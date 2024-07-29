@@ -1,6 +1,6 @@
 import React, { ForwardedRef, forwardRef, ReactNode, useCallback } from 'react';
 import Scroller, { OnScroll } from 'Components/Scroller/Scroller';
-import { scrollDirections } from 'Helpers/Props';
+import { VERTICAL } from 'Helpers/Props/scrollDirections';
 import { isLocked } from 'Utilities/scrollLock';
 import styles from './PageContentBody.css';
 
@@ -36,7 +36,7 @@ const PageContentBody = forwardRef(
         ref={ref}
         {...otherProps}
         className={className}
-        scrollDirection={scrollDirections.VERTICAL}
+        scrollDirection={VERTICAL}
         onScroll={onScrollWrapper}
       >
         <div className={innerClassName}>{children}</div>

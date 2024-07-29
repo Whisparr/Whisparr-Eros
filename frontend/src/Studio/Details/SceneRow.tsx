@@ -79,7 +79,15 @@ class SceneRow extends Component<SceneRowProps, SceneRowState> {
     this.setState({ isDetailsModalOpen: false });
   };
 
-  onMonitorMoviePress = (monitored: boolean, options?: object): void => {
+  onMonitorMoviePress = (
+    value: boolean | { monitored: boolean; moviesMonitored: boolean },
+    options: { shiftKey: boolean }
+  ): void => {
+    // Support both boolean and object signatures
+    const { monitored } =
+      typeof value === 'object' && value !== null && 'monitored' in value
+        ? value
+        : { monitored: value as boolean };
     this.props.onMonitorMoviePress(this.props.id, monitored, options);
   };
 

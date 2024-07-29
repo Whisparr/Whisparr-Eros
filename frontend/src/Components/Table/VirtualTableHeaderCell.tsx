@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import Icon from 'Components/Icon';
 import Link from 'Components/Link/Link';
 import { icons, sortDirections } from 'Helpers/Props';
-import { SortDirection } from 'Helpers/Props/SortDirection';
+import { SortDirection } from 'Helpers/Props/sortDirections';
 import styles from './VirtualTableHeaderCell.css';
 
 interface VirtualTableHeaderCellProps {

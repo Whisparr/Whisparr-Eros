@@ -33,17 +33,11 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   }
 
   render() {
-    const {
-      children,
-      errorComponent: ErrorComponent,
-      onModalClose,
-    } = this.props;
+    const { children, errorComponent: ErrorComponent } = this.props;
     const { error, info } = this.state;
 
     if (error) {
-      return (
-        <ErrorComponent error={error} info={info} onModalClose={onModalClose} />
-      );
+      return <ErrorComponent error={error} info={info} />;
     }
 
     return children;

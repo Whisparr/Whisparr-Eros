@@ -1,11 +1,12 @@
 import React from 'react';
-import { icons, sortDirections } from 'Helpers/Props';
+import { icons } from 'Helpers/Props';
+import { SortDirection } from 'Helpers/Props/sortDirections';
 import SelectedMenuItem from './SelectedMenuItem';
 
 interface SortMenuItemProps {
   name?: string;
   sortKey?: string;
-  sortDirection?: sortDirections;
+  sortDirection?: SortDirection;
   children: string | React.ReactNode;
   onPress: (sortKey: string) => void;
 }

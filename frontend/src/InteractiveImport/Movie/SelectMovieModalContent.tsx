@@ -18,7 +18,7 @@ import ModalHeader from 'Components/Modal/ModalHeader';
 import Scroller from 'Components/Scroller/Scroller';
 import Column from 'Components/Table/Column';
 import VirtualTableRowButton from 'Components/Table/VirtualTableRowButton';
-import { scrollDirections } from 'Helpers/Props';
+import { NONE } from 'Helpers/Props/scrollDirections';
 import Movie from 'Movie/Movie';
 import { searchMoviesModal } from 'Store/Actions/movieSearchActions';
 import dimensions from 'Styles/Variables/dimensions';
@@ -200,10 +200,7 @@ function SelectMovieModalContent(props: SelectMovieModalContentProps) {
         {translate('SelectMovieModalTitle', { modalTitle })}
       </ModalHeader>
 
-      <ModalBody
-        className={styles.modalBody}
-        scrollDirection={scrollDirections.NONE}
-      >
+      <ModalBody className={styles.modalBody} scrollDirection={NONE}>
         <TextInput
           className={styles.filterInput}
           placeholder={translate('FilterMoviePlaceholder')}

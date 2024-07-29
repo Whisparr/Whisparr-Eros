@@ -2,7 +2,7 @@ import React from 'react';
 import Column from 'Components/Table/Column';
 import Table from 'Components/Table/Table';
 import TableBody from 'Components/Table/TableBody';
-import { SortDirection } from 'Helpers/Props/SortDirection';
+import { SortDirection } from 'Helpers/Props/sortDirections';
 import translate from 'Utilities/String/translate';
 import { MovieFile } from '../MovieFile';
 import MovieFileEditorRow from './MovieFileEditorRow';

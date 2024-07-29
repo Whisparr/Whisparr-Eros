@@ -24,7 +24,8 @@ import Table from 'Components/Table/Table';
 import TableBody from 'Components/Table/TableBody';
 import usePrevious from 'Helpers/Hooks/usePrevious';
 import useSelectState from 'Helpers/Hooks/useSelectState';
-import { align, icons, kinds, scrollDirections } from 'Helpers/Props';
+import { align, icons, kinds } from 'Helpers/Props';
+import { BOTH } from 'Helpers/Props/scrollDirections';
 import ImportMode from 'InteractiveImport/ImportMode';
 import SelectIndexerFlagsModal from 'InteractiveImport/IndexerFlags/SelectIndexerFlagsModal';
 import InteractiveImport, {
@@ -682,7 +683,7 @@ function InteractiveImportModalContent(
         {modalTitle} - {title || folder}
       </ModalHeader>
 
-      <ModalBody scrollDirection={scrollDirections.BOTH}>
+      <ModalBody scrollDirection={BOTH}>
         {showFilterExistingFiles && (
           <div className={styles.filterContainer}>
             <Menu alignMenu={align.RIGHT}>

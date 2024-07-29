@@ -17,6 +17,7 @@ import MovieSearchAppState from './MovieSearchAppState';
 import OAuthAppState from './OAuthAppState';
 import OrganizePreviewAppState from './OrganizePreviewAppState';
 import ParseAppState from './ParseAppState';
+import PathsAppState from './PathsAppState';
 import PerformersAppState from './PerformersAppState';
 import ProviderOptionsAppState from './ProviderOptionsAppState';
 import QueueAppState from './QueueAppState';
@@ -58,13 +59,6 @@ export interface CustomFilter {
   type: string;
   label: string;
   filters: PropertyFilter[];
-}
-
-export interface PathsAppState {
-  currentPath: string;
-  directories: Array<{ path: string; type?: string }>;
-  files: Array<{ path: string; type?: string }>;
-  isFetching?: boolean;
 }
 
 export interface AppSectionState {
