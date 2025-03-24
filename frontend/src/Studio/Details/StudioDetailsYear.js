@@ -82,7 +82,6 @@ class StudioDetailsYear extends Component {
       isOrganizeModalOpen: false,
       isManageMoviesOpen: false,
       isHistoryModalOpen: false,
-      isInteractiveSearchModalOpen: false,
       lastToggledMovie: null
     };
   }
@@ -132,14 +131,6 @@ class StudioDetailsYear extends Component {
 
   //
   // Listeners
-
-  onInteractiveSearchPress = () => {
-    this.setState({ isInteractiveSearchModalOpen: true });
-  };
-
-  onInteractiveSearchModalClose = () => {
-    this.setState({ isInteractiveSearchModalOpen: false });
-  };
 
   onExpandPress = () => {
     const {
@@ -288,18 +279,6 @@ class StudioDetailsYear extends Component {
 
                     {translate('Search')}
                   </MenuItem>
-
-                  <MenuItem
-                    onPress={this.onInteractiveSearchPress}
-                    isDisabled={!totalMovieCount}
-                  >
-                    <Icon
-                      className={styles.actionMenuIcon}
-                      name={icons.INTERACTIVE}
-                    />
-
-                    {translate('InteractiveSearch')}
-                  </MenuItem>
                 </MenuContent>
               </Menu> :
 
@@ -312,15 +291,6 @@ class StudioDetailsYear extends Component {
                   isSpinning={isSearching}
                   isDisabled={isSearching || !hasMonitoredMovies || !studioMonitored}
                   onPress={onSearchPress}
-                />
-
-                <IconButton
-                  className={styles.actionButton}
-                  name={icons.INTERACTIVE}
-                  title={translate('InteractiveSearchSeason')}
-                  size={24}
-                  isDisabled={!totalMovieCount}
-                  onPress={this.onInteractiveSearchPress}
                 />
               </div>
           }
