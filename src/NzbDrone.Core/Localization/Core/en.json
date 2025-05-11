@@ -1804,6 +1804,8 @@
   "WhatsNew": "What's new?",
   "WhisparrAutoMatchOnDate": "Match scene on Date Only",
   "WhisparrAutoMatchOnDateHelpText": "If checked Whisparr will accept a scene on just studio and date. Can cause false positives",
+  "WhisparrCacheMovieAPI": "Cache Movie API",
+  "WhisparrCacheMovieAPIHelpText": "Cache API calls to movie/scene",
   "WhisparrValidateRuntime": "Validate the runtime",
   "WhisparrValidateRuntimeHelpText": "Validates the runtime minutes with the expected time of the scene",
   "WhisparrCalendarFeed": "{appName} Calendar Feed",
