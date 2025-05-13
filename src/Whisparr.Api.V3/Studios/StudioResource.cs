@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using NzbDrone.Core.MediaCover;
@@ -17,9 +18,11 @@ namespace Whisparr.Api.V3.Studios
         public string Network { get; set; }
         public List<MediaCover> Images { get; set; }
         public bool Monitored { get; set; }
+        public string AfterDate { get; set; }
         public string RootFolderPath { get; set; }
         public int QualityProfileId { get; set; }
         public bool SearchOnAdd { get; set; }
+        public List<string> Aliases { get; set; }
         public HashSet<int> Tags { get; set; }
         public bool HasMovies { get; set; }
         public bool HasScenes { get; set; }
@@ -49,10 +52,12 @@ namespace Whisparr.Api.V3.Studios
                 Website = model.Website,
                 Network = model.Network,
                 Monitored = model.Monitored,
+                AfterDate = model.AfterDate?.ToLocalTime().ToString("yyyy-MM-dd"),
                 Images = model.Images,
                 QualityProfileId = model.QualityProfileId,
                 RootFolderPath = model.RootFolderPath,
                 SearchOnAdd = model.SearchOnAdd,
+                Aliases = model.Aliases,
                 Tags = model.Tags
             };
         }
@@ -80,9 +85,11 @@ namespace Whisparr.Api.V3.Studios
                 Website = resource.Website,
                 Network = resource.Network,
                 Monitored = resource.Monitored,
+                AfterDate = DateTime.Parse(resource.AfterDate),
                 QualityProfileId = resource.QualityProfileId,
                 RootFolderPath = resource.RootFolderPath,
                 SearchOnAdd = resource.SearchOnAdd,
+                Aliases = resource.Aliases,
                 Tags = resource.Tags
             };
         }
