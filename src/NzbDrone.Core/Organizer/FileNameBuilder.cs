@@ -399,6 +399,16 @@ namespace NzbDrone.Core.Organizer
                     .Take(4)
                     .Join(" ");
             }
+
+            if (!string.IsNullOrWhiteSpace(movie.MovieMetadata.Value.Code))
+            {
+                var code = movie.MovieMetadata.Value.Code;
+                tokenHandlers["{Scene Code}"] = m => code;
+            }
+            else
+            {
+                tokenHandlers["{Scene Code}"] = m => string.Empty;
+            }
         }
 
         private void AddSceneTitlePlaceholderTokens(Dictionary<string, Func<TokenMatch, string>> tokenHandlers, Movie movie)
