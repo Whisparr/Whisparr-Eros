@@ -21,6 +21,7 @@ using NzbDrone.Common.Exceptions;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Instrumentation;
 using NzbDrone.Common.Instrumentation.Extensions;
+using NzbDrone.Common.Options;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Datastore.Extensions;
 using PostgresOptions = NzbDrone.Core.Datastore.PostgresOptions;
@@ -92,10 +93,24 @@ namespace NzbDrone.Host
                                         .AddStartupContext(startupContext)
                                         .Resolve<UtilityModeRouter>()
                                         .Route(appMode);
+
+                                    if (config.GetValue(nameof(ConfigFileProvider.LogDbEnabled), true))
+                                    {
+                                        c.AddLogDatabase();
+                                    }
+                                    else
+                                    {
+                                        c.AddDummyLogDatabase();
+                                    }
                                 })
                                 .ConfigureServices(services =>
                                 {
                                     services.Configure<PostgresOptions>(config.GetSection("Whisparr:Postgres"));
+                                    services.Configure<AppOptions>(config.GetSection("Whisparr:App"));
+                                    services.Configure<AuthOptions>(config.GetSection("Whisparr:Auth"));
+                                    services.Configure<ServerOptions>(config.GetSection("Whisparr:Server"));
+                                    services.Configure<LogOptions>(config.GetSection("Whisparr:Log"));
+                                    services.Configure<UpdateOptions>(config.GetSection("Whisparr:Update"));
                                 }).Build();
 
                             break;
@@ -123,12 +138,13 @@ namespace NzbDrone.Host
         {
             var config = GetConfiguration(context);
 
-            var bindAddress = config.GetValue(nameof(ConfigFileProvider.BindAddress), "*");
-            var port = config.GetValue(nameof(ConfigFileProvider.Port), 6969);
-            var sslPort = config.GetValue(nameof(ConfigFileProvider.SslPort), 9898);
-            var enableSsl = config.GetValue(nameof(ConfigFileProvider.EnableSsl), false);
-            var sslCertPath = config.GetValue<string>(nameof(ConfigFileProvider.SslCertPath));
-            var sslCertPassword = config.GetValue<string>(nameof(ConfigFileProvider.SslCertPassword));
+            var bindAddress = config.GetValue<string>($"Whisparr:Server:{nameof(ServerOptions.BindAddress)}") ?? config.GetValue(nameof(ConfigFileProvider.BindAddress), "*");
+            var port = config.GetValue<int?>($"Whisparr:Server:{nameof(ServerOptions.Port)}") ?? config.GetValue(nameof(ConfigFileProvider.Port), 6969);
+            var sslPort = config.GetValue<int?>($"Whisparr:Server:{nameof(ServerOptions.SslPort)}") ?? config.GetValue(nameof(ConfigFileProvider.SslPort), 9898);
+            var enableSsl = config.GetValue<bool?>($"Whisparr:Server:{nameof(ServerOptions.EnableSsl)}") ?? config.GetValue(nameof(ConfigFileProvider.EnableSsl), false);
+            var sslCertPath = config.GetValue<string>($"Whisparr:Server:{nameof(ServerOptions.SslCertPath)}") ?? config.GetValue<string>(nameof(ConfigFileProvider.SslCertPath));
+            var sslCertPassword = config.GetValue<string>($"Whisparr:Server:{nameof(ServerOptions.SslCertPassword)}") ?? config.GetValue<string>(nameof(ConfigFileProvider.SslCertPassword));
+            var logDbEnabled = config.GetValue<bool?>($"Whisparr:Log:{nameof(LogOptions.DbEnabled)}") ?? config.GetValue(nameof(ConfigFileProvider.LogDbEnabled), true);
 
             var urls = new List<string> { BuildUrl("http", bindAddress, port) };
 
@@ -146,10 +162,24 @@ namespace NzbDrone.Host
                         .AddNzbDroneLogger()
                         .AddDatabase()
                         .AddStartupContext(context);
+
+                    if (logDbEnabled)
+                    {
+                        c.AddLogDatabase();
+                    }
+                    else
+                    {
+                        c.AddDummyLogDatabase();
+                    }
                 })
                 .ConfigureServices(services =>
                 {
                     services.Configure<PostgresOptions>(config.GetSection("Whisparr:Postgres"));
+                    services.Configure<AppOptions>(config.GetSection("Whisparr:App"));
+                    services.Configure<AuthOptions>(config.GetSection("Whisparr:Auth"));
+                    services.Configure<ServerOptions>(config.GetSection("Whisparr:Server"));
+                    services.Configure<LogOptions>(config.GetSection("Whisparr:Log"));
+                    services.Configure<UpdateOptions>(config.GetSection("Whisparr:Update"));
                 })
                 .ConfigureWebHost(builder =>
                 {
