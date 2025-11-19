@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import TextTruncate from 'react-text-truncate';
@@ -49,7 +48,8 @@ const screenshotStyle = {
   'object-fit': 'cover'
 };
 function getFanartUrl(images) {
-  return _.find(images, { coverType: 'fanart' })?.url;
+  const image = images.find((img) => img.coverType === 'fanart');
+  return image?.url ?? image?.remoteUrl;
 }
 
 class MovieDetails extends Component {
@@ -242,8 +242,10 @@ class MovieDetails extends Component {
     const marqueeWidth = isSmallScreen ? titleWidth : (titleWidth - 150);
     const ImageComponent = itemType === 'movie' ? MoviePoster : ScenePoster;
 
+    const pageTitle = `${title}${year > 0 ? ` (${year})` : ''}`;
+
     return (
-      <PageContent title={title}>
+      <PageContent title={pageTitle}>
         <PageToolbar>
           <PageToolbarSection>
             <PageToolbarButton
@@ -326,7 +328,7 @@ class MovieDetails extends Component {
                 blur={safeForWorkMode}
                 className={itemType === 'movie' ? styles.poster : styles.screenShot}
                 images={images}
-                size={250}
+                size={500}
                 lazy={false}
               />
 

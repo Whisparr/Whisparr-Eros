@@ -26,14 +26,16 @@ namespace NzbDrone.Core.Movies
 
         private void HandleScanEvents(Movie movie)
         {
-            if (movie.AddOptions == null)
+            var addOptions = movie.AddOptions;
+
+            if (addOptions == null)
             {
                 return;
             }
 
             _logger.Info("[{0}] was recently added, performing post-add actions", movie.Title);
 
-            if (movie.AddOptions.SearchForMovie)
+            if (addOptions.SearchForMovie)
             {
                 _commandQueueManager.Push(new MoviesSearchCommand { MovieIds = new List<int> { movie.Id } });
             }

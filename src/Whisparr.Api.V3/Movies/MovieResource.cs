@@ -10,6 +10,7 @@ using NzbDrone.Core.MediaCover;
 using NzbDrone.Core.Movies;
 using NzbDrone.Core.Movies.Credits;
 using NzbDrone.Core.Parser;
+using Swashbuckle.AspNetCore.Annotations;
 using Whisparr.Api.V3.MovieFiles;
 using Whisparr.Api.V3.Movies;
 using Whisparr.Http.REST;
@@ -81,6 +82,7 @@ namespace Whisparr.Api.V3.Movies
 
         // Hiding this so people don't think its usable (only used to set the initial state)
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        [SwaggerIgnore]
         public bool Grabbed { get; set; }
     }
 
@@ -183,7 +185,7 @@ namespace Whisparr.Api.V3.Movies
 
                 RootFolderPath = resource.RootFolderPath,
 
-                Tags = resource.Tags,
+                Tags = resource.Tags ?? new HashSet<int>(),
                 Added = resource.Added,
                 AddOptions = resource.AddOptions
             };
