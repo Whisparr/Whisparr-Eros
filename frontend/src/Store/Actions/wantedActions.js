@@ -48,6 +48,18 @@ export const defaultState = {
         isVisible: false
       },
       {
+        name: 'movies.lastSearchTime',
+        label: () => translate('LastSearched'),
+        isSortable: true,
+        isVisible: false
+      },
+      {
+        name: 'movies.lastSearchTime',
+        label: () => translate('LastSearched'),
+        isSortable: true,
+        isVisible: false
+      },
+      {
         name: 'status',
         label: () => translate('Status'),
         isVisible: true
@@ -119,6 +131,12 @@ export const defaultState = {
       {
         name: 'languages',
         label: () => translate('Languages'),
+        isVisible: false
+      },
+      {
+        name: 'movies.lastSearchTime',
+        label: () => translate('LastSearched'),
+        isSortable: true,
         isVisible: false
       },
       {
