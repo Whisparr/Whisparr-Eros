@@ -111,6 +111,7 @@ class EditStudioModalContent extends Component {
 
                   <FormInputGroup
                     type={inputTypes.QUALITY_PROFILE_SELECT}
+                    helpText={translate('StudioQualityProfileHelpText')}
                     name="qualityProfileId"
                     {...qualityProfileId}
                     onChange={onInputChange}

@@ -65,7 +65,7 @@ class EditPerformerModalContent extends Component {
               !isSmallScreen &&
                 <div className={styles.poster}>
                   <MovieHeadshot
-                    blur={safeForWorkMode}
+                    safeForWorkMode={safeForWorkMode}
                     className={styles.poster}
                     images={images}
                     size={250}
@@ -94,6 +94,7 @@ class EditPerformerModalContent extends Component {
 
                   <FormInputGroup
                     type={inputTypes.QUALITY_PROFILE_SELECT}
+                    helpText={translate('PerformerQualityProfileHelpText')}
                     name="qualityProfileId"
                     {...qualityProfileId}
                     onChange={onInputChange}
