@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using NLog;
 using NzbDrone.Common;
 using NzbDrone.Common.Cloud;
+using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
 using NzbDrone.Common.Serializer;
@@ -822,6 +823,11 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
         public List<Movie> SearchForNewTmdbMovie(string title)
         {
+            if (title.IsPathValid(PathValidationType.AnyOs))
+            {
+                throw new InvalidSearchTermException("Invalid search term '{0}'", title);
+            }
+
             try
             {
                 var regex = new Regex("^https://www.themoviedb.org/movie/(?<tmdbid>[0-9]+).*$", RegexOptions.None, RegexDefaults.Timeout);
