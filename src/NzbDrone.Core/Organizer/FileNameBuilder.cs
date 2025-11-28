@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Diacritical;
-using DryIoc.ImTools;
 using NLog;
 using NzbDrone.Common.EnsureThat;
 using NzbDrone.Common.Extensions;
@@ -94,6 +93,9 @@ namespace NzbDrone.Core.Organizer
             { "wel", "cym" }
         }.ToImmutableDictionary();
 
+        public static readonly ImmutableArray<string> BadCharacters = ImmutableArray.Create("\\", "/", "<", ">", "?", "*", "|", "\"");
+        public static readonly ImmutableArray<string> GoodCharacters = ImmutableArray.Create("+", "+", "", "", "!", "-", "", "");
+
         public FileNameBuilder(INamingConfigService namingConfigService,
                                IQualityDefinitionService qualityDefinitionService,
                                IStudioService studioService,
@@ -124,6 +126,11 @@ namespace NzbDrone.Core.Organizer
                 {
                     return GetOriginalTitle(movieFile, false);
                 }
+            }
+
+            if (namingConfig.StandardMovieFormat.IsNullOrWhiteSpace())
+            {
+                throw new NamingFormatException("Standard movie format cannot be empty");
             }
 
             var pattern = itemType == ItemType.Movie ? namingConfig.StandardMovieFormat : namingConfig.StandardSceneFormat;
@@ -289,20 +296,9 @@ namespace NzbDrone.Core.Organizer
             return "_";
         }
 
-        public static string CleanFileName(string name, bool replace = true, ColonReplacementFormat colonReplacement = ColonReplacementFormat.Delete)
+        public static string CleanFileName(string name)
         {
-            var colonReplacementFormat = colonReplacement.GetFormatString();
-
-            var result = name;
-            string[] badCharacters = { "\\", "/", "<", ">", "?", "*", ":", "|", "\"" };
-            string[] goodCharacters = { "+", "+", "", "", "!", "-", colonReplacementFormat, "", "" };
-
-            for (var i = 0; i < badCharacters.Length; i++)
-            {
-                result = result.Replace(badCharacters[i], replace ? goodCharacters[i] : string.Empty);
-            }
-
-            return result.TrimStart(' ', '.').TrimEnd(' ');
+            return CleanFileName(name, NamingConfig.Default);
         }
 
         public static string CleanFolderName(string name)
@@ -501,7 +497,7 @@ namespace NzbDrone.Core.Organizer
             new Dictionary<string, int>(FileNameBuilderTokenEqualityComparer.Instance)
         {
             { MediaInfoVideoDynamicRangeToken, 5 },
-            { MediaInfoVideoDynamicRangeTypeToken, 12 }
+            { MediaInfoVideoDynamicRangeTypeToken, 13 }
         };
 
         private void AddMediaInfoTokens(Dictionary<string, Func<TokenMatch, string>> tokenHandlers, MovieFile movieFile)
@@ -725,7 +721,7 @@ namespace NzbDrone.Core.Organizer
                 replacementText = replacementText.Replace(" ", tokenMatch.Separator);
             }
 
-            replacementText = CleanFileName(replacementText, namingConfig.ReplaceIllegalCharacters, namingConfig.ColonReplacementFormat);
+            replacementText = CleanFileName(replacementText, namingConfig);
 
             if (!replacementText.IsNullOrWhiteSpace())
             {
@@ -770,10 +766,10 @@ namespace NzbDrone.Core.Organizer
         {
             if (movieFile.SceneName.IsNullOrWhiteSpace())
             {
-                return GetOriginalFileName(movieFile, multipleTokens);
+                return CleanFileName(GetOriginalFileName(movieFile, multipleTokens));
             }
 
-            return movieFile.SceneName;
+            return CleanFileName(movieFile.SceneName);
         }
 
         private string GetOriginalFileName(MovieFile movieFile, bool multipleTokens)
@@ -795,6 +791,51 @@ namespace NzbDrone.Core.Organizer
         {
             // Replace reserved windows device names with an alternative
             return ReservedDeviceNamesRegex.Replace(input, match => match.Value.Replace(".", "_"));
+        }
+
+        private static string CleanFileName(string name, NamingConfig namingConfig)
+        {
+            var result = name;
+
+            if (namingConfig.ReplaceIllegalCharacters)
+            {
+                // Smart replaces a colon followed by a space with space dash space for a better appearance
+                if (namingConfig.ColonReplacementFormat == ColonReplacementFormat.Smart)
+                {
+                    result = result.Replace(": ", " - ");
+                    result = result.Replace(":", "-");
+                }
+                else
+                {
+                    var replacement = string.Empty;
+
+                    switch (namingConfig.ColonReplacementFormat)
+                    {
+                        case ColonReplacementFormat.Dash:
+                            replacement = "-";
+                            break;
+                        case ColonReplacementFormat.SpaceDash:
+                            replacement = " -";
+                            break;
+                        case ColonReplacementFormat.SpaceDashSpace:
+                            replacement = " - ";
+                            break;
+                    }
+
+                    result = result.Replace(":", replacement);
+                }
+            }
+            else
+            {
+                result = result.Replace(":", string.Empty);
+            }
+
+            for (var i = 0; i < BadCharacters.Length; i++)
+            {
+                result = result.Replace(BadCharacters[i], namingConfig.ReplaceIllegalCharacters ? GoodCharacters[i] : string.Empty);
+            }
+
+            return result.TrimStart(' ', '.').TrimEnd(' ');
         }
 
         private string Truncate(string input, string formatter)
@@ -850,13 +891,12 @@ namespace NzbDrone.Core.Organizer
         }
     }
 
-    public enum MultiEpisodeStyle
+    public enum ColonReplacementFormat
     {
-        Extend = 0,
-        Duplicate = 1,
-        Repeat = 2,
-        Scene = 3,
-        Range = 4,
-        PrefixedRange = 5
+        Delete = 0,
+        Dash = 1,
+        SpaceDash = 2,
+        SpaceDashSpace = 3,
+        Smart = 4
     }
 }

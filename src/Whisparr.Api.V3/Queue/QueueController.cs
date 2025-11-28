@@ -139,7 +139,26 @@ namespace Whisparr.Api.V3.Queue
         public PagingResource<QueueResource> GetQueue([FromQuery] PagingRequestResource paging, bool includeUnknownMovieItems = false, bool includeMovie = false, [FromQuery] int[] movieIds = null, DownloadProtocol? protocol = null, [FromQuery] int[] languages = null, int? quality = null)
         {
             var pagingResource = new PagingResource<QueueResource>(paging);
-            var pagingSpec = pagingResource.MapToPagingSpec<QueueResource, NzbDrone.Core.Queue.Queue>(null, "timeleft", SortDirection.Ascending);
+            var pagingSpec = pagingResource.MapToPagingSpec<QueueResource, NzbDrone.Core.Queue.Queue>(
+                new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    "added",
+                    "downloadClient",
+                    "estimatedCompletionTime",
+                    "indexer",
+                    "languages",
+                    "movies.sortTitle",
+                    "progress",
+                    "protocol",
+                    "quality",
+                    "size",
+                    "status",
+                    "timeleft",
+                    "title",
+                    "year"
+                },
+                "timeleft",
+                SortDirection.Ascending);
 
             return pagingSpec.ApplyToPage((spec) => GetQueue(spec, movieIds?.ToHashSet(), protocol, languages?.ToHashSet(), quality, includeUnknownMovieItems), (q) => MapToResource(q, includeMovie));
         }

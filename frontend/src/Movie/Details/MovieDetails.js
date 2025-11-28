@@ -363,27 +363,31 @@ class MovieDetails extends Component {
 
                 <div className={styles.details}>
                   <div>
-                    {!!certification &&
-                      <span className={styles.certification}>
-                        {certification}
-                      </span>
+                    {
+                      certification ?
+                        <span className={styles.certification}>
+                          {certification}
+                        </span> :
+                        null
                     }
 
-                    {year > 0 &&
-                      <span className={styles.year}>
-                        <Popover
-                          anchor={
-                            year
-                          }
-                          title={translate('ReleaseDates')}
-                          body={
-                            <MovieReleaseDates
-                              releaseDate={releaseDate}
-                            />
-                          }
-                          position={tooltipPositions.BOTTOM}
-                        />
-                      </span>
+                    {
+                      year > 0 ?
+                        <span className={styles.year}>
+                          <Popover
+                            anchor={
+                              year
+                            }
+                            title={translate('ReleaseDates')}
+                            body={
+                              <MovieReleaseDates
+                                releaseDate={releaseDate}
+                              />
+                            }
+                            position={tooltipPositions.BOTTOM}
+                          />
+                        </span> :
+                        null
                     }
 
                     {!!studioTitle &&
@@ -392,10 +396,11 @@ class MovieDetails extends Component {
                       </span>
                     }
 
-                    {!!runtime &&
+                    {runtime ?
                       <span className={styles.runtime}>
                         {formatRuntime(runtime, movieRuntimeFormat)}
-                      </span>
+                      </span> :
+                      null
                     }
 
                     {

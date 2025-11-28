@@ -36,6 +36,7 @@ function MovieReleaseDates(props: MovieReleaseDatesProps) {
           <div className={styles.dateIcon}>
             <Icon name={icons.CALENDAR} />
           </div>
+
           {getRelativeDate({
             date: releaseDate,
             shortDateFormat,
