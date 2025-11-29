@@ -76,6 +76,9 @@ namespace NzbDrone.Core.Test.ParserTests
         [TestCase("Movie Title (2016) [UHDRemux 2160p SDR] [Castellano DD 5.1 - Inglés DTS-HD MA 5.1 Subs]")]
         [TestCase("Movie Title 2022 [HDTV 720p][Cap.101][AC3 5.1 Castellano][www.pctnew.ORG]")]
         [TestCase("Movie Title 2022 [HDTV 720p][Cap.206][AC3 5.1 Español Castellano]")]
+        [TestCase("Movie Title 2022 [Remux-1080p 8-bit h264 DTS-HD MA 2.0][ES.EN]-HiFi")]
+        [TestCase("Movie Title 2022 [BDRemux 1080p AVC ES DTS-HD MA 5.1 Subs][HDO].mkv")]
+        [TestCase("Movie.Name.2022.BluRay.1080p.H264.DTS[EN+ES].[EN+ES+IT]")]
         public void should_parse_language_spanish(string postTitle)
         {
             var result = Parser.Parser.ParseMovieTitle(postTitle, true);
@@ -188,6 +191,7 @@ namespace NzbDrone.Core.Test.ParserTests
         [TestCase("Movie.Title.1994.Dublado.1080p.XviD-LOL")]
         [TestCase("Movie.Title.2.2019.1080p.Bluray.Dublado.WWW.TPF.GRATIS")]
         [TestCase("Movie.Title.2014.1080p.Bluray.Brazilian.WWW.TPF.GRATIS")]
+        [TestCase("Movie.Title.2014.1080p.AMZN.WEB-DL.DDP2.0.H.264.pt-BR.ENG-LCD")]
         public void should_parse_language_brazilian_portuguese(string postTitle)
         {
             var result = Parser.Parser.ParseMovieTitle(postTitle, true);
