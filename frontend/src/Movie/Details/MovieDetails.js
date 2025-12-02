@@ -190,6 +190,7 @@ class MovieDetails extends Component {
     const {
       id,
       tmdbId,
+      foreignId,
       stashId,
       title,
       code,
@@ -365,39 +366,46 @@ class MovieDetails extends Component {
                   <div>
                     {
                       certification ?
-                        <span className={styles.certification}>
+                        <span className={styles.certification} title={translate('Certification')}>
                           {certification}
                         </span> :
                         null
                     }
 
-                    {
-                      year > 0 ?
-                        <span className={styles.year}>
-                          <Popover
-                            anchor={
-                              year
-                            }
-                            title={translate('ReleaseDates')}
-                            body={
-                              <MovieReleaseDates
-                                releaseDate={releaseDate}
-                              />
-                            }
-                            position={tooltipPositions.BOTTOM}
+                    <span className={styles.year}>
+                      <Popover
+                        anchor={
+                          year > 0 ? (
+                            year
+                          ) : (
+                            <Icon
+                              name={icons.WARNING}
+                              kind={kinds.WARNING}
+                              size={20}
+                            />
+                          )
+                        }
+                        title={translate('ReleaseDates')}
+                        body={
+                          <MovieReleaseDates
+                            foreignId={foreignId}
+                            itemType={itemType}
+                            releaseDate={releaseDate}
                           />
-                        </span> :
-                        null
-                    }
+                        }
+                        position={tooltipPositions.BOTTOM}
+                      />
+                    </span>
 
-                    {!!studioTitle &&
+                    {studioTitle ?
                       <span className={styles.studio}>
                         <MovieStudioLink foreignId={studioForeignId} studioTitle={studioTitle} />
-                      </span>
+                      </span> :
+                      null
                     }
 
                     {runtime ?
-                      <span className={styles.runtime}>
+                      <span className={styles.runtime} title={translate('Runtime')}>
                         {formatRuntime(runtime, movieRuntimeFormat)}
                       </span> :
                       null
@@ -646,6 +654,7 @@ class MovieDetails extends Component {
 MovieDetails.propTypes = {
   id: PropTypes.number.isRequired,
   tmdbId: PropTypes.number.isRequired,
+  foreignId: PropTypes.string,
   stashId: PropTypes.string,
   title: PropTypes.string.isRequired,
   code: PropTypes.string,
