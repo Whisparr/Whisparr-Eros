@@ -213,13 +213,13 @@ namespace Whisparr.Api.V3.Performers
         {
             var performerResources = new List<PerformerResource>();
 
-            var getIds = new List<string>();
+            var missingIds = new List<string>();
             foreach (var id in performerForeignIds)
             {
                 var performerResource = _performerResourceCache.Find(id);
                 if (performerResource == null)
                 {
-                    getIds.Add(id);
+                    missingIds.Add(id);
                 }
                 else
                 {
@@ -227,11 +227,26 @@ namespace Whisparr.Api.V3.Performers
                 }
             }
 
-            if (getIds.Count > 0)
+            if (missingIds.Count > 0)
             {
                 try
                 {
                     _performerResourceCache.Lock.Wait();
+
+                    // recheck after acquiring the lock
+                    var getIds = new List<string>();
+                    foreach (var id in missingIds)
+                    {
+                        var performerResource = _performerResourceCache.Find(id);
+                        if (performerResource == null)
+                        {
+                            getIds.Add(id);
+                        }
+                        else
+                        {
+                            performerResources.AddIfNotNull(performerResource);
+                        }
+                    }
 
                     if (getIds.Count > 0)
                     {
