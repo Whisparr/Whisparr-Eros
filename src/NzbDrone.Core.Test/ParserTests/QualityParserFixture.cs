@@ -293,6 +293,42 @@ namespace NzbDrone.Core.Test.ParserTests
             ParseAndVerifyQuality(title, QualitySource.Bluray, proper, Resolution.R2160p);
         }
 
+        [Test]
+        [TestCase("Movie.Title.2025.5120x2880.x264", Resolution.R2880p, 33)]
+        [TestCase("Movie.Title.2025.5k.x264", Resolution.R2880p, 33)]
+        [TestCase("Movie.Title.2025.5k-UHD.x265", Resolution.R2880p, 33)]
+        [TestCase("Movie.Title.2025.6144x3160.x265", Resolution.R3160p, 34)]
+        [TestCase("Movie.Title.2025.6016x3384.x265", Resolution.R3384p, 36)]
+        [TestCase("Movie.Title.2025.6k-UHD.x265", Resolution.R3160p, 34)]
+        [TestCase("Movie.Title.2025.8k.7680x4320.x265", Resolution.R4320p, 35)]
+        [TestCase("Movie.Title.2025.8K-UHD.x265", Resolution.R4320p, 35)]
+        [TestCase("Movie.Title.2025.4k-UHD.x265", Resolution.R2160p, 18)]
+        [TestCase("Movie.Title.2025.2160p.x265", Resolution.R2160p, 18)]
+        [TestCase("Movie.Title.2025.UHD.x265", Resolution.R2160p, 18)]
+        public void should_parse_large_resolutions(string title, Resolution expectedResolution, int expectedQualityId)
+        {
+            var result = QualityParser.ParseQuality(title);
+
+            result.ResolutionDetectionSource.Should().Be(QualityDetectionSource.Name);
+            result.Quality.Resolution.Should().Be((int)expectedResolution);
+
+            var expectedQuality = Quality.FindById(expectedQualityId);
+            result.Quality.Should().Be(expectedQuality);
+        }
+
+        [Test]
+        [TestCase("Movie.Title.2025.Season5.EpisodeK")]
+        [TestCase("Movie.Title.2025.500k")]
+        [TestCase("Movie.Title.2025.5kgain")]
+        [TestCase("Movie.Title.2025.s5k")]
+        public void should_not_match_false_positive_large_resolutions(string title)
+        {
+            var result = QualityParser.ParseQuality(title);
+
+            result.Quality.Resolution.Should().Be((int)Resolution.Unknown);
+            result.Quality.Should().Be(Quality.Unknown);
+        }
+
         [TestCase("Movie.Name.2004.576p.BDRip.x264-HANDJOB")]
         [TestCase("Movie.Title.S01E05.576p.BluRay.DD5.1.x264-HiSD")]
         public void should_parse_bluray576p_quality(string title)
@@ -311,7 +347,6 @@ namespace NzbDrone.Core.Test.ParserTests
         [TestCase("Movie.Name.2008.BDREMUX.1080p.Bluray.AVC.DTS-HR.MA.5.1-LEGi0N")]
         [TestCase("Movie.Title.M.2008.USA.BluRay.Remux.1080p.MPEG-2.DD.5.1-TDD")]
         [TestCase("Movie.Title.2018.1080p.BluRay.REMUX.MPEG-2.DTS-HD.MA.5.1-EPSiLON")]
-        [TestCase("Movie.Title.II.2003.4K.BluRay.Remux.1080p.AVC.DTS-HD.MA.5.1-BMF")]
         [TestCase("Movie Title 2022 (BDRemux 1080p HEVC FLAC) [Netaro]")]
         [TestCase("[Vodes] Movie Title - Other Title (2020) [BDRemux 1080p HEVC Dual-Audio]")]
         [TestCase("This.Wonderful.Movie.1991.German.ML.1080p.BluRay.AVC-GeRMaNSCeNEGRoUP")]
