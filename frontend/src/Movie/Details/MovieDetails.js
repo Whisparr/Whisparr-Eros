@@ -23,6 +23,7 @@ import DeleteMovieModal from 'Movie/Delete/DeleteMovieModal';
 import EditMovieModalConnector from 'Movie/Edit/EditMovieModalConnector';
 import getMovieStatusDetails from 'Movie/getMovieStatusDetails';
 import MovieHistoryModal from 'Movie/History/MovieHistoryModal';
+import MovieGenres from 'Movie/MovieGenres';
 import MovieImage from 'Movie/MovieImage';
 import MovieInteractiveSearchModal from 'Movie/Search/MovieInteractiveSearchModal';
 import MovieFileEditorTable from 'MovieFile/Editor/MovieFileEditorTable';
@@ -540,16 +541,16 @@ class MovieDetails extends Component {
                       null
                   }
 
-                  {!!genres.length && !isSmallScreen &&
-                    <InfoLabel
-                      className={styles.detailsInfoLabel}
-                      title={translate('Genres')}
-                      size={sizes.LARGE}
-                    >
-                      <span className={styles.genres}>
-                        {genres.slice(0, 3).join(', ')}
-                      </span>
-                    </InfoLabel>
+                  {
+                    genres.length && !isSmallScreen ?
+                      <InfoLabel
+                        className={styles.detailsInfoLabel}
+                        name={translate('Genres')}
+                        size={sizes.LARGE}
+                      >
+                        <MovieGenres className={styles.genres} genres={genres} />
+                      </InfoLabel> :
+                      null
                   }
                 </div>
 
