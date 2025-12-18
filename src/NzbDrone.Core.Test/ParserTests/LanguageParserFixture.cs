@@ -460,6 +460,22 @@ namespace NzbDrone.Core.Test.ParserTests
             result.Should().Contain(Language.Afrikaans);
         }
 
+        [TestCase("Movie Title 2015 Marathi 1080p WebRip x264 AC3 5.1 ESubs [TMB]")]
+        [TestCase("Movie.Title.(2018).720p.CensorRip.Marathi.x264.AAC.-.LHDm@Telly")]
+        public void should_parse_language_marathi(string postTitle)
+        {
+            var result = LanguageParser.ParseLanguages(postTitle);
+            result.Should().Contain(Language.Marathi);
+        }
+
+        [TestCase("Movie Title 2024 1080p Tagalog WEB-DL HEVC x265 BONE")]
+        [TestCase("Movie.Title.2022.720p.Tagalog.WEB-DL.AAC.x264-Mkvking")]
+        public void should_parse_language_tagalog(string postTitle)
+        {
+            var result = LanguageParser.ParseLanguages(postTitle);
+            result.Should().Contain(Language.Tagalog);
+        }
+
         [TestCase("Movie.Title.en.sub")]
         [TestCase("Movie Title.eng.sub")]
         [TestCase("Movie.Title.eng.forced.sub")]

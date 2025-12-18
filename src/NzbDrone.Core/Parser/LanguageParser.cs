@@ -234,6 +234,16 @@ namespace NzbDrone.Core.Parser
                 languages.Add(Language.Afrikaans);
             }
 
+            if (lowerTitle.Contains("marathi"))
+            {
+                languages.Add(Language.Marathi);
+            }
+
+            if (lowerTitle.Contains("tagalog"))
+            {
+                languages.Add(Language.Tagalog);
+            }
+
             // Case sensitive
             var caseSensitiveMatches = CaseSensitiveLanguageRegex.Matches(title);
 
