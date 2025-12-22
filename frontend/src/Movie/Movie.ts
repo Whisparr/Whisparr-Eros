@@ -18,6 +18,7 @@ export interface Image {
 }
 
 export interface Collection {
+  tmdbId: number;
   title: string;
 }
 
@@ -67,6 +68,7 @@ interface Movie extends ModelBase {
   images: Image[];
   movieFile: MovieFile;
   hasFile: boolean;
+  grabbed?: boolean;
   lastSearchTime?: string;
   isAvailable: boolean;
   isSaving?: boolean;
