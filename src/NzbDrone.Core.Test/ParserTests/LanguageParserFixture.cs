@@ -11,6 +11,8 @@ namespace NzbDrone.Core.Test.ParserTests
     public class LanguageParserFixture : CoreTest
     {
         [TestCase("Movie.Title.1994.English.1080p.XviD-LOL")]
+        [TestCase("Movie Title 1994 Eng 1080p XviD-GROUP")]
+        [TestCase("Movie Title 1994 EN 1080p XviD-GROUP")]
         public void should_parse_language_english(string postTitle)
         {
             var result = Parser.Parser.ParseMovieTitle(postTitle, true);
@@ -535,6 +537,16 @@ namespace NzbDrone.Core.Test.ParserTests
             var result = Parser.Parser.ParseMovieTitle(postTitle);
             result.Languages.Count.Should().Be(1);
             result.Languages.Should().Contain(Language.German);
+        }
+
+        [TestCase("Movie.Title.2025.Original.1080P.WEB.H264-RlsGrp")]
+        [TestCase("Movie.Title.2025.Orig.1080P.WEB.H264-RlsGrp")]
+        [TestCase("Movie Title 2025 [HEVC, HDR10, Dolby Vision, WEB-DL 2160p] [Hybrid] 3 XX + Original")]
+        public void should_parse_original_title_from_release_name(string postTitle)
+        {
+            var result = Parser.Parser.ParseMovieTitle(postTitle);
+            result.Languages.Count.Should().Be(1);
+            result.Languages.Should().Contain(Language.Original);
         }
 
         [TestCase("The.Movie.Name.2023.German.ML.EAC3.720p.NF.WEB.H264-RlsGrp")]
