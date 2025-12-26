@@ -24,7 +24,7 @@ export interface RootFolderSelectInputValue
   isMissing?: boolean;
 }
 
-interface RootFolderSelectInputProps
+export interface RootFolderSelectInputProps
   extends Omit<
     EnhancedSelectInputProps<string, EnhancedSelectInputValue<string>>,
     'value' | 'values'
@@ -141,7 +141,7 @@ function RootFolderSelectInput({
   const handleNewRootFolderSelect = useCallback(
     ({ value: newValue }: InputChanged<string>) => {
       setNewRootFolderPath(newValue);
-      dispatch(addRootFolder(newValue));
+      dispatch(addRootFolder({ path: newValue }));
     },
     [setNewRootFolderPath, dispatch]
   );
