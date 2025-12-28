@@ -68,6 +68,7 @@ function getFanartUrl(images: MovieImageType[]) {
 interface Props {
   id: number;
   tmdbId: number;
+  tpdbId: string;
   foreignId?: string;
   stashId?: string;
   title: string;
@@ -228,6 +229,7 @@ class MovieDetails extends Component<Props, State> {
     const {
       id,
       tmdbId,
+      tpdbId,
       stashId,
       title,
       code,
@@ -445,6 +447,7 @@ class MovieDetails extends Component<Props, State> {
                         tooltip={
                           <MovieDetailsLinks
                             tmdbId={tmdbId}
+                            tpdbId={tpdbId}
                             stashId={stashId ?? undefined}
                           />
                         }
@@ -584,14 +587,12 @@ class MovieDetails extends Component<Props, State> {
               <ExtraFileTable movieId={id} />
             </FieldSet>
 
-            {itemType === 'scene' ? (
-              <FieldSet legend={translate('Cast')}>
-                <MovieCastPostersConnector
-                  movieId={id}
-                  isSmallScreen={isSmallScreen}
-                />
-              </FieldSet>
-            ) : null}
+            <FieldSet legend={translate('Cast')}>
+              <MovieCastPostersConnector
+                movieId={id}
+                isSmallScreen={isSmallScreen}
+              />
+            </FieldSet>
           </div>
 
           <OrganizePreviewModal
