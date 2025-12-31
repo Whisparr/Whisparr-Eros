@@ -39,8 +39,8 @@ import Tasks from 'System/Tasks/Tasks';
 import Updates from 'System/Updates/Updates';
 import UnmappedFilesTableConnector from 'UnmappedFiles/UnmappedFilesTableConnector';
 import getPathWithUrlBase from 'Utilities/getPathWithUrlBase';
-import CutoffUnmetConnector from 'Wanted/CutoffUnmet/CutoffUnmetConnector';
-import MissingConnector from 'Wanted/Missing/MissingConnector';
+import CutoffUnmet from 'Wanted/CutoffUnmet/CutoffUnmet';
+import Missing from 'Wanted/Missing/Missing';
 
 function RedirectWithUrlBase() {
   return <Redirect to={getPathWithUrlBase('/')} />;
@@ -115,9 +115,9 @@ function AppRoutes() {
         Wanted
       */}
 
-      <Route path="/wanted/missing" component={MissingConnector} />
+      <Route path="/wanted/missing" component={Missing} />
 
-      <Route path="/wanted/cutoffunmet" component={CutoffUnmetConnector} />
+      <Route path="/wanted/cutoffunmet" component={CutoffUnmet} />
 
       {/*
         Settings
