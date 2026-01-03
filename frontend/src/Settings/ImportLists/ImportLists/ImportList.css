@@ -4,6 +4,11 @@
   width: 290px;
 }
 
+.nameContainer {
+  display: flex;
+  justify-content: space-between;
+}
+
 .name {
   @add-mixin truncate;
 
@@ -12,8 +17,20 @@
   font-size: 24px;
 }
 
+.cloneButton {
+  composes: button from '~Components/Link/IconButton.css';
+
+  height: 36px;
+}
+
 .enabled {
   display: flex;
   flex-wrap: wrap;
   margin-top: 5px;
+}
+
+.nameContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
