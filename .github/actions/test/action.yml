@@ -23,7 +23,7 @@ inputs:
   binary_artifact:
     description: 'Binary artifact for integration tests'
   binary_path:
-    description: 'Path witin binary artifact for integration tests'
+    description: 'Path within binary artifact for integration tests'
 
 runs:
   using: 'composite'
@@ -51,7 +51,7 @@ runs:
         echo "Whisparr__Postgres__User=postgres" >> "$GITHUB_ENV"
         echo "Whisparr__Postgres__Password=postgres" >> "$GITHUB_ENV"
 
-    - name: Download Artifact
+    - name: Download Tests Artifact
       uses: actions/download-artifact@v5
       with:
         name: ${{ inputs.artifact }}
@@ -64,24 +64,44 @@ runs:
         name: ${{ inputs.binary_artifact }}
         path: _output
 
+
     - name: Set up binary artifact
       if: ${{ inputs.binary_path != '' }}
       shell: bash
-      run: mv ./_output/${{inputs.binary_path}} _tests/bin
+      run: |
+        mv ./_output/${{inputs.binary_path}} _tests/bin
+        echo "Moved Whisparr binary to _tests/bin."
+        if [ -f "_tests/bin/Whisparr" ]; then
+          echo "_tests/bin/Whisparr exists."
+        else
+          echo "ERROR: _tests/bin/Whisparr does not exist!" >&2
+          exit 1
+        fi
+        ls -l _tests/bin/Whisparr
+
 
     - name: Make executable
       if: startsWith(inputs.os, 'windows') != true
       shell: bash
-      run: chmod +x ./_tests/Whisparr.Test.Dummy && chmod +x ./_tests/ffprobe && chomd +x ./_tests/bin/Whisparr
+      run: chmod +x ./_tests/Whisparr.Test.Dummy && chmod +x ./_tests/ffprobe
 
-    - name: Make Whisparr binary executable
+    - name: Make Whisparr binary executable and verify
       if: ${{ inputs.integration_tests && !startsWith(inputs.os, 'windows') }}
       shell: bash
-      run: chmod +x ./_tests/bin/Whisparr
+      run: |
+        chmod +x ./_tests/bin/Whisparr
+        if [ -x "./_tests/bin/Whisparr" ]; then
+          echo "_tests/bin/Whisparr is executable."
+        else
+          echo "ERROR: _tests/bin/Whisparr is NOT executable!" >&2
+          exit 1
+        fi
+        ls -l ./_tests/bin/Whisparr
 
     - name: Run tests
       shell: bash
-      run: dotnet test ./_tests/Whisparr.*.Test.dll --filter "${{ inputs.filter }}" --logger "trx;LogFileName=${{ env.RESULTS_NAME }}.trx" --logger "GitHubActions;summary.includePassedTests=true;summary.includeSkippedTests=true"
+      run: |
+        dotnet test ./_tests/Whisparr.*.Test.dll --filter "${{ inputs.filter }}" --logger "trx;LogFileName=${{ env.RESULTS_NAME }}.trx" --logger "GitHubActions;summary.includePassedTests=true;summary.includeSkippedTests=true"
 
     - name: Upload Test Results
       if: ${{ !cancelled() }}

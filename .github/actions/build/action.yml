@@ -38,6 +38,7 @@ runs:
         echo "SDK_PATH=${{ env.DOTNET_ROOT }}/sdk/${DOTNET_VERSION}" >> "$GITHUB_ENV"
         echo "WHISPARR_VERSION=${{ inputs.version }}" >> "$GITHUB_ENV"
         echo "BRANCH=${{ inputs.branch }}" >> "$GITHUB_ENV"
+        echo "WHISPARR_ASSEMBLY_VERSION=${{ env.WHISPARR_ASSEMBLY_VERSION }}" >> "$GITHUB_ENV"
 
         if [ "$RUNNER_OS" == "Windows" ]; then
           echo "NUGET_PACKAGES=D:\nuget\packages" >> "$GITHUB_ENV"
@@ -80,7 +81,9 @@ runs:
       run: |
         if [ "$WHISPARR_VERSION" != "" ]; then
           echo "Updating version info to: $WHISPARR_VERSION"
-          sed -i'' -e "s/<AssemblyVersion>[0-9.*]\+<\/AssemblyVersion>/<AssemblyVersion>$WHISPARR_VERSION<\/AssemblyVersion>/g" src/Directory.Build.props
+          sed -i'' -e "s/<AssemblyVersion>[0-9.*]\+<\/AssemblyVersion>/<AssemblyVersion>$WHISPARR_ASSEMBLY_VERSION<\/AssemblyVersion>/g" src/Directory.Build.props
+          sed -i'' -e "s/<AssemblyFileVersion>[0-9.*]\+<\/AssemblyFileVersion>/<AssemblyFileVersion>$WHISPARR_ASSEMBLY_VERSION<\/AssemblyFileVersion>/g" src/Directory.Build.props
+          sed -i'' -e "s/<AssemblyInformationalVersion>.*<\/AssemblyInformationalVersion>/<AssemblyInformationalVersion>$WHISPARR_VERSION<\/AssemblyInformationalVersion>/g" src/Directory.Build.props
           sed -i'' -e "s/<AssemblyConfiguration>[\$()A-Za-z-]\+<\/AssemblyConfiguration>/<AssemblyConfiguration>${BRANCH}<\/AssemblyConfiguration>/g" src/Directory.Build.props
           sed -i'' -e "s/<string>10.0.0.0<\/string>/<string>$WHISPARR_VERSION<\/string>/g" distribution/macOS/Whisparr.app/Contents/Info.plist
         fi
