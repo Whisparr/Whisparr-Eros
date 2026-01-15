@@ -29,7 +29,7 @@ import styles from './EditImportListExclusionModalContent.css';
 
 const newImportListExclusion = {
   movieTitle: '',
-  movieYear: 0,
+  movieYear: null,
   type: 'scene',
   foreignId: '',
 };
@@ -87,7 +87,7 @@ function EditImportListExclusionModalContent({
 
   const dispatchSetImportListExclusionValue = (payload: {
     name: string;
-    value: string | number;
+    value: string | number | null;
   }) => {
     // @ts-expect-error 'setImportListExclusionValue' isn't typed yet
     dispatch(setImportListExclusionValue(payload));
@@ -201,7 +201,6 @@ function EditImportListExclusionModalContent({
             {translate('Delete')}
           </Button>
         )}
-        : null
         <Button onPress={onModalClose}>{translate('Cancel')}</Button>
         <SpinnerErrorButton
           isSpinning={isSaving}

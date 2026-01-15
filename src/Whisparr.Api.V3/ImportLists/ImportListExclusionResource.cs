@@ -39,13 +39,21 @@ namespace Whisparr.Api.V3.ImportLists
 
         public static ImportListExclusion ToModel(this ImportListExclusionResource resource)
         {
+            var movieYear = resource.MovieYear;
+            if (resource.Type == ImportExclusionType.Studio ||
+                resource.Type == ImportExclusionType.Performer ||
+                resource.Type == ImportExclusionType.Tag)
+            {
+                movieYear = null;
+            }
+
             return new ImportListExclusion
             {
                 Id = resource.Id,
                 ForeignId = resource.ForeignId,
                 MovieTitle = resource.MovieTitle,
                 Type = resource.Type,
-                MovieYear = resource.MovieYear ?? 0
+                MovieYear = movieYear
             };
         }
 

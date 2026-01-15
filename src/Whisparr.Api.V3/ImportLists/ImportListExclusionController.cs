@@ -41,7 +41,11 @@ namespace Whisparr.Api.V3.ImportLists
                 .SetValidator(importListExclusionExistsValidator);
 
             SharedValidator.RuleFor(c => c.MovieTitle).NotEmpty();
-            SharedValidator.RuleFor(c => c.MovieYear).GreaterThan(0);
+
+            SharedValidator.RuleFor(c => c.MovieYear)
+                .NotNull()
+                .GreaterThan(0)
+                .When(c => c.Type == ImportExclusionType.Movie || c.Type == ImportExclusionType.Scene);
         }
 
         // Endpoint only used by stasharr to show excluded scenes
