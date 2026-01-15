@@ -13,8 +13,9 @@ interface Update {
   installedOn: string;
   installable: boolean;
   latest: boolean;
-  changes: Changes | null;
+  changes: Changes | string | null;
   hash: string;
+  body?: string; // Release notes markdown
 }
 
 export default Update;

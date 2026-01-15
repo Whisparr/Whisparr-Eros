@@ -37,7 +37,7 @@ namespace NzbDrone.Core.Test.UpdateTests
                 {
                     FileName = "NzbDrone.develop.2.0.0.0.tar.gz",
                     Url = "http://download.sonarr.tv/v2/develop/mono/NzbDrone.develop.tar.gz",
-                    Version = new Version("2.0.0.0")
+                    Version = new Semver.SemVersion(2, 0, 0, prerelease: new[] { new Semver.PrereleaseIdentifier("develop"), new Semver.PrereleaseIdentifier("0") })
                 };
             }
             else
@@ -46,7 +46,7 @@ namespace NzbDrone.Core.Test.UpdateTests
                 {
                     FileName = "NzbDrone.develop.2.0.0.0.zip",
                     Url = "http://download.sonarr.tv/v2/develop/windows/NzbDrone.develop.zip",
-                    Version = new Version("2.0.0.0")
+                    Version = new Semver.SemVersion(2, 0, 0, prerelease: new[] { new Semver.PrereleaseIdentifier("develop"), new Semver.PrereleaseIdentifier("0") })
                 };
             }
 
