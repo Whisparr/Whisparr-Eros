@@ -260,7 +260,7 @@ function InteractiveImportRow(props: InteractiveImportRowProps) {
 
   const movieTitle = movie ? movie.title : '';
 
-  const showMoviePlaceholder = isSelected && !movie;
+  const showMoviePlaceholder = !movie;
   const showReleaseGroupPlaceholder = isSelected && !releaseGroup;
   const showQualityPlaceholder = isSelected && !quality;
   const showLanguagePlaceholder = isSelected && !languages;
