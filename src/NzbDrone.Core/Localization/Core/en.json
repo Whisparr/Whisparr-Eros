@@ -49,7 +49,7 @@
   "AddNewSceneMessage": "It's easy to add a new scene, performer, or studio.  Just start typing the name of the item you want to add",
   "AddNewStashIdMessage": "You can also search using Stash Id of a scene. e.g. 'stash:06a8ee7b-4b90-4f31-a640-9a12aedfe7cf'",
   "AddNewStudio": "Add New Studio",
-  "AddNewTmdbIdMessage": "You can also search using TMDb Id of a movie. e.g. 'tmdb:71663'",
+  "AddNewTmdbIdMessage": "You can also search using TMDb Id of a movie. e.g. 'tmdb:476739'",
   "AddNotificationError": "Unable to add a new notification, please try again.",
   "AddPerformer": "Add Performer",
   "AddPerformers": "Add Performers",
@@ -2317,7 +2317,7 @@
   "YesCancel": "Yes, Cancel",
   "Yesterday": "Yesterday",
   "YesterdayAt": "Yesterday at {time}",
-  "YouCanAlsoSearch": "You can also search using TMDb ID or IMDb ID of a movie. e.g. `tmdb:71663`",
+  "YouCanAlsoSearch": "You can also search using TMDb ID or IMDb ID of a movie. e.g. `tmdb:476739`",
   "YourFolderStructureShouldLookLikeThis": "Your folder structure should look like this:",
   "yymmdd": "yy.mm.dd"
 }
