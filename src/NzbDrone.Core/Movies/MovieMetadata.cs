@@ -28,6 +28,8 @@ namespace NzbDrone.Core.Movies
         public DateTime? ReleaseDateUtc { get; set; }
         public string ReleaseDate { get; set; }
         public int Year { get; set; }
+        public int CollectionTmdbId { get; set; }
+        public string CollectionTitle { get; set; }
         public Ratings Ratings { get; set; }
         public string StudioForeignId { get; set; }
         public StudioResource Studio { get; set; }

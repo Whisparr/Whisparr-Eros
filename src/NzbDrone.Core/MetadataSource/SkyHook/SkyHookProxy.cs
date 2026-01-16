@@ -15,6 +15,7 @@ using NzbDrone.Core.MediaCover;
 using NzbDrone.Core.MetadataSource.SkyHook.Resource;
 using NzbDrone.Core.Movies;
 using NzbDrone.Core.Movies.AlternativeTitles;
+using NzbDrone.Core.Movies.Collections;
 using NzbDrone.Core.Movies.Credits;
 using NzbDrone.Core.Movies.Performers;
 using NzbDrone.Core.Movies.Studios;
@@ -250,6 +251,35 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             var performers = httpResponse.Resource.Credits.Select(c => MapPerformer(c.Performer)).DistinctBy(p => p.ForeignId).ToList();
 
             return new Tuple<MovieMetadata, Studio, List<Performer>>(movie, MapStudio(httpResponse.Resource.Studio), performers);
+        }
+
+        public MovieCollection GetCollectionInfo(int tmdbId)
+        {
+            var httpRequest = _whisparrMetadata.Create()
+                                             .SetSegment("route", "movie/collection")
+                                             .Resource(tmdbId.ToString())
+                                             .Build();
+
+            httpRequest.AllowAutoRedirect = true;
+            httpRequest.SuppressHttpError = true;
+
+            var httpResponse = _httpClient.Get<CollectionResource>(httpRequest);
+
+            if (httpResponse.HasHttpError)
+            {
+                if (httpResponse.StatusCode == HttpStatusCode.NotFound)
+                {
+                    throw new MovieNotFoundException(tmdbId);
+                }
+                else
+                {
+                    throw new HttpException(httpRequest, httpResponse);
+                }
+            }
+
+            var collection = MapCollection(httpResponse.Resource);
+
+            return collection;
         }
 
         public List<MovieMetadata> GetBulkMovieInfo(List<int> tmdbIds)
@@ -554,6 +584,13 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                     movie.StudioTitle = resource.Studio.Title;
                     movie.Studio = resource.Studio;
                 }
+            }
+
+            // Collections only currently on TMDB, as other providers may implement.
+            if (resource.Collection?.Name != null && resource.Collection?.ForeignIds?.TmdbId != null)
+            {
+                movie.CollectionTmdbId = resource.Collection.ForeignIds.TmdbId;
+                movie.CollectionTitle = resource.Collection.Name;
             }
 
             return movie;
@@ -1232,6 +1269,22 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             }
 
             return movie;
+        }
+
+        private MovieCollection MapCollection(CollectionResource arg)
+        {
+            var collection = new MovieCollection
+            {
+                TmdbId = arg.ForeignIds.TmdbId,
+                Title = arg.Name,
+                Overview = arg.Overview,
+                CleanTitle = arg.Name.CleanMovieTitle(),
+                SortTitle = Parser.Parser.NormalizeTitle(arg.Name),
+                Images = arg.Images?.Select(MapImage).ToList() ?? new List<MediaCover.MediaCover>(),
+                Movies = arg.Parts?.Select(x => MapMovie(x)).ToList() ?? new List<MovieMetadata>()
+            };
+
+            return collection;
         }
 
         private static Credit MapCast(CastResource arg)

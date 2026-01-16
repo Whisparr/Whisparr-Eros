@@ -25,7 +25,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook.Resource
 
         public List<CastResource> Credits { get; set; }
         public StudioResource Studio { get; set; }
-
+        public CollectionResource Collection { get; set; }
         public string Homepage { get; set; }
         public ItemType ItemType { get; set; }
     }

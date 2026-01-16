@@ -29,6 +29,7 @@ using NzbDrone.Core.MediaFiles;
 using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Movies;
 using NzbDrone.Core.Movies.AlternativeTitles;
+using NzbDrone.Core.Movies.Collections;
 using NzbDrone.Core.Movies.Credits;
 using NzbDrone.Core.Movies.Performers;
 using NzbDrone.Core.Movies.Studios;
@@ -179,6 +180,8 @@ namespace NzbDrone.Core.Datastore
                         .Ignore(e => e.MergedIntoId);
 
                   Mapper.Entity<Studio>("Studios").RegisterModel();
+
+                  Mapper.Entity<MovieCollection>("Collections").RegisterModel();
 
                   Mapper.Entity<AutoTagging.AutoTag>("AutoTagging").RegisterModel();
 

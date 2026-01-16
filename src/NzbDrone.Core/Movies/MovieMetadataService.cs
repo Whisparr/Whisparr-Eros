@@ -11,6 +11,8 @@ namespace NzbDrone.Core.Movies
         MovieMetadata FindByTpdbId(string tpdbId);
         MovieMetadata FindByForeignId(string foreignId);
         MovieMetadata FindByImdbId(string imdbId);
+        List<MovieMetadata> GetMoviesWithCollections();
+        List<MovieMetadata> GetMoviesByCollectionTmdbId(int collectionId);
         bool Upsert(MovieMetadata movie);
         bool UpsertMany(List<MovieMetadata> movies);
         void DeleteMany(List<MovieMetadata> movies);
@@ -52,6 +54,16 @@ namespace NzbDrone.Core.Movies
         public MovieMetadata FindByImdbId(string imdbId)
         {
             return _movieMetadataRepository.FindByImdbId(imdbId);
+        }
+
+        public List<MovieMetadata> GetMoviesWithCollections()
+        {
+            return _movieMetadataRepository.GetMoviesWithCollections();
+        }
+
+        public List<MovieMetadata> GetMoviesByCollectionTmdbId(int collectionId)
+        {
+            return _movieMetadataRepository.GetMoviesByCollectionTmdbId(collectionId);
         }
 
         public MovieMetadata Get(int id)

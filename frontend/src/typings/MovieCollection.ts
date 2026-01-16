@@ -1,14 +1,17 @@
 import ModelBase from 'App/ModelBase';
-import Movie from 'Movie/Movie';
+import Movie, { Image } from 'Movie/Movie';
 
 interface MovieCollection extends ModelBase {
-  title: string;
-  sortTitle: string;
   tmdbId: number;
+  sortTitle: string;
+  title: string;
   overview: string;
   monitored: boolean;
-  rootFolderPath: string;
+  minimumAvailability: string;
   qualityProfileId: number;
+  rootFolderPath: string;
+  searchOnAdd: boolean;
+  images: Image[];
   movies: Movie[];
   missingMovies: number;
   tags: number[];

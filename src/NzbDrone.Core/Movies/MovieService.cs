@@ -50,6 +50,7 @@ namespace NzbDrone.Core.Movies
         bool MovieExists(Movie movie);
         List<Movie> GetMoviesByFileId(int fileId);
         List<Movie> GetMoviesByFileId(IEnumerable<int> fileId);
+        List<Movie> GetMoviesByCollectionTmdbId(int collectionId);
         List<Movie> GetMoviesBetweenDates(DateTime start, DateTime end, bool includeUnmonitored);
         PagingSpec<Movie> MoviesWithoutFiles(PagingSpec<Movie> pagingSpec);
         void DeleteMovie(int movieId, bool deleteFiles, bool addImportListExclusion = false);
@@ -67,6 +68,7 @@ namespace NzbDrone.Core.Movies
         void SetFileIds(List<Movie> movies);
         Dictionary<Movie, MovieParseMatchType> MatchMovies(string parsedMovieTitle, string releaseDate, string foreignId, string episode, List<Movie> movies, bool verifyDate, bool verifyEpisode);
         List<Movie> SearchMovies(string query);
+        HashSet<int> AllMovieWithCollectionsTmdbIds();
     }
 
     public class MovieService : IMovieService, IHandle<MovieFileAddedEvent>,
@@ -444,6 +446,11 @@ namespace NzbDrone.Core.Movies
             return _movieRepository.GetMoviesByFileId(fileId);
         }
 
+        public List<Movie> GetMoviesByCollectionTmdbId(int collectionId)
+        {
+            return _movieRepository.GetMoviesByCollectionTmdbId(collectionId);
+        }
+
         public List<Movie> GetMoviesBetweenDates(DateTime start, DateTime end, bool includeUnmonitored)
         {
             var movies = _movieRepository.MoviesBetweenDates(start.ToUniversalTime(), end.ToUniversalTime(), includeUnmonitored);
@@ -560,6 +567,11 @@ namespace NzbDrone.Core.Movies
             }
 
             return result;
+        }
+
+        public HashSet<int> AllMovieWithCollectionsTmdbIds()
+        {
+            return _movieRepository.AllMovieWithCollectionsTmdbIds();
         }
 
         private Movie FindByStudioAndReleaseDate(string studioForeignId, string releaseDate, string releaseTokens, string foreignId, string episode, bool interactiveSearch = false, SearchCriteriaBase searchCriteria = null)
