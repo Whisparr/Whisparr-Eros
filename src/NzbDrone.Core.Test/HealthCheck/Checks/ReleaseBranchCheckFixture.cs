@@ -35,10 +35,10 @@ namespace NzbDrone.Core.Test.HealthCheck.Checks
             Subject.Check().ShouldBeWarning();
         }
 
-        [TestCase("nightly")]
-        [TestCase("Nightly")]
-        [TestCase("develop")]
-        [TestCase("master")]
+        [TestCase("eros")]
+        [TestCase("eros-develop")]
+        [TestCase("Eros")]
+        [TestCase("Eros-Develop")]
         public void should_return_no_warning_when_branch_valid(string branch)
         {
             GivenValidBranch(branch);
