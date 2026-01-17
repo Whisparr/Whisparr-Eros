@@ -22,7 +22,14 @@ namespace Whisparr.Api.V3.Studios
             _upgradableSpecification = upgradableSpecification;
         }
 
+        /// <summary>
+        /// Edits multiple studios
+        /// </summary>
+        /// <param name="resource"></param>
+        /// <returns>StudioEditorResource containing as-edited values</returns>
         [HttpPut]
+        [Consumes("application/json")]
+        [Produces("application/json")]
         public IActionResult SaveAll([FromBody] StudioEditorResource resource)
         {
             var studiosToUpdate = _studioService.GetStudios(resource.StudioIds);
@@ -42,6 +49,11 @@ namespace Whisparr.Api.V3.Studios
                 if (resource.RootFolderPath.IsNotNullOrWhiteSpace())
                 {
                     studios.RootFolderPath = resource.RootFolderPath;
+                }
+
+                if (resource.SearchOnAdd.HasValue)
+                {
+                    studios.SearchOnAdd = resource.SearchOnAdd.Value;
                 }
 
                 if (resource.Tags != null)

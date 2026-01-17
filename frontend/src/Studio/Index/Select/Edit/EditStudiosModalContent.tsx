@@ -14,8 +14,10 @@ import styles from './EditStudiosModalContent.css';
 
 interface SavePayload {
   monitored?: boolean;
+  moviesMonitored?: boolean;
   qualityProfileId?: number;
   rootFolderPath?: string;
+  searchOnAdd?: boolean;
 }
 
 interface EditStudiosModalContentProps {
@@ -48,16 +50,45 @@ const monitoredOptions = [
   },
 ];
 
+const searchOnAddOptions = [
+  {
+    key: NO_CHANGE,
+    get value() {
+      return translate('NoChange');
+    },
+    disabled: true,
+  },
+  {
+    key: 'true',
+    get value() {
+      return translate('Yes');
+    },
+  },
+  {
+    key: 'false',
+    get value() {
+      return translate('No');
+    },
+  },
+];
+
 function EditStudiosModalContent(props: EditStudiosModalContentProps) {
   const { studioIds, onSavePress, onModalClose } = props;
 
   const [monitored, setMonitored] = useState<string | number>(NO_CHANGE);
+
+  const [moviesMonitored, setMoviesMonitored] = useState<string | number>(
+    NO_CHANGE
+  );
+
   const [qualityProfileId, setQualityProfileId] = useState<string | number>(
     NO_CHANGE
   );
   const [rootFolderPath, setRootFolderPath] = useState<string | number>(
     NO_CHANGE
   );
+
+  const [searchOnAdd, setSearchOnAdd] = useState<string | number>(NO_CHANGE);
 
   const save = useCallback(() => {
     let hasChanges = false;
@@ -66,6 +97,11 @@ function EditStudiosModalContent(props: EditStudiosModalContentProps) {
     if (monitored !== NO_CHANGE) {
       hasChanges = true;
       payload.monitored = monitored === 'monitored';
+    }
+
+    if (moviesMonitored !== NO_CHANGE) {
+      hasChanges = true;
+      payload.moviesMonitored = moviesMonitored === 'monitored';
     }
 
     if (qualityProfileId !== NO_CHANGE) {
@@ -78,12 +114,25 @@ function EditStudiosModalContent(props: EditStudiosModalContentProps) {
       payload.rootFolderPath = rootFolderPath as string;
     }
 
+    if (searchOnAdd !== NO_CHANGE) {
+      hasChanges = true;
+      payload.searchOnAdd = searchOnAdd === 'true';
+    }
+
     if (hasChanges) {
       onSavePress(payload);
     }
 
     onModalClose();
-  }, [monitored, qualityProfileId, rootFolderPath, onSavePress, onModalClose]);
+  }, [
+    monitored,
+    moviesMonitored,
+    qualityProfileId,
+    rootFolderPath,
+    searchOnAdd,
+    onSavePress,
+    onModalClose,
+  ]);
 
   const onInputChange = useCallback(
     ({ name, value }: EnhancedSelectInputChanged<string | number>) => {
@@ -91,11 +140,17 @@ function EditStudiosModalContent(props: EditStudiosModalContentProps) {
         case 'monitored':
           setMonitored(value);
           break;
+        case 'moviesMonitored':
+          setMoviesMonitored(value);
+          break;
         case 'qualityProfileId':
           setQualityProfileId(value);
           break;
         case 'rootFolderPath':
           setRootFolderPath(value);
+          break;
+        case 'searchOnAdd':
+          setSearchOnAdd(value);
           break;
         default:
           console.warn('EditStudiosModalContent Unknown Input');
@@ -116,12 +171,26 @@ function EditStudiosModalContent(props: EditStudiosModalContentProps) {
 
       <ModalBody>
         <FormGroup>
-          <FormLabel>{translate('Monitored')}</FormLabel>
+          <FormLabel>{translate('MonitoredScene')}</FormLabel>
 
           <FormInputGroup
             type={inputTypes.SELECT}
             name="monitored"
+            helpText={translate('MonitoredStudioHelpText')}
             value={monitored}
+            values={monitoredOptions}
+            onChange={onInputChange}
+          />
+        </FormGroup>
+
+        <FormGroup>
+          <FormLabel>{translate('MonitoredMovie')}</FormLabel>
+
+          <FormInputGroup
+            type={inputTypes.SELECT}
+            name="moviesMonitored"
+            helpText={translate('MonitoredStudioMovieHelpText')}
+            value={moviesMonitored}
             values={monitoredOptions}
             onChange={onInputChange}
           />
@@ -150,7 +219,20 @@ function EditStudiosModalContent(props: EditStudiosModalContentProps) {
             includeNoChange={true}
             includeNoChangeDisabled={false}
             selectedValueOptions={{ includeFreeSpace: false }}
-            helpText="Moving scenes to the same root folder can be used to rename scene folders to match updated title or naming format"
+            helpText={translate('MovieEditRootFolderHelpText')}
+            onChange={onInputChange}
+          />
+        </FormGroup>
+
+        <FormGroup>
+          <FormLabel>{translate('SearchOnAdd')}</FormLabel>
+
+          <FormInputGroup
+            type={inputTypes.SELECT}
+            name="searchOnAdd"
+            helpText={translate('SearchOnAddStudioHelpText')}
+            value={searchOnAdd}
+            values={searchOnAddOptions}
             onChange={onInputChange}
           />
         </FormGroup>

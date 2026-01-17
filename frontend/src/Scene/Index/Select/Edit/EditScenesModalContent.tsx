@@ -146,6 +146,7 @@ function EditScenesModalContent(props: EditScenesModalContentProps) {
           <FormInputGroup
             type={inputTypes.SELECT}
             name="monitored"
+            helpText={translate('MonitoredMovieHelpText')}
             value={monitored}
             values={monitoredOptions}
             onChange={onInputChange}
@@ -175,7 +176,7 @@ function EditScenesModalContent(props: EditScenesModalContentProps) {
             includeNoChange={true}
             includeNoChangeDisabled={false}
             selectedValueOptions={{ includeFreeSpace: false }}
-            helpText="Moving scenes to the same root folder can be used to rename scene folders to match updated title or naming format"
+            helpText={translate('MovieEditRootFolderHelpText')}
             onChange={onInputChange}
           />
         </FormGroup>
