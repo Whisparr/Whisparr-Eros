@@ -68,6 +68,7 @@ namespace NzbDrone.Core.Configuration
         string Theme { get; }
         bool TrustCgnatIpAddresses { get; }
         string WhisparrMetadata { get; }
+        string GithubOwnerRepo { get; }
     }
 
     public class ConfigFileProvider : IConfigFileProvider
@@ -180,7 +181,6 @@ namespace NzbDrone.Core.Configuration
             get
             {
                 const string defaultValue = "https://api.whisparr.com/v4/{route}";
-
                 var whisparrMetadata = GetValue("WhisparrMetadata", defaultValue);
                 if (string.IsNullOrWhiteSpace(whisparrMetadata))
                 {
@@ -188,6 +188,21 @@ namespace NzbDrone.Core.Configuration
                 }
 
                 return whisparrMetadata;
+            }
+        }
+
+        public string GithubOwnerRepo
+        {
+            get
+            {
+                const string defaultValue = "whisparr/whisparr-eros";
+                var githubOwnerRepo = GetValue("GithubOwnerRepo", defaultValue);
+                if (string.IsNullOrWhiteSpace(githubOwnerRepo))
+                {
+                    return defaultValue;
+                }
+
+                return githubOwnerRepo;
             }
         }
 

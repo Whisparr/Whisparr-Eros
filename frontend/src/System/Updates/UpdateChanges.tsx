@@ -1,6 +1,5 @@
 import React from 'react';
-import InlineMarkdown from 'Components/Markdown/InlineMarkdown';
-import styles from './UpdateChanges.css';
+import MarkdownRenderer from 'Components/Markdown/MarkdownRenderer';
 
 interface UpdateChangesProps {
   title: string;
@@ -8,9 +7,9 @@ interface UpdateChangesProps {
 }
 
 function UpdateChanges(props: UpdateChangesProps) {
-  const { title, changes } = props;
+  const { changes } = props;
 
-  if (changes.length === 0) {
+  if (!changes || changes.length === 0) {
     return null;
   }
 
@@ -18,24 +17,37 @@ function UpdateChanges(props: UpdateChangesProps) {
 
   return (
     <div>
-      <div className={styles.title}>{title}</div>
-      <ul>
-        {uniqueChanges.map((change, index) => {
-          const checkChange = change.replace(
-            /#\d{3,5}\b/g,
-            (match) =>
-              `[${match}](https://github.com/Whisparr/Whisparr/issues/${match.substring(
-                1
-              )})`
-          );
-
-          return (
-            <li key={index}>
-              <InlineMarkdown data={checkChange} />
-            </li>
-          );
-        })}
-      </ul>
+      {uniqueChanges.map((change, index) => {
+        // Linkify issue numbers
+        let transformed = change.replace(
+          /#\d{3,5}\b/g,
+          (match) =>
+            `[${match}](https://github.com/Whisparr/Whisparr/issues/${match.substring(
+              1
+            )})`
+        );
+        // Linkify @mentions
+        transformed = transformed.replace(
+          /(^|\s)@(\w+)/g,
+          (_match, p1, username) =>
+            `${p1}[@${username}](https://github.com/${username})`
+        );
+        // Transform GitHub PR URLs to PR#123 links
+        transformed = transformed.replace(
+          /https:\/\/github\.com\/([\w-]+)\/([\w-]+)\/pull\/(\d+)/g,
+          (url, _owner, _repo, pr) => `[#${pr}](${url})`
+        );
+        // Linkify plain URLs not already inside markdown links
+        transformed = transformed.replace(
+          /(?<!\]\()https?:\/\/[^\s)]+/g,
+          (url) => `[${url}](${url})`
+        );
+        return (
+          <div key={index}>
+            <MarkdownRenderer>{transformed}</MarkdownRenderer>
+          </div>
+        );
+      })}
     </div>
   );
 }

@@ -241,25 +241,39 @@ function Updates() {
                     ) : null}
                   </div>
 
-                  {update.changes ? (
-                    <div>
-                      <UpdateChanges
-                        title={translate('New')}
-                        changes={update.changes.new}
+                  {/* Render release notes or changes or fallback */}
+                  {(() => {
+                    if (typeof update.changes === 'string' && update.changes) {
+                      // If changes is a markdown string, render as markdown
+                      return (
+                        <UpdateChanges
+                          title={translate('New')}
+                          changes={[update.changes]}
+                        />
+                      );
+                    }
+                    if (update.changes && typeof update.changes === 'object') {
+                      return (
+                        <div>
+                          <UpdateChanges
+                            title={translate('New')}
+                            changes={update.changes.new}
+                          />
+                          <UpdateChanges
+                            title={translate('Fixed')}
+                            changes={update.changes.fixed}
+                          />
+                        </div>
+                      );
+                    }
+                    return (
+                      <InlineMarkdown
+                        data={translate('MaintenanceReleaseWithLink', {
+                          url: 'https://github.com/Whisparr/Whisparr/commits/eros/',
+                        })}
                       />
-
-                      <UpdateChanges
-                        title={translate('Fixed')}
-                        changes={update.changes.fixed}
-                      />
-                    </div>
-                  ) : (
-                    <InlineMarkdown
-                      data={translate('MaintenanceReleaseWithLink', {
-                        url: 'https://github.com/Whisparr/Whisparr/commits/eros/',
-                      })}
-                    />
-                  )}
+                    );
+                  })()}
                 </div>
               );
             })}

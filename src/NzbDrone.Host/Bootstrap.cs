@@ -163,6 +163,10 @@ namespace NzbDrone.Host
                         .AddDatabase()
                         .AddStartupContext(context);
 
+                    // Only register GithubUpdatePackageProvider for IUpdatePackageProvider
+                    c.Register<NzbDrone.Core.Update.GithubUpdatePackageProvider>(Reuse.Singleton);
+                    c.Register<NzbDrone.Core.Update.IUpdatePackageProvider, NzbDrone.Core.Update.GithubUpdatePackageProvider>(Reuse.Singleton, ifAlreadyRegistered: IfAlreadyRegistered.Replace);
+
                     if (logDbEnabled)
                     {
                         c.AddLogDatabase();

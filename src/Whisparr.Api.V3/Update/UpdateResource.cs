@@ -33,8 +33,7 @@ namespace Whisparr.Api.V3.Update
 
             return new UpdateResource
             {
-                Version = model.Version,
-
+                Version = model.DotNetVersion,
                 Branch = model.Branch,
                 ReleaseDate = model.ReleaseDate,
                 FileName = model.FileName,
@@ -50,7 +49,28 @@ namespace Whisparr.Api.V3.Update
 
         public static List<UpdateResource> ToResource(this IEnumerable<UpdatePackage> models)
         {
-            return models.Select(ToResource).ToList();
+            return models
+                .OrderByDescending(m => m?.DotNetVersion, Comparer<Version>.Create((a, b) =>
+                {
+                    if (a == null && b == null)
+                    {
+                        return 0;
+                    }
+
+                    if (a == null)
+                    {
+                        return -1;
+                    }
+
+                    if (b == null)
+                    {
+                        return 1;
+                    }
+
+                    return a.CompareTo(b);
+                }))
+                .Select(ToResource)
+                .ToList();
         }
     }
 }
