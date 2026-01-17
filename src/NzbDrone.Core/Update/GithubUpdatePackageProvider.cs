@@ -94,7 +94,7 @@ namespace NzbDrone.Core.Update
 
             var builder = _cloudRequestBuilder.GithubReleases.Create();
             builder.SetSegment("githubownerrepo", ownerRepo);
-            builder.AddQueryParam("per_page", "5");
+            builder.AddQueryParam("per_page", "25");
 
             var request = builder.Build();
             _logger.Debug($"Requesting: {request.Url}");
@@ -107,9 +107,33 @@ namespace NzbDrone.Core.Update
             var osAssetString = GetOsAssetString(OsInfo.Os);
             var arch = RuntimeInformation.OSArchitecture.ToString().ToLowerInvariant();
 
+
             var packages = new List<UpdatePackage>();
             foreach (var release in releases)
             {
+                // Filter out releases that do not match the requested branch
+                // For example, if branch is 'eros-develop', skip tags like 'v3.2.0-release.27'
+                // You may need to adjust this logic if your tag naming changes
+                if (!string.IsNullOrEmpty(branch))
+                {
+                    var tagLower = release.tag_name.ToLowerInvariant();
+                    var branchLower = branch.ToLowerInvariant();
+
+                    // If branch is exactly 'eros', skip prerelease tags
+                    if (branchLower == "eros" && tagLower.Contains("develop"))
+                    {
+                        _logger.Debug($"Skipping prerelease {release.tag_name} for stable branch {branch}.");
+                        continue;
+                    }
+
+                    // If branch contains 'develop', skip tags with 'release' and vice versa
+                    if (branchLower.Contains("develop") && !tagLower.Contains("develop"))
+                    {
+                        _logger.Debug($"Skipping release {release.tag_name} because it is a release tag and branch is {branch}.");
+                        continue;
+                    }
+                }
+
                 if (release.assets == null)
                 {
                     _logger.Debug($"Release {release.tag_name} has no package assets, skipping.");
@@ -153,7 +177,7 @@ namespace NzbDrone.Core.Update
                     FileName = asset.name,
                     Url = asset.browser_download_url,
                     Changes = new UpdateChanges { New = new List<string> { body } },
-                    Hash = asset.digest,
+                    Hash = asset.digest.Replace("sha256:", "", StringComparison.OrdinalIgnoreCase),
                     Branch = branch
                 });
             }
@@ -238,7 +262,7 @@ namespace NzbDrone.Core.Update
             /// <summary>The name of the asset file.</summary>
             public string name { get; set; }
 
-            /// <summary>The digest (sha:hash) of the asset.</summary>
+            /// <summary>The digest (sha256 hash) of the asset.</summary>
             public string digest { get; set; }
 
             /// <summary>The download URL of the asset.</summary>
