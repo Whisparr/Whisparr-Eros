@@ -15,8 +15,7 @@
 
   &:hover,
   &:focus {
-    color: var(--themePurple);
-    text-decoration: none;
+    color: var(--themeLightPurple);
   }
 
 }
@@ -29,16 +28,18 @@
 }
 
 .isActiveLink {
-  color: var(--themePurple);
+  color: var(--themeLightPurple);
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 
 .isActiveParentLink {
   background-color: var(--sidebarActiveBackgroundColor);
-    color: var(--white);
+    color: var(--themeLightPurple);
     }
-    
+
     .sectionHeading {
-      color: var(--white);
+      color: var(--themeLightPurple);
 }
 
 .iconContainer {
