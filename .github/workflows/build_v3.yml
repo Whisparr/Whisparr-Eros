@@ -17,7 +17,7 @@ on:
       - "src/Whisparr.Api.*/openapi.json"
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-pr-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 env:

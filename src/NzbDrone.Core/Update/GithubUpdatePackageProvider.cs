@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using NLog;
 using NzbDrone.Common.Cloud;
 using NzbDrone.Common.EnvironmentInfo;
@@ -10,6 +11,7 @@ using NzbDrone.Common.Http;
 using NzbDrone.Core.Analytics;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Datastore;
+using Semver;
 
 namespace NzbDrone.Core.Update
 {
@@ -54,11 +56,15 @@ namespace NzbDrone.Core.Update
             if (latest != null)
             {
                 _logger.Info("Update found: {0} ({1})", latest.Version, latest.FileName);
-                if (Semver.SemVersion.ComparePrecedence(Semver.SemVersion.Parse(currentVersion.ToString()), latest.Version) >= 0)
+
+                // Convert latest.Version (SemVersion) to .NET Version for comparison
+                var latestDotNetVersion = releaseVersionAsAssemblyVersion(latest.Version.ToString());
+
+                if (currentVersion >= latestDotNetVersion)
                 {
                     _logger.Info("Current version '{0}' is up-to-date or newer than the latest available update '{1}'.",
                         currentVersion,
-                        latest.Version);
+                        latestDotNetVersion);
                     return null;
                 }
 
@@ -125,7 +131,12 @@ namespace NzbDrone.Core.Update
 
                 _logger.Debug($"Found update: {release.tag_name} - {asset.name}");
                 var tag = release.tag_name.TrimStart('v');
-                var version = Semver.SemVersion.Parse(tag);
+
+                // Attempt to strip "what's new", as it's repetitive in our UI
+                var body = release?.body != null
+                    ? Regex.Replace(release.body, @"^## What's Changed\s*\r?\n", "", RegexOptions.Multiline)
+                    : string.Empty;
+                var version = SemVersion.Parse(tag);
                 if (version == null)
                 {
                     _logger.Warn("Could not parse semver from tag '{0}' (parsed: '{1}'). Skipping this release.",
@@ -141,7 +152,7 @@ namespace NzbDrone.Core.Update
                     ReleaseDate = release.published_at,
                     FileName = asset.name,
                     Url = asset.browser_download_url,
-                    Changes = new UpdateChanges { New = new List<string> { release.body } },
+                    Changes = new UpdateChanges { New = new List<string> { body } },
                     Hash = asset.digest,
                     Branch = branch
                 });
@@ -149,6 +160,37 @@ namespace NzbDrone.Core.Update
 
             _logger.Debug($"Total updates found (max 5): {packages.Count}");
             return packages;
+        }
+
+        /// <summary> Converts a GitHub release version string to a .NET Version object.</summary>
+        /// <param name="releaseTag">The release version string (e.g., "v3.2.0-develop.23").</param>
+        /// <returns>The corresponding .NET Assembly Version object.(e.e., 3.2.0.27)</returns>
+        private static Version releaseVersionAsAssemblyVersion(string releaseTag)
+        {
+            var semver = SemVersion.Parse(releaseTag.TrimStart('v'));
+            if (semver == null)
+            {
+                throw new ArgumentException($"Invalid semver: {releaseTag}", nameof(releaseTag));
+            }
+
+            // Use major, minor, patch, and if available, the last numeric part of prerelease as revision
+            var major = (int)semver.Major;
+            var minor = (int)semver.Minor;
+            var build = (int)semver.Patch;
+
+            // Try to extract revision from prerelease (e.g., 3.2.0-develop.23)
+            var revision = 0;
+
+            if (!string.IsNullOrEmpty(semver.Prerelease))
+            {
+                var parts = semver.Prerelease.Split('.');
+                if (parts.Length > 0 && int.TryParse(parts.Last(), out var rev))
+                {
+                    revision = rev;
+                }
+            }
+
+            return new Version(major, minor, build, revision);
         }
 
         /// <summary>
@@ -175,7 +217,7 @@ namespace NzbDrone.Core.Update
             }
         }
 
-        private class GithubRelease
+        internal class GithubRelease
         {
             /// <summary>The tag name of the release.</summary>
             public string tag_name { get; set; }
@@ -191,7 +233,7 @@ namespace NzbDrone.Core.Update
         }
 
         /// <summary>Represents an asset in a GitHub release.</summary>
-        private class GithubAsset
+        internal class GithubAsset
         {
             /// <summary>The name of the asset file.</summary>
             public string name { get; set; }
