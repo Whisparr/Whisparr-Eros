@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import Button from 'Components/Link/Button';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import InlineMarkdown from 'Components/Markdown/InlineMarkdown';
+import MarkdownRenderer from 'Components/Markdown/MarkdownRenderer';
 import ModalBody from 'Components/Modal/ModalBody';
 import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
@@ -38,24 +39,34 @@ function mergeUpdates(items: Update[], version: string, prevVersion?: string) {
     return null;
   }
 
-  const appliedChanges: Update['changes'] = { new: [], fixed: [] };
-
-  appliedUpdates.forEach((u: Update) => {
-    if (u.changes) {
-      appliedChanges.new.push(...u.changes.new);
-      appliedChanges.fixed.push(...u.changes.fixed);
+  // Only merge if all are objects, otherwise just use the first string
+  if (
+    appliedUpdates.every(
+      (u) => typeof u.changes === 'object' && u.changes !== null
+    )
+  ) {
+    const appliedChanges: Update['changes'] = { new: [], fixed: [] };
+    appliedUpdates.forEach((u: Update) => {
+      if (u.changes && typeof u.changes === 'object') {
+        appliedChanges.new.push(...u.changes.new);
+        appliedChanges.fixed.push(...u.changes.fixed);
+      }
+    });
+    const mergedUpdate: Update = Object.assign({}, appliedUpdates[0], {
+      changes: appliedChanges,
+    });
+    if (!appliedChanges.new.length && !appliedChanges.fixed.length) {
+      mergedUpdate.changes = null;
     }
-  });
-
-  const mergedUpdate: Update = Object.assign({}, appliedUpdates[0], {
-    changes: appliedChanges,
-  });
-
-  if (!appliedChanges.new.length && !appliedChanges.fixed.length) {
-    mergedUpdate.changes = null;
+    return mergedUpdate;
+  } else if (
+    appliedUpdates[0] &&
+    typeof appliedUpdates[0].changes === 'string'
+  ) {
+    // Just use the first string markdown
+    return appliedUpdates[0];
   }
-
-  return mergedUpdate;
+  return null;
 }
 
 interface AppUpdatedModalContentProps {
@@ -102,27 +113,29 @@ function AppUpdatedModalContent(props: AppUpdatedModalContentProps) {
 
         {isPopulated && !error && !!update ? (
           <div>
-            {update.changes ? (
-              <div className={styles.maintenance}>
-                {translate('MaintenanceRelease')}
-              </div>
-            ) : null}
-
-            {update.changes ? (
-              <div>
-                <div className={styles.changes}>{translate('WhatsNew')}</div>
-
-                <UpdateChanges
-                  title={translate('New')}
-                  changes={update.changes.new}
-                />
-
-                <UpdateChanges
-                  title={translate('Fixed')}
-                  changes={update.changes.fixed}
-                />
-              </div>
-            ) : null}
+            {(() => {
+              if (typeof update.changes === 'string' && update.changes) {
+                return <MarkdownRenderer>{update.changes}</MarkdownRenderer>;
+              }
+              if (update.changes && typeof update.changes === 'object') {
+                return (
+                  <div>
+                    <div className={styles.changes}>
+                      {translate('WhatsNew')}
+                    </div>
+                    <UpdateChanges
+                      title={translate('New')}
+                      changes={update.changes.new}
+                    />
+                    <UpdateChanges
+                      title={translate('Fixed')}
+                      changes={update.changes.fixed}
+                    />
+                  </div>
+                );
+              }
+              return null;
+            })()}
           </div>
         ) : null}
 

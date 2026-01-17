@@ -1,5 +1,4 @@
 using NzbDrone.Common.Http;
-
 namespace NzbDrone.Common.Cloud
 {
     public interface IWhisparrCloudRequestBuilder
@@ -8,6 +7,7 @@ namespace NzbDrone.Common.Cloud
         IHttpRequestBuilderFactory TMDB { get; }
         IHttpRequestBuilderFactory WhisparrMetadata { get; }
         IHttpRequestBuilderFactory StashDB { get; }
+        IHttpRequestBuilderFactory GithubReleases { get; }
     }
 
     public class WhisparrCloudRequestBuilder : IWhisparrCloudRequestBuilder
@@ -26,12 +26,16 @@ namespace NzbDrone.Common.Cloud
 
             StashDB = new HttpRequestBuilder("https://stashdb.org/graphql")
                 .CreateFactory();
+
+            GithubReleases = new HttpRequestBuilder("https://api.github.com/repos/{githubownerrepo}/releases")
+                .CreateFactory();
         }
 
         public IHttpRequestBuilderFactory Services { get; private set; }
         public IHttpRequestBuilderFactory TMDB { get; private set; }
         public IHttpRequestBuilderFactory WhisparrMetadata { get; private set; }
         public IHttpRequestBuilderFactory StashDB { get; private set; }
+        public IHttpRequestBuilderFactory GithubReleases { get; private set; }
 
         public string AuthToken => "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIxYTczNzMzMDE5NjFkMDNmOTdmODUzYTg3NmRkMTIxMiIsInN1YiI6IjU4NjRmNTkyYzNhMzY4MGFiNjAxNzUzNCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.gh1BwogCCKOda6xj9FRMgAAj_RYKMMPC3oNlcBtlmwk";
     }
