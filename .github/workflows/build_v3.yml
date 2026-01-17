@@ -91,6 +91,8 @@ jobs:
     steps:
       - name: Check out
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Build
         uses: ./.github/actions/build
@@ -106,6 +108,8 @@ jobs:
     steps:
       - name: Check out
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Volta
         uses: volta-cli/action@v4
@@ -151,6 +155,8 @@ jobs:
     steps:
       - name: Check out
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Test
         uses: ./.github/actions/test
@@ -170,6 +176,8 @@ jobs:
     steps:
       - name: Check out
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Test
         uses: ./.github/actions/test
@@ -207,6 +215,8 @@ jobs:
     steps:
       - name: Check out
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
       - name: Test
         uses: ./.github/actions/test
         with:
