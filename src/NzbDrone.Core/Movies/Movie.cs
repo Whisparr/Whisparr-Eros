@@ -103,7 +103,7 @@ namespace NzbDrone.Core.Movies
             return MovieMetadata.Value.ReleaseDateUtc;
         }
 
-        public override string ToString()
+        public string ToFormattedString()
         {
             var result = string.Empty;
 
@@ -111,25 +111,37 @@ namespace NzbDrone.Core.Movies
             {
                 if (MovieMetadata.Value.Title != null)
                 {
-                    result += string.Format("[{0} - {1} - {2}]", MovieMetadata.Value.StudioTitle.NullSafe(), MovieMetadata.Value.ReleaseDate.NullSafe(), MovieMetadata.Value.Title.NullSafe());
+                    result += string.Format("{0} - {1} - {2}", MovieMetadata.Value.StudioTitle.NullSafe(), MovieMetadata.Value.ReleaseDate.NullSafe(), MovieMetadata.Value.Title.NullSafe());
                 }
             }
             else
             {
                 if (MovieMetadata.Value.Title != null)
                 {
-                    result += string.Format("[{0} ({1})]", MovieMetadata.Value.Title.NullSafe(), MovieMetadata.Value.Year.NullSafe());
+                    result += string.Format("{0} ({1})", MovieMetadata.Value.Title.NullSafe(), MovieMetadata.Value.Year.NullSafe());
                 }
             }
 
+            return result;
+        }
+
+        public override string ToString()
+        {
+            var result = ToFormattedString();
+
             if (MovieMetadata.Value.ImdbId != null)
             {
-                result += $"[{MovieMetadata.Value.ImdbId}]";
+                result += $" [{MovieMetadata.Value.ImdbId}]";
             }
 
             if (MovieMetadata.Value.ForeignId != null)
             {
-                result += $"[{MovieMetadata.Value.ForeignId}]";
+                result += $" [{MovieMetadata.Value.ForeignId}]";
+            }
+
+            if (result.IsNullOrWhiteSpace())
+            {
+                result = $"[{result}]";
             }
 
             return result;
