@@ -173,7 +173,8 @@ namespace NzbDrone.Core.Datastore
 
                   Mapper.Entity<UpdateHistory>("UpdateHistory").RegisterModel();
 
-                  Mapper.Entity<MovieMetadata>("MovieMetadata").RegisterModel();
+                  Mapper.Entity<MovieMetadata>("MovieMetadata").RegisterModel()
+                    .Ignore(i => i.TagIds);
 
                   Mapper.Entity<Performer>("Performers").RegisterModel()
                         .Ignore(e => e.MergedIntoId);

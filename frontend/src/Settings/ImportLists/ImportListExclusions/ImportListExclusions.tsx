@@ -61,12 +61,6 @@ const COLUMNS: Column[] = [
     isSortable: true,
   },
   {
-    name: 'movieYear',
-    label: () => translate('Year'),
-    isVisible: true,
-    isSortable: true,
-  },
-  {
     className: styles.actions,
     name: 'actions',
     label: '',
@@ -261,7 +255,7 @@ function ImportListExclusions() {
             })}
 
             <TableRow>
-              <TableRowCell colSpan={5}>
+              <TableRowCell colSpan={4}>
                 <SpinnerButton
                   kind={kinds.DANGER}
                   isSpinning={isDeleting}

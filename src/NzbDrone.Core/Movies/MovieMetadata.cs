@@ -19,12 +19,14 @@ namespace NzbDrone.Core.Movies
             OriginalLanguage = Language.English;
             Recommendations = new List<int>();
             Ratings = new Ratings();
+            TagIds = new List<string>();
         }
 
         public string ForeignId { get; set; }
 
         public List<MediaCover.MediaCover> Images { get; set; }
         public List<string> Genres { get; set; }
+        public List<string> TagIds { get; set; }
         public DateTime? ReleaseDateUtc { get; set; }
         public string ReleaseDate { get; set; }
         public int Year { get; set; }

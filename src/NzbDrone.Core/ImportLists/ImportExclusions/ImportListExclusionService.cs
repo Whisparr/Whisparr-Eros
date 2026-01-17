@@ -121,7 +121,7 @@ namespace NzbDrone.Core.ImportLists.ImportExclusions
             {
                 _logger.Debug("Adding {0} Deleted Movies to Import Exclusions", message.Movies.Count);
 
-                var exclusions = message.Movies.Select(m => new ImportListExclusion { ForeignId = m.ForeignId, Type = ToImportExclusionType(m.MovieMetadata.Value.ItemType), MovieTitle = m.Title, MovieYear = m.Year }).ToList();
+                var exclusions = message.Movies.Select(m => new ImportListExclusion { ForeignId = m.ForeignId, Type = ToImportExclusionType(m.MovieMetadata.Value.ItemType), MovieTitle = m.ToFormattedString() }).ToList();
                 _exclusionRepository.InsertMany(DeDupeExclusions(exclusions));
             }
         }

@@ -16,6 +16,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook.Resource
         public int? Duration { get; set; }
         public List<ImageResource> Images { get; set; }
         public List<string> Genres { get; set; }
+        public List<TagResource> Tags { get; set; }
         public string Code { get; set; }
         public int Year { get; set; }
         public string ReleaseDate { get; set; }
