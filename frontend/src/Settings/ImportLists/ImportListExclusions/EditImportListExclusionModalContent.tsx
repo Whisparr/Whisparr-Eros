@@ -29,7 +29,6 @@ import styles from './EditImportListExclusionModalContent.css';
 
 const newImportListExclusion = {
   movieTitle: '',
-  movieYear: 0,
   type: 'scene',
   foreignId: '',
 };
@@ -80,7 +79,7 @@ function EditImportListExclusionModalContent({
   const { isFetching, isSaving, item, error, saveError, ...otherProps } =
     useSelector(createImportListExclusionSelector(id));
 
-  const { movieTitle, movieYear, foreignId, type } = item;
+  const { movieTitle, foreignId, type } = item;
 
   const dispatch = useDispatch();
   const previousIsSaving = usePrevious(isSaving);
@@ -175,18 +174,6 @@ function EditImportListExclusionModalContent({
                 onChange={onInputChange}
               />
             </FormGroup>
-
-            <FormGroup>
-              <FormLabel>{translate('Year')}</FormLabel>
-
-              <FormInputGroup
-                type={inputTypes.NUMBER}
-                name="movieYear"
-                helpText={translate('MovieYearToExcludeHelpText')}
-                {...movieYear}
-                onChange={onInputChange}
-              />
-            </FormGroup>
           </Form>
         )}
       </ModalBody>
@@ -201,7 +188,6 @@ function EditImportListExclusionModalContent({
             {translate('Delete')}
           </Button>
         )}
-        : null
         <Button onPress={onModalClose}>{translate('Cancel')}</Button>
         <SpinnerErrorButton
           isSpinning={isSaving}

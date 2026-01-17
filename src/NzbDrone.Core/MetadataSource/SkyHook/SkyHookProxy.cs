@@ -527,6 +527,17 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             movie.Ratings = MapRatings(resource.Ratings) ?? new Ratings();
 
             movie.Genres = resource.Genres;
+
+            // Check for tags with StashIDs as used for exclusion/tagging in Whisparr not stored locally
+            if (resource.Tags != null && resource.Tags.Where(t => !string.IsNullOrEmpty(t.ForeignIds?.StashId)).Any())
+            {
+                movie.TagIds = resource.Tags.Select(t => t.ForeignIds.StashId).ToList();
+            }
+            else
+            {
+                movie.TagIds = new List<string>();
+            }
+
             movie.Images = resource.Images.Select(MapImage).ToList();
 
             movie.ItemType = resource.ItemType;

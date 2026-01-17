@@ -254,7 +254,7 @@ namespace NzbDrone.Core.Movies
             var type = newMovie.MovieMetadata.Value.ItemType == ItemType.Scene ? ImportExclusionType.Scene : ImportExclusionType.Movie;
             if (!_importListExclusionService.IsExcluded(newMovie.ForeignId, type))
             {
-                var newExclusion = new ImportListExclusion { ForeignId = newMovie.ForeignId, Type = type, MovieTitle = newMovie.Title, MovieYear = newMovie.Year };
+                var newExclusion = new ImportListExclusion { ForeignId = newMovie.ForeignId, Type = type, MovieTitle = newMovie.ToFormattedString() };
                 if (newMovie.MovieMetadata?.Value?.Studio != null)
                 {
                     var stashId = newMovie.MovieMetadata.Value.Studio.ForeignIds.StashId;
@@ -317,7 +317,7 @@ namespace NzbDrone.Core.Movies
                         if (_configService.WhisparrAlwaysExcludePerformersTag.IsNullOrWhiteSpace())
                         {
                             _importListExclusionService.AddExclusion(newExclusion);
-                            throw new ValidationException($"Performer: [{string.Join(",", excludedPerformers.Select(ep => ep.MovieTitle).ToList())}] has been excluded");
+                            throw new ValidationException($"Performer: [{string.Join(",", excludedPerformers.Select(ep => ep.ToString()).ToList())}] has been excluded");
                         }
                         else
                         {
@@ -328,21 +328,31 @@ namespace NzbDrone.Core.Movies
                             }
 
                             newMovie.Monitored = false;
-                            _logger.Info("Performer: [{0}] has been excluded. Marking movie as unmonitored.", string.Join(",", excludedPerformers.Select(ep => ep.MovieTitle).ToList()));
+                            _logger.Info("Performer: [{0}] has been excluded. Marking movie as unmonitored.", string.Join(",", excludedPerformers.Select(ep => ep.ToString()).ToList()));
                         }
                     }
                 }
 
-                var tagNames = newMovie.MovieMetadata.Value.Genres;
-                var excludedTags = _importListExclusionService.GetAllByType(ImportExclusionType.Tag);
-                var exclusions = excludedTags.Where(e => tagNames.Contains(e.MovieTitle, StringComparer.OrdinalIgnoreCase)).ToList();
+                // check by tag ids
+                var exclusions = new List<ImportListExclusion>();
+                var tagIds = newMovie.MovieMetadata.Value.TagIds ?? new List<string>();
+                var isExcludedByTag = false;
+                foreach (var tagId in tagIds)
+                {
+                    isExcludedByTag = _importListExclusionService.IsExcluded(tagId, ImportExclusionType.Tag);
+                    if (isExcludedByTag)
+                    {
+                        exclusions = _importListExclusionService.GetAllByType(ImportExclusionType.Tag).Where(e => e.ForeignId == tagId).ToList();
+                        break;
+                    }
+                }
 
-                if (exclusions.Any())
+                if (isExcludedByTag)
                 {
                     if (_configService.WhisparrAlwaysExcludeTagsTag.IsNullOrWhiteSpace())
                     {
                         _importListExclusionService.AddExclusion(newExclusion);
-                        throw new ValidationException($"Tag(s): [{string.Join(",", exclusions.Select(et => et.MovieTitle).ToList())}] excluded");
+                        throw new ValidationException($"Tag(s): [{string.Join(",", exclusions.Select(et => et.ToString()).ToList())}] excluded");
                     }
                     else
                     {
@@ -353,7 +363,7 @@ namespace NzbDrone.Core.Movies
                         }
 
                         newMovie.Monitored = false;
-                        _logger.Info("Tag(s): [{0}] has been excluded. Marking movie as unmonitored.", string.Join(",", exclusions.Select(et => et.MovieTitle).ToList()));
+                        _logger.Info("Tag(s): [{0}] has been excluded. Marking movie as unmonitored.", string.Join(",", exclusions.Select(et => et.ToString()).ToList()));
                     }
                 }
             }
