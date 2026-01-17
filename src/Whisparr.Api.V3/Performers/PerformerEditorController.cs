@@ -22,8 +22,14 @@ namespace Whisparr.Api.V3.Performers
             _upgradableSpecification = upgradableSpecification;
         }
 
+        /// <summary>
+        /// Edits multiple performers
+        /// </summary>
+        /// <param name="resource"></param>
+        /// <returns>PerformerEditorResource containing as-edited values</returns>
         [HttpPut]
         [Consumes("application/json")]
+        [Produces("application/json")]
         public IActionResult SaveAll([FromBody] PerformerEditorResource resource)
         {
             var performersToUpdate = _performerService.GetPerformers(resource.PerformerIds);
@@ -35,6 +41,11 @@ namespace Whisparr.Api.V3.Performers
                     performer.Monitored = resource.Monitored.Value;
                 }
 
+                if (resource.MoviesMonitored.HasValue)
+                {
+                    performer.MoviesMonitored = resource.MoviesMonitored.Value;
+                }
+
                 if (resource.QualityProfileId.HasValue)
                 {
                     performer.QualityProfileId = resource.QualityProfileId.Value;
@@ -43,6 +54,11 @@ namespace Whisparr.Api.V3.Performers
                 if (resource.RootFolderPath.IsNotNullOrWhiteSpace())
                 {
                     performer.RootFolderPath = resource.RootFolderPath;
+                }
+
+                if (resource.SearchOnAdd.HasValue)
+                {
+                    performer.SearchOnAdd = resource.SearchOnAdd.Value;
                 }
 
                 if (resource.Tags != null)
