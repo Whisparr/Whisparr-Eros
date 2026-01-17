@@ -38,6 +38,7 @@ module.exports = {
 
   themePink: whisparrPink,
   themePurple: whisparrPurple,
+  themeLightPurple: '#c084fc',
   themeAlternatePink: '#c4337c',
   themeRed: '#c4273c',
   themeDarkColor: '#494949',
