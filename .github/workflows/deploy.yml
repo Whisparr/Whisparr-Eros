@@ -86,15 +86,6 @@ jobs:
           latest: true
           prerelease: ${{ inputs.branch != 'eros' }}
 
-      - name: Generate Commit Changelog
-        id: generate-commit-changelog
-        run: |
-          PREV_TAG="${{ steps.previous-release.outputs.tag_name }}"
-          CUR_TAG="v${{ inputs.version }}"
-          echo "## What's Changed" > changelog.md
-          git log "$PREV_TAG..$CUR_TAG" --pretty=format:"- %s (%h) - @%an" >> changelog.md
-          cat changelog.md
-
       - name: Enable GPG signing
         uses: crazy-max/ghaction-import-gpg@v6
         with:
@@ -110,6 +101,15 @@ jobs:
           git push origin v${{ inputs.version }}
         env:
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+
+      - name: Generate Commit Changelog
+        id: generate-commit-changelog
+        run: |
+          PREV_TAG="${{ steps.previous-release.outputs.tag_name }}"
+          CUR_TAG="v${{ inputs.version }}"
+          echo "## What's Changed" > changelog.md
+          git log "$PREV_TAG..$CUR_TAG" --pretty=format:"- %s (%h) - @%an" >> changelog.md
+          cat changelog.md
 
       - name: Create release
         uses: ncipollo/release-action@v1
