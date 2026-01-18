@@ -20,9 +20,9 @@ function UpdateChanges(props: UpdateChangesProps) {
       {uniqueChanges.map((change, index) => {
         // Linkify issue numbers
         let transformed = change.replace(
-          /#\d{3,5}\b/g,
+          /#\d{2,5}\b/g,
           (match) =>
-            `[${match}](https://github.com/Whisparr/Whisparr/issues/${match.substring(
+            `[${match}](https://github.com/Whisparr/Whisparr-Eros/issues/${match.substring(
               1
             )})`
         );
@@ -32,14 +32,15 @@ function UpdateChanges(props: UpdateChangesProps) {
           (_match, p1, username) =>
             `${p1}[@${username}](https://github.com/${username})`
         );
-        // Transform GitHub PR URLs to PR#123 links
+        // Linkify commit short hashes in parentheses (e.g., (abc1234))
         transformed = transformed.replace(
-          /https:\/\/github\.com\/([\w-]+)\/([\w-]+)\/pull\/(\d+)/g,
-          (url, _owner, _repo, pr) => `[#${pr}](${url})`
+          /\(([a-f0-9]{7,40})\)/gi,
+          (_match, hash) =>
+            `([${hash}](https://github.com/Whisparr/Whisparr-Eros/commit/${hash}))`
         );
         // Linkify plain URLs not already inside markdown links
         transformed = transformed.replace(
-          /(?<!\]\()https?:\/\/[^\s)]+/g,
+          /(?<!\]\()https?:\/\/[\w\-._~:/?#[\]@!$&'()*+,;=%]+/g,
           (url) => `[${url}](${url})`
         );
         return (
