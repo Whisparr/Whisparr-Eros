@@ -62,6 +62,7 @@ jobs:
           version: ${{ inputs.version }}
 
   release:
+    if: ${{ github.ref_name == 'eros-develop' || github.ref_name == 'eros' }}
     needs: package
     runs-on: ubuntu-latest
     permissions:
