@@ -263,7 +263,7 @@ namespace NzbDrone.Core.Movies
                     {
                         if (_configService.WhisparrAlwaysExcludeStudiosTag.IsNullOrWhiteSpace())
                         {
-                            newExclusion.Reason = ImportExclusionReason.StudioExcluded;
+                            newExclusion.Reason = ImportExclusionReason.StudioExclusion;
                             _importListExclusionService.AddExclusion(newExclusion);
                             throw new ValidationException($"Studio: [{newMovie.MovieMetadata.Value.Studio.Title}] has been excluded");
                         }

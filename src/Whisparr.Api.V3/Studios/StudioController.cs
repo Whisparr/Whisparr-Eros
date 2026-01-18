@@ -173,7 +173,7 @@ namespace Whisparr.Api.V3.Studios
                 exclusion.ForeignId = studio.ForeignId;
                 exclusion.MovieTitle = studio.Title;
                 exclusion.Type = ImportExclusionType.Studio;
-                exclusion.Reason = ImportExclusionReason.Deleted;
+                exclusion.Reason = ImportExclusionReason.DuringDelete;
 
                 _exclusionService.AddExclusion(exclusion);
             }

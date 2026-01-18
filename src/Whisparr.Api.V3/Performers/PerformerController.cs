@@ -206,7 +206,7 @@ namespace Whisparr.Api.V3.Performers
                 exclusion.ForeignId = performer.ForeignId;
                 exclusion.MovieTitle = performer.Name;
                 exclusion.Type = ImportExclusionType.Performer;
-                exclusion.Reason = ImportExclusionReason.Deleted;
+                exclusion.Reason = ImportExclusionReason.DuringDelete;
 
                 _exclusionService.AddExclusion(exclusion);
             }

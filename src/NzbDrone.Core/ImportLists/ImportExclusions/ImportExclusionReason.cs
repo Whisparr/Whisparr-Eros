@@ -3,9 +3,9 @@ namespace NzbDrone.Core.ImportLists.ImportExclusions
     public enum ImportExclusionReason
     {
         Manual,
-        Deleted,
+        DuringDelete,
         PerformerExclusion,
-        StudioExcluded,
+        StudioExclusion,
         StudioAfterDate,
         TagExclusion
     }
