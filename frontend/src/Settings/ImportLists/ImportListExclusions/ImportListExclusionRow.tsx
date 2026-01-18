@@ -20,8 +20,15 @@ interface ImportListExclusionRowProps extends ImportListExclusion {
 }
 
 function ImportListExclusionRow(props: ImportListExclusionRowProps) {
-  const { id, foreignId, type, movieTitle, isSelected, onSelectedChange } =
-    props;
+  const {
+    id,
+    foreignId,
+    type,
+    reason,
+    movieTitle,
+    isSelected,
+    onSelectedChange,
+  } = props;
 
   const dispatch = useDispatch();
 
@@ -52,6 +59,7 @@ function ImportListExclusionRow(props: ImportListExclusionRowProps) {
       <TableRowCell>{movieTitle}</TableRowCell>
       <TableRowCell className={styles.foreignId}>{foreignId}</TableRowCell>
       <TableRowCell>{type}</TableRowCell>
+      <TableRowCell>{reason}</TableRowCell>
 
       <TableRowCell className={styles.actions}>
         <IconButton
