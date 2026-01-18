@@ -98,7 +98,8 @@ namespace Whisparr.Api.V3.ImportLists
                     "id",
                     "foreignId",
                     "movieTitle",
-                    "movieYear"
+                    "type",
+                    "reason"
                 },
                 "id",
                 SortDirection.Descending);
