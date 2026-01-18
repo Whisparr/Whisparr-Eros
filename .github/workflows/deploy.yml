@@ -69,6 +69,9 @@ jobs:
     steps:
       - name: Check out
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
 
       - name: Download release artifacts
         uses: actions/download-artifact@v4
@@ -84,23 +87,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           latest: true
-          prerelease: ${{ inputs.branch != 'main' }}
-
-      - name: Generate Release Notes
-        id: generate-release-notes
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ github.token }}
-          result-encoding: string
-          script: |
-            const { data } = await github.rest.repos.generateReleaseNotes({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              tag_name: 'v${{ inputs.version }}',
-              target_commitish: '${{ github.sha }}',
-              previous_tag_name: '${{ steps.previous-release.outputs.tag_name }}',
-            })
-            return data.body
+          prerelease: ${{ inputs.branch != 'eros' }}
 
       - name: Enable GPG signing
         uses: crazy-max/ghaction-import-gpg@v6
@@ -118,13 +105,22 @@ jobs:
         env:
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
+      - name: Generate Commit Changelog
+        id: generate-commit-changelog
+        run: |
+          PREV_TAG="${{ steps.previous-release.outputs.tag_name }}"
+          CUR_TAG="v${{ inputs.version }}"
+          echo "## What's Changed" > changelog.md
+          git log "$PREV_TAG..$CUR_TAG" --pretty=format:"- %s (%h) - @%an" >> changelog.md
+          cat changelog.md
+
       - name: Create release
         uses: ncipollo/release-action@v1
         with:
           artifacts: _artifacts/Whisparr.*
           commit: ${{ github.sha }}
           generateReleaseNotes: false
-          body: ${{ steps.generate-release-notes.outputs.result }}
+          bodyFile: changelog.md
           name: ${{ inputs.version }}
           prerelease: ${{ inputs.branch != 'eros' }}
           skipIfReleaseExists: true

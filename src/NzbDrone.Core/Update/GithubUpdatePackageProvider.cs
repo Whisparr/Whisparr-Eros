@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using NLog;
 using NzbDrone.Common.Cloud;
 using NzbDrone.Common.EnvironmentInfo;
@@ -10,6 +11,7 @@ using NzbDrone.Common.Http;
 using NzbDrone.Core.Analytics;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Datastore;
+using Semver;
 
 namespace NzbDrone.Core.Update
 {
@@ -54,11 +56,15 @@ namespace NzbDrone.Core.Update
             if (latest != null)
             {
                 _logger.Info("Update found: {0} ({1})", latest.Version, latest.FileName);
-                if (Semver.SemVersion.ComparePrecedence(Semver.SemVersion.Parse(currentVersion.ToString()), latest.Version) >= 0)
+
+                // Convert latest.Version (SemVersion) to .NET Version for comparison
+                var latestDotNetVersion = releaseVersionAsAssemblyVersion(latest.Version.ToString());
+
+                if (currentVersion >= latestDotNetVersion)
                 {
                     _logger.Info("Current version '{0}' is up-to-date or newer than the latest available update '{1}'.",
                         currentVersion,
-                        latest.Version);
+                        latestDotNetVersion);
                     return null;
                 }
 
@@ -88,7 +94,7 @@ namespace NzbDrone.Core.Update
 
             var builder = _cloudRequestBuilder.GithubReleases.Create();
             builder.SetSegment("githubownerrepo", ownerRepo);
-            builder.AddQueryParam("per_page", "5");
+            builder.AddQueryParam("per_page", "25");
 
             var request = builder.Build();
             _logger.Debug($"Requesting: {request.Url}");
@@ -104,16 +110,58 @@ namespace NzbDrone.Core.Update
             var packages = new List<UpdatePackage>();
             foreach (var release in releases)
             {
+                // Filter out releases that do not match the requested branch
+                // For example, if branch is 'eros-develop', skip tags like 'v3.2.0-release.27'
+                // You may need to adjust this logic if your tag naming changes
+                if (!string.IsNullOrEmpty(branch))
+                {
+                    var tagLower = release.tag_name.ToLowerInvariant();
+                    var branchLower = branch.ToLowerInvariant();
+
+                    // If branch is exactly 'eros', skip prerelease tags
+                    if (branchLower == "eros" && tagLower.Contains("develop"))
+                    {
+                        _logger.Debug($"Skipping prerelease {release.tag_name} for stable branch {branch}.");
+                        continue;
+                    }
+
+                    // If branch contains 'develop', skip tags with 'release' and vice versa
+                    if (branchLower.Contains("develop") && !tagLower.Contains("develop"))
+                    {
+                        _logger.Debug($"Skipping release {release.tag_name} because it is a release tag and branch is {branch}.");
+                        continue;
+                    }
+                }
+
                 if (release.assets == null)
                 {
                     _logger.Debug($"Release {release.tag_name} has no package assets, skipping.");
                     continue;
                 }
 
-                // Filter release assets by mapped OS asset string and architecture
-                var asset = release.assets.FirstOrDefault(a =>
-                    a.name.Contains(osAssetString, StringComparison.OrdinalIgnoreCase) &&
-                    a.name.Contains(arch, StringComparison.OrdinalIgnoreCase));
+                // Prefer .tar.gz for Osx, fallback to .zip/.app
+                GithubAsset asset = null;
+                if (OsInfo.Os == Os.Osx)
+                {
+                    asset = release.assets.FirstOrDefault(a =>
+                        a.name.Contains(osAssetString, StringComparison.OrdinalIgnoreCase) &&
+                        a.name.Contains(arch, StringComparison.OrdinalIgnoreCase) &&
+                        a.name.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase));
+                    if (asset == null)
+                    {
+                        asset = release.assets.FirstOrDefault(a =>
+                            a.name.Contains(osAssetString, StringComparison.OrdinalIgnoreCase) &&
+                            a.name.Contains(arch, StringComparison.OrdinalIgnoreCase) &&
+                            (a.name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase) || a.name.EndsWith(".app", StringComparison.OrdinalIgnoreCase)));
+                    }
+                }
+                else
+                {
+                    asset = release.assets.FirstOrDefault(a =>
+                        a.name.Contains(osAssetString, StringComparison.OrdinalIgnoreCase) &&
+                        a.name.Contains(arch, StringComparison.OrdinalIgnoreCase));
+                }
+
                 if (asset == null)
                 {
                     _logger.Debug("No asset found for release {0} matching OS asset string '{1}' and arch '{2}'",
@@ -125,7 +173,12 @@ namespace NzbDrone.Core.Update
 
                 _logger.Debug($"Found update: {release.tag_name} - {asset.name}");
                 var tag = release.tag_name.TrimStart('v');
-                var version = Semver.SemVersion.Parse(tag);
+
+                // Attempt to strip "what's new", as it's repetitive in our UI
+                var body = release?.body != null
+                    ? Regex.Replace(release.body, @"^## What's Changed\s*\r?\n", "", RegexOptions.Multiline)
+                    : string.Empty;
+                var version = SemVersion.Parse(tag);
                 if (version == null)
                 {
                     _logger.Warn("Could not parse semver from tag '{0}' (parsed: '{1}'). Skipping this release.",
@@ -141,14 +194,45 @@ namespace NzbDrone.Core.Update
                     ReleaseDate = release.published_at,
                     FileName = asset.name,
                     Url = asset.browser_download_url,
-                    Changes = new UpdateChanges { New = new List<string> { release.body } },
-                    Hash = asset.digest,
+                    Changes = new UpdateChanges { New = new List<string> { body } },
+                    Hash = asset.digest.Replace("sha256:", "", StringComparison.OrdinalIgnoreCase),
                     Branch = branch
                 });
             }
 
             _logger.Debug($"Total updates found (max 5): {packages.Count}");
             return packages;
+        }
+
+        /// <summary> Converts a GitHub release version string to a .NET Version object.</summary>
+        /// <param name="releaseTag">The release version string (e.g., "v3.2.0-develop.23").</param>
+        /// <returns>The corresponding .NET Assembly Version object.(e.e., 3.2.0.27)</returns>
+        private static Version releaseVersionAsAssemblyVersion(string releaseTag)
+        {
+            var semver = SemVersion.Parse(releaseTag.TrimStart('v'));
+            if (semver == null)
+            {
+                throw new ArgumentException($"Invalid semver: {releaseTag}", nameof(releaseTag));
+            }
+
+            // Use major, minor, patch, and if available, the last numeric part of prerelease as revision
+            var major = (int)semver.Major;
+            var minor = (int)semver.Minor;
+            var build = (int)semver.Patch;
+
+            // Try to extract revision from prerelease (e.g., 3.2.0-develop.23)
+            var revision = 0;
+
+            if (!string.IsNullOrEmpty(semver.Prerelease))
+            {
+                var parts = semver.Prerelease.Split('.');
+                if (parts.Length > 0 && int.TryParse(parts.Last(), out var rev))
+                {
+                    revision = rev;
+                }
+            }
+
+            return new Version(major, minor, build, revision);
         }
 
         /// <summary>
@@ -175,7 +259,7 @@ namespace NzbDrone.Core.Update
             }
         }
 
-        private class GithubRelease
+        internal class GithubRelease
         {
             /// <summary>The tag name of the release.</summary>
             public string tag_name { get; set; }
@@ -191,12 +275,12 @@ namespace NzbDrone.Core.Update
         }
 
         /// <summary>Represents an asset in a GitHub release.</summary>
-        private class GithubAsset
+        internal class GithubAsset
         {
             /// <summary>The name of the asset file.</summary>
             public string name { get; set; }
 
-            /// <summary>The digest (sha:hash) of the asset.</summary>
+            /// <summary>The digest (sha256 hash) of the asset.</summary>
             public string digest { get; set; }
 
             /// <summary>The download URL of the asset.</summary>

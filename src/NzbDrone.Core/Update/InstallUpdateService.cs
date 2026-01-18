@@ -139,6 +139,31 @@ namespace NzbDrone.Core.Update
             _archiveService.Extract(packageDestination, updateSandboxFolder);
             _logger.Info("Update package extracted successfully");
 
+            // Log the contents of the updateSandboxFolder after extraction
+
+            try
+            {
+                var extractedDirs = _diskProvider.GetDirectories(updateSandboxFolder);
+                var extractedFiles = _diskProvider.GetFiles(updateSandboxFolder, true); // true = recursive
+                _logger.Info("[Update Debug] Contents of updateSandboxFolder after extraction:");
+                foreach (var dir in extractedDirs)
+                {
+                    _logger.Info("[Update Debug] Dir: {0}", dir);
+                }
+
+                foreach (var file in extractedFiles)
+                {
+                    _logger.Info("[Update Debug] File: {0}", file);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Warn(ex, "[Update Debug] Failed to enumerate extracted updateSandboxFolder contents");
+            }
+
+            var expectedUpdateClientFolder = _appFolderInfo.GetUpdateClientFolder();
+            _logger.Info("[Update Debug] Expected update client folder: {0}", expectedUpdateClientFolder);
+
             EnsureValidBranch(updatePackage);
 
             _backupService.Backup(BackupType.Update);

@@ -51,3 +51,7 @@
   margin-left: 10px;
   font-size: 14px;
 }
+
+a {
+  color: var(--linkColor);
+}

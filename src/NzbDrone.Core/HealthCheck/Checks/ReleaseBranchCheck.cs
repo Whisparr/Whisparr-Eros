@@ -19,7 +19,7 @@ namespace NzbDrone.Core.HealthCheck.Checks
 
         public override HealthCheck Check()
         {
-            var currentBranch = _configFileService.Branch.ToLower();
+            var currentBranch = _configFileService.Branch.ToLower().Replace("-", "");
 
             if (!Enum.GetNames(typeof(ReleaseBranches)).Any(x => x.ToLower() == currentBranch))
             {
@@ -31,10 +31,8 @@ namespace NzbDrone.Core.HealthCheck.Checks
 
         public enum ReleaseBranches
         {
-            Master,
-            Develop,
-            Nightly,
-            Eros
+            Eros,
+            ErosDevelop
         }
     }
 }
