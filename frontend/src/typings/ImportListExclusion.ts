@@ -4,4 +4,5 @@ export default interface ImportListExclusion extends ModelBase {
   foreignId: string;
   movieTitle: string;
   type: string;
+  reason: string;
 }

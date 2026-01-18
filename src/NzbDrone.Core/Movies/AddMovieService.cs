@@ -263,6 +263,7 @@ namespace NzbDrone.Core.Movies
                     {
                         if (_configService.WhisparrAlwaysExcludeStudiosTag.IsNullOrWhiteSpace())
                         {
+                            newExclusion.Reason = ImportExclusionReason.StudioExclusion;
                             _importListExclusionService.AddExclusion(newExclusion);
                             throw new ValidationException($"Studio: [{newMovie.MovieMetadata.Value.Studio.Title}] has been excluded");
                         }
@@ -288,6 +289,7 @@ namespace NzbDrone.Core.Movies
                             {
                                 if (_configService.WhisparrAlwaysExcludeStudiosAfterTag.IsNullOrWhiteSpace())
                                 {
+                                    newExclusion.Reason = ImportExclusionReason.StudioAfterDate;
                                     _importListExclusionService.AddExclusion(newExclusion);
                                     throw new ValidationException($"Studio After Date: [{newMovie.MovieMetadata.Value.Studio.Title}] has an after date of {dateTime.ToString("yyyy-MM-dd")}. Marking movie as unmonitored.");
                                 }
@@ -316,6 +318,7 @@ namespace NzbDrone.Core.Movies
                     {
                         if (_configService.WhisparrAlwaysExcludePerformersTag.IsNullOrWhiteSpace())
                         {
+                            newExclusion.Reason = ImportExclusionReason.PerformerExclusion;
                             _importListExclusionService.AddExclusion(newExclusion);
                             throw new ValidationException($"Performer: [{string.Join(",", excludedPerformers.Select(ep => ep.ToString()).ToList())}] has been excluded");
                         }
@@ -351,6 +354,7 @@ namespace NzbDrone.Core.Movies
                 {
                     if (_configService.WhisparrAlwaysExcludeTagsTag.IsNullOrWhiteSpace())
                     {
+                        newExclusion.Reason = ImportExclusionReason.TagExclusion;
                         _importListExclusionService.AddExclusion(newExclusion);
                         throw new ValidationException($"Tag(s): [{string.Join(",", exclusions.Select(et => et.ToString()).ToList())}] excluded");
                     }
