@@ -229,7 +229,6 @@ jobs:
           binary_path: ${{ matrix.binary_path }}
 
   deploy:
-    if: ${{ github.ref_name == 'eros-develop' || github.ref_name == 'eros' }}
     needs:
       [
         prepare,

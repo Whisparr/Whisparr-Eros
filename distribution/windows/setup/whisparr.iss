@@ -9,7 +9,7 @@
 #define BuildNumber "3.1"
 #define BuildNumber GetEnv('WHISPARR_VERSION')
 #define MajorVersion GetEnv('WHISPARR_MAJOR_VERSION')
-#define BranchName GetEnv('BRANCH')
+#define BranchName GetEnv('SAFE_BRANCH')
 #define Framework GetEnv('FRAMEWORK')
 #define Runtime GetEnv('RUNTIME')
 
