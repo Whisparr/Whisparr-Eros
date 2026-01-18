@@ -269,7 +269,7 @@ function Updates() {
                     return (
                       <InlineMarkdown
                         data={translate('MaintenanceReleaseWithLink', {
-                          url: 'https://github.com/Whisparr/Whisparr/commits/eros/',
+                          url: 'https://github.com/Whisparr/Whisparr-Eros/commits/eros/',
                         })}
                       />
                     );
