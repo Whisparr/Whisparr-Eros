@@ -79,8 +79,17 @@ namespace Whisparr.Http.Authentication
 
         protected override Task HandleChallengeAsync(AuthenticationProperties properties)
         {
-            Response.StatusCode = 401;
-            return Task.CompletedTask;
+            var path = Request.Path.Value?.ToLowerInvariant() ?? string.Empty;
+
+            // Only return 401 for API or SignalR endpoints, otherwise let the next handler (e.g. Cookie) handle it
+            if (path.StartsWith("/api") || path.StartsWith("/signalr"))
+            {
+                Response.StatusCode = 401;
+                return Task.CompletedTask;
+            }
+
+            // For non-API requests, let the next handler (cookie/forms) handle the challenge
+            return base.HandleChallengeAsync(properties);
         }
 
         protected override Task HandleForbiddenAsync(AuthenticationProperties properties)

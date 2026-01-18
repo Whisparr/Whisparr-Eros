@@ -18,6 +18,7 @@ using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Instrumentation;
 using NzbDrone.Common.Processes;
 using NzbDrone.Common.Serializer;
+using NzbDrone.Core.Authentication;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Datastore;
 using NzbDrone.Core.Instrumentation;
@@ -197,8 +198,15 @@ namespace NzbDrone.Host
                     policy.RequireAuthenticatedUser();
                 });
 
+                // API key policy for API endpoints
+                options.AddPolicy("ApiKeyPolicy", policy =>
+                {
+                    policy.AuthenticationSchemes.Add("API");
+                    policy.RequireAuthenticatedUser();
+                });
+
                 // Require auth on everything except those marked [AllowAnonymous]
-                options.FallbackPolicy = new AuthorizationPolicyBuilder("API")
+                options.FallbackPolicy = new AuthorizationPolicyBuilder(nameof(AuthenticationType.Forms))
                 .RequireAuthenticatedUser()
                 .Build();
             });
@@ -280,6 +288,9 @@ namespace NzbDrone.Host
                 ExceptionHandler = errorHandler.HandleException
             });
 
+            // Middleware to rewrite 401+Location to 302 for browser requests
+            app.UseBrowserRedirect();
+
             app.UseRouting();
             app.UseCors();
 
@@ -320,6 +331,14 @@ namespace NzbDrone.Host
             app.UseEndpoints(x =>
             {
                 x.MapHub<MessageHub>("/signalr/messages").RequireAuthorization("SignalR");
+
+                // Map API v3 endpoints with API key policy
+                x.MapControllerRoute(
+                    name: "apiv3",
+                    pattern: "api/v3/{**slug}")
+                    .RequireAuthorization("ApiKeyPolicy");
+
+                // Map all other controllers (UI, etc.)
                 x.MapControllers();
             });
         }

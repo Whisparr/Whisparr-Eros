@@ -46,20 +46,24 @@ namespace Whisparr.Http.Authentication
                     options.ReturnUrlParameter = "returnUrl";
                 });
 
-            return services.AddAuthentication()
-                .AddNone(nameof(AuthenticationType.None))
-                .AddExternal(nameof(AuthenticationType.External))
-                .AddCookie(nameof(AuthenticationType.Forms))
-                .AddApiKey("API", options =>
-                {
-                    options.HeaderName = "X-Api-Key";
-                    options.QueryName = "apikey";
-                })
-                .AddApiKey("SignalR", options =>
-                {
-                    options.HeaderName = "X-Api-Key";
-                    options.QueryName = "access_token";
-                });
+            return services.AddAuthentication(options =>
+            {
+                options.DefaultScheme = nameof(AuthenticationType.Forms);
+                options.DefaultChallengeScheme = nameof(AuthenticationType.Forms);
+            })
+            .AddNone(nameof(AuthenticationType.None))
+            .AddExternal(nameof(AuthenticationType.External))
+            .AddCookie(nameof(AuthenticationType.Forms))
+            .AddApiKey("API", options =>
+            {
+                options.HeaderName = "X-Api-Key";
+                options.QueryName = "apikey";
+            })
+            .AddApiKey("SignalR", options =>
+            {
+                options.HeaderName = "X-Api-Key";
+                options.QueryName = "access_token";
+            });
         }
     }
 }
