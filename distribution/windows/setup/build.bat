@@ -1,7 +1,8 @@
 @REM SET WHISPARR_MAJOR_VERSION=3
 @REM SET WHISPARR_VERSION=3.1.0.0
 @REM SET BRANCH=eros-develop
+@REM SET SAFE_BRANCH=eros-develop
 @REM SET FRAMEWORK=net10.0
 @REM SET RUNTIME=win-x64
 
-inno\ISCC.exe whisparr.iss
+inno\ISCC.exe /DSAFE_BRANCH="%SAFE_BRANCH%" whisparr.iss
