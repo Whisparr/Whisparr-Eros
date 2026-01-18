@@ -107,7 +107,6 @@ namespace NzbDrone.Core.Update
             var osAssetString = GetOsAssetString(OsInfo.Os);
             var arch = RuntimeInformation.OSArchitecture.ToString().ToLowerInvariant();
 
-
             var packages = new List<UpdatePackage>();
             foreach (var release in releases)
             {
