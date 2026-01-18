@@ -155,6 +155,13 @@ namespace NzbDrone.Core.Update
                             (a.name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase) || a.name.EndsWith(".app", StringComparison.OrdinalIgnoreCase)));
                     }
                 }
+                else if (OsInfo.Os == Os.Windows)
+                {
+                    asset = release.assets.FirstOrDefault(a =>
+                        a.name.Contains(osAssetString, StringComparison.OrdinalIgnoreCase) &&
+                        a.name.Contains(arch, StringComparison.OrdinalIgnoreCase) &&
+                        a.name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase));
+                }
                 else
                 {
                     asset = release.assets.FirstOrDefault(a =>
