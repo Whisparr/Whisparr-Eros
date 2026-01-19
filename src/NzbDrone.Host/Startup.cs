@@ -304,6 +304,7 @@ namespace NzbDrone.Host
             });
 
             app.UseAuthentication();
+            app.UseBrowserRedirect();  // workaround to convert 401 to 302 for browser requests
             app.UseAuthorization();
             app.UseResponseCompression();
             app.Properties["host.AppName"] = BuildInfo.AppName;
