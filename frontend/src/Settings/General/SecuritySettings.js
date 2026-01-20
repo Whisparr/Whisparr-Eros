@@ -241,10 +241,12 @@ class SecuritySettings extends Component {
                 key="apidocumentation"
                 kind={kinds.PRIMARY}
                 to="/docs"
+                target='_blank'
+                title={translate=('ApiDocumentation')}
                 noRouter={true}
               >
                 <Icon
-                  name={icons.UNKNOWN}
+                  name={icons.DOCUMENTATION}
                 />
               </FormInputButton>
             ]}
