@@ -242,7 +242,7 @@ class SecuritySettings extends Component {
                 kind={kinds.PRIMARY}
                 to="/docs"
                 target='_blank'
-                title={translate=('ApiDocumentation')}
+                title={translate('ApiDocumentation')}
                 noRouter={true}
               >
                 <Icon
