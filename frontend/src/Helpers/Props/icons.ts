@@ -30,6 +30,7 @@ import {
   faBan as fasBan,
   faBars as fasBars,
   faBolt as fasBolt,
+  faBook as faBook,
   faBookmark as fasBookmark,
   faBookReader as fasBookReader,
   faBroadcastTower as fasBroadcastTower,
@@ -161,6 +162,7 @@ export const COMPUTER = fasDesktop;
 export const DANGER = fasExclamationCircle;
 export const DELETE = fasTrashAlt;
 export const DISC = fasCompactDisc;
+export const DOCUMENTATION = faBook;
 export const DOWNLOAD = fasDownload;
 export const DOWNLOADED = fasDownload;
 export const DOWNLOADING = fasCloudDownloadAlt;
