@@ -64,7 +64,7 @@ function AddNewMovieCollectionMovieModalContent({
   const { settings, validationErrors, validationWarnings } = useMemo(() => {
     const options = {
       rootFolderPath: collection.rootFolderPath,
-      monitor: collection.monitored ? 'movieOnly' : 'none',
+      monitored: collection.monitored,
       qualityProfileId: collection.qualityProfileId,
       searchForMovie: collection.searchOnAdd,
       tags: collection.tags || [],
@@ -73,7 +73,7 @@ function AddNewMovieCollectionMovieModalContent({
     return selectSettings(options, pendingChanges, addError);
   }, [collection, pendingChanges, addError]);
 
-  const { monitor, qualityProfileId, rootFolderPath, searchForMovie, tags } =
+  const { monitored, qualityProfileId, rootFolderPath, searchForMovie, tags } =
     settings;
 
   const handleInputChange = useCallback(
@@ -90,7 +90,7 @@ function AddNewMovieCollectionMovieModalContent({
         foreignId,
         title,
         rootFolderPath: rootFolderPath.value,
-        monitor: monitor.value,
+        monitored: monitored.value,
         qualityProfileId: qualityProfileId.value,
         searchForMovie: searchForMovie.value,
         tags: tags.value,
@@ -100,7 +100,7 @@ function AddNewMovieCollectionMovieModalContent({
     foreignId,
     title,
     rootFolderPath,
-    monitor,
+    monitored,
     qualityProfileId,
     searchForMovie,
     tags,
@@ -170,9 +170,10 @@ function AddNewMovieCollectionMovieModalContent({
                 <FormLabel>{translate('Monitor')}</FormLabel>
 
                 <FormInputGroup
-                  type={inputTypes.MONITOR_MOVIES_SELECT}
-                  name="monitor"
-                  {...monitor}
+                  type={inputTypes.CHECK}
+                  name="monitored"
+                  helpText={translate('MonitoredMovieHelpText')}
+                  {...monitored}
                   onChange={handleInputChange}
                 />
               </FormGroup>

@@ -262,6 +262,16 @@ export const actionHandlers = handleThunks({
     }).request;
 
     promise.done((data) => {
+      // handle old movies that have not been refreshed.
+      if (data.collection === undefined) {
+        dispatch(set({
+          section,
+          isAdding: false,
+          isAdded: false
+        }));
+        return;
+      }
+
       const collectionToUpdate = getState().movieCollections.items.find((collection) => collection.tmdbId === data.collection.tmdbId);
       const collectionData = { ...collectionToUpdate, missingMovies: Math.max(0, collectionToUpdate.missingMovies - 1 ) };
 
