@@ -71,6 +71,10 @@ const LINKS: SidebarItem[] = [
         to: '/add/new/movie',
       },
       {
+        title: () => translate('ImportLibrary'),
+        to: '/add/import/movies',
+      },
+      {
         title: () => translate('Collections'),
         to: '/collections',
       },
