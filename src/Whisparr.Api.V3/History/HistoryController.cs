@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.CustomFormats;
@@ -77,7 +78,7 @@ namespace Whisparr.Api.V3.History
 
             if (eventTypes != null && eventTypes.Any())
             {
-                 pagingSpec.FilterExpressions.Add(v => eventTypes.Contains((int)v.EventType));
+                pagingSpec.FilterExpressions.Add(BuildOrEventTypeFilter(eventTypes));
             }
 
             if (downloadId.IsNotNullOrWhiteSpace())
@@ -87,10 +88,51 @@ namespace Whisparr.Api.V3.History
 
             if (movieIds != null && movieIds.Any())
             {
-                pagingSpec.FilterExpressions.Add(h => movieIds.Contains(h.MovieId));
+                pagingSpec.FilterExpressions.Add(BuildOrMovieIdFilter(movieIds));
             }
 
             return pagingSpec.ApplyToPage(h => _historyService.Paged(pagingSpec, languages, quality), h => MapToResource(h, includeMovie));
+        }
+
+        // Helper methods for OR-ed filter expressions
+        private static Expression<Func<MovieHistory, bool>> BuildOrEventTypeFilter(int[] eventTypes)
+        {
+            var param = Expression.Parameter(typeof(MovieHistory), "v");
+            Expression body = null;
+            foreach (var eventType in eventTypes)
+            {
+                var left = Expression.Convert(Expression.Property(param, "EventType"), typeof(int));
+                var right = Expression.Constant(eventType);
+                var eq = Expression.Equal(left, right);
+                body = body == null ? eq : Expression.OrElse(body, eq);
+            }
+
+            if (body == null)
+            {
+                body = Expression.Constant(true);
+            }
+
+            return Expression.Lambda<Func<MovieHistory, bool>>(body, param);
+        }
+
+        private static Expression<Func<MovieHistory, bool>> BuildOrMovieIdFilter(int[] movieIds)
+        {
+            var param = Expression.Parameter(typeof(MovieHistory), "h");
+            Expression body = null;
+            foreach (var movieId in movieIds)
+            {
+                var left = Expression.Property(param, "MovieId");
+                var right = Expression.Constant(movieId);
+                var eq = Expression.Equal(left, right);
+                body = body == null ? eq : Expression.OrElse(body, eq);
+            }
+
+            if (body == null)
+            {
+                body = Expression.Constant(true);
+            }
+
+            return Expression.Lambda<Func<MovieHistory, bool>>(body, param);
         }
 
         [HttpGet("since")]
