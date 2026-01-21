@@ -65,6 +65,7 @@ class CollectionMovie extends Component {
       status,
       overview,
       year,
+      foreignId,
       tmdbId,
       images,
       monitored,
@@ -87,6 +88,7 @@ class CollectionMovie extends Component {
       isNewAddMovieModalOpen
     } = this.state;
 
+    // Currently only TMDB collections so this can change when required.
     const linkProps = id ? { to: `/movie/${tmdbId}` } : { onPress: this.onAddMoviePress };
 
     const elementStyle = {
@@ -168,6 +170,7 @@ class CollectionMovie extends Component {
 
         <AddNewMovieCollectionMovieModal
           isOpen={isNewAddMovieModalOpen && !isExistingMovie}
+          foreignId={foreignId}
           tmdbId={tmdbId}
           title={title}
           year={year}
@@ -208,8 +211,7 @@ CollectionMovie.propTypes = {
   isExistingMovie: PropTypes.bool,
   isExcluded: PropTypes.bool,
   tmdbId: PropTypes.number.isRequired,
-  imdbId: PropTypes.string,
-  youTubeTrailerId: PropTypes.string,
+  foreignId: PropTypes.string.isRequired,
   onMonitorTogglePress: PropTypes.func.isRequired
 };
 

@@ -249,9 +249,9 @@ export const actionHandlers = handleThunks({
   [ADD_MOVIE]: function(getState, payload, dispatch) {
     dispatch(set({ section, isAdding: true }));
 
-    const { tmdbId, title } = payload;
+    const { foreignId, title } = payload;
 
-    const newMovie = getNewMovie({ tmdbId, title }, payload);
+    const newMovie = getNewMovie({ foreignId, title }, payload);
     newMovie.id = 0;
 
     const promise = createAjaxRequest({

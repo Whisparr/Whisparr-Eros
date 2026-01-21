@@ -28,7 +28,7 @@ import translate from 'Utilities/String/translate';
 import styles from './AddNewMovieCollectionMovieModalContent.css';
 
 export interface AddNewMovieCollectionMovieModalContentProps {
-  tmdbId: number;
+  foreignId: number;
   title: string;
   year: number;
   overview?: string;
@@ -39,7 +39,7 @@ export interface AddNewMovieCollectionMovieModalContentProps {
 }
 
 function AddNewMovieCollectionMovieModalContent({
-  tmdbId,
+  foreignId,
   title,
   year,
   overview,
@@ -87,7 +87,7 @@ function AddNewMovieCollectionMovieModalContent({
   const handleAddMoviePress = useCallback(() => {
     dispatch(
       addMovie({
-        tmdbId,
+        foreignId,
         title,
         rootFolderPath: rootFolderPath.value,
         monitor: monitor.value,
@@ -97,7 +97,7 @@ function AddNewMovieCollectionMovieModalContent({
       })
     );
   }, [
-    tmdbId,
+    foreignId,
     title,
     rootFolderPath,
     monitor,

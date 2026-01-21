@@ -6,8 +6,11 @@ namespace Whisparr.Api.V3.Collections
 {
     public class CollectionMovieResource
     {
-        public int TmdbId { get; set; }
         public string ImdbId { get; set; }
+        public int TmdbId { get; set; }
+        public string TpdbId { get; set; }
+        public string ForeignId { get; set; }
+        public string StashId { get; set; }
         public string Title { get; set; }
         public string CleanTitle { get; set; }
         public string SortTitle { get; set; }
@@ -18,6 +21,7 @@ namespace Whisparr.Api.V3.Collections
         public int Year { get; set; }
         public Ratings Ratings { get; set; }
         public List<string> Genres { get; set; }
+        public ItemType ItemType { get; set; }
         public string Folder { get; set; }
         public bool IsExisting { get; set; }
         public bool IsExcluded { get; set; }
@@ -34,7 +38,10 @@ namespace Whisparr.Api.V3.Collections
 
             return new CollectionMovieResource
             {
+                ForeignId = model.ForeignId,
                 TmdbId = model.TmdbId,
+                TpdbId = model.TpdbId,
+                StashId = model.StashId,
                 Title = model.Title,
                 Status = model.Status,
                 Overview = model.Overview,
@@ -45,7 +52,8 @@ namespace Whisparr.Api.V3.Collections
                 Runtime = model.Runtime,
                 CleanTitle = model.CleanTitle,
                 Genres = model.Genres,
-                Year = model.Year
+                Year = model.Year,
+                ItemType = model.ItemType
             };
         }
     }
