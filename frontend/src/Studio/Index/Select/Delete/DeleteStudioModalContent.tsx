@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import FormGroup from 'Components/Form/FormGroup';
 import FormInputGroup from 'Components/Form/FormInputGroup';
@@ -13,67 +12,55 @@ import { inputTypes, kinds, sizes } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import styles from './DeleteStudioModal.css';
 
-class DeleteStudioModalContent extends Component {
+interface DeleteStudioModalContentProps {
+  studioIds?: number[];
+  onDeletePress: (deleteFiles: boolean, addImportExclusion: boolean) => void;
+  onModalClose: () => void;
+}
 
-  //
-  // Lifecycle
+interface DeleteStudioModalContentState {
+  deleteFiles: boolean;
+  addImportExclusion: boolean;
+}
 
-  constructor(props, context) {
-    super(props, context);
+class DeleteStudioModalContent extends Component<
+  DeleteStudioModalContentProps,
+  DeleteStudioModalContentState
+> {
+  state: DeleteStudioModalContentState = {
+    deleteFiles: false,
+    addImportExclusion: false,
+  };
 
-    this.state = {
-      deleteFiles: false,
-      addImportExclusion: false
-    };
-  }
-
-  //
-  // Listeners
-  onDeleteOptionChange = ({ value }) => {
+  onDeleteOptionChange = ({ value }: { value: boolean }) => {
     this.setState({ addImportExclusion: value });
   };
 
-  onDeleteFilesChange = ({ value }) => {
+  onDeleteFilesChange = ({ value }: { value: boolean }) => {
     this.setState({ deleteFiles: value });
   };
 
   onDeleteStudioConfirmed = () => {
-    const deleteFiles = this.state.deleteFiles;
-    const addImportExclusion = this.state.addImportExclusion;
-
+    const { deleteFiles, addImportExclusion } = this.state;
     this.props.onDeletePress(deleteFiles, addImportExclusion);
   };
 
-  //
-  // Render
-
   render() {
-    const {
-      onModalClose
-    } = this.props;
-
-    const deleteFiles = this.state.deleteFiles;
-    const addImportExclusion = this.state.addImportExclusion;
-
+    const { onModalClose } = this.props;
+    const { deleteFiles, addImportExclusion } = this.state;
     return (
-      <ModalContent
-        onModalClose={onModalClose}
-      >
-        <ModalHeader>
-          {translate('DeleteStudiosModalHeader')}
-        </ModalHeader>
-
+      <ModalContent onModalClose={onModalClose}>
+        <ModalHeader>{translate('DeleteStudiosModalHeader')}</ModalHeader>
         <ModalBody>
           <FormGroup>
             <InfoLabel
-              name={''}
+              name=""
               size={sizes.LARGE}
               className={styles.warningText}
             >
               {translate('DeleteStudiosModalWarning')}
             </InfoLabel>
           </FormGroup>
-
           <FormGroup>
             <FormLabel>{translate('AddImportListExclusion')}</FormLabel>
             <FormInputGroup
@@ -85,9 +72,10 @@ class DeleteStudioModalContent extends Component {
               onChange={this.onDeleteOptionChange}
             />
           </FormGroup>
-
           <FormGroup>
-            <FormLabel>{translate('DeleteFiles', [translate('All')])}</FormLabel>
+            <FormLabel>
+              {translate('DeleteFiles', { all: translate('All') })}
+            </FormLabel>
             <FormInputGroup
               type={inputTypes.CHECK}
               name="deleteFiles"
@@ -97,18 +85,10 @@ class DeleteStudioModalContent extends Component {
               onChange={this.onDeleteFilesChange}
             />
           </FormGroup>
-
         </ModalBody>
-
         <ModalFooter>
-          <Button onPress={onModalClose}>
-            {translate('Close')}
-          </Button>
-
-          <Button
-            kind={kinds.DANGER}
-            onPress={this.onDeleteStudioConfirmed}
-          >
+          <Button onPress={onModalClose}>{translate('Close')}</Button>
+          <Button kind={kinds.DANGER} onPress={this.onDeleteStudioConfirmed}>
             {translate('Delete')}
           </Button>
         </ModalFooter>
@@ -116,17 +96,5 @@ class DeleteStudioModalContent extends Component {
     );
   }
 }
-
-DeleteStudioModalContent.propTypes = {
-  studioIds: PropTypes.arrayOf(PropTypes.number),
-  deleteOptions: PropTypes.object.isRequired,
-  onDeleteOptionChange: PropTypes.func.isRequired,
-  onDeletePress: PropTypes.func.isRequired,
-  onModalClose: PropTypes.func.isRequired
-};
-
-DeleteStudioModalContent.defaultProps = {
-  statistics: {}
-};
 
 export default DeleteStudioModalContent;

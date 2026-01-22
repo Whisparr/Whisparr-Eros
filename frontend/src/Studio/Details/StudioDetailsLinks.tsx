@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React from 'react';
 import Label from 'Components/Label';
 import Link from 'Components/Link/Link';
@@ -6,28 +5,32 @@ import { kinds, sizes } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import styles from './StudioDetailsLinks.css';
 
-function StudioDetailsLinks(props) {
-  const {
-    foreignId,
-    tmdbId,
-    tpdbId,
-    website
-  } = props;
+interface StudioDetailsLinksProps {
+  foreignId: string;
+  tmdbId?: number;
+  tpdbId?: string;
+  website?: string;
+}
 
+function StudioDetailsLinks({
+  foreignId,
+  tmdbId,
+  tpdbId,
+  website,
+}: StudioDetailsLinksProps) {
   return (
     <div className={styles.links}>
-      <Link
-        className={styles.link}
-        to={website}
-      >
-        <Label
-          className={styles.linkLabel}
-          kind={kinds.INFO}
-          size={sizes.LARGE}
-        >
-          {translate('Homepage')}
-        </Label>
-      </Link>
+      {website && (
+        <Link className={styles.link} to={website}>
+          <Label
+            className={styles.linkLabel}
+            kind={kinds.INFO}
+            size={sizes.LARGE}
+          >
+            {translate('Homepage')}
+          </Label>
+        </Link>
+      )}
       <Link
         className={styles.link}
         to={`https://stashdb.org/studios/${foreignId}`}
@@ -73,12 +76,5 @@ function StudioDetailsLinks(props) {
     </div>
   );
 }
-
-StudioDetailsLinks.propTypes = {
-  foreignId: PropTypes.string.isRequired,
-  tpdbId: PropTypes.string,
-  tmdbId: PropTypes.number,
-  website: PropTypes.string
-};
 
 export default StudioDetailsLinks;
