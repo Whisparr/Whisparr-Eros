@@ -76,7 +76,17 @@ namespace NzbDrone.Core.Movies.Performers
 
         public List<Performer> FindByForeignIds(List<string> foreignIds)
         {
-            return _performerRepo.FindByForeignIds(foreignIds);
+            // SQLite has a default variable limit of 999, so use a safe chunk size
+            // this prevents the API layer from triggering SQLite fauls based on UI requests
+            const int chunkSize = 500;
+            var results = new List<Performer>();
+            for (var i = 0; i < foreignIds.Count; i += chunkSize)
+            {
+                var chunk = foreignIds.Skip(i).Take(chunkSize).ToList();
+                results.AddRange(_performerRepo.FindByForeignIds(chunk));
+            }
+
+            return results;
         }
 
         public List<Performer> SearchPerformers(string query)
