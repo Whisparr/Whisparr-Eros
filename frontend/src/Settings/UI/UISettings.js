@@ -6,6 +6,7 @@ import Form from 'Components/Form/Form';
 import FormGroup from 'Components/Form/FormGroup';
 import FormInputGroup from 'Components/Form/FormInputGroup';
 import FormLabel from 'Components/Form/FormLabel';
+import SpinnerButton from 'Components/Link/SpinnerButton';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import PageContent from 'Components/Page/PageContent';
 import PageContentBody from 'Components/Page/PageContentBody';
@@ -75,6 +76,7 @@ class UISettings extends Component {
       onInputChange,
       onSavePress,
       languages,
+      isDeleting,
       ...otherProps
     } = this.props;
 
@@ -82,6 +84,28 @@ class UISettings extends Component {
       .map((theme) => ({ key: theme, value: titleCase(theme) }));
 
     const uiLanguages = languages.filter((item) => item.value !== 'Original');
+
+    const handleClearLocalStoragePress = () => {
+      let reload = false;
+      this.setState({
+        isDeleting: true
+      });
+
+      try {
+        // clear the PersistState
+        localStorage.clear();
+        reload = true;
+      } catch {
+        reload = false;
+      }
+
+      this.setState({
+        isDeleting: false
+      });
+      if (reload) {
+        window.location.reload();
+      }
+    };
 
     return (
       <PageContent title={translate('UiSettings')}>
@@ -251,6 +275,21 @@ class UISettings extends Component {
                     />
                   </FormGroup>
                 </FieldSet>
+
+                <FieldSet legend={translate('Browser')}>
+                  <FormGroup>
+                    <FormLabel>{translate('ClearLocalData')}</FormLabel>
+                    <SpinnerButton
+                      kind={kinds.DANGER}
+                      isSpinning={isDeleting}
+                      onPress={handleClearLocalStoragePress}
+                      title={translate('ClearLocalDataHelpText')}
+                    >
+                      {translate('Clear')}
+                    </SpinnerButton>
+                  </FormGroup>
+
+                </FieldSet>
               </Form> :
               null
           }
@@ -267,6 +306,7 @@ UISettings.propTypes = {
   settings: PropTypes.object.isRequired,
   hasSettings: PropTypes.bool.isRequired,
   languages: PropTypes.arrayOf(PropTypes.object).isRequired,
+  isDeleting: PropTypes.bool,
   onSavePress: PropTypes.func.isRequired,
   onInputChange: PropTypes.func.isRequired
 };

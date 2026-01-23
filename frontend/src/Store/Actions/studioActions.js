@@ -54,7 +54,7 @@ export const defaultState = {
 
   defaults: {
     rootFolderPath: '',
-    monitor: 'movieOnly',
+    monitored: true,
     qualityProfileId: 0,
     searchForMovie: true,
     tags: []
