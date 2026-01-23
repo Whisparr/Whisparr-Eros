@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import FormGroup from 'Components/Form/FormGroup';
 import FormInputGroup from 'Components/Form/FormInputGroup';
@@ -13,72 +12,62 @@ import { inputTypes, kinds, sizes } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import styles from './DeleteStudioModal.css';
 
-class DeleteStudioModalContent extends Component {
+interface DeleteStudioModalContentProps {
+  title: string;
+  deleteOptions: { addImportExclusion: boolean };
+  onDeleteOptionChange: (option: { name: string; value: boolean }) => void;
+  onDeletePress: (deleteFiles: boolean, addImportExclusion: boolean) => void;
+  onModalClose: () => void;
+}
 
-  //
-  // Lifecycle
+interface DeleteStudioModalContentState {
+  deleteFiles: boolean;
+  addImportExclusion: boolean;
+}
 
-  constructor(props, context) {
-    super(props, context);
+class DeleteStudioModalContent extends Component<
+  DeleteStudioModalContentProps,
+  DeleteStudioModalContentState
+> {
+  state: DeleteStudioModalContentState = {
+    deleteFiles: false,
+    addImportExclusion: false,
+  };
 
-    this.state = {
-      deleteFiles: false,
-      addImportExclusion: false
-    };
-  }
-
-  //
-  // Listeners
-
-  onDeleteFilesChange = ({ value }) => {
+  onDeleteFilesChange = ({ value }: { value: boolean }) => {
     this.setState({ deleteFiles: value });
   };
 
   onDeleteStudioConfirmed = () => {
     const deleteFiles = this.state.deleteFiles;
     const addImportExclusion = this.props.deleteOptions.addImportExclusion;
-
     this.setState({ deleteFiles: false });
     this.props.onDeletePress(deleteFiles, addImportExclusion);
   };
 
-  //
-  // Render
-
   render() {
-    const {
-      title,
-      deleteOptions,
-      onModalClose,
-      onDeleteOptionChange
-    } = this.props;
+    const { title, deleteOptions, onModalClose, onDeleteOptionChange } =
+      this.props;
 
     const deleteFiles = this.state.deleteFiles;
     const addImportExclusion = deleteOptions.addImportExclusion;
 
     return (
-      <ModalContent
-        onModalClose={onModalClose}
-      >
-        <ModalHeader>
-          {translate('DeleteHeader', [title])}
-        </ModalHeader>
+      <ModalContent onModalClose={onModalClose}>
+        <ModalHeader>{translate('DeleteHeader', { title })}</ModalHeader>
 
         <ModalBody>
           <FormGroup>
             <InfoLabel
-              name={''}
+              name=""
               size={sizes.LARGE}
               className={styles.warningText}
             >
-              {translate('DeleteStudioModalWarning', [title])}
+              {translate('DeleteStudioModalWarning', { title })}
             </InfoLabel>
           </FormGroup>
           <FormGroup>
-            <FormLabel>
-              {translate('AddImportListExclusion')}
-            </FormLabel>
-
+            <FormLabel>{translate('AddImportListExclusion')}</FormLabel>
             <FormInputGroup
               type={inputTypes.CHECK}
               name="addImportExclusion"
@@ -88,10 +77,10 @@ class DeleteStudioModalContent extends Component {
               onChange={onDeleteOptionChange}
             />
           </FormGroup>
-
           <FormGroup>
-            <FormLabel>{translate('DeleteFiles', [translate('All')])}</FormLabel>
-
+            <FormLabel>
+              {translate('DeleteFiles', { all: translate('All') })}
+            </FormLabel>
             <FormInputGroup
               type={inputTypes.CHECK}
               name="deleteFiles"
@@ -101,18 +90,10 @@ class DeleteStudioModalContent extends Component {
               onChange={this.onDeleteFilesChange}
             />
           </FormGroup>
-
         </ModalBody>
-
         <ModalFooter>
-          <Button onPress={onModalClose}>
-            {translate('Close')}
-          </Button>
-
-          <Button
-            kind={kinds.DANGER}
-            onPress={this.onDeleteStudioConfirmed}
-          >
+          <Button onPress={onModalClose}>{translate('Close')}</Button>
+          <Button kind={kinds.DANGER} onPress={this.onDeleteStudioConfirmed}>
             {translate('Delete')}
           </Button>
         </ModalFooter>
@@ -120,17 +101,5 @@ class DeleteStudioModalContent extends Component {
     );
   }
 }
-
-DeleteStudioModalContent.propTypes = {
-  title: PropTypes.string.isRequired,
-  deleteOptions: PropTypes.object.isRequired,
-  onDeleteOptionChange: PropTypes.func.isRequired,
-  onDeletePress: PropTypes.func.isRequired,
-  onModalClose: PropTypes.func.isRequired
-};
-
-DeleteStudioModalContent.defaultProps = {
-  statistics: {}
-};
 
 export default DeleteStudioModalContent;

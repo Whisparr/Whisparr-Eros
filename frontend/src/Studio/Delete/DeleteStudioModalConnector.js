@@ -34,7 +34,9 @@ class DeleteStudioModalConnector extends Component {
 DeleteStudioModalConnector.propTypes = {
   ...DeleteStudioModal.propTypes,
   onModalClose: PropTypes.func.isRequired,
-  clearPendingChanges: PropTypes.func.isRequired
+  clearPendingChanges: PropTypes.func.isRequired,
+  studioId: PropTypes.number.isRequired,
+  onDeleteMoviePress: PropTypes.func.isRequired
 };
 
 export default connect(undefined, mapDispatchToProps)(DeleteStudioModalConnector);

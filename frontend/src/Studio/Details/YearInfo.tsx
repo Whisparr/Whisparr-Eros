@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React from 'react';
 import DescriptionList from 'Components/DescriptionList/DescriptionList';
 import DescriptionListItem from 'Components/DescriptionList/DescriptionListItem';
@@ -6,14 +5,19 @@ import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
 import styles from './YearInfo.css';
 
-function YearInfo(props) {
-  const {
-    totalMovieCount,
-    monitoredMovieCount,
-    movieFileCount,
-    sizeOnDisk
-  } = props;
+interface YearInfoProps {
+  totalMovieCount: number;
+  monitoredMovieCount: number;
+  movieFileCount: number;
+  sizeOnDisk: number;
+}
 
+function YearInfo({
+  totalMovieCount,
+  monitoredMovieCount,
+  movieFileCount,
+  sizeOnDisk,
+}: YearInfoProps) {
   return (
     <DescriptionList>
       <DescriptionListItem
@@ -46,12 +50,5 @@ function YearInfo(props) {
     </DescriptionList>
   );
 }
-
-YearInfo.propTypes = {
-  totalMovieCount: PropTypes.number.isRequired,
-  monitoredMovieCount: PropTypes.number.isRequired,
-  movieFileCount: PropTypes.number.isRequired,
-  sizeOnDisk: PropTypes.number.isRequired
-};
 
 export default YearInfo;

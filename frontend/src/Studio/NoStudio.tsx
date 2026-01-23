@@ -1,13 +1,14 @@
-import PropTypes from 'prop-types';
 import React from 'react';
 import Button from 'Components/Link/Button';
 import { kinds } from 'Helpers/Props';
 import styles from 'Scene/NoScene.css';
 import translate from 'Utilities/String/translate';
 
-function NoStudio(props) {
-  const { totalItems } = props;
+export interface NoStudioProps {
+  totalItems: number;
+}
 
+function NoStudio({ totalItems }: NoStudioProps) {
   if (totalItems > 0) {
     return (
       <div>
@@ -20,33 +21,21 @@ function NoStudio(props) {
 
   return (
     <div>
-      <div className={styles.message}>
-        {translate('NoStudiosExist')}
-      </div>
+      <div className={styles.message}>{translate('NoStudiosExist')}</div>
 
       <div className={styles.buttonContainer}>
-        <Button
-          to="/add/import/scenes"
-          kind={kinds.PRIMARY}
-        >
+        <Button to="/add/import/scenes" kind={kinds.PRIMARY}>
           {translate('ImportExistingScenes')}
         </Button>
       </div>
 
       <div className={styles.buttonContainer}>
-        <Button
-          to="/add/new/studio"
-          kind={kinds.PRIMARY}
-        >
+        <Button to="/add/new/studio" kind={kinds.PRIMARY}>
           {translate('AddNewStudio')}
         </Button>
       </div>
     </div>
   );
 }
-
-NoStudio.propTypes = {
-  totalItems: PropTypes.number.isRequired
-};
 
 export default NoStudio;
