@@ -66,7 +66,7 @@ class AddNewMovieModalContentConnector extends Component {
     this.props.addMovie({
       foreignId,
       rootFolderPath: rootFolderPath.value,
-      monitored: monitored.value,
+      monitored: monitored.value === true,
       qualityProfileId: qualityProfileId.value,
       searchForMovie: searchForMovie.value,
       tags: tags.value
@@ -90,7 +90,7 @@ class AddNewMovieModalContentConnector extends Component {
 AddNewMovieModalContentConnector.propTypes = {
   foreignId: PropTypes.string.isRequired,
   rootFolderPath: PropTypes.object,
-  monitored: PropTypes.bool.isRequired,
+  monitored: PropTypes.object,
   qualityProfileId: PropTypes.object,
   searchForMovie: PropTypes.object.isRequired,
   tags: PropTypes.object.isRequired,

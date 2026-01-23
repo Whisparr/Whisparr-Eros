@@ -68,8 +68,8 @@ class AddNewPerformerModalContentConnector extends Component {
     this.props.addPerformer({
       foreignId,
       rootFolderPath: rootFolderPath.value,
-      monitored: monitored.value,
-      moviesMonitored: moviesMonitored.value,
+      monitored: monitored.value === true,
+      moviesMonitored: moviesMonitored.value === true,
       qualityProfileId: qualityProfileId.value,
       searchForMovie: searchForMovie.value,
       tags: tags.value
@@ -93,8 +93,8 @@ class AddNewPerformerModalContentConnector extends Component {
 AddNewPerformerModalContentConnector.propTypes = {
   foreignId: PropTypes.string.isRequired,
   rootFolderPath: PropTypes.object,
-  monitored: PropTypes.bool.isRequired,
-  moviesMonitored: PropTypes.bool.isRequired,
+  monitored: PropTypes.object,
+  moviesMonitored: PropTypes.object,
   qualityProfileId: PropTypes.object,
   searchForMovie: PropTypes.object.isRequired,
   tags: PropTypes.object.isRequired,
