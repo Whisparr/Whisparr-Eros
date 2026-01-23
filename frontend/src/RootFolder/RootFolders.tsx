@@ -23,11 +23,6 @@ const rootFolderColumns: Column[] = [
     isVisible: true,
   },
   {
-    name: 'unmappedFolders',
-    label: () => translate('UnmappedFolders'),
-    isVisible: true,
-  },
-  {
     name: 'actions',
     label: '',
     isVisible: true,
@@ -66,7 +61,6 @@ function RootFolders() {
               path={rootFolder.path}
               accessible={rootFolder.accessible}
               freeSpace={rootFolder.freeSpace}
-              unmappedFolders={rootFolder.unmappedFolders}
             />
           );
         })}
