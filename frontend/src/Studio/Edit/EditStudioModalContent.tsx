@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Form from 'Components/Form/Form';
 import FormGroup from 'Components/Form/FormGroup';
@@ -11,25 +10,42 @@ import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { inputTypes } from 'Helpers/Props';
+import type { Image } from 'Movie/Movie';
 import StudioLogo from 'Studio/StudioLogo';
 import translate from 'Utilities/String/translate';
 import styles from './EditStudioModalContent.css';
 
-class EditStudioModalContent extends Component {
+interface StudioEditItem {
+  monitored: object;
+  moviesMonitored: object;
+  afterDate: object;
+  qualityProfileId: object;
+  rootFolderPath: object;
+  tags: object;
+  searchTitle: object;
+  searchOnAdd: object;
+  // Add more fields as needed for type safety
+}
 
-  //
-  // Listeners
+interface EditStudioModalContentProps {
+  studioId: number;
+  title: string;
+  overview?: string;
+  images: Image[];
+  item: StudioEditItem;
+  isSaving: boolean;
+  isPathChanging: boolean;
+  isSmallScreen: boolean;
+  onInputChange: (e: unknown) => void;
+  onSavePress: (arg: boolean) => void;
+  onModalClose: () => void;
+  [key: string]: unknown;
+}
 
+class EditStudioModalContent extends Component<EditStudioModalContentProps> {
   onSavePress = () => {
-    const {
-      onSavePress
-    } = this.props;
-
-    onSavePress(false);
+    this.props.onSavePress(false);
   };
-
-  //
-  // Render
 
   render() {
     const {
@@ -49,12 +65,17 @@ class EditStudioModalContent extends Component {
       moviesMonitored,
       afterDate,
       qualityProfileId,
-      // Id,
       rootFolderPath,
       tags,
       searchTitle,
-      searchOnAdd
+      searchOnAdd,
     } = item;
+
+    // Helper to safely get .value from item fields
+    const getValue = (field: unknown, fallback: unknown) =>
+      field && typeof field === 'object' && 'value' in field
+        ? (field as { value: unknown }).value
+        : fallback;
 
     return (
       <ModalContent onModalClose={onModalClose}>
@@ -64,28 +85,22 @@ class EditStudioModalContent extends Component {
 
         <ModalBody>
           <div className={styles.container}>
-            {
-              !isSmallScreen &&
-                <div className={styles.poster}>
-                  <StudioLogo
-                    className={styles.poster}
-                    images={images}
-                    size={250}
-                  />
-                </div>
-            }
+            {!isSmallScreen && (
+              <div className={styles.poster}>
+                <StudioLogo
+                  className={styles.poster}
+                  images={images}
+                  size={250}
+                />
+              </div>
+            )}
 
             <div className={styles.info}>
-              <div className={styles.overview}>
-                {overview}
-              </div>
+              <div className={styles.overview}>{overview}</div>
 
-              <Form
-                {...otherProps}
-              >
+              <Form {...otherProps}>
                 <FormGroup>
                   <FormLabel>{translate('MonitoredScene')}</FormLabel>
-
                   <FormInputGroup
                     type={inputTypes.CHECK}
                     name="monitored"
@@ -94,10 +109,8 @@ class EditStudioModalContent extends Component {
                     onChange={onInputChange}
                   />
                 </FormGroup>
-
                 <FormGroup>
                   <FormLabel>{translate('MonitoredMovie')}</FormLabel>
-
                   <FormInputGroup
                     type={inputTypes.CHECK}
                     name="moviesMonitored"
@@ -106,73 +119,77 @@ class EditStudioModalContent extends Component {
                     onChange={onInputChange}
                   />
                 </FormGroup>
-
                 <FormGroup>
                   <FormLabel>{translate('MonitorAfter')}</FormLabel>
-
                   <FormInputGroup
                     type={inputTypes.DATE}
                     name="afterDate"
                     helpText={translate('MonitorAfterStudioHelpText')}
                     {...afterDate}
+                    value={
+                      getValue(afterDate, '') as string | number | string[]
+                    }
                     onChange={onInputChange}
                   />
                 </FormGroup>
-
                 <FormGroup>
                   <FormLabel>{translate('QualityProfile')}</FormLabel>
-
                   <FormInputGroup
                     type={inputTypes.QUALITY_PROFILE_SELECT}
                     helpText={translate('StudioQualityProfileHelpText')}
                     name="qualityProfileId"
                     {...qualityProfileId}
+                    value={getValue(qualityProfileId, '') as string | number}
                     onChange={onInputChange}
                   />
                 </FormGroup>
-
                 <FormGroup>
                   <FormLabel>{translate('RootFolder')}</FormLabel>
-
                   <FormInputGroup
                     type={inputTypes.ROOT_FOLDER_SELECT}
                     name="rootFolderPath"
                     {...rootFolderPath}
+                    value={getValue(rootFolderPath, '') as string | undefined}
                     includeMissingValue={false}
                     onChange={onInputChange}
                   />
                 </FormGroup>
-
                 <FormGroup>
                   <FormLabel>{translate('Tags')}</FormLabel>
-
                   <FormInputGroup
                     type={inputTypes.TAG}
                     name="tags"
                     onChange={onInputChange}
                     {...tags}
+                    value={getValue(tags, []) as string[]}
                   />
                 </FormGroup>
-
                 <FormGroup>
                   <FormLabel>{translate('SearchTitle')}</FormLabel>
-
                   <FormInputGroup
                     type={inputTypes.TEXT}
                     name="searchTitle"
                     onChange={onInputChange}
                     {...searchTitle}
+                    value={
+                      getValue(searchTitle, '') as string | number | string[]
+                    }
                   />
                 </FormGroup>
-
                 <FormGroup>
                   <FormLabel>{translate('SearchOnAdd')}</FormLabel>
-
                   <FormInputGroup
                     type={inputTypes.CHECK}
                     name="searchOnAdd"
                     helpText={translate('SearchOnAddStudioHelpText')}
                     {...searchOnAdd}
+                    value={
+                      getValue(searchOnAdd, false) as
+                        | string
+                        | boolean
+                        | null
+                        | undefined
+                    }
                     onChange={onInputChange}
                   />
                 </FormGroup>
@@ -180,18 +197,9 @@ class EditStudioModalContent extends Component {
             </div>
           </div>
         </ModalBody>
-
         <ModalFooter>
-          <Button
-            onPress={onModalClose}
-          >
-            {translate('Cancel')}
-          </Button>
-
-          <SpinnerButton
-            isSpinning={isSaving}
-            onPress={this.onSavePress}
-          >
+          <Button onPress={onModalClose}>{translate('Cancel')}</Button>
+          <SpinnerButton isSpinning={isSaving} onPress={this.onSavePress}>
             {translate('Save')}
           </SpinnerButton>
         </ModalFooter>
@@ -199,19 +207,5 @@ class EditStudioModalContent extends Component {
     );
   }
 }
-
-EditStudioModalContent.propTypes = {
-  studioId: PropTypes.number.isRequired,
-  title: PropTypes.string.isRequired,
-  overview: PropTypes.string,
-  images: PropTypes.arrayOf(PropTypes.object).isRequired,
-  item: PropTypes.object.isRequired,
-  isSaving: PropTypes.bool.isRequired,
-  isPathChanging: PropTypes.bool.isRequired,
-  isSmallScreen: PropTypes.bool.isRequired,
-  onInputChange: PropTypes.func.isRequired,
-  onSavePress: PropTypes.func.isRequired,
-  onModalClose: PropTypes.func.isRequired
-};
 
 export default EditStudioModalContent;

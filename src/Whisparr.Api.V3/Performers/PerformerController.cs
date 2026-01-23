@@ -66,14 +66,14 @@ namespace Whisparr.Api.V3.Performers
             {
                 SharedValidator.RuleFor(s => s.MoviesMonitored)
                     .Must((s, monitored) => !monitored || s.TmdbId > 0)
-                    .WithMessage("Requires a TMDB link to be added to the Performer within StashDB");
+                    .WithMessage("Requires a TMDB link to be added to the Performer on StashDB.org");
             }
 
             if (configService.WhisparrMovieMetadataSource == MovieMetadataType.TPDB)
             {
                 SharedValidator.RuleFor(s => s.MoviesMonitored)
                     .Must((s, monitored) => !monitored || !string.IsNullOrWhiteSpace(s.TpdbId))
-                    .WithMessage("Requires a TPDB link to be added to the Performer within StashDB");
+                    .WithMessage("Requires a TPDB link to be added to the Performer on StashDB.org");
             }
         }
 
