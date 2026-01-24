@@ -17,11 +17,10 @@ interface RootFolderRowProps {
   path: string;
   accessible: boolean;
   freeSpace?: number;
-  unmappedFolders: object[];
 }
 
 function RootFolderRow(props: RootFolderRowProps) {
-  const { id, path, accessible, freeSpace = 0, unmappedFolders = [] } = props;
+  const { id, path, accessible, freeSpace = 0 } = props;
 
   const isUnavailable = !accessible;
 
@@ -55,9 +54,7 @@ function RootFolderRow(props: RootFolderRowProps) {
             </Label>
           </div>
         ) : (
-          <Link className={styles.link} to={`/add/import/${id}`}>
-            {path}
-          </Link>
+          <Link className={styles.link}>{path}</Link>
         )}
       </TableRowCell>
 
@@ -65,10 +62,6 @@ function RootFolderRow(props: RootFolderRowProps) {
         {isUnavailable || isNaN(Number(freeSpace))
           ? '-'
           : formatBytes(freeSpace)}
-      </TableRowCell>
-
-      <TableRowCell className={styles.unmappedFolders}>
-        {isUnavailable ? '-' : unmappedFolders.length}
       </TableRowCell>
 
       <TableRowCell className={styles.actions}>
