@@ -392,19 +392,6 @@ class StudioDetails extends Component<StudioDetailsProps, StudioDetailsState> {
                   </Label>
 
                   <Label className={styles.detailsLabel} size={sizes.LARGE}>
-                    <Icon
-                      name={monitored ? icons.MONITORED : icons.UNMONITORED}
-                      size={17}
-                    />
-
-                    <span className={styles.qualityProfileName}>
-                      {monitored
-                        ? translate('Monitored')
-                        : translate('Unmonitored')}
-                    </span>
-                  </Label>
-
-                  <Label className={styles.detailsLabel} size={sizes.LARGE}>
                     <Icon name={icons.FILM} size={17} />
 
                     <span className={styles.movieCount}>
