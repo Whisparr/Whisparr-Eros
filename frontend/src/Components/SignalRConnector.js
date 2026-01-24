@@ -249,6 +249,19 @@ class SignalRConnector extends Component {
     }
   };
 
+  handleCollection = (body) => {
+    const action = body.action;
+    const section = 'movieCollections';
+
+    console.log(body);
+
+    if (action === 'updated') {
+      this.props.dispatchUpdateItem({ section, ...body.resource });
+    } else if (action === 'deleted') {
+      this.props.dispatchRemoveItem({ section, id: body.resource.id });
+    }
+  };
+
   handlePerformer = (body) => {
     const action = body.action;
     const section = 'performers';
