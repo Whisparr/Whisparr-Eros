@@ -222,7 +222,13 @@ export const defaultState = {
   filterBuilderProps: [
     {
       name: 'monitored',
-      label: () => translate('Monitored'),
+      label: () => translate('MonitoredScene'),
+      type: filterBuilderTypes.EXACT,
+      valueType: filterBuilderValueTypes.BOOL
+    },
+    {
+      name: 'moviesMonitored',
+      label: () => translate('MonitoredMovie'),
       type: filterBuilderTypes.EXACT,
       valueType: filterBuilderValueTypes.BOOL
     },
@@ -284,23 +290,6 @@ export const defaultState = {
       label: () => translate('RootFolder'),
       type: filterBuilderTypes.EXACT,
       valueType: filterBuilderValueTypes.FOLDER
-    },
-    {
-      name: 'monitor',
-      label: () => translate('Monitor'),
-      type: filterBuilderTypes.EXACT,
-      optionsSelector: function(items) {
-        const tagList = ['movieOnly', 'all', 'none'];
-
-        const tags = tagList.map((tag) => {
-          return {
-            id: tag,
-            name: camelCaseToString(tag)
-          };
-        });
-
-        return tags.sort(sortByProp('name'));
-      }
     },
     {
       name: 'qualityProfileId',

@@ -182,7 +182,13 @@ export const defaultState = {
   filterBuilderProps: [
     {
       name: 'monitored',
-      label: () => translate('Monitored'),
+      label: () => translate('MonitoredScene'),
+      type: filterBuilderTypes.EXACT,
+      valueType: filterBuilderValueTypes.BOOL
+    },
+    {
+      name: 'moviesMonitored',
+      label: () => translate('MonitoredMovie'),
       type: filterBuilderTypes.EXACT,
       valueType: filterBuilderValueTypes.BOOL
     },
