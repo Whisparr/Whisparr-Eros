@@ -1,4 +1,8 @@
-import PropTypes from 'prop-types';
+type HandleSelectedChangeOptions = {
+  id: number | string;
+  value: boolean | null;
+  shiftKey: boolean;
+};
 import React, { Component } from 'react';
 import IconButton from 'Components/Link/IconButton';
 import ConfirmModal from 'Components/Modal/ConfirmModal';
@@ -9,28 +13,59 @@ import { icons, kinds } from 'Helpers/Props';
 import InteractiveImportModal from 'InteractiveImport/InteractiveImportModal';
 import MovieQuality from 'Movie/MovieQuality';
 import FileDetailsModal from 'MovieFile/FileDetailsModal';
+import { QualityModel } from 'Quality/Quality';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
 import styles from './UnmappedFilesTableRow.css';
 
-class UnmappedFilesTableRow extends Component {
-  //
-  // Lifecycle
+interface UnmappedFilesTableRowProps {
+  id: number;
+  originalFilePath: string;
+  size: number;
+  quality: QualityModel;
+  dateAdded: string;
+  mediaInfo?: Record<string, unknown>;
+  columns: Array<{ name: string; isVisible: boolean }>;
+  isSelected?: boolean;
+  onSelectedChange: (args: {
+    id: number | string;
+    value: boolean;
+    shiftKey?: boolean;
+  }) => void;
+  deleteUnmappedFile: (id: number) => void;
+  [key: string]: unknown;
+}
 
-  constructor(props, context) {
+interface UnmappedFilesTableRowState {
+  isDetailsModalOpen: boolean;
+  isInteractiveImportModalOpen: boolean;
+  isConfirmDeleteModalOpen: boolean;
+  sortColumn: string | null;
+  sortDirection: 'asc' | 'desc';
+}
+
+class UnmappedFilesTableRow extends Component<
+  UnmappedFilesTableRowProps,
+  UnmappedFilesTableRowState
+> {
+  constructor(props: UnmappedFilesTableRowProps, context?: unknown) {
     super(props, context);
-
     this.state = {
       isDetailsModalOpen: false,
       isInteractiveImportModalOpen: false,
       isConfirmDeleteModalOpen: false,
       sortColumn: null,
-      sortDirection: 'asc' // or 'desc'
+      sortDirection: 'asc',
     };
   }
 
-  //
-  // Listeners
+  onSelectedChangeHandler = (options: HandleSelectedChangeOptions) => {
+    this.props.onSelectedChange({
+      id: options.id,
+      value: options.value ?? false,
+      shiftKey: options.shiftKey,
+    });
+  };
 
   onDetailsPress = () => {
     this.setState({ isDetailsModalOpen: true });
@@ -61,29 +96,6 @@ class UnmappedFilesTableRow extends Component {
     this.setState({ isConfirmDeleteModalOpen: false });
   };
 
-  onSortColumn = (column) => {
-    this.setState((prevState) => {
-      const isSameColumn = prevState.sortColumn === column;
-      const direction =
-        isSameColumn && prevState.sortDirection === 'asc' ? 'desc' : 'asc';
-      return {
-        sortColumn: column,
-        sortDirection: direction
-      };
-    });
-  };
-
-  renderSortIndicator = (column) => {
-    const { sortColumn, sortDirection } = this.state;
-    if (sortColumn !== column) {
-      return null;
-    }
-    return sortDirection === 'asc' ? ' ↑' : ' ↓';
-  };
-
-  //
-  // Render
-
   render() {
     const {
       id,
@@ -94,7 +106,6 @@ class UnmappedFilesTableRow extends Component {
       quality,
       columns,
       isSelected,
-      onSelectedChange
     } = this.props;
 
     const folder = originalFilePath.substring(
@@ -108,81 +119,75 @@ class UnmappedFilesTableRow extends Component {
     const {
       isInteractiveImportModalOpen,
       isDetailsModalOpen,
-      isConfirmDeleteModalOpen
+      isConfirmDeleteModalOpen,
     } = this.state;
 
     return (
       <>
         {columns.map((column) => {
           const { name, isVisible } = column;
-
           if (!isVisible) {
             return null;
           }
-
+          // Type-safe dynamic CSS module access
+          const cellClass = (styles as unknown as Record<string, string>)[name];
           if (name === 'select') {
             return (
               <VirtualTableSelectCell
-                inputClassName={styles.checkInput}
-                id={id}
                 key={name}
+                inputClassName={
+                  (styles as unknown as Record<string, string>).checkInput
+                }
+                id={id}
                 isSelected={isSelected}
                 isDisabled={false}
-                onSelectedChange={onSelectedChange}
+                onSelectedChange={this.onSelectedChangeHandler}
               />
             );
           }
-
           if (name === 'path') {
-            console.log('originalFilePath:', originalFilePath);
             return (
               <VirtualTableRowCell
                 key={name}
-                className={styles[name]}
+                className={cellClass}
                 title={originalFilePath?.toString() ?? ''}
               >
                 {originalFilePath}
               </VirtualTableRowCell>
             );
           }
-
           if (name === 'size') {
             return (
-              <VirtualTableRowCell key={name} className={styles[name]}>
+              <VirtualTableRowCell key={name} className={cellClass}>
                 {formatBytes(size)}
               </VirtualTableRowCell>
             );
           }
-
           if (name === 'dateAdded') {
             return (
               <RelativeDateCell
                 key={name}
-                className={styles[name]}
+                className={cellClass}
                 date={dateAdded}
                 component={VirtualTableRowCell}
               />
             );
           }
-
           if (name === 'quality') {
             return (
-              <VirtualTableRowCell key={name} className={styles[name]}>
+              <VirtualTableRowCell key={name} className={cellClass}>
                 <MovieQuality quality={quality} />
               </VirtualTableRowCell>
             );
           }
-
           if (name === 'actions') {
             return (
-              <VirtualTableRowCell key={name} className={styles[name]}>
+              <VirtualTableRowCell key={name} className={cellClass}>
                 <IconButton name={icons.INFO} onPress={this.onDetailsPress} />
-
                 <IconButton
                   name={icons.INTERACTIVE}
                   onPress={this.onInteractiveImportPress}
                 />
-
                 <IconButton
                   name={icons.DELETE}
                   onPress={this.onDeleteFilePress}
@@ -190,7 +195,6 @@ class UnmappedFilesTableRow extends Component {
               </VirtualTableRowCell>
             );
           }
-
           return null;
         })}
 
@@ -207,17 +211,17 @@ class UnmappedFilesTableRow extends Component {
 
         <FileDetailsModal
           isOpen={isDetailsModalOpen}
-          onModalClose={this.onDetailsModalClose}
           mediaInfo={mediaInfo}
+          onModalClose={this.onDetailsModalClose}
         />
 
         <ConfirmModal
           isOpen={isConfirmDeleteModalOpen}
           kind={kinds.DANGER}
           title={translate('DeleteSelectedMovieFiles')}
-          message={translate('DeleteSelectedMovieFilesHelpText', [
-            originalFilePath
-          ])}
+          message={translate('DeleteSelectedMovieFilesHelpText', {
+            file: originalFilePath,
+          })}
           confirmLabel={translate('Delete')}
           onConfirm={this.onConfirmDelete}
           onCancel={this.onConfirmDeleteModalClose}
@@ -226,18 +230,5 @@ class UnmappedFilesTableRow extends Component {
     );
   }
 }
-
-UnmappedFilesTableRow.propTypes = {
-  id: PropTypes.number.isRequired,
-  originalFilePath: PropTypes.string.isRequired,
-  size: PropTypes.number.isRequired,
-  quality: PropTypes.object.isRequired,
-  dateAdded: PropTypes.string.isRequired,
-  mediaInfo: PropTypes.object,
-  columns: PropTypes.arrayOf(PropTypes.object).isRequired,
-  isSelected: PropTypes.bool,
-  onSelectedChange: PropTypes.func.isRequired,
-  deleteUnmappedFile: PropTypes.func.isRequired
-};
 
 export default UnmappedFilesTableRow;

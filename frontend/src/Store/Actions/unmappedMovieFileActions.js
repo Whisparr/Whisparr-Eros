@@ -79,7 +79,8 @@ export const defaultState = {
 export const persistState = [
   'unmappedMovieFiles.columns',
   'unmappedMovieFiles.sortKey',
-  'unmappedMovieFiles.sortDirection'
+  'unmappedMovieFiles.sortDirection',
+  'unmappedMovieFiles.items'
 ];
 
 //
