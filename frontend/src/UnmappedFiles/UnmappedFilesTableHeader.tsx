@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React from 'react';
 import IconButton from 'Components/Link/IconButton';
 import TableOptionsModalWrapper from 'Components/Table/TableOptions/TableOptionsModalWrapper';
@@ -8,7 +7,23 @@ import VirtualTableSelectAllHeaderCell from 'Components/Table/VirtualTableSelect
 import { icons } from 'Helpers/Props';
 import styles from './UnmappedFilesTableHeader.css';
 
-function UnmappedFilesTableHeader(props) {
+export interface UnmappedFilesTableHeaderProps {
+  columns: Array<{
+    name: string;
+    label?: string | (() => React.ReactNode);
+    isSortable?: boolean;
+    isVisible: boolean;
+  }>;
+  allSelected: boolean;
+  allUnselected: boolean;
+  onSelectAllChange: (value: { value: boolean }) => void;
+  onTableOptionChange: (payload: unknown) => void;
+  sortKey?: string;
+  sortDirection?: 'asc' | 'desc';
+  onSortColumnPress: (column: string) => void;
+}
+
+function UnmappedFilesTableHeader(props: UnmappedFilesTableHeaderProps) {
   const {
     columns,
     onTableOptionChange,
@@ -21,17 +36,8 @@ function UnmappedFilesTableHeader(props) {
     ...otherProps
   } = props;
 
-  const renderSortIndicator = (columnName) => {
-    if (sortKey !== columnName) {
-      return null;
-    }
-    console.log(
-      'Checking sort indicator for:',
-      columnName,
-      'Current sortKey:',
-      sortKey
-    );
-
+  const renderSortIndicator = (columnName: string) => {
+    if (sortKey !== columnName) return null;
     return sortDirection === 'asc' ? ' ↑' : ' ↓';
   };
 
@@ -39,11 +45,7 @@ function UnmappedFilesTableHeader(props) {
     <VirtualTableHeader>
       {columns.map((column) => {
         const { name, label, isSortable, isVisible } = column;
-
-        if (!isVisible) {
-          return null;
-        }
-
+        if (!isVisible) return null;
         if (name === 'select') {
           return (
             <VirtualTableSelectAllHeaderCell
@@ -54,12 +56,11 @@ function UnmappedFilesTableHeader(props) {
             />
           );
         }
-
         if (name === 'actions') {
           return (
             <VirtualTableHeaderCell
               key={name}
-              className={styles[name]}
+              className={(styles as unknown as Record<string, string>)[name]}
               name={name}
               isSortable={false}
               {...otherProps}
@@ -73,34 +74,30 @@ function UnmappedFilesTableHeader(props) {
             </VirtualTableHeaderCell>
           );
         }
-
         return (
           <VirtualTableHeaderCell
             key={name}
-            className={styles[name]}
+            className={(styles as unknown as Record<string, string>)[name]}
             name={name}
-            isSortable={true}
-            onClick={isSortable ? () => onSortColumnPress(name) : undefined}
+            isSortable={!!isSortable}
             {...otherProps}
           >
-            {typeof label === 'function' ? label() : label}
-            {isSortable && renderSortIndicator(name)}
+            <span
+              {...(isSortable
+                ? {
+                    onClick: () => onSortColumnPress(name),
+                    style: { cursor: 'pointer' },
+                  }
+                : {})}
+            >
+              {typeof label === 'function' ? label() : label}
+              {isSortable && renderSortIndicator(name)}
+            </span>
           </VirtualTableHeaderCell>
         );
       })}
     </VirtualTableHeader>
   );
 }
-
-UnmappedFilesTableHeader.propTypes = {
-  columns: PropTypes.arrayOf(PropTypes.object).isRequired,
-  allSelected: PropTypes.bool.isRequired,
-  allUnselected: PropTypes.bool.isRequired,
-  onSelectAllChange: PropTypes.func.isRequired,
-  onTableOptionChange: PropTypes.func.isRequired,
-  sortKey: PropTypes.string,
-  sortDirection: PropTypes.oneOf(['asc', 'desc']),
-  onSortColumnPress: PropTypes.func.isRequired
-};
 
 export default UnmappedFilesTableHeader;

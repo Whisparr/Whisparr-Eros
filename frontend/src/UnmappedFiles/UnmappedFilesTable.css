@@ -19,6 +19,10 @@
   font-weight: 600;
 }
 
+.row {
+  display: flex;
+}
+
 .sceneImportStep {
   margin-left: 12px;
 }
