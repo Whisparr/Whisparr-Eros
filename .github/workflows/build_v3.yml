@@ -24,25 +24,18 @@ env:
   FRAMEWORK: net10.0
   RAW_BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
   WHISPARR_MAJOR_VERSION: 3
+  VERSION: 3.2.2
+  WHISPARR_ASSEMBLY_VERSION: 3.2.2.${{ github.run_number }}
 
 jobs:
   prepare:
     runs-on: ubuntu-latest
-    env:
-      FRAMEWORK: net10.0
-      RAW_BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
-      WHISPARR_MAJOR_VERSION: 3
     outputs:
       framework: ${{ steps.variables.outputs.framework }}
       major_version: ${{ steps.variables.outputs.major_version }}
       version: ${{ steps.variables.outputs.version }}
       branch: ${{ steps.variables.outputs.branch }}
     steps:
-      - name: Read version
-        id: get_version
-        run: echo "VERSION=$(cat VERSION)" >> $GITHUB_ENV
-      - name: Set assembly version
-        run: echo "WHISPARR_ASSEMBLY_VERSION=${VERSION}.${{ github.run_number }}" >> $GITHUB_ENV
       - name: Setup Environment Variables
         id: variables
         shell: bash
@@ -54,7 +47,7 @@ jobs:
           fi
           echo "framework=${{ env.FRAMEWORK }}" >> "$GITHUB_OUTPUT"
           echo "major_version=${{ env.WHISPARR_MAJOR_VERSION }}" >> "$GITHUB_OUTPUT"
-          echo "version=${VERSION}-${SEMVER_LABEL}.${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+          echo "version=${{ env.VERSION }}-${SEMVER_LABEL}.${{ github.run_number }}" >> "$GITHUB_OUTPUT"
           echo "branch=${RAW_BRANCH_NAME//\//-}" >> "$GITHUB_OUTPUT"
 
   backend:
@@ -95,8 +88,6 @@ jobs:
             os: ubuntu-latest
 
     runs-on: ${{ matrix.os }}
-    env:
-      VERSION: ${{ needs.prepare.outputs.version }}
     steps:
       - name: Check out
         uses: actions/checkout@v5
@@ -114,8 +105,6 @@ jobs:
 
   frontend:
     runs-on: ubuntu-latest
-    env:
-      VERSION: ${{ needs.prepare.outputs.version }}
     steps:
       - name: Check out
         uses: actions/checkout@v5
@@ -163,8 +152,6 @@ jobs:
             binary_artifact: build-win-x64
             filter: TestCategory!=ManualTest&TestCategory!=LINUX&TestCategory!=IntegrationTest&TestCategory!=AutomationTest
     runs-on: ${{ matrix.os }}
-    env:
-      VERSION: ${{ needs.prepare.outputs.version }}
     steps:
       - name: Check out
         uses: actions/checkout@v5
@@ -182,8 +169,6 @@ jobs:
   unit_test_postgres:
     needs: backend
     runs-on: ubuntu-latest
-    env:
-      VERSION: ${{ needs.prepare.outputs.version }}
     strategy:
       fail-fast: false
       matrix:
@@ -227,8 +212,6 @@ jobs:
             binary_artifact: build-win-x64
             binary_path: win-x64/${{ needs.prepare.outputs.framework }}/Whisparr
     runs-on: ${{ matrix.os }}
-    env:
-      VERSION: ${{ needs.prepare.outputs.version }}
     steps:
       - name: Check out
         uses: actions/checkout@v5
