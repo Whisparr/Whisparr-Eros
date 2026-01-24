@@ -1,19 +1,28 @@
 import _ from 'lodash';
-import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
 import * as commandNames from 'Commands/commandNames';
 import withCurrentPage from 'Components/withCurrentPage';
 import { executeCommand } from 'Store/Actions/commandActions';
-import { deleteMovieFile, deleteMovieFiles, fetchMovieFiles } from 'Store/Actions/movieFileActions';
+import {
+  deleteMovieFile,
+  deleteMovieFiles,
+  fetchMovieFiles,
+} from 'Store/Actions/movieFileActions';
 import { setUnmappedMovieFilesTableOption } from 'Store/Actions/unmappedMovieFileActions';
 import createClientSideCollectionSelector from 'Store/Selectors/createClientSideCollectionSelector';
 import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
 import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
-import { registerPagePopulator, unregisterPagePopulator } from 'Utilities/pagePopulator';
-import UnmappedFilesTable from './UnmappedFilesTable';
+import {
+  registerPagePopulator,
+  unregisterPagePopulator,
+} from 'Utilities/pagePopulator';
+import UnmappedFilesTable, {
+  UnmappedFilesTableProps,
+} from './UnmappedFilesTable';
 
+// TODO: Add proper types for state, dispatch, and props
 function createMapStateToProps() {
   return createSelector(
     createClientSideCollectionSelector('movieFiles'),
@@ -28,101 +37,65 @@ function createMapStateToProps() {
       isCleaningUnmappedFiles,
       dimensionsState
     ) => {
-      // movieFiles could pick up mapped entries via signalR so filter again here
-      const {
-        items,
-        ...otherProps
-      } = movieFiles;
-
+      const { items, ...otherProps } = movieFiles;
       const unmappedFiles = _.filter(items, { movieId: 0 });
-
       return {
         ...otherProps,
         items: unmappedFiles,
         columns: movieFileColumns.columns,
         isScanningFolders,
         isCleaningUnmappedFiles,
-        isSmallScreen: dimensionsState.isSmallScreen
+        isSmallScreen: dimensionsState.isSmallScreen,
       };
     }
   );
 }
 
-function createMapDispatchToProps(dispatch, props) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function createMapDispatchToProps(dispatch: any) {
   return {
-    onTableOptionChange(payload) {
+    onTableOptionChange(payload: unknown) {
       dispatch(setUnmappedMovieFilesTableOption(payload));
     },
-
     fetchUnmappedFiles() {
       dispatch(fetchMovieFiles({ unmapped: true }));
     },
-
-    deleteUnmappedFile(id) {
-      dispatch(deleteMovieFile({ id }));
+    deleteUnmappedFile(id: number) {
+      dispatch(deleteMovieFile(id));
     },
-
-    deleteUnmappedFiles(movieFileIds) {
-      dispatch(deleteMovieFiles({ movieFileIds }));
+    deleteUnmappedFiles(ids: number[]) {
+      dispatch(deleteMovieFiles(ids));
     },
-
     onAddScenesPress() {
-      dispatch(executeCommand({
-        name: commandNames.RESCAN_SCENES,
-        filter: 'matched'
-      }));
+      dispatch(executeCommand({ name: commandNames.RESCAN_SCENES }));
     },
-
     onCleanUnmappedFilesPress() {
-      dispatch(executeCommand({
-        name: commandNames.CLEAN_UNMAPPED_FILES
-      }));
-    }
+      dispatch(executeCommand({ name: commandNames.CLEAN_UNMAPPED_FILES }));
+    },
   };
 }
 
-class UnmappedFilesTableConnector extends Component {
-
-  //
-  // Lifecycle
-
+class UnmappedFilesTableConnector extends Component<UnmappedFilesTableProps> {
   componentDidMount() {
-    registerPagePopulator(this.repopulate, ['movieFileUpdated']);
-
-    this.repopulate();
+    if (
+      !this.props.isPopulated &&
+      (!this.props.items || this.props.items.length === 0)
+    ) {
+      this.props.fetchUnmappedFiles();
+    }
+    registerPagePopulator(this.props.fetchUnmappedFiles);
   }
-
   componentWillUnmount() {
-    unregisterPagePopulator(this.repopulate);
+    unregisterPagePopulator(this.props.fetchUnmappedFiles);
   }
-
-  //
-  // Control
-
-  repopulate = () => {
-    this.props.fetchUnmappedFiles();
-  };
-
-  //
-  // Render
-
   render() {
-    return (
-      <UnmappedFilesTable
-        {...this.props}
-      />
-    );
+    return <UnmappedFilesTable {...this.props} />;
   }
 }
-
-UnmappedFilesTableConnector.propTypes = {
-  isSmallScreen: PropTypes.bool.isRequired,
-  onTableOptionChange: PropTypes.func.isRequired,
-  fetchUnmappedFiles: PropTypes.func.isRequired,
-  deleteUnmappedFile: PropTypes.func.isRequired,
-  deleteUnmappedFiles: PropTypes.func.isRequired
-};
 
 export default withCurrentPage(
-  connect(createMapStateToProps, createMapDispatchToProps)(UnmappedFilesTableConnector)
+  connect(
+    createMapStateToProps,
+    createMapDispatchToProps
+  )(UnmappedFilesTableConnector)
 );

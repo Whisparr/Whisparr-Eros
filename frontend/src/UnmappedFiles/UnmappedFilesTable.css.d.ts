@@ -3,6 +3,7 @@
 interface CssExports {
   'folderStructure': string;
   'folderStructureHeading': string;
+  'row': string;
   'sceneImportHaveMore': string;
   'sceneImportNote': string;
   'sceneImportStep': string;
