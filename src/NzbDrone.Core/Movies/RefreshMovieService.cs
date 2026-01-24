@@ -16,6 +16,7 @@ using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.MetadataSource;
 using NzbDrone.Core.Movies.AlternativeTitles;
+using NzbDrone.Core.Movies.Collections;
 using NzbDrone.Core.Movies.Commands;
 using NzbDrone.Core.Movies.Credits;
 using NzbDrone.Core.Movies.Events;
@@ -29,6 +30,7 @@ namespace NzbDrone.Core.Movies
     {
         private readonly IProvideMovieInfo _movieInfo;
         private readonly IMovieService _movieService;
+        private readonly IAddMovieCollectionService _movieCollectionService;
         private readonly IMovieMetadataService _movieMetadataService;
         private readonly IRootFolderService _folderService;
         private readonly IDiskProvider _diskProvider;
@@ -48,6 +50,7 @@ namespace NzbDrone.Core.Movies
 
         public RefreshMovieService(IProvideMovieInfo movieInfo,
                                     IMovieService movieService,
+                                    IAddMovieCollectionService movieCollectionService,
                                     IMovieMetadataService movieMetadataService,
                                     IRootFolderService folderService,
                                     IDiskProvider diskProvider,
@@ -67,6 +70,7 @@ namespace NzbDrone.Core.Movies
         {
             _movieInfo = movieInfo;
             _movieService = movieService;
+            _movieCollectionService = movieCollectionService;
             _movieMetadataService = movieMetadataService;
             _folderService = folderService;
             _diskProvider = diskProvider;
@@ -172,6 +176,32 @@ namespace NzbDrone.Core.Movies
             else
             {
                 movieMetadata.StudioForeignId = null;
+            }
+
+            // add collection
+            if (movieInfo.CollectionTmdbId > 0)
+            {
+                var newCollection = _movieCollectionService.AddMovieCollection(new MovieCollection
+                {
+                    TmdbId = movieInfo.CollectionTmdbId,
+                    Title = movieInfo.CollectionTitle,
+                    Monitored = false,
+                    SearchOnAdd = movie.AddOptions?.SearchForMovie ?? false,
+                    QualityProfileId = movie.QualityProfileId,
+                    RootFolderPath = _folderService.GetBestRootFolderPath(movie.Path).GetCleanPath(),
+                    Tags = movie.Tags
+                });
+
+                if (newCollection != null)
+                {
+                    movieMetadata.CollectionTmdbId = newCollection.TmdbId;
+                    movieMetadata.CollectionTitle = newCollection.Title;
+                }
+            }
+            else
+            {
+                movieMetadata.CollectionTmdbId = 0;
+                movieMetadata.CollectionTitle = null;
             }
 
             movieMetadata.AlternativeTitles = _alternativeTitleService.UpdateTitles(movieInfo.AlternativeTitles, movieMetadata);

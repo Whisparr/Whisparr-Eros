@@ -78,6 +78,7 @@ namespace Whisparr.Api.V3.Movies
         public AddMovieOptions AddOptions { get; set; }
         public Ratings Ratings { get; set; }
         public MovieFileResource MovieFile { get; set; }
+        public MovieCollectionResource Collection { get; set; }
         public List<Credit> Credits { get; set; }
         public ItemType ItemType { get; set; }
         public DateTime? LastSearchTime { get; set; }
@@ -106,6 +107,8 @@ namespace Whisparr.Api.V3.Movies
             var size = model.MovieFile?.Size ?? 0;
 
             var movieFile = model.MovieFile?.ToResource(model, upgradableSpecification, formatCalculationService);
+
+            var collection = model.MovieMetadata.Value.CollectionTmdbId > 0 ? new MovieCollectionResource { Title = model.MovieMetadata.Value.CollectionTitle, TmdbId = model.MovieMetadata.Value.CollectionTmdbId } : null;
 
             return new MovieResource
             {
@@ -156,6 +159,7 @@ namespace Whisparr.Api.V3.Movies
                 Credits = model.MovieMetadata.Value.Credits,
                 ItemType = model.MovieMetadata.Value.ItemType,
                 LastSearchTime = model.LastSearchTime,
+                Collection = collection,
             };
         }
 

@@ -34,6 +34,7 @@ import {
   Ratings,
   Statistics as MovieStatistics,
 } from 'Movie/Movie';
+import MovieCollectionLabel from 'Movie/MovieCollectionLabel';
 import MovieGenres from 'Movie/MovieGenres';
 import MovieImage from 'Movie/MovieImage';
 import MovieInteractiveSearchModal from 'Movie/Search/MovieInteractiveSearchModal';
@@ -42,6 +43,7 @@ import ExtraFileTable from 'MovieFile/Extras/ExtraFileTable';
 import OrganizePreviewModal from 'Organize/OrganizePreviewModal';
 import QualityProfileName from 'Settings/Profiles/Quality/QualityProfileName';
 import fonts from 'Styles/Variables/fonts';
+import MovieCollection from 'typings/MovieCollection';
 import formatRuntime from 'Utilities/Date/formatRuntime';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
@@ -86,7 +88,7 @@ interface Props {
   studioTitle?: string;
   studioForeignId?: string;
   genres: string[];
-  collection?: Record<string, unknown>;
+  collection?: MovieCollection;
   isAvailable: boolean;
   releaseDate?: string;
   overview: string;
@@ -247,6 +249,7 @@ class MovieDetails extends Component<Props, State> {
       studioForeignId,
       credits,
       genres,
+      collection,
       overview,
       website,
       status,
@@ -525,6 +528,18 @@ class MovieDetails extends Component<Props, State> {
                       {formatBytes(sizeOnDisk)}
                     </span>
                   </InfoLabel>
+
+                  {collection ? (
+                    <InfoLabel
+                      className={styles.detailsInfoLabel}
+                      name={translate('Collection')}
+                      size={sizes.LARGE}
+                    >
+                      <div className={styles.collection}>
+                        <MovieCollectionLabel tmdbId={collection.tmdbId} />
+                      </div>
+                    </InfoLabel>
+                  ) : null}
 
                   {!!code && !!code.length && (
                     <InfoLabel
