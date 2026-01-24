@@ -37,15 +37,17 @@ namespace NzbDrone.Core.Organizer
             ruleBuilder.SetValidator(new NotEmptyValidator(null));
             ruleBuilder.SetValidator(new IllegalCharactersValidator());
 
-            return ruleBuilder.SetValidator(new RegularExpressionValidator(FileNameBuilder.SceneFolderRegex)).WithMessage("Must contain scene studio");
+            return ruleBuilder.SetValidator(new RegularExpressionValidator(FileNameBuilder.SceneFolderRegex)).WithMessage("Must contain scene studio token, ex. {Studio CleanTitle}");
         }
 
         public static IRuleBuilderOptions<T, string> ValidMainSceneFolderFormat<T>(this IRuleBuilder<T, string> ruleBuilder)
         {
             ruleBuilder.SetValidator(new NotEmptyValidator(null));
             ruleBuilder.SetValidator(new IllegalCharactersValidator());
-
-            return ruleBuilder.SetValidator(new RegularExpressionValidator(FileNameBuilder.MainFolderRegex)).WithMessage("Must start with a relative path inside root folder, ex. 'scenes/'");
+            ruleBuilder.SetValidator(new RegularExpressionValidator(FileNameBuilder.MainFolderRegex)).WithMessage("Must start with a relative path inside root folder, ex. 'scenes/'");
+            return ruleBuilder.Must(value =>
+                value is string s && FileNameBuilder.SceneTitleTokenRegex.IsMatch(s))
+                    .WithMessage("Must contain a Scene Title naming token, ex. {Scene CleanTitle}");
         }
 
         public static IRuleBuilderOptions<T, string> ValidSceneImportFolderFormat<T>(this IRuleBuilder<T, string> ruleBuilder)
@@ -61,7 +63,7 @@ namespace NzbDrone.Core.Organizer
             ruleBuilder.SetValidator(new NotEmptyValidator(null));
             ruleBuilder.SetValidator(new IllegalCharactersValidator());
 
-            return ruleBuilder.SetValidator(new RegularExpressionValidator(FileNameBuilder.SceneTitleRegex)).WithMessage("Must contain scene title");
+            return ruleBuilder.SetValidator(new RegularExpressionValidator(FileNameBuilder.SceneTitleRegex)).WithMessage("Must contain scene title, ex {Scene CleanTitle}");
         }
     }
 
