@@ -27,7 +27,7 @@ class MovieStudioLink extends PureComponent {
 }
 
 MovieStudioLink.propTypes = {
-  foreignId: PropTypes.string.isRequired,
+  foreignId: PropTypes.string,
   studioTitle: PropTypes.string.isRequired
 };
 
