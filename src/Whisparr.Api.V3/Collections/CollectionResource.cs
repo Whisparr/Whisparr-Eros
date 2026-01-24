@@ -13,17 +13,64 @@ namespace Whisparr.Api.V3.Collections
             Movies = new List<CollectionMovieResource>();
         }
 
+        /// <summary>
+        /// The collection's title.
+        /// </summary>
         public string Title { get; set; }
+
+        /// <summary>
+        /// Title used for sorting the collection.
+        /// </summary>
         public string SortTitle { get; set; }
+
+        /// <summary>
+        /// The TMDB identifier for the collection.
+        /// </summary>
         public int TmdbId { get; set; }
+
+        /// <summary>
+        /// A list of media cover images associated with the collection.
+        /// </summary>
         public List<MediaCover> Images { get; set; }
+
+        /// <summary>
+        /// A short overview or synopsis for the collection.
+        /// </summary>
         public string Overview { get; set; }
+
+        /// <summary>
+        /// Whether the collection is monitored for automatic actions (e.g., downloads).
+        /// </summary>
         public bool Monitored { get; set; }
+
+        /// <summary>
+        /// The configured root folder path where movies for this collection are stored.
+        /// </summary>
         public string RootFolderPath { get; set; }
+
+        /// <summary>
+        /// The quality profile id applied to movies in this collection.
+        /// </summary>
         public int QualityProfileId { get; set; }
+
+        /// <summary>
+        /// Whether new movies in the collection should be searched for automatically when added.
+        /// </summary>
         public bool SearchOnAdd { get; set; }
+
+        /// <summary>
+        /// Movies that belong to this collection.
+        /// </summary>
         public List<CollectionMovieResource> Movies { get; set; }
+
+        /// <summary>
+        /// Number of movies from the collection that are missing from the local library.
+        /// </summary>
         public int MissingMovies { get; set; }
+
+        /// <summary>
+        /// Set of tag ids associated with the collection.
+        /// </summary>
         public HashSet<int> Tags { get; set; }
     }
 

@@ -7,7 +7,6 @@ interface MovieCollection extends ModelBase {
   title: string;
   overview: string;
   monitored: boolean;
-  minimumAvailability: string;
   qualityProfileId: number;
   rootFolderPath: string;
   searchOnAdd: boolean;

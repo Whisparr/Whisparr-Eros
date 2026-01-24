@@ -34,6 +34,18 @@ namespace Whisparr.Api.V3.Collections
         private readonly INamingConfigService _namingService;
         private readonly IManageCommandQueue _commandQueueManager;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CollectionController"/> class.
+        /// </summary>
+        /// <param name="signalRBroadcaster">SignalR broadcaster used to push resource change notifications.</param>
+        /// <param name="collectionService">Service for movie collections.</param>
+        /// <param name="movieService">Service for movies.</param>
+        /// <param name="movieMetadataService">Service to retrieve movie metadata (external sources).</param>
+        /// <param name="importListExclusionService">Service used to check import list exclusions.</param>
+        /// <param name="configService">Application configuration service.</param>
+        /// <param name="fileNameBuilder">Builder for movie folder/file naming.</param>
+        /// <param name="namingService">Naming configuration service.</param>
+        /// <param name="commandQueueManager">Command queue manager used to enqueue background commands.</param>
         public CollectionController(IBroadcastSignalRMessage signalRBroadcaster,
                                     IMovieCollectionService collectionService,
                                     IMovieService movieService,
@@ -60,6 +72,12 @@ namespace Whisparr.Api.V3.Collections
             return MapToResource(_collectionService.GetCollection(id));
         }
 
+        /// <summary>
+        /// Retrieves collections. If <paramref name="tmdbId"/> is provided returns the single matching collection;
+        /// otherwise returns all collections.
+        /// </summary>
+        /// <param name="tmdbId">Optional TMDB collection id to filter by.</param>
+        /// <returns>List of <see cref="CollectionResource"/> matching the request.</returns>
         [HttpGet]
         [Produces("application/json")]
         public List<CollectionResource> GetCollections(int? tmdbId)
@@ -83,8 +101,14 @@ namespace Whisparr.Api.V3.Collections
             return collectionResources;
         }
 
+        /// <summary>
+        /// Updates a single collection.
+        /// </summary>
+        /// <param name="collectionResource">The collection resource containing updated values. The resource's Id is used to locate the existing collection.</param>
+        /// <returns>Accepted result with the updated collection Id.</returns>
         [RestPutById]
         [Consumes("application/json")]
+        [Produces("application/json")]
         public ActionResult<CollectionResource> UpdateCollection([FromBody] CollectionResource collectionResource)
         {
             var collection = _collectionService.GetCollection(collectionResource.Id);
@@ -96,8 +120,14 @@ namespace Whisparr.Api.V3.Collections
             return Accepted(updatedMovie.Id);
         }
 
+        /// <summary>
+        /// Bulk update for multiple collections. Only properties present in the request are applied.
+        /// </summary>
+        /// <param name="resource">The update resource containing collection ids and the properties to change.</param>
+        /// <returns>Accepted result containing the updated collection resources.</returns>
         [HttpPut]
         [Consumes("application/json")]
+        [Produces("application/json")]
         public ActionResult UpdateCollections([FromBody] CollectionUpdateResource resource)
         {
             var collectionsToUpdate = _collectionService.GetCollections(resource.CollectionIds).ToList();
@@ -216,18 +246,30 @@ namespace Whisparr.Api.V3.Collections
             return resource;
         }
 
+        /// <summary>
+        /// Handles a collection added event and broadcasts the created resource.
+        /// </summary>
+        /// <param name="message">Event message containing the added collection.</param>
         [NonAction]
         public void Handle(CollectionAddedEvent message)
         {
             BroadcastResourceChange(ModelAction.Created, MapToResource(message.Collection));
         }
 
+        /// <summary>
+        /// Handles a collection edited event and broadcasts the updated resource.
+        /// </summary>
+        /// <param name="message">Event message containing the edited collection.</param>
         [NonAction]
         public void Handle(CollectionEditedEvent message)
         {
             BroadcastResourceChange(ModelAction.Updated, MapToResource(message.Collection));
         }
 
+        /// <summary>
+        /// Handles a collection deleted event and broadcasts the deleted collection id.
+        /// </summary>
+        /// <param name="message">Event message containing the deleted collection.</param>
         [NonAction]
         public void Handle(CollectionDeletedEvent message)
         {

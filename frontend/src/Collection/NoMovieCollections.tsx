@@ -24,13 +24,7 @@ function NoMovieCollections({ totalItems }: NoMovieCollectionsProps) {
       <div className={styles.message}>{translate('NoCollections')}</div>
 
       <div className={styles.buttonContainer}>
-        <Button to="/add/import" kind={kinds.PRIMARY}>
-          {translate('ImportExistingMovies')}
-        </Button>
-      </div>
-
-      <div className={styles.buttonContainer}>
-        <Button to="/add/new" kind={kinds.PRIMARY}>
+        <Button to="/add/new/movie" kind={kinds.PRIMARY}>
           {translate('AddNewMovie')}
         </Button>
       </div>
