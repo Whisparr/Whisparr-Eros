@@ -1,12 +1,11 @@
 import ModelBase from 'App/ModelBase';
 import { Image } from 'Movie/Movie';
-import Performer from 'Performer/Performer';
 
 export type MovieCreditType = 'cast' | 'crew';
 
 interface MovieCredit extends ModelBase {
   foreignId: string;
-  performer: Performer;
+  performerId: number;
   personName: string;
   images: Image[];
   type: MovieCreditType;
@@ -14,6 +13,10 @@ interface MovieCredit extends ModelBase {
   job: string;
   character: string;
   order: number;
+  canMonitor: boolean;
+  monitored: boolean;
+  canMovieMonitor: boolean;
+  moviesMonitored: boolean;
 }
 
 export default MovieCredit;

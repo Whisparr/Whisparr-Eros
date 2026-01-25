@@ -83,7 +83,6 @@ interface Props {
   qualityProfileId: number;
   monitored: boolean;
   status: MovieStatus;
-  credits?: [];
   studio?: string;
   studioTitle?: string;
   studioForeignId?: string;
@@ -106,6 +105,7 @@ interface Props {
   isSidebarVisible: boolean;
   movieFilesError?: unknown;
   extraFilesError?: unknown;
+  movieCreditsError?: unknown;
   hasMovieFiles: boolean;
   onMonitorTogglePress: () => void;
   onRefreshPress: () => void;
@@ -247,7 +247,6 @@ class MovieDetails extends Component<Props, State> {
       monitored,
       studioTitle,
       studioForeignId,
-      credits,
       genres,
       collection,
       overview,
@@ -265,6 +264,7 @@ class MovieDetails extends Component<Props, State> {
       isSmallScreen,
       movieFilesError,
       extraFilesError,
+      movieCreditsError,
       hasMovieFiles,
       onMonitorTogglePress,
       onRefreshPress,
@@ -606,14 +606,18 @@ class MovieDetails extends Component<Props, State> {
               <ExtraFileTable movieId={id} />
             </FieldSet>
 
-            {credits != null && credits.length > 0 ? (
-              <FieldSet legend={translate('Cast')}>
-                <MovieCastPostersConnector
-                  movieId={id}
-                  isSmallScreen={isSmallScreen}
-                />
-              </FieldSet>
+            {!isFetching && movieCreditsError ? (
+              <Alert kind={kinds.DANGER}>
+                {translate('LoadingMovieCreditsFailed')}
+              </Alert>
             ) : null}
+
+            <FieldSet legend={translate('Cast')}>
+              <MovieCastPostersConnector
+                movieId={id}
+                isSmallScreen={isSmallScreen}
+              />
+            </FieldSet>
 
             <FieldSet legend={translate('Titles')}>
               <MovieTitlesTable movieId={id} />
