@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.IdentityModel.Tokens;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Datastore;
 using NzbDrone.Core.Messaging.Events;
@@ -32,13 +31,13 @@ namespace NzbDrone.Core.Movies.Credits
                 builder,
                 (credit, performer) =>
                 {
-                    // Temporary mapping until the data populates in credits
-                    if (credit.Images.Count == 0 && performer?.Images.Count > 0)
+                    // Use Performer Data over a Credit version if available
+                    if (performer?.Images.Count > 0)
                     {
                         credit.Images = performer.Images;
                     }
 
-                    if (credit.PersonName.IsNullOrEmpty() && performer?.Name.IsNotNullOrWhiteSpace() == true)
+                    if (performer?.Name.IsNotNullOrWhiteSpace() == true)
                     {
                         credit.PersonName = performer.Name;
                     }
@@ -68,6 +67,17 @@ namespace NzbDrone.Core.Movies.Credits
                 builder,
                 (credit, performer) =>
                 {
+                    // Use Performer Data over a Credit version if available
+                    if (performer?.Images.Count > 0)
+                    {
+                        credit.Images = performer.Images;
+                    }
+
+                    if (performer?.Name.IsNotNullOrWhiteSpace() == true)
+                    {
+                        credit.PersonName = performer.Name;
+                    }
+
                     var creditPerformer = new CreditPerformer();
 
                     creditPerformer.Id = performer?.Id ?? 0;
