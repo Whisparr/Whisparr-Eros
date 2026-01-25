@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.IdentityModel.Tokens;
+using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Datastore;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Movies.Performers;
@@ -23,15 +25,33 @@ namespace NzbDrone.Core.Movies.Credits
         public List<Credit> FindByMovieMetadataId(int movieMetadataId)
         {
             var builder = new SqlBuilder(_database.DatabaseType)
-               .Join<Credit, Performer>((m, p) => m.PerformerForeignId == p.ForeignId)
+               .LeftJoin<Credit, Performer>((m, p) => m.PerformerForeignId == p.ForeignId)
                .Where<Credit>(x => x.MovieMetadataId == movieMetadataId);
 
             return _database.QueryJoined<Credit, Performer>(
                 builder,
                 (credit, performer) =>
                 {
+                    // Temporary mapping until the data populates in credits
+                    if (credit.Images.Count == 0 && performer?.Images.Count > 0)
+                    {
+                        credit.Images = performer.Images;
+                    }
+
+                    if (credit.PersonName.IsNullOrEmpty() && performer?.Name.IsNotNullOrWhiteSpace() == true)
+                    {
+                        credit.PersonName = performer.Name;
+                    }
+
                     var creditPerformer = new CreditPerformer();
-                    creditPerformer.Name = performer.Name;
+
+                    creditPerformer.Id = performer?.Id ?? 0;
+                    creditPerformer.ForeignId = performer?.ForeignId;
+                    creditPerformer.TpdbId = performer?.TpdbId;
+                    creditPerformer.TmdbId = performer?.TmdbId ?? 0;
+                    creditPerformer.Monitored = performer?.Monitored == true;
+                    creditPerformer.MoviesMonitored = performer?.MoviesMonitored == true;
+
                     credit.Performer = creditPerformer;
 
                     return credit;
@@ -49,7 +69,14 @@ namespace NzbDrone.Core.Movies.Credits
                 (credit, performer) =>
                 {
                     var creditPerformer = new CreditPerformer();
-                    creditPerformer.Name = performer.Name;
+
+                    creditPerformer.Id = performer?.Id ?? 0;
+                    creditPerformer.ForeignId = performer?.ForeignId;
+                    creditPerformer.TpdbId = performer?.TpdbId;
+                    creditPerformer.TmdbId = performer?.TmdbId ?? 0;
+                    creditPerformer.Monitored = performer?.Monitored == true;
+                    creditPerformer.MoviesMonitored = performer?.MoviesMonitored == true;
+
                     credit.Performer = creditPerformer;
 
                     return credit;

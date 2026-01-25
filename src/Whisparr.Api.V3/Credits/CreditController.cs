@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Common.Extensions;
+using NzbDrone.Core.Configuration;
 using NzbDrone.Core.MediaCover;
 using NzbDrone.Core.Movies;
 using NzbDrone.Core.Movies.Credits;
@@ -16,17 +17,19 @@ namespace NzbDrone.Api.V3.Credits
         private readonly ICreditService _creditService;
         private readonly IMovieService _movieService;
         private readonly IMapCoversToLocal _coverMapper;
+        private readonly MovieMetadataType _whisparrMovieMetadataSource;
 
-        public CreditController(ICreditService creditService, IMovieService movieService, IMapCoversToLocal coverMapper)
+        public CreditController(ICreditService creditService, IMovieService movieService, IMapCoversToLocal coverMapper, IConfigService configService)
         {
             _creditService = creditService;
             _movieService = movieService;
             _coverMapper = coverMapper;
+            _whisparrMovieMetadataSource = configService.WhisparrMovieMetadataSource;
         }
 
         protected override CreditResource GetResourceById(int id)
         {
-            return _creditService.GetById(id).ToResource();
+            return _creditService.GetById(id).ToResource(_whisparrMovieMetadataSource);
         }
 
         [HttpGet]
@@ -56,7 +59,7 @@ namespace NzbDrone.Api.V3.Credits
         {
             foreach (var currentCredits in credits)
             {
-                var resource = currentCredits.ToResource();
+                var resource = currentCredits.ToResource(_whisparrMovieMetadataSource);
                 if (resource.Images.Any())
                 {
                     _coverMapper.ConvertToLocalUrls(0, resource.Images);
