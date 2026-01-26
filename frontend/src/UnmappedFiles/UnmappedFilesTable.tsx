@@ -11,6 +11,7 @@ import TableOptionsModalWrapper from 'Components/Table/TableOptions/TableOptions
 import VirtualTable from 'Components/Table/VirtualTable';
 import VirtualTableRow from 'Components/Table/VirtualTableRow';
 import { align, icons } from 'Helpers/Props';
+import MediaInfo from 'typings/MediaInfo';
 import hasDifferentItemsOrOrder from 'Utilities/Object/hasDifferentItemsOrOrder';
 import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
@@ -25,7 +26,7 @@ interface UnmappedFile extends ModelBase {
   size: number;
   quality?: { quality?: { name?: string } } | { name?: string } | string;
   dateAdded: string;
-  mediaInfo?: object;
+  mediaInfo: MediaInfo;
   [key: string]: unknown;
 }
 
@@ -268,7 +269,7 @@ class UnmappedFilesTable extends Component<
             }) => void
           }
           {...item}
-          mediaInfo={item.mediaInfo as Record<string, unknown> | undefined}
+          mediaInfo={item.mediaInfo}
           quality={item.quality as import('Quality/Quality').QualityModel}
         />
       </VirtualTableRow>

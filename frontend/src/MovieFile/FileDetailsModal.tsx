@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React from 'react';
 import Button from 'Components/Link/Button';
 import Modal from 'Components/Modal/Modal';
@@ -7,47 +6,34 @@ import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { sizes } from 'Helpers/Props';
+import MediaInfoType from 'typings/MediaInfo';
 import translate from 'Utilities/String/translate';
 import MediaInfo from './Editor/MediaInfo';
 
-function FileDetailsModal(props) {
-  const {
-    isOpen,
-    onModalClose,
-    mediaInfo
-  } = props;
+interface FileDetailsModalProps {
+  isOpen: boolean;
+  onModalClose: () => void;
+  mediaInfo: MediaInfoType;
+}
 
+function FileDetailsModal({
+  isOpen,
+  onModalClose,
+  mediaInfo,
+}: FileDetailsModalProps) {
   return (
-    <Modal
-      isOpen={isOpen}
-      onModalClose={onModalClose}
-      size={sizes.SMALL}
-    >
-      <ModalContent
-        onModalClose={onModalClose}
-      >
-        <ModalHeader>
-          {translate('Details')}
-        </ModalHeader>
-
+    <Modal size={sizes.SMALL} isOpen={isOpen} onModalClose={onModalClose}>
+      <ModalContent onModalClose={onModalClose}>
+        <ModalHeader>{translate('Details')}</ModalHeader>
         <ModalBody>
           <MediaInfo {...mediaInfo} />
         </ModalBody>
-
         <ModalFooter>
-          <Button onPress={onModalClose}>
-            {translate('Close')}
-          </Button>
+          <Button onPress={onModalClose}>{translate('Close')}</Button>
         </ModalFooter>
       </ModalContent>
     </Modal>
   );
 }
-
-FileDetailsModal.propTypes = {
-  isOpen: PropTypes.bool.isRequired,
-  onModalClose: PropTypes.func.isRequired,
-  mediaInfo: PropTypes.object
-};
 
 export default FileDetailsModal;
