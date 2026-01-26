@@ -19,7 +19,7 @@ updates:
         patterns:
           - "*"
   - package-ecosystem: "nuget"
-    directory: "/"
+    directory: "/src"
     schedule:
       interval: "daily"
     open-pull-requests-limit: 1
