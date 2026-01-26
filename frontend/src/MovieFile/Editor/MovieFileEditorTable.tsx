@@ -1,24 +1,16 @@
-import PropTypes from 'prop-types';
 import React from 'react';
 import MovieFileEditorTableContentConnector from './MovieFileEditorTableContentConnector';
 import styles from './MovieFileEditorTable.css';
 
-function MovieFileEditorTable(props) {
-  const {
-    movieId
-  } = props;
-
+export interface MovieFileEditorTableProps {
+  movieId: number;
+}
+function MovieFileEditorTable({ movieId }: MovieFileEditorTableProps) {
   return (
     <div className={styles.container}>
-      <MovieFileEditorTableContentConnector
-        movieId={movieId}
-      />
+      <MovieFileEditorTableContentConnector movieId={movieId} />
     </div>
   );
 }
-
-MovieFileEditorTable.propTypes = {
-  movieId: PropTypes.number.isRequired
-};
 
 export default MovieFileEditorTable;

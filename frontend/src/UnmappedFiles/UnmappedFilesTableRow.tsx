@@ -14,6 +14,7 @@ import InteractiveImportModal from 'InteractiveImport/InteractiveImportModal';
 import MovieQuality from 'Movie/MovieQuality';
 import FileDetailsModal from 'MovieFile/FileDetailsModal';
 import { QualityModel } from 'Quality/Quality';
+import MediaInfo from 'typings/MediaInfo';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
 import styles from './UnmappedFilesTableRow.css';
@@ -24,7 +25,7 @@ interface UnmappedFilesTableRowProps {
   size: number;
   quality: QualityModel;
   dateAdded: string;
-  mediaInfo?: Record<string, unknown>;
+  mediaInfo: MediaInfo;
   columns: Array<{ name: string; isVisible: boolean }>;
   isSelected?: boolean;
   onSelectedChange: (args: {
