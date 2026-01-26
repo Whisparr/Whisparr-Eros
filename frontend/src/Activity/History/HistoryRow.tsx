@@ -23,7 +23,7 @@ import HistoryDetailsModal from './Details/HistoryDetailsModal';
 import HistoryEventTypeCell from './HistoryEventTypeCell';
 import styles from './HistoryRow.css';
 
-interface HistoryRowProps {
+export interface HistoryRowProps {
   id: number;
   movieId: number;
   languages: Language[];
@@ -39,6 +39,7 @@ interface HistoryRowProps {
   isMarkingAsFailed?: boolean;
   markAsFailedError?: object;
   columns: Column[];
+  onMarkAsFailedPress?: () => void;
 }
 
 function HistoryRow(props: HistoryRowProps) {

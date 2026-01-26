@@ -35,7 +35,19 @@ import translate from 'Utilities/String/translate';
 import HistoryFilterModal from './HistoryFilterModal';
 import HistoryRow from './HistoryRow';
 
-function History() {
+// Add a properly formatted interface for handler props
+interface HistoryHandlerProps {
+  handleFirstPagePress?: () => void;
+  handlePreviousPagePress?: () => void;
+  handleNextPagePress?: () => void;
+  handleLastPagePress?: () => void;
+  handlePageSelect?: (page: number) => void;
+  handleSortPress?: (sortKey: string) => void;
+  handleFilterSelect?: (selectedFilterKey: string | number) => void;
+  handleTableOptionChange?: (payload: TableOptionsChangePayload) => void;
+}
+
+function History(props: Partial<HistoryHandlerProps>) {
   const requestCurrentPage = useCurrentPage();
 
   const {
@@ -65,16 +77,34 @@ function History() {
   const hasError = error || moviesError;
 
   const {
-    handleFirstPagePress,
-    handlePreviousPagePress,
-    handleNextPagePress,
-    handleLastPagePress,
-    handlePageSelect,
+    handleFirstPagePress: internalFirstPagePress,
+    handlePreviousPagePress: internalPrevPagePress,
+    handleNextPagePress: internalNextPagePress,
+    handleLastPagePress: internalLastPagePress,
+    handlePageSelect: internalPageSelect,
   } = usePaging({
     page,
     totalPages,
     gotoPage: gotoHistoryPage,
   });
+
+  const {
+    handleFirstPagePress: propFirstPage,
+    handlePreviousPagePress: propPrevPage,
+    handleNextPagePress: propNextPage,
+    handleLastPagePress: propLastPage,
+    handlePageSelect: propPageSelect,
+    handleSortPress: propSort,
+    handleFilterSelect: propFilter,
+    handleTableOptionChange: propTableOption,
+  } = props || {};
+
+  // Use prop handlers if provided, otherwise use internal
+  const firstPageHandler = propFirstPage || internalFirstPagePress;
+  const prevPageHandler = propPrevPage || internalPrevPagePress;
+  const nextPageHandler = propNextPage || internalNextPagePress;
+  const lastPageHandler = propLastPage || internalLastPagePress;
+  const pageSelectHandler = propPageSelect || internalPageSelect;
 
   const handleFilterSelect = useCallback(
     (selectedFilterKey: string | number) => {
@@ -100,6 +130,11 @@ function History() {
     },
     [dispatch]
   );
+
+  // Fallback handler assignments must come after their declarations
+  const sortHandler = propSort || handleSortPress;
+  const filterHandler = propFilter || handleFilterSelect;
+  const tableOptionHandler = propTableOption || handleTableOptionChange;
 
   useEffect(() => {
     if (requestCurrentPage) {
@@ -133,7 +168,7 @@ function History() {
             label={translate('Refresh')}
             iconName={icons.REFRESH}
             isSpinning={isFetching}
-            onPress={handleFirstPagePress}
+            onPress={firstPageHandler}
           />
         </PageToolbarSection>
 
@@ -141,7 +176,7 @@ function History() {
           <TableOptionsModalWrapper
             columns={columns}
             pageSize={pageSize}
-            onTableOptionChange={handleTableOptionChange}
+            onTableOptionChange={tableOptionHandler}
           >
             <PageToolbarButton
               label={translate('Options')}
@@ -155,7 +190,7 @@ function History() {
             filters={filters}
             customFilters={customFilters}
             filterModalConnectorComponent={HistoryFilterModal}
-            onFilterSelect={handleFilterSelect}
+            onFilterSelect={filterHandler}
           />
         </PageToolbarSection>
       </PageToolbar>
@@ -183,8 +218,8 @@ function History() {
               pageSize={pageSize}
               sortKey={sortKey}
               sortDirection={sortDirection}
-              onTableOptionChange={handleTableOptionChange}
-              onSortPress={handleSortPress}
+              onTableOptionChange={tableOptionHandler}
+              onSortPress={sortHandler}
             >
               <TableBody>
                 {items.map((item) => {
@@ -200,11 +235,11 @@ function History() {
               totalPages={totalPages}
               totalRecords={totalRecords}
               isFetching={isFetching}
-              onFirstPagePress={handleFirstPagePress}
-              onPreviousPagePress={handlePreviousPagePress}
-              onNextPagePress={handleNextPagePress}
-              onLastPagePress={handleLastPagePress}
-              onPageSelect={handlePageSelect}
+              onFirstPagePress={firstPageHandler}
+              onPreviousPagePress={prevPageHandler}
+              onNextPagePress={nextPageHandler}
+              onLastPagePress={lastPageHandler}
+              onPageSelect={pageSelectHandler}
             />
           </div>
         ) : null}
