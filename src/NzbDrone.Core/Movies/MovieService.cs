@@ -635,6 +635,13 @@ namespace NzbDrone.Core.Movies
                     movies = _movieRepository.GetByStudioForeignId(studioForeignId);
                     verifyDate = true;
                 }
+
+                // WhisparrAutoMatchOnDate enabled and only one match, return it
+                if (_configService.WhisparrAutoMatchOnDate && movies.Count == 1)
+                {
+                    _logger.Debug("{0}: WhisparrAutoMatchOnDate enabled, returning single movie match by studio and date.", methodName);
+                    return movies.First();
+                }
             }
             else
             {

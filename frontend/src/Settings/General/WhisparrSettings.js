@@ -121,11 +121,11 @@ function WhisparrSettings(props) {
           type={inputTypes.CHECK}
           name="whisparrAutoMatchOnDate"
           helpText={translate('WhisparrAutoMatchOnDateHelpText')}
+          helpTextWarning={translate('WhisparrAutoMatchOnDateHelpTextWarning')}
           onChange={onInputChange}
           {...whisparrAutoMatchOnDate}
         />
       </FormGroup>
-
       <FormGroup
         advancedSettings={advancedSettings}
         isAdvanced={true}
