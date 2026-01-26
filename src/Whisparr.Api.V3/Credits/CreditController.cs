@@ -11,6 +11,9 @@ using Whisparr.Http.REST;
 
 namespace NzbDrone.Api.V3.Credits
 {
+    /// <summary>
+    /// API controller for credit-related endpoints (cast and crew).
+    /// </summary>
     [V3ApiController]
     public class CreditController : RestController<CreditResource>
     {
@@ -19,6 +22,13 @@ namespace NzbDrone.Api.V3.Credits
         private readonly IMapCoversToLocal _coverMapper;
         private readonly MovieMetadataType _whisparrMovieMetadataSource;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CreditController"/> class.
+        /// </summary>
+        /// <param name="creditService">Service for accessing and managing credits.</param>
+        /// <param name="movieService">Service for accessing movie data.</param>
+        /// <param name="coverMapper">Mapper used to convert remote cover URLs to local URLs.</param>
+        /// <param name="configService">Configuration service providing application settings.</param>
         public CreditController(ICreditService creditService, IMovieService movieService, IMapCoversToLocal coverMapper, IConfigService configService)
         {
             _creditService = creditService;
@@ -27,11 +37,25 @@ namespace NzbDrone.Api.V3.Credits
             _whisparrMovieMetadataSource = configService.WhisparrMovieMetadataSource;
         }
 
+        /// <summary>
+        /// Retrieves a single credit resource by identifier.
+        /// </summary>
+        /// <param name="id">The credit identifier.</param>
+        /// <returns>The <see cref="CreditResource"/> for the specified id, or null if not found.</returns>
         protected override CreditResource GetResourceById(int id)
         {
             return _creditService.GetById(id).ToResource(_whisparrMovieMetadataSource);
         }
 
+        /// <summary>
+        /// Retrieves credits filtered by movie id, movie metadata id, or performer id.
+        /// If multiple filters are provided, precedence is: movieMetadataId, movieId, performerId.
+        /// If no filters are provided, all credits are returned.
+        /// </summary>
+        /// <param name="movieId">Optional internal movie id to filter credits by movie.</param>
+        /// <param name="movieMetadataId">Optional movie metadata id to filter credits by metadata record.</param>
+        /// <param name="performerId">Optional performer foreign id to filter credits by performer.</param>
+        /// <returns>A list of <see cref="CreditResource"/> matching the provided filter.</returns>
         [HttpGet]
         public List<CreditResource> GetCredits(int? movieId, int? movieMetadataId, string performerId)
         {
@@ -55,6 +79,11 @@ namespace NzbDrone.Api.V3.Credits
             return MapToResource(_creditService.GetAllCredits()).ToList();
         }
 
+        /// <summary>
+        /// Maps domain <see cref="Credit"/> instances to <see cref="CreditResource"/> and converts image URLs to local URLs when present.
+        /// </summary>
+        /// <param name="credits">Enumerable of <see cref="Credit"/> to map.</param>
+        /// <returns>Enumerable of mapped <see cref="CreditResource"/> instances.</returns>
         private IEnumerable<CreditResource> MapToResource(IEnumerable<Credit> credits)
         {
             foreach (var currentCredits in credits)
