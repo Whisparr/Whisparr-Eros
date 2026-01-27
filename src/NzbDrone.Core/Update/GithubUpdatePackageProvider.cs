@@ -185,6 +185,14 @@ namespace NzbDrone.Core.Update
                 var body = release?.body != null
                     ? Regex.Replace(release.body, @"^## What's Changed\s*\r?\n", "", RegexOptions.Multiline)
                     : string.Empty;
+
+                // Strip out lines that are not New: or Fix:
+                body = string.Join("\n",
+                    body.Split('\n')
+                        .Where(line => line.StartsWith("- New", StringComparison.OrdinalIgnoreCase) ||
+                                       line.StartsWith("- Fix", StringComparison.OrdinalIgnoreCase))
+                        .Select(line => line.Trim()));
+
                 var version = SemVersion.Parse(tag);
                 if (version == null)
                 {
