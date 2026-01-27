@@ -208,7 +208,7 @@ function Updates() {
                       {formatDate(update.releaseDate, shortDateFormat)}
                     </div>
 
-                    {update.branch === 'master' ? null : (
+                    {update.branch === 'eros' ? null : (
                       <Label className={styles.label}>{update.branch}</Label>
                     )}
 
@@ -241,35 +241,34 @@ function Updates() {
                     ) : null}
                   </div>
 
-                  {/* Render release notes or changes or fallback */}
+                  {/* Render release notes, or maintenance URL as fallback */}
                   {(() => {
-                    if (typeof update.changes === 'string' && update.changes) {
-                      // If changes is a markdown string, render as markdown
-                      return (
-                        <UpdateChanges
-                          title={translate('New')}
-                          changes={[update.changes]}
-                        />
+                    if (
+                      update.changes &&
+                      typeof update.changes !== 'string' &&
+                      Array.isArray((update.changes as { new?: unknown }).new)
+                    ) {
+                      const nonEmptyLines = (
+                        (update.changes as { new?: unknown }).new as string[]
+                      ).filter(
+                        (line: string) =>
+                          typeof line === 'string' && line.trim() !== ''
                       );
-                    }
-                    if (update.changes && typeof update.changes === 'object') {
-                      return (
-                        <div>
-                          <UpdateChanges
-                            title={translate('New')}
-                            changes={update.changes.new}
-                          />
-                          <UpdateChanges
-                            title={translate('Fixed')}
-                            changes={update.changes.fixed}
-                          />
-                        </div>
-                      );
+                      if (nonEmptyLines.length > 0) {
+                        return (
+                          <div>
+                            <UpdateChanges
+                              title={translate('New')}
+                              changes={nonEmptyLines}
+                            />
+                          </div>
+                        );
+                      }
                     }
                     return (
                       <InlineMarkdown
                         data={translate('MaintenanceReleaseWithLink', {
-                          url: 'https://github.com/Whisparr/Whisparr-Eros/commits/eros/',
+                          url: `https://github.com/Whisparr/Whisparr-Eros/commits/${update.branch}`,
                         })}
                       />
                     );
