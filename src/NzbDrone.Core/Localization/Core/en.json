@@ -1726,6 +1726,7 @@
   "Refresh": "Refresh",
   "RefreshAndScan": "Refresh & Scan",
   "RefreshCollections": "Refresh Collections",
+  "Refreshed": "Refreshed",
   "RefreshInformationAndScanDisk": "Refresh information and scan disk",
   "RefreshLists": "Refresh Lists",
   "RefreshMonitoredIntervalHelpText": "How often to refresh monitored downloads from download clients, minimum 1 minute",
