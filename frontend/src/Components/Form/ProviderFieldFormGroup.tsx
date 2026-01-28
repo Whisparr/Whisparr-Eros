@@ -55,6 +55,8 @@ function ProviderFieldFormGroup<T>({
         return 'captcha';
       case 'checkbox':
         return 'check';
+      case 'date':
+        return 'date';
       case 'device':
         return 'device';
       case 'keyValueList':
