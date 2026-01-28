@@ -43,7 +43,6 @@ namespace NzbDrone.Core.Test.OrganizerTests
                     .With(x => x.MovieMetadata.Value.ForeignId = "019abb52-0557-7c5f-83df-94b828851fd1")
                     .With(x => x.MovieMetadata.Value.StashId = "019abb52-0557-7c5f-83df-94b828851fd1")
                     .With(x => x.MovieMetadata.Value.ReleaseDate = "2025-11-25")
-                    .With(x => x.MovieMetadata.Value.Credits = credits)
                     .With(x => x.MovieMetadata.Value.StudioForeignId = studio.ForeignId)
                     .With(x => x.MovieMetadata.Value.StudioTitle = studio.Title)
                     .With(x => x.MovieMetadata.Value.ItemType = ItemType.Scene)
