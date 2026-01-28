@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import Card from 'Components/Card';
 import Label from 'Components/Label';
 import IconButton from 'Components/Link/IconButton';
@@ -7,8 +7,10 @@ import ConfirmModal from 'Components/Modal/ConfirmModal';
 import TagList from 'Components/TagList';
 import { icons, kinds } from 'Helpers/Props';
 import { deleteImportList } from 'Store/Actions/settingsActions';
+import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
 import useTags from 'Tags/useTags';
 import formatShortTimeSpan from 'Utilities/Date/formatShortTimeSpan';
+import getRelativeDate from 'Utilities/Date/getRelativeDate';
 import translate from 'Utilities/String/translate';
 import EditImportListModal from './EditImportListModal';
 import styles from './ImportList.css';
@@ -20,6 +22,7 @@ interface ImportListProps {
   enableAuto: boolean;
   tags: number[];
   minRefreshInterval: string;
+  lastInfoSync: string;
   onCloneImportListPress: (id: number) => void;
 }
 
@@ -30,10 +33,15 @@ function ImportList({
   enableAuto,
   tags,
   minRefreshInterval,
+  lastInfoSync,
   onCloneImportListPress,
 }: ImportListProps) {
   const dispatch = useDispatch();
   const tagList = useTags();
+
+  const { shortDateFormat, timeFormat } = useSelector(
+    createUISettingsSelector()
+  );
 
   const [isEditImportListModalOpen, setIsEditImportListModalOpen] =
     useState(false);
@@ -106,6 +114,20 @@ function ImportList({
           )}`}
         </Label>
       </div>
+
+      {lastInfoSync && (
+        <div className={styles.enabled}>
+          <Label kind={kinds.DEFAULT} title={translate('Refreshed')}>
+            {`${translate('Refreshed')}: ${getRelativeDate({
+              date: lastInfoSync,
+              shortDateFormat,
+              timeFormat,
+              showRelativeDates: true,
+              timeForToday: true,
+            })}`}
+          </Label>
+        </div>
+      )}
 
       <EditImportListModal
         id={id}

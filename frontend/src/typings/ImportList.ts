@@ -10,6 +10,7 @@ interface ImportList extends Provider {
   rootFolderPath: string;
   monitor: MovieMonitor;
   searchOnAdd: boolean;
+  lastInfoSync: string;
   listType: string;
   listOrder: number;
   minRefreshInterval: string;
