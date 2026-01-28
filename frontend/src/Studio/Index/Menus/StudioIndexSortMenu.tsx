@@ -20,7 +20,7 @@ function StudioIndexSortMenu(props: StudioIndexSortMenuProps) {
     <SortMenu isDisabled={isDisabled} alignMenu={align.RIGHT}>
       <MenuContent>
         <SortMenuItem
-          name="title"
+          name="sortTitle"
           sortKey={sortKey}
           sortDirection={sortDirection}
           onPress={onSortSelect}
