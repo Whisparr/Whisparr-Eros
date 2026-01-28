@@ -1282,6 +1282,11 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             {
                 movie = new Movie { MovieMetadata = MapMovie(result) };
 
+                foreach (var performer in result.Credits)
+                {
+                    movie.MovieMetadata.Value.SearchCredits.Add(MapCast(performer));
+                }
+
                 movie.MovieMetadata.Value.PerformerNames = result.Credits.Select(c => c.Performer.Name).ToList();
                 movie.MovieMetadata.Value.PerformerForeignIds = result.Credits.Select(c => c.Performer?.ForeignIds?.StashId).Where(id => id.IsNotNullOrWhiteSpace()).ToList();
             }

@@ -4,6 +4,7 @@ using Equ;
 using NzbDrone.Core.Languages;
 using NzbDrone.Core.MetadataSource.SkyHook.Resource;
 using NzbDrone.Core.Movies.AlternativeTitles;
+using NzbDrone.Core.Movies.Credits;
 
 namespace NzbDrone.Core.Movies
 {
@@ -12,6 +13,7 @@ namespace NzbDrone.Core.Movies
         public MovieMetadata()
         {
             AlternativeTitles = new List<AlternativeTitle>();
+            SearchCredits = new List<Credit>();
             Images = new List<MediaCover.MediaCover>();
             Genres = new List<string>();
             OriginalLanguage = Language.English;
@@ -56,6 +58,7 @@ namespace NzbDrone.Core.Movies
         public MetadataSource MetadataSource { get; set; }
         public List<string> PerformerForeignIds { get; set; }
         public List<string> PerformerNames { get; set; }
+        public List<Credit> SearchCredits { get; set; } // Only Used for searching Movie/Scene to provide cast info gender
 
         [MemberwiseEqualityIgnore]
         public bool IsRecentMovie

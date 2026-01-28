@@ -23,6 +23,25 @@ import translate from 'Utilities/String/translate';
 import AddNewMovieModal from './AddNewMovieModal';
 import styles from './AddNewMovieSearchResult.css';
 
+function genderToIcon(gender) {
+  switch (gender) {
+    case 'male':
+      return icons.PERFORMERMALE || icons.PERFORMER;
+    case 'female':
+      return icons.PERFORMERFEMALE || icons.PERFORMER;
+    case 'transMale':
+      return icons.PERFORMERTRANS || icons.PERFORMER;
+    case 'transFemale':
+      return icons.PERFORMERTRANS || icons.PERFORMER;
+    case 'interSex':
+      return icons.PERFORMERTRANS || icons.PERFORMER;
+    case 'nonBinary':
+      return icons.PERFORMERTRANS || icons.PERFORMER;
+    default:
+      return icons.PERFORMER;
+  }
+}
+
 function createMapStateToProps() {
   return createSelector(
     createUISettingsSelector(),
@@ -81,7 +100,7 @@ class AddNewMovieSearchResult extends Component {
       year,
       studioTitle,
       genres,
-      performerNames,
+      searchCredits,
       status,
       itemType,
       releaseDate,
@@ -272,12 +291,21 @@ class AddNewMovieSearchResult extends Component {
               }
 
               {
-                performerNames && performerNames.length > 0 ?
-                  performerNames.slice(0, 4).map((performerName, index) => {
+                searchCredits && searchCredits.length > 0 ?
+                  searchCredits.slice(0, 4).map((credit, index) => {
+                    const performer = (credit && (credit.performer || credit)) || {};
+                    const name = performer.name || credit.name || '';
+                    const gender = performer.gender;
+                    const iconName = genderToIcon(gender);
+
                     return (
-                      <Label key={performerName || index} size={sizes.LARGE}>
+                      <Label key={credit.id || name || index} size={sizes.LARGE}>
+                        <Icon
+                          name={iconName}
+                          size={13}
+                        />
                         <span className={styles.credits}>
-                          {performerName}
+                          {name}
                         </span>
                       </Label>
                     );
@@ -366,7 +394,7 @@ AddNewMovieSearchResult.propTypes = {
   year: PropTypes.number.isRequired,
   studioTitle: PropTypes.string,
   genres: PropTypes.arrayOf(PropTypes.string),
-  performerNames: PropTypes.arrayOf(PropTypes.string),
+  searchCredits: PropTypes.arrayOf(PropTypes.object),
   status: PropTypes.string.isRequired,
   releaseDate: PropTypes.string,
   itemType: PropTypes.string.isRequired,
@@ -398,7 +426,7 @@ AddNewMovieSearchResult.propTypes = {
 
 AddNewMovieSearchResult.defaultProps = {
   genres: [],
-  performerNames: [],
+  searchCredits: [],
   isExcluded: false
 };
 
