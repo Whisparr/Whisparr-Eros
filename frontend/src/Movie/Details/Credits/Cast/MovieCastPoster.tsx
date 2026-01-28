@@ -3,12 +3,11 @@ import React, { useCallback, useState } from 'react';
 import Link from 'Components/Link/Link';
 import MonitorToggleButton from 'Components/MonitorToggleButton';
 import MovieHeadshot from 'Movie/MovieHeadshot';
-import Performer from 'Performer/Performer';
+import MovieCredit from 'typings/MovieCredit';
 import styles from '../MovieCreditPoster.css';
 
 interface Props {
-  performer: Performer;
-  character?: string;
+  credit: MovieCredit;
   posterWidth: number;
   posterHeight: number;
   safeForWorkMode: boolean;
@@ -19,14 +18,23 @@ interface Props {
 }
 
 function MovieCastPoster({
-  performer,
-  character,
+  credit,
   posterWidth,
   posterHeight,
   safeForWorkMode,
   onTogglePerformerMonitored,
 }: Props) {
   const [hasPosterError, setHasPosterError] = useState(false);
+  const {
+    foreignId,
+    personName,
+    images,
+    character,
+    canMonitor,
+    monitored,
+    canMovieMonitor,
+    moviesMonitored,
+  } = credit;
 
   const onPosterLoad = useCallback(() => {
     setHasPosterError(false);
@@ -43,37 +51,37 @@ function MovieCastPoster({
   } as React.CSSProperties;
 
   const contentStyle = { width: `${posterWidth}px` } as React.CSSProperties;
-  const name = performer.fullName ?? performer.name;
-  const isPerformer = !!performer?.foreignId;
-  const isPerfotmerLoaded = !!performer?.fullName;
-  const link = isPerformer ? `/performer/${performer.foreignId}` : '';
+  const isPerformer = !!foreignId;
+  const link = isPerformer ? `/performer/${foreignId}` : '';
   const title = isPerformer
-    ? `${performer.fullName}`
+    ? `${personName}`
     : 'Create a Link on StashDB to Link this Performer';
 
   return (
     <div className={styles.content} style={contentStyle}>
       <div className={styles.posterContainer}>
-        {isPerfotmerLoaded && (
-          <div className={styles.controls}>
+        <div className={styles.controls}>
+          {canMonitor && (
             <MonitorToggleButton
               className={styles.action}
-              monitored={performer.monitored}
-              moviesMonitored={performer.moviesMonitored}
+              monitored={monitored}
+              moviesMonitored={moviesMonitored}
               type="sceneMonitor"
               size={20}
               onPress={onTogglePerformerMonitored}
             />
+          )}
+          {canMovieMonitor && (
             <MonitorToggleButton
               className={styles.movieAction}
-              monitored={performer.monitored}
-              moviesMonitored={performer.moviesMonitored}
+              monitored={monitored}
+              moviesMonitored={moviesMonitored}
               type="movieMonitor"
               size={20}
               onPress={onTogglePerformerMonitored}
             />
-          </div>
-        )}
+          )}
+        </div>
 
         <div style={elementStyle}>
           <Link title={title} className={styles.link} to={link}>
@@ -81,7 +89,7 @@ function MovieCastPoster({
               safeForWorkMode={safeForWorkMode}
               className={styles.poster}
               style={elementStyle}
-              images={performer.images}
+              images={images}
               size={250}
               lazy={false}
               overflow={true}
@@ -90,14 +98,14 @@ function MovieCastPoster({
             />
 
             {hasPosterError && (
-              <div className={styles.overlayTitle}>{name}</div>
+              <div className={styles.overlayTitle}>{personName}</div>
             )}
           </Link>
         </div>
       </div>
 
       <div className={classNames(styles.title, 'swiper-no-swiping')}>
-        {name}
+        {personName}
       </div>
       <div className={classNames(styles.title, 'swiper-no-swiping')}>
         {character}

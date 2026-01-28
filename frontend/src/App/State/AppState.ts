@@ -10,6 +10,7 @@ import InteractiveImportAppState from './InteractiveImportAppState';
 import MessagesAppState from './MessagesAppState';
 import MovieBlocklistAppState from './MovieBlocklistAppState';
 import MovieCollectionAppState from './MovieCollectionAppState';
+import MovieCreditAppState from './MovieCreditAppState';
 import MovieFilesAppState from './MovieFilesAppState';
 import MoviesAppState, { MovieIndexAppState } from './MoviesAppState';
 import MovieSearchAppState from './MovieSearchAppState';
@@ -99,6 +100,7 @@ interface AppState {
   interactiveImport: InteractiveImportAppState;
   movieBlocklist: MovieBlocklistAppState;
   movieCollections: MovieCollectionAppState;
+  movieCredits: MovieCreditAppState;
   movieFiles: MovieFilesAppState;
   movieHistory: MovieHistoryAppState;
   movieIndex: MovieIndexAppState;

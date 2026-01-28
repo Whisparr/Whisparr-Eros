@@ -54,6 +54,8 @@ namespace NzbDrone.Core.Movies
         public List<int> Recommendations { get; set; }
         public ItemType ItemType { get; set; }
         public MetadataSource MetadataSource { get; set; }
+        public List<string> PerformerForeignIds { get; set; }
+        public List<string> PerformerNames { get; set; }
         public List<Credit> Credits { get; set; }
 
         [MemberwiseEqualityIgnore]

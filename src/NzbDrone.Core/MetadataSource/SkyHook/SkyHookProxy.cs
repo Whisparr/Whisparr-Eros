@@ -184,6 +184,9 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
             var performers = httpResponse.Resource.Credits.Select(c => MapPerformer(c.Performer)).DistinctBy(p => p.ForeignId).ToList();
 
+            movie.PerformerForeignIds = performers.Select(p => p.ForeignId).ToList();
+            movie.PerformerNames = movie.Credits.Select(p => p.PersonName).ToList();
+
             return new Tuple<MovieMetadata, Studio, List<Performer>>(movie, MapStudio(httpResponse.Resource.Studio), performers);
         }
 
@@ -1302,10 +1305,14 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
         {
             var newActor = new Credit
             {
+                PersonName = arg.Performer.Name,
                 Character = arg.Character,
                 Order = arg.Order,
                 Type = CreditType.Cast,
+                Images = arg.Performer.Images.Select(MapImage).ToList(),
                 PerformerForeignId = arg.Performer.ForeignIds.StashId,
+
+                // To Remove once client uses the Credit Controller
                 Performer = new CreditPerformer
                 {
                     Name = arg.Performer.Name,
@@ -1464,10 +1471,14 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
         {
             var newActor = new Credit
             {
+                PersonName = arg.Performer.Name,
                 Character = arg.Character,
                 Order = arg.Order,
                 Type = CreditType.Cast,
+                Images = arg.Performer.Images.Select(MapImage).ToList(),
                 PerformerForeignId = arg.Performer.ForeignIds.StashId,
+
+                // To Remove once client uses the Credit Controller
                 Performer = new CreditPerformer
                 {
                     Name = arg.Performer.Name,
