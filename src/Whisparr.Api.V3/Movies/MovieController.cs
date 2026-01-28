@@ -338,7 +338,7 @@ namespace Whisparr.Api.V3.Movies
             if (_useCache)
             {
                 var moviesResources = GetMovieResources();
-                moviesList = moviesResources.Where(m => m.Credits.Where(c => c.Performer.ForeignId == performerForeignId).Any()).Map(x => x.Id).ToList();
+                moviesList = moviesResources.Where(m => m.PerformerForeignIds.Where(x => x == performerForeignId).Any()).Map(x => x.Id).ToList();
             }
             else
             {

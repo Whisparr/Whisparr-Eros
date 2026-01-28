@@ -309,7 +309,7 @@ namespace NzbDrone.Core.Movies
                     }
                 }
 
-                var performerForeignIds = newMovie.MovieMetadata.Value.Credits.Select(c => c.PerformerForeignId);
+                var performerForeignIds =  newMovie.MovieMetadata.Value.PerformerForeignIds;
                 var excludedItems = _importListExclusionService.GetAllByType(ImportExclusionType.Performer);
                 if (excludedItems != null)
                 {

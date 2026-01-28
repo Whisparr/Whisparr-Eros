@@ -4,7 +4,6 @@ using Equ;
 using NzbDrone.Core.Languages;
 using NzbDrone.Core.MetadataSource.SkyHook.Resource;
 using NzbDrone.Core.Movies.AlternativeTitles;
-using NzbDrone.Core.Movies.Credits;
 
 namespace NzbDrone.Core.Movies
 {
@@ -13,13 +12,14 @@ namespace NzbDrone.Core.Movies
         public MovieMetadata()
         {
             AlternativeTitles = new List<AlternativeTitle>();
-            Credits = new List<Credit>();
             Images = new List<MediaCover.MediaCover>();
             Genres = new List<string>();
             OriginalLanguage = Language.English;
             Recommendations = new List<int>();
             Ratings = new Ratings();
             TagIds = new List<string>();
+            PerformerNames = new List<string>();
+            PerformerForeignIds = new List<string>();
         }
 
         public string ForeignId { get; set; }
@@ -56,7 +56,6 @@ namespace NzbDrone.Core.Movies
         public MetadataSource MetadataSource { get; set; }
         public List<string> PerformerForeignIds { get; set; }
         public List<string> PerformerNames { get; set; }
-        public List<Credit> Credits { get; set; }
 
         [MemberwiseEqualityIgnore]
         public bool IsRecentMovie

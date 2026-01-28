@@ -8,7 +8,6 @@ using NzbDrone.Core.DecisionEngine.Specifications;
 using NzbDrone.Core.Languages;
 using NzbDrone.Core.MediaCover;
 using NzbDrone.Core.Movies;
-using NzbDrone.Core.Movies.Credits;
 using NzbDrone.Core.Parser;
 using Swashbuckle.AspNetCore.Annotations;
 using Whisparr.Api.V3.MovieFiles;
@@ -21,6 +20,8 @@ namespace Whisparr.Api.V3.Movies
     {
         public MovieResource()
         {
+            PerformerForeignIds = new List<string>();
+            PerformerNames = new List<string>();
             Genres = new List<string>();
             Monitored = true;
         }
@@ -81,7 +82,6 @@ namespace Whisparr.Api.V3.Movies
         public MovieCollectionResource Collection { get; set; }
         public List<string> PerformerForeignIds { get; set; }
         public List<string> PerformerNames { get; set; }
-        public List<Credit> Credits { get; set; }
         public ItemType ItemType { get; set; }
         public DateTime? LastSearchTime { get; set; }
         public MovieStatisticsResource Statistics { get; set; }
@@ -160,7 +160,6 @@ namespace Whisparr.Api.V3.Movies
                 StudioForeignId = model.MovieMetadata.Value.StudioForeignId,
                 PerformerForeignIds = model.MovieMetadata.Value.PerformerForeignIds,
                 PerformerNames = model.MovieMetadata.Value.PerformerNames,
-                Credits = model.MovieMetadata.Value.Credits,
                 ItemType = model.MovieMetadata.Value.ItemType,
                 LastSearchTime = model.LastSearchTime,
                 Collection = collection,

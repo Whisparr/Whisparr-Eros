@@ -13,6 +13,7 @@ using NzbDrone.Core.CustomFormats;
 using NzbDrone.Core.MediaFiles;
 using NzbDrone.Core.MediaFiles.MediaInfo;
 using NzbDrone.Core.Movies;
+using NzbDrone.Core.Movies.Credits;
 using NzbDrone.Core.Movies.Performers;
 using NzbDrone.Core.Movies.Studios;
 using NzbDrone.Core.Parser;
@@ -36,6 +37,7 @@ namespace NzbDrone.Core.Organizer
 
         private readonly INamingConfigService _namingConfigService;
         private readonly IQualityDefinitionService _qualityDefinitionService;
+        private readonly ICreditService _creditService;
         private readonly IStudioService _studioService;
         private readonly IUpdateMediaInfo _mediaInfoUpdater;
         private readonly ICustomFormatCalculationService _formatCalculator;
@@ -108,6 +110,7 @@ namespace NzbDrone.Core.Organizer
 
         public FileNameBuilder(INamingConfigService namingConfigService,
                                IQualityDefinitionService qualityDefinitionService,
+                               ICreditService creditService,
                                IStudioService studioService,
                                IUpdateMediaInfo mediaInfoUpdater,
                                ICustomFormatCalculationService formatCalculator,
@@ -115,6 +118,7 @@ namespace NzbDrone.Core.Organizer
         {
             _namingConfigService = namingConfigService;
             _qualityDefinitionService = qualityDefinitionService;
+            _creditService = creditService;
             _studioService = studioService;
             _mediaInfoUpdater = mediaInfoUpdater;
             _formatCalculator = formatCalculator;
@@ -398,9 +402,10 @@ namespace NzbDrone.Core.Organizer
                 tokenHandlers["{Release Date}"] = m => "Unknown";
             }
 
-            if (movie.MovieMetadata.Value.Credits != null)
+            var credits = _creditService.GetAllCreditsForMovieMetadata(movie.MovieMetadataId);
+
+            if (credits != null)
             {
-                var credits = movie.MovieMetadata.Value.Credits;
                 tokenHandlers["{Scene Performers}"] = m => credits.OrderBy(p => p.Performer.Name)
                     .Select(p => p.Performer.Name)
                     .Take(4)

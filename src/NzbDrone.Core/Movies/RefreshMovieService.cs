@@ -101,6 +101,7 @@ namespace NzbDrone.Core.Movies
             MovieMetadata movieInfo;
             Studio studioInfo;
             List<Performer> performerInfo;
+            List<Credit> creditInfo;
 
             try
             {
@@ -108,6 +109,7 @@ namespace NzbDrone.Core.Movies
                 movieInfo = tupleInfo.Item1;
                 studioInfo = tupleInfo.Item2;
                 performerInfo = tupleInfo.Item3;
+                creditInfo = tupleInfo.Item4;
             }
             catch (MovieNotFoundException)
             {
@@ -144,7 +146,6 @@ namespace NzbDrone.Core.Movies
             movieMetadata.Ratings = movieInfo.Ratings;
             movieMetadata.ItemType = movieInfo.ItemType;
             movieMetadata.MetadataSource = movieInfo.MetadataSource;
-            movieMetadata.Credits = movieInfo.Credits;
             movieMetadata.Genres = movieInfo.Genres;
             movieMetadata.Website = movieInfo.Website;
 
@@ -215,10 +216,15 @@ namespace NzbDrone.Core.Movies
                         p.Tags = movie.Tags;
                     });
 
-            _performerService.AddPerformers(performerInfo.Where(p => !string.IsNullOrWhiteSpace(p.ForeignId)).ToList(), true);
+            var performerList = performerInfo.Where(p => !string.IsNullOrWhiteSpace(p.ForeignId)).ToList();
+            _performerService.AddPerformers(performerList, true);
+
+            // Update the flattened performer lists on the movie metadata
+            performerList.ForEach(performer => movieMetadata.PerformerForeignIds.Add(performer.ForeignId));
+            creditInfo.ForEach(credit => movieMetadata.PerformerNames.Add(credit.PersonName));
 
             _movieMetadataService.Upsert(movieMetadata);
-            _creditService.UpdateCredits(movieInfo.Credits, movieMetadata);
+            _creditService.UpdateCredits(creditInfo, movieMetadata);
 
             movie.MovieMetadata = movieMetadata;
 
@@ -255,7 +261,7 @@ namespace NzbDrone.Core.Movies
             return movie;
         }
 
-        private Tuple<MovieMetadata, Studio, List<Performer>> GetMetadata(Movie movie)
+        private Tuple<MovieMetadata, Studio, List<Performer>, List<Credit>> GetMetadata(Movie movie)
         {
             if (movie.MovieMetadata.Value != null)
             {
