@@ -65,14 +65,14 @@ function Row({ index, style, data }: ListChildComponentProps<RowItemData>) {
   }, [movie?.id, onMovieSelect]);
 
   const joinedPerformers = useMemo(() => {
-    const credits = Array.isArray(movie?.credits) ? movie!.credits : [];
+    const credits = Array.isArray(movie?.performerNames)
+      ? movie!.performerNames
+      : [];
 
     // Map/guard for expected shape { performer: { name: string } }
     const names = credits
       .slice(0, 5)
-      .map((c) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const name = (c as any)?.performer?.name;
+      .map((name) => {
         return typeof name === 'string' ? name : '';
       })
       .filter((n) => n && n.length > 0)

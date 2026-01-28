@@ -63,7 +63,8 @@ interface Movie extends ModelBase {
   monitored: boolean;
   status: MovieStatus;
   title: string;
-  credits: Array<object>;
+  performerForeignIds: Array<string>;
+  performerNames: Array<string>;
   titleSlug: string;
   originalTitle: string;
   originalLanguage: Language;

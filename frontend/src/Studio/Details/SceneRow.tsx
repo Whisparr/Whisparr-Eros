@@ -18,12 +18,6 @@ import formatBytes from 'Utilities/Number/formatBytes';
 import formatCustomFormatScore from 'Utilities/Number/formatCustomFormatScore';
 import styles from './SceneRow.css';
 
-interface Credit {
-  performer: {
-    name: string;
-  };
-}
-
 interface Column {
   name: string;
   isVisible: boolean;
@@ -37,7 +31,7 @@ interface SceneRowProps {
   hasFile: boolean;
   movieFile?: MovieFile;
   monitored: boolean;
-  credits?: Credit[];
+  performerNames?: string[];
   joinedPerformers?: string;
   releaseDate?: string;
   runtime?: number;
@@ -89,7 +83,7 @@ class SceneRow extends Component<SceneRowProps, SceneRowState> {
       foreignId,
       movieFileId,
       monitored,
-      credits = [],
+      performerNames = [],
       runtime,
       isAvailable,
       hasFile,
@@ -134,10 +128,9 @@ class SceneRow extends Component<SceneRowProps, SceneRowState> {
           }
 
           if (name === 'credits') {
-            const joinedPerformers = credits
+            const joinedPerformers = performerNames
               .slice(0, 4)
-              .sort((a, b) => (a.performer.name > b.performer.name ? 1 : -1))
-              .map((credit) => credit.performer.name)
+              .sort((a, b) => (a > b ? 1 : -1))
               .join(', ');
             return (
               <TableRowCell key={name} className={styles.performers}>

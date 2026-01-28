@@ -77,7 +77,7 @@ function createMapStateToProps() {
     (state) => _.get(state, 'performerScenes'),
     (studioForeignId, isScenes, studio, scenes, performer, dimensions, performerScenes) => {
 
-      let items = scenes.items.filter((scene) => scene.studioForeignId === studioForeignId && scene.credits.some((credit) => credit.performer.foreignId === performer.foreignId));
+      let items = scenes.items.filter((scene) => scene.studioForeignId === studioForeignId && scene.performerForeignIds.some((performerForeignId) => performerForeignId === performer.foreignId));
       if (isScenes) {
         items = items.filter((scene) => scene.itemType === 'scene');
       } else {
