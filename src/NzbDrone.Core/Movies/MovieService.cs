@@ -12,6 +12,7 @@ using NzbDrone.Core.IndexerSearch.Definitions;
 using NzbDrone.Core.MediaFiles;
 using NzbDrone.Core.MediaFiles.Events;
 using NzbDrone.Core.Messaging.Events;
+using NzbDrone.Core.Movies.Credits;
 using NzbDrone.Core.Movies.Events;
 using NzbDrone.Core.Movies.Performers;
 using NzbDrone.Core.Movies.Studios;
@@ -75,6 +76,7 @@ namespace NzbDrone.Core.Movies
                                                IHandle<MovieFileDeletedEvent>
     {
         private readonly IMovieRepository _movieRepository;
+        private readonly ICreditService _creditService;
         private readonly IStudioService _studioService;
         private readonly IConfigService _configService;
         private readonly IEventAggregator _eventAggregator;
@@ -85,6 +87,7 @@ namespace NzbDrone.Core.Movies
         private readonly Logger _logger;
 
         public MovieService(IMovieRepository movieRepository,
+                            ICreditService creditService,
                             IStudioService studioService,
                             IEventAggregator eventAggregator,
                             IConfigService configService,
@@ -94,6 +97,7 @@ namespace NzbDrone.Core.Movies
                             Logger logger)
         {
             _movieRepository = movieRepository;
+            _creditService = creditService;
             _studioService = studioService;
             _eventAggregator = eventAggregator;
             _configService = configService;
@@ -753,10 +757,17 @@ namespace NzbDrone.Core.Movies
                     }
                 }
 
-                var cleanPerformers = movie.MovieMetadata.Value.Credits.Select(a => Parser.Parser.NormalizeEpisodeTitle(a.Performer.Name))
+                var credits = _creditService.GetAllCreditsForMovieMetadata(movie.MovieMetadata.Value.Id);
+
+                if (credits == null || !credits.Any())
+                {
+                    continue;
+                }
+
+                var cleanPerformers =  credits.Select(a => Parser.Parser.NormalizeEpisodeTitle(a.Performer.Name))
                                                                        .Where(x => x.IsNotNullOrWhiteSpace());
 
-                if (cleanPerformers.Empty())
+                if (cleanPerformers == null || cleanPerformers.Empty())
                 {
                     continue;
                 }
@@ -769,7 +780,7 @@ namespace NzbDrone.Core.Movies
                     continue;
                 }
 
-                var cleanCharacters = movie.MovieMetadata.Value.Credits.Select(a => Parser.Parser.NormalizeEpisodeTitle(a.Character))
+                var cleanCharacters = credits.Select(a => Parser.Parser.NormalizeEpisodeTitle(a.Character))
                                                                         .Where(x => x.IsNotNullOrWhiteSpace());
 
                 // If parsed title matches character, consider a match
@@ -780,7 +791,7 @@ namespace NzbDrone.Core.Movies
                     continue;
                 }
 
-                var cleanFemalePerformers = movie.MovieMetadata.Value.Credits.Where(a => a.Performer.Gender == Gender.Female)
+                var cleanFemalePerformers = credits.Where(a => a.Performer.Gender == Gender.Female)
                                                                              .Select(a => Parser.Parser.NormalizeEpisodeTitle(a.Performer.Name))
                                                                              .Where(x => x.IsNotNullOrWhiteSpace()).ToList();
 
@@ -792,7 +803,7 @@ namespace NzbDrone.Core.Movies
                     continue;
                 }
 
-                var cleanFemaleCharacters = movie.MovieMetadata.Value.Credits.Where(a => a.Performer.Gender == Gender.Female)
+                var cleanFemaleCharacters = credits.Where(a => a.Performer.Gender == Gender.Female)
                                                                              .Select(a => Parser.Parser.NormalizeEpisodeTitle(a.Character))
                                                                              .Where(x => x.IsNotNullOrWhiteSpace()).ToList();
 

@@ -22,6 +22,7 @@ namespace NzbDrone.Core.Test.MovieTests.MovieServiceTests
             // Correct constructor order: IMovieRepository, IStudioService, IEventAggregator, IConfigService, IBuildMoviePaths, IAutoTaggingService, ICacheManager, Logger
             _movieService = new MovieService(
                 _movieRepositoryMock.Object,
+                null, // ICreditsService
                 null, // IStudioService
                 null, // IEventAggregator
                 _configServiceMock.Object,

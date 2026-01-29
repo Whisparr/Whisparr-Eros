@@ -154,7 +154,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             return new HashSet<string>(response.Resource);
         }
 
-        public Tuple<MovieMetadata, Studio, List<Performer>> GetMovieInfo(int tmdbId)
+        public Tuple<MovieMetadata, Studio, List<Performer>, List<Credit>> GetMovieInfo(int tmdbId)
         {
             var httpRequest = _whisparrMetadata.Create()
                                              .SetSegment("route", "movie")
@@ -180,17 +180,17 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
             var movie = MapMovie(httpResponse.Resource);
 
-            movie.Credits.AddRange(httpResponse.Resource.Credits.Select(MapCast));
+            var credits = httpResponse.Resource.Credits.Select(MapCast).ToList();
 
             var performers = httpResponse.Resource.Credits.Select(c => MapPerformer(c.Performer)).DistinctBy(p => p.ForeignId).ToList();
 
             movie.PerformerForeignIds = performers.Select(p => p.ForeignId).ToList();
-            movie.PerformerNames = movie.Credits.Select(p => p.PersonName).ToList();
+            movie.PerformerNames = credits.Select(p => p.PersonName).ToList();
 
-            return new Tuple<MovieMetadata, Studio, List<Performer>>(movie, MapStudio(httpResponse.Resource.Studio), performers);
+            return new Tuple<MovieMetadata, Studio, List<Performer>, List<Credit>>(movie, MapStudio(httpResponse.Resource.Studio), performers, credits);
         }
 
-        public Tuple<MovieMetadata, Studio, List<Performer>> GetTpdbMovieInfo(string tpdbId)
+        public Tuple<MovieMetadata, Studio, List<Performer>, List<Credit>> GetTpdbMovieInfo(string tpdbId)
         {
             var httpRequest = _whisparrMetadata.Create()
                                              .SetSegment("route", "tpdb/movie")
@@ -216,14 +216,17 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
             var movie = MapMovie(httpResponse.Resource);
 
-            movie.Credits.AddRange(httpResponse.Resource.Credits.Select(MapCast));
+            var credits = httpResponse.Resource.Credits.Select(MapCast).ToList();
 
             var performers = httpResponse.Resource.Credits.Select(c => MapPerformer(c.Performer)).DistinctBy(p => p.ForeignId).ToList();
 
-            return new Tuple<MovieMetadata, Studio, List<Performer>>(movie, MapStudio(httpResponse.Resource.Studio), performers);
+            movie.PerformerForeignIds = performers.Select(p => p.ForeignId).ToList();
+            movie.PerformerNames = credits.Select(p => p.PersonName).ToList();
+
+            return new Tuple<MovieMetadata, Studio, List<Performer>, List<Credit>>(movie, MapStudio(httpResponse.Resource.Studio), performers, credits);
         }
 
-        public Tuple<MovieMetadata, Studio, List<Performer>> GetSceneInfo(string stashId)
+        public Tuple<MovieMetadata, Studio, List<Performer>, List<Credit>> GetSceneInfo(string stashId)
         {
             var httpRequest = _whisparrMetadata.Create()
                                              .SetSegment("route", "scene")
@@ -249,11 +252,14 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
             var movie = MapMovie(httpResponse.Resource);
 
-            movie.Credits.AddRange(httpResponse.Resource.Credits.Select(c => MapSceneCast(c, movie.ForeignId)));
+            var credits = httpResponse.Resource.Credits.Select(c => MapSceneCast(c, movie.ForeignId)).ToList();
 
             var performers = httpResponse.Resource.Credits.Select(c => MapPerformer(c.Performer)).DistinctBy(p => p.ForeignId).ToList();
 
-            return new Tuple<MovieMetadata, Studio, List<Performer>>(movie, MapStudio(httpResponse.Resource.Studio), performers);
+            movie.PerformerForeignIds = performers.Select(p => p.ForeignId).ToList();
+            movie.PerformerNames = credits.Select(p => p.PersonName).ToList();
+
+            return new Tuple<MovieMetadata, Studio, List<Performer>, List<Credit>>(movie, MapStudio(httpResponse.Resource.Studio), performers, credits);
         }
 
         public MovieCollection GetCollectionInfo(int tmdbId)
@@ -1278,8 +1284,11 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
                 foreach (var performer in result.Credits)
                 {
-                    movie.MovieMetadata.Value.Credits.Add(MapCast(performer));
+                    movie.MovieMetadata.Value.SearchCredits.Add(MapCast(performer));
                 }
+
+                movie.MovieMetadata.Value.PerformerNames = result.Credits.Select(c => c.Performer.Name).ToList();
+                movie.MovieMetadata.Value.PerformerForeignIds = result.Credits.Select(c => c.Performer?.ForeignIds?.StashId).Where(id => id.IsNotNullOrWhiteSpace()).ToList();
             }
 
             return movie;

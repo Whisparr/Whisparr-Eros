@@ -44,6 +44,10 @@ namespace NzbDrone.Core.Test.OrganizerTests.FileNameBuilderTests
                 new Credit { Character = null, Performer = new CreditPerformer { Name = "Manuel Ferrara", Gender = Gender.Male } }
             };
 
+            Mocker.GetMock<ICreditService>()
+                .Setup(s => s.GetAllCreditsForMovieMetadata(It.Is<int>(s => s.Equals(1))))
+                .Returns(credits);
+
             _movie = Builder<Movie>
                     .CreateNew()
                     .With(s => s.Title = "South Park")
@@ -56,7 +60,7 @@ namespace NzbDrone.Core.Test.OrganizerTests.FileNameBuilderTests
                     .With(x => x.MovieMetadata.Value.ForeignId = "019abb52-0557-7c5f-83df-94b828851fd1")
                     .With(x => x.MovieMetadata.Value.StashId = "019abb52-0557-7c5f-83df-94b828851fd1")
                     .With(x => x.MovieMetadata.Value.ReleaseDate = "2025-11-25")
-                    .With(x => x.MovieMetadata.Value.Credits = credits)
+                    .With(x => x.MovieMetadata.Value.Id = 1)
                     .With(x => x.MovieMetadata.Value.Studio = studio)
                     .With(x => x.MovieMetadata.Value.StudioTitle = studio.Title)
                     .With(x => x.MovieMetadata.Value.ItemType = ItemType.Scene)
@@ -69,7 +73,7 @@ namespace NzbDrone.Core.Test.OrganizerTests.FileNameBuilderTests
                     .With(x => x.MovieMetadata.Value.ForeignId = "019abb52-0557-7c5f-83df-94b828851fd1")
                     .With(x => x.MovieMetadata.Value.StashId = "019abb52-0557-7c5f-83df-94b828851fd1")
                     .With(x => x.MovieMetadata.Value.ReleaseDate = "2025-11-25")
-                    .With(x => x.MovieMetadata.Value.Credits = credits)
+                    .With(x => x.MovieMetadata.Value.Id = 1)
                     .With(x => x.MovieMetadata.Value.Studio = studio)
                     .With(x => x.MovieMetadata.Value.StudioTitle = studio.Title)
                     .With(x => x.MovieMetadata.Value.ItemType = ItemType.Scene)

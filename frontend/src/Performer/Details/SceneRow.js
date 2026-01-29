@@ -58,7 +58,7 @@ class SceneRow extends Component {
       hasFile,
       movieFile,
       monitored,
-      credits,
+      performerNames,
       runtime,
       movieRuntimeFormat,
       releaseDate,
@@ -116,12 +116,11 @@ class SceneRow extends Component {
             }
 
             if (name === 'credits') {
-              const joinedPerformers = credits
+              const joinedPerformers = performerNames
                 .slice(0, 4)
                 .sort((a, b) => {
-                  return a.performer.name > b.performer.name ? 1 : -1;
+                  return a > b ? 1 : -1;
                 })
-                .map((credit) => credit.performer.name)
                 .join(', ');
 
               return (
@@ -354,7 +353,7 @@ SceneRow.propTypes = {
   runtime: PropTypes.number,
   movieRuntimeFormat: PropTypes.string,
   title: PropTypes.string.isRequired,
-  credits: PropTypes.arrayOf(PropTypes.object),
+  performerNames: PropTypes.arrayOf(PropTypes.string),
   joinedPerformers: PropTypes.string,
   isSaving: PropTypes.bool,
   movieFilePath: PropTypes.string,

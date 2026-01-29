@@ -8,6 +8,7 @@ using NzbDrone.Core.Exceptions;
 using NzbDrone.Core.MetadataSource;
 using NzbDrone.Core.Movies;
 using NzbDrone.Core.Movies.Commands;
+using NzbDrone.Core.Movies.Credits;
 using NzbDrone.Core.Movies.Performers;
 using NzbDrone.Core.Movies.Studios;
 using NzbDrone.Core.RootFolders;
@@ -58,7 +59,7 @@ namespace NzbDrone.Core.Test.MovieTests
         {
             Mocker.GetMock<IProvideMovieInfo>()
                   .Setup(s => s.GetMovieInfo(_movie.TmdbId))
-                  .Returns(new System.Tuple<MovieMetadata, Studio, List<Performer>>(movie, new Studio(), new List<Performer>()));
+                  .Returns(new System.Tuple<MovieMetadata, Studio, List<Performer>, List<Credit>>(movie, new Studio(), new List<Performer>(), new List<Credit>()));
         }
 
         [Test]

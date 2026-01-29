@@ -52,7 +52,7 @@ export interface SuggestedMovie
     | 'itemType'
     | 'studioTitle'
     | 'genres'
-    | 'credits'
+    | 'performerNames'
     | 'runtime'
     | 'releaseDate'
   > {
@@ -90,7 +90,7 @@ function createUnoptimizedSelector() {
           itemType,
           studioTitle,
           genres = [],
-          credits = [],
+          performerNames = [],
           runtime,
           releaseDate,
           tags = [],
@@ -106,7 +106,7 @@ function createUnoptimizedSelector() {
           itemType,
           studioTitle,
           genres,
-          credits,
+          performerNames,
           runtime,
           releaseDate,
           firstCharacter: title.charAt(0).toLowerCase(),

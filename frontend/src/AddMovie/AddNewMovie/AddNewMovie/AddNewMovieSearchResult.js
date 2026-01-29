@@ -100,7 +100,7 @@ class AddNewMovieSearchResult extends Component {
       year,
       studioTitle,
       genres,
-      credits,
+      searchCredits,
       status,
       itemType,
       releaseDate,
@@ -291,8 +291,8 @@ class AddNewMovieSearchResult extends Component {
               }
 
               {
-                credits && credits.length > 0 ?
-                  credits.slice(0, 4).map((credit, index) => {
+                searchCredits && searchCredits.length > 0 ?
+                  searchCredits.slice(0, 4).map((credit, index) => {
                     const performer = (credit && (credit.performer || credit)) || {};
                     const name = performer.name || credit.name || '';
                     const gender = performer.gender;
@@ -394,7 +394,7 @@ AddNewMovieSearchResult.propTypes = {
   year: PropTypes.number.isRequired,
   studioTitle: PropTypes.string,
   genres: PropTypes.arrayOf(PropTypes.string),
-  credits: PropTypes.arrayOf(PropTypes.object),
+  searchCredits: PropTypes.arrayOf(PropTypes.object),
   status: PropTypes.string.isRequired,
   releaseDate: PropTypes.string,
   itemType: PropTypes.string.isRequired,
@@ -426,7 +426,7 @@ AddNewMovieSearchResult.propTypes = {
 
 AddNewMovieSearchResult.defaultProps = {
   genres: [],
-  credits: [],
+  searchCredits: [],
   isExcluded: false
 };
 

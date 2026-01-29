@@ -26,7 +26,7 @@ const selectMovies = createSelector(
       error
     } = movies;
 
-    const filteredMovies = items.filter((movie) => movie.credits.some((credit) => credit.performer.foreignId === foreignId));
+    const filteredMovies = items.filter((movie) => movie.performerForeignIds.some((performerForeignId) => performerForeignId === foreignId));
     const studios = _.orderBy(_.uniqBy(filteredMovies.map((movie) => ({ title: movie.studioTitle, foreignId: movie.studioForeignId })), 'foreignId'), 'title').filter((s) => s.foreignId !== undefined);
     const totalMovieCount = filteredMovies.filter((movie) => movie.itemType === 'movie').length;
     const hasMovies = !!totalMovieCount;
