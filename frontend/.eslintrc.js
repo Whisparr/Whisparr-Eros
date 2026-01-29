@@ -403,7 +403,19 @@ module.exports = {
             eventHandlerPropPrefix: 'on'
           }
         ],
-        'react/jsx-no-bind': ['error', { ignoreRefs: true }],
+
+        /* fires erroneously when using functions defined outside of the render scope */
+        /* setting allowFunctions to true to disable that check */
+        'react/jsx-no-bind': [
+          'error',
+          {
+            ignoreRefs: true,
+            allowArrowFunctions: false,
+            allowFunctions: true,
+            allowBind: false,
+            ignoreDOMComponents: true
+          }
+        ],
         'react/jsx-no-useless-fragment': ['error', { allowExpressions: true }],
         'react/jsx-pascal-case': ['error', { allowAllCaps: true }],
         'react/jsx-sort-props': [

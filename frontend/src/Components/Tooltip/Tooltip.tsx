@@ -22,6 +22,7 @@ export interface TooltipProps {
   kind?: Extract<Kind, keyof typeof styles>;
   position?: (typeof tooltipPositions.all)[number];
   canFlip?: boolean;
+  maxWidth?: number;
 }
 function Tooltip(props: TooltipProps) {
   const {
@@ -32,6 +33,8 @@ function Tooltip(props: TooltipProps) {
     kind = kinds.DEFAULT,
     position = tooltipPositions.TOP,
     canFlip = false,
+
+    maxWidth: maxWidthProp,
   } = props;
 
   const closeTimeout = useRef(0);
@@ -71,9 +74,8 @@ function Tooltip(props: TooltipProps) {
     }, 100);
   }, [setIsOpen]);
 
-  const maxWidth = useMemo(() => {
+  const calculatedMaxWidth = useMemo(() => {
     const windowWidth = window.innerWidth;
-
     if (windowWidth >= parseInt(dimensions.breakpointLarge)) {
       return 800;
     } else if (windowWidth >= parseInt(dimensions.breakpointMedium)) {
@@ -81,9 +83,10 @@ function Tooltip(props: TooltipProps) {
     } else if (windowWidth >= parseInt(dimensions.breakpointSmall)) {
       return 500;
     }
-
     return 450;
   }, []);
+  const maxWidth =
+    typeof maxWidthProp === 'number' ? maxWidthProp : calculatedMaxWidth;
 
   const computeMaxSize = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -200,7 +203,10 @@ function Tooltip(props: TooltipProps) {
                   style={arrowProps.style}
                 />
                 {isOpen ? (
-                  <div className={classNames(styles.tooltip, styles[kind])}>
+                  <div
+                    className={classNames(styles.tooltip, styles[kind])}
+                    style={maxWidth ? { maxWidth } : undefined}
+                  >
                     <div className={bodyClassName}>{tooltip}</div>
                   </div>
                 ) : null}

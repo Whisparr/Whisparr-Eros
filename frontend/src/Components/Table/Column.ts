@@ -10,7 +10,6 @@ interface Column {
   className?: string;
   columnLabel?: string;
   isSortable?: boolean;
-  // Use the SortDirection enum to ensure type compatibility
   fixedSortDirection?: SortDirection;
   isVisible: boolean;
   isModifiable?: boolean;

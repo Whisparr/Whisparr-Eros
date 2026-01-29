@@ -1,5 +1,6 @@
 import ModelBase from 'App/ModelBase';
 import { Image } from 'Movie/Movie';
+import Studio from 'Studio/Studio';
 
 interface Performer extends ModelBase {
   foreignId: string;
@@ -28,6 +29,9 @@ interface Performer extends ModelBase {
   added: string;
   qualityProfileId: number;
   tags: number[];
+  sizeOnDisk: number;
+  studios: Studio[];
+  genres: string[];
 }
 
 export default Performer;

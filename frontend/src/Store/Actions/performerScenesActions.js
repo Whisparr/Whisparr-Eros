@@ -63,6 +63,11 @@ export const defaultState = {
       isVisible: false,
       isSortable: true
     },
+    { name: 'studioTitle',
+      label: () => translate('Studio'),
+      isVisible: true,
+      isSortable: true
+    },
     {
       name: 'languages',
       label: () => translate('Languages'),
@@ -94,7 +99,7 @@ export const defaultState = {
       isVisible: false
     },
     {
-      name: 'size',
+      name: 'sizeOnDisk',
       label: () => translate('Size'),
       isVisible: false,
       isSortable: true
@@ -135,8 +140,11 @@ export const defaultState = {
   sortPredicates: {
     gender: function(item) {
       const gender = item.gender;
-
       return gender ? gender.toLowerCase() : '';
+    },
+    status: function(item) {
+      console.log('Sorting status:', item.status);
+      return item.status ? item.status.toLowerCase() : '';
     }
   }
 };

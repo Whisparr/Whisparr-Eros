@@ -1,4 +1,4 @@
-.studio {
+.year {
   margin-bottom: 20px;
   border: 1px solid var(--borderColor);
   border-radius: 4px;
@@ -9,28 +9,18 @@
   }
 }
 
-.studioLink {
-  margin-right: 10px;
-  margin-left: 5px;
-}
-
-.studioLink>a:link,
-.studioLink>a:visited,
-.studioLink>a:hover,
-.studioLink>a:active {
-  color: inherit;
-}
-
 .header {
   position: relative;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   width: 100%;
   font-size: 24px;
 }
 
-.movieCountTooltip {
-  display: flex;
+.yearNumber{
+  margin-right: 10px;
+  margin-left: 5px;
 }
 
 .sizeOnDisk {
@@ -39,23 +29,43 @@
   font-size: $defaultFontSize;
 }
 
-.expandButton {
-  composes: link from '~Components/Link/Link.css';
-
-  flex-grow: 1;
-  margin: 0 20px;
-  text-align: center;
-}
-
-.left {
+.hearerLeft {
   display: flex;
   align-items: center;
-  flex: 0 1 600px;
 }
 
-.left,
-.actions {
-  padding: 15px 10px;
+.headerCenter {
+  position: absolute;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  transform: translateX(-50%);
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+
+.monitorToggleButton{
+  justify-content: flex-start;
+}
+
+.movieCountTooltip {
+  display: flex;
+}
+
+.expandButton {
+  composes: link from '~Components/Link/Link.css';
+}
+
+.refreshButton {
+  padding-left: 5px;
+}
+
+.searchButton {
+  padding-right: 10px;
 }
 
 .actionsMenu {
@@ -81,35 +91,17 @@
   width: 30px;
 }
 
-.episodes {
-  padding-top: 15px;
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 0;
   border-top: 1px solid var(--borderColor);
 }
 
 .collapseButtonContainer {
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 10px 15px;
-  width: 100%;
-  border-top: 1px solid var(--borderColor);
-  border-bottom-right-radius: 4px;
-  border-bottom-left-radius: 4px;
-  background-color: var(--collapseButtonBackgroundColor);
-}
-
-.collapseButtonIcon {
-  margin-bottom: -4px;
-}
-
-.expandButtonIcon {
-  composes: actionButton;
-
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  margin-top: -12px;
-  margin-left: -12px;
 }
 
 .noEpisodes {
@@ -118,14 +110,13 @@
 }
 
 @media only screen and (max-width: $breakpointSmall) {
-  .season {
+  .year {
     border-right: 0;
     border-left: 0;
     border-radius: 0;
   }
 
   .expandButtonIcon {
-    position: static;
     margin: 0;
   }
 

@@ -3,22 +3,24 @@
 interface CssExports {
   'actionButton': string;
   'actionMenuIcon': string;
-  'actions': string;
   'actionsMenu': string;
   'actionsMenuContent': string;
   'collapseButtonContainer': string;
-  'collapseButtonIcon': string;
-  'episodes': string;
   'expandButton': string;
   'expandButtonIcon': string;
+  'footer': string;
   'header': string;
-  'left': string;
+  'headerCenter': string;
+  'headerRight': string;
+  'hearerLeft': string;
+  'monitorToggleButton': string;
   'movieCountTooltip': string;
   'noEpisodes': string;
-  'season': string;
+  'refreshButton': string;
+  'searchButton': string;
   'sizeOnDisk': string;
-  'studio': string;
-  'studioLink': string;
+  'year': string;
+  'yearNumber': string;
 }
 export const cssExports: CssExports;
 export default cssExports;

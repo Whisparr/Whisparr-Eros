@@ -14,7 +14,7 @@ import NotFound from 'Components/NotFound';
 import Switch from 'Components/Router/Switch';
 import MovieDetailsPageConnector from 'Movie/Details/MovieDetailsPageConnector';
 import MovieIndex from 'Movie/Index/MovieIndex';
-import PerformerDetailsPageConnector from 'Performer/Details/PerformerDetailsPageConnector';
+import PerformerDetails from 'Performer/Details/PerformerDetails';
 import PerformerIndex from 'Performer/Index/PerformerIndex';
 import SceneIndex from 'Scene/Index/SceneIndex';
 import CustomFormatSettingsPage from 'Settings/CustomFormats/CustomFormatSettingsPage';
@@ -90,8 +90,8 @@ function AppRoutes() {
       <Route path="/movie/:titleSlug" component={MovieDetailsPageConnector} />
 
       <Route
-        path="/performer/:foreignId"
-        component={PerformerDetailsPageConnector}
+        path="/performer/:performerForeignId"
+        component={PerformerDetails}
       />
 
       <Route path="/studio/:foreignId" component={StudioDetailsPageConnector} />

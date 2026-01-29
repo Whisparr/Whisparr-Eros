@@ -42,4 +42,5 @@ export default interface General {
   backupInterval: number;
   backupRetention: number;
   id: number;
+  whisparrMovieMetadataSource: string;
 }

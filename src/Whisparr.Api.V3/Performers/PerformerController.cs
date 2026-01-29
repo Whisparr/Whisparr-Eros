@@ -18,6 +18,7 @@ using NzbDrone.Core.Movies.Performers;
 using NzbDrone.Core.Movies.Performers.Events;
 using NzbDrone.Core.MovieStats;
 using NzbDrone.SignalR;
+using Whisparr.Api.V3.Movies;
 using Whisparr.Http;
 using Whisparr.Http.REST;
 using Whisparr.Http.REST.Attributes;
@@ -95,51 +96,72 @@ namespace Whisparr.Api.V3.Performers
             return resource;
         }
 
-        /// <summary>Retrieves full list of performers, or a single performer by their external foreign ID (e.g., from StashDb)</summary>
-        /// <param name="stashId">The external foreign ID (StashDb ID) of the performer</param>
+        /// <summary>Retrieves a single performer by their external foreign ID (e.g., from StashDb)</summary>
+        /// <returns>Performer details with associated movies and local cover URLs</returns>
+        /// <response code="200">Performer found and returned</response>
+        /// <response code="404">Performer with the specified foreign ID not found</response>
+        [HttpGet("{performerForeignId}")]
+        [Produces("application/json")]
+        public ActionResult<PerformerResource> GetPerformerByForeignId(string performerForeignId)
+        {
+            var performerResource = GetCachedPerformerResource(performerForeignId);
+            if (performerResource == null || performerResource.ForeignId != performerForeignId)
+            {
+                return NotFound();
+            }
+
+            // TODO: Consider caching movies in MovieService to avoid repeated DB hits
+            var performerMovies = _moviesService.GetByPerformerForeignId(performerForeignId);
+            LinkPerformerStatistics(performerResource, performerMovies);
+            return performerResource;
+        }
+
+        /// <summary>Retrieves all movies associated with a performer by their external foreign ID (e.g., from StashDb)</summary>
+        /// <returns>List of movies associated with the performer</returns>
+        /// <response code="200">Movies found and returned</response>
+        /// <response code="404">Performer with the specified foreign ID not found</response>
+        [HttpGet("{performerForeignId}/works")]
+        public ActionResult<List<MovieResource>> GetMoviesByPerformerForeignId(string performerForeignId)
+        {
+            var performer = GetCachedPerformerResource(performerForeignId);
+            if (performer == null || performer.ForeignId != performerForeignId)
+            {
+                return NotFound();
+            }
+
+            var movies = _moviesService.GetByPerformerForeignId(performerForeignId);
+            var movieResources = movies
+                .Select(m => MovieResourceMapper.ToResource(m, 0))
+                .Where(r => r != null)
+                .ToList();
+
+            LinkMovieStatistics(movieResources);
+            return movieResources;
+        }
+
+        /// <summary>Retrieves full list of performers</summary>
         /// <returns>Performer details with associated movies and local cover URLs</returns>
         /// <response code="200">Performer found and returned</response>
         /// <response code="404">Performer with the specified foreign ID not found</response>
         [HttpGet]
         [Produces("application/json")]
-        public List<PerformerResource> GetPerformers(string stashId)
+        public List<PerformerResource> GetPerformers()
         {
             var performerResources = new List<PerformerResource>();
 
             if (_useCache)
             {
-                if (stashId.IsNotNullOrWhiteSpace())
-                {
-                    performerResources.AddIfNotNull(GetPerformerResource(stashId));
-                }
-                else
-                {
-                    performerResources = GetPerformerResources();
-                }
-
+                performerResources = GetPerformerResources();
                 return performerResources;
             }
             else
             {
-                if (stashId.IsNotNullOrWhiteSpace())
-                {
-                    var performer = _performerService.FindByForeignId(stashId);
-
-                    if (performer != null)
-                    {
-                        performerResources.AddIfNotNull(performer.ToResource());
-                    }
-                }
-                else
-                {
-                    performerResources = _performerService.GetAllPerformers().ToResource();
-                }
+                performerResources = _performerService.GetAllPerformers().ToResource();
             }
 
             var coverFileInfos = _coverMapper.GetPerformerCoverFileInfos();
 
             _coverMapper.ConvertToLocalPerformerUrls(performerResources.Select(x => Tuple.Create(x.Id, x.Images.AsEnumerable())), coverFileInfos);
-
             LinkMovies(performerResources);
 
             return performerResources;
@@ -174,11 +196,16 @@ namespace Whisparr.Api.V3.Performers
             var performer = _performerService.GetById(resource.Id);
 
             var updatedPerformer = _performerService.Update(resource.ToModel(performer));
-
             _performerResourceCache.Remove(updatedPerformer.ForeignId);
-            BroadcastResourceChange(ModelAction.Updated, updatedPerformer.ToResource());
+            var performerResource = updatedPerformer.ToResource();
 
-            return Accepted(updatedPerformer);
+            // Added to allow for React-Query cache updates
+            FetchAndLinkMovies(performerResource);
+
+            // Broadcasts to both SignalR and React-Query clients
+            BroadcastResourceChange(ModelAction.Updated, performerResource);
+
+            return Accepted(performerResource);
         }
 
         /// <summary>Deletes a performer and their associated movies/scenes from Whisparr</summary>
@@ -239,28 +266,70 @@ namespace Whisparr.Api.V3.Performers
             }
         }
 
+        private void LinkMovieStatistics(List<MovieResource> movies)
+        {
+            var ids = movies.Map(x => x.Id).ToList();
+            var movieStats = _movieStatisticsService.MovieStatistics(ids);
+
+            foreach (var movie in movies)
+            {
+                var stats = movieStats.FirstOrDefault(x => x.MovieId == movie.Id);
+                if (stats != null)
+                {
+                    movie.MovieFileCount = stats.MovieFileCount;
+                    movie.SizeOnDisk = stats.SizeOnDisk;
+                }
+            }
+        }
+
+        private void LinkPerformerStatistics(PerformerResource resource, List<Movie> movies)
+        {
+            var ids = movies.Map(x => x.Id).ToList();
+            var movieStats = _movieStatisticsService.MovieStatistics(ids);
+            resource.SizeOnDisk = movieStats.Sum(x => x.SizeOnDisk);
+            resource.TotalMovieCount = movies.Count(x => x.MovieMetadata.Value.ItemType == ItemType.Movie);
+            resource.TotalSceneCount = movies.Count(x => x.MovieMetadata.Value.ItemType == ItemType.Scene);
+            resource.MovieCount = movieStats.Count(x => x.MovieFileCount > 0 && movies.First(m => m.Id == x.MovieId).MovieMetadata.Value.ItemType == ItemType.Movie);
+            resource.SceneCount = movieStats.Count(x => x.MovieFileCount > 0 && movies.First(m => m.Id == x.MovieId).MovieMetadata.Value.ItemType == ItemType.Scene);
+        }
+
         private void LinkMovies(PerformerResource resource, List<Movie> movies)
         {
             var scenes = movies.Where(x => x.MovieMetadata.Value.ItemType == ItemType.Scene);
             resource.HasScenes = scenes.Any();
-            resource.HasMovies = movies.Where(x => x.MovieMetadata.Value.ItemType == ItemType.Movie).Any();
+            resource.HasMovies = movies.Any(x => x.MovieMetadata.Value.ItemType == ItemType.Movie);
 
-            resource.Studios = scenes.Map(x => new PerformerStudioResource() { ForeignId = x.MovieMetadata.Value.StudioForeignId, Title = x.MovieMetadata.Value.StudioTitle }).DistinctBy(x => x.ForeignId).OrderBy(x => x.Title).ToList();
-
-            resource.MovieCount = movies.Where(x => x.HasFile && x.MovieMetadata.Value.ItemType == ItemType.Movie).Count();
-            resource.TotalMovieCount = movies.Where(x => x.MovieMetadata.Value.ItemType == ItemType.Movie).Count();
-            resource.SceneCount = movies.Where(x => x.HasFile && x.MovieMetadata.Value.ItemType == ItemType.Scene).Count();
-            resource.TotalSceneCount = movies.Where(x => x.MovieMetadata.Value.ItemType == ItemType.Scene).Count();
+            resource.Studios = movies
+                .GroupBy(x => new { x.MovieMetadata.Value.StudioForeignId, x.MovieMetadata.Value.StudioTitle })
+                .Select(g => new PerformerStudioResource
+                {
+                    ForeignId = g.Key.StudioForeignId,
+                    Title = g.Key.StudioTitle,
+                    Movies = g.Select(m => MovieResourceMapper.ToResource(m, 0))
+                        .Where(r => r != null)
+                        .ToList()
+                })
+                .OrderBy(x => x.Title)
+                .ToList();
+            resource.MovieCount = movies.Count(x => x.HasFile && x.MovieMetadata.Value.ItemType == ItemType.Movie);
+            resource.TotalMovieCount = movies.Count(x => x.MovieMetadata.Value.ItemType == ItemType.Movie);
+            resource.SceneCount = movies.Count(x => x.HasFile && x.MovieMetadata.Value.ItemType == ItemType.Scene);
+            resource.TotalSceneCount = movies.Count(x => x.MovieMetadata.Value.ItemType == ItemType.Scene);
 
             var ids = movies.Map(x => x.Id).ToList();
             var movieStats = _movieStatisticsService.MovieStatistics(ids);
             resource.SizeOnDisk = movieStats.Sum(x => x.SizeOnDisk);
         }
 
-        private PerformerResource GetPerformerResource(string performerForeignId)
+        private PerformerResource GetCachedPerformerResource(string performerForeignId)
         {
-            var performerForeignIds = new List<string> { performerForeignId };
-            return GetPerformerResources(performerForeignIds).FirstOrDefault();
+            var performerResource = _performerResourceCache.Find(performerForeignId);
+            if (performerResource == null)
+            {
+                performerResource = _performerService.FindByForeignId(performerForeignId).ToResource();
+            }
+
+            return performerResource;
         }
 
         private List<PerformerResource> GetPerformerResources()
@@ -342,8 +411,6 @@ namespace Whisparr.Api.V3.Performers
 
                         _coverMapper.ConvertToLocalPerformerUrls(performerResources.Select(x => Tuple.Create(x.Id, x.Images.AsEnumerable())), coverFileInfos);
 
-                        LinkMovies(performerResources);
-
                         foreach (var performerResource in performerResources)
                         {
                             _performerResourceCache.Set(performerResource.ForeignId, performerResource);
@@ -366,6 +433,32 @@ namespace Whisparr.Api.V3.Performers
             }
 
             return performerResources;
+        }
+
+        private void HydratePerformerResourceWithMovies(PerformerResource resource)
+        {
+            var movies = _moviesService.GetByPerformerForeignId(resource.ForeignId);
+            var movieResources = movies
+                .Select(m => MovieResourceMapper.ToResource(m, 0))
+                .Where(r => r != null)
+                .ToList();
+
+            if (resource.Studios == null || resource.Studios.Count == 0)
+            {
+                var hydrated = GetCachedPerformerResource(resource.ForeignId);
+                if (hydrated != null)
+                {
+                    resource.Studios = hydrated.Studios;
+                }
+            }
+
+            foreach (var studio in resource.Studios)
+            {
+                var studioMovies = movieResources
+                    .Where(movie => movie.StudioForeignId == studio.ForeignId)
+                    .ToList();
+                studio.Movies = studioMovies;
+            }
         }
     }
 }

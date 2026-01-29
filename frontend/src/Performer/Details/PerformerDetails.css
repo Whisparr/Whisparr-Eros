@@ -1,3 +1,8 @@
+.blurred {
+  filter: blur(6px);
+  transition: filter 0.2s;
+}
+
 .innerContentBody {
   padding: 0;
 }
@@ -137,12 +142,17 @@
 }
 
 .links,
-.gender,
 .ethnicity,
 .years,
 .age,
+.status,
+.tags,
 .runtime {
   margin-right: 14px;
+}
+
+.gender{
+  font-size: 50px;
 }
 
 .detailsLabel {
@@ -210,7 +220,7 @@
     padding: 15px;
   }
 
-  .title {
+  .performerName {
     font-weight: 300;
     font-size: 30px;
     line-height: 30px;
@@ -233,5 +243,9 @@
 
   .details {
     font-size: 19px;
+  }
+
+  .scenesFieldSet{
+    flex-direction: column;
   }
 }
