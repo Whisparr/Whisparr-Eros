@@ -14,6 +14,10 @@ interface MovieCollectionAppState
   isAdding: boolean;
   addError: Error;
 
+  deleteOptions: {
+    addImportExclusion: boolean;
+  };
+
   pendingChanges: Partial<MovieCollection>;
 }
 

@@ -9,6 +9,7 @@ import getNewMovie from 'Utilities/Movie/getNewMovie';
 import translate from 'Utilities/String/translate';
 import { set, update, updateItem } from './baseActions';
 import createHandleActions from './Creators/createHandleActions';
+import createRemoveItemHandler from './Creators/createRemoveItemHandler';
 import createSaveProviderHandler from './Creators/createSaveProviderHandler';
 import createSetClientSideCollectionFilterReducer from './Creators/Reducers/createSetClientSideCollectionFilterReducer';
 import createSetClientSideCollectionSortReducer from './Creators/Reducers/createSetClientSideCollectionSortReducer';
@@ -52,6 +53,10 @@ export const defaultState = {
     qualityProfileId: 0,
     searchForMovie: false,
     tags: []
+  },
+
+  deleteOptions: {
+    addImportExclusion: false
   },
 
   selectedFilterKey: 'all',
@@ -178,6 +183,10 @@ export const SET_MOVIE_COLLECTION_VALUE = 'movieCollections/setMovieCollectionVa
 
 export const ADD_MOVIE = 'movieCollections/addMovie';
 
+export const SAVE_COLLECTION_EDITOR = 'movieCollections/saveCollectionEditor';
+export const DELETE_COLLECTION = 'movieCollections/deleteCollection';
+export const SET_DELETE_OPTION = 'movieCollections/setDeleteOption';
+
 export const TOGGLE_COLLECTION_MONITORED = 'movieCollections/toggleCollectionMonitored';
 
 export const SET_MOVIE_COLLECTIONS_SORT = 'movieCollections/setMovieCollectionsSort';
@@ -194,6 +203,18 @@ export const saveMovieCollection = createThunk(SAVE_MOVIE_COLLECTION);
 export const saveMovieCollections = createThunk(SAVE_MOVIE_COLLECTIONS);
 
 export const addMovie = createThunk(ADD_MOVIE);
+export const saveCollectionEditor = createThunk(SAVE_COLLECTION_EDITOR);
+export const deleteCollection = createThunk(DELETE_COLLECTION, (payload) => {
+  return {
+    ...payload,
+    queryParams: {
+      deleteFiles: payload.deleteFiles,
+      addImportExclusion: payload.addImportExclusion
+    }
+  };
+});
+
+export const setDeleteOption = createAction(SET_DELETE_OPTION);
 
 export const toggleCollectionMonitored = createThunk(TOGGLE_COLLECTION_MONITORED);
 
@@ -215,6 +236,7 @@ export const setMovieCollectionValue = createAction(SET_MOVIE_COLLECTION_VALUE, 
 export const actionHandlers = handleThunks({
 
   [SAVE_MOVIE_COLLECTION]: createSaveProviderHandler(section, '/collection'),
+  [DELETE_COLLECTION]: createRemoveItemHandler(section, '/collection'),
   [FETCH_MOVIE_COLLECTIONS]: function(getState, payload, dispatch) {
     dispatch(set({ section, isFetching: true }));
 
@@ -401,6 +423,46 @@ export const actionHandlers = handleThunks({
         saveError: xhr
       }));
     });
+  },
+
+  [SAVE_COLLECTION_EDITOR]: function(getState, payload, dispatch) {
+    dispatch(set({
+      section,
+      isSaving: true
+    }));
+
+    const promise = createAjaxRequest({
+      url: '/collection/editor',
+      method: 'PUT',
+      data: JSON.stringify(payload),
+      dataType: 'json'
+    }).request;
+
+    promise.done((data) => {
+      dispatch(batchActions([
+        ...data.map((collection) => {
+          return updateItem({
+            id: collection.id,
+            section: 'collections',
+            ...collection
+          });
+        }),
+
+        set({
+          section,
+          isSaving: false,
+          saveError: null
+        })
+      ]));
+    });
+
+    promise.fail((xhr) => {
+      dispatch(set({
+        section,
+        isSaving: false,
+        saveError: xhr
+      }));
+    });
   }
 });
 
@@ -439,6 +501,14 @@ export const reducers = createHandleActions({
 
   [CLEAR_MOVIE_COLLECTIONS]: (state) => {
     return Object.assign({}, state, defaultState);
+  },
+  [SET_DELETE_OPTION]: (state, { payload }) => {
+    return {
+      ...state,
+      deleteOptions: {
+        ...payload
+      }
+    };
   }
 
 }, defaultState, section);

@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Error } from 'App/State/AppSectionState';
+import DeleteCollectionModal from 'Collection/Delete/DeleteCollectionModal';
 import FormInputGroup from 'Components/Form/FormInputGroup';
 import { EnhancedSelectInputValue } from 'Components/Form/Select/EnhancedSelectInput';
 import SpinnerButton from 'Components/Link/SpinnerButton';
@@ -23,6 +24,7 @@ interface CollectionFooterProps {
   selectedIds: number[];
   isAdding: boolean;
   isSaving: boolean;
+  isDeleteCollectionModalOpen: boolean;
   saveError: Error;
   onUpdateSelectedPress(payload: object): void;
 }
@@ -84,6 +86,9 @@ function CollectionFooter({
   );
   const [rootFolderPath, setRootFolderPath] = useState(NO_CHANGE);
   const [searchOnAdd, setSearchOnAdd] = useState(NO_CHANGE);
+
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isCollectionModalOpen, setIsCollectionModalOpen] = useState(false);
 
   const wasSaving = usePrevious(isSaving);
 
@@ -150,6 +155,14 @@ function CollectionFooter({
     }
   }, []);
 
+  const onDeletePress = useCallback(() => {
+    setIsCollectionModalOpen(true);
+  }, [setIsCollectionModalOpen]);
+
+  const onDeleteModalClose = useCallback(() => {
+    setIsCollectionModalOpen(false);
+  }, []);
+
   useEffect(() => {
     if (!isSaving && wasSaving && !saveError) {
       setMonitored(NO_CHANGE);
@@ -157,6 +170,7 @@ function CollectionFooter({
       setQualityProfileId(NO_CHANGE);
       setRootFolderPath(NO_CHANGE);
       setSearchOnAdd(NO_CHANGE);
+      setIsDeleting(false);
     }
   }, [
     isSaving,
@@ -167,6 +181,7 @@ function CollectionFooter({
     setQualityProfileId,
     setRootFolderPath,
     setSearchOnAdd,
+    setIsDeleting,
   ]);
 
   const selectedCount = selectedIds.length;
@@ -256,6 +271,12 @@ function CollectionFooter({
         />
       </div>
 
+      <DeleteCollectionModal
+        isOpen={isCollectionModalOpen}
+        collectionIds={selectedIds}
+        onModalClose={onDeleteModalClose}
+      />
+
       <div className={styles.buttonContainer}>
         <div className={styles.buttonContainerContent}>
           <CollectionFooterLabel
@@ -269,8 +290,18 @@ function CollectionFooter({
             <div>
               <SpinnerButton
                 className={styles.addSelectedButton}
+                kind={kinds.DANGER}
+                isSpinning={isSaving && isDeleting}
+                isDisabled={!selectedCount || isSaving}
+                onPress={onDeletePress}
+              >
+                {translate('Delete')}
+              </SpinnerButton>
+
+              <SpinnerButton
+                className={styles.addSelectedButton}
                 kind={kinds.PRIMARY}
-                isSpinning={isSaving}
+                isSpinning={isSaving && !isDeleting}
                 isDisabled={!selectedCount || isSaving}
                 onPress={handleSavePress}
               >

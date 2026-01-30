@@ -46,6 +46,7 @@ namespace Whisparr.Api.V3.Config
         public int BackupInterval { get; set; }
         public int BackupRetention { get; set; }
         public bool TrustCgnatIpAddresses { get; set; }
+        public string WhisparrAlwaysExcludeCollectionsTag { get; set; }
         public string WhisparrAlwaysExcludePerformersTag { get; set; }
         public string WhisparrAlwaysExcludeStudiosTag { get; set; }
         public string WhisparrAlwaysExcludeStudiosAfterTag { get; set; }
@@ -104,6 +105,7 @@ namespace Whisparr.Api.V3.Config
                 BackupInterval = configService.BackupInterval,
                 BackupRetention = configService.BackupRetention,
                 ApplicationUrl = configService.ApplicationUrl,
+                WhisparrAlwaysExcludeCollectionsTag = configService.WhisparrAlwaysExcludeCollectionsTag,
                 WhisparrAlwaysExcludePerformersTag = configService.WhisparrAlwaysExcludePerformersTag,
                 WhisparrAlwaysExcludeStudiosTag = configService.WhisparrAlwaysExcludeStudiosTag,
                 WhisparrAlwaysExcludeStudiosAfterTag = configService.WhisparrAlwaysExcludeStudiosAfterTag,
