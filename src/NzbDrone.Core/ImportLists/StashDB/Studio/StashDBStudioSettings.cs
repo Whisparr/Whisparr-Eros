@@ -29,9 +29,9 @@ namespace NzbDrone.Core.ImportLists.StashDB.Studio
         public string Tags { get; set; }
 
         [FieldDefinition(5, Label = "Tags Filter", Type = FieldType.Select, SelectOptions = typeof(FilterModifier), HelpText = "Filter tags by")]
-        public FilterModifier TagsFilter { get; set; }
+        public int TagsFilter { get; set; }
 
-        [FieldDefinition(6, Label = "Only Favorite Performers", Type = FieldType.Checkbox,  HelpText = "Filter by favorite performers")]
+        [FieldDefinition(6, Label = "Only Favorite Performers", Type = FieldType.Checkbox, HelpText = "Filter by favorite performers")]
         public bool OnlyFavoritePerformers { get; set; }
     }
 }
