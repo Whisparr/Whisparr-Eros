@@ -21,6 +21,12 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
             _logger.Debug("Checking if report meets quality requirements. {0}", subject.ParsedMovieInfo.Quality);
 
             var profile = subject.Movie.QualityProfile;
+            if (profile == null)
+            {
+                _logger.Debug("Movie {0} is missing the Quality Profile Setting", subject.Movie);
+                return DownloadSpecDecision.Reject(DownloadRejectionReason.QualityNotWanted, "Movie {0} is missing the Quality Profile Setting", subject.Movie);
+            }
+
             var qualityIndex = profile.GetIndex(subject.ParsedMovieInfo.Quality.Quality);
             var qualityOrGroup = profile.Items[qualityIndex.Index];
 

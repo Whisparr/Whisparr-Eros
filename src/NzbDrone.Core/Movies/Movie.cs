@@ -52,7 +52,7 @@ namespace NzbDrone.Core.Movies
 
         public string ForeignId
         {
-            get { return MovieMetadata.Value.ForeignId; }
+            get { return MovieMetadata.Value?.ForeignId ?? ""; }
             set { MovieMetadata.Value.ForeignId = value; }
         }
 
