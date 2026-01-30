@@ -50,7 +50,7 @@ namespace NzbDrone.Core.Update
         /// <returns>The latest UpdatePackage if an update is available; otherwise, null.</returns>
         public UpdatePackage GetLatestUpdate(string branch, Version currentVersion)
         {
-            _logger.Info("Checking for latest update (branch: {0}, currentVersion: {1})", branch, currentVersion);
+            _logger.Debug("Checking for latest update (branch: {0}, currentVersion: {1})", branch, currentVersion);
             var updates = GetRecentUpdates(branch, currentVersion);
             var latest = updates.FirstOrDefault();
             if (latest != null)
@@ -87,7 +87,7 @@ namespace NzbDrone.Core.Update
         public List<UpdatePackage> GetRecentUpdates(string branch, Version currentVersion, Version previousVersion = null)
         {
             var ownerRepo = _configFileProvider.GithubOwnerRepo;
-            _logger.Info("Fetching recent updates from GitHub releases (branch: {0}, currentVersion: {1}, previousVersion: {2}",
+            _logger.Debug("Fetching recent updates from GitHub releases (branch: {0}, currentVersion: {1}, previousVersion: {2}",
                 branch,
                 currentVersion,
                 previousVersion);
@@ -100,7 +100,7 @@ namespace NzbDrone.Core.Update
             _logger.Debug($"Requesting: {request.Url}");
 
             var response = _httpClient.Get(request);
-            _logger.Debug($"GitHub API response: {response.StatusCode}, {response.Content?.Length ?? 0} bytes");
+            _logger.Trace($"GitHub API response: {response.StatusCode}, {response.Content?.Length ?? 0} bytes");
 
             var releases = JsonSerializer.Deserialize<List<GithubRelease>>(response.Content) ?? new List<GithubRelease>();
 
@@ -215,7 +215,7 @@ namespace NzbDrone.Core.Update
                 });
             }
 
-            _logger.Debug($"Total updates found (max 5): {packages.Count}");
+            _logger.Debug($"Total updates found: {packages.Count}");
             return packages;
         }
 
