@@ -6,7 +6,6 @@ using FluentValidation.Results;
 using NLog;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Localization;
-using NzbDrone.Core.MediaCover;
 using NzbDrone.Core.Movies;
 
 namespace NzbDrone.Core.Notifications.Gotify
@@ -140,7 +139,7 @@ namespace NzbDrone.Core.Notifications.Gotify
             {
                 if (Settings.IncludeMoviePoster)
                 {
-                    var poster = movie.MovieMetadata.Value.Images.FirstOrDefault(x => x.CoverType == MediaCoverTypes.Poster)?.RemoteUrl;
+                    var poster = movie.MovieMetadata.Value.Poster?.RemoteUrl;
 
                     if (poster != null)
                     {
