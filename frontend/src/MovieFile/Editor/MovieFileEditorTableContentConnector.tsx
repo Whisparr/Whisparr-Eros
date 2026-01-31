@@ -2,7 +2,7 @@ import React, { useCallback, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
 import Column from 'Components/Table/Column';
-import { SortDirection } from 'Helpers/Props/SortDirection';
+import { SortDirection } from 'Helpers/Props/sortDirections';
 import Quality from 'Quality/Quality';
 import {
   deleteMovieFile,

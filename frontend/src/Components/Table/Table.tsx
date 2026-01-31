@@ -3,8 +3,9 @@ import React from 'react';
 import IconButton from 'Components/Link/IconButton';
 import Scroller from 'Components/Scroller/Scroller';
 import TableOptionsModalWrapper from 'Components/Table/TableOptions/TableOptionsModalWrapper';
-import { icons, scrollDirections } from 'Helpers/Props';
-import { SortDirection } from 'Helpers/Props/SortDirection';
+import { icons } from 'Helpers/Props';
+import { HORIZONTAL, NONE } from 'Helpers/Props/scrollDirections';
+import { SortDirection } from 'Helpers/Props/sortDirections';
 import { CheckInputChanged } from 'typings/inputs';
 import { TableOptionsChangePayload } from 'typings/Table';
 import Column from './Column';
@@ -54,9 +55,7 @@ function Table({
         styles.tableContainer,
         horizontalScroll && styles.horizontalScroll
       )}
-      scrollDirection={
-        horizontalScroll ? scrollDirections.HORIZONTAL : scrollDirections.NONE
-      }
+      scrollDirection={horizontalScroll ? HORIZONTAL : NONE}
       autoFocus={false}
     >
       <table className={className}>

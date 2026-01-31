@@ -1,5 +1,5 @@
 import React from 'react';
-import { SortDirection } from 'Helpers/Props/SortDirection';
+import { SortDirection } from 'Helpers/Props/sortDirections';
 
 type PropertyFunction<T> = () => T;
 

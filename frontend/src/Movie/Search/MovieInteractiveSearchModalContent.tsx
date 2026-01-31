@@ -5,7 +5,7 @@ import ModalBody from 'Components/Modal/ModalBody';
 import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
-import { scrollDirections } from 'Helpers/Props';
+import { BOTH } from 'Helpers/Props/scrollDirections';
 import InteractiveSearch from 'InteractiveSearch/InteractiveSearch';
 import Movie from 'Movie/Movie';
 import useMovie from 'Movie/useMovie';
@@ -62,7 +62,7 @@ function MovieInteractiveSearchModalContent({
           : translate('InteractiveSearchModalHeader')}
       </ModalHeader>
 
-      <ModalBody scrollDirection={scrollDirections.BOTH}>
+      <ModalBody scrollDirection={BOTH}>
         <InteractiveSearch searchPayload={{ movieId }} />
       </ModalBody>
 

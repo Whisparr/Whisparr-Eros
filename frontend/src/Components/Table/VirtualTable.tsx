@@ -9,7 +9,7 @@ import ModelBase from 'App/ModelBase';
 import Scroller from 'Components/Scroller/Scroller';
 import useMeasure from 'Helpers/Hooks/useMeasure';
 import usePrevious from 'Helpers/Hooks/usePrevious';
-import { scrollDirections } from 'Helpers/Props';
+import { HORIZONTAL } from 'Helpers/Props/scrollDirections';
 import hasDifferentItemsOrOrder from 'Utilities/Object/hasDifferentItemsOrOrder';
 import styles from './VirtualTable.css';
 
@@ -134,10 +134,7 @@ function VirtualTable<T extends ModelBase>({
         }
         return (
           <div ref={measureRef}>
-            <Scroller
-              className={className}
-              scrollDirection={scrollDirections.HORIZONTAL}
-            >
+            <Scroller className={className} scrollDirection={HORIZONTAL}>
               {header}
 
               <div ref={registerRef}>

@@ -1,23 +1,27 @@
 import React from 'react';
 import Scroller from 'Components/Scroller/Scroller';
-import { scrollDirections } from 'Helpers/Props';
+import {
+  NONE,
+  ScrollDirection,
+  VERTICAL,
+} from 'Helpers/Props/scrollDirections';
 import styles from './ModalBody.css';
 
 interface ModalBodyProps {
   className?: string;
   innerClassName?: string;
   children?: React.ReactNode;
-  scrollDirection?: scrollDirections;
+  scrollDirection?: ScrollDirection;
 }
 
 function ModalBody({
   innerClassName = styles.innerModalBody,
-  scrollDirection = scrollDirections.VERTICAL,
+  scrollDirection = VERTICAL,
   children,
   ...otherProps
 }: ModalBodyProps) {
   let className = otherProps.className;
-  const hasScroller = scrollDirection !== scrollDirections.NONE;
+  const hasScroller = scrollDirection !== NONE;
 
   if (!className) {
     className = hasScroller ? styles.modalScroller : styles.modalBody;

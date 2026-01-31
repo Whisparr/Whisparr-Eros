@@ -1,5 +1,5 @@
 import Column from 'Components/Table/Column';
-import { SortDirection } from 'Helpers/Props/SortDirection';
+import { SortDirection } from 'Helpers/Props/sortDirections';
 import { ValidationFailure } from 'typings/pending';
 import { Filter, FilterBuilderProp } from './AppState';
 

@@ -8,7 +8,8 @@ import ModalBody from 'Components/Modal/ModalBody';
 import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
-import { inputTypes, kinds, scrollDirections } from 'Helpers/Props';
+import { inputTypes, kinds } from 'Helpers/Props';
+import { NONE } from 'Helpers/Props/scrollDirections';
 import translate from 'Utilities/String/translate';
 import styles from './SelectReleaseGroupModalContent.css';
 
@@ -42,10 +43,7 @@ function SelectReleaseGroupModalContent(
         {translate('SetReleaseGroupModalTitle', { modalTitle })}
       </ModalHeader>
 
-      <ModalBody
-        className={styles.modalBody}
-        scrollDirection={scrollDirections.NONE}
-      >
+      <ModalBody className={styles.modalBody} scrollDirection={NONE}>
         <Form>
           <FormGroup>
             <FormLabel>{translate('ReleaseGroup')}</FormLabel>

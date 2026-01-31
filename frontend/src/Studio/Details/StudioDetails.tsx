@@ -90,7 +90,10 @@ interface StudioDetailsProps {
   isSidebarVisible: boolean;
   previousStudio: object;
   nextStudio: object;
-  onMonitorTogglePress: () => void;
+  onMonitorTogglePress: (
+    value: boolean | { monitored: boolean; moviesMonitored: boolean },
+    options: { shiftKey: boolean }
+  ) => void;
   onRefreshPress: () => void;
   onSearchPress: () => void;
   onGoToStudio: () => void;
@@ -168,6 +171,15 @@ class StudioDetails extends Component<StudioDetailsProps, StudioDetailsState> {
     });
   };
 
+  // Updated handler for MonitorToggleButton
+  onMonitorTogglePress = (
+    value: boolean | { monitored: boolean; moviesMonitored: boolean },
+    options: { shiftKey: boolean }
+  ) => {
+    if (typeof this.props.onMonitorTogglePress === 'function') {
+      this.props.onMonitorTogglePress(value, options);
+    }
+  };
   // Render
   render() {
     const {
@@ -200,7 +212,6 @@ class StudioDetails extends Component<StudioDetailsProps, StudioDetailsState> {
       totalMovieCount,
       totalSceneCount,
       sceneCount,
-      onMonitorTogglePress,
       onRefreshPress,
       onSearchPress,
       moviesError,
@@ -308,7 +319,7 @@ class StudioDetails extends Component<StudioDetailsProps, StudioDetailsState> {
                             type="sceneMonitor"
                             isSaving={isSaving}
                             size={30}
-                            onPress={onMonitorTogglePress}
+                            onPress={this.onMonitorTogglePress}
                           />
                         </div>
 
@@ -328,7 +339,7 @@ class StudioDetails extends Component<StudioDetailsProps, StudioDetailsState> {
                               type="movieMonitor"
                               isSaving={isSaving}
                               size={30}
-                              onPress={onMonitorTogglePress}
+                              onPress={this.onMonitorTogglePress}
                             />
                           </div>
                         )}

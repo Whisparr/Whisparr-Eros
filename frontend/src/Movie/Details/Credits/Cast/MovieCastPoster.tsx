@@ -11,10 +11,10 @@ interface Props {
   posterWidth: number;
   posterHeight: number;
   safeForWorkMode: boolean;
-  onTogglePerformerMonitored: (
-    monitored: boolean,
-    moviesMonitored: boolean
-  ) => void;
+  onTogglePerformerMonitored: (args: {
+    monitored: boolean;
+    moviesMonitored: boolean;
+  }) => void;
 }
 
 function MovieCastPoster({
@@ -24,6 +24,26 @@ function MovieCastPoster({
   safeForWorkMode,
   onTogglePerformerMonitored,
 }: Props) {
+  // Adapter for MonitorToggleButton signature
+  const handleMonitorTogglePress = useCallback(
+    (
+      value: boolean | { monitored: boolean; moviesMonitored: boolean },
+      _options: { shiftKey: boolean }
+    ) => {
+      const { monitored, moviesMonitored } =
+        typeof value === 'object' &&
+        value !== null &&
+        'monitored' in value &&
+        'moviesMonitored' in value
+          ? value
+          : {
+              monitored: value as boolean,
+              moviesMonitored: credit.moviesMonitored,
+            };
+      onTogglePerformerMonitored({ monitored, moviesMonitored });
+    },
+    [onTogglePerformerMonitored, credit.moviesMonitored]
+  );
   const [hasPosterError, setHasPosterError] = useState(false);
   const {
     foreignId,
@@ -68,7 +88,7 @@ function MovieCastPoster({
               moviesMonitored={moviesMonitored}
               type="sceneMonitor"
               size={20}
-              onPress={onTogglePerformerMonitored}
+              onPress={handleMonitorTogglePress}
             />
           )}
           {canMovieMonitor && (
@@ -78,7 +98,7 @@ function MovieCastPoster({
               moviesMonitored={moviesMonitored}
               type="movieMonitor"
               size={20}
-              onPress={onTogglePerformerMonitored}
+              onPress={handleMonitorTogglePress}
             />
           )}
         </div>

@@ -23,10 +23,15 @@ function MovieCollectionLabel({ tmdbId }: MovieCollectionLabelProps) {
   const dispatch = useDispatch();
 
   const handleMonitorTogglePress = useCallback(
-    (value: boolean) => {
-      dispatch(
-        toggleCollectionMonitored({ collectionId: id, monitored: value })
-      );
+    (
+      value: boolean | { monitored: boolean; moviesMonitored: boolean },
+      _options: { shiftKey: boolean }
+    ) => {
+      const { monitored } =
+        typeof value === 'object' && value !== null && 'monitored' in value
+          ? value
+          : { monitored: value as boolean };
+      dispatch(toggleCollectionMonitored({ collectionId: id, monitored }));
     },
     [id, dispatch]
   );

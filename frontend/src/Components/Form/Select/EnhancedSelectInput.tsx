@@ -18,7 +18,7 @@ import ModalBody from 'Components/Modal/ModalBody';
 import Portal from 'Components/Portal';
 import Scroller from 'Components/Scroller/Scroller';
 import useMeasure from 'Helpers/Hooks/useMeasure';
-import { icons, scrollDirections } from 'Helpers/Props';
+import { icons } from 'Helpers/Props';
 import ArrayElement from 'typings/Helpers/ArrayElement';
 import { EnhancedSelectInputChanged, InputChanged } from 'typings/inputs';
 
@@ -53,6 +53,7 @@ export interface EnhancedSelectInputProps<
   onOpen?: () => void;
   onChange: (change: EnhancedSelectInputChanged<V>) => void;
 }
+import { NONE } from 'Helpers/Props/scrollDirections';
 import { isMobile as isMobileUtil } from 'Utilities/browser';
 import * as keyCodes from 'Utilities/Constants/keyCodes';
 import getUniqueElementId from 'Utilities/getUniqueElementId';
@@ -570,7 +571,7 @@ function EnhancedSelectInput<V, T extends EnhancedSelectInputValue<V>>(
           <ModalBody
             className={styles.optionsModalBody}
             innerClassName={styles.optionsInnerModalBody}
-            scrollDirection={scrollDirections.NONE}
+            scrollDirection={NONE}
           >
             <Scroller className={styles.optionsModalScroller}>
               <div className={styles.mobileCloseButtonContainer}>
