@@ -103,7 +103,7 @@ namespace Whisparr.Api.V3.Movies
     {
         public static MovieResource ToResource(this Movie model, int availDelay, IUpgradableSpecification upgradableSpecification = null, ICustomFormatCalculationService formatCalculationService = null)
         {
-            if (model == null)
+            if (model == null || model.MovieMetadata.Value == null)
             {
                 return null;
             }

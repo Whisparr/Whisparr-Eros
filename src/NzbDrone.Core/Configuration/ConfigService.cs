@@ -477,6 +477,12 @@ namespace NzbDrone.Core.Configuration
             set { SetValue("TrustCgnatIpAddresses", value); }
         }
 
+        public string WhisparrAlwaysExcludeCollectionsTag
+        {
+            get { return GetValue("WhisparrAlwaysExcludeCollectionsTag", ""); }
+            set { SetValue("WhisparrAlwaysExcludeCollectionsTag", value); }
+        }
+
         public string WhisparrAlwaysExcludePerformersTag
         {
             get { return GetValue("WhisparrAlwaysExcludePerformersTag", ""); }

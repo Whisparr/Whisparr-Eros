@@ -26,6 +26,7 @@ namespace Whisparr.Api.V3.Collections
                                         IHandle<CollectionDeletedEvent>
     {
         private readonly IMovieCollectionService _collectionService;
+        private readonly IImportListExclusionService _exclusionService;
         private readonly IMovieService _movieService;
         private readonly IMovieMetadataService _movieMetadataService;
         private readonly IImportListExclusionService _importListExclusionService;
@@ -39,6 +40,7 @@ namespace Whisparr.Api.V3.Collections
         /// </summary>
         /// <param name="signalRBroadcaster">SignalR broadcaster used to push resource change notifications.</param>
         /// <param name="collectionService">Service for movie collections.</param>
+        /// <param name="exclusionService">Service for Import List Exclusions</param>
         /// <param name="movieService">Service for movies.</param>
         /// <param name="movieMetadataService">Service to retrieve movie metadata (external sources).</param>
         /// <param name="importListExclusionService">Service used to check import list exclusions.</param>
@@ -48,6 +50,7 @@ namespace Whisparr.Api.V3.Collections
         /// <param name="commandQueueManager">Command queue manager used to enqueue background commands.</param>
         public CollectionController(IBroadcastSignalRMessage signalRBroadcaster,
                                     IMovieCollectionService collectionService,
+                                    IImportListExclusionService exclusionService,
                                     IMovieService movieService,
                                     IMovieMetadataService movieMetadataService,
                                     IImportListExclusionService importListExclusionService,
@@ -58,6 +61,7 @@ namespace Whisparr.Api.V3.Collections
             : base(signalRBroadcaster)
         {
             _collectionService = collectionService;
+            _exclusionService = exclusionService;
             _movieService = movieService;
             _movieMetadataService = movieMetadataService;
             _importListExclusionService = importListExclusionService;
@@ -169,6 +173,40 @@ namespace Whisparr.Api.V3.Collections
             _commandQueueManager.Push(new RefreshCollectionsCommand());
 
             return Accepted(updated);
+        }
+
+        /// <summary>Deletes a collection and their associated movies/scenes from Whisparr</summary>
+        /// <param name="id">The internal ID of the colection to delete</param>
+        /// <param name="deleteFiles">If true, associated movie/scene files will also be deleted from disk</param>
+        /// <param name="addImportExclusion">If true, an import exclusion will be added to prevent re-adding the collection in future imports</param>
+        [RestDeleteById]
+        public void DeleteCollection(int id, bool deleteFiles = false, bool addImportExclusion = false)
+        {
+            var collection = _collectionService.GetCollection(id);
+
+            if (collection == null)
+            {
+                return;
+            }
+
+            // Get the movies for the collection
+            var movies = _movieService.GetMoviesByCollectionTmdbId(collection.TmdbId);
+            var movieIds = movies.Select(x => x.Id).ToList();
+            _movieService.DeleteMovies(movieIds, deleteFiles);
+
+            if (addImportExclusion)
+            {
+                var exclusion = new ImportListExclusion();
+                exclusion.ForeignId = collection.TmdbId.ToString();
+                exclusion.MovieTitle = collection.Title;
+                exclusion.Type = ImportExclusionType.Collection;
+                exclusion.Reason = ImportExclusionReason.DuringDelete;
+
+                _exclusionService.AddExclusion(exclusion);
+            }
+
+            // Remove the Collection now that the associated scenes have been removed
+            _collectionService.RemoveCollection(collection);
         }
 
         private IEnumerable<CollectionResource> MapToResource(List<MovieCollection> collections)
