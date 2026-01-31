@@ -25,6 +25,7 @@ namespace NzbDrone.Core.Test.OrganizerTests.FileNameBuilderTests
     public class FileNameBuilderFixture : CoreTest<FileNameBuilder>
     {
         private Movie _movie;
+        private Movie _addScene;
         private Movie _scene;
         private Movie _sceneLongTitle;
         private MovieFile _movieFile;
@@ -36,12 +37,12 @@ namespace NzbDrone.Core.Test.OrganizerTests.FileNameBuilderTests
             var studio = new Core.MetadataSource.SkyHook.Resource.StudioResource { Title = "Pure Taboo", Network = "Adult Time Originals" };
             var credits = new List<Credit>
             {
-                new Credit { Character = "Rissa", Performer = new CreditPerformer { Name = "Rissa May", Gender = Gender.Female } },
-                new Credit { Character = null, Performer = new CreditPerformer { Name = "Maddy O'Reilly", Gender = Gender.Female } },
-                new Credit { Character = "Chuck", Performer = new CreditPerformer { Name = "Charles Dera", Gender = Gender.Male } },
-                new Credit { Character = "Reagan", Performer = new CreditPerformer { Name = "Reagan Foxx", Gender = Gender.Female } },
-                new Credit { Character = "Axel", Performer = new CreditPerformer { Name = "Axel Haze", Gender = Gender.Male } },
-                new Credit { Character = null, Performer = new CreditPerformer { Name = "Manuel Ferrara", Gender = Gender.Male } }
+                new Credit { Character = "Rissa", PersonName = "Rissa May", Performer = new CreditPerformer { Name = "Rissa May", Gender = Gender.Female } },
+                new Credit { Character = null, PersonName = "Maddy O'Reilly", Performer = new CreditPerformer { Name = "Maddy O'Reilly", Gender = Gender.Female } },
+                new Credit { Character = "Chuck", PersonName = "Charles Dera", Performer = new CreditPerformer { Name = "Charles Dera", Gender = Gender.Male } },
+                new Credit { Character = "Reagan", PersonName = "Reagan Foxx", Performer = new CreditPerformer { Name = "Reagan Foxx", Gender = Gender.Female } },
+                new Credit { Character = "Axel", PersonName = "Axel Haze", Performer = new CreditPerformer { Name = "Axel Haze", Gender = Gender.Male } },
+                new Credit { Character = null, PersonName = "Manuel Ferrara", Performer = new CreditPerformer { Name = "Manuel Ferrara", Gender = Gender.Male } }
             };
 
             Mocker.GetMock<ICreditService>()
@@ -74,6 +75,21 @@ namespace NzbDrone.Core.Test.OrganizerTests.FileNameBuilderTests
                     .With(x => x.MovieMetadata.Value.StashId = "019abb52-0557-7c5f-83df-94b828851fd1")
                     .With(x => x.MovieMetadata.Value.ReleaseDate = "2025-11-25")
                     .With(x => x.MovieMetadata.Value.Id = 1)
+                    .With(x => x.MovieMetadata.Value.Studio = studio)
+                    .With(x => x.MovieMetadata.Value.StudioTitle = studio.Title)
+                    .With(x => x.MovieMetadata.Value.ItemType = ItemType.Scene)
+                    .Build();
+
+            // Scene just Added but not refreshed (saved to the database)
+            _addScene = Builder<Movie>
+                    .CreateNew()
+                    .With(s => s.Title = "The Last Train Home")
+                    .With(x => x.ForeignId = "019abb52-0557-7c5f-83df-94b828851fd1")
+                    .With(x => x.MovieMetadata.Value.ForeignId = "019abb52-0557-7c5f-83df-94b828851fd1")
+                    .With(x => x.MovieMetadata.Value.StashId = "019abb52-0557-7c5f-83df-94b828851fd1")
+                    .With(x => x.MovieMetadata.Value.ReleaseDate = "2025-11-25")
+                    .With(x => x.MovieMetadata.Value.Id = 2)
+                    .With(x => x.MovieMetadata.Value.Credits = credits)
                     .With(x => x.MovieMetadata.Value.Studio = studio)
                     .With(x => x.MovieMetadata.Value.StudioTitle = studio.Title)
                     .With(x => x.MovieMetadata.Value.ItemType = ItemType.Scene)
@@ -115,6 +131,10 @@ namespace NzbDrone.Core.Test.OrganizerTests.FileNameBuilderTests
             // Aliases should be used if present, otherwise fallback to real name.
             Subject.BuildFileName(_scene, _movieFile)
                 .Should().Be("Pure Taboo - 2025-11-25 - The Last Train Home [Axel Chuck Maddy O'Reilly Manuel Ferrara]");
+
+            // Scene that is adding (not yet refreshed) should also work
+            Subject.BuildFileName(_addScene, _movieFile)
+                .Should().Be("Pure Taboo - 2025-11-25 - The Last Train Home [Axel Chuck Maddy O'Reilly Manuel Ferrara]");
         }
 
         [Test]
@@ -124,6 +144,10 @@ namespace NzbDrone.Core.Test.OrganizerTests.FileNameBuilderTests
 
             // Aliases should be used if present, otherwise fallback to real name.
             Subject.BuildFileName(_scene, _movieFile)
+                .Should().Be("Pure Taboo - 2025-11-25 - The Last Train Home [Axel Chuck Maddy OReilly Manuel Ferrara]");
+
+            // Scene that is adding (not yet refreshed) should also work
+            Subject.BuildFileName(_addScene, _movieFile)
                 .Should().Be("Pure Taboo - 2025-11-25 - The Last Train Home [Axel Chuck Maddy OReilly Manuel Ferrara]");
         }
 
@@ -135,6 +159,9 @@ namespace NzbDrone.Core.Test.OrganizerTests.FileNameBuilderTests
             // Only female aliases, fallback to real name if alias is not present
             Subject.BuildFileName(_scene, _movieFile)
                 .Should().Be("Pure Taboo - 2025-11-25 - The Last Train Home [Maddy O'Reilly Reagan Rissa]");
+
+            Subject.BuildFileName(_addScene, _movieFile)
+                .Should().Be("Pure Taboo - 2025-11-25 - The Last Train Home [Maddy O'Reilly Reagan Rissa]");
         }
 
         [Test]
@@ -144,6 +171,10 @@ namespace NzbDrone.Core.Test.OrganizerTests.FileNameBuilderTests
 
             // Only female aliases, fallback to real name if alias is not present
             Subject.BuildFileName(_scene, _movieFile)
+                .Should().Be("Pure Taboo - 2025-11-25 - The Last Train Home [Maddy OReilly Reagan Rissa]");
+
+            // Scene that is adding (not yet refreshed) should also work
+            Subject.BuildFileName(_addScene, _movieFile)
                 .Should().Be("Pure Taboo - 2025-11-25 - The Last Train Home [Maddy OReilly Reagan Rissa]");
         }
 

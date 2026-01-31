@@ -402,10 +402,22 @@ namespace NzbDrone.Core.Organizer
                 tokenHandlers["{Release Date}"] = m => "Unknown";
             }
 
-            var credits = _creditService.GetAllCreditsForMovieMetadata(movie.MovieMetadataId);
-
-            if (credits != null)
+            if (!movie.MovieMetadata.Value.Credits.Any())
             {
+                // Load the Credits if not already loaded
+                movie.MovieMetadata.Value.Credits = _creditService.GetAllCreditsForMovieMetadata(movie.MovieMetadataId);
+
+                // Make sure that Credits is not null
+                if (movie.MovieMetadata.Value.Credits == null)
+                {
+                    movie.MovieMetadata.Value.Credits = new List<Credit>();
+                }
+            }
+
+            if (movie.MovieMetadata.Value.Credits.Any())
+            {
+                var credits = movie.MovieMetadata.Value.Credits;
+
                 tokenHandlers["{Scene Performers}"] = m => credits.OrderBy(p => p.Performer.Name)
                     .Select(p => p.Performer.Name)
                     .Take(4)

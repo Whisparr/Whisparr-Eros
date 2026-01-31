@@ -20,17 +20,17 @@ namespace NzbDrone.Core.Test.MovieTests.MovieServiceTests
         [SetUp]
         public void Setup()
         {
-            var credits = new List<Credit> { new Credit { Character = "Quinn", Performer = new CreditPerformer { Name = "Quinn Waters", Gender = Gender.Female } } };
-            var otherCredits = new List<Credit> { new Credit { Character = "Carrie", Performer = new CreditPerformer { Name = "Carrie Sage", Gender = Gender.Female } } };
-            var dualCredits = new List<Credit> { new Credit { Character = "Quinn", Performer = new CreditPerformer { Name = "Quinn Waters", Gender = Gender.Female } }, new Credit { Character = "Carrie", Performer = new CreditPerformer { Name = "Carrie Sage", Gender = Gender.Female } } };
-            var differentCredits = new List<Credit> { new Credit { Character = "Angie", Performer = new CreditPerformer { Name = "Angela White", Gender = Gender.Female } } };
-            var invalidCredits = new List<Credit> { new Credit { Character = "Invalid", Performer = new CreditPerformer { Name = "Invalid Name", Gender = Gender.Female } } };
-            var bellaCredits = new List<Credit> { new Credit { Character = "", Performer = new CreditPerformer { Name = "Violet Myers", Gender = Gender.Female } }, new Credit { Character = "", Performer = new CreditPerformer { Name = "Victor Ray", Gender = Gender.Male } } };
-            var evilCredits = new List<Credit> { new Credit { Character = "", Performer = new CreditPerformer { Name = "Whitney Wright", Gender = Gender.Female } }, new Credit { Character = "", Performer = new CreditPerformer { Name = "Mick Blue", Gender = Gender.Male } } };
-            var ariAlectra = new List<Credit> { new Credit { Character = "", Performer = new CreditPerformer { Name = "Ari Alectra", Gender = Gender.Female } } };
-            var amhyraShy = new List<Credit> { new Credit { Character = "", Performer = new CreditPerformer { Name = "Amhyra Shy", Gender = Gender.Female } } };
-            var cocoLovelock = new List<Credit> { new Credit { Character = "Coco Lovecock", Performer = new CreditPerformer { Name = "Coco Lovelock", Gender = Gender.Female } }  };
-            var vixenCredits = new List<Credit> { new Credit { Character = "", Performer = new CreditPerformer { Name = "Emma White", Gender = Gender.Female } } };
+            var credits = new List<Credit> { new Credit { Character = "Quinn", PersonName = "Quinn Waters", Performer = new CreditPerformer { Name = "Quinn Waters", Gender = Gender.Female } } };
+            var otherCredits = new List<Credit> { new Credit { Character = "Carrie", PersonName = "Carrie Sage", Performer = new CreditPerformer { Name = "Carrie Sage", Gender = Gender.Female } } };
+            var dualCredits = new List<Credit> { new Credit { Character = "Quinn", PersonName = "Quinn Waters", Performer = new CreditPerformer { Name = "Quinn Waters", Gender = Gender.Female } }, new Credit { Character = "Carrie", PersonName = "Carrie Sage", Performer = new CreditPerformer { Name = "Carrie Sage", Gender = Gender.Female } } };
+            var differentCredits = new List<Credit> { new Credit { Character = "Angie", PersonName = "Angela White", Performer = new CreditPerformer { Name = "Angela White", Gender = Gender.Female } } };
+            var invalidCredits = new List<Credit> { new Credit { Character = "Invalid", PersonName = "Invalid Name", Performer = new CreditPerformer { Name = "Invalid Name", Gender = Gender.Female } } };
+            var bellaCredits = new List<Credit> { new Credit { Character = "", PersonName = "Violet Myers", Performer = new CreditPerformer { Name = "Violet Myers", Gender = Gender.Female } }, new Credit { Character = "", PersonName = "Victor Ray",  Performer = new CreditPerformer { Name = "Victor Ray", Gender = Gender.Male } } };
+            var evilCredits = new List<Credit> { new Credit { Character = "", PersonName = "Whitney Wright", Performer = new CreditPerformer { Name = "Whitney Wright", Gender = Gender.Female } }, new Credit { Character = "", PersonName = "Mick Blue", Performer = new CreditPerformer { Name = "Mick Blue", Gender = Gender.Male } } };
+            var ariAlectra = new List<Credit> { new Credit { Character = "", PersonName = "Ari Alectra", Performer = new CreditPerformer { Name = "Ari Alectra", Gender = Gender.Female } } };
+            var amhyraShy = new List<Credit> { new Credit { Character = "", PersonName = "Amhyra Shy", Performer = new CreditPerformer { Name = "Amhyra Shy", Gender = Gender.Female } } };
+            var cocoLovelock = new List<Credit> { new Credit { Character = "Coco Lovecock", PersonName = "Coco Lovelock", Performer = new CreditPerformer { Name = "Coco Lovelock", Gender = Gender.Female } } };
+            var vixenCredits = new List<Credit> { new Credit { Character = "", PersonName = "Emma White", Performer = new CreditPerformer { Name = "Emma White", Gender = Gender.Female } } };
 
             Mocker.GetMock<ICreditService>()
                 .Setup(s => s.GetAllCreditsForMovieMetadata(It.Is<int>(s => s.Equals(1))))

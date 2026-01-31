@@ -146,6 +146,7 @@ namespace NzbDrone.Core.Movies
             movieMetadata.Ratings = movieInfo.Ratings;
             movieMetadata.ItemType = movieInfo.ItemType;
             movieMetadata.MetadataSource = movieInfo.MetadataSource;
+            movieMetadata.Credits = creditInfo; // Store credits for so they can be used for the initial naming
             movieMetadata.Genres = movieInfo.Genres;
             movieMetadata.Website = movieInfo.Website;
 
@@ -219,8 +220,13 @@ namespace NzbDrone.Core.Movies
             var performerList = performerInfo.Where(p => !string.IsNullOrWhiteSpace(p.ForeignId)).ToList();
             _performerService.AddPerformers(performerList, true);
 
+            // Reset flattened performer lists before repopulating
+            movieMetadata.PerformerForeignIds = new List<string>();
+            movieMetadata.PerformerNames = new List<string>();
+
             // Update the flattened performer lists on the movie metadata
             performerList.ForEach(performer => movieMetadata.PerformerForeignIds.Add(performer.ForeignId));
+
             creditInfo.ForEach(credit => movieMetadata.PerformerNames.Add(credit.PersonName));
 
             _movieMetadataService.Upsert(movieMetadata);

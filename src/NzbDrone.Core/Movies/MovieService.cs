@@ -757,15 +757,15 @@ namespace NzbDrone.Core.Movies
                     }
                 }
 
-                var credits = _creditService.GetAllCreditsForMovieMetadata(movie.MovieMetadata.Value.Id);
-
-                if (credits == null || !credits.Any())
+                if (!movie.MovieMetadata.Value.Credits.Any())
                 {
-                    continue;
+                    // Load the Credits if not already loaded
+                    movie.MovieMetadata.Value.Credits = _creditService.GetAllCreditsForMovieMetadata(movie.MovieMetadata.Value.Id);
                 }
 
-                var cleanPerformers =  credits.Select(a => Parser.Parser.NormalizeEpisodeTitle(a.Performer.Name))
-                                                                       .Where(x => x.IsNotNullOrWhiteSpace());
+                var cleanPerformers = movie.MovieMetadata.Value.Credits
+                    .Select(a => Parser.Parser.NormalizeEpisodeTitle(a.Performer.Name ?? a.PersonName))
+                    .Where(n => n.IsNotNullOrWhiteSpace());
 
                 if (cleanPerformers == null || cleanPerformers.Empty())
                 {
@@ -780,8 +780,9 @@ namespace NzbDrone.Core.Movies
                     continue;
                 }
 
-                var cleanCharacters = credits.Select(a => Parser.Parser.NormalizeEpisodeTitle(a.Character))
-                                                                        .Where(x => x.IsNotNullOrWhiteSpace());
+                var cleanCharacters = movie.MovieMetadata.Value.Credits
+                    .Select(a => Parser.Parser.NormalizeEpisodeTitle(a.Character))
+                    .Where(x => x.IsNotNullOrWhiteSpace());
 
                 // If parsed title matches character, consider a match
                 if (cleanCharacters.Any() && cleanCharacters.Any(c => c.IsNotNullOrWhiteSpace() && parsedMovieTitle.Equals(c)))
@@ -791,7 +792,7 @@ namespace NzbDrone.Core.Movies
                     continue;
                 }
 
-                var cleanFemalePerformers = credits.Where(a => a.Performer.Gender == Gender.Female)
+                var cleanFemalePerformers = movie.MovieMetadata.Value.Credits.Where(a => a.Performer.Gender == Gender.Female)
                                                                              .Select(a => Parser.Parser.NormalizeEpisodeTitle(a.Performer.Name))
                                                                              .Where(x => x.IsNotNullOrWhiteSpace()).ToList();
 
@@ -803,7 +804,7 @@ namespace NzbDrone.Core.Movies
                     continue;
                 }
 
-                var cleanFemaleCharacters = credits.Where(a => a.Performer.Gender == Gender.Female)
+                var cleanFemaleCharacters = movie.MovieMetadata.Value.Credits.Where(a => a.Performer.Gender == Gender.Female)
                                                                              .Select(a => Parser.Parser.NormalizeEpisodeTitle(a.Character))
                                                                              .Where(x => x.IsNotNullOrWhiteSpace()).ToList();
 

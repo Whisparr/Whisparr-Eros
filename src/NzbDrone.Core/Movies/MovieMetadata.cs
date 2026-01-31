@@ -15,7 +15,7 @@ namespace NzbDrone.Core.Movies
         public MovieMetadata()
         {
             AlternativeTitles = new List<AlternativeTitle>();
-            SearchCredits = new List<Credit>();
+            Credits = new List<Credit>();
             Images = new List<MediaCover.MediaCover>();
             Genres = new List<string>();
             OriginalLanguage = Language.English;
@@ -60,7 +60,7 @@ namespace NzbDrone.Core.Movies
         public MetadataSource MetadataSource { get; set; }
         public List<string> PerformerForeignIds { get; set; }
         public List<string> PerformerNames { get; set; }
-        public List<Credit> SearchCredits { get; set; } // Only Used for searching Movie/Scene to provide cast info gender
+        public List<Credit> Credits { get; set; } // Either Passed from SkyHook or Loaded from the database
 
         [MemberwiseEqualityIgnore]
         public bool IsRecentMovie
@@ -78,7 +78,7 @@ namespace NzbDrone.Core.Movies
 
         public MediaCover.MediaCover Poster
         {
-            // Return Poster if exists, otherwise return Screenshot (Don't return any Fanart)
+           // Return Poster if exists, otherwise return Screenshot (Don't return any Fanart)
             get { return Images.FirstOrDefault(c => c.CoverType == MediaCoverTypes.Poster) ?? Images.FirstOrDefault(i => i.CoverType == MediaCoverTypes.Screenshot); }
         }
 
