@@ -160,7 +160,7 @@ namespace Whisparr.Api.V3.Movies
                 MovieFile = movieFile,
                 StudioTitle = model.MovieMetadata.Value.StudioTitle,
                 StudioForeignId = model.MovieMetadata.Value.StudioForeignId,
-                SearchCredits = model.MovieMetadata.Value.SearchCredits,
+                SearchCredits = model.MovieMetadata.Value.Credits,
                 PerformerForeignIds = model.MovieMetadata.Value.PerformerForeignIds,
                 PerformerNames = model.MovieMetadata.Value.PerformerNames,
                 ItemType = model.MovieMetadata.Value.ItemType,

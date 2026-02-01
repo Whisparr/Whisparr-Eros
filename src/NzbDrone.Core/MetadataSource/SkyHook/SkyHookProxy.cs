@@ -1284,7 +1284,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
                 foreach (var performer in result.Credits)
                 {
-                    movie.MovieMetadata.Value.SearchCredits.Add(MapCast(performer));
+                    movie.MovieMetadata.Value.Credits.Add(MapCast(performer));
                 }
 
                 movie.MovieMetadata.Value.PerformerNames = result.Credits.Select(c => c.Performer.Name).ToList();
