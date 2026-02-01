@@ -182,7 +182,9 @@ namespace NzbDrone.Core.Configuration
             {
                 const string defaultValue = "https://api.whisparr.com/v4/{route}";
                 var whisparrMetadata = GetValue("WhisparrMetadata", defaultValue);
-                if (string.IsNullOrWhiteSpace(whisparrMetadata))
+
+                // Do not allow the old v3 URL for Whisparr V2 Metadata
+                if (string.IsNullOrWhiteSpace(whisparrMetadata) || whisparrMetadata.Equals("https://api.whisparr.com/v3/{route}", StringComparison.InvariantCultureIgnoreCase))
                 {
                     return defaultValue;
                 }
