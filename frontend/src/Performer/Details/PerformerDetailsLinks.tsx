@@ -1,30 +1,37 @@
-import PropTypes from 'prop-types';
 import React from 'react';
 import Label from 'Components/Label';
 import Link from 'Components/Link/Link';
 import { kinds, sizes } from 'Helpers/Props';
+import Performer from 'Performer/Performer';
 import translate from 'Utilities/String/translate';
 import styles from './PerformerDetailsLinks.css';
 
-function PerformerDetailsLinks(props) {
+type PerformerDetailsLinksProps = Pick<
+  Performer,
+  'tmdbId' | 'tpdbId' | 'foreignId'
+>;
+
+function PerformerDetailsLinks(props: PerformerDetailsLinksProps) {
   const { tmdbId, tpdbId, foreignId } = props;
 
   return (
     <div className={styles.links}>
-      <Link
-        className={styles.link}
-        to={`https://stashdb.org/performers/${foreignId}`}
-      >
-        <Label
-          className={styles.linkLabel}
-          kind={kinds.INFO}
-          size={sizes.LARGE}
+      {foreignId ? (
+        <Link
+          className={styles.link}
+          to={`https://stashdb.org/performers/${foreignId}`}
         >
-          {translate('StashDB')}
-        </Label>
-      </Link>
+          <Label
+            className={styles.linkLabel}
+            kind={kinds.INFO}
+            size={sizes.LARGE}
+          >
+            {translate('StashDB')}
+          </Label>
+        </Link>
+      ) : null}
 
-      {!!tmdbId && (
+      {tmdbId ? (
         <Link
           className={styles.link}
           to={`https://www.themoviedb.org/person/${tmdbId}`}
@@ -37,9 +44,9 @@ function PerformerDetailsLinks(props) {
             {translate('TMDb')}
           </Label>
         </Link>
-      )}
+      ) : null}
 
-      {!!tpdbId && (
+      {tpdbId ? (
         <Link
           className={styles.link}
           to={`https://theporndb.net/performers/${tpdbId}`}
@@ -49,18 +56,12 @@ function PerformerDetailsLinks(props) {
             kind={kinds.INFO}
             size={sizes.LARGE}
           >
-            {translate('TPDb')}
+            {translate('TPDB')}
           </Label>
         </Link>
-      )}
+      ) : null}
     </div>
   );
 }
-
-PerformerDetailsLinks.propTypes = {
-  foreignId: PropTypes.string.isRequired,
-  tpdbId: PropTypes.string,
-  tmdbId: PropTypes.number
-};
 
 export default PerformerDetailsLinks;

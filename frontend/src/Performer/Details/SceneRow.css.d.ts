@@ -3,6 +3,7 @@
 interface CssExports {
   'audio': string;
   'audioLanguages': string;
+  'blurred': string;
   'customFormatScore': string;
   'externalLink': string;
   'languages': string;

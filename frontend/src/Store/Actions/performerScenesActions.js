@@ -1,7 +1,5 @@
-import React from 'react';
 import { createAction } from 'redux-actions';
-import Icon from 'Components/Icon';
-import { icons, sortDirections } from 'Helpers/Props';
+import { sortDirections } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import createHandleActions from './Creators/createHandleActions';
 import createSetClientSideCollectionSortReducer from './Creators/Reducers/createSetClientSideCollectionSortReducer';
@@ -46,12 +44,6 @@ export const defaultState = {
       isSortable: true
     },
     {
-      name: 'relativePath',
-      label: () => translate('RelativePath'),
-      isVisible: false,
-      isSortable: true
-    },
-    {
       name: 'releaseDate',
       label: () => translate('ReleaseDate'),
       isVisible: true,
@@ -69,58 +61,8 @@ export const defaultState = {
       isSortable: true
     },
     {
-      name: 'languages',
-      label: () => translate('Languages'),
-      isVisible: false
-    },
-    {
-      name: 'audioInfo',
-      label: () => translate('AudioInfo'),
-      isVisible: false
-    },
-    {
-      name: 'videoCodec',
-      label: () => translate('VideoCodec'),
-      isVisible: false
-    },
-    {
-      name: 'videoDynamicRangeType',
-      label: () => translate('VideoDynamicRange'),
-      isVisible: false
-    },
-    {
-      name: 'audioLanguages',
-      label: () => translate('AudioLanguages'),
-      isVisible: false
-    },
-    {
-      name: 'subtitleLanguages',
-      label: () => translate('SubtitleLanguages'),
-      isVisible: false
-    },
-    {
       name: 'sizeOnDisk',
       label: () => translate('Size'),
-      isVisible: false,
-      isSortable: true
-    },
-    {
-      name: 'releaseGroup',
-      label: () => translate('ReleaseGroup'),
-      isVisible: false
-    },
-    {
-      name: 'customFormats',
-      label: () => translate('Formats'),
-      isVisible: false
-    },
-    {
-      name: 'customFormatScore',
-      columnLabel: () => translate('CustomFormatScore'),
-      label: React.createElement(Icon, {
-        name: icons.SCORE,
-        title: () => translate('CustomFormatScore')
-      }),
       isVisible: false,
       isSortable: true
     },

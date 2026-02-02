@@ -278,6 +278,7 @@ namespace Whisparr.Api.V3.Performers
                 {
                     movie.MovieFileCount = stats.MovieFileCount;
                     movie.SizeOnDisk = stats.SizeOnDisk;
+                    movie.HasFile = stats.MovieFileCount > 0;
                 }
             }
         }
@@ -291,6 +292,8 @@ namespace Whisparr.Api.V3.Performers
             resource.TotalSceneCount = movies.Count(x => x.MovieMetadata.Value.ItemType == ItemType.Scene);
             resource.MovieCount = movieStats.Count(x => x.MovieFileCount > 0 && movies.First(m => m.Id == x.MovieId).MovieMetadata.Value.ItemType == ItemType.Movie);
             resource.SceneCount = movieStats.Count(x => x.MovieFileCount > 0 && movies.First(m => m.Id == x.MovieId).MovieMetadata.Value.ItemType == ItemType.Scene);
+            resource.HasMovies = resource.MovieCount > 0;
+            resource.HasScenes = resource.SceneCount > 0;
         }
 
         private void LinkMovies(PerformerResource resource, List<Movie> movies)
