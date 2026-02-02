@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { clearPendingChanges } from 'Store/Actions/baseActions';
@@ -7,6 +6,8 @@ import EditPerformerModal from './EditPerformerModal';
 const mapDispatchToProps = {
   clearPendingChanges
 };
+
+import PropTypes from 'prop-types';
 
 class EditPerformerModalConnector extends Component {
 
@@ -33,6 +34,7 @@ class EditPerformerModalConnector extends Component {
 
 EditPerformerModalConnector.propTypes = {
   ...EditPerformerModal.propTypes,
+  performerId: PropTypes.number.isRequired,
   onModalClose: PropTypes.func.isRequired,
   clearPendingChanges: PropTypes.func.isRequired
 };

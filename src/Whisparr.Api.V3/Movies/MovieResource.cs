@@ -38,6 +38,7 @@ namespace Whisparr.Api.V3.Movies
         public string SortTitle { get; set; }
         public List<AlternativeTitleResource> AlternateTitles { get; set; }
         public long? SizeOnDisk { get; set; }
+        public int? MovieFileCount { get; set; }
         public MovieStatusType Status { get; set; }
         public string Overview { get; set; }
         public DateTime? ReleaseDate { get; set; }

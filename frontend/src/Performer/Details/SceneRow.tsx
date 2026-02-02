@@ -1,12 +1,15 @@
 import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
+import Icon from 'Components/Icon';
 import MonitorToggleButton from 'Components/MonitorToggleButton';
 import RelativeDateCell from 'Components/Table/Cells/RelativeDateCell';
 import TableRowCell from 'Components/Table/Cells/TableRowCell';
 import Column from 'Components/Table/Column';
 import TableRow from 'Components/Table/TableRow';
 import Tooltip from 'Components/Tooltip/Tooltip';
-import { tooltipPositions } from 'Helpers/Props';
+import { icons, tooltipPositions } from 'Helpers/Props';
 import MovieIndexProgressBar from 'Movie/Index/ProgressBar/MovieIndexProgressBar';
+import { MovieStatus } from 'Movie/Movie';
 import MovieFormats from 'Movie/MovieFormats';
 import MovieSearchCell from 'Movie/MovieSearchCell';
 import MovieTitleLink from 'Movie/MovieTitleLink';
@@ -17,16 +20,20 @@ import type { default as CustomFormatType } from 'typings/CustomFormat';
 import formatRuntime from 'Utilities/Date/formatRuntime';
 import formatBytes from 'Utilities/Number/formatBytes';
 import formatCustomFormatScore from 'Utilities/Number/formatCustomFormatScore';
+import translate from 'Utilities/String/translate';
 import styles from './SceneRow.css';
 
 interface SceneRowProps {
   id: number;
+  itemType: string;
   foreignId: string;
   movieFileId?: number;
   isAvailable: boolean;
   hasFile: boolean;
   movieFile?: MovieFile;
   monitored: boolean;
+  languages?: string[];
+  audioLanguages?: string[];
   performerNames?: string[];
   joinedPerformers?: string;
   releaseDate?: string;
@@ -34,10 +41,16 @@ interface SceneRowProps {
   movieRuntimeFormat?: string;
   title: string;
   isSaving?: boolean;
+  path?: string;
+  relativePath?: string;
   movieFilePath?: string;
   movieFileRelativePath?: string;
-  movieFileSize?: number;
+  sizeOnDisk?: number;
   releaseGroup?: string;
+  rootFolderPath?: string;
+  status: MovieStatus;
+  studioTitle?: string;
+  studioForeignId?: string;
   customFormats?: CustomFormatType[];
   customFormatScore?: number;
   mediaInfo?: ReturnType<typeof MediaInfo>;
@@ -69,26 +82,24 @@ class SceneRow extends Component<SceneRowProps, SceneRowState> {
     this.setState({ isDetailsModalOpen: false });
   };
 
-  onMonitorMoviePress = (
-    value: boolean | { monitored: boolean; moviesMonitored: boolean },
-    options: { shiftKey: boolean }
-  ): void => {
-    // Support both boolean and object signatures
-    const { monitored } =
-      typeof value === 'object' && value !== null && 'monitored' in value
-        ? value
-        : { monitored: value as boolean };
-    this.props.onMonitorMoviePress(this.props.id, monitored, options);
+  onMonitorToggle = (): void => {
+    const { id, monitored, onMonitorMoviePress } = this.props;
+    onMonitorMoviePress(id, !monitored);
   };
 
   render() {
     const {
       id,
+      itemType,
       foreignId,
       movieFileId,
       monitored,
       performerNames,
       runtime,
+      path,
+      relativePath,
+      languages,
+      audioLanguages,
       isAvailable,
       hasFile,
       movieFile,
@@ -96,15 +107,35 @@ class SceneRow extends Component<SceneRowProps, SceneRowState> {
       releaseDate,
       title,
       isSaving,
-      movieFilePath,
-      movieFileRelativePath,
-      movieFileSize,
+      studioTitle,
+      studioForeignId,
+      sizeOnDisk,
       releaseGroup,
       customFormats = [],
       customFormatScore,
       columns,
     } = this.props;
 
+    const status = this.props.status as MovieStatus;
+    const externalLink = () => {
+      if (!foreignId) return '';
+      if (foreignId.startsWith('tpdbId:')) {
+        return `https://www.theporndb.net/movies/${foreignId.replace(
+          'tpdbId:',
+          ''
+        )}`;
+      }
+      if (parseInt(foreignId) > 0) {
+        return `https://www.themoviedb.org/movie/${foreignId.replace(
+          'tmdbId:',
+          ''
+        )}`;
+      }
+      // failsafe, though we shouldn't ever need this
+      return `https://stashdb.org/scene/${foreignId}`;
+    };
+
+    const url = externalLink();
     return (
       <TableRow>
         {columns.map((column) => {
@@ -115,9 +146,14 @@ class SceneRow extends Component<SceneRowProps, SceneRowState> {
             return (
               <TableRowCell key={name} className={styles.monitored}>
                 <MonitorToggleButton
+                  className={styles.monitorToggleButton}
+                  size={20}
+                  type={itemType === 'scene' ? 'sceneMonitor' : 'movieMonitor'}
                   monitored={monitored}
+                  moviesMonitored={monitored}
                   isSaving={isSaving}
-                  onPress={this.onMonitorMoviePress}
+                  isDisabled={false}
+                  onPress={this.onMonitorToggle}
                 />
               </TableRowCell>
             );
@@ -131,10 +167,43 @@ class SceneRow extends Component<SceneRowProps, SceneRowState> {
             );
           }
 
+          // Fully populated Studio will link to it, otherwise just show name
+          if (name === 'studioTitle') {
+            return (
+              <TableRowCell key={name} className={styles.studio}>
+                {studioForeignId ? (
+                  <Link to={`/studio/${studioForeignId}`}>{studioTitle}</Link>
+                ) : (
+                  <Tooltip
+                    maxWidth={250}
+                    anchor={
+                      <span>
+                        {studioTitle}
+                        <a href={url} target="_blank">
+                          <Icon
+                            className={styles.externalLink}
+                            name={icons.EXTERNAL_LINK}
+                          />
+                        </a>
+                      </span>
+                    }
+                    tooltip={translate('StudioNotInStashDb')}
+                  />
+                )}
+              </TableRowCell>
+            );
+          }
+
+          if (name === 'releaseDate') {
+            return <RelativeDateCell key={name} date={releaseDate} />;
+          }
+
           if (name === 'credits' && performerNames) {
-            const joinedPerformers = performerNames
-              .slice(0, 4)
+            // TODO: Workaround for duplicates before slicing
+            const uniquePerformers = Array.from(new Set(performerNames));
+            const joinedPerformers = uniquePerformers
               .sort((a, b) => (a > b ? 1 : -1))
+              .slice(0, 4)
               .join(', ');
             return (
               <TableRowCell key={name} className={styles.performers}>
@@ -143,36 +212,22 @@ class SceneRow extends Component<SceneRowProps, SceneRowState> {
             );
           }
 
-          if (name === 'path') {
-            return <TableRowCell key={name}>{movieFilePath}</TableRowCell>;
-          }
-
-          if (name === 'relativePath') {
-            return (
-              <TableRowCell key={name}>{movieFileRelativePath}</TableRowCell>
-            );
-          }
-
-          if (name === 'releaseDate') {
-            return <RelativeDateCell key={name} date={releaseDate} />;
-          }
-
           if (name === 'runtime') {
             return (
               <TableRowCell key={name} className={styles.runtime}>
                 {typeof runtime === 'number'
                   ? formatRuntime(runtime, movieRuntimeFormat)
-                  : ''}
+                  : null}
               </TableRowCell>
             );
           }
 
           if (name === 'customFormats') {
-            return (
+            return customFormats.length > 0 ? (
               <TableRowCell key={name}>
                 <MovieFormats formats={customFormats as CustomFormatType[]} />
               </TableRowCell>
-            );
+            ) : null;
           }
 
           if (name === 'customFormatScore') {
@@ -195,13 +250,23 @@ class SceneRow extends Component<SceneRowProps, SceneRowState> {
           }
 
           if (name === 'languages') {
-            return (
+            return languages && languages.length > 0 ? (
               <TableRowCell key={name} className={styles.languages}>
                 {typeof movieFileId === 'number' ? (
                   <MovieFileLanguageConnector movieFileId={movieFileId} />
                 ) : null}
               </TableRowCell>
-            );
+            ) : null;
+          }
+
+          if (name === 'audioLanguages') {
+            return audioLanguages && audioLanguages.length > 0 ? (
+              <TableRowCell key={name} className={styles.audio}>
+                {typeof movieFileId === 'number' ? (
+                  <MovieFileLanguageConnector movieFileId={movieFileId} />
+                ) : null}
+              </TableRowCell>
+            ) : null;
           }
 
           if (name === 'audioInfo') {
@@ -254,10 +319,26 @@ class SceneRow extends Component<SceneRowProps, SceneRowState> {
             );
           }
 
-          if (name === 'size') {
+          if (name === 'path') {
+            return path ? (
+              <TableRowCell key={name} className={styles.path}>
+                {path}
+              </TableRowCell>
+            ) : null;
+          }
+
+          if (name === 'relativePath') {
+            return relativePath ? (
+              <TableRowCell key={name} className={styles.relativePath}>
+                {relativePath}
+              </TableRowCell>
+            ) : null;
+          }
+
+          if (name === 'sizeOnDisk') {
             return (
               <TableRowCell key={name} className={styles.size}>
-                {!!movieFileSize && formatBytes(movieFileSize)}
+                {sizeOnDisk ? formatBytes(sizeOnDisk) : null}
               </TableRowCell>
             );
           }
@@ -265,7 +346,7 @@ class SceneRow extends Component<SceneRowProps, SceneRowState> {
           if (name === 'releaseGroup') {
             return (
               <TableRowCell key={name} className={styles.releaseGroup}>
-                {releaseGroup}
+                {releaseGroup ? releaseGroup : null}
               </TableRowCell>
             );
           }
@@ -282,7 +363,7 @@ class SceneRow extends Component<SceneRowProps, SceneRowState> {
                   detailedProgressBar={true}
                   bottomRadius={false}
                   isStandAlone={true}
-                  status="released"
+                  status={status}
                   width={100}
                 />
               </TableRowCell>

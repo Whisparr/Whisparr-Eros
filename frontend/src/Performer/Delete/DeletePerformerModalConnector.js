@@ -33,6 +33,7 @@ class DeletePerformerModalConnector extends Component {
 
 DeletePerformerModalConnector.propTypes = {
   ...DeletePerformerModal.propTypes,
+  performerId: PropTypes.number.isRequired,
   onModalClose: PropTypes.func.isRequired,
   clearPendingChanges: PropTypes.func.isRequired
 };

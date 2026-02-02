@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
+import { queryClient } from 'App/queryClient';
 import { setAppValue, setVersion } from 'Store/Actions/appActions';
 import { removeItem, update, updateItem } from 'Store/Actions/baseActions';
 import { fetchCommands, finishCommand, updateCommand } from 'Store/Actions/commandActions';
@@ -86,6 +87,34 @@ Logger.prototype.log = function(logLevel, message) {
     }
   }
 };
+
+// TODO: TempHelper to update a nested movie in performer.years[].movies[] in React Query cache
+// Update Performer React Query cache helper
+function updateMovieInPerformerWorksQueryCache(updatedMovie) {
+  // Find all queries for performer works
+  const queryCache = queryClient.getQueryCache().findAll();
+  queryCache.forEach(({ queryKey }) => {
+    // Look for keys like "/api/v3/performer/{performerId}/works"
+    if (
+      Array.isArray(queryKey) &&
+      typeof queryKey[0] === 'string' &&
+      (/performer\/[^/]+\/works$/).test(queryKey[0])
+    ) {
+      queryClient.setQueryData(queryKey, (oldData) => {
+        if (!Array.isArray(oldData)) {
+          return oldData;
+        }
+        const idx = oldData.findIndex((movie) => movie.id === updatedMovie.id);
+        if (idx === -1) {
+          return oldData;
+        }
+        const newData = [...oldData];
+        newData[idx] = { ...oldData[idx], ...updatedMovie };
+        return newData;
+      });
+    }
+  });
+}
 
 class SignalRConnector extends Component {
 
@@ -243,6 +272,8 @@ class SignalRConnector extends Component {
     if (action === 'updated') {
       this.props.dispatchUpdateItem({ section, ...body.resource });
 
+      // TODO: temp shim for react-query until Movie is moved to React-Query
+      updateMovieInPerformerWorksQueryCache(body.resource);
       repopulatePage('movieUpdated');
     } else if (action === 'deleted') {
       this.props.dispatchRemoveItem({ section, id: body.resource.id });
@@ -267,7 +298,18 @@ class SignalRConnector extends Component {
     const section = 'performers';
 
     if (action === 'updated') {
+      // Update performer item in Redux store
       this.props.dispatchUpdateItem({ section, ...body.resource });
+
+      // Invalidate performer query cache in React Query
+      if (body.resource && body.resource.foreignId) {
+        queryClient.invalidateQueries([
+          [`/performer/${body.resource.foreignId}`]]);
+      }
+      if (body.resource && body.resource.foreignId) {
+        queryClient.invalidateQueries([
+          [`/performer/${body.resource.foreignId}/works`]]);
+      }
     } else if (action === 'deleted') {
       this.props.dispatchRemoveItem({ section, id: body.resource.id });
     }

@@ -1,6 +1,7 @@
 import ModelBase from 'App/ModelBase';
 import Language from 'Language/Language';
 import { MovieFile } from 'MovieFile/MovieFile';
+import MovieCredit from 'typings/MovieCredit';
 
 export type MovieMonitor = 'movieOnly' | 'sceneOnly' | 'movieAndScene' | 'none';
 
@@ -63,6 +64,7 @@ interface Movie extends ModelBase {
   monitored: boolean;
   status: MovieStatus;
   title: string;
+  credits: MovieCredit[];
   performerForeignIds: Array<string>;
   performerNames: Array<string>;
   titleSlug: string;
@@ -91,6 +93,7 @@ interface Movie extends ModelBase {
   isAvailable: boolean;
   isSaving?: boolean;
   addOptions: MovieAddOptions;
+  sizeOnDisk?: number;
 }
 
 export default Movie;
