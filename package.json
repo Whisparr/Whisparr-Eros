@@ -22,6 +22,7 @@
     "defaults"
   ],
   "dependencies": {
+    "@floating-ui/react": "0.27.17",
     "@fortawesome/fontawesome-free": "7.1.0",
     "@fortawesome/fontawesome-svg-core": "7.1.0",
     "@fortawesome/free-brands-svg-icons": "7.1.0",

@@ -18,19 +18,17 @@ const useApiQuery = <T>(options: QueryOptions<T>) => {
   const { queryKey, requestOptions } = useMemo(() => {
     const { path: path, queryOptions, queryParams, ...otherOptions } = options;
 
-    const key = queryParams ? [path, queryParams] : [path];
-    const reqOpts = {
-      ...otherOptions,
-      path: getQueryPath(path) + getQueryString(queryParams),
-      headers: {
-        ...options.headers,
-        'X-Api-Key': window.Whisparr.apiKey,
-        'X-Whisparr-Client': 'Whisparr',
-      },
-    };
     return {
-      queryKey: key,
-      requestOptions: reqOpts,
+      queryKey: queryParams ? [path, queryParams] : [path],
+      requestOptions: {
+        ...otherOptions,
+        path: getQueryPath(path) + getQueryString(queryParams),
+        headers: {
+          ...options.headers,
+          'X-Api-Key': window.Whisparr.apiKey,
+          'X-Whisparr-Client': 'Whisparr',
+        },
+      },
     };
   }, [options]);
 

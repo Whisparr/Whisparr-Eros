@@ -32,10 +32,10 @@ interface SceneRowProps {
   releaseDate?: string;
   runtime?: number;
   movieRuntimeFormat?: string;
+  safeForWorkMode?: boolean;
   title: string;
   isSaving?: boolean;
   movieFilePath?: string;
-  movieFileRelativePath?: string;
   movieFileSize?: number;
   releaseGroup?: string;
   customFormats?: CustomFormatType[];
@@ -97,9 +97,9 @@ class SceneRow extends Component<SceneRowProps, SceneRowState> {
       title,
       isSaving,
       movieFilePath,
-      movieFileRelativePath,
       movieFileSize,
       releaseGroup,
+      safeForWorkMode,
       customFormats = [],
       customFormatScore,
       columns,
@@ -144,17 +144,32 @@ class SceneRow extends Component<SceneRowProps, SceneRowState> {
           }
 
           if (name === 'path') {
-            return <TableRowCell key={name}>{movieFilePath}</TableRowCell>;
-          }
-
-          if (name === 'relativePath') {
             return (
-              <TableRowCell key={name}>{movieFileRelativePath}</TableRowCell>
+              <TableRowCell
+                key={name}
+                className={
+                  this.props.safeForWorkMode
+                    ? `${styles.path} ${styles.blurred}`
+                    : styles.path
+                }
+              >
+                {movieFilePath}
+              </TableRowCell>
             );
           }
 
           if (name === 'releaseDate') {
-            return <RelativeDateCell key={name} date={releaseDate} />;
+            return (
+              <RelativeDateCell
+                key={name}
+                className={
+                  safeForWorkMode
+                    ? `${styles.path} ${styles.blurred}`
+                    : styles.path
+                }
+                date={releaseDate}
+              />
+            );
           }
 
           if (name === 'runtime') {

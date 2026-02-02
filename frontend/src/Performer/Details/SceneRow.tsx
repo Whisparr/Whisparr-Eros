@@ -49,6 +49,7 @@ interface SceneRowProps {
   releaseGroup?: string;
   rootFolderPath?: string;
   status: MovieStatus;
+  safeForWorkMode?: boolean;
   studioTitle?: string;
   studioForeignId?: string;
   customFormats?: CustomFormatType[];
@@ -175,7 +176,6 @@ class SceneRow extends Component<SceneRowProps, SceneRowState> {
                   <Link to={`/studio/${studioForeignId}`}>{studioTitle}</Link>
                 ) : (
                   <Tooltip
-                    maxWidth={250}
                     anchor={
                       <span>
                         {studioTitle}
@@ -321,7 +321,12 @@ class SceneRow extends Component<SceneRowProps, SceneRowState> {
 
           if (name === 'path') {
             return path ? (
-              <TableRowCell key={name} className={styles.path}>
+              <TableRowCell
+                key={name}
+                className={
+                  this.props.safeForWorkMode ? styles.blurred : styles.path
+                }
+              >
                 {path}
               </TableRowCell>
             ) : null;

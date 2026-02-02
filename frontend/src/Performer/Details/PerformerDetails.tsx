@@ -334,9 +334,9 @@ function PerformerDetails() {
                   <div className={styles.title}>
                     <span className={styles.performerName}>{fullName}</span>
                     <PerformerGenderIcon
+                      className={styles.gender}
                       gender={gender}
                       size={40}
-                      className={styles.gender}
                     />
                   </div>
                 </div>
@@ -356,32 +356,6 @@ function PerformerDetails() {
                   {!!age && (
                     <span className={styles.age}>
                       {age} {` ${translate('YearsOld')}`}
-                    </span>
-                  )}
-
-                  {(foreignId || tmdbId || tpdbId) && (
-                    <span className={styles.links}>
-                      <Tooltip
-                        anchor={<Icon name={icons.EXTERNAL_LINK} size={20} />}
-                        tooltip={
-                          <PerformerDetailsLinks
-                            foreignId={foreignId ?? ''}
-                            tmdbId={tmdbId}
-                            tpdbId={tpdbId}
-                          />
-                        }
-                        position={tooltipPositions.BOTTOM}
-                      />
-                    </span>
-                  )}
-
-                  {performerTags.length > 0 && (
-                    <span className={styles.tags}>
-                      <Tooltip
-                        anchor={<Icon name={icons.TAGS} size={20} />}
-                        tooltip={<PerformerTags tags={performerTags} />}
-                        position={tooltipPositions.BOTTOM}
-                      />
                     </span>
                   )}
                 </div>
@@ -461,7 +435,7 @@ function PerformerDetails() {
                   </Label>
                 )}
 
-                {sizeOnDisk >= 0 && (
+                {sizeOnDisk >= 0 ? (
                   <Label
                     className={styles.detailsLabel}
                     title={translate('SizeOnDisk')}
@@ -472,7 +446,44 @@ function PerformerDetails() {
                       {formatBytes(sizeOnDisk)}
                     </span>
                   </Label>
-                )}
+                ) : null}
+
+                {performerTags.length ? (
+                  <Tooltip
+                    anchor={
+                      <Label className={styles.detailsLabel} size={sizes.LARGE}>
+                        <Icon name={icons.TAGS} size={17} />
+
+                        <span className={styles.tags}>{translate('Tags')}</span>
+                      </Label>
+                    }
+                    tooltip={<PerformerTags tags={performerTags} />}
+                    kind={kinds.INVERSE}
+                    position={tooltipPositions.BOTTOM}
+                  />
+                ) : null}
+
+                <Tooltip
+                  anchor={
+                    <Label className={styles.detailsLabel} size={sizes.LARGE}>
+                      <div>
+                        <Icon name={icons.EXTERNAL_LINK} size={17} />
+                        <span className={styles.links}>
+                          {translate('Links')}
+                        </span>
+                      </div>
+                    </Label>
+                  }
+                  tooltip={
+                    <PerformerDetailsLinks
+                      tpdbId={tpdbId}
+                      tmdbId={tmdbId}
+                      foreignId={foreignId}
+                    />
+                  }
+                  kind={kinds.INVERSE}
+                  position={tooltipPositions.BOTTOM}
+                />
               </div>
             </div>
           </div>
@@ -497,6 +508,7 @@ function PerformerDetails() {
                   sortDirection={sortDirection}
                   isExpanded={!!expandedYears[year]}
                   isSmallScreen={false} // or use your actual logic for small screen
+                  safeForWorkMode={safeForWorkMode}
                   onSortPress={handleSortPress}
                   onExpandPress={handleExpandYearPress}
                   onYearRefreshPress={onYearRefreshPress}

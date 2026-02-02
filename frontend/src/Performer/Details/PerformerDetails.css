@@ -146,12 +146,12 @@
 .years,
 .age,
 .status,
-.tags,
 .runtime {
   margin-right: 14px;
 }
 
 .gender{
+  margin-left: 15px;
   font-size: 50px;
 }
 
@@ -168,6 +168,8 @@
 .sceneCount,
 .statusName,
 .studio,
+.tags,
+.links,
 .genres {
   margin-left: 8px;
   font-weight: 300;

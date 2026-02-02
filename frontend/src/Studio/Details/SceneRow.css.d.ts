@@ -3,9 +3,11 @@
 interface CssExports {
   'audio': string;
   'audioLanguages': string;
+  'blurred': string;
   'customFormatScore': string;
   'languages': string;
   'monitored': string;
+  'path': string;
   'performers': string;
   'releaseGroup': string;
   'runtime': string;

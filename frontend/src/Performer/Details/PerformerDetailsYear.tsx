@@ -27,6 +27,7 @@ interface PerformerDetailsYearProps {
   sortKey: string;
   isSmallScreen: boolean;
   isExpanded?: boolean;
+  safeForWorkMode?: boolean;
   onYearRefreshPress?: (ids: number[]) => void;
   onExpandPress: (year: number, expand: boolean) => void;
   onSortPress?: (name: string, direction: SortDirection) => void;
@@ -42,6 +43,7 @@ function PerformerDetailsYear(props: PerformerDetailsYearProps) {
     sortDirection,
     isSmallScreen,
     isExpanded,
+    safeForWorkMode,
     onExpandPress,
     onYearRefreshPress,
     onSortPress: propOnSortPress,
@@ -227,6 +229,7 @@ function PerformerDetailsYear(props: PerformerDetailsYearProps) {
                       <SceneRow
                         key={movie.id}
                         {...movie}
+                        safeForWorkMode={safeForWorkMode}
                         columns={columns}
                         onMonitorMoviePress={handleMonitorMoviePress}
                       />
