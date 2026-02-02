@@ -1314,7 +1314,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
         {
             var newActor = new Credit
             {
-                PersonName = arg.Performer.Name,
+                PersonName = arg.PersonName.IsNotNullOrWhiteSpace() ? arg.PersonName : arg.Performer.Name,
                 Character = arg.Character,
                 Order = arg.Order,
                 Type = CreditType.Cast,
