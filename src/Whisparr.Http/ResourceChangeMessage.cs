@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using NzbDrone.Core.Datastore.Events;
 using Whisparr.Http.REST;
 
@@ -8,6 +9,7 @@ namespace Whisparr.Http
         where TResource : RestResource
     {
         public TResource Resource { get; private set; }
+        public IReadOnlyList<TResource> Resources { get; private set; }
         public ModelAction Action { get; private set; }
 
         public ResourceChangeMessage(ModelAction action)
@@ -23,6 +25,17 @@ namespace Whisparr.Http
         public ResourceChangeMessage(TResource resource, ModelAction action)
         {
             Resource = resource;
+            Action = action;
+        }
+
+        public ResourceChangeMessage(IEnumerable<TResource> resources, ModelAction action)
+        {
+            if (resources == null)
+            {
+                throw new ArgumentNullException(nameof(resources));
+            }
+
+            Resources = new List<TResource>(resources);
             Action = action;
         }
     }
