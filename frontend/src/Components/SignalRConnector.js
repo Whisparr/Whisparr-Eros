@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
 import { queryClient } from 'App/queryClient';
 import { setAppValue, setVersion } from 'Store/Actions/appActions';
-import { removeItem, update, updateItem } from 'Store/Actions/baseActions';
+import { removeItem, update, updateItem, updateItemsBatch } from 'Store/Actions/baseActions';
 import { fetchCommands, finishCommand, updateCommand } from 'Store/Actions/commandActions';
 import { fetchMovies } from 'Store/Actions/movieActions';
 import { fetchQueue, fetchQueueDetails } from 'Store/Actions/queueActions';
@@ -46,6 +46,7 @@ const mapDispatchToProps = {
   dispatchSetVersion: setVersion,
   dispatchUpdate: update,
   dispatchUpdateItem: updateItem,
+  dispatchUpdateItemsBatch: updateItemsBatch,
   dispatchRemoveItem: removeItem,
   dispatchFetchHealth: fetchHealth,
   dispatchFetchQualityDefinitions: fetchQualityDefinitions,
@@ -266,13 +267,28 @@ class SignalRConnector extends Component {
   };
 
   handleMovie = (body) => {
-    const action = body.action;
     const section = 'movies';
 
+    // Support batch payloads (Resources) and single (resource)
+    if (Array.isArray(body.resources) && body.resources.length > 0) {
+      // Batched update
+      if (body.action === 'updated') {
+        this.props.dispatchUpdateItemsBatch(body.resources.map((resource) => ({ section, ...resource })));
+        body.resources.forEach(updateMovieInPerformerWorksQueryCache);
+        repopulatePage('movieUpdated');
+      } else if (body.action === 'deleted') {
+        body.resources.forEach((resource) => {
+          this.props.dispatchRemoveItem({ section, id: resource.id });
+        });
+      }
+      repopulatePage('movieUpdated');
+      return;
+    }
+
+    // Fallback: single resource
+    const action = body.action;
     if (action === 'updated') {
       this.props.dispatchUpdateItem({ section, ...body.resource });
-
-      // TODO: temp shim for react-query until Movie is moved to React-Query
       updateMovieInPerformerWorksQueryCache(body.resource);
       repopulatePage('movieUpdated');
     } else if (action === 'deleted') {
@@ -466,6 +482,7 @@ SignalRConnector.propTypes = {
   dispatchSetAppValue: PropTypes.func.isRequired,
   dispatchSetVersion: PropTypes.func.isRequired,
   dispatchUpdate: PropTypes.func.isRequired,
+  dispatchUpdateItemsBatch: PropTypes.func.isRequired,
   dispatchUpdateItem: PropTypes.func.isRequired,
   dispatchRemoveItem: PropTypes.func.isRequired,
   dispatchFetchHealth: PropTypes.func.isRequired,

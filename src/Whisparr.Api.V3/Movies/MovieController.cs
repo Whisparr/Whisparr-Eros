@@ -294,8 +294,9 @@ namespace Whisparr.Api.V3.Movies
             foreach (var movie in updated)
             {
                 _movieResourcesCache.Remove(movie.Id.ToString());
-                BroadcastResourceChange(ModelAction.Updated, MapToResource(movie));
             }
+
+            BroadcastResourceChangeBatch(ModelAction.Updated, updated.Select(MapToResource));
 
             return Ok();
         }
@@ -370,7 +371,7 @@ namespace Whisparr.Api.V3.Movies
             resource.RootFolderPath = _rootFolderService.GetBestRootFolderPath(resource.Path);
 
             if (_useCache)
-        {
+            {
                 _movieResourcesCache.Set(resource.Id.ToString(), resource);
             }
 
@@ -507,17 +508,7 @@ namespace Whisparr.Api.V3.Movies
         [NonAction]
         public void Handle(MoviesDeletedEvent message)
         {
-            foreach (var movie in message.Movies)
-            {
-                _movieResourcesCache.Remove(movie.Id.ToString());
-                BroadcastResourceChange(ModelAction.Deleted, movie.Id);
-            }
-        }
-
-        [NonAction]
-        public void Handle(MoviesBulkEditedEvent message)
-        {
-            if (message?.Movies == null)
+            if (message?.Movies == null || !message.Movies.Any())
             {
                 return;
             }
@@ -525,8 +516,26 @@ namespace Whisparr.Api.V3.Movies
             foreach (var movie in message.Movies)
             {
                 _movieResourcesCache.Remove(movie.Id.ToString());
-                BroadcastResourceChange(ModelAction.Updated, MapToResource(movie));
             }
+
+            BroadcastResourceChangeBatch(ModelAction.Deleted, message.Movies.Select(m => new MovieResource { Id = m.Id }));
+        }
+
+        [NonAction]
+        public void Handle(MoviesBulkEditedEvent message)
+        {
+            if (message?.Movies == null || !message.Movies.Any())
+            {
+                return;
+            }
+
+            foreach (var movie in message.Movies)
+            {
+                _movieResourcesCache.Remove(movie.Id.ToString());
+            }
+
+            // Batch broadcast with mapped resources
+            BroadcastResourceChangeBatch(ModelAction.Updated, message.Movies.Select(MapToResource));
         }
 
         [NonAction]
@@ -599,7 +608,7 @@ namespace Whisparr.Api.V3.Movies
             {
                 var movieResource = _movieResourcesCache.Find(id.ToString());
                 if (movieResource == null)
-        {
+                {
                     missingIds.Add(id);
                 }
                 else
@@ -623,7 +632,7 @@ namespace Whisparr.Api.V3.Movies
                         _movieResourcesCache.Lock.Wait();
                         releaseLock = true;
                         if (stopwatch.Elapsed.TotalSeconds > 2)
-            {
+                        {
                             _logger.Warn($"Locked movie cache for {stopwatch.Elapsed.TotalSeconds} seconds");
                         }
 
@@ -679,7 +688,7 @@ namespace Whisparr.Api.V3.Movies
                             foreach (var moviesResource in moviesResources)
                             {
                                 _movieResourcesCache.Set(moviesResource.Id.ToString(), moviesResource);
-            }
+                            }
                         }
                     }
                 }

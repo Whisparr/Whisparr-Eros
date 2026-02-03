@@ -655,6 +655,20 @@ export const reducers = createHandleActions({
         ...payload
       }
     };
+  },
+  // Batch update handler: efficiently updates multiple items in one state edit
+  UPDATE_ITEMS_BATCH: (state, { payload }) => {
+    // payload: array of updated movie objects, each with an id
+    const updatedMap = {};
+    payload.forEach((item) => {
+      updatedMap[item.id] = item;
+    });
+    return {
+      ...state,
+      items: state.items.map((item) =>
+        (updatedMap[item.id] ? { ...item, ...updatedMap[item.id] } : item)
+      )
+    };
   }
 
 }, defaultState, section);

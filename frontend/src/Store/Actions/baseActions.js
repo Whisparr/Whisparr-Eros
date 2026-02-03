@@ -7,6 +7,7 @@ export const SET = 'base/set';
 
 export const UPDATE = 'base/update';
 export const UPDATE_ITEM = 'base/updateItem';
+export const UPDATE_ITEMS_BATCH = 'base/updateItemsBatch';
 export const UPDATE_SERVER_SIDE_COLLECTION = 'base/updateServerSideCollection';
 
 export const SET_SETTING_VALUE = 'base/setSettingValue';
@@ -21,6 +22,7 @@ export const set = createAction(SET);
 
 export const update = createAction(UPDATE);
 export const updateItem = createAction(UPDATE_ITEM);
+export const updateItemsBatch = createAction(UPDATE_ITEMS_BATCH);
 export const updateServerSideCollection = createAction(UPDATE_SERVER_SIDE_COLLECTION);
 
 export const setSettingValue = createAction(SET_SETTING_VALUE);
