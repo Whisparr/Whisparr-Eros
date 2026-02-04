@@ -42,6 +42,8 @@ namespace NzbDrone.Core.MediaCover
         IHandleAsync<PerformerUpdatedEvent>,
         IHandleAsync<StudioUpdatedEvent>,
         IHandleAsync<MoviesDeletedEvent>,
+        IHandleAsync<PerformersDeletedEvent>,
+        IHandleAsync<StudiosDeletedEvent>,
         IMapCoversToLocal
     {
         private readonly IMediaCoverProxy _mediaCoverProxy;
@@ -713,6 +715,30 @@ namespace NzbDrone.Core.MediaCover
             foreach (var movie in message.Movies)
             {
                 var path = GetMovieCoverPath(movie.Id);
+                if (_diskProvider.FolderExists(path))
+                {
+                    _diskProvider.DeleteFolder(path, true);
+                }
+            }
+        }
+
+        public void HandleAsync(PerformersDeletedEvent message)
+        {
+            foreach (var performer in message.Performers)
+            {
+                var path = GetPerformerCoverPath(performer.Id);
+                if (_diskProvider.FolderExists(path))
+                {
+                    _diskProvider.DeleteFolder(path, true);
+                }
+            }
+        }
+
+        public void HandleAsync(StudiosDeletedEvent message)
+        {
+            foreach (var studio in message.Studios)
+            {
+                var path = GetStudioCoverPath(studio.Id);
                 if (_diskProvider.FolderExists(path))
                 {
                     _diskProvider.DeleteFolder(path, true);

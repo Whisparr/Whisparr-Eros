@@ -95,7 +95,7 @@ namespace NzbDrone.Core.Movies.Studios
         public void RemoveStudio(Studio studio)
         {
             _studioRepo.Delete(studio);
-
+            _eventAggregator.PublishEvent(new StudiosDeletedEvent(new List<Studio> { studio }));
             RemoveStudioResourcesCache(studio.ForeignId);
         }
 
