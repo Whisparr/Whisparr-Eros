@@ -36,7 +36,6 @@ function ParseResult(props: ParseResultProps) {
     releaseHash,
     quality,
     tmdbId,
-    imdbId,
   } = parsedMovieInfo;
 
   const finalLanguages = languages ?? parsedMovieInfo.languages;
@@ -75,85 +74,46 @@ function ParseResult(props: ParseResultProps) {
           />
         )}
 
-        <ParseResultItem title={translate('Episode')} data={episode} />
+        {episode ? (
+          <ParseResultItem title={translate('Episode')} data={episode} />
+        ) : null}
 
-        <ParseResultItem
-          title={translate('Edition')}
-          data={edition ? edition : '-'}
-        />
+        {edition ? (
+          <ParseResultItem
+            title={translate('Edition')}
+            data={edition ? edition : '-'}
+          />
+        ) : null}
 
         <ParseResultItem
           title={translate('ReleaseToken')}
           data={releaseTokens}
         />
 
-        <ParseResultItem
-          title={translate('AllTitles')}
-          data={movieTitles?.length > 0 ? movieTitles.join(', ') : '-'}
-        />
+        {movieTitles?.length > 0 ? (
+          <ParseResultItem
+            title={translate('AllTitles')}
+            data={movieTitles.join(', ')}
+          />
+        ) : null}
 
-        <ParseResultItem
-          title={translate('ReleaseGroup')}
-          data={releaseGroup ?? '-'}
-        />
+        {releaseGroup ? (
+          <ParseResultItem
+            title={translate('ReleaseGroup')}
+            data={releaseGroup ?? '-'}
+          />
+        ) : null}
 
-        <ParseResultItem
-          title={translate('ReleaseHash')}
-          data={releaseHash ? releaseHash : '-'}
-        />
+        {releaseHash ? (
+          <ParseResultItem
+            title={translate('ReleaseHash')}
+            data={releaseHash ? releaseHash : '-'}
+          />
+        ) : null}
 
         {tmdbId ? (
           <ParseResultItem title={translate('TMDBId')} data={tmdbId} />
         ) : null}
-
-        {imdbId ? (
-          <ParseResultItem title={translate('IMDbId')} data={imdbId} />
-        ) : null}
-      </FieldSet>
-
-      <FieldSet legend={translate('Quality')}>
-        <div className={styles.container}>
-          <div className={styles.column}>
-            <ParseResultItem
-              title={translate('Quality')}
-              data={quality.quality.name}
-            />
-            <ParseResultItem
-              title={translate('Proper')}
-              data={
-                quality.revision.version > 1 && !quality.revision.isRepack
-                  ? 'True'
-                  : '-'
-              }
-            />
-
-            <ParseResultItem
-              title={translate('Repack')}
-              data={quality.revision.isRepack ? translate('True') : '-'}
-            />
-          </div>
-
-          <div className={styles.column}>
-            <ParseResultItem
-              title={translate('Version')}
-              data={
-                quality.revision.version > 1 ? quality.revision.version : '-'
-              }
-            />
-
-            <ParseResultItem
-              title={translate('Real')}
-              data={quality.revision.real ? translate('True') : '-'}
-            />
-          </div>
-        </div>
-      </FieldSet>
-
-      <FieldSet legend={translate('Languages')}>
-        <ParseResultItem
-          title={translate('Languages')}
-          data={finalLanguages.map((l) => l.name).join(', ')}
-        />
       </FieldSet>
 
       <FieldSet legend={translate('Details')}>
@@ -172,28 +132,86 @@ function ParseResult(props: ParseResultProps) {
           }
         />
 
+        {customFormats?.length ? (
+          <ParseResultItem
+            title={translate('CustomFormats')}
+            data={
+              customFormats?.length ? (
+                <MovieFormats formats={customFormats} />
+              ) : (
+                '-'
+              )
+            }
+          />
+        ) : null}
+
+        {customFormatScore ? (
+          <ParseResultItem
+            title={translate('CustomFormatScore')}
+            data={customFormatScore}
+          />
+        ) : null}
+      </FieldSet>
+
+      <FieldSet legend={translate('Quality')}>
+        <div className={styles.container}>
+          <div className={styles.column}>
+            <ParseResultItem
+              title={translate('Quality')}
+              data={quality.quality.name}
+            />
+
+            {quality.revision.version > 1 && !quality.revision.isRepack ? (
+              <ParseResultItem
+                title={translate('Proper')}
+                data={
+                  quality.revision.version > 1 && !quality.revision.isRepack
+                    ? 'True'
+                    : '-'
+                }
+              />
+            ) : null}
+
+            {quality.revision.isRepack ? (
+              <ParseResultItem
+                title={translate('Repack')}
+                data={quality.revision.isRepack ? translate('True') : '-'}
+              />
+            ) : null}
+          </div>
+
+          <div className={styles.column}>
+            {quality.revision.version > 1 ? (
+              <ParseResultItem
+                title={translate('Version')}
+                data={
+                  quality.revision.version > 1 ? quality.revision.version : '-'
+                }
+              />
+            ) : null}
+
+            {quality.revision.real ? (
+              <ParseResultItem
+                title={translate('Real')}
+                data={quality.revision.real ? translate('True') : '-'}
+              />
+            ) : null}
+          </div>
+        </div>
+      </FieldSet>
+
+      <FieldSet legend={translate('Languages')}>
+        <ParseResultItem
+          title={translate('Languages')}
+          data={finalLanguages.map((l) => l.name).join(', ')}
+        />
+
         {movie && movie.originalLanguage ? (
           <ParseResultItem
             title={translate('OriginalLanguage')}
             data={movie.originalLanguage.name}
           />
         ) : null}
-
-        <ParseResultItem
-          title={translate('CustomFormats')}
-          data={
-            customFormats?.length ? (
-              <MovieFormats formats={customFormats} />
-            ) : (
-              '-'
-            )
-          }
-        />
-
-        <ParseResultItem
-          title={translate('CustomFormatScore')}
-          data={customFormatScore}
-        />
       </FieldSet>
     </div>
   );

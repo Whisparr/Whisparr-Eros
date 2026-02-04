@@ -9,11 +9,12 @@ import AddNewSceneConnector from 'AddMovie/AddNewMovie/AddNewSceneConnector';
 import AddNewStudioConnector from 'AddMovie/AddNewMovie/AddNewStudioConnector';
 import ImportMovies from 'AddMovie/ImportMovie/ImportMovies';
 import CalendarPage from 'Calendar/CalendarPage';
+import CollectionConnector from 'Collection/CollectionConnector';
 import NotFound from 'Components/NotFound';
 import Switch from 'Components/Router/Switch';
 import MovieDetailsPageConnector from 'Movie/Details/MovieDetailsPageConnector';
 import MovieIndex from 'Movie/Index/MovieIndex';
-import PerformerDetailsPageConnector from 'Performer/Details/PerformerDetailsPageConnector';
+import PerformerDetails from 'Performer/Details/PerformerDetails';
 import PerformerIndex from 'Performer/Index/PerformerIndex';
 import SceneIndex from 'Scene/Index/SceneIndex';
 import CustomFormatSettingsPage from 'Settings/CustomFormats/CustomFormatSettingsPage';
@@ -68,6 +69,8 @@ function AppRoutes() {
 
       <Route path="/movies" component={MovieIndex} />
 
+      <Route path="/collections" component={CollectionConnector} />
+
       <Route path="/scenes" component={SceneIndex} />
 
       <Route path="/performers" component={PerformerIndex} />
@@ -87,8 +90,8 @@ function AppRoutes() {
       <Route path="/movie/:titleSlug" component={MovieDetailsPageConnector} />
 
       <Route
-        path="/performer/:foreignId"
-        component={PerformerDetailsPageConnector}
+        path="/performer/:performerForeignId"
+        component={PerformerDetails}
       />
 
       <Route path="/studio/:foreignId" component={StudioDetailsPageConnector} />

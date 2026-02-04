@@ -17,8 +17,8 @@ export interface IconProps
     'icon' | 'spin' | 'name' | 'title' | 'size'
   > {
   containerClassName?: ComponentProps<'span'>['className'];
-  name: IconName;
-  kind?: IconKind;
+  name: FontAwesomeIconProps['icon'];
+  kind?: Extract<Kind, keyof typeof styles>;
   size?: number;
   isSpinning?: FontAwesomeIconProps['spin'];
   title?: string | (() => string) | null;

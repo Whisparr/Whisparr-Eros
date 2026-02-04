@@ -16,6 +16,7 @@ using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.MetadataSource;
 using NzbDrone.Core.Movies.AlternativeTitles;
+using NzbDrone.Core.Movies.Collections;
 using NzbDrone.Core.Movies.Commands;
 using NzbDrone.Core.Movies.Credits;
 using NzbDrone.Core.Movies.Events;
@@ -29,6 +30,7 @@ namespace NzbDrone.Core.Movies
     {
         private readonly IProvideMovieInfo _movieInfo;
         private readonly IMovieService _movieService;
+        private readonly IAddMovieCollectionService _movieCollectionService;
         private readonly IMovieMetadataService _movieMetadataService;
         private readonly IRootFolderService _folderService;
         private readonly IDiskProvider _diskProvider;
@@ -48,6 +50,7 @@ namespace NzbDrone.Core.Movies
 
         public RefreshMovieService(IProvideMovieInfo movieInfo,
                                     IMovieService movieService,
+                                    IAddMovieCollectionService movieCollectionService,
                                     IMovieMetadataService movieMetadataService,
                                     IRootFolderService folderService,
                                     IDiskProvider diskProvider,
@@ -67,6 +70,7 @@ namespace NzbDrone.Core.Movies
         {
             _movieInfo = movieInfo;
             _movieService = movieService;
+            _movieCollectionService = movieCollectionService;
             _movieMetadataService = movieMetadataService;
             _folderService = folderService;
             _diskProvider = diskProvider;
@@ -97,6 +101,7 @@ namespace NzbDrone.Core.Movies
             MovieMetadata movieInfo;
             Studio studioInfo;
             List<Performer> performerInfo;
+            List<Credit> creditInfo;
 
             try
             {
@@ -104,6 +109,7 @@ namespace NzbDrone.Core.Movies
                 movieInfo = tupleInfo.Item1;
                 studioInfo = tupleInfo.Item2;
                 performerInfo = tupleInfo.Item3;
+                creditInfo = tupleInfo.Item4;
             }
             catch (MovieNotFoundException)
             {
@@ -140,7 +146,7 @@ namespace NzbDrone.Core.Movies
             movieMetadata.Ratings = movieInfo.Ratings;
             movieMetadata.ItemType = movieInfo.ItemType;
             movieMetadata.MetadataSource = movieInfo.MetadataSource;
-            movieMetadata.Credits = movieInfo.Credits;
+            movieMetadata.Credits = creditInfo; // Store credits for so they can be used for the initial naming
             movieMetadata.Genres = movieInfo.Genres;
             movieMetadata.Website = movieInfo.Website;
 
@@ -174,6 +180,32 @@ namespace NzbDrone.Core.Movies
                 movieMetadata.StudioForeignId = null;
             }
 
+            // add collection
+            if (movieInfo.CollectionTmdbId > 0)
+            {
+                var newCollection = _movieCollectionService.AddMovieCollection(new MovieCollection
+                {
+                    TmdbId = movieInfo.CollectionTmdbId,
+                    Title = movieInfo.CollectionTitle,
+                    Monitored = false,
+                    SearchOnAdd = movie.AddOptions?.SearchForMovie ?? false,
+                    QualityProfileId = movie.QualityProfileId,
+                    RootFolderPath = _folderService.GetBestRootFolderPath(movie.Path).GetCleanPath(),
+                    Tags = movie.Tags
+                });
+
+                if (newCollection != null)
+                {
+                    movieMetadata.CollectionTmdbId = newCollection.TmdbId;
+                    movieMetadata.CollectionTitle = newCollection.Title;
+                }
+            }
+            else
+            {
+                movieMetadata.CollectionTmdbId = 0;
+                movieMetadata.CollectionTitle = null;
+            }
+
             movieMetadata.AlternativeTitles = _alternativeTitleService.UpdateTitles(movieInfo.AlternativeTitles, movieMetadata);
 
             performerInfo.ForEach(p =>
@@ -185,10 +217,20 @@ namespace NzbDrone.Core.Movies
                         p.Tags = movie.Tags;
                     });
 
-            _performerService.AddPerformers(performerInfo.Where(p => !string.IsNullOrWhiteSpace(p.ForeignId)).ToList(), true);
+            var performerList = performerInfo.Where(p => !string.IsNullOrWhiteSpace(p.ForeignId)).ToList();
+            _performerService.AddPerformers(performerList, true);
+
+            // Reset flattened performer lists before repopulating
+            movieMetadata.PerformerForeignIds = new List<string>();
+            movieMetadata.PerformerNames = new List<string>();
+
+            // Update the flattened performer lists on the movie metadata
+            performerList.ForEach(performer => movieMetadata.PerformerForeignIds.Add(performer.ForeignId));
+
+            creditInfo.ForEach(credit => movieMetadata.PerformerNames.Add(credit.PersonName));
 
             _movieMetadataService.Upsert(movieMetadata);
-            _creditService.UpdateCredits(movieInfo.Credits, movieMetadata);
+            _creditService.UpdateCredits(creditInfo, movieMetadata);
 
             movie.MovieMetadata = movieMetadata;
 
@@ -225,7 +267,7 @@ namespace NzbDrone.Core.Movies
             return movie;
         }
 
-        private Tuple<MovieMetadata, Studio, List<Performer>> GetMetadata(Movie movie)
+        private Tuple<MovieMetadata, Studio, List<Performer>, List<Credit>> GetMetadata(Movie movie)
         {
             if (movie.MovieMetadata.Value != null)
             {

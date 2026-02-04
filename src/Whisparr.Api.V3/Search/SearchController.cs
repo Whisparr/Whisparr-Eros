@@ -89,7 +89,7 @@ namespace Whisparr.Api.V3.Search
 
                     _coverMapper.ConvertToLocalUrls(movieResource.Id, movieResource.Images);
 
-                    var poster = movie.MovieMetadata.Value.Images.FirstOrDefault(c => c.CoverType == MediaCoverTypes.Poster);
+                    var poster = movie.MovieMetadata.Value.Poster;
                     if (poster != null)
                     {
                         movieResource.RemotePoster = poster.RemoteUrl;

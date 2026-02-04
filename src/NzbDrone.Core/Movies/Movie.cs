@@ -52,7 +52,7 @@ namespace NzbDrone.Core.Movies
 
         public string ForeignId
         {
-            get { return MovieMetadata.Value.ForeignId; }
+            get { return MovieMetadata.Value?.ForeignId ?? ""; }
             set { MovieMetadata.Value.ForeignId = value; }
         }
 
@@ -129,9 +129,22 @@ namespace NzbDrone.Core.Movies
         {
             var result = ToFormattedString();
 
-            if (MovieMetadata.Value.ImdbId != null)
+            if (MovieMetadata.Value.StudioTitle.IsNotNullOrWhiteSpace())
             {
-                result += $" [{MovieMetadata.Value.ImdbId}]";
+                result += $" [{MovieMetadata.Value.StudioTitle}]";
+            }
+
+            if (MovieMetadata.Value.ReleaseDate.IsNotNullOrWhiteSpace())
+            {
+                // Try to parse and format as yyyy-MM-dd, fallback to original string if parsing fails
+                if (DateTime.TryParse(MovieMetadata.Value.ReleaseDate, out var parsedDate))
+                {
+                    result += $" [{parsedDate:yyyy-MM-dd}]";
+                }
+                else
+                {
+                    result += $" [{MovieMetadata.Value.ReleaseDate}]";
+                }
             }
 
             if (MovieMetadata.Value.ForeignId != null)

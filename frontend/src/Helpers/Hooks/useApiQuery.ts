@@ -1,58 +1,46 @@
-import { useQuery } from '@tanstack/react-query';
+import { UndefinedInitialDataOptions, useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
+import fetchJson, {
+  ApiError,
+  FetchJsonOptions,
+} from 'Utilities/Fetch/fetchJson';
+import getQueryPath from 'Utilities/Fetch/getQueryPath';
+import getQueryString, { QueryParams } from 'Utilities/Fetch/getQueryString';
 
-interface QueryOptions {
-  url: string;
-  headers?: HeadersInit;
+export interface QueryOptions<T> extends FetchJsonOptions<unknown> {
+  queryParams?: QueryParams;
+  queryOptions?:
+    | Omit<UndefinedInitialDataOptions<T, ApiError>, 'queryKey' | 'queryFn'>
+    | undefined;
 }
 
-const absUrlRegex = /^(https?:)?\/\//i;
-const apiRoot = window.Whisparr.apiRoot;
-
-function isAbsolute(url: string) {
-  return absUrlRegex.test(url);
-}
-
-function getUrl(url: string) {
-  return apiRoot + url;
-}
-
-function useApiQuery<T>(options: QueryOptions) {
-  const { url, headers } = options;
-
-  const final = useMemo(() => {
-    if (isAbsolute(url)) {
-      return {
-        url,
-        headers,
-      };
-    }
+const useApiQuery = <T>(options: QueryOptions<T>) => {
+  const { queryKey, requestOptions } = useMemo(() => {
+    const { path: path, queryOptions, queryParams, ...otherOptions } = options;
 
     return {
-      url: getUrl(url),
-      headers: {
-        ...headers,
-        'X-Api-Key': window.Whisparr.apiKey,
+      queryKey: queryParams ? [path, queryParams] : [path],
+      requestOptions: {
+        ...otherOptions,
+        path: getQueryPath(path) + getQueryString(queryParams),
+        headers: {
+          ...options.headers,
+          'X-Api-Key': window.Whisparr.apiKey,
+          'X-Whisparr-Client': 'Whisparr',
+        },
       },
     };
-  }, [url, headers]);
+  }, [options]);
 
-  return useQuery({
-    queryKey: [final.url],
-    queryFn: async () => {
-      const result = await fetch(final.url, {
-        headers: final.headers,
-      });
-
-      if (!result.ok) {
-        throw new Error(
-          `Failed to fetch ${final.url}: ${result.status} ${result.statusText}`
-        );
-      }
-
-      return result.json() as T;
-    },
-  });
-}
+  return {
+    queryKey,
+    ...useQuery({
+      ...options.queryOptions,
+      queryKey,
+      queryFn: async ({ signal }) =>
+        fetchJson<T, unknown>({ ...requestOptions, signal }),
+    }),
+  };
+};
 
 export default useApiQuery;

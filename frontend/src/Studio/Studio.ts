@@ -1,5 +1,5 @@
 import ModelBase from 'App/ModelBase';
-import { Image } from 'Movie/Movie';
+import Movie, { Image } from 'Movie/Movie';
 
 interface Studio extends ModelBase {
   foreignId: string;
@@ -21,6 +21,7 @@ interface Studio extends ModelBase {
   aliases: string[];
   rootFolderPath: string;
   website: string;
+  movies: Movie[];
 }
 
 export default Studio;

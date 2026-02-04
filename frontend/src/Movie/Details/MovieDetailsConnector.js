@@ -8,6 +8,7 @@ import * as commandNames from 'Commands/commandNames';
 import { executeCommand } from 'Store/Actions/commandActions';
 import { clearExtraFiles, fetchExtraFiles } from 'Store/Actions/extraFileActions';
 import { toggleMovieMonitored } from 'Store/Actions/movieActions';
+import { clearMovieCredits, fetchMovieCredits } from 'Store/Actions/movieCreditsActions';
 import { clearMovieFiles, fetchMovieFiles } from 'Store/Actions/movieFileActions';
 import { clearQueueDetails, fetchQueueDetails } from 'Store/Actions/queueActions';
 import { fetchImportListSchema } from 'Store/Actions/settingsActions';
@@ -39,7 +40,6 @@ const selectMovieFiles = createSelector(
   }
 );
 
-/*
 const selectMovieCredits = createSelector(
   (state) => state.movieCredits,
   (movieCredits) => {
@@ -56,7 +56,6 @@ const selectMovieCredits = createSelector(
     };
   }
 );
-*/
 
 const selectExtraFiles = createSelector(
   (state) => state.extraFiles,
@@ -80,6 +79,7 @@ function createMapStateToProps() {
     (state, { titleSlug }) => titleSlug,
     selectMovieFiles,
     selectExtraFiles,
+    selectMovieCredits,
     createAllItemsSelector(),
     createCommandsSelector(),
     createDimensionsSelector(),
@@ -87,7 +87,7 @@ function createMapStateToProps() {
     (state) => state.app.isSidebarVisible,
     (state) => state.settings.ui.item.movieRuntimeFormat,
     (state) => state.settings.safeForWorkMode,
-    (titleSlug, movieFiles, extraFiles, allMovies, commands, dimensions, queueItems, isSidebarVisible, movieRuntimeFormat, safeForWorkMode) => {
+    (titleSlug, movieFiles, extraFiles, movieCredits, allMovies, commands, dimensions, queueItems, isSidebarVisible, movieRuntimeFormat, safeForWorkMode) => {
       const sortedMovies = allMovies; // _.orderBy(allMovies, 'sortTitle');
       const movieIndex = _.findIndex(sortedMovies, { titleSlug });
       const movie = sortedMovies[movieIndex];
@@ -109,6 +109,12 @@ function createMapStateToProps() {
         extraFilesError
       } = extraFiles;
 
+      const {
+        isMovieCreditsFetching,
+        isMovieCreditsPopulated,
+        movieCreditsError
+      } = movieCredits;
+
       const isMovieRefreshing = isCommandExecuting(findCommand(commands, { name: commandNames.REFRESH_MOVIE, movieIds: [movie.id] }));
       const movieRefreshingCommand = findCommand(commands, { name: commandNames.REFRESH_MOVIE });
       const allMoviesRefreshing = (
@@ -124,8 +130,8 @@ function createMapStateToProps() {
         isRenamingMovieCommand.body.movieIds.indexOf(movie.id) > -1
       );
 
-      const isFetching = isMovieFilesFetching || isExtraFilesFetching;
-      const isPopulated = isMovieFilesPopulated && isExtraFilesPopulated;
+      const isFetching = isMovieFilesFetching || isExtraFilesFetching || isMovieCreditsFetching;
+      const isPopulated = isMovieFilesPopulated && isExtraFilesPopulated && isMovieCreditsPopulated;
       const alternateTitles = _.reduce(movie.alternateTitles, (acc, alternateTitle) => {
         acc.push(alternateTitle.title);
         return acc;
@@ -146,6 +152,7 @@ function createMapStateToProps() {
         isPopulated,
         movieFilesError,
         extraFilesError,
+        movieCreditsError,
         hasMovieFiles,
         isSmallScreen: dimensions.isSmallScreen,
         isSidebarVisible,
@@ -164,6 +171,12 @@ function createMapDispatchToProps(dispatch, props) {
     },
     dispatchClearMovieFiles() {
       dispatch(clearMovieFiles());
+    },
+    dispatchFetchMovieCredits({ movieId }) {
+      dispatch(fetchMovieCredits({ movieId }));
+    },
+    dispatchClearMovieCredits() {
+      dispatch(clearMovieCredits());
     },
     dispatchFetchExtraFiles({ movieId }) {
       dispatch(fetchExtraFiles({ movieId }));
@@ -241,6 +254,7 @@ class MovieDetailsConnector extends Component {
     const movieId = this.props.id;
 
     this.props.dispatchFetchMovieFiles({ movieId });
+    this.props.dispatchFetchMovieCredits({ movieId });
     this.props.dispatchFetchExtraFiles({ movieId });
     this.props.dispatchFetchQueueDetails({ movieId });
     this.props.dispatchFetchImportListSchema();
@@ -248,6 +262,7 @@ class MovieDetailsConnector extends Component {
 
   unpopulate = () => {
     this.props.dispatchClearMovieFiles();
+    this.props.dispatchClearMovieCredits();
     this.props.dispatchClearExtraFiles();
     this.props.dispatchClearQueueDetails();
   };
@@ -302,6 +317,8 @@ MovieDetailsConnector.propTypes = {
   isSmallScreen: PropTypes.bool.isRequired,
   dispatchFetchMovieFiles: PropTypes.func.isRequired,
   dispatchClearMovieFiles: PropTypes.func.isRequired,
+  dispatchFetchMovieCredits: PropTypes.func.isRequired,
+  dispatchClearMovieCredits: PropTypes.func.isRequired,
   dispatchFetchExtraFiles: PropTypes.func.isRequired,
   dispatchClearExtraFiles: PropTypes.func.isRequired,
   dispatchToggleMovieMonitored: PropTypes.func.isRequired,

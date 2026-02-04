@@ -21,6 +21,8 @@ namespace Whisparr.Api.V3.Movies
     {
         public MovieResource()
         {
+            PerformerForeignIds = new List<string>();
+            PerformerNames = new List<string>();
             Genres = new List<string>();
             Monitored = true;
         }
@@ -36,6 +38,7 @@ namespace Whisparr.Api.V3.Movies
         public string SortTitle { get; set; }
         public List<AlternativeTitleResource> AlternateTitles { get; set; }
         public long? SizeOnDisk { get; set; }
+        public int? MovieFileCount { get; set; }
         public MovieStatusType Status { get; set; }
         public string Overview { get; set; }
         public DateTime? ReleaseDate { get; set; }
@@ -78,7 +81,10 @@ namespace Whisparr.Api.V3.Movies
         public AddMovieOptions AddOptions { get; set; }
         public Ratings Ratings { get; set; }
         public MovieFileResource MovieFile { get; set; }
-        public List<Credit> Credits { get; set; }
+        public MovieCollectionResource Collection { get; set; }
+        public List<Credit> SearchCredits { get; set; }
+        public List<string> PerformerForeignIds { get; set; }
+        public List<string> PerformerNames { get; set; }
         public ItemType ItemType { get; set; }
         public DateTime? LastSearchTime { get; set; }
         public MovieStatisticsResource Statistics { get; set; }
@@ -98,7 +104,7 @@ namespace Whisparr.Api.V3.Movies
     {
         public static MovieResource ToResource(this Movie model, int availDelay, IUpgradableSpecification upgradableSpecification = null, ICustomFormatCalculationService formatCalculationService = null)
         {
-            if (model == null)
+            if (model == null || model.MovieMetadata.Value == null)
             {
                 return null;
             }
@@ -106,6 +112,8 @@ namespace Whisparr.Api.V3.Movies
             var size = model.MovieFile?.Size ?? 0;
 
             var movieFile = model.MovieFile?.ToResource(model, upgradableSpecification, formatCalculationService);
+
+            var collection = model.MovieMetadata.Value.CollectionTmdbId > 0 ? new MovieCollectionResource { Title = model.MovieMetadata.Value.CollectionTitle, TmdbId = model.MovieMetadata.Value.CollectionTmdbId } : null;
 
             return new MovieResource
             {
@@ -153,9 +161,12 @@ namespace Whisparr.Api.V3.Movies
                 MovieFile = movieFile,
                 StudioTitle = model.MovieMetadata.Value.StudioTitle,
                 StudioForeignId = model.MovieMetadata.Value.StudioForeignId,
-                Credits = model.MovieMetadata.Value.Credits,
+                SearchCredits = model.MovieMetadata.Value.Credits,
+                PerformerForeignIds = model.MovieMetadata.Value.PerformerForeignIds,
+                PerformerNames = model.MovieMetadata.Value.PerformerNames,
                 ItemType = model.MovieMetadata.Value.ItemType,
                 LastSearchTime = model.LastSearchTime,
+                Collection = collection,
             };
         }
 

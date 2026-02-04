@@ -73,7 +73,7 @@ namespace NzbDrone.Integration.Test.Client
             // cache control header gets reordered on net core
             var headers = response.Headers;
             ((string)headers.SingleOrDefault(c => c.Name == "Cache-Control")?.Value ?? string.Empty).Split(',').Select(x => x.Trim())
-                .Should().BeEquivalentTo("no-store, no-cache".Split(',').Select(x => x.Trim()));
+                .Should().BeEquivalentTo(new[] { "no-store", "no-cache" }, options => options.WithoutStrictOrdering());
             headers.Single(c => c.Name == "Pragma").Value.Should().Be("no-cache");
             headers.Single(c => c.Name == "Expires").Value.Should().Be("-1");
         }

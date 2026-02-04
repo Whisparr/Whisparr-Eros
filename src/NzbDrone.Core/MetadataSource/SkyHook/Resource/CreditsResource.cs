@@ -10,6 +10,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook.Resource
     public class CastResource
     {
         public int Order { get; set; }
+        public string PersonName { get; set; }
         public string Character { get; set; }
         public string CreditId { get; set; }
         public PerformerResource Performer { get; set; }

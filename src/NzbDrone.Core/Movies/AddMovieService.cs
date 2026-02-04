@@ -250,7 +250,7 @@ namespace NzbDrone.Core.Movies
                 throw new ValidationException(validationResult.Errors);
             }
 
-            // Check if previosly excluded
+            // Check if previously excluded
             var type = newMovie.MovieMetadata.Value.ItemType == ItemType.Scene ? ImportExclusionType.Scene : ImportExclusionType.Movie;
             if (!_importListExclusionService.IsExcluded(newMovie.ForeignId, type))
             {
@@ -309,7 +309,33 @@ namespace NzbDrone.Core.Movies
                     }
                 }
 
-                var performerForeignIds = newMovie.MovieMetadata.Value.Credits.Select(c => c.PerformerForeignId);
+                if (newMovie.MovieMetadata?.Value?.CollectionTmdbId != null)
+                {
+                    var collectionTmdbId = newMovie.MovieMetadata.Value.CollectionTmdbId.ToString();
+                    var excludedCollection = _importListExclusionService.IsExcluded(collectionTmdbId, ImportExclusionType.Collection);
+                    if (excludedCollection)
+                    {
+                        if (_configService.WhisparrAlwaysExcludeCollectionsTag.IsNullOrWhiteSpace())
+                        {
+                            newExclusion.Reason = ImportExclusionReason.CollectionExclusion;
+                            _importListExclusionService.AddExclusion(newExclusion);
+                            throw new ValidationException($"Studio: [{newMovie.MovieMetadata.Value.Studio.Title}] has been excluded");
+                        }
+                        else
+                        {
+                            var tag = AddTag(new Tag { Label = _configService.WhisparrAlwaysExcludeCollectionsTag });
+                            if (tag != null)
+                            {
+                                newMovie.Tags.Add(tag.Id);
+                            }
+
+                            newMovie.Monitored = false;
+                            _logger.Info("Collection: [{0}] has been excluded. Marking movie as unmonitored.", newMovie.MovieMetadata.Value.CollectionTitle);
+                        }
+                    }
+                }
+
+                var performerForeignIds = newMovie.MovieMetadata.Value.PerformerForeignIds;
                 var excludedItems = _importListExclusionService.GetAllByType(ImportExclusionType.Performer);
                 if (excludedItems != null)
                 {

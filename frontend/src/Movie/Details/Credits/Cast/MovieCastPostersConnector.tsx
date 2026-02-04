@@ -1,8 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import Movie from 'Movie/Movie';
-import Performer from 'Performer/Performer';
-import { createMovieSelectorForHook } from 'Store/Selectors/createMovieSelector';
+import createMovieCreditsSelector from 'Store/Selectors/createMovieCreditsSelector';
 import MovieCreditPosters from '../MovieCreditPosters';
 import MovieCastPoster from './MovieCastPoster';
 
@@ -11,25 +9,14 @@ interface Props {
   isSmallScreen: boolean;
 }
 
-interface Credit {
-  creditForeignId?: string;
-  performer: Performer;
-  job?: string;
-  type?: string;
-}
-
-function MovieCastPostersConnector({ movieId, isSmallScreen }: Props) {
-  const movie = useSelector(createMovieSelectorForHook(movieId)) as
-    | Movie
-    | undefined;
-
-  const cast = ((movie?.credits || []) as unknown[]).filter(
-    (c) => (c as Credit).type === 'cast'
-  ) as Credit[];
+function MovieCastPostersConnector({ isSmallScreen }: Props) {
+  const { items: castCredits } = useSelector(
+    createMovieCreditsSelector('cast')
+  );
 
   return (
     <MovieCreditPosters
-      items={cast}
+      items={castCredits}
       itemComponent={MovieCastPoster}
       isSmallScreen={isSmallScreen}
     />

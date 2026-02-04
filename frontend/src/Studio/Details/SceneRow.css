@@ -1,3 +1,8 @@
+.blurred {
+  filter: blur(6px);
+  transition: filter 0.2s;
+}
+
 .title {
   composes: cell from '~Components/Table/Cells/TableRowCell.css';
 
@@ -31,6 +36,7 @@
 .languages,
 .audio,
 .video,
+.path,
 .status {
   composes: cell from '~Components/Table/Cells/TableRowCell.css';
 

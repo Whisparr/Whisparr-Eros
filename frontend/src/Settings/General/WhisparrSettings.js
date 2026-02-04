@@ -15,6 +15,7 @@ function WhisparrSettings(props) {
   } = props;
 
   const {
+    whisparrAlwaysExcludeCollectionsTag,
     whisparrAlwaysExcludePerformersTag,
     whisparrAlwaysExcludeStudiosTag,
     whisparrAlwaysExcludeStudiosAfterTag,
@@ -121,11 +122,11 @@ function WhisparrSettings(props) {
           type={inputTypes.CHECK}
           name="whisparrAutoMatchOnDate"
           helpText={translate('WhisparrAutoMatchOnDateHelpText')}
+          helpTextWarning={translate('WhisparrAutoMatchOnDateHelpTextWarning')}
           onChange={onInputChange}
           {...whisparrAutoMatchOnDate}
         />
       </FormGroup>
-
       <FormGroup
         advancedSettings={advancedSettings}
         isAdvanced={true}
@@ -182,6 +183,19 @@ function WhisparrSettings(props) {
           helpText={translate('WhisparrMovieMetadataSourceHelpText')}
           onChange={onInputChange}
           {...whisparrMovieMetadataSource}
+        />
+      </FormGroup>
+
+      <FormGroup>
+
+        <FormLabel>{translate('WhisparrAlwaysExcludeCollectionsTag')}</FormLabel>
+
+        <FormInputGroup
+          type={inputTypes.TEXT}
+          name="whisparrAlwaysExcludeCollectionsTag"
+          helpText={translate('WhisparrAlwaysExcludeCollectionsTagHelpText')}
+          onChange={onInputChange}
+          {...whisparrAlwaysExcludeCollectionsTag}
         />
       </FormGroup>
 

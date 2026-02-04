@@ -3,14 +3,20 @@
 interface CssExports {
   'audio': string;
   'audioLanguages': string;
+  'blurred': string;
   'customFormatScore': string;
+  'externalLink': string;
   'languages': string;
+  'monitorToggleButton': string;
   'monitored': string;
+  'path': string;
   'performers': string;
+  'relativePath': string;
   'releaseGroup': string;
   'runtime': string;
   'size': string;
   'status': string;
+  'studio': string;
   'subtitles': string;
   'title': string;
   'video': string;

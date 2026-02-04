@@ -1,8 +1,8 @@
 import React, { useCallback, useMemo } from 'react';
 import { Navigation, type Swiper as SwiperType } from 'swiper';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import Performer from 'Performer/Performer';
 import dimensions from 'Styles/Variables/dimensions';
+import MovieCredit from 'typings/MovieCredit';
 import MovieCreditPosterConnector from './MovieCreditPosterConnector';
 import styles from './MovieCreditPosters.css';
 
@@ -28,14 +28,8 @@ function calculateRowHeight(posterHeight: number, isSmallScreen: boolean) {
   return heights.reduce((acc, height) => acc + height, 0);
 }
 
-interface Credit {
-  creditForeignId?: string;
-  performer: Performer;
-  job?: string;
-}
-
 interface Props {
-  items: Credit[];
+  items: MovieCredit[];
   itemComponent: React.ElementType;
   isSmallScreen: boolean;
 }
@@ -69,8 +63,8 @@ function MovieCreditPosters({ items, itemComponent, isSmallScreen }: Props) {
       >
         {items.map((credit, index) => {
           const slideKey =
-            credit.creditForeignId ||
-            `${credit.performer?.foreignId}-${credit.job || 'job'}-${index}`;
+            credit.foreignId ||
+            `${credit.foreignId}-${credit.job || 'job'}-${index}`;
 
           return (
             <SwiperSlide
@@ -81,10 +75,7 @@ function MovieCreditPosters({ items, itemComponent, isSmallScreen }: Props) {
                 component={itemComponent}
                 posterWidth={posterWidth}
                 posterHeight={posterHeight}
-                performerForeignId={credit.performer.foreignId}
-                performer={credit.performer}
-                job={credit.job}
-                character={credit.performer.fullName}
+                credit={credit}
               />
             </SwiperSlide>
           );

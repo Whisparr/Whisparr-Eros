@@ -43,7 +43,14 @@ namespace NzbDrone.Core.ImportLists.StashDB.Favorite
 
             Logger.Info(parameterLog);
 
-            var querySceneQuery = new QueryFavoriteSceneQuery(1, _pageSize, Settings.Filter, tags, Settings.TagsFilter, Settings.Sort, Settings.AfterDate);
+            var querySceneQuery = new QueryFavoriteSceneQuery(
+                1,
+                _pageSize,
+                (FavoriteFilter)Settings.Filter,
+                tags,
+                (FilterModifier)Settings.TagsFilter,
+                (SceneSort)Settings.Sort,
+                Settings.AfterDate);
 
             var requestBuilder = RequestBuilder
                                         .Create()

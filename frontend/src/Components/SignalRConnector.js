@@ -3,8 +3,9 @@ import PropTypes from 'prop-types';
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
+import { queryClient } from 'App/queryClient';
 import { setAppValue, setVersion } from 'Store/Actions/appActions';
-import { removeItem, update, updateItem } from 'Store/Actions/baseActions';
+import { removeItem, update, updateItem, updateItemsBatch } from 'Store/Actions/baseActions';
 import { fetchCommands, finishCommand, updateCommand } from 'Store/Actions/commandActions';
 import { fetchMovies } from 'Store/Actions/movieActions';
 import { fetchQueue, fetchQueueDetails } from 'Store/Actions/queueActions';
@@ -45,6 +46,7 @@ const mapDispatchToProps = {
   dispatchSetVersion: setVersion,
   dispatchUpdate: update,
   dispatchUpdateItem: updateItem,
+  dispatchUpdateItemsBatch: updateItemsBatch,
   dispatchRemoveItem: removeItem,
   dispatchFetchHealth: fetchHealth,
   dispatchFetchQualityDefinitions: fetchQualityDefinitions,
@@ -86,6 +88,34 @@ Logger.prototype.log = function(logLevel, message) {
     }
   }
 };
+
+// TODO: TempHelper to update a nested movie in performer.years[].movies[] in React Query cache
+// Update Performer React Query cache helper
+function updateMovieInPerformerWorksQueryCache(updatedMovie) {
+  // Find all queries for performer works
+  const queryCache = queryClient.getQueryCache().findAll();
+  queryCache.forEach(({ queryKey }) => {
+    // Look for keys like "/api/v3/performer/{performerId}/works"
+    if (
+      Array.isArray(queryKey) &&
+      typeof queryKey[0] === 'string' &&
+      (/performer\/[^/]+\/works$/).test(queryKey[0])
+    ) {
+      queryClient.setQueryData(queryKey, (oldData) => {
+        if (!Array.isArray(oldData)) {
+          return oldData;
+        }
+        const idx = oldData.findIndex((movie) => movie.id === updatedMovie.id);
+        if (idx === -1) {
+          return oldData;
+        }
+        const newData = [...oldData];
+        newData[idx] = { ...oldData[idx], ...updatedMovie };
+        return newData;
+      });
+    }
+  });
+}
 
 class SignalRConnector extends Component {
 
@@ -237,13 +267,43 @@ class SignalRConnector extends Component {
   };
 
   handleMovie = (body) => {
-    const action = body.action;
     const section = 'movies';
+
+    // Support batch payloads (Resources) and single (resource)
+    if (Array.isArray(body.resources) && body.resources.length > 0) {
+      // Batched update
+      if (body.action === 'updated') {
+        this.props.dispatchUpdateItemsBatch(body.resources.map((resource) => ({ section, ...resource })));
+        body.resources.forEach(updateMovieInPerformerWorksQueryCache);
+        repopulatePage('movieUpdated');
+      } else if (body.action === 'deleted') {
+        body.resources.forEach((resource) => {
+          this.props.dispatchRemoveItem({ section, id: resource.id });
+        });
+      }
+      repopulatePage('movieUpdated');
+      return;
+    }
+
+    // Fallback: single resource
+    const action = body.action;
+    if (action === 'updated') {
+      this.props.dispatchUpdateItem({ section, ...body.resource });
+      updateMovieInPerformerWorksQueryCache(body.resource);
+      repopulatePage('movieUpdated');
+    } else if (action === 'deleted') {
+      this.props.dispatchRemoveItem({ section, id: body.resource.id });
+    }
+  };
+
+  handleCollection = (body) => {
+    const action = body.action;
+    const section = 'movieCollections';
+
+    console.log(body);
 
     if (action === 'updated') {
       this.props.dispatchUpdateItem({ section, ...body.resource });
-
-      repopulatePage('movieUpdated');
     } else if (action === 'deleted') {
       this.props.dispatchRemoveItem({ section, id: body.resource.id });
     }
@@ -254,7 +314,18 @@ class SignalRConnector extends Component {
     const section = 'performers';
 
     if (action === 'updated') {
+      // Update performer item in Redux store
       this.props.dispatchUpdateItem({ section, ...body.resource });
+
+      // Invalidate performer query cache in React Query
+      if (body.resource && body.resource.foreignId) {
+        queryClient.invalidateQueries([
+          [`/performer/${body.resource.foreignId}`]]);
+      }
+      if (body.resource && body.resource.foreignId) {
+        queryClient.invalidateQueries([
+          [`/performer/${body.resource.foreignId}/works`]]);
+      }
     } else if (action === 'deleted') {
       this.props.dispatchRemoveItem({ section, id: body.resource.id });
     }
@@ -411,6 +482,7 @@ SignalRConnector.propTypes = {
   dispatchSetAppValue: PropTypes.func.isRequired,
   dispatchSetVersion: PropTypes.func.isRequired,
   dispatchUpdate: PropTypes.func.isRequired,
+  dispatchUpdateItemsBatch: PropTypes.func.isRequired,
   dispatchUpdateItem: PropTypes.func.isRequired,
   dispatchRemoveItem: PropTypes.func.isRequired,
   dispatchFetchHealth: PropTypes.func.isRequired,

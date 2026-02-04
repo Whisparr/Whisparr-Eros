@@ -15,6 +15,7 @@ using NzbDrone.Core.MediaCover;
 using NzbDrone.Core.MetadataSource.SkyHook.Resource;
 using NzbDrone.Core.Movies;
 using NzbDrone.Core.Movies.AlternativeTitles;
+using NzbDrone.Core.Movies.Collections;
 using NzbDrone.Core.Movies.Credits;
 using NzbDrone.Core.Movies.Performers;
 using NzbDrone.Core.Movies.Studios;
@@ -153,7 +154,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             return new HashSet<string>(response.Resource);
         }
 
-        public Tuple<MovieMetadata, Studio, List<Performer>> GetMovieInfo(int tmdbId)
+        public Tuple<MovieMetadata, Studio, List<Performer>, List<Credit>> GetMovieInfo(int tmdbId)
         {
             var httpRequest = _whisparrMetadata.Create()
                                              .SetSegment("route", "movie")
@@ -179,14 +180,17 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
             var movie = MapMovie(httpResponse.Resource);
 
-            movie.Credits.AddRange(httpResponse.Resource.Credits.Select(MapCast));
+            var credits = httpResponse.Resource.Credits.Select(MapCast).ToList();
 
             var performers = httpResponse.Resource.Credits.Select(c => MapPerformer(c.Performer)).DistinctBy(p => p.ForeignId).ToList();
 
-            return new Tuple<MovieMetadata, Studio, List<Performer>>(movie, MapStudio(httpResponse.Resource.Studio), performers);
+            movie.PerformerForeignIds = performers.Select(p => p.ForeignId).ToList();
+            movie.PerformerNames = credits.Select(p => p.PersonName).ToList();
+
+            return new Tuple<MovieMetadata, Studio, List<Performer>, List<Credit>>(movie, MapStudio(httpResponse.Resource.Studio), performers, credits);
         }
 
-        public Tuple<MovieMetadata, Studio, List<Performer>> GetTpdbMovieInfo(string tpdbId)
+        public Tuple<MovieMetadata, Studio, List<Performer>, List<Credit>> GetTpdbMovieInfo(string tpdbId)
         {
             var httpRequest = _whisparrMetadata.Create()
                                              .SetSegment("route", "tpdb/movie")
@@ -212,14 +216,17 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
             var movie = MapMovie(httpResponse.Resource);
 
-            movie.Credits.AddRange(httpResponse.Resource.Credits.Select(MapCast));
+            var credits = httpResponse.Resource.Credits.Select(MapCast).ToList();
 
             var performers = httpResponse.Resource.Credits.Select(c => MapPerformer(c.Performer)).DistinctBy(p => p.ForeignId).ToList();
 
-            return new Tuple<MovieMetadata, Studio, List<Performer>>(movie, MapStudio(httpResponse.Resource.Studio), performers);
+            movie.PerformerForeignIds = performers.Select(p => p.ForeignId).ToList();
+            movie.PerformerNames = credits.Select(p => p.PersonName).ToList();
+
+            return new Tuple<MovieMetadata, Studio, List<Performer>, List<Credit>>(movie, MapStudio(httpResponse.Resource.Studio), performers, credits);
         }
 
-        public Tuple<MovieMetadata, Studio, List<Performer>> GetSceneInfo(string stashId)
+        public Tuple<MovieMetadata, Studio, List<Performer>, List<Credit>> GetSceneInfo(string stashId)
         {
             var httpRequest = _whisparrMetadata.Create()
                                              .SetSegment("route", "scene")
@@ -245,11 +252,43 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
             var movie = MapMovie(httpResponse.Resource);
 
-            movie.Credits.AddRange(httpResponse.Resource.Credits.Select(c => MapSceneCast(c, movie.ForeignId)));
+            var credits = httpResponse.Resource.Credits.Select(c => MapSceneCast(c, movie.ForeignId)).ToList();
 
             var performers = httpResponse.Resource.Credits.Select(c => MapPerformer(c.Performer)).DistinctBy(p => p.ForeignId).ToList();
 
-            return new Tuple<MovieMetadata, Studio, List<Performer>>(movie, MapStudio(httpResponse.Resource.Studio), performers);
+            movie.PerformerForeignIds = performers.Select(p => p.ForeignId).ToList();
+            movie.PerformerNames = credits.Select(p => p.PersonName).ToList();
+
+            return new Tuple<MovieMetadata, Studio, List<Performer>, List<Credit>>(movie, MapStudio(httpResponse.Resource.Studio), performers, credits);
+        }
+
+        public MovieCollection GetCollectionInfo(int tmdbId)
+        {
+            var httpRequest = _whisparrMetadata.Create()
+                                             .SetSegment("route", "movie/collection")
+                                             .Resource(tmdbId.ToString())
+                                             .Build();
+
+            httpRequest.AllowAutoRedirect = true;
+            httpRequest.SuppressHttpError = true;
+
+            var httpResponse = _httpClient.Get<CollectionResource>(httpRequest);
+
+            if (httpResponse.HasHttpError)
+            {
+                if (httpResponse.StatusCode == HttpStatusCode.NotFound)
+                {
+                    throw new MovieNotFoundException(tmdbId);
+                }
+                else
+                {
+                    throw new HttpException(httpRequest, httpResponse);
+                }
+            }
+
+            var collection = MapCollection(httpResponse.Resource);
+
+            return collection;
         }
 
         public List<MovieMetadata> GetBulkMovieInfo(List<int> tmdbIds)
@@ -467,7 +506,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             var tpdbIds = httpResponse.Resource.TpdbMovies;
             var tmpdIds = new List<int>();
 
-         // Check while Skyhook is transitioning to return TMDB company movies.
+            // Check while Skyhook is transitioning to return TMDB company movies.
             if (httpResponse.Resource.Movies != null)
             {
                 tmpdIds = httpResponse.Resource.Movies.ConvertAll(int.Parse);
@@ -490,6 +529,11 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
         public MovieMetadata MapMovie(MovieResource resource)
         {
+            if (resource == null)
+            {
+                throw new ArgumentNullException(nameof(resource));
+            }
+
             var movie = new MovieMetadata();
             var altTitles = new List<AlternativeTitle>();
             var metadataSource = MapMetadataSource(resource.ItemType, resource.ForeignIds);
@@ -567,6 +611,13 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                 }
             }
 
+            // Collections only currently on TMDB, as other providers may implement.
+            if (resource.Collection?.Name != null && resource.Collection?.ForeignIds?.TmdbId != null)
+            {
+                movie.CollectionTmdbId = resource.Collection.ForeignIds.TmdbId;
+                movie.CollectionTitle = resource.Collection.Name;
+            }
+
             return movie;
         }
 
@@ -586,6 +637,11 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
         public MovieMetadata MapMovieToTmdbMovie(MovieMetadata movie)
         {
+            if (movie == null)
+            {
+                throw new ArgumentNullException(nameof(movie));
+            }
+
             try
             {
                 var newMovie = movie;
@@ -830,7 +886,21 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
                 var httpResponse = _httpClient.Get<List<MovieResource>>(request);
 
-                return httpResponse.Resource.SelectList(MapSearchResult);
+                return httpResponse.Resource
+                    .Select(resource =>
+                    {
+                        try
+                        {
+                            return MapSearchResult(resource);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.Trace(ex, $"Failed to map search result for resource: {resource?.ToJson(Formatting.None)}");
+                            return null;
+                        }
+                    })
+                    .Where(x => x != null)
+                    .ToList();
             }
             catch (HttpException ex)
             {
@@ -921,7 +991,21 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
                 var httpResponse = _httpClient.Get<List<MovieResource>>(request);
 
-                return httpResponse.Resource.SelectList(MapSearchResult);
+                return httpResponse.Resource
+                    .Select(resource =>
+                    {
+                        try
+                        {
+                            return MapSearchResult(resource);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.Trace(ex, $"Failed to map TPDB search result for resource: {resource?.ToJson(Formatting.None)}");
+                            return null;
+                        }
+                    })
+                    .Where(x => x != null)
+                    .ToList();
             }
             catch (HttpException ex)
             {
@@ -993,7 +1077,21 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
                 var httpResponse = _httpClient.Get<List<MovieResource>>(request);
 
-                return httpResponse.Resource.SelectList(MapSearchResult);
+                return httpResponse.Resource
+                    .Select(resource =>
+                    {
+                        try
+                        {
+                            return MapSearchResult(resource);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.Trace(ex, $"Failed to map Scene search result for resource: {resource?.ToJson(Formatting.None)}");
+                            return null;
+                        }
+                    })
+                    .Where(x => x != null)
+                    .ToList();
             }
             catch (UnexpectedHtmlContentException ex)
             {
@@ -1194,25 +1292,27 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
         public Movies.MetadataSource MapMetadataSource(ItemType itemType, ExternalIdResource externalIdResource)
         {
-            if (itemType == ItemType.Movie)
+            if (externalIdResource == null)
             {
-                if (externalIdResource.TpdbId.IsNotNullOrWhiteSpace())
-                {
-                    return Movies.MetadataSource.TpdbMovie;
-                }
-                else
-                {
-                    return Movies.MetadataSource.Tmdb;
-                }
+                return itemType == ItemType.Movie ? Movies.MetadataSource.Tmdb : Movies.MetadataSource.Stash;
             }
-            else
+
+            return itemType switch
             {
-                return Movies.MetadataSource.Stash;
-            }
+                ItemType.Movie => !string.IsNullOrWhiteSpace(externalIdResource.TpdbId)
+                    ? Movies.MetadataSource.TpdbMovie
+                    : Movies.MetadataSource.Tmdb,
+                _ => Movies.MetadataSource.Stash
+            };
         }
 
         public static string MapForeignId(Movies.MetadataSource metadataSource, ExternalIdResource externalIdResource)
         {
+            if (externalIdResource == null)
+            {
+                throw new ArgumentNullException(nameof(externalIdResource));
+            }
+
             if (metadataSource == Movies.MetadataSource.Tmdb)
             {
                 return externalIdResource.TmdbId.ToString();
@@ -1229,6 +1329,11 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
         private Movie MapSearchResult(MovieResource result)
         {
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
             var foreignId = MapForeignId(MapMetadataSource(result.ItemType, result.ForeignIds), result.ForeignIds);
             var movie = _movieService.FindByForeignId(foreignId);
 
@@ -1240,25 +1345,58 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                 {
                     movie.MovieMetadata.Value.Credits.Add(MapCast(performer));
                 }
+
+                movie.MovieMetadata.Value.PerformerNames = result.Credits.Select(c => c.Performer.Name).ToList();
+                movie.MovieMetadata.Value.PerformerForeignIds = result.Credits.Select(c => c.Performer?.ForeignIds?.StashId).Where(id => id.IsNotNullOrWhiteSpace()).ToList();
             }
 
             return movie;
         }
 
-        private static Credit MapCast(CastResource arg)
+        private MovieCollection MapCollection(CollectionResource collectionResource)
         {
+            if (collectionResource == null)
+            {
+                throw new ArgumentNullException(nameof(collectionResource));
+            }
+
+            var collection = new MovieCollection
+            {
+                TmdbId = collectionResource.ForeignIds.TmdbId,
+                Title = collectionResource.Name,
+                Overview = collectionResource.Overview,
+                CleanTitle = collectionResource.Name.CleanMovieTitle(),
+                SortTitle = Parser.Parser.NormalizeTitle(collectionResource.Name),
+                Images = collectionResource.Images?.Select(MapImage).ToList() ?? new List<MediaCover.MediaCover>(),
+                Movies = collectionResource.Parts?.Select(x => MapMovie(x)).ToList() ?? new List<MovieMetadata>()
+            };
+
+            return collection;
+        }
+
+        private static Credit MapCast(CastResource castResource)
+        {
+            if (castResource == null)
+            {
+                throw new ArgumentNullException(nameof(castResource));
+            }
+
             var newActor = new Credit
             {
-                Character = arg.Character,
-                Order = arg.Order,
+                PersonName = castResource.PersonName.IsNotNullOrWhiteSpace() ? castResource.PersonName : castResource.Performer.Name,
+                Character = castResource.Character,
+                Order = castResource.Order,
                 Type = CreditType.Cast,
-                PerformerForeignId = arg.Performer.ForeignIds.StashId,
+                Images = castResource.Performer.Images.Select(MapImage).ToList(),
+                PerformerForeignId = castResource.Performer.ForeignIds.StashId,
+
+                // To Remove once client uses the Credit Controller
                 Performer = new CreditPerformer
                 {
-                    Name = arg.Performer.Name,
-                    ForeignId = arg.Performer.ForeignIds.StashId.ToString(),
-                    Images = arg.Performer.Images.Select(MapImage).ToList(),
-                    Gender = MapGender(arg.Performer.Gender)
+                    Name = castResource.Performer.Name,
+                    ForeignId = castResource.Performer.ForeignIds.StashId.ToString(),
+                    Images = castResource.Performer.Images.Select(MapImage).ToList(),
+                    Gender = MapGender(castResource.Performer.Gender)
                 }
             };
 
@@ -1267,6 +1405,11 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
         private Performer MapPerformer(PerformerResource performer)
         {
+            if (performer == null)
+            {
+                throw new ArgumentNullException(nameof(performer));
+            }
+
             var newPerformer = new Performer
             {
                 Name = performer.Name,
@@ -1369,58 +1512,79 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             }
         }
 
-        private static AlternativeTitle MapAlternativeTitle(AlternativeTitleResource arg)
+        private static AlternativeTitle MapAlternativeTitle(AlternativeTitleResource altTitleResource)
         {
+            if (altTitleResource == null)
+            {
+                throw new ArgumentNullException(nameof(altTitleResource));
+            }
+
             var newAlternativeTitle = new AlternativeTitle
             {
-                Title = arg.Title,
-                SourceType = arg.Type,
-                CleanTitle = arg.Title.CleanMovieTitle()
+                Title = altTitleResource.Title,
+                SourceType = altTitleResource.Type,
+                CleanTitle = altTitleResource.Title.CleanMovieTitle()
             };
 
             return newAlternativeTitle;
         }
 
-        private Studio MapStudio(StudioResource studio)
+        private Studio MapStudio(StudioResource studioResource)
         {
+            if (studioResource == null)
+            {
+                throw new ArgumentNullException(nameof(studioResource));
+            }
+
             // Do not Map the Studio if it has not mapped to a StashDB studio. For Movies as the name is stored in the movie Metadata.
-            if (string.IsNullOrEmpty(studio?.ForeignIds?.StashId))
+            if (string.IsNullOrEmpty(studioResource?.ForeignIds?.StashId))
             {
                 return null;
             }
 
             var newStudio = new Studio
             {
-                Title = studio.Title,
-                CleanTitle = studio.Title.CleanStudioTitle(),
-                SortTitle = Parser.Parser.NormalizeTitle(studio.Title),
-                Aliases = studio.Aliases,
-                Website = studio.Homepage,
-                ForeignId = studio.ForeignIds.StashId,
-                TpdbId = studio.ForeignIds.TpdbId,
-                TmdbId = studio.ForeignIds.TmdbId,
-                Network = studio.Network,
-                Images = studio.Images?.Select(MapImage).ToList() ?? new List<MediaCover.MediaCover>(),
-                Status = studio.Status
+                Title = studioResource.Title,
+                CleanTitle = studioResource.Title.CleanStudioTitle(),
+                SortTitle = Parser.Parser.NormalizeTitle(studioResource.Title),
+                Aliases = studioResource.Aliases,
+                Website = studioResource.Homepage,
+                ForeignId = studioResource.ForeignIds.StashId,
+                TpdbId = studioResource.ForeignIds.TpdbId,
+                TmdbId = studioResource.ForeignIds.TmdbId,
+                Network = studioResource.Network,
+                Images = studioResource.Images?.Select(MapImage).ToList() ?? new List<MediaCover.MediaCover>(),
+                Status = studioResource.Status
             };
 
             return newStudio;
         }
 
-        private static Credit MapSceneCast(CastResource arg, string sceneForeignId)
+        private static Credit MapSceneCast(CastResource castResource, string sceneForeignId)
         {
+            // TODO: Remove sceneForeignId?  Not in use
+
+            if (castResource == null)
+            {
+                throw new ArgumentNullException(nameof(castResource));
+            }
+
             var newActor = new Credit
             {
-                Character = arg.Character,
-                Order = arg.Order,
+                PersonName = castResource.Performer.Name,
+                Character = castResource.Character,
+                Order = castResource.Order,
                 Type = CreditType.Cast,
-                PerformerForeignId = arg.Performer.ForeignIds.StashId,
+                Images = castResource.Performer.Images.Select(MapImage).ToList(),
+                PerformerForeignId = castResource.Performer.ForeignIds.StashId,
+
+                // To Remove once client uses the Credit Controller
                 Performer = new CreditPerformer
                 {
-                    Name = arg.Performer.Name,
-                    ForeignId = arg.Performer.ForeignIds.StashId,
-                    Images = arg.Performer.Images?.Select(MapImage).ToList() ?? new List<MediaCover.MediaCover>(),
-                    Gender = MapGender(arg.Performer.Gender)
+                    Name = castResource.Performer.Name,
+                    ForeignId = castResource.Performer.ForeignIds.StashId,
+                    Images = castResource.Performer.Images?.Select(MapImage).ToList() ?? new List<MediaCover.MediaCover>(),
+                    Gender = MapGender(castResource.Performer.Gender)
                 }
             };
 
@@ -1449,12 +1613,17 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             return mappedRatings;
         }
 
-        private static MediaCover.MediaCover MapImage(ImageResource arg)
+        private static MediaCover.MediaCover MapImage(ImageResource imageResource)
         {
+            if (imageResource == null)
+            {
+                throw new ArgumentNullException(nameof(imageResource));
+            }
+
             return new MediaCover.MediaCover
             {
-                RemoteUrl = arg.Url,
-                CoverType = MapCoverType(arg.CoverType)
+                RemoteUrl = imageResource.Url,
+                CoverType = MapCoverType(imageResource.CoverType)
             };
         }
 

@@ -5,7 +5,6 @@ using NzbDrone.Core.Configuration;
 using NzbDrone.Core.ImportLists;
 using NzbDrone.Core.ImportLists.ImportExclusions;
 using NzbDrone.Core.ImportLists.ImportListMovies;
-using NzbDrone.Core.MediaCover;
 using NzbDrone.Core.MetadataSource;
 using NzbDrone.Core.Movies;
 using NzbDrone.Core.Organizer;
@@ -94,7 +93,7 @@ namespace Whisparr.Api.V3.ImportLists
             {
                 var resource = currentMovie.ToResource();
 
-                var poster = currentMovie.MovieMetadata.Value.Images.FirstOrDefault(c => c.CoverType == MediaCoverTypes.Poster);
+                var poster = currentMovie.MovieMetadata.Value.Poster;
                 if (poster != null)
                 {
                     resource.RemotePoster = poster.RemoteUrl;
@@ -117,7 +116,7 @@ namespace Whisparr.Api.V3.ImportLists
             {
                 var resource = currentMovie.ToResource();
 
-                var poster = currentMovie.MovieMetadata.Value.Images.FirstOrDefault(c => c.CoverType == MediaCoverTypes.Poster);
+                var poster = currentMovie.MovieMetadata.Value.Poster;
                 if (poster != null)
                 {
                     resource.RemotePoster = poster.RemoteUrl;

@@ -1,3 +1,5 @@
+// Set per-performer refreshing state
+export const SET_PERFORMER_REFRESHING = 'performers/setPerformerRefreshing';
 import _ from 'lodash';
 import { createAction } from 'redux-actions';
 import { batchActions } from 'redux-batched-actions';
@@ -21,11 +23,19 @@ import createSetTableOptionReducer from './Creators/Reducers/createSetTableOptio
 // Variables
 
 export const section = 'performers';
+export const setPerformerRefreshing = createAction(
+  SET_PERFORMER_REFRESHING,
+  (payload) => ({
+    section,
+    ...payload
+  })
+);
 
 //
 // State
 
 export const defaultState = {
+  refreshingPerformers: {},
   isFetching: false,
   isPopulated: false,
   error: null,
@@ -546,6 +556,17 @@ export const actionHandlers = handleThunks({
 // Reducers
 
 export const reducers = createHandleActions({
+  // Set per-performer refreshing state
+  [SET_PERFORMER_REFRESHING]: function(state, { payload }) {
+    const { id, isRefreshing } = payload;
+    return {
+      ...state,
+      refreshingPerformers: {
+        ...state.refreshingPerformers,
+        [id]: isRefreshing
+      }
+    };
+  },
 
   [SET_PERFORMER_SORT]: createSetClientSideCollectionSortReducer(section),
   [SET_PERFORMER_FILTER]: createSetClientSideCollectionFilterReducer(section),

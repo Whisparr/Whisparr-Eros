@@ -57,7 +57,17 @@ namespace NzbDrone.Core.ImportLists.StashDB.Performer
 
             Logger.Info($"Importing StashDB scenes for performers: {parameterLog}");
 
-            var querySceneQuery = new QueryPerformerSceneQuery(1, _pageSize, performers, studios, Settings.StudiosFilter, tags, Settings.TagsFilter, Settings.OnlyFavoriteStudios, Settings.Sort, Settings.AfterDate);
+            var querySceneQuery = new QueryPerformerSceneQuery(
+                1,
+                _pageSize,
+                performers,
+                studios,
+                (FilterModifier)Settings.StudiosFilter,
+                tags,
+                (FilterModifier)Settings.TagsFilter,
+                Settings.OnlyFavoriteStudios,
+                (SceneSort)Settings.Sort,
+                Settings.AfterDate);
 
             var requestBuilder = RequestBuilder
                                         .Create()

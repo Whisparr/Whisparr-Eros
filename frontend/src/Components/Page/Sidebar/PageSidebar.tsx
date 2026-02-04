@@ -14,7 +14,8 @@ import { IconName } from 'Components/Icon';
 import OverlayScroller from 'Components/Scroller/OverlayScroller';
 import Scroller from 'Components/Scroller/Scroller';
 import usePrevious from 'Helpers/Hooks/usePrevious';
-import { icons, scrollDirections } from 'Helpers/Props';
+import { icons } from 'Helpers/Props';
+import { VERTICAL } from 'Helpers/Props/scrollDirections';
 import { setIsSidebarVisible } from 'Store/Actions/appActions';
 import dimensions from 'Styles/Variables/dimensions';
 import HealthStatus from 'System/Status/Health/HealthStatus';
@@ -73,6 +74,10 @@ const LINKS: SidebarItem[] = [
       {
         title: () => translate('ImportLibrary'),
         to: '/add/import/movies',
+      },
+      {
+        title: () => translate('Collections'),
+        to: '/collections',
       },
     ],
   },
@@ -520,8 +525,10 @@ function PageSidebar({ isSidebarVisible, isSmallScreen }: PageSidebarProps) {
     >
       <ScrollerComponent
         className={styles.sidebar}
-        scrollDirection={scrollDirections.VERTICAL}
+        scrollDirection={VERTICAL}
         style={sidebarStyle}
+        autoHide={true}
+        autoScroll={false}
       >
         <div>
           {LINKS.map((link) => {

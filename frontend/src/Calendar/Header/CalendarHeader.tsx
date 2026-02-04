@@ -190,7 +190,7 @@ function CalendarHeader() {
               <CalendarHeaderViewButton
                 view="forecast"
                 selectedView={view}
-                buttonGroupPosition="center"
+                buttonGroupPosition={align.CENTER}
                 onPress={handleViewChange}
               />
 
@@ -204,7 +204,7 @@ function CalendarHeader() {
               <CalendarHeaderViewButton
                 view="agenda"
                 selectedView={view}
-                buttonGroupPosition="right"
+                buttonGroupPosition={align.RIGHT}
                 onPress={handleViewChange}
               />
             </>

@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using FluentValidation.Results;
 using NzbDrone.Common.Extensions;
-using NzbDrone.Core.MediaCover;
 using NzbDrone.Core.Movies;
 
 namespace NzbDrone.Core.Notifications.Pushcut
@@ -76,7 +75,7 @@ namespace NzbDrone.Core.Notifications.Pushcut
 
         private string GetPosterUrl(Movie movie)
         {
-            return movie.MovieMetadata.Value.Images.FirstOrDefault(x => x.CoverType == MediaCoverTypes.Poster)?.RemoteUrl;
+            return movie.MovieMetadata.Value.Poster?.RemoteUrl;
         }
 
         private List<NotificationMetadataLink> GetLinks(Movie movie)

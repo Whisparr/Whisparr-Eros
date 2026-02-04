@@ -1,47 +1,41 @@
 import React, { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import AppState from 'App/State/AppState';
-import Performer from 'Performer/Performer';
 import { togglePerformerMonitored } from 'Store/Actions/performerActions';
+import MovieCredit from 'typings/MovieCredit';
 
 interface Props {
-  performerForeignId: string;
-  performer?: Performer;
+  credit: MovieCredit;
   component: React.ElementType;
   posterWidth?: number;
   posterHeight?: number;
-  job?: string;
-  character?: string;
 }
 
-const selectPerformers = (state: AppState) =>
-  state.performers.items as Performer[];
 const selectSafeForWork = (state: AppState) => state.settings.safeForWorkMode;
 
 function MovieCreditPosterConnector(props: Props) {
-  const { performerForeignId, performer: performerProp } = props;
-  const performers = useSelector(selectPerformers);
+  const { credit } = props;
   const safeForWorkMode = useSelector(selectSafeForWork);
   const dispatch = useDispatch();
 
-  const performer =
-    performers?.find((p) => p.foreignId === performerForeignId) ||
-    performerProp;
+  const performerId = credit.performerId;
 
   const onTogglePerformerMonitored = useCallback(
     (args: { monitored: boolean; moviesMonitored: boolean }) => {
-      if (!performer) return;
+      if (performerId === 0) return;
       const monitored = args.monitored;
       const moviesMonitored = args.moviesMonitored;
       dispatch(
         togglePerformerMonitored({
-          performerId: performer.id,
+          performerId,
           monitored,
           moviesMonitored,
         })
       );
+      props.credit.monitored = monitored;
+      props.credit.moviesMonitored = moviesMonitored;
     },
-    [dispatch, performer]
+    [performerId, dispatch, props.credit]
   );
 
   const ItemComponent = props.component;
@@ -49,7 +43,7 @@ function MovieCreditPosterConnector(props: Props) {
   return (
     <ItemComponent
       {...props}
-      performer={performer}
+      credit={credit}
       safeForWorkMode={safeForWorkMode}
       onTogglePerformerMonitored={onTogglePerformerMonitored}
     />

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using NzbDrone.Core.Movies;
+using NzbDrone.Core.Movies.Collections;
+using NzbDrone.Core.Movies.Credits;
 using NzbDrone.Core.Movies.Performers;
 using NzbDrone.Core.Movies.Studios;
 
@@ -9,11 +11,12 @@ namespace NzbDrone.Core.MetadataSource
     public interface IProvideMovieInfo
     {
         MovieMetadata GetMovieByImdbId(string imdbId);
-        Tuple<MovieMetadata, Studio, List<Performer>> GetMovieInfo(int tmdbId);
-        Tuple<MovieMetadata, Studio, List<Performer>> GetTpdbMovieInfo(string tpdbId);
-        Tuple<MovieMetadata, Studio, List<Performer>> GetSceneInfo(string stashId);
+        Tuple<MovieMetadata, Studio, List<Performer>, List<Credit>> GetMovieInfo(int tmdbId);
+        Tuple<MovieMetadata, Studio, List<Performer>, List<Credit>> GetTpdbMovieInfo(string tpdbId);
+        Tuple<MovieMetadata, Studio, List<Performer>, List<Credit>> GetSceneInfo(string stashId);
         List<MovieMetadata> GetBulkMovieInfo(List<int> tmdbIds);
         List<MovieMetadata> GetBulkTpdbMovieInfo(List<string> tpdbIds);
+        MovieCollection GetCollectionInfo(int tmdbId);
         Performer GetPerformerInfo(string stashId);
         Studio GetStudioInfo(string stashId);
         (List<string> StashdbIds, List<string> TpdbIds, List<int> TmdbIds) GetPerformerWorks(string stashId);

@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Equ;
 using NzbDrone.Core.Languages;
+using NzbDrone.Core.MediaCover;
 using NzbDrone.Core.MetadataSource.SkyHook.Resource;
 using NzbDrone.Core.Movies.AlternativeTitles;
 using NzbDrone.Core.Movies.Credits;
@@ -20,6 +22,8 @@ namespace NzbDrone.Core.Movies
             Recommendations = new List<int>();
             Ratings = new Ratings();
             TagIds = new List<string>();
+            PerformerNames = new List<string>();
+            PerformerForeignIds = new List<string>();
         }
 
         public string ForeignId { get; set; }
@@ -30,6 +34,8 @@ namespace NzbDrone.Core.Movies
         public DateTime? ReleaseDateUtc { get; set; }
         public string ReleaseDate { get; set; }
         public int Year { get; set; }
+        public int CollectionTmdbId { get; set; }
+        public string CollectionTitle { get; set; }
         public Ratings Ratings { get; set; }
         public string StudioForeignId { get; set; }
         public StudioResource Studio { get; set; }
@@ -52,7 +58,9 @@ namespace NzbDrone.Core.Movies
         public List<int> Recommendations { get; set; }
         public ItemType ItemType { get; set; }
         public MetadataSource MetadataSource { get; set; }
-        public List<Credit> Credits { get; set; }
+        public List<string> PerformerForeignIds { get; set; }
+        public List<string> PerformerNames { get; set; }
+        public List<Credit> Credits { get; set; } // Either Passed from SkyHook or Loaded from the database
 
         [MemberwiseEqualityIgnore]
         public bool IsRecentMovie
@@ -66,6 +74,18 @@ namespace NzbDrone.Core.Movies
 
                 return false;
             }
+        }
+
+        public MediaCover.MediaCover Poster
+        {
+           // Return Poster if exists, otherwise return Screenshot (Don't return any Fanart)
+            get { return Images.FirstOrDefault(c => c.CoverType == MediaCoverTypes.Poster) ?? Images.FirstOrDefault(i => i.CoverType == MediaCoverTypes.Screenshot); }
+        }
+
+        public MediaCover.MediaCover Fanart
+        {
+            // Return Poster if exists, otherwise return Screenshot (Don't return any Fanart)
+            get { return Images.FirstOrDefault(c => c.CoverType == MediaCoverTypes.Fanart); }
         }
     }
 

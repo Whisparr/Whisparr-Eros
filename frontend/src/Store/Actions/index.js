@@ -11,6 +11,8 @@ import * as importMovie from './importMovieActions';
 import * as interactiveImportActions from './interactiveImportActions';
 import * as movies from './movieActions';
 import * as movieBlocklist from './movieBlocklistActions';
+import * as movieCollections from './movieCollectionActions';
+import * as movieCredits from './movieCreditsActions';
 import * as movieFiles from './movieFileActions';
 import * as movieHistory from './movieHistoryActions';
 import * as movieIndex from './movieIndexActions';
@@ -59,6 +61,8 @@ export default [
   movies,
   movieSearch,
   movieBlocklist,
+  movieCollections,
+  movieCredits,
   movieHistory,
   movieIndex,
   performers,

@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import MonitorToggleButton from 'Components/MonitorToggleButton';
 import RelativeDateCell from 'Components/Table/Cells/RelativeDateCell';
 import TableRowCell from 'Components/Table/Cells/TableRowCell';
+import Column from 'Components/Table/Column';
 import TableRow from 'Components/Table/TableRow';
 import Tooltip from 'Components/Tooltip/Tooltip';
 import { tooltipPositions } from 'Helpers/Props';
@@ -18,17 +19,6 @@ import formatBytes from 'Utilities/Number/formatBytes';
 import formatCustomFormatScore from 'Utilities/Number/formatCustomFormatScore';
 import styles from './SceneRow.css';
 
-interface Credit {
-  performer: {
-    name: string;
-  };
-}
-
-interface Column {
-  name: string;
-  isVisible: boolean;
-}
-
 interface SceneRowProps {
   id: number;
   foreignId: string;
@@ -37,19 +27,19 @@ interface SceneRowProps {
   hasFile: boolean;
   movieFile?: MovieFile;
   monitored: boolean;
-  credits?: Credit[];
+  performerNames?: string[];
   joinedPerformers?: string;
   releaseDate?: string;
   runtime?: number;
   movieRuntimeFormat?: string;
+  safeForWorkMode?: boolean;
   title: string;
   isSaving?: boolean;
   movieFilePath?: string;
-  movieFileRelativePath?: string;
   movieFileSize?: number;
   releaseGroup?: string;
   customFormats?: CustomFormatType[];
-  customFormatScore: number;
+  customFormatScore?: number;
   mediaInfo?: ReturnType<typeof MediaInfo>;
   columns: Column[];
   onMonitorMoviePress: (
@@ -79,7 +69,15 @@ class SceneRow extends Component<SceneRowProps, SceneRowState> {
     this.setState({ isDetailsModalOpen: false });
   };
 
-  onMonitorMoviePress = (monitored: boolean, options?: object): void => {
+  onMonitorMoviePress = (
+    value: boolean | { monitored: boolean; moviesMonitored: boolean },
+    options: { shiftKey: boolean }
+  ): void => {
+    // Support both boolean and object signatures
+    const { monitored } =
+      typeof value === 'object' && value !== null && 'monitored' in value
+        ? value
+        : { monitored: value as boolean };
     this.props.onMonitorMoviePress(this.props.id, monitored, options);
   };
 
@@ -89,7 +87,7 @@ class SceneRow extends Component<SceneRowProps, SceneRowState> {
       foreignId,
       movieFileId,
       monitored,
-      credits = [],
+      performerNames,
       runtime,
       isAvailable,
       hasFile,
@@ -99,9 +97,9 @@ class SceneRow extends Component<SceneRowProps, SceneRowState> {
       title,
       isSaving,
       movieFilePath,
-      movieFileRelativePath,
       movieFileSize,
       releaseGroup,
+      safeForWorkMode,
       customFormats = [],
       customFormatScore,
       columns,
@@ -133,11 +131,10 @@ class SceneRow extends Component<SceneRowProps, SceneRowState> {
             );
           }
 
-          if (name === 'credits') {
-            const joinedPerformers = credits
+          if (name === 'credits' && performerNames) {
+            const joinedPerformers = performerNames
               .slice(0, 4)
-              .sort((a, b) => (a.performer.name > b.performer.name ? 1 : -1))
-              .map((credit) => credit.performer.name)
+              .sort((a, b) => (a > b ? 1 : -1))
               .join(', ');
             return (
               <TableRowCell key={name} className={styles.performers}>
@@ -147,17 +144,32 @@ class SceneRow extends Component<SceneRowProps, SceneRowState> {
           }
 
           if (name === 'path') {
-            return <TableRowCell key={name}>{movieFilePath}</TableRowCell>;
-          }
-
-          if (name === 'relativePath') {
             return (
-              <TableRowCell key={name}>{movieFileRelativePath}</TableRowCell>
+              <TableRowCell
+                key={name}
+                className={
+                  this.props.safeForWorkMode
+                    ? `${styles.path} ${styles.blurred}`
+                    : styles.path
+                }
+              >
+                {movieFilePath}
+              </TableRowCell>
             );
           }
 
           if (name === 'releaseDate') {
-            return <RelativeDateCell key={name} date={releaseDate} />;
+            return (
+              <RelativeDateCell
+                key={name}
+                className={
+                  safeForWorkMode
+                    ? `${styles.path} ${styles.blurred}`
+                    : styles.path
+                }
+                date={releaseDate}
+              />
+            );
           }
 
           if (name === 'runtime') {

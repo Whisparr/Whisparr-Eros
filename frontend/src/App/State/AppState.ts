@@ -10,12 +10,14 @@ import InteractiveImportAppState from './InteractiveImportAppState';
 import MessagesAppState from './MessagesAppState';
 import MovieBlocklistAppState from './MovieBlocklistAppState';
 import MovieCollectionAppState from './MovieCollectionAppState';
+import MovieCreditAppState from './MovieCreditAppState';
 import MovieFilesAppState from './MovieFilesAppState';
 import MoviesAppState, { MovieIndexAppState } from './MoviesAppState';
 import MovieSearchAppState from './MovieSearchAppState';
 import OAuthAppState from './OAuthAppState';
 import OrganizePreviewAppState from './OrganizePreviewAppState';
 import ParseAppState from './ParseAppState';
+import PathsAppState from './PathsAppState';
 import PerformersAppState from './PerformersAppState';
 import ProviderOptionsAppState from './ProviderOptionsAppState';
 import QueueAppState from './QueueAppState';
@@ -59,13 +61,6 @@ export interface CustomFilter {
   filters: PropertyFilter[];
 }
 
-export interface PathsAppState {
-  currentPath: string;
-  directories: Array<{ path: string; type?: string }>;
-  files: Array<{ path: string; type?: string }>;
-  isFetching?: boolean;
-}
-
 export interface AppSectionState {
   isUpdated: boolean;
   isConnected: boolean;
@@ -99,6 +94,7 @@ interface AppState {
   interactiveImport: InteractiveImportAppState;
   movieBlocklist: MovieBlocklistAppState;
   movieCollections: MovieCollectionAppState;
+  movieCredits: MovieCreditAppState;
   movieFiles: MovieFilesAppState;
   movieHistory: MovieHistoryAppState;
   movieIndex: MovieIndexAppState;

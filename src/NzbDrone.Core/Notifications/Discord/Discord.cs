@@ -55,7 +55,7 @@ namespace NzbDrone.Core.Notifications.Discord
             {
                 embed.Thumbnail = new DiscordImage
                 {
-                    Url = message.Movie.MovieMetadata.Value.Images.FirstOrDefault(x => x.CoverType == MediaCoverTypes.Poster)?.RemoteUrl
+                    Url = message.Movie.MovieMetadata.Value.Poster?.RemoteUrl
                 };
             }
 
@@ -63,7 +63,7 @@ namespace NzbDrone.Core.Notifications.Discord
             {
                 embed.Image = new DiscordImage
                 {
-                    Url = message.Movie.MovieMetadata.Value.Images.FirstOrDefault(x => x.CoverType == MediaCoverTypes.Fanart)?.RemoteUrl
+                    Url = message.Movie.MovieMetadata.Value.Fanart?.RemoteUrl
                 };
             }
 
@@ -159,7 +159,7 @@ namespace NzbDrone.Core.Notifications.Discord
             {
                 embed.Thumbnail = new DiscordImage
                 {
-                    Url = message.Movie.MovieMetadata.Value.Images.FirstOrDefault(x => x.CoverType == MediaCoverTypes.Poster)?.RemoteUrl
+                    Url = message.Movie.MovieMetadata.Value.Poster?.RemoteUrl
                 };
             }
 
@@ -167,7 +167,7 @@ namespace NzbDrone.Core.Notifications.Discord
             {
                 embed.Image = new DiscordImage
                 {
-                    Url = message.Movie.MovieMetadata.Value.Images.FirstOrDefault(x => x.CoverType == MediaCoverTypes.Fanart)?.RemoteUrl
+                    Url = message.Movie.MovieMetadata.Value.Fanart?.RemoteUrl
                 };
             }
 
@@ -273,7 +273,7 @@ namespace NzbDrone.Core.Notifications.Discord
             {
                 embed.Thumbnail = new DiscordImage
                 {
-                    Url = movie.MovieMetadata.Value.Images.FirstOrDefault(x => x.CoverType == MediaCoverTypes.Poster)?.RemoteUrl
+                    Url = movie.MovieMetadata.Value.Poster?.RemoteUrl
                 };
             }
 
@@ -281,7 +281,7 @@ namespace NzbDrone.Core.Notifications.Discord
             {
                 embed.Image = new DiscordImage
                 {
-                    Url = movie.MovieMetadata.Value.Images.FirstOrDefault(x => x.CoverType == MediaCoverTypes.Fanart)?.RemoteUrl
+                    Url = movie.MovieMetadata.Value.Fanart?.RemoteUrl
                 };
             }
 
@@ -330,7 +330,7 @@ namespace NzbDrone.Core.Notifications.Discord
             {
                 embed.Thumbnail = new DiscordImage
                 {
-                    Url = movie.MovieMetadata.Value.Images.FirstOrDefault(x => x.CoverType == MediaCoverTypes.Poster)?.RemoteUrl
+                    Url = movie.MovieMetadata.Value.Poster?.RemoteUrl
                 };
             }
 
@@ -338,7 +338,7 @@ namespace NzbDrone.Core.Notifications.Discord
             {
                 embed.Image = new DiscordImage
                 {
-                    Url = movie.MovieMetadata.Value.Images.FirstOrDefault(x => x.CoverType == MediaCoverTypes.Fanart)?.RemoteUrl
+                    Url = movie.MovieMetadata.Value.Fanart?.RemoteUrl
                 };
             }
 

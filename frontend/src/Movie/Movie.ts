@@ -1,6 +1,7 @@
 import ModelBase from 'App/ModelBase';
 import Language from 'Language/Language';
 import { MovieFile } from 'MovieFile/MovieFile';
+import MovieCredit from 'typings/MovieCredit';
 
 export type MovieMonitor = 'movieOnly' | 'sceneOnly' | 'movieAndScene' | 'none';
 
@@ -50,46 +51,49 @@ export interface MovieAddOptions {
 }
 
 interface Movie extends ModelBase {
+  foreignId: string;
   tmdbId: number;
   tpdbId: string;
   stashId: string;
   itemType: string;
-  foreignId: string;
-  sortTitle: string;
-  cleanTitle: string;
-  alternateTitles: AlternativeTitle[];
-  overview: string;
-  website: string;
-  monitored: boolean;
-  status: MovieStatus;
-  title: string;
-  credits: Array<object>;
-  titleSlug: string;
-  originalTitle: string;
-  originalLanguage: Language;
-  collection: Collection;
-  studioTitle: string;
-  studioForeignId: string;
-  qualityProfileId: number;
   added: string;
-  year: number;
+  addOptions: MovieAddOptions;
+  alternateTitles: AlternativeTitle[];
+  cleanTitle: string;
+  collection: Collection;
+  credits: MovieCredit[];
+  genres: string[];
+  grabbed?: boolean;
+  hasFile: boolean;
+  images: Image[];
+  isAvailable: boolean;
+  isSaving?: boolean;
+  lastSearchTime?: string;
+  monitored: boolean;
+  movieFile?: MovieFile;
+  movieFileId: number;
+  originalLanguage: Language;
+  originalTitle: string;
+  overview: string;
+  path: string;
+  performerForeignIds: Array<string>;
+  performerNames: Array<string>;
+  qualityProfileId: number;
+  ratings: Ratings;
   releaseDate: string;
   rootFolderPath: string;
   runtime: number;
-  path: string;
-  genres: string[];
-  ratings: Ratings;
+  sizeOnDisk?: number;
+  sortTitle: string;
   statistics: Statistics;
+  status: MovieStatus;
+  studioForeignId: string;
+  studioTitle: string;
   tags: number[];
-  images: Image[];
-  movieFileId: number;
-  movieFile?: MovieFile;
-  hasFile: boolean;
-  grabbed?: boolean;
-  lastSearchTime?: string;
-  isAvailable: boolean;
-  isSaving?: boolean;
-  addOptions: MovieAddOptions;
+  title: string;
+  titleSlug: string;
+  website: string;
+  year: number;
 }
 
 export default Movie;

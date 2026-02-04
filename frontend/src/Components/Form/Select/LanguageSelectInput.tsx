@@ -6,9 +6,9 @@ import EnhancedSelectInput, {
 
 export interface LanguageSelectInputProps {
   name: string;
-  value: number;
+  value: number[];
   values: EnhancedSelectInputValue<number>[];
-  onChange: (change: EnhancedSelectInputChanged<number>) => void;
+  onChange: (change: EnhancedSelectInputChanged<number[]>) => void;
 }
 
 function LanguageSelectInput({
@@ -32,7 +32,10 @@ function LanguageSelectInput({
   }, [values]);
 
   return (
-    <EnhancedSelectInput
+    <EnhancedSelectInput<
+      number[],
+      { key: number; value: string; dividerAfter: boolean }
+    >
       {...otherProps}
       values={mappedValues}
       onChange={onChange}

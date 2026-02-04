@@ -42,7 +42,6 @@ export const defaultState = {
     monitored: true,
     moviesMonitored: false,
     qualityProfileId: 0,
-    minimumAvailability: 'released',
     searchForMovie: false,
     tags: []
   },

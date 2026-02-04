@@ -18,7 +18,7 @@ import ModalHeader from 'Components/Modal/ModalHeader';
 import Scroller from 'Components/Scroller/Scroller';
 import Column from 'Components/Table/Column';
 import VirtualTableRowButton from 'Components/Table/VirtualTableRowButton';
-import { scrollDirections } from 'Helpers/Props';
+import { NONE } from 'Helpers/Props/scrollDirections';
 import Movie from 'Movie/Movie';
 import { searchMoviesModal } from 'Store/Actions/movieSearchActions';
 import dimensions from 'Styles/Variables/dimensions';
@@ -65,14 +65,14 @@ function Row({ index, style, data }: ListChildComponentProps<RowItemData>) {
   }, [movie?.id, onMovieSelect]);
 
   const joinedPerformers = useMemo(() => {
-    const credits = Array.isArray(movie?.credits) ? movie!.credits : [];
+    const credits = Array.isArray(movie?.performerNames)
+      ? movie!.performerNames
+      : [];
 
     // Map/guard for expected shape { performer: { name: string } }
     const names = credits
       .slice(0, 5)
-      .map((c) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const name = (c as any)?.performer?.name;
+      .map((name) => {
         return typeof name === 'string' ? name : '';
       })
       .filter((n) => n && n.length > 0)
@@ -200,10 +200,7 @@ function SelectMovieModalContent(props: SelectMovieModalContentProps) {
         {translate('SelectMovieModalTitle', { modalTitle })}
       </ModalHeader>
 
-      <ModalBody
-        className={styles.modalBody}
-        scrollDirection={scrollDirections.NONE}
-      >
+      <ModalBody className={styles.modalBody} scrollDirection={NONE}>
         <TextInput
           className={styles.filterInput}
           placeholder={translate('FilterMoviePlaceholder')}

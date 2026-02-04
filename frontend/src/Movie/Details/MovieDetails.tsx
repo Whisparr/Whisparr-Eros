@@ -34,6 +34,7 @@ import {
   Ratings,
   Statistics as MovieStatistics,
 } from 'Movie/Movie';
+import MovieCollectionLabel from 'Movie/MovieCollectionLabel';
 import MovieGenres from 'Movie/MovieGenres';
 import MovieImage from 'Movie/MovieImage';
 import MovieInteractiveSearchModal from 'Movie/Search/MovieInteractiveSearchModal';
@@ -42,6 +43,7 @@ import ExtraFileTable from 'MovieFile/Extras/ExtraFileTable';
 import OrganizePreviewModal from 'Organize/OrganizePreviewModal';
 import QualityProfileName from 'Settings/Profiles/Quality/QualityProfileName';
 import fonts from 'Styles/Variables/fonts';
+import MovieCollection from 'typings/MovieCollection';
 import formatRuntime from 'Utilities/Date/formatRuntime';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
@@ -81,12 +83,11 @@ interface Props {
   qualityProfileId: number;
   monitored: boolean;
   status: MovieStatus;
-  credits?: [];
   studio?: string;
   studioTitle?: string;
   studioForeignId?: string;
   genres: string[];
-  collection?: Record<string, unknown>;
+  collection?: MovieCollection;
   isAvailable: boolean;
   releaseDate?: string;
   overview: string;
@@ -104,6 +105,7 @@ interface Props {
   isSidebarVisible: boolean;
   movieFilesError?: unknown;
   extraFilesError?: unknown;
+  movieCreditsError?: unknown;
   hasMovieFiles: boolean;
   onMonitorTogglePress: () => void;
   onRefreshPress: () => void;
@@ -245,8 +247,8 @@ class MovieDetails extends Component<Props, State> {
       monitored,
       studioTitle,
       studioForeignId,
-      credits,
       genres,
+      collection,
       overview,
       website,
       status,
@@ -262,6 +264,7 @@ class MovieDetails extends Component<Props, State> {
       isSmallScreen,
       movieFilesError,
       extraFilesError,
+      movieCreditsError,
       hasMovieFiles,
       onMonitorTogglePress,
       onRefreshPress,
@@ -526,6 +529,18 @@ class MovieDetails extends Component<Props, State> {
                     </span>
                   </InfoLabel>
 
+                  {collection ? (
+                    <InfoLabel
+                      className={styles.detailsInfoLabel}
+                      name={translate('Collection')}
+                      size={sizes.LARGE}
+                    >
+                      <div className={styles.collection}>
+                        <MovieCollectionLabel tmdbId={collection.tmdbId} />
+                      </div>
+                    </InfoLabel>
+                  ) : null}
+
                   {!!code && !!code.length && (
                     <InfoLabel
                       className={styles.detailsInfoLabel}
@@ -591,14 +606,18 @@ class MovieDetails extends Component<Props, State> {
               <ExtraFileTable movieId={id} />
             </FieldSet>
 
-            {credits != null && credits.length > 0 ? (
-              <FieldSet legend={translate('Cast')}>
-                <MovieCastPostersConnector
-                  movieId={id}
-                  isSmallScreen={isSmallScreen}
-                />
-              </FieldSet>
+            {!isFetching && movieCreditsError ? (
+              <Alert kind={kinds.DANGER}>
+                {translate('LoadingMovieCreditsFailed')}
+              </Alert>
             ) : null}
+
+            <FieldSet legend={translate('Cast')}>
+              <MovieCastPostersConnector
+                movieId={id}
+                isSmallScreen={isSmallScreen}
+              />
+            </FieldSet>
 
             <FieldSet legend={translate('Titles')}>
               <MovieTitlesTable movieId={id} />

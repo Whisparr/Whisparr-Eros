@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NzbDrone.Core.MediaCover;
 using NzbDrone.Core.Movies.Performers;
+using Whisparr.Api.V3.Movies;
 using Whisparr.Http.REST;
 
 namespace Whisparr.Api.V3.Performers
@@ -108,6 +109,8 @@ namespace Whisparr.Api.V3.Performers
 
         /// <summary>Foreign ID from Stash metadata source</summary>
         public string ForeignId { get; set; }
+
+        public List<MovieResource> Movies { get; set; }
     }
 
     /// <summary>Provides mapping functions between Performer model and PerformerResource</summary>
