@@ -52,6 +52,9 @@ dotnet_diagnostic.IDE0005.severity = error
 dotnet_diagnostic.IDE0007.severity = error
 # Inline variable declaration
 dotnet_diagnostic.IDE0018.severity = error
+# Remove unused private members
+dotnet_code_quality_unused_parameters = non_public
+dotnet_diagnostic.IDE0060.severity = suggestion
 
 # Stylecop Rules
 dotnet_diagnostic.SA0001.severity = none
