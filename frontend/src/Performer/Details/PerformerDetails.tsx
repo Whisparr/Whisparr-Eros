@@ -27,6 +27,8 @@ import EditPerformerModalConnector from 'Performer/Edit/EditPerformerModalConnec
 import PerformerGenderIcon from 'Performer/PerformerGenderIcon';
 import { getPerformerStatusDetails } from 'Performer/PerformerStatus';
 import QualityProfileName from 'Settings/Profiles/Quality/QualityProfileName';
+import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
+import formatDate from 'Utilities/Date/formatDate';
 import formatBytes from 'Utilities/Number/formatBytes';
 import firstCharToUpper from 'Utilities/String/firstCharToUpper';
 import translate from 'Utilities/String/translate';
@@ -50,6 +52,8 @@ function getFanartUrl(
 
 function PerformerDetails() {
   const { performerForeignId } = useParams<{ performerForeignId: string }>();
+
+  const { shortDateFormat } = useSelector(createUISettingsSelector());
 
   const generalSettings = useGeneralSettings();
   const {
@@ -163,10 +167,18 @@ function PerformerDetails() {
   const fullName = performer.fullName;
   const rootFolderPath = performer.rootFolderPath;
   const gender = performer.gender;
+  const height = performer.height;
   const age = performer.age;
+  const birthDate = performer.birthDate;
   const ethnicity = performer.ethnicity;
+  const country = performer.country;
   const careerStart = performer.careerStart;
   const careerEnd = performer.careerEnd;
+  const eyeColor = performer.eyeColor;
+  const breastType = performer.breastType;
+  const hairColor = performer.hairColor;
+  const tattoos = performer.tattoos;
+  const piercings = performer.piercings;
   const qualityProfileId = performer.qualityProfileId;
   const monitored = performer.monitored;
   const moviesMonitored = performer.moviesMonitored;
@@ -177,6 +189,15 @@ function PerformerDetails() {
   const totalSceneCount = performer.totalSceneCount ?? 0;
   const sceneCount = performer.sceneCount ?? 0;
   const sizeOnDisk = performer.sizeOnDisk ?? 0;
+  let measurments = null;
+
+  if (
+    performer.bandSize != null &&
+    performer.waistSize != null &&
+    performer.hipSize != null
+  ) {
+    measurments = `${performer.bandSize}${performer.cupSize}-${performer.waistSize}-${performer.hipSize}`;
+  }
 
   // Computed variables
   const isSaving = false;
@@ -206,6 +227,29 @@ function PerformerDetails() {
       (source?.toLowerCase() === 'tpdb' && tpdbId && tpdbId.length > 0)
     );
   };
+
+  function convertHeight(height: number, units: 'metric' | 'imperial') {
+    const metric = Number(height) || null;
+    // return null or the metric value.
+    if (metric === null || units === 'metric') {
+      return metric;
+    }
+
+    // 1 inch = 2.54 cm
+    const totalInches = metric / 2.54;
+
+    // Calculate total inches (rounded)
+    const roundedTotalInches = Math.round(totalInches);
+
+    // 1 foot = 12 inches
+    // Use Math.floor to get the whole number of feet
+    const feet = Math.floor(roundedTotalInches / 12);
+
+    // Use the modulo operator (%) to get the remaining inches
+    const inches = roundedTotalInches % 12;
+
+    return `${feet}' ${inches}"`;
+  }
 
   // Handlers
   function handleDeleteMovieModalClose() {
@@ -336,31 +380,139 @@ function PerformerDetails() {
                     <PerformerGenderIcon
                       className={styles.gender}
                       gender={gender}
-                      size={40}
+                      size={34}
                     />
                   </div>
                 </div>
               </div>
-              <div className={styles.details}>
+              <div className={styles.metadata}>
                 <div>
-                  {!!ethnicity && (
-                    <span className={styles.ethnicity}>
-                      {firstCharToUpper(ethnicity)}
-                    </span>
-                  )}
-
                   {!!runningYears && (
-                    <span className={styles.years}>{runningYears}</span>
+                    <Label
+                      className={styles.metadataLabel}
+                      title={translate('Career')}
+                      size={sizes.LARGE}
+                    >
+                      <Icon name={icons.CALENDAR} size={17} />
+                      <span className={styles.years}>{runningYears}</span>
+                    </Label>
                   )}
-
-                  {!!age && (
-                    <span className={styles.age}>
-                      {age} {` ${translate('YearsOld')}`}
-                    </span>
+                  {!!birthDate && (
+                    <Label
+                      className={styles.metadataLabel}
+                      title={translate('DateOfBirth')}
+                      size={sizes.LARGE}
+                    >
+                      <Icon name={icons.CAKE} size={17} />
+                      <span className={styles.birthDate}>
+                        {formatDate(birthDate, shortDateFormat)} | {age}
+                      </span>
+                    </Label>
+                  )}
+                  {!!country && (
+                    <Label
+                      className={styles.metadataLabel}
+                      title={translate('Nationality')}
+                      size={sizes.LARGE}
+                    >
+                      <Icon name={icons.FLAG} size={17} />
+                      <span className={styles.country}>{country}</span>
+                    </Label>
+                  )}
+                  {!!ethnicity && (
+                    <Label
+                      className={styles.metadataLabel}
+                      title={translate('Ethnicity')}
+                      size={sizes.LARGE}
+                    >
+                      <Icon name={icons.GLOBE} size={17} />
+                      <span className={styles.ethnicity}>
+                        {firstCharToUpper(ethnicity)}
+                      </span>
+                    </Label>
+                  )}
+                  {!!measurments && (
+                    <Label
+                      className={styles.metadataLabel}
+                      title={translate('Figure')}
+                      size={sizes.LARGE}
+                    >
+                      <Icon name={icons.TAPE} size={17} />
+                      <span className={styles.measurments}>{measurments}</span>
+                    </Label>
+                  )}
+                  {!!breastType && breastType !== 'na' && (
+                    <Label
+                      className={styles.metadataLabel}
+                      title={translate('BreastType')}
+                      size={sizes.LARGE}
+                    >
+                      <Icon name={icons.TAPE} size={17} />
+                      <span className={styles.breastType}>{breastType}</span>
+                    </Label>
+                  )}
+                  {!!height && (
+                    <Label
+                      className={styles.metadataLabel}
+                      title={translate('Height')}
+                      size={sizes.LARGE}
+                    >
+                      <Icon name={icons.HEIGHT} size={17} />
+                      <span className={styles.height}>
+                        {convertHeight(height, 'metric')}{' '}
+                        {` ${translate('cm')}`} |{' '}
+                        {convertHeight(height, 'imperial')}
+                      </span>
+                    </Label>
+                  )}
+                  {!!eyeColor && (
+                    <Label
+                      className={styles.metadataLabel}
+                      title={translate('EyeColor')}
+                      size={sizes.LARGE}
+                    >
+                      <Icon name={icons.EYE} size={17} />
+                      <span className={styles.eyeColor}>{eyeColor}</span>
+                    </Label>
+                  )}
+                  {!!hairColor && (
+                    <Label
+                      className={styles.metadataLabel}
+                      title={translate('HairColor')}
+                      size={sizes.LARGE}
+                    >
+                      <Icon name={icons.HAIR} size={17} />
+                      <span className={styles.hairColor}>{hairColor}</span>
+                    </Label>
+                  )}
+                  {!!tattoos && tattoos.length > 0 && (
+                    <Label
+                      className={styles.metadataLabel}
+                      title={tattoos.join(', ')}
+                      size={sizes.LARGE}
+                    >
+                      <Icon name={icons.TATTOOS} size={17} />
+                      <span className={styles.tattoos}>
+                        {translate('Tattoos')}
+                      </span>
+                    </Label>
+                  )}
+                  {!!piercings && piercings.length > 0 && (
+                    <Label
+                      className={styles.metadataLabel}
+                      title={piercings.join(', ')}
+                      size={sizes.LARGE}
+                    >
+                      <Icon name={icons.PIERCINGS} size={17} />
+                      <span className={styles.piercings}>
+                        {translate('Piercings')}
+                      </span>
+                    </Label>
                   )}
                 </div>
               </div>
-              <div>
+
+              <div className={styles.details}>
                 {!!rootFolderPath && (
                   <Label
                     className={styles.detailsLabel}

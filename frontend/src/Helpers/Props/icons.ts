@@ -13,12 +13,14 @@ import {
   faFileArchive as farFileArchive,
   faFileVideo as farFileVideo,
   faFolder as farFolder,
+  faGem,
   faHdd as farHdd,
   faHeart as farHeart,
   faKeyboard as farKeyboard,
   faObjectGroup as farObjectGroup,
   faObjectUngroup as farObjectUngroup,
   faSquare as farSquare,
+  faUser,
 } from '@fortawesome/free-regular-svg-icons';
 //
 // Solid
@@ -38,6 +40,7 @@ import {
   faBug as fasBug,
   faBuilding as fasBuilding,
   faBullhorn as fasBullhorn,
+  faCake as fasCake,
   faCalculator as fasCalculator,
   faCalendarAlt as fasCalendarAlt,
   faCaretDown as fasCaretDown,
@@ -74,6 +77,7 @@ import {
   faFolderOpen as fasFolderOpen,
   faFolderTree as farFolderTree,
   faForward as fasForward,
+  faGlobe as fasGlobe,
   faHeart as fasHeart,
   faHistory as fasHistory,
   faHome as fasHome,
@@ -86,6 +90,7 @@ import {
   faMedkit as fasMedkit,
   faMinus as fasMinus,
   faPause as fasPause,
+  faPersonBurst,
   faPlay as fasPlay,
   faPlus as faPlus,
   faPowerOff as fasPowerOff,
@@ -109,6 +114,8 @@ import {
   faSync as fasSync,
   faTable as fasTable,
   faTags as fasTags,
+  faTape as fasTape,
+  faTextHeight,
   faTh as fasTh,
   faTheaterMasks as fasTheaterMasks,
   faThList as fasThList,
@@ -267,4 +274,12 @@ export const UPDATE = fasRetweet;
 export const UNSAVED_SETTING = farDotCircle;
 export const VIEW = fasEye;
 export const WARNING = fasExclamationTriangle;
+export const GLOBE = fasGlobe;
+export const TAPE = fasTape;
+export const HEIGHT = faTextHeight;
+export const CAKE = fasCake;
+export const EYE = fasEye;
+export const HAIR = faUser;
+export const TATTOOS = faPersonBurst;
+export const PIERCINGS = faGem;
 export const WIKI = fasBookReader;

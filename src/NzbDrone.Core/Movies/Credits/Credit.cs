@@ -48,10 +48,12 @@ namespace NzbDrone.Core.Movies.Credits
 
         public int Id { get; set; }
         public string Name { get; set; }
+        public string Disambiguation { get; set; }
         public string ForeignId { get; set; }
         public int TmdbId { get; set; }
         public string TpdbId { get; set; }
         public Gender Gender { get; set; }
+        public string Country { get; set; }
         public List<MediaCover.MediaCover> Images { get; set; }
         public bool Monitored { get; set; }
         public bool MoviesMonitored { get; set; }

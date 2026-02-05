@@ -56,6 +56,7 @@ class AddNewPerformerSearchResult extends Component {
       tpdbId,
       fullName,
       gender,
+      country,
       status,
       images,
       isExistingPerformer,
@@ -127,6 +128,12 @@ class AddNewPerformerSearchResult extends Component {
                     {firstCharToUpper(gender)}
                   </Label>
               }
+              {
+                !!country &&
+                  <Label size={sizes.LARGE} kind={kinds.DEFAULT}>
+                    {country}
+                  </Label>
+              }
 
               <Tooltip
                 anchor={
@@ -183,6 +190,7 @@ AddNewPerformerSearchResult.propTypes = {
   tpdbId: PropTypes.string,
   fullName: PropTypes.string.isRequired,
   gender: PropTypes.string.isRequired,
+  country: PropTypes.string.isRequired,
   status: PropTypes.string.isRequired,
   images: PropTypes.arrayOf(PropTypes.object).isRequired,
   existingPerformerId: PropTypes.number,

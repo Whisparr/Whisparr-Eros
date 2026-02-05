@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NzbDrone.Common.Extensions;
 using NzbDrone.Core.MediaCover;
 using NzbDrone.Core.Movies.Performers;
 using Whisparr.Api.V3.Movies;
@@ -11,17 +12,56 @@ namespace Whisparr.Api.V3.Performers
     /// <summary>Represents a performer (adult film actor/actress) in Whisparr</summary>
     public class PerformerResource : RestResource
     {
-        /// <summary>The performer's full name</summary>
+        /// <summary>The performer's name with Disambiguation</summary>
         public string FullName { get; set; }
+
+        /// <summary>The performer's name</summary>
+        public string Name { get; set; }
+
+        /// <summary>List of alternative names or aliases for the performer</summary>
+        public List<string> Aliases { get; set; }
 
         /// <summary>The performer's gender</summary>
         public Gender Gender { get; set; }
+
+        /// <summary>The performer's birth date (optional)</summary>
+        public DateTime? BirthDate { get; set; }
+
+        /// <summary>The performer's death date (optional)</summary>
+        public DateTime? DeathDate { get; set; }
+
+        /// <summary>Current age of the performer (optional)</summary>
+        public int? Age { get; set; }
+
+        /// <summary>Gets or sets the eye color of the person.</summary>
+        public EyeColor? EyeColor { get; set; }
 
         /// <summary>The performer's hair color (optional)</summary>
         public HairColor? HairColor { get; set; }
 
         /// <summary>The performer's ethnicity (optional)</summary>
         public Ethnicity? Ethnicity { get; set; }
+
+        /// <summary>The performer's country of origin (optional)  ISO 3166 codes</summary>
+        public string Country { get; set; }
+
+        /// <summary>The performer's height in centimeters (optional)</summary>
+        public int? Height { get; set; }
+
+        /// <summary>The performer's cup size (optional)</summary>
+        public string CupSize { get; set; }
+
+        /// <summary>The performer's band size (optional)</summary>
+        public int? BandSize { get; set; }
+
+        /// <summary>The performer's waist size in centimeters (optional)</summary>
+        public int? WaistSize { get; set; }
+
+        /// <summary>The performer's hip size in centimeters (optional)</summary>
+        public int? HipSize { get; set; }
+
+        /// <summary>The performer's breast type (optional)</summary>
+        public BreastTypeEnum BreastType { get; set; }
 
         /// <summary>The performer's career status (active, retired, etc.)</summary>
         public PerformerStatus Status { get; set; }
@@ -32,8 +72,11 @@ namespace Whisparr.Api.V3.Performers
         /// <summary>Year the performer ended their career (optional)</summary>
         public int? CareerEnd { get; set; }
 
-        /// <summary>Current age of the performer (optional)</summary>
-        public int? Age { get; set; }
+        /// <summary>List of the performer's tattoos (optional)</summary>
+        public List<string> Tattoos { get; set; }
+
+        /// <summary>List of the performer's piercings (optional)</summary>
+        public List<string> Piercings { get; set; }
 
         /// <summary>External foreign ID from metadata source (e.g., StashDB ID)</summary>
         public string ForeignId { get; set; }
@@ -126,6 +169,13 @@ namespace Whisparr.Api.V3.Performers
                 return null;
             }
 
+            // Extract the name with the Disambiguation in the same format as StashDB (For User Display)
+            var fullname = model.Name;
+            if (model.Disambiguation.IsNotNullOrWhiteSpace())
+            {
+                fullname = $"{fullname} ({model.Disambiguation})";
+            }
+
             return new PerformerResource
             {
                 Id = model.Id,
@@ -134,12 +184,26 @@ namespace Whisparr.Api.V3.Performers
                 TpdbId = model.TpdbId,
                 Gender = model.Gender,
                 Age = model.Age,
+                BirthDate = model.BirthDate,
+                DeathDate = model.DeathDate,
                 Ethnicity = model.Ethnicity,
+                Country = model.Country,
+                EyeColor = model.EyeColor,
                 HairColor = model.HairColor,
+                Height = model.Height,
+                CupSize = model.CupSize,
+                BandSize = model.BandSize,
+                WaistSize = model.WaistSize,
+                HipSize = model.HipSize,
+                BreastType = model.BreastType,
+                Tattoos = model.Tattoos,
+                Piercings = model.Piercings,
                 Status = model.Status,
                 CareerStart = model.CareerStart,
                 CareerEnd = model.CareerEnd,
-                FullName = model.Name,
+                Name = model.Name,
+                FullName = fullname,
+                Aliases = model.Aliases,
                 Monitored = model.Monitored,
                 MoviesMonitored = model.MoviesMonitored,
                 Images = model.Images,

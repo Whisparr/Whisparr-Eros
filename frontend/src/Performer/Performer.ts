@@ -1,6 +1,5 @@
 import ModelBase from 'App/ModelBase';
 import { Image } from 'Movie/Movie';
-import Studio from 'Studio/Studio';
 
 interface Performer extends ModelBase {
   foreignId: string;
@@ -8,17 +7,30 @@ interface Performer extends ModelBase {
   tpdbId?: string;
   name: string;
   fullName: string;
+  aliases: string[];
   added: string;
+  birthDate?: Date;
+  deathDate?: Date;
   age?: number;
   careerEnd?: number;
   careerStart?: number;
   ethnicity?: string;
   gender: string;
-  genres: string[];
+  country: string;
+  eyeColor?: string;
   hairColor?: string;
+  height?: number;
+  cupSize?: string;
+  bandSize?: number;
+  waistSize?: number;
+  hipSize?: number;
+  breastType: string;
+  tattoos: string[];
+  piercings: string[];
+  images: Image[];
+  status: string;
   hasMovies: boolean;
   hasScenes: boolean;
-  images: Image[];
   monitored: boolean;
   movieCount: number;
   moviesMonitored: boolean;
@@ -27,8 +39,6 @@ interface Performer extends ModelBase {
   sceneCount: number;
   sizeOnDisk: number;
   sortTitle: string;
-  status: string;
-  studios: Studio[];
   tags: number[];
   totalMovieCount: number;
   totalSceneCount: number;
