@@ -162,7 +162,7 @@ namespace NzbDrone.Core.MediaFiles.MovieImport
                     SceneSource = sceneSource,
                 };
 
-                if (movie.ForeignId == null)
+                if (string.IsNullOrWhiteSpace(movie.ForeignId))
                 {
                     // Add the movieFile if no match to a movie
                     var unmappedFile = new MovieFile();
@@ -181,6 +181,7 @@ namespace NzbDrone.Core.MediaFiles.MovieImport
                     unmappedFile.Quality = localMovie.Quality;
 
                     unmappedFiles.Add(unmappedFile);
+                    _logger.Info("Added unmapped decision.  No matching movie found for file: {0}", file);
                     continue;
                 }
 
