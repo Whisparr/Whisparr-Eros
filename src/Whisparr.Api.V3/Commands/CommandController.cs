@@ -55,8 +55,13 @@ namespace Whisparr.Api.V3.Commands
         {
             var commandType =
                 _knownTypes.GetImplementations(typeof(Command))
-                               .Single(c => c.Name.Replace("Command", "")
-                                             .Equals(commandResource.Name, StringComparison.InvariantCultureIgnoreCase));
+                    .SingleOrDefault(c => c.Name.Replace("Command", "")
+                        .Equals(commandResource.Name, StringComparison.InvariantCultureIgnoreCase));
+
+            if (commandType == null)
+            {
+                return BadRequest($"Unknown command type: {commandResource.Name}");
+            }
 
             Request.Body.Seek(0, SeekOrigin.Begin);
             using (var reader = new StreamReader(Request.Body))
