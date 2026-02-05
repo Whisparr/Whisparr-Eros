@@ -17,7 +17,7 @@ export const usePerformerDetails = (foreignId: string) => {
   const [isManualRefresh, setIsManualRefresh] = useState(false);
   const prevPerformerRef = useRef<Performer | undefined>();
 
-  // 1. Lookup performer by foreignId using useQuery
+  // Lookup performer by foreignId using useQuery
   const {
     data: performer,
     error: performerDetailsError,
@@ -40,16 +40,13 @@ export const usePerformerDetails = (foreignId: string) => {
     path: performerId ? `/${PATH}/${performerId}` : '',
     mutationOptions: {
       onSuccess: (data) => {
-        if (data?.id) {
-          /* invalidate primary ID-based cache */
-          queryClient.invalidateQueries({
-            queryKey: [`/${PATH}/${data.id}`],
-          });
-        }
         if (data?.foreignId) {
-          /* Invalidate foreignId-based cache */
+          /* invalidate foreign ID cache keys used by the query */
           queryClient.invalidateQueries({
             queryKey: [`/${PATH}/${data.foreignId}`],
+          });
+          queryClient.invalidateQueries({
+            queryKey: [`/${PATH}/${data.foreignId}/works`],
           });
         }
       },

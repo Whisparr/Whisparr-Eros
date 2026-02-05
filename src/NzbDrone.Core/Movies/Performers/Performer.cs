@@ -37,6 +37,23 @@ namespace NzbDrone.Core.Movies.Performers
         public DateTime? LastInfoSync { get; set; }
         public HashSet<int> Tags { get; set; }
 
+        /// <summary> Number of scenes in Whisparr with this performer</summary>
+        public int TotalSceneCount { get; set; }
+
+        /// <summary> Number of movies in Whisparr with this performer</summary>
+        public int TotalMovieCount { get; set; }
+
+        /// <summary>Total size in bytes of all files on disk associated with this performer</summary>
+        public long SizeOnDisk { get; set; }
+
+        /// <summary>Number of scenes have a file on disk that has this performer in them. This is not the same as TotalMovieCount, which is the total number of movies that have this performer in them, regardless of whether they have a file on disk or not.</summary>
+        /// <remarks> This is not the same as TotalSceneCount, which is the total number of scenes that have this performer in them. </remarks>
+        public int SceneCount { get; set; }
+
+        /// <summary>Number of movies have a file on disk that has this performer in them. </summary>
+        /// <remarks> This is not the same as TotalMovieCount, which is the total number of movies that have this performer in them. </remarks>
+        public int MovieCount { get; set; }
+
         public void ApplyChanges(Performer otherPerformer)
         {
             QualityProfileId = otherPerformer.QualityProfileId;

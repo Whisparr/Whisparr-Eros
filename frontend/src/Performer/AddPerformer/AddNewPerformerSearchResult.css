@@ -43,15 +43,19 @@
 
 .titleRow {
   display: flex;
+  align-items: center;
+
 }
 
 .titleContainer {
   display: flex;
-  align-items: flex-end;
   flex: 0 1 auto;
 }
 
+.genderIcon,
 .title {
+  align-item: center;
+
   font-weight: 300;
   font-size: 36px;
 }

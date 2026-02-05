@@ -12,7 +12,6 @@ import { icons, kinds } from 'Helpers/Props';
 import getErrorMessage from 'Utilities/Object/getErrorMessage';
 import translate from 'Utilities/String/translate';
 import AddNewMovieSearchResultConnector from './AddNewMovie/AddNewMovieSearchResultConnector';
-import AddNewPerformerSearchResultConnector from './AddNewPerformer/AddNewPerformerSearchResultConnector';
 import styles from './AddNewMovie.css';
 
 class AddNewMovie extends Component {
@@ -158,13 +157,7 @@ class AddNewMovie extends Component {
                         />
                       );
                     } else if (item.performer) {
-                      return (
-                        <AddNewPerformerSearchResultConnector
-                          key={item.foreignId}
-                          colorImpairedMode={colorImpairedMode}
-                          {...item.performer}
-                        />
-                      );
+                      return null;
                     }
                     return null;
                   })

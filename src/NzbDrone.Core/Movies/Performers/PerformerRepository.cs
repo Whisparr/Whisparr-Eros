@@ -6,14 +6,6 @@ using NzbDrone.Core.Messaging.Events;
 
 namespace NzbDrone.Core.Movies.Performers
 {
-    public interface IPerformerRepository : IBasicRepository<Performer>
-    {
-        Performer FindByForeignId(string foreignId);
-        List<Performer> FindByForeignIds(List<string> foreignIds);
-        List<Performer> SearchPerformers(string cleanName, string foreignId);
-        List<string> AllPerformerForeignIds();
-    }
-
     public class PerformerRepository : BasicRepository<Performer>, IPerformerRepository
     {
         public PerformerRepository(IMainDatabase database, IEventAggregator eventAggregator)
@@ -42,6 +34,11 @@ namespace NzbDrone.Core.Movies.Performers
             {
                 return conn.Query<string>("SELECT \"ForeignId\" FROM \"Performers\"").ToList();
             }
+        }
+
+        public override PagingSpec<Performer> GetPaged(PagingSpec<Performer> pagingSpec)
+        {
+            return base.GetPaged(pagingSpec);
         }
     }
 }

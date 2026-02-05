@@ -1,9 +1,11 @@
+// ...existing code...
 import React, { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { createSelector } from 'reselect';
-import AppState from 'App/State/AppState';
+import AppState, { Filter } from 'App/State/AppState';
 import FilterModal from 'Components/Filter/FilterModal';
 import { setPerformerFilter } from 'Store/Actions/performerActions';
+import { createCustomFiltersSelector } from 'Store/Selectors/createClientSideCollectionSelector';
 
 function createPerformerSelector() {
   return createSelector(
@@ -30,16 +32,20 @@ function createFilterBuilderPropsSelector() {
 
 interface PerformerIndexFilterModalProps {
   isOpen: boolean;
+  customFilters: Filter[];
 }
 
 export default function PerformerIndexFilterModal(
   props: PerformerIndexFilterModalProps
 ) {
+  const dispatch = useDispatch();
+
   const sectionItems = useSelector(createPerformerSelector());
   const filterBuilderProps = useSelector(createFilterBuilderPropsSelector());
   const customFilterType = 'performers';
-
-  const dispatch = useDispatch();
+  const customFilters = useSelector(
+    createCustomFiltersSelector(customFilterType)
+  );
 
   const dispatchSetFilter = useCallback(
     (payload: unknown) => {
@@ -56,6 +62,7 @@ export default function PerformerIndexFilterModal(
       filterBuilderProps={filterBuilderProps}
       customFilterType={customFilterType}
       dispatchSetFilter={dispatchSetFilter}
+      customFilters={customFilters}
     />
   );
 }

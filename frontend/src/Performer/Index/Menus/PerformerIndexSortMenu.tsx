@@ -28,6 +28,14 @@ function PerformerIndexSortMenu(props: PerformerIndexSortMenuProps) {
           {translate('Name')}
         </SortMenuItem>
         <SortMenuItem
+          name="age"
+          sortKey={sortKey}
+          sortDirection={sortDirection}
+          onPress={onSortSelect}
+        >
+          {translate('Age')}
+        </SortMenuItem>
+        <SortMenuItem
           name="ethnicity"
           sortKey={sortKey}
           sortDirection={sortDirection}
@@ -58,6 +66,30 @@ function PerformerIndexSortMenu(props: PerformerIndexSortMenuProps) {
           onPress={onSortSelect}
         >
           {translate('QualityProfile')}
+        </SortMenuItem>
+        <SortMenuItem
+          name="totalSceneCount"
+          sortKey={sortKey}
+          sortDirection={sortDirection}
+          onPress={onSortSelect}
+        >
+          {translate('TotalSceneCount')}
+        </SortMenuItem>
+        <SortMenuItem
+          name="totalMovieCount"
+          sortKey={sortKey}
+          sortDirection={sortDirection}
+          onPress={onSortSelect}
+        >
+          {translate('TotalMovieCount')}
+        </SortMenuItem>
+        <SortMenuItem
+          name="sizeOnDisk"
+          sortKey={sortKey}
+          sortDirection={sortDirection}
+          onPress={onSortSelect}
+        >
+          {translate('SizeOnDisk')}
         </SortMenuItem>
       </MenuContent>
     </SortMenu>

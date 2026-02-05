@@ -1,8 +1,18 @@
 export default function areAllSelected(selectedState) {
+  const keys = Object.keys(selectedState);
+
+  // If selectedState is empty, nothing is selected
+  if (keys.length === 0) {
+    return {
+      allSelected: false,
+      allUnselected: true
+    };
+  }
+
   let allSelected = true;
   let allUnselected = true;
 
-  Object.keys(selectedState).forEach((key) => {
+  keys.forEach((key) => {
     if (selectedState[key]) {
       allUnselected = false;
     } else {
@@ -15,3 +25,4 @@ export default function areAllSelected(selectedState) {
     allUnselected
   };
 }
+

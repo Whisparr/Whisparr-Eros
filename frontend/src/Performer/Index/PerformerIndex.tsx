@@ -1,42 +1,23 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import React, { useRef } from 'react';
+import { useSelector } from 'react-redux';
 import { SelectProvider } from 'App/SelectContext';
-import ClientSideCollectionAppState from 'App/State/ClientSideCollectionAppState';
-import PerformersAppState from 'App/State/PerformersAppState';
-import Alert from 'Components/Alert';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import PageContent from 'Components/Page/PageContent';
 import PageContentBody from 'Components/Page/PageContentBody';
-import PageJumpBar from 'Components/Page/PageJumpBar';
 import PageToolbar from 'Components/Page/Toolbar/PageToolbar';
 import PageToolbarButton from 'Components/Page/Toolbar/PageToolbarButton';
 import PageToolbarSection from 'Components/Page/Toolbar/PageToolbarSection';
 import PageToolbarSeparator from 'Components/Page/Toolbar/PageToolbarSeparator';
 import TableOptionsModalWrapper from 'Components/Table/TableOptions/TableOptionsModalWrapper';
-import withScrollPosition from 'Components/withScrollPosition';
-import { align, icons, kinds, sortDirections } from 'Helpers/Props';
+import TablePager from 'Components/Table/TablePager';
+import { align, icons } from 'Helpers/Props';
 import MovieIndexSelectAllButton from 'Movie/Index/Select/MovieIndexSelectAllButton';
 import MovieIndexSelectAllMenuItem from 'Movie/Index/Select/MovieIndexSelectAllMenuItem';
 import MovieIndexSelectModeButton from 'Movie/Index/Select/MovieIndexSelectModeButton';
 import MovieIndexSelectModeMenuItem from 'Movie/Index/Select/MovieIndexSelectModeMenuItem';
 import NoPerformer from 'Performer/NoPerformer';
-import {
-  setPerformerFilter,
-  setPerformerSort,
-  setPerformerTableOption,
-  setPerformerView,
-} from 'Store/Actions/performerActions';
-import { fetchQueueDetails } from 'Store/Actions/queueActions';
-import scrollPositions from 'Store/scrollPositions';
-import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
-import createPerformerClientSideCollectionItemsSelector from 'Store/Selectors/createPerformerClientSideCollectionItemsSelector';
+import { defaultState } from 'Store/Actions/performerActions';
+import { createCustomFiltersSelector } from 'Store/Selectors/createClientSideCollectionSelector';
 import translate from 'Utilities/String/translate';
 import PerformerIndexFilterMenu from './Menus/PerformerIndexFilterMenu';
 import PerformerIndexSortMenu from './Menus/PerformerIndexSortMenu';
@@ -47,166 +28,67 @@ import PerformerIndexPosters from './Posters/PerformerIndexPosters';
 import PerformerIndexSelectFooter from './Select/PerformerIndexSelectFooter';
 import PerformerIndexTable from './Table/PerformerIndexTable';
 import PerformerIndexTableOptions from './Table/PerformerIndexTableOptions';
+import { usePerformerIndex } from './usePerformerIndex';
 import styles from './PerformerIndex.css';
-
-function getViewComponent(view: string) {
-  if (view === 'posters') {
-    return PerformerIndexPosters;
-  }
-
-  return PerformerIndexTable;
-}
 
 interface PerformerIndexProps {
   initialScrollTop?: number;
 }
 
-const PerformerIndex = withScrollPosition((props: PerformerIndexProps) => {
+function PerformerIndex(_: PerformerIndexProps): JSX.Element {
   const {
-    isFetching,
-    isPopulated,
-    error,
-    totalItems,
     items,
-    columns,
-    selectedFilterKey,
-    filters,
-    customFilters,
+    totalItems,
+    page,
+    totalPages,
     sortKey,
+    columns,
+    isFetching,
+    isOptionsModalOpen,
+    isSelectMode,
+    safeForWorkMode,
+    selectedFilterKey,
     sortDirection,
     view,
-  }: PerformersAppState & ClientSideCollectionAppState = useSelector(
-    createPerformerClientSideCollectionItemsSelector('performers')
-  );
+    handleFirstPagePress,
+    handleLastPagePress,
+    handleNextPagePress,
+    handlePageSelect,
+    handlePreviousPagePress,
+    handleSortPress,
+    onAddPerformerPress,
+    onFilterSelect,
+    onOptionsModalClose,
+    onOptionsPress,
+    onSelectModePress,
+    onTableOptionChange,
+    onViewSelect,
+    PerformerSelectModeReinitializer,
+  } = usePerformerIndex();
 
-  const { isSmallScreen } = useSelector(createDimensionsSelector());
-  const dispatch = useDispatch();
+  const filters = defaultState.filters || [];
+  const customFilters = useSelector(createCustomFiltersSelector('performers'));
+  const hasNoPerformer = items.length === 0;
+  const isLoaded = !!items.length;
   const scrollerRef = useRef<HTMLDivElement>(null);
-  const [isOptionsModalOpen, setIsOptionsModalOpen] = useState(false);
-  const history = useHistory();
-
-  const [jumpToCharacter, setJumpToCharacter] = useState<string | undefined>(
-    undefined
-  );
-  const [isSelectMode, setIsSelectMode] = useState(false);
-
-  useEffect(() => {
-    dispatch(fetchQueueDetails({ all: true }));
-  }, [dispatch]);
-
-  const onSelectModePress = useCallback(() => {
-    setIsSelectMode(!isSelectMode);
-  }, [isSelectMode, setIsSelectMode]);
-
-  const onTableOptionChange = useCallback(
-    (payload: unknown) => {
-      dispatch(setPerformerTableOption(payload));
-    },
-    [dispatch]
-  );
-
-  const onViewSelect = useCallback(
-    (value: string) => {
-      dispatch(setPerformerView({ view: value }));
-
-      if (scrollerRef.current) {
-        scrollerRef.current.scrollTo(0, 0);
-      }
-    },
-    [scrollerRef, dispatch]
-  );
-
-  const onSortSelect = useCallback(
-    (value: string) => {
-      dispatch(setPerformerSort({ sortKey: value }));
-    },
-    [dispatch]
-  );
-
-  const onFilterSelect = useCallback(
-    (value: string | number) => {
-      dispatch(setPerformerFilter({ selectedFilterKey: value }));
-    },
-    [dispatch]
-  );
-
-  const onOptionsPress = useCallback(() => {
-    setIsOptionsModalOpen(true);
-  }, [setIsOptionsModalOpen]);
-
-  const onOptionsModalClose = useCallback(() => {
-    setIsOptionsModalOpen(false);
-  }, [setIsOptionsModalOpen]);
-
-  const onJumpBarItemPress = useCallback(
-    (character: string) => {
-      setJumpToCharacter(character);
-    },
-    [setJumpToCharacter]
-  );
-
-  const onScroll = useCallback(
-    ({ scrollTop }: { scrollTop: number }) => {
-      setJumpToCharacter(undefined);
-      scrollPositions.sceneIndex = scrollTop;
-    },
-    [setJumpToCharacter]
-  );
-
-  const onAddPerformerPress = useCallback(() => {
-    history.push('/add/new/performer');
-  }, [history]);
-
-  const jumpBarItems = useMemo(() => {
-    // Reset if not sorting by sortTitle
-    if (sortKey !== 'fullName') {
-      return {
-        characters: {},
-        order: [],
-      };
-    }
-
-    const characters = items.reduce((acc: Record<string, number>, item) => {
-      let char = item.sortTitle.charAt(0);
-
-      if (!isNaN(Number(char))) {
-        char = '#';
-      }
-
-      if (char in acc) {
-        acc[char] = acc[char] + 1;
-      } else {
-        acc[char] = 1;
-      }
-
-      return acc;
-    }, {});
-
-    const order = Object.keys(characters).sort();
-
-    // Reverse if sorting descending
-    if (sortDirection === sortDirections.DESCENDING) {
-      order.reverse();
-    }
-
-    return {
-      characters,
-      order,
-    };
-  }, [items, sortKey, sortDirection]);
-  const ViewComponent = useMemo(() => getViewComponent(view), [view]);
-
-  const isLoaded = !!(!error && isPopulated && items.length);
-  const hasNoPerformer = !totalItems;
 
   return (
     <SelectProvider items={items}>
-      <PageContent>
+      <PerformerSelectModeReinitializer
+        isSelectMode={isSelectMode}
+        items={items}
+      />
+      <PageContent className={styles.pageContent}>
+        {/*
+          HEADER TOOLBAR
+        */}
         <PageToolbar>
           <PageToolbarSection>
             <PerformerIndexRefreshPerformerButton
               isSelectMode={isSelectMode}
               selectedFilterKey={selectedFilterKey}
+              items={items}
+              totalItems={totalItems}
             />
             <MovieIndexSelectModeButton
               label={
@@ -249,7 +131,6 @@ const PerformerIndex = withScrollPosition((props: PerformerIndexProps) => {
               <PageToolbarButton
                 label={translate('Options')}
                 iconName={view === 'posters' ? icons.POSTER : icons.OVERVIEW}
-                isDisabled={hasNoPerformer}
                 onPress={onOptionsPress}
               />
             )}
@@ -266,72 +147,100 @@ const PerformerIndex = withScrollPosition((props: PerformerIndexProps) => {
               sortKey={sortKey}
               sortDirection={sortDirection}
               isDisabled={hasNoPerformer}
-              onSortSelect={onSortSelect}
+              onSortSelect={handleSortPress}
             />
 
             <PerformerIndexFilterMenu
               selectedFilterKey={selectedFilterKey}
               filters={filters}
-              customFilters={customFilters}
-              isDisabled={hasNoPerformer}
+              customFilters={customFilters || ''}
+              isDisabled={false}
               onFilterSelect={onFilterSelect}
             />
           </PageToolbarSection>
         </PageToolbar>
-        <div className={styles.pageContentBodyWrapper}>
-          <PageContentBody
-            ref={scrollerRef}
-            className={styles.contentBody}
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            innerClassName={styles[`${view}InnerContentBody`]}
-            initialScrollTop={props.initialScrollTop}
-            onScroll={onScroll}
-          >
-            {isFetching && !isPopulated ? <LoadingIndicator /> : null}
 
-            {!isFetching && !!error ? (
-              <Alert kind={kinds.DANGER}>
-                {translate('UnableToLoadPerformers')}
-              </Alert>
-            ) : null}
+        {/*
+        MAIN PAGE BODY
+        */}
+        <PageContentBody ref={scrollerRef}>
+          {isFetching ? <LoadingIndicator /> : null}
 
-            {isLoaded ? (
-              <div className={styles.contentBodyContainer}>
-                <ViewComponent
-                  scrollerRef={scrollerRef}
-                  items={items}
-                  sortKey={sortKey}
-                  sortDirection={sortDirection}
-                  jumpToCharacter={jumpToCharacter}
-                  isSmallScreen={isSmallScreen}
-                  isSelectMode={isSelectMode}
-                />
-              </div>
-            ) : null}
+          {/*
+          TABLE VIEW
+          */}
+          {isLoaded && items.length > 0 && view === 'table' ? (
+            <div>
+              <PerformerIndexTable
+                items={items}
+                isSelectMode={isSelectMode}
+                sortKey={sortKey}
+                sortDirection={sortDirection}
+                columns={columns}
+                onSortPress={handleSortPress}
+              />
+              <TablePager
+                page={page}
+                totalRecords={totalItems}
+                totalPages={totalPages}
+                isFetching={isFetching}
+                onFirstPagePress={handleFirstPagePress}
+                onPreviousPagePress={handlePreviousPagePress}
+                onNextPagePress={handleNextPagePress}
+                onLastPagePress={handleLastPagePress}
+                onPageSelect={handlePageSelect}
+              />
+            </div>
+          ) : null}
 
-            {!error && isPopulated && !items.length ? (
-              <NoPerformer totalItems={totalItems} />
-            ) : null}
-          </PageContentBody>
+          {/* POSTER VIEW */}
+          {isLoaded && items.length > 0 && view === 'posters' ? (
+            <div>
+              <PerformerIndexPosters
+                items={items}
+                scrollerRef={scrollerRef}
+                isSmallScreen={false}
+                isSelectMode={isSelectMode}
+                safeForWorkMode={safeForWorkMode}
+                sortKey={sortKey}
+                sortDirection={sortDirection}
+              />
+              <TablePager
+                page={page}
+                totalRecords={totalItems}
+                totalPages={totalPages}
+                isFetching={isFetching}
+                onFirstPagePress={handleFirstPagePress}
+                onPreviousPagePress={handlePreviousPagePress}
+                onNextPagePress={handleNextPagePress}
+                onLastPagePress={handleLastPagePress}
+                onPageSelect={handlePageSelect}
+              />
+            </div>
+          ) : null}
 
-          {isLoaded && !!jumpBarItems.order.length ? (
-            <PageJumpBar
-              items={jumpBarItems}
-              onItemPress={onJumpBarItemPress}
+          {/*
+          NO ITEMS PLACEHOLDER
+          */}
+          {items.length === 0 && !isFetching ? <NoPerformer /> : null}
+
+          {/*
+          FOOTER - SELECT MODE
+          */}
+          {isSelectMode ? <PerformerIndexSelectFooter /> : null}
+
+          {/*
+          MODALS
+          */}
+          {view === 'posters' ? (
+            <PerformerIndexPosterOptionsModal
+              isOpen={isOptionsModalOpen}
+              onModalClose={onOptionsModalClose}
             />
           ) : null}
-        </div>
-
-        {isSelectMode ? <PerformerIndexSelectFooter /> : null}
-
-        <PerformerIndexPosterOptionsModal
-          isOpen={isOptionsModalOpen}
-          onModalClose={onOptionsModalClose}
-        />
+        </PageContentBody>
       </PageContent>
     </SelectProvider>
   );
-}, 'performers');
-
+}
 export default PerformerIndex;

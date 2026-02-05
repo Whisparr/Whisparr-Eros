@@ -16,13 +16,23 @@ export interface QueryOptions<T> extends FetchJsonOptions<unknown> {
 
 const useApiQuery = <T>(options: QueryOptions<T>) => {
   const { queryKey, requestOptions } = useMemo(() => {
-    const { path: path, queryOptions, queryParams, ...otherOptions } = options;
+    const { path, queryOptions, queryParams, body, ...otherOptions } = options;
+
+    // Include body in cache key if present (for POSTs)
+    const cacheKey = [path];
+
+    // Include query params for GET requests in cache key
+    if (queryParams) cacheKey.push(JSON.stringify(queryParams));
+
+    // Include body in cache key if present (for POSTs)
+    if (body) cacheKey.push(JSON.stringify(body));
 
     return {
-      queryKey: queryParams ? [path, queryParams] : [path],
+      queryKey: cacheKey,
       requestOptions: {
         ...otherOptions,
         path: getQueryPath(path) + getQueryString(queryParams),
+        body, // pass body through for POST
         headers: {
           ...options.headers,
           'X-Api-Key': window.Whisparr.apiKey,
@@ -35,6 +45,7 @@ const useApiQuery = <T>(options: QueryOptions<T>) => {
   return {
     queryKey,
     ...useQuery({
+      placeholderData: (prev) => prev,
       ...options.queryOptions,
       queryKey,
       queryFn: async ({ signal }) =>

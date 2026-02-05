@@ -316,16 +316,6 @@ class SignalRConnector extends Component {
     if (action === 'updated') {
       // Update performer item in Redux store
       this.props.dispatchUpdateItem({ section, ...body.resource });
-
-      // Invalidate performer query cache in React Query
-      if (body.resource && body.resource.foreignId) {
-        queryClient.invalidateQueries([
-          [`/performer/${body.resource.foreignId}`]]);
-      }
-      if (body.resource && body.resource.foreignId) {
-        queryClient.invalidateQueries([
-          [`/performer/${body.resource.foreignId}/works`]]);
-      }
     } else if (action === 'deleted') {
       this.props.dispatchRemoveItem({ section, id: body.resource.id });
     }

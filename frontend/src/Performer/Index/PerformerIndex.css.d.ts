@@ -4,9 +4,12 @@ interface CssExports {
   'contentBody': string;
   'contentBodyContainer': string;
   'errorMessage': string;
+  'pageContent': string;
   'pageContentBodyWrapper': string;
+  'performerIndexTable': string;
   'postersInnerContentBody': string;
   'tableInnerContentBody': string;
+  'tablePager': string;
 }
 export const cssExports: CssExports;
 export default cssExports;

@@ -140,8 +140,6 @@ namespace NzbDrone.Core.MediaCover
 
                     var filePath = GetMovieCoverPath(movieId, mediaCover.CoverType);
 
-                    mediaCover.Url = _configFileProvider.UrlBase + @"/MediaCover/movie/" + movieId + "/" + mediaCover.CoverType.ToString().ToLower() + GetExtension(mediaCover.CoverType);
-
                     FileInfo file;
                     var fileExists = false;
                     if (fileInfos != null)
@@ -153,6 +151,8 @@ namespace NzbDrone.Core.MediaCover
                         file = _diskProvider.GetFileInfo(filePath);
                         fileExists = file.Exists;
                     }
+
+                    mediaCover.Url = _configFileProvider.UrlBase + @"/MediaCover/movie/" + movieId + "/" + mediaCover.CoverType.ToString().ToLower() + GetExtension(mediaCover.CoverType);
 
                     if (fileExists)
                     {
@@ -184,8 +184,6 @@ namespace NzbDrone.Core.MediaCover
 
                     var filePath = GetPerformerCoverPath(performerId, mediaCover.CoverType);
 
-                    mediaCover.Url = _configFileProvider.UrlBase + @"/MediaCover/performer/" + performerId + "/" + mediaCover.CoverType.ToString().ToLower() + GetExtension(mediaCover.CoverType);
-
                     FileInfo file;
                     var fileExists = false;
                     if (fileInfos != null)
@@ -197,6 +195,8 @@ namespace NzbDrone.Core.MediaCover
                         file = _diskProvider.GetFileInfo(filePath);
                         fileExists = file.Exists;
                     }
+
+                    mediaCover.Url = _configFileProvider.UrlBase + @"/MediaCover/performer/" + performerId + "/" + mediaCover.CoverType.ToString().ToLower() + GetExtension(mediaCover.CoverType);
 
                     if (fileExists)
                     {
@@ -244,8 +244,6 @@ namespace NzbDrone.Core.MediaCover
                         extension = info.Extension;
                     }
 
-                    mediaCover.Url = _configFileProvider.UrlBase + @"/MediaCover/studio/" + studioId + "/" + mediaCover.CoverType.ToString().ToLower() + extension;
-
                     FileInfo file;
                     var fileExists = false;
                     var testPath = Path.Join(filePath, mediaCover.CoverType.ToString() + extension);
@@ -258,6 +256,8 @@ namespace NzbDrone.Core.MediaCover
                         file = _diskProvider.GetFileInfo(testPath);
                         fileExists = file.Exists;
                     }
+
+                    mediaCover.Url = _configFileProvider.UrlBase + @"/MediaCover/studio/" + studioId + "/" + mediaCover.CoverType.ToString().ToLower() + extension;
 
                     if (fileExists)
                     {
