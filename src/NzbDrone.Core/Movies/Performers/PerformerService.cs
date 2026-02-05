@@ -128,6 +128,7 @@ namespace NzbDrone.Core.Movies.Performers
         public void RemovePerformer(Performer performer)
         {
             _performerRepo.Delete(performer);
+            _eventAggregator.PublishEvent(new PerformersDeletedEvent(new List<Performer> { performer }));
             RemovePerformerResourcesCache(performer.ForeignId);
         }
 
