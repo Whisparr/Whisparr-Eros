@@ -7,6 +7,7 @@ import Alert from 'Components/Alert';
 import FieldSet from 'Components/FieldSet';
 import Icon from 'Components/Icon';
 import Label from 'Components/Label';
+import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import MonitorToggleButton from 'Components/MonitorToggleButton';
 import PageContent from 'Components/Page/PageContent';
 import PageContentBody from 'Components/Page/PageContentBody';
@@ -149,7 +150,11 @@ function PerformerDetails() {
   // Null check
   if (!performer) {
     if (isPerformerDetailsFetching) {
-      return <div>{translate('Loading')}</div>;
+      return (
+        <PageContent>
+          <LoadingIndicator />
+        </PageContent>
+      );
     }
     if (performerDetailsError) {
       return (
