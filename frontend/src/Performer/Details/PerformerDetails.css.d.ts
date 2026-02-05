@@ -5,9 +5,11 @@ interface CssExports {
   'alternateTitlesIconContainer': string;
   'backdrop': string;
   'backdropOverlay': string;
+  'birthDate': string;
   'blurred': string;
   'certification': string;
   'contentContainer': string;
+  'country': string;
   'details': string;
   'detailsLabel': string;
   'errorMessage': string;
@@ -20,6 +22,8 @@ interface CssExports {
   'info': string;
   'innerContentBody': string;
   'links': string;
+  'metadata': string;
+  'metadataLabel': string;
   'monitorToggleButton': string;
   'monitorToggleButtonsContainer': string;
   'movieCount': string;
