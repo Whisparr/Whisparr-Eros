@@ -38,6 +38,7 @@ import {
   faBug as fasBug,
   faBuilding as fasBuilding,
   faBullhorn as fasBullhorn,
+  faCake as fasCake,
   faCalculator as fasCalculator,
   faCalendarAlt as fasCalendarAlt,
   faCaretDown as fasCaretDown,
@@ -74,6 +75,7 @@ import {
   faFolderOpen as fasFolderOpen,
   faFolderTree as farFolderTree,
   faForward as fasForward,
+  faGlobe as fasGlobe,
   faHeart as fasHeart,
   faHistory as fasHistory,
   faHome as fasHome,
@@ -267,4 +269,7 @@ export const UPDATE = fasRetweet;
 export const UNSAVED_SETTING = farDotCircle;
 export const VIEW = fasEye;
 export const WARNING = fasExclamationTriangle;
+export const GLOBE = fasGlobe;
+export const CAKE = fasCake;
+export const EYE = fasEye;
 export const WIKI = fasBookReader;

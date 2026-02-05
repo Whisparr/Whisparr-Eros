@@ -1,6 +1,5 @@
 import ModelBase from 'App/ModelBase';
 import { Image } from 'Movie/Movie';
-import Studio from 'Studio/Studio';
 
 interface Performer extends ModelBase {
   foreignId: string;
@@ -9,12 +8,13 @@ interface Performer extends ModelBase {
   name: string;
   fullName: string;
   added: string;
+  birthDate?: Date;
   age?: number;
   careerEnd?: number;
   careerStart?: number;
   ethnicity?: string;
   gender: string;
-  genres: string[];
+  country: string;
   hairColor?: string;
   hasMovies: boolean;
   hasScenes: boolean;
@@ -28,7 +28,6 @@ interface Performer extends ModelBase {
   sizeOnDisk: number;
   sortTitle: string;
   status: string;
-  studios: Studio[];
   tags: number[];
   totalMovieCount: number;
   totalSceneCount: number;

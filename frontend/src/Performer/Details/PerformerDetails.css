@@ -73,9 +73,12 @@
 }
 
 .title {
-  font-weight: 300;
   font-size: 50px;
   line-height: 60px;
+}
+
+.performerName {
+  font-weight: 300;
 }
 
 .unmonitored {
@@ -85,10 +88,9 @@
 
 .monitorToggleButtonsContainer {
   display: flex;
-
   align-items: flex-start;
-
   margin-right: 20px;
+  line-height: 60px;
 }
 
 .toggleMonitoredContainer,
@@ -134,25 +136,36 @@
   }
 }
 
-.details {
-  margin-bottom: 8px;
-  padding-left: 7px;
-  font-weight: 300;
-  font-size: 20px;
+.metadata{
+  padding: 10px;
+}
+
+.metadataLabel{
+  composes: label from '~Components/Label.css';
+
+  margin: 5px 10px 5px 0;
+  background-color: transparent;
 }
 
 .links,
 .ethnicity,
 .years,
 .age,
+.country,
+.birthDate,
 .status,
 .runtime {
-  margin-right: 14px;
+  margin-left: 8px;
+  font-weight: 300;
+  font-size: 17px;
 }
 
 .gender{
-  margin-left: 15px;
-  font-size: 50px;
+  margin: auto 15px;
+}
+
+.details {
+  padding: 10px;
 }
 
 .detailsLabel {
@@ -222,9 +235,12 @@
     padding: 15px;
   }
 
-  .performerName {
-    font-weight: 300;
+  .title {
     font-size: 30px;
+    line-height: 30px;
+  }
+
+  .monitorToggleButtonsContainer {
     line-height: 30px;
   }
 }
@@ -241,10 +257,6 @@
   .year,
   .runtime {
     margin-right: 9px;
-  }
-
-  .details {
-    font-size: 19px;
   }
 
   .scenesFieldSet{

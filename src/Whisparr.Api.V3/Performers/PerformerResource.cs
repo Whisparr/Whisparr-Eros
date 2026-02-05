@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NzbDrone.Common.Extensions;
 using NzbDrone.Core.MediaCover;
 using NzbDrone.Core.Movies.Performers;
 using Whisparr.Api.V3.Movies;
@@ -11,8 +12,11 @@ namespace Whisparr.Api.V3.Performers
     /// <summary>Represents a performer (adult film actor/actress) in Whisparr</summary>
     public class PerformerResource : RestResource
     {
-        /// <summary>The performer's full name</summary>
+        /// <summary>The performer's name with Disambiguation</summary>
         public string FullName { get; set; }
+
+        /// <summary>The performer's name</summary>
+        public string Name { get; set; }
 
         /// <summary>The performer's gender</summary>
         public Gender Gender { get; set; }
@@ -23,6 +27,9 @@ namespace Whisparr.Api.V3.Performers
         /// <summary>The performer's ethnicity (optional)</summary>
         public Ethnicity? Ethnicity { get; set; }
 
+        /// <summary>The performer's country of origin (optional)  ISO 3166 codes</summary>
+        public string Country { get; set; }
+
         /// <summary>The performer's career status (active, retired, etc.)</summary>
         public PerformerStatus Status { get; set; }
 
@@ -31,6 +38,9 @@ namespace Whisparr.Api.V3.Performers
 
         /// <summary>Year the performer ended their career (optional)</summary>
         public int? CareerEnd { get; set; }
+
+        /// <summary>The performer's birth date (optional)</summary>
+        public DateTime? BirthDate { get; set; }
 
         /// <summary>Current age of the performer (optional)</summary>
         public int? Age { get; set; }
@@ -126,6 +136,13 @@ namespace Whisparr.Api.V3.Performers
                 return null;
             }
 
+            // Extract the name with the Disambiguation in the same format as StashDB (For User Display)
+            var fullname = model.Name;
+            if (model.Disambiguation.IsNotNullOrWhiteSpace())
+            {
+                fullname = $"{fullname} ({model.Disambiguation})";
+            }
+
             return new PerformerResource
             {
                 Id = model.Id,
@@ -134,12 +151,14 @@ namespace Whisparr.Api.V3.Performers
                 TpdbId = model.TpdbId,
                 Gender = model.Gender,
                 Age = model.Age,
+                BirthDate = model.BirthDate,
                 Ethnicity = model.Ethnicity,
-                HairColor = model.HairColor,
+                Country = model.Country,
                 Status = model.Status,
                 CareerStart = model.CareerStart,
                 CareerEnd = model.CareerEnd,
-                FullName = model.Name,
+                Name = model.Name,
+                FullName = fullname,
                 Monitored = model.Monitored,
                 MoviesMonitored = model.MoviesMonitored,
                 Images = model.Images,

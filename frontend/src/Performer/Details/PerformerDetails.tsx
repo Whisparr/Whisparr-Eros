@@ -27,6 +27,8 @@ import EditPerformerModalConnector from 'Performer/Edit/EditPerformerModalConnec
 import PerformerGenderIcon from 'Performer/PerformerGenderIcon';
 import { getPerformerStatusDetails } from 'Performer/PerformerStatus';
 import QualityProfileName from 'Settings/Profiles/Quality/QualityProfileName';
+import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
+import formatDate from 'Utilities/Date/formatDate';
 import formatBytes from 'Utilities/Number/formatBytes';
 import firstCharToUpper from 'Utilities/String/firstCharToUpper';
 import translate from 'Utilities/String/translate';
@@ -50,6 +52,8 @@ function getFanartUrl(
 
 function PerformerDetails() {
   const { performerForeignId } = useParams<{ performerForeignId: string }>();
+
+  const { shortDateFormat } = useSelector(createUISettingsSelector());
 
   const generalSettings = useGeneralSettings();
   const {
@@ -164,7 +168,12 @@ function PerformerDetails() {
   const rootFolderPath = performer.rootFolderPath;
   const gender = performer.gender;
   const age = performer.age;
+  const birthDate =
+    performer.birthDate === undefined
+      ? ''
+      : formatDate(performer.birthDate, shortDateFormat);
   const ethnicity = performer.ethnicity;
+  const country = performer.country;
   const careerStart = performer.careerStart;
   const careerEnd = performer.careerEnd;
   const qualityProfileId = performer.qualityProfileId;
@@ -177,7 +186,6 @@ function PerformerDetails() {
   const totalSceneCount = performer.totalSceneCount ?? 0;
   const sceneCount = performer.sceneCount ?? 0;
   const sizeOnDisk = performer.sizeOnDisk ?? 0;
-
   // Computed variables
   const isSaving = false;
   const isRefreshing = false;
@@ -193,12 +201,12 @@ function PerformerDetails() {
       : '';
   const runningYears = `${startYear}-${endYear}`;
   const fanartUrl = getFanartUrl(Array.isArray(images) ? images : []);
+  const formatedAge = birthDate === '' ? age : `${birthDate} | ${age}`;
 
   const moviesByYear = years.map((year) => ({
     year,
     movies: movies.filter((m) => m.year === year),
   }));
-
   const showMovieMonitorToggle = () => {
     const source = generalSettings.whisparrMovieMetadataSource;
     return (
@@ -336,31 +344,59 @@ function PerformerDetails() {
                     <PerformerGenderIcon
                       className={styles.gender}
                       gender={gender}
-                      size={40}
+                      size={34}
                     />
                   </div>
                 </div>
               </div>
-              <div className={styles.details}>
+              <div className={styles.metadata}>
                 <div>
-                  {!!ethnicity && (
-                    <span className={styles.ethnicity}>
-                      {firstCharToUpper(ethnicity)}
-                    </span>
-                  )}
-
                   {!!runningYears && (
-                    <span className={styles.years}>{runningYears}</span>
+                    <Label
+                      className={styles.metadataLabel}
+                      title={translate('Career')}
+                      size={sizes.LARGE}
+                    >
+                      <Icon name={icons.CALENDAR} size={17} />
+                      <span className={styles.years}>{runningYears}</span>
+                    </Label>
                   )}
-
-                  {!!age && (
-                    <span className={styles.age}>
-                      {age} {` ${translate('YearsOld')}`}
-                    </span>
+                  {!!formatedAge && (
+                    <Label
+                      className={styles.metadataLabel}
+                      title={translate('DateOfBirth')}
+                      size={sizes.LARGE}
+                    >
+                      <Icon name={icons.CAKE} size={17} />
+                      <span className={styles.birthDate}>{formatedAge}</span>
+                    </Label>
+                  )}
+                  {!!country && (
+                    <Label
+                      className={styles.metadataLabel}
+                      title={translate('Nationality')}
+                      size={sizes.LARGE}
+                    >
+                      <Icon name={icons.FLAG} size={17} />
+                      <span className={styles.country}>{country}</span>
+                    </Label>
+                  )}
+                  {!!ethnicity && (
+                    <Label
+                      className={styles.metadataLabel}
+                      title={translate('Ethnicity')}
+                      size={sizes.LARGE}
+                    >
+                      <Icon name={icons.GLOBE} size={17} />
+                      <span className={styles.ethnicity}>
+                        {firstCharToUpper(ethnicity)}
+                      </span>
+                    </Label>
                   )}
                 </div>
               </div>
-              <div>
+
+              <div className={styles.details}>
                 {!!rootFolderPath && (
                   <Label
                     className={styles.detailsLabel}
