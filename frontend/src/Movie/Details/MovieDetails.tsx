@@ -381,7 +381,7 @@ class MovieDetails extends Component<Props, State> {
               <MovieImage
                 safeForWorkMode={safeForWorkMode}
                 className={
-                  itemType === 'movie' ? styles.poster : styles.screenShot
+                  itemType === 'movie' ? styles.poster : styles.screenshot
                 }
                 coverType={itemType === 'movie' ? 'poster' : 'screenshot'}
                 images={images}
