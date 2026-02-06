@@ -438,9 +438,19 @@ namespace Whisparr.Api.V3.Movies
 
         private void LinkMovieStatistics(List<MovieResource> resources, Dictionary<int, MovieStatistics> sDict)
         {
+            if (resources == null || sDict == null)
+            {
+                return;
+            }
+
             foreach (var movie in resources)
             {
-                if (sDict.TryGetValue(movie.Id, out var stats))
+                if (movie == null)
+                {
+                    continue;
+                }
+
+                if (sDict.TryGetValue(movie.Id, out var stats) && stats != null)
                 {
                     LinkMovieStatistics(movie, stats);
                 }
@@ -449,6 +459,11 @@ namespace Whisparr.Api.V3.Movies
 
         private void LinkMovieStatistics(MovieResource resource, MovieStatistics movieStatistics)
         {
+            if (resource == null || movieStatistics == null)
+            {
+                return;
+            }
+
             resource.Statistics = movieStatistics.ToResource();
             resource.HasFile = movieStatistics.MovieFileCount > 0;
             resource.SizeOnDisk = movieStatistics.SizeOnDisk;
