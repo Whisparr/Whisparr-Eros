@@ -31,7 +31,7 @@ interface CssExports {
   'releaseDate': string;
   'runtime': string;
   'sceneHeader': string;
-  'screenShot': string;
+  'screenshot': string;
   'selectedTab': string;
   'sizeOnDisk': string;
   'statusName': string;
