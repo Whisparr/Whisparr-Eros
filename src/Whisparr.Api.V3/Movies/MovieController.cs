@@ -365,6 +365,8 @@ namespace Whisparr.Api.V3.Movies
             var availDelay = _configService.AvailabilityDelay;
 
             var resource = movie.ToResource(availDelay, _qualityUpgradableSpecification);
+
+            // TODO: movie this to the movie updated event handler instead
             MapCoversToLocal(resource);
             FetchAndLinkMovieStatistics(resource);
 
@@ -423,11 +425,21 @@ namespace Whisparr.Api.V3.Movies
 
         private void MapCoversToLocal(MovieResource movie)
         {
+            if (movie == null)
+            {
+                return;
+            }
+
             _coverMapper.ConvertToLocalUrls(movie.Id, movie.Images);
         }
 
         private void MapCoversToLocal(IEnumerable<MovieResource> movies, Dictionary<string, FileInfo> coverFileInfos)
         {
+            if (movies == null || !movies.Any() || coverFileInfos == null || !coverFileInfos.Any())
+            {
+                return;
+            }
+
             _coverMapper.ConvertToLocalUrls(movies.Select(x => Tuple.Create(x.Id, x.Images.AsEnumerable())), coverFileInfos);
         }
 
