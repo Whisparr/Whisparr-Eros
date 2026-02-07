@@ -141,7 +141,7 @@ namespace NzbDrone.Core.MediaFiles.MovieImport
 
             var movie = new Movie();
 
-            if (result.Title.IsNotNullOrWhiteSpace())
+            if (result?.Id != null && result.Title.IsNotNullOrWhiteSpace())
             {
                 movie = result;
                 var sourcePath = file.ToString();
