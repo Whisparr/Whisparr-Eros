@@ -257,6 +257,11 @@ namespace Whisparr.Api.V3.Performers
 
         private void MapCoversToLocal(Performer performer)
         {
+            if (performer == null || !performer.Images.Any())
+            {
+                return;
+            }
+
             _coverMapper.ConvertToLocalPerformerUrls(performer.Id, performer.Images);
         }
 
