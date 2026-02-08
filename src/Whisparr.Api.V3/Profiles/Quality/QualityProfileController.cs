@@ -52,6 +52,18 @@ namespace Whisparr.Api.V3.Profiles.Quality
         {
             var model = resource.ToModel();
             model = _qualityProfileService.Add(model);
+
+            if (model.Fallback)
+            {
+                // Uncheck all other profiles as Fallback if this is set to Fallback
+                var all = _qualityProfileService.All();
+                foreach (var profile in all.Where(p => p.Id != model.Id && p.Fallback))
+                {
+                    profile.Fallback = false;
+                    _qualityProfileService.Update(profile);
+                }
+            }
+
             return Created(model.Id);
         }
 
@@ -68,6 +80,17 @@ namespace Whisparr.Api.V3.Profiles.Quality
             var model = resource.ToModel();
 
             _qualityProfileService.Update(model);
+
+            if (model.Fallback)
+            {
+                // Uncheck all other profiles as Fallback if this is set to Fallback
+                var all = _qualityProfileService.All();
+                foreach (var profile in all.Where(p => p.Id != model.Id && p.Fallback))
+                {
+                    profile.Fallback = false;
+                    _qualityProfileService.Update(profile);
+                }
+            }
 
             return Accepted(model.Id);
         }

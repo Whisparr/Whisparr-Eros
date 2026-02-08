@@ -122,6 +122,7 @@ class EditQualityProfileModalContent extends Component {
     const {
       id,
       name,
+      fallback,
       upgradeAllowed,
       cutoff,
       minFormatScore,
@@ -180,6 +181,20 @@ class EditQualityProfileModalContent extends Component {
                             type={inputTypes.TEXT}
                             name="name"
                             {...name}
+                            onChange={onInputChange}
+                          />
+                        </FormGroup>
+
+                        <FormGroup size={sizes.EXTRA_SMALL}>
+                          <FormLabel size={sizes.SMALL}>
+                            {translate('FallbackQualityProfile')}
+                          </FormLabel>
+
+                          <FormInputGroup
+                            type={inputTypes.CHECK}
+                            name="fallback"
+                            {...fallback}
+                            helpText={translate('FallbackQualityProfileHelpText')}
                             onChange={onInputChange}
                           />
                         </FormGroup>

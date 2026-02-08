@@ -1569,9 +1569,17 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                 throw new ArgumentNullException(nameof(castResource));
             }
 
+            // Extract the person name from older skyhook data
+            var personName = castResource.PersonName.IsNotNullOrWhiteSpace() ? castResource.PersonName : castResource.Performer.Name;
+
+            if (personName == null)
+            {
+                personName = "";
+            }
+
             var newActor = new Credit
             {
-                PersonName = castResource.Performer.Name,
+                PersonName = personName,
                 Character = castResource.Character,
                 Order = castResource.Order,
                 Type = CreditType.Cast,

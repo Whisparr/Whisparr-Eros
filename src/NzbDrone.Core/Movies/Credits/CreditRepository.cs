@@ -45,9 +45,11 @@ namespace NzbDrone.Core.Movies.Credits
                     var creditPerformer = new CreditPerformer();
 
                     creditPerformer.Id = performer?.Id ?? 0;
+                    creditPerformer.Name = performer?.Name ?? string.Empty;
                     creditPerformer.ForeignId = performer?.ForeignId;
                     creditPerformer.TpdbId = performer?.TpdbId;
                     creditPerformer.TmdbId = performer?.TmdbId ?? 0;
+                    creditPerformer.Gender = performer?.Gender ?? Gender.Female;
                     creditPerformer.Monitored = performer?.Monitored == true;
                     creditPerformer.MoviesMonitored = performer?.MoviesMonitored == true;
 
