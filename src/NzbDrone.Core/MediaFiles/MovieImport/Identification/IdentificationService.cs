@@ -13,6 +13,7 @@ using NzbDrone.Core.MetadataSource;
 using NzbDrone.Core.Movies;
 using NzbDrone.Core.Organizer;
 using NzbDrone.Core.Parser.Model;
+using NzbDrone.Core.Profiles.Qualities;
 using NzbDrone.Core.RootFolders;
 
 namespace NzbDrone.Core.MediaFiles.MovieImport
@@ -36,6 +37,7 @@ namespace NzbDrone.Core.MediaFiles.MovieImport
         private readonly INamingConfigService _namingConfigService;
         private readonly IConfigService _configService;
         private readonly IRootFolderService _rootFolderService;
+        private readonly IQualityProfileRepository _profileRepository;
         private readonly Logger _logger;
 
         public SceneIdentificationService(ISearchForNewMovie searchProxy,
@@ -50,6 +52,7 @@ namespace NzbDrone.Core.MediaFiles.MovieImport
                                           INamingConfigService namingConfigService,
                                           IConfigService configService,
                                           IRootFolderService rootFolderService,
+                                          IQualityProfileRepository profileRepository,
                                           Logger logger)
         {
             _searchProxy = searchProxy;
@@ -64,6 +67,7 @@ namespace NzbDrone.Core.MediaFiles.MovieImport
             _namingConfigService = namingConfigService;
             _configService = configService;
             _rootFolderService = rootFolderService;
+            _profileRepository = profileRepository;
             _logger = logger;
         }
 
@@ -213,7 +217,10 @@ namespace NzbDrone.Core.MediaFiles.MovieImport
                     }
                 }
 
-                movie.QualityProfileId = 1;
+                var qualityProfiles = _profileRepository.All();
+                var defaultProfile = qualityProfiles.FirstOrDefault(x => x.Fallback) ?? qualityProfiles.First();
+
+                movie.QualityProfileId = defaultProfile.Id;
                 movie.RootFolderPath = rootFolder;
                 movie.AddOptions = new AddMovieOptions
                 {

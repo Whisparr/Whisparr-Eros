@@ -2,6 +2,7 @@
 // Please do not change this file!
 interface CssExports {
   'cloneButton': string;
+  'fallback': string;
   'name': string;
   'nameContainer': string;
   'qualities': string;
