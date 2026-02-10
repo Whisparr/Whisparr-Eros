@@ -365,6 +365,8 @@ namespace Whisparr.Api.V3.Movies
             var availDelay = _configService.AvailabilityDelay;
 
             var resource = movie.ToResource(availDelay, _qualityUpgradableSpecification);
+
+            // TODO: movie this to the movie updated event handler instead
             MapCoversToLocal(resource);
             FetchAndLinkMovieStatistics(resource);
 
@@ -423,11 +425,21 @@ namespace Whisparr.Api.V3.Movies
 
         private void MapCoversToLocal(MovieResource movie)
         {
+            if (movie == null)
+            {
+                return;
+            }
+
             _coverMapper.ConvertToLocalUrls(movie.Id, movie.Images);
         }
 
         private void MapCoversToLocal(IEnumerable<MovieResource> movies, Dictionary<string, FileInfo> coverFileInfos)
         {
+            if (movies == null || !movies.Any() || coverFileInfos == null || !coverFileInfos.Any())
+            {
+                return;
+            }
+
             _coverMapper.ConvertToLocalUrls(movies.Select(x => Tuple.Create(x.Id, x.Images.AsEnumerable())), coverFileInfos);
         }
 
@@ -438,9 +450,19 @@ namespace Whisparr.Api.V3.Movies
 
         private void LinkMovieStatistics(List<MovieResource> resources, Dictionary<int, MovieStatistics> sDict)
         {
+            if (resources == null || sDict == null)
+            {
+                return;
+            }
+
             foreach (var movie in resources)
             {
-                if (sDict.TryGetValue(movie.Id, out var stats))
+                if (movie == null)
+                {
+                    continue;
+                }
+
+                if (sDict.TryGetValue(movie.Id, out var stats) && stats != null)
                 {
                     LinkMovieStatistics(movie, stats);
                 }
@@ -449,6 +471,11 @@ namespace Whisparr.Api.V3.Movies
 
         private void LinkMovieStatistics(MovieResource resource, MovieStatistics movieStatistics)
         {
+            if (resource == null || movieStatistics == null)
+            {
+                return;
+            }
+
             resource.Statistics = movieStatistics.ToResource();
             resource.HasFile = movieStatistics.MovieFileCount > 0;
             resource.SizeOnDisk = movieStatistics.SizeOnDisk;

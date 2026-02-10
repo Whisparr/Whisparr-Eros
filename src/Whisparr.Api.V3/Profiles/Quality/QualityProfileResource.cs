@@ -12,6 +12,7 @@ namespace Whisparr.Api.V3.Profiles.Quality
     {
         public string Name { get; set; }
         public bool UpgradeAllowed { get; set; }
+        public bool Fallback { get; set; }
         public int Cutoff { get; set; }
         public List<QualityProfileQualityItemResource> Items { get; set; }
         public int MinFormatScore { get; set; }
@@ -55,6 +56,7 @@ namespace Whisparr.Api.V3.Profiles.Quality
                 Id = model.Id,
                 Name = model.Name,
                 UpgradeAllowed = model.UpgradeAllowed,
+                Fallback = model.Fallback,
                 Cutoff = model.Cutoff,
                 Items = model.Items.ConvertAll(ToResource),
                 MinFormatScore = model.MinFormatScore,
@@ -104,6 +106,7 @@ namespace Whisparr.Api.V3.Profiles.Quality
                 Id = resource.Id,
                 Name = resource.Name,
                 UpgradeAllowed = resource.UpgradeAllowed,
+                Fallback = resource.Fallback,
                 Cutoff = resource.Cutoff,
                 Items = resource.Items.ConvertAll(ToModel),
                 MinFormatScore = resource.MinFormatScore,

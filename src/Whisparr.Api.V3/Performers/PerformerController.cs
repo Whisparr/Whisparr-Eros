@@ -78,6 +78,24 @@ namespace Whisparr.Api.V3.Performers
             }
         }
 
+        protected PerformerResource MapToResource(Performer performer)
+        {
+            if (performer == null)
+            {
+                return null;
+            }
+
+            var resource = performer.ToResource();
+            MapCoversToLocal(performer);
+
+            if (_useCache)
+            {
+                _performerResourceCache.Set(resource.Id.ToString(), resource);
+            }
+
+            return resource;
+        }
+
         /// <summary>Retrieves a performer by their Whisparr (local)internal ID</summary>
         /// <param name="id">The internal ID of the performer</param>
         /// <returns>Performer details with associated movies and local cover URLs</returns>
@@ -87,9 +105,7 @@ namespace Whisparr.Api.V3.Performers
         [Produces("application/json")]
         protected override PerformerResource GetResourceById(int id)
         {
-            var resource = _performerService.GetById(id).ToResource();
-
-            _coverMapper.ConvertToLocalPerformerUrls(resource.Id, resource.Images);
+            var resource = MapToResource(_performerService.GetById(id));
 
             FetchAndLinkMovies(resource);
 
@@ -197,13 +213,10 @@ namespace Whisparr.Api.V3.Performers
 
             var updatedPerformer = _performerService.Update(resource.ToModel(performer));
             _performerResourceCache.Remove(updatedPerformer.ForeignId);
-            var performerResource = updatedPerformer.ToResource();
+            var performerResource = MapToResource(updatedPerformer);
 
             // Added to allow for React-Query cache updates
             FetchAndLinkMovies(performerResource);
-
-            // Broadcasts to both SignalR and React-Query clients
-            BroadcastResourceChange(ModelAction.Updated, performerResource);
 
             return Accepted(performerResource);
         }
@@ -242,11 +255,21 @@ namespace Whisparr.Api.V3.Performers
             _performerService.RemovePerformer(performer);
         }
 
+        private void MapCoversToLocal(Performer performer)
+        {
+            if (performer == null || !performer.Images.Any())
+            {
+                return;
+            }
+
+            _coverMapper.ConvertToLocalPerformerUrls(performer.Id, performer.Images);
+        }
+
         /// <summary>Handles performer updated events to update the performer cache and broadcast changes via SignalR</summary>
         [NonAction]
         public void Handle(PerformerUpdatedEvent message)
         {
-            var resource = message.Performer.ToResource();
+            var resource = MapToResource(message.Performer);
 
             FetchAndLinkMovies(resource);
             _performerResourceCache.Remove(resource.ForeignId);
@@ -329,7 +352,7 @@ namespace Whisparr.Api.V3.Performers
             var performerResource = _performerResourceCache.Find(performerForeignId);
             if (performerResource == null)
             {
-                performerResource = _performerService.FindByForeignId(performerForeignId).ToResource();
+                performerResource = MapToResource(_performerService.FindByForeignId(performerForeignId));
             }
 
             return performerResource;
@@ -436,32 +459,6 @@ namespace Whisparr.Api.V3.Performers
             }
 
             return performerResources;
-        }
-
-        private void HydratePerformerResourceWithMovies(PerformerResource resource)
-        {
-            var movies = _moviesService.GetByPerformerForeignId(resource.ForeignId);
-            var movieResources = movies
-                .Select(m => MovieResourceMapper.ToResource(m, 0))
-                .Where(r => r != null)
-                .ToList();
-
-            if (resource.Studios == null || resource.Studios.Count == 0)
-            {
-                var hydrated = GetCachedPerformerResource(resource.ForeignId);
-                if (hydrated != null)
-                {
-                    resource.Studios = hydrated.Studios;
-                }
-            }
-
-            foreach (var studio in resource.Studios)
-            {
-                var studioMovies = movieResources
-                    .Where(movie => movie.StudioForeignId == studio.ForeignId)
-                    .ToList();
-                studio.Movies = studioMovies;
-            }
         }
     }
 }

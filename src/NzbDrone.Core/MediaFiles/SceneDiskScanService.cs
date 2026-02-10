@@ -92,6 +92,11 @@ namespace NzbDrone.Core.MediaFiles
             if (folders == null)
             {
                 folders = _rootFolderService.All().Select(x => x.Path).ToList();
+                if (folders == null)
+                {
+                    _logger.Error("No Root Folders Defined.");
+                    return;
+                }
             }
 
             var movieIds = new List<int>();

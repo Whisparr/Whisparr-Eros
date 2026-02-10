@@ -452,88 +452,95 @@ namespace NzbDrone.Core.MediaFiles.MovieImport.Manual
                 _logger.ProgressTrace("Processing file {0} of {1}", i + 1, message.Files.Count);
 
                 var file = message.Files[i];
-                var movie = _movieService.GetMovie(file.MovieId);
-                var fileMovieInfo = Parser.Parser.ParseMoviePath(file.Path) ?? new ParsedMovieInfo();
-                var existingFile = movie.Path.IsParentPath(file.Path);
-                TrackedDownload trackedDownload = null;
-
-                var localMovie = new LocalMovie
+                try
                 {
-                    ExistingFile = existingFile,
-                    FileMovieInfo = fileMovieInfo,
-                    Path = file.Path,
-                    ReleaseGroup = file.ReleaseGroup,
-                    Quality = file.Quality,
-                    Languages = file.Languages,
-                    IndexerFlags = (IndexerFlags)file.IndexerFlags,
-                    Movie = movie,
-                    Size = 0
-                };
+                    var movie = _movieService.GetMovie(file.MovieId);
+                    var fileMovieInfo = Parser.Parser.ParseMoviePath(file.Path) ?? new ParsedMovieInfo();
+                    var existingFile = movie.Path.IsParentPath(file.Path);
+                    TrackedDownload trackedDownload = null;
 
-                if (file.DownloadId.IsNotNullOrWhiteSpace())
-                {
-                    trackedDownload = _trackedDownloadService.Find(file.DownloadId);
-                    localMovie.DownloadClientMovieInfo = trackedDownload?.RemoteMovie?.ParsedMovieInfo;
-                    localMovie.DownloadItem = trackedDownload?.DownloadItem;
-                }
-
-                if (file.FolderName.IsNotNullOrWhiteSpace())
-                {
-                    localMovie.FolderMovieInfo = Parser.Parser.ParseMovieTitle(file.FolderName);
-                    localMovie.SceneSource = !existingFile;
-                }
-
-                // Augment movie file so imported files have all additional information an automatic import would
-                localMovie = _aggregationService.Augment(localMovie, trackedDownload?.DownloadItem);
-
-                // Apply the user-chosen values.
-                localMovie.Movie = movie;
-                localMovie.ReleaseGroup = file.ReleaseGroup;
-                localMovie.Quality = file.Quality;
-                localMovie.Languages = file.Languages;
-                localMovie.IndexerFlags = (IndexerFlags)file.IndexerFlags;
-
-                localMovie.CustomFormats = _formatCalculator.ParseCustomFormat(localMovie);
-                localMovie.CustomFormatScore = localMovie.Movie.QualityProfile?.CalculateCustomFormatScore(localMovie.CustomFormats) ?? 0;
-
-                // TODO: Cleanup non-tracked downloads
-                var importDecision = new ImportDecision(localMovie);
-
-                if (trackedDownload == null)
-                {
-                    imported.AddRange(_importApprovedMovie.Import(new List<ImportDecision> { importDecision }, !existingFile, null, message.ImportMode));
-                }
-                else
-                {
-                    var importResult = _importApprovedMovie.Import(new List<ImportDecision> { importDecision }, true, trackedDownload.DownloadItem, message.ImportMode).First();
-
-                    imported.Add(importResult);
-
-                    importedTrackedDownload.Add(new ManuallyImportedFile
+                    var localMovie = new LocalMovie
                     {
-                        TrackedDownload = trackedDownload,
-                        ImportResult = importResult
-                    });
-                }
+                        ExistingFile = existingFile,
+                        FileMovieInfo = fileMovieInfo,
+                        Path = file.Path,
+                        ReleaseGroup = file.ReleaseGroup,
+                        Quality = file.Quality,
+                        Languages = file.Languages,
+                        IndexerFlags = (IndexerFlags)file.IndexerFlags,
+                        Movie = movie,
+                        Size = 0
+                    };
 
-                // Check if movie is a scene, then cleanup the unmapped scene
-                if (movie.MovieMetadata.Value.ItemType != ItemType.Scene)
-                {
-                    continue;
-                }
-
-                var unmappedFiles = _mediaFileRepository.GetUnmappedFiles();
-                if (unmappedFiles != null)
-                {
-                    foreach (var unmappedFile in unmappedFiles)
+                    if (file.DownloadId.IsNotNullOrWhiteSpace())
                     {
-                        if (unmappedFile.OriginalFilePath == file.Path)
+                        trackedDownload = _trackedDownloadService.Find(file.DownloadId);
+                        localMovie.DownloadClientMovieInfo = trackedDownload?.RemoteMovie?.ParsedMovieInfo;
+                        localMovie.DownloadItem = trackedDownload?.DownloadItem;
+                    }
+
+                    if (file.FolderName.IsNotNullOrWhiteSpace())
+                    {
+                        localMovie.FolderMovieInfo = Parser.Parser.ParseMovieTitle(file.FolderName);
+                        localMovie.SceneSource = !existingFile;
+                    }
+
+                    // Augment movie file so imported files have all additional information an automatic import would
+                    localMovie = _aggregationService.Augment(localMovie, trackedDownload?.DownloadItem);
+
+                    // Apply the user-chosen values.
+                    localMovie.Movie = movie;
+                    localMovie.ReleaseGroup = file.ReleaseGroup;
+                    localMovie.Quality = file.Quality;
+                    localMovie.Languages = file.Languages;
+                    localMovie.IndexerFlags = (IndexerFlags)file.IndexerFlags;
+
+                    localMovie.CustomFormats = _formatCalculator.ParseCustomFormat(localMovie);
+                    localMovie.CustomFormatScore = localMovie.Movie.QualityProfile?.CalculateCustomFormatScore(localMovie.CustomFormats) ?? 0;
+
+                    // TODO: Cleanup non-tracked downloads
+                    var importDecision = new ImportDecision(localMovie);
+
+                    if (trackedDownload == null)
+                    {
+                        imported.AddRange(_importApprovedMovie.Import(new List<ImportDecision> { importDecision }, !existingFile, null, message.ImportMode));
+                    }
+                    else
+                    {
+                        var importResult = _importApprovedMovie.Import(new List<ImportDecision> { importDecision }, true, trackedDownload.DownloadItem, message.ImportMode).First();
+
+                        imported.Add(importResult);
+
+                        importedTrackedDownload.Add(new ManuallyImportedFile
                         {
-                            var reason = DeleteMediaFileReason.Manual;
-                            _mediaFileRepository.Delete(unmappedFile);
-                            _eventAggregator.PublishEvent(new MovieFileDeletedEvent(unmappedFile, reason));
+                            TrackedDownload = trackedDownload,
+                            ImportResult = importResult
+                        });
+                    }
+
+                    // Check if movie is a scene, then cleanup the unmapped scene
+                    if (movie.MovieMetadata.Value.ItemType != ItemType.Scene)
+                    {
+                        continue;
+                    }
+
+                    var unmappedFiles = _mediaFileRepository.GetUnmappedFiles();
+                    if (unmappedFiles != null)
+                    {
+                        foreach (var unmappedFile in unmappedFiles)
+                        {
+                            if (unmappedFile.OriginalFilePath == file.Path)
+                            {
+                                var reason = DeleteMediaFileReason.Manual;
+                                _mediaFileRepository.Delete(unmappedFile);
+                                _eventAggregator.PublishEvent(new MovieFileDeletedEvent(unmappedFile, reason));
+                            }
                         }
                     }
+                }
+                catch (Exception ex)
+                {
+                    _logger.Warn(ex, "Failed to import file: {0}", file.Path);
                 }
             }
 

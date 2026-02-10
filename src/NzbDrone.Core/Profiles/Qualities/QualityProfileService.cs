@@ -69,7 +69,7 @@ namespace NzbDrone.Core.Profiles.Qualities
         public void Delete(int id)
         {
             if (_movieService.GetAllMovies().Any(c => c.QualityProfileId == id) || _importListFactory.All().Any(c => c.QualityProfileId == id) ||
-                _performerService.GetAllPerformers().Any(c => c.QualityProfileId == id) || _studioService.GetAllStudios().Any(c => c.QualityProfileId == id))
+                _performerService.GetAllPerformers().Any(c => c.QualityProfileId == id) || _studioService.GetAllStudios().Any(c => c.QualityProfileId == id) || _profileRepository.Get(id)?.Fallback == true)
             {
                 throw new QualityProfileInUseException(id);
             }

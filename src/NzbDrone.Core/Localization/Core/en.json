@@ -739,6 +739,8 @@
   "FailedToLoadMovieFromAPI": "Failed to load movie from API",
   "FailedToUpdateSettings": "Failed to update settings",
   "Fallback": "Fallback",
+  "FallbackQualityProfile": "Fallback",
+  "FallbackQualityProfileHelpText": "Used as a Fallback Quality Profile if an invalid Profile is used",
   "False": "False",
   "FavoriteFolderAdd": "Add Favorite Folder",
   "FavoriteFolderRemove": "Remove Favorite Folder",

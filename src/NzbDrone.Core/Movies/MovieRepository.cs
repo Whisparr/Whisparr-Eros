@@ -156,6 +156,15 @@ namespace NzbDrone.Core.Movies
                 {
                     movie.MovieMetadata = metadata;
                     movie.MovieFile = file;
+
+                    // Check Quality Key exists
+                    if (!qualityProfiles.ContainsKey(movie.QualityProfileId))
+                    {
+                        // Correct any bad Quality Profiles
+                        var defaultProfile = qualityProfiles.FirstOrDefault(x => x.Value.Fallback).Value ?? qualityProfiles.First().Value;
+                        movie.QualityProfileId = defaultProfile.Id;
+                    }
+
                     movie.QualityProfile = qualityProfiles[movie.QualityProfileId];
 
                     if (alternativeTitles.TryGetValue(movie.MovieMetadataId, out var altTitles))

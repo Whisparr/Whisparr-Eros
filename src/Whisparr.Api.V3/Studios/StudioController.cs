@@ -74,11 +74,18 @@ namespace Whisparr.Api.V3.Studios
             }
         }
 
+        protected StudioResource MapToResource(Studio studio)
+        {
+            var resource = studio.ToResource();
+
+            MapCoversToLocal(studio);
+
+            return resource;
+        }
+
         protected override StudioResource GetResourceById(int id)
         {
-            var resource = _studioService.GetById(id).ToResource();
-
-            _coverMapper.ConvertToLocalStudioUrls(resource.Id, resource.Images);
+            var resource = MapToResource(_studioService.GetById(id));
 
             FetchAndLinkMovies(resource);
 
@@ -109,7 +116,7 @@ namespace Whisparr.Api.V3.Studios
 
                     if (studio != null)
                     {
-                        studioResources.AddIfNotNull(studio.ToResource());
+                        studioResources.AddIfNotNull(MapToResource(studio));
                     }
                 }
                 else
@@ -147,7 +154,6 @@ namespace Whisparr.Api.V3.Studios
             var updatedStudio = _studioService.Update(resource.ToModel(studio));
 
             _studioResourceCache.Remove(updatedStudio.ForeignId);
-            BroadcastResourceChange(ModelAction.Updated, updatedStudio.ToResource());
 
             return Accepted(updatedStudio);
         }
@@ -183,14 +189,19 @@ namespace Whisparr.Api.V3.Studios
             _studioService.RemoveStudio(studio);
         }
 
+        private void MapCoversToLocal(Studio studio)
+        {
+            _coverMapper.ConvertToLocalStudioUrls(studio.Id, studio.Images);
+        }
+
         [NonAction]
         public void Handle(StudioUpdatedEvent message)
         {
-            var resource = message.Studio.ToResource();
+            var resource = MapToResource(message.Studio);
 
             _studioResourceCache.Remove(resource.ForeignId);
             FetchAndLinkMovies(resource);
-            BroadcastResourceChange(ModelAction.Updated, message.Studio.ToResource());
+            BroadcastResourceChange(ModelAction.Updated, resource);
         }
 
         private void FetchAndLinkMovies(StudioResource resource)
@@ -302,7 +313,7 @@ namespace Whisparr.Api.V3.Studios
 
                         foreach (var studio in studios)
                         {
-                            studioResources.AddIfNotNull(studio.ToResource());
+                            studioResources.AddIfNotNull(MapToResource(studio));
                         }
 
                         var coverFileInfos = _coverMapper.GetStudioCoverFileInfos();

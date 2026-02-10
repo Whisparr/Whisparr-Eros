@@ -67,6 +67,7 @@ class QualityProfile extends Component {
       id,
       name,
       upgradeAllowed,
+      fallback,
       cutoff,
       items,
       isDeleting
@@ -151,6 +152,14 @@ class QualityProfile extends Component {
           }
         </div>
 
+        {fallback && (
+          <div className={styles.fallback}>
+            <Label>
+              {translate('Fallback')}
+            </Label>
+          </div>
+        )}
+
         <EditQualityProfileModalConnector
           id={id}
           isOpen={this.state.isEditQualityProfileModalOpen}
@@ -177,6 +186,7 @@ QualityProfile.propTypes = {
   id: PropTypes.number.isRequired,
   name: PropTypes.string.isRequired,
   upgradeAllowed: PropTypes.bool.isRequired,
+  fallback: PropTypes.bool.isRequired,
   cutoff: PropTypes.number.isRequired,
   items: PropTypes.arrayOf(PropTypes.object).isRequired,
   isDeleting: PropTypes.bool.isRequired,

@@ -370,7 +370,21 @@ namespace NzbDrone.Core.Indexers
 
                 if (releases.Empty())
                 {
-                    return new ValidationFailure(string.Empty, "Query successful, but no results in the configured categories were returned from your indexer. This may be an issue with the indexer or your indexer category settings.");
+                    // Test with a fake scene search
+                    var movieSearchCriteria = new SceneSearchCriteria() { Movie = new Movies.Movie() { Title = "xxx" }, SceneTitles = new List<string>() { "xxx" } };
+                    var backupRequest = generator.GetSearchRequests(movieSearchCriteria).GetAllTiers().FirstOrDefault()?.FirstOrDefault();
+
+                    if (backupRequest == null)
+                    {
+                        return new ValidationFailure(string.Empty, "No rss feed query available. This may be an issue with the indexer or your indexer category settings.");
+                    }
+
+                    releases = await FetchPage(backupRequest, parser);
+
+                    if (releases.Empty())
+                    {
+                        return new ValidationFailure(string.Empty, "Query successful, but no results in the configured categories were returned from your indexer. This may be an issue with the indexer or your indexer category settings.");
+                    }
                 }
             }
             catch (ApiKeyException ex)
