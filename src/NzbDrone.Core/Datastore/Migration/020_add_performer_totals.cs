@@ -3,7 +3,7 @@ using NzbDrone.Core.Datastore.Migration.Framework;
 
 namespace NzbDrone.Core.Datastore.Migration
 {
-    [Migration(019)]
+    [Migration(020)]
     public class add_performer_totals : NzbDroneMigrationBase
     {
         protected override void MainDbUpgrade()
