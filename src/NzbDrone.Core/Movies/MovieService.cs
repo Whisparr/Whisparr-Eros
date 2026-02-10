@@ -770,7 +770,7 @@ namespace NzbDrone.Core.Movies
                 {
                     // We don't want to match unless studio was properly matched up, false positives
                     // Passion-HD trips this a lot
-                    _logger.Info("{0}: Skipping fuzzy match for movie {1} due to missing studio or release date", methodName, movie.ToString());
+                    _logger.Trace("{0}: Skipping fuzzy match for movie {1} due to missing studio or release date", methodName, movie.ToString());
                     continue;
                 }
 
@@ -787,7 +787,7 @@ namespace NzbDrone.Core.Movies
             {
                 // There can be only one
                 var highest = fuzzyMatchMoviesWithScores.OrderByDescending(m => m.score).First();
-                _logger.Info("{0}: Returning fuzzy matched movie [{1} - {2}]", methodName, highest.movie.Title, highest.movie.ForeignId);
+                _logger.Trace("{0}: Returning fuzzy matched movie [{1} - {2}]", methodName, highest.movie.Title, highest.movie.ForeignId);
                 return highest.movie;
             }
 
@@ -1243,7 +1243,7 @@ namespace NzbDrone.Core.Movies
             }
 
             var score = FuzzySharp.Fuzz.Ratio(normalizedTitle, movie.CleanTitle);
-            _logger.Info("{0}: Fuzzy matching release tokens '{1}' to movie {2}: {3}%", methodName, normalizedTitle, movie.ToString(), score);
+            _logger.Debug("{0}: Matching [{1}] to movie [{2}]: {3}%", methodName, normalizedTitle, movie.ToString(), score);
 
             return (movie, score);
         }
