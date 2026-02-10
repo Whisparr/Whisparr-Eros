@@ -1,26 +1,28 @@
-using System.Text;
 using NLog;
 using NLog.Layouts;
 using NzbDrone.Common.EnvironmentInfo;
 
 namespace NzbDrone.Common.Instrumentation;
 
-public class CleansingConsoleLogLayout : SimpleLayout
+public class CleansingConsoleLogLayout : Layout
 {
+    private readonly string _format;
+
     public CleansingConsoleLogLayout(string format)
-        : base(format)
     {
+        _format = format;
     }
 
-    protected override void RenderFormattedMessage(LogEventInfo logEvent, StringBuilder target)
+    protected override string GetFormattedMessage(LogEventInfo logEvent)
     {
-        base.RenderFormattedMessage(logEvent, target);
+        var simpleLayout = new SimpleLayout(_format);
+        var result = simpleLayout.Render(logEvent);
 
         if (RuntimeInfo.IsProduction)
         {
-            var result = CleanseLogMessage.Cleanse(target.ToString());
-            target.Clear();
-            target.Append(result);
+            result = CleanseLogMessage.Cleanse(result);
         }
+
+        return result;
     }
 }
