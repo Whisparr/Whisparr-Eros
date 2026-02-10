@@ -1,4 +1,5 @@
 using System.Linq;
+using FluentValidation;
 using FluentValidation.Validators;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
@@ -6,7 +7,7 @@ using NzbDrone.Core.Movies;
 
 namespace NzbDrone.Core.Validation.Paths
 {
-    public class MoviePathValidator : PropertyValidator
+    public class MoviePathValidator<T> : PropertyValidator<T, string>
     {
         private readonly IMovieService _moviesService;
 
@@ -15,24 +16,26 @@ namespace NzbDrone.Core.Validation.Paths
             _moviesService = moviesService;
         }
 
-        protected override string GetDefaultMessageTemplate() => "Path '{path}' is already configured for an existing movie";
+        public override string Name => "MoviePathValidator";
 
-        protected override bool IsValid(PropertyValidatorContext context)
+        protected override string GetDefaultMessageTemplate(string errorCode) => "Path '{path}' is already configured for an existing movie";
+
+        public override bool IsValid(ValidationContext<T> context, string value)
         {
-            if (context.PropertyValue == null)
+            if (value == null)
             {
                 return true;
             }
 
-            dynamic instance = context.ParentContext.InstanceToValidate;
+            dynamic instance = context.InstanceToValidate;
             var instanceId = (int)instance.Id;
 
-            context.MessageFormatter.AppendArgument("path", context.PropertyValue.ToString());
+            context.MessageFormatter.AppendArgument("path", value);
 
             // Skip the path for this movie and any invalid paths
             return !_moviesService.AllMoviePaths().Any(s => s.Key != instanceId &&
                                                             s.Value.IsPathValid(PathValidationType.CurrentOs) &&
-                                                            s.Value.PathEquals(context.PropertyValue.ToString()));
+                                                            s.Value.PathEquals(value));
         }
     }
 }

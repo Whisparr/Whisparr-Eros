@@ -1,16 +1,19 @@
+using FluentValidation;
 using FluentValidation.Validators;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
 
 namespace NzbDrone.Core.Validation.Paths
 {
-    public class SystemFolderValidator : PropertyValidator
+    public class SystemFolderValidator<T> : PropertyValidator<T, string>
     {
-        protected override string GetDefaultMessageTemplate() => "Path '{path}' is {relationship} system folder {systemFolder}";
+        public override string Name => "SystemFolderValidator";
 
-        protected override bool IsValid(PropertyValidatorContext context)
+        protected override string GetDefaultMessageTemplate(string errorCode) => "Path '{path}' is {relationship} system folder {systemFolder}";
+
+        public override bool IsValid(ValidationContext<T> context, string value)
         {
-            var folder = context.PropertyValue.ToString();
+            var folder = value;
             context.MessageFormatter.AppendArgument("path", folder);
 
             foreach (var systemFolder in SystemFolders.GetSystemFolders())

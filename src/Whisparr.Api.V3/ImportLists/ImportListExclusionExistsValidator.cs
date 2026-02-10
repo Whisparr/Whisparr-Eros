@@ -1,9 +1,10 @@
+using FluentValidation;
 using FluentValidation.Validators;
 using NzbDrone.Core.ImportLists.ImportExclusions;
 
 namespace Whisparr.Api.V3.ImportLists
 {
-    public class ImportListExclusionExistsValidator : PropertyValidator
+    public class ImportListExclusionExistsValidator : PropertyValidator<ImportListExclusionResource, string>
     {
         private readonly IImportListExclusionService _importListExclusionService;
 
@@ -12,11 +13,13 @@ namespace Whisparr.Api.V3.ImportLists
             _importListExclusionService = importListExclusionService;
         }
 
-        protected override string GetDefaultMessageTemplate() => "This exclusion has already been added.";
+        public override string Name => "ImportListExclusionExistsValidator";
 
-        protected override bool IsValid(PropertyValidatorContext context)
+        protected override string GetDefaultMessageTemplate(string errorCode) => "This exclusion has already been added.";
+
+        public override bool IsValid(ValidationContext<ImportListExclusionResource> context, string value)
         {
-            if (context.PropertyValue == null)
+            if (value == null)
             {
                 return true;
             }
@@ -26,7 +29,7 @@ namespace Whisparr.Api.V3.ImportLists
                 return true;
             }
 
-            return !_importListExclusionService.GetAllExclusions().Exists(v => v.ForeignId == (string)context.PropertyValue && v.Id != listExclusionResource.Id);
+            return !_importListExclusionService.GetAllExclusions().Exists(v => v.ForeignId == value && v.Id != listExclusionResource.Id);
         }
     }
 }

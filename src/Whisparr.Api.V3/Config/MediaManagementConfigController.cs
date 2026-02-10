@@ -11,14 +11,14 @@ namespace Whisparr.Api.V3.Config
     public class MediaManagementConfigController : ConfigController<MediaManagementConfigResource>
     {
         public MediaManagementConfigController(IConfigService configService,
-                                           PathExistsValidator pathExistsValidator,
-                                           FolderChmodValidator folderChmodValidator,
-                                           FolderWritableValidator folderWritableValidator,
-                                           MoviePathValidator moviePathValidator,
-                                           StartupFolderValidator startupFolderValidator,
-                                           SystemFolderValidator systemFolderValidator,
-                                           RootFolderAncestorValidator rootFolderAncestorValidator,
-                                           RootFolderValidator rootFolderValidator)
+                                           PathExistsValidator<MediaManagementConfigResource> pathExistsValidator,
+                                           FolderChmodValidator<MediaManagementConfigResource> folderChmodValidator,
+                                           FolderWritableValidator<MediaManagementConfigResource> folderWritableValidator,
+                                           MoviePathValidator<MediaManagementConfigResource> moviePathValidator,
+                                           StartupFolderValidator<MediaManagementConfigResource> startupFolderValidator,
+                                           SystemFolderValidator<MediaManagementConfigResource> systemFolderValidator,
+                                           RootFolderAncestorValidator<MediaManagementConfigResource> rootFolderAncestorValidator,
+                                           RootFolderValidator<MediaManagementConfigResource> rootFolderValidator)
             : base(configService)
         {
             SharedValidator.RuleFor(c => c.RecycleBinCleanupDays).GreaterThanOrEqualTo(0);

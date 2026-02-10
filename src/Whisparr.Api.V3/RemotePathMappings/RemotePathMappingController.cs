@@ -16,8 +16,8 @@ namespace Whisparr.Api.V3.RemotePathMappings
         private readonly IRemotePathMappingService _remotePathMappingService;
 
         public RemotePathMappingController(IRemotePathMappingService remotePathMappingService,
-                                       PathExistsValidator pathExistsValidator,
-                                       MappedNetworkDriveValidator mappedNetworkDriveValidator)
+                                       PathExistsValidator<RemotePathMappingResource> pathExistsValidator,
+                                       MappedNetworkDriveValidator<RemotePathMappingResource> mappedNetworkDriveValidator)
         {
             _remotePathMappingService = remotePathMappingService;
 
@@ -41,7 +41,7 @@ namespace Whisparr.Api.V3.RemotePathMappings
                 .IsValidPath()
                 .SetValidator(mappedNetworkDriveValidator)
                 .SetValidator(pathExistsValidator)
-                .SetValidator(new SystemFolderValidator())
+                .SetValidator(new SystemFolderValidator<RemotePathMappingResource>())
                 .NotEqual("/")
                 .WithMessage("Cannot be set to '/'");
         }

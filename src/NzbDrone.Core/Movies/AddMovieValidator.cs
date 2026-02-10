@@ -11,10 +11,10 @@ namespace NzbDrone.Core.Movies
 
     public class AddMovieValidator : AbstractValidator<Movie>, IAddMovieValidator
     {
-        public AddMovieValidator(RootFolderValidator rootFolderValidator,
-                                 RecycleBinValidator recycleBinValidator,
-                                 MoviePathValidator moviePathValidator,
-                                 MovieAncestorValidator movieAncestorValidator)
+        public AddMovieValidator(RootFolderValidator<Movie> rootFolderValidator,
+                                 RecycleBinValidator<Movie> recycleBinValidator,
+                                 MoviePathValidator<Movie> moviePathValidator,
+                                 MovieAncestorValidator<Movie> movieAncestorValidator)
         {
             RuleFor(c => c.Path).Cascade(CascadeMode.Stop)
                                 .IsValidPath()

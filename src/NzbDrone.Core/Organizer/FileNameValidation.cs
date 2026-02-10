@@ -10,41 +10,44 @@ namespace NzbDrone.Core.Organizer
     {
         public static IRuleBuilderOptions<T, string> ValidMovieFolderFormat<T>(this IRuleBuilder<T, string> ruleBuilder)
         {
-            ruleBuilder.SetValidator(new NotEmptyValidator(null));
-            ruleBuilder.SetValidator(new IllegalCharactersValidator());
+            ruleBuilder.NotEmpty();
+            ruleBuilder.SetValidator(new IllegalCharactersValidator<T>());
 
-            return ruleBuilder.SetValidator(new RegularExpressionValidator(FileNameBuilder.MovieTitleRegex)).WithMessage("Must contain movie title");
+            return ruleBuilder.Matches(FileNameBuilder.MovieTitleRegex).WithMessage("Must contain movie title");
         }
 
         public static IRuleBuilderOptions<T, string> ValidMainMovieFolderFormat<T>(this IRuleBuilder<T, string> ruleBuilder)
         {
-            ruleBuilder.SetValidator(new NotEmptyValidator(null));
-            ruleBuilder.SetValidator(new IllegalCharactersValidator());
+            ruleBuilder.NotEmpty();
+            ruleBuilder.SetValidator(new IllegalCharactersValidator<T>());
 
-            return ruleBuilder.SetValidator(new RegularExpressionValidator(FileNameBuilder.MainFolderRegex)).WithMessage("Must start with a relative path inside root folder, ex. 'movies/'");
+            return ruleBuilder.Matches(FileNameBuilder.MainFolderRegex)
+                              .WithMessage("Must start with a relative path inside root folder, ex. 'movies/'");
         }
 
         public static IRuleBuilderOptions<T, string> ValidMovieFormat<T>(this IRuleBuilder<T, string> ruleBuilder)
         {
-            ruleBuilder.SetValidator(new NotEmptyValidator(null));
-            ruleBuilder.SetValidator(new IllegalCharactersValidator());
+            ruleBuilder.NotEmpty();
+            ruleBuilder.SetValidator(new IllegalCharactersValidator<T>());
 
-            return ruleBuilder.SetValidator(new RegularExpressionValidator(FileNameBuilder.MovieTitleRegex)).WithMessage("Must contain movie title");
+            return ruleBuilder.Matches(FileNameBuilder.MovieTitleRegex).WithMessage("Must contain movie title");
         }
 
         public static IRuleBuilderOptions<T, string> ValidSceneFolderFormat<T>(this IRuleBuilder<T, string> ruleBuilder)
         {
-            ruleBuilder.SetValidator(new NotEmptyValidator(null));
-            ruleBuilder.SetValidator(new IllegalCharactersValidator());
+            ruleBuilder.NotEmpty();
+            ruleBuilder.SetValidator(new IllegalCharactersValidator<T>());
 
-            return ruleBuilder.SetValidator(new RegularExpressionValidator(FileNameBuilder.SceneFolderRegex)).WithMessage("Must contain scene studio token, ex. {Studio CleanTitle}");
+            return ruleBuilder.Matches(FileNameBuilder.SceneFolderRegex)
+                              .WithMessage("Must contain scene studio token, ex. {Studio CleanTitle}");
         }
 
         public static IRuleBuilderOptions<T, string> ValidMainSceneFolderFormat<T>(this IRuleBuilder<T, string> ruleBuilder)
         {
-            ruleBuilder.SetValidator(new NotEmptyValidator(null));
-            ruleBuilder.SetValidator(new IllegalCharactersValidator());
-            ruleBuilder.SetValidator(new RegularExpressionValidator(FileNameBuilder.MainFolderRegex)).WithMessage("Must start with a relative path inside root folder, ex. 'scenes/'");
+            ruleBuilder.NotEmpty();
+            ruleBuilder.SetValidator(new IllegalCharactersValidator<T>());
+            ruleBuilder.Matches(FileNameBuilder.MainFolderRegex)
+                       .WithMessage("Must start with a relative path inside root folder, ex. 'scenes/'");
             return ruleBuilder.Must(value =>
                 value is string s && FileNameBuilder.SceneTitleTokenRegex.IsMatch(s))
                     .WithMessage("Must contain a Scene Title naming token, ex. {Scene CleanTitle}");
@@ -52,28 +55,31 @@ namespace NzbDrone.Core.Organizer
 
         public static IRuleBuilderOptions<T, string> ValidSceneImportFolderFormat<T>(this IRuleBuilder<T, string> ruleBuilder)
         {
-            ruleBuilder.SetValidator(new NotEmptyValidator(null));
-            ruleBuilder.SetValidator(new IllegalCharactersValidator());
+            ruleBuilder.NotEmpty();
+            ruleBuilder.SetValidator(new IllegalCharactersValidator<T>());
 
-            return ruleBuilder.SetValidator(new NotEmptyValidator(null)).WithMessage("Must not be empty");
+            return ruleBuilder.NotEmpty().WithMessage("Must not be empty");
         }
 
         public static IRuleBuilderOptions<T, string> ValidSceneFormat<T>(this IRuleBuilder<T, string> ruleBuilder)
         {
-            ruleBuilder.SetValidator(new NotEmptyValidator(null));
-            ruleBuilder.SetValidator(new IllegalCharactersValidator());
+            ruleBuilder.NotEmpty();
+            ruleBuilder.SetValidator(new IllegalCharactersValidator<T>());
 
-            return ruleBuilder.SetValidator(new RegularExpressionValidator(FileNameBuilder.SceneTitleRegex)).WithMessage("Must contain scene title, ex {Scene CleanTitle}");
+            return ruleBuilder.Matches(FileNameBuilder.SceneTitleRegex)
+                              .WithMessage("Must contain scene title, ex {Scene CleanTitle}");
         }
     }
 
-    public class ValidMovieFolderFormatValidator : PropertyValidator
+    public class ValidMovieFolderFormatValidator<T> : PropertyValidator<T, string>
     {
-        protected override string GetDefaultMessageTemplate() => "Must contain movie title";
+        public override string Name => "ValidMovieFolderFormatValidator";
 
-        protected override bool IsValid(PropertyValidatorContext context)
+        protected override string GetDefaultMessageTemplate(string errorCode) => "Must contain movie title";
+
+        public override bool IsValid(ValidationContext<T> context, string value)
         {
-            if (context.PropertyValue is not string value)
+            if (value == null)
             {
                 return false;
             }
@@ -82,15 +88,16 @@ namespace NzbDrone.Core.Organizer
         }
     }
 
-    public class IllegalCharactersValidator : PropertyValidator
+    public class IllegalCharactersValidator<T> : PropertyValidator<T, string>
     {
         private static readonly char[] InvalidPathChars = Path.GetInvalidPathChars();
 
-        protected override string GetDefaultMessageTemplate() => "Contains illegal characters: {InvalidCharacters}";
+        public override string Name => "IllegalCharactersValidator";
 
-        protected override bool IsValid(PropertyValidatorContext context)
+        protected override string GetDefaultMessageTemplate(string errorCode) => "Contains illegal characters: {InvalidCharacters}";
+
+        public override bool IsValid(ValidationContext<T> context, string value)
         {
-            var value = context.PropertyValue as string;
             if (value.IsNullOrWhiteSpace())
             {
                 return true;

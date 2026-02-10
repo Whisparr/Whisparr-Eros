@@ -18,13 +18,13 @@ namespace Whisparr.Api.V3.RootFolders
 
         public RootFolderController(IRootFolderService rootFolderService,
                                 IBroadcastSignalRMessage signalRBroadcaster,
-                                RootFolderValidator rootFolderValidator,
-                                PathExistsValidator pathExistsValidator,
-                                MappedNetworkDriveValidator mappedNetworkDriveValidator,
-                                RecycleBinValidator recycleBinValidator,
-                                StartupFolderValidator startupFolderValidator,
-                                SystemFolderValidator systemFolderValidator,
-                                FolderWritableValidator folderWritableValidator)
+                                RootFolderValidator<RootFolderResource> rootFolderValidator,
+                                PathExistsValidator<RootFolderResource> pathExistsValidator,
+                                MappedNetworkDriveValidator<RootFolderResource> mappedNetworkDriveValidator,
+                                RecycleBinValidator<RootFolderResource> recycleBinValidator,
+                                StartupFolderValidator<RootFolderResource> startupFolderValidator,
+                                SystemFolderValidator<RootFolderResource> systemFolderValidator,
+                                FolderWritableValidator<RootFolderResource> folderWritableValidator)
         : base(signalRBroadcaster)
         {
             _rootFolderService = rootFolderService;
