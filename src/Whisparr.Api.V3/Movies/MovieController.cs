@@ -425,22 +425,34 @@ namespace Whisparr.Api.V3.Movies
 
         private void MapCoversToLocal(MovieResource movie)
         {
-            if (movie == null)
+            if (movie == null || !movie.Images.Any())
             {
                 return;
             }
 
-            _coverMapper.ConvertToLocalUrls(movie.Id, movie.Images);
+            try
+            {
+                _coverMapper.ConvertToLocalUrls(movie.Id, movie.Images);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Error mapping covers to local for movie {MovieId}", movie.Id);
+            }
         }
 
         private void MapCoversToLocal(IEnumerable<MovieResource> movies, Dictionary<string, FileInfo> coverFileInfos)
         {
-            if (movies == null || !movies.Any() || coverFileInfos == null || !coverFileInfos.Any())
+            // Workaround for bulk API failing here and crashing app web loading
+            // Will be addressed in future via pagination API re-work
+            // If failures happen, worst case is covers are hotlinked from StashDB
+            try
             {
-                return;
+                _coverMapper.ConvertToLocalUrls(movies.Select(x => Tuple.Create(x.Id, x.Images.AsEnumerable())), coverFileInfos);
             }
-
-            _coverMapper.ConvertToLocalUrls(movies.Select(x => Tuple.Create(x.Id, x.Images.AsEnumerable())), coverFileInfos);
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Error mapping covers to local for movies");
+            }
         }
 
         private void FetchAndLinkMovieStatistics(MovieResource resource)
