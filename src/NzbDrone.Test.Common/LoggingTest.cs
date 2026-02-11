@@ -60,9 +60,6 @@ namespace NzbDrone.Test.Common
             fileTarget.FileName = Path.Combine(TestContext.CurrentContext.WorkDirectory, "TestLog.txt");
             fileTarget.AutoFlush = false;
             fileTarget.KeepFileOpen = true;
-            fileTarget.ConcurrentWrites = true;
-            fileTarget.ConcurrentWriteAttemptDelay = 50;
-            fileTarget.ConcurrentWriteAttempts = 10;
             fileTarget.Layout = layout;
 
             LogManager.Configuration.AddTarget(fileTarget.GetType().Name, fileTarget);
