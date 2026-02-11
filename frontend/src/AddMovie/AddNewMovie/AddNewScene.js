@@ -12,7 +12,6 @@ import { icons, kinds } from 'Helpers/Props';
 import getErrorMessage from 'Utilities/Object/getErrorMessage';
 import translate from 'Utilities/String/translate';
 import AddNewMovieSearchResultConnector from './AddNewMovie/AddNewMovieSearchResultConnector';
-import AddNewPerformerSearchResultConnector from './AddNewPerformer/AddNewPerformerSearchResultConnector';
 import AddNewStudioSearchResultConnector from './AddNewStudio/AddNewStudioSearchResultConnector';
 import styles from '../AddNewMovie/AddNewMovie.css';
 
@@ -157,13 +156,7 @@ class AddNewScene extends Component {
                         />
                       );
                     } else if (item.performer) {
-                      return (
-                        <AddNewPerformerSearchResultConnector
-                          key={item.foreignId}
-                          colorImpairedMode={colorImpairedMode}
-                          {...item.performer}
-                        />
-                      );
+                      return null;
                     } else if (item.studio) {
                       return (
                         <AddNewStudioSearchResultConnector

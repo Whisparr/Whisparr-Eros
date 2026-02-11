@@ -29,6 +29,7 @@ import {
   faBackward as fasBackward,
   faBan as fasBan,
   faBars as fasBars,
+  faBirthdayCake as faBirthdayCake,
   faBolt as fasBolt,
   faBook as faBook,
   faBookmark as fasBookmark,
@@ -142,6 +143,7 @@ export const ARROW_RIGHT = fasArrowCircleRight;
 export const BACKUP = farFileArchive;
 export const BLOCKLIST = fasBan;
 export const BUG = fasBug;
+export const CAKE = faBirthdayCake;
 export const CALENDAR = fasCalendarAlt;
 export const CALENDAR_O = farCalendar;
 export const CARET_DOWN = fasCaretDown;

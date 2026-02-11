@@ -1,8 +1,14 @@
 .cell {
   composes: cell from '~Components/Table/Cells/VirtualTableRowCell.css';
+  /* display: flex; */
+  /* align-items: center; */
+}
 
-  display: flex;
-  align-items: center;
+.blur {
+  composes: cell;
+
+  flex: 1 0 150px;
+  filter: blur(4px);
 }
 
 .status {
@@ -38,6 +44,11 @@
   flex: 1 0 150px;
 }
 
+.actions,
+.status{
+  width: 50px;
+}
+
 .monitored,
 .gender,
 .age,
@@ -48,6 +59,8 @@
 .hairColor,
 .totalMovieCount,
 .totalSceneCount,
+.sizeOnDisk,
+.placeholder,
 .tags {
   composes: cell;
 

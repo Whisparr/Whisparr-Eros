@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using NzbDrone.Core.MediaCover;
 using NzbDrone.Core.Movies.Performers;
-using Whisparr.Api.V3.Movies;
 using Whisparr.Http.REST;
 
 namespace Whisparr.Api.V3.Performers
@@ -77,40 +76,28 @@ namespace Whisparr.Api.V3.Performers
         /// <summary>Indicates if the performer has any associated scenes</summary>
         public bool HasScenes { get; set; }
 
-        /// <summary>Number of movies from this performer</summary>
+        /// <summary>Number of movies (on disk)from this performer</summary>
         public int MovieCount { get; set; }
 
         /// <summary>Total number of movies associated with this performer</summary>
         public int TotalMovieCount
         {
             get;
-            internal set;
+            set;
         }
 
         /// <summary>Total number of scenes associated with this performer</summary>
         public int TotalSceneCount
         {
             get;
-            internal set;
+            set;
         }
 
-        /// <summary>Number of scenes from this performer</summary>
+        /// <summary>Number of scenes (on disk) from this performer</summary>
         public int SceneCount { get; set; }
 
-        /// <summary>List of minimal-property studio objects associated with this performer</summary>
-        public List<PerformerStudioResource> Studios { get; set; }
+        /// <summary>Total size in bytes of all files on disk associated with this performer/// </summary>
         public long SizeOnDisk { get; set; }
-    }
-
-    public class PerformerStudioResource
-    {
-        /// <summary>The studio's name</summary>
-        public string Title { get; set; }
-
-        /// <summary>Foreign ID from Stash metadata source</summary>
-        public string ForeignId { get; set; }
-
-        public List<MovieResource> Movies { get; set; }
     }
 
     /// <summary>Provides mapping functions between Performer model and PerformerResource</summary>
@@ -146,7 +133,12 @@ namespace Whisparr.Api.V3.Performers
                 QualityProfileId = model.QualityProfileId,
                 RootFolderPath = model.RootFolderPath,
                 SearchOnAdd = model.SearchOnAdd,
-                Tags = model.Tags
+                Tags = model.Tags,
+                SceneCount = model.SceneCount,
+                TotalSceneCount = model.TotalSceneCount,
+                MovieCount = model.MovieCount,
+                TotalMovieCount = model.TotalMovieCount,
+                SizeOnDisk = model.SizeOnDisk
             };
         }
 

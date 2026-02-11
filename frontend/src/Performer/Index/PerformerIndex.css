@@ -1,7 +1,17 @@
-.pageContentBodyWrapper {
+.pageContent{
   display: flex;
-  flex: 1 0 1px;
-  overflow: hidden;
+  flex: 1;
+  flex-direction: column;
+  width: 100%;
+}
+
+.performerIndexTable{
+  flex: 1;
+  width: 100%;
+}
+
+.tablePager{
+  flex: 0 0 auto;
 }
 
 .errorMessage {

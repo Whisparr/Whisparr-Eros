@@ -23,14 +23,14 @@ import {
   SortDirection,
 } from 'Helpers/Props/sortDirections';
 import MovieHeadshot from 'Movie/MovieHeadshot';
-import DeletePerformerModalConnector from 'Performer/Delete/DeletePerformerModalConnector';
-import EditPerformerModalConnector from 'Performer/Edit/EditPerformerModalConnector';
+import DeletePerformerModal from 'Performer/Delete/DeletePerformerModal';
 import PerformerGenderIcon from 'Performer/PerformerGenderIcon';
 import { getPerformerStatusDetails } from 'Performer/PerformerStatus';
 import QualityProfileName from 'Settings/Profiles/Quality/QualityProfileName';
 import formatBytes from 'Utilities/Number/formatBytes';
 import firstCharToUpper from 'Utilities/String/firstCharToUpper';
 import translate from 'Utilities/String/translate';
+import EditPerformerModal from '../Edit/EditPerformerModal';
 import PerformerDetailsLinks from './PerformerDetailsLinks';
 import PerformerDetailsYear from './PerformerDetailsYear';
 import PerformerTags from './PerformerTags';
@@ -161,7 +161,6 @@ function PerformerDetails() {
   }
 
   // Performer properties
-  const id = performer.id;
   const foreignId = performer.foreignId;
   const tmdbId = performer.tmdbId;
   const tpdbId = performer.tpdbId;
@@ -506,7 +505,7 @@ function PerformerDetails() {
                 <PerformerDetailsYear
                   key={year}
                   year={year}
-                  performerId={id}
+                  performerId={performer.id}
                   columns={columns}
                   movies={yearMovies}
                   sortKey={sortKey}
@@ -522,14 +521,14 @@ function PerformerDetails() {
             </FieldSet>
           )}
         </div>
-        <DeletePerformerModalConnector
+        <DeletePerformerModal
           isOpen={isDeleteMovieModalOpen}
-          performerId={id}
+          performer={performer}
           onModalClose={handleDeleteMovieModalClose}
         />
-        <EditPerformerModalConnector
+        <EditPerformerModal
           isOpen={isEditMovieModalOpen}
-          performerId={id}
+          performer={performer}
           onModalClose={handleEditMovieModalClose}
         />
       </PageContentBody>

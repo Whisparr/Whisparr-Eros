@@ -1,4 +1,5 @@
 import * as addMovie from './addMovieActions';
+import * as addPerformer from './addPerformerActions';
 import * as app from './appActions';
 import * as blocklist from './blocklistActions';
 import * as calendar from './calendarActions';
@@ -38,6 +39,7 @@ import * as wanted from './wantedActions';
 
 export default [
   addMovie,
+  addPerformer,
   app,
   blocklist,
   calendar,

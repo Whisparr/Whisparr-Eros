@@ -5,6 +5,7 @@ interface CssExports {
   'content': string;
   'exclusionIcon': string;
   'gender': string;
+  'genderIcon': string;
   'icons': string;
   'links': string;
   'overlay': string;

@@ -3,6 +3,7 @@
 interface CssExports {
   'actions': string;
   'age': string;
+  'blur': string;
   'careerEnd': string;
   'careerStart': string;
   'cell': string;
@@ -13,8 +14,10 @@ interface CssExports {
   'gender': string;
   'hairColor': string;
   'monitored': string;
+  'placeholder': string;
   'qualityProfileId': string;
   'rootFolderPath': string;
+  'sizeOnDisk': string;
   'status': string;
   'statusIcon': string;
   'tags': string;
