@@ -1381,7 +1381,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                 throw new ArgumentNullException(nameof(castResource));
             }
 
-            var personName = castResource.PersonName.IsNotNullOrWhiteSpace() ? castResource.PersonName : castResource.Performer.Name;
+            var personName = castResource.PersonName ?? castResource.Performer.Name;
 
             if (personName == null)
             {
