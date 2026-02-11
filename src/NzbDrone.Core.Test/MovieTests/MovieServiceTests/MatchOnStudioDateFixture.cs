@@ -47,8 +47,8 @@ namespace NzbDrone.Core.Test.MovieTests.MovieServiceTests
 
             var result = _movieService.InvokeFindByStudioAndReleaseDate(studioId, releaseDate, "", "", "");
 
-            Assert.IsNotNull(result);
-            Assert.AreEqual(movie.Id, result.Id);
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Id, Is.EqualTo(movie.Id));
         }
 
         [Test]
@@ -66,7 +66,7 @@ namespace NzbDrone.Core.Test.MovieTests.MovieServiceTests
 
             var result = _movieService.InvokeFindByStudioAndReleaseDate(studioId, releaseDate, "", "", "");
 
-            Assert.IsNull(result);
+            Assert.That(result, Is.Null);
         }
     }
 
