@@ -9,19 +9,21 @@ namespace NzbDrone.Core.Validation.Paths
     {
         public static IRuleBuilderOptions<T, string> IsValidPath<T>(this IRuleBuilder<T, string> ruleBuilder)
         {
-            return ruleBuilder.SetValidator(new PathValidator());
+            return ruleBuilder.SetValidator(new PathValidator<T>());
         }
     }
 
-    public class PathValidator : PropertyValidator
+    public class PathValidator<T> : PropertyValidator<T, string>
     {
-        protected override string GetDefaultMessageTemplate() => "Invalid Path: '{path}'";
+        public override string Name => "PathValidator";
 
-        protected override bool IsValid(PropertyValidatorContext context)
+        protected override string GetDefaultMessageTemplate(string errorCode) => "Invalid Path: '{path}'";
+
+        public override bool IsValid(ValidationContext<T> context, string value)
         {
-            context.MessageFormatter.AppendArgument("path", context.PropertyValue?.ToString());
+            context.MessageFormatter.AppendArgument("path", value);
 
-            return context.PropertyValue != null && context.PropertyValue.ToString().IsPathValid(PathValidationType.CurrentOs);
+            return value != null && value.IsPathValid(PathValidationType.CurrentOs);
         }
     }
 }

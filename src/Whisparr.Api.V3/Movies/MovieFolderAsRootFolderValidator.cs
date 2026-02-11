@@ -1,12 +1,13 @@
 ﻿using System;
 using System.IO;
+using FluentValidation;
 using FluentValidation.Validators;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Organizer;
 
 namespace Whisparr.Api.V3.Movies
 {
-    public class MovieFolderAsRootFolderValidator : PropertyValidator
+    public class MovieFolderAsRootFolderValidator : PropertyValidator<MovieResource, string>
     {
         private readonly IBuildFileNames _fileNameBuilder;
 
@@ -15,11 +16,13 @@ namespace Whisparr.Api.V3.Movies
             _fileNameBuilder = fileNameBuilder;
         }
 
-        protected override string GetDefaultMessageTemplate() => "Root folder path '{rootFolderPath}' contains movie folder '{movieFolder}'";
+        public override string Name => "MovieFolderAsRootFolderValidator";
 
-        protected override bool IsValid(PropertyValidatorContext context)
+        protected override string GetDefaultMessageTemplate(string errorCode) => "Root folder path '{rootFolderPath}' contains movie folder '{movieFolder}'";
+
+        public override bool IsValid(ValidationContext<MovieResource> context, string value)
         {
-            if (context.PropertyValue == null)
+            if (value == null)
             {
                 return true;
             }
@@ -29,7 +32,7 @@ namespace Whisparr.Api.V3.Movies
                 return true;
             }
 
-            var rootFolderPath = context.PropertyValue.ToString();
+            var rootFolderPath = value;
 
             if (rootFolderPath.IsNullOrWhiteSpace())
             {

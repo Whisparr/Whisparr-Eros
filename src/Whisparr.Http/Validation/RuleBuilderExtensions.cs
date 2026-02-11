@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using FluentValidation;
-using FluentValidation.Validators;
 
 namespace Whisparr.Http.Validation
 {
@@ -9,32 +8,32 @@ namespace Whisparr.Http.Validation
     {
         public static IRuleBuilderOptions<T, int> ValidId<T>(this IRuleBuilder<T, int> ruleBuilder)
         {
-            return ruleBuilder.SetValidator(new GreaterThanValidator(0));
+            return ruleBuilder.GreaterThan(0);
         }
 
         public static IRuleBuilderOptions<T, int> IsZero<T>(this IRuleBuilder<T, int> ruleBuilder)
         {
-            return ruleBuilder.SetValidator(new EqualValidator(0));
+            return ruleBuilder.Equal(0);
         }
 
         public static IRuleBuilderOptions<T, string> HaveHttpProtocol<T>(this IRuleBuilder<T, string> ruleBuilder)
         {
-            return ruleBuilder.SetValidator(new RegularExpressionValidator("^http(s)?://", RegexOptions.IgnoreCase)).WithMessage("must start with http:// or https://");
+            return ruleBuilder.Matches("^http(s)?://", RegexOptions.IgnoreCase).WithMessage("must start with http:// or https://");
         }
 
         public static IRuleBuilderOptions<T, string> NotBlank<T>(this IRuleBuilder<T, string> ruleBuilder)
         {
-            return ruleBuilder.SetValidator(new NotNullValidator()).SetValidator(new NotEmptyValidator(""));
+            return ruleBuilder.NotNull().NotEmpty();
         }
 
         public static IRuleBuilderOptions<T, IEnumerable<TProp>> EmptyCollection<T, TProp>(this IRuleBuilder<T, IEnumerable<TProp>> ruleBuilder)
         {
-            return ruleBuilder.SetValidator(new EmptyCollectionValidator<TProp>());
+            return ruleBuilder.SetValidator(new EmptyCollectionValidator<T, TProp>());
         }
 
         public static IRuleBuilderOptions<T, int> IsValidRssSyncInterval<T>(this IRuleBuilder<T, int> ruleBuilder)
         {
-            return ruleBuilder.SetValidator(new RssSyncIntervalValidator());
+            return ruleBuilder.SetValidator(new RssSyncIntervalValidator<T>());
         }
     }
 }

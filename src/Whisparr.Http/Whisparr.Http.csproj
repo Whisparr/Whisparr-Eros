@@ -7,7 +7,7 @@
     <NoWarn>$(NoWarn);CA1825</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="FluentValidation" Version="9.5.4" />
+    <PackageReference Include="FluentValidation" Version="12.1.1" />
     <PackageReference Include="ImpromptuInterface" Version="8.0.6" />
     <PackageReference Include="NLog" Version="6.1.0" />
   </ItemGroup>

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using FluentValidation;
-using FluentValidation.Internal;
 using Whisparr.Http.ClientSchema;
 
 namespace Whisparr.Http.REST
@@ -12,19 +11,21 @@ namespace Whisparr.Http.REST
     {
         public IRuleBuilderInitial<TResource, TProperty> RuleForField<TProperty>(Expression<Func<TResource, IEnumerable<Field>>> fieldListAccessor, string fieldName)
         {
-            var rule = new PropertyRule(fieldListAccessor.GetMember(), c => GetValue(c, fieldListAccessor.Compile(), fieldName), null, () => CascadeMode.Continue, typeof(TProperty), typeof(TResource));
-            rule.PropertyName = fieldName;
-            rule.SetDisplayName(fieldName);
+            var accessor = fieldListAccessor.Compile();
 
-            AddRule(rule);
-            return new RuleBuilder<TResource, TProperty>(rule, this);
+            return RuleFor(resource => GetValue<TProperty>(resource, accessor, fieldName));
         }
 
-        private static object GetValue(object container, Func<TResource, IEnumerable<Field>> fieldListAccessor, string fieldName)
+        private static TProperty GetValue<TProperty>(TResource resource, Func<TResource, IEnumerable<Field>> fieldListAccessor, string fieldName)
         {
-            var resource = fieldListAccessor((TResource)container).SingleOrDefault(c => c.Name == fieldName);
+            var field = fieldListAccessor(resource).SingleOrDefault(c => c.Name == fieldName);
 
-            return resource?.Value;
+            if (field?.Value == null)
+            {
+                return default;
+            }
+
+            return (TProperty)field.Value;
         }
     }
 }
