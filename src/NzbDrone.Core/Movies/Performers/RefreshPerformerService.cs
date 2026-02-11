@@ -90,17 +90,31 @@ namespace NzbDrone.Core.Movies.Performers
 
             performer.TmdbId = performerInfo.TmdbId;
             performer.TpdbId = performerInfo.TpdbId;
-            performer.Age = performerInfo.Age;
-            performer.CareerEnd = performerInfo.CareerEnd;
-            performer.CareerStart = performerInfo.CareerStart;
-            performer.CleanName = performerInfo.CleanName;
-            performer.Ethnicity = performerInfo.Ethnicity;
             performer.Gender = performerInfo.Gender;
+            performer.Age = performerInfo.Age;
+            performer.BirthDate = performerInfo.BirthDate;
+            performer.DeathDate = performerInfo.DeathDate;
+            performer.Ethnicity = performerInfo.Ethnicity;
+            performer.Country = performerInfo.Country;
+            performer.EyeColor = performerInfo.EyeColor;
             performer.HairColor = performerInfo.HairColor;
-            performer.Images = performerInfo.Images;
-            performer.LastInfoSync = DateTime.UtcNow;
+            performer.Height = performerInfo.Height;
+            performer.CupSize = performerInfo.CupSize;
+            performer.BandSize = performerInfo.BandSize;
+            performer.WaistSize = performerInfo.WaistSize;
+            performer.HipSize = performerInfo.HipSize;
+            performer.BreastType = performerInfo.BreastType;
+            performer.Tattoos = performerInfo.Tattoos;
+            performer.Piercings = performerInfo.Piercings;
+            performer.Status = performerInfo.Status;
+            performer.CareerStart = performerInfo.CareerStart;
+            performer.CareerEnd = performerInfo.CareerEnd;
             performer.Name = performerInfo.Name;
             performer.SortName = performerInfo.SortName;
+            performer.Aliases = performerInfo.Aliases;
+            performer.CleanName = performerInfo.CleanName;
+            performer.Images = performerInfo.Images;
+            performer.LastInfoSync = DateTime.UtcNow;
             performer.Status = performerInfo.Status;
 
             if (performerInfo.MergedIntoId.IsNotNullOrWhiteSpace())

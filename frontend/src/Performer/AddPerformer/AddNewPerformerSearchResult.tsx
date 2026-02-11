@@ -23,8 +23,16 @@ function AddNewPerformerSearchResult({
   performer,
   isExistingPerformer,
 }: AddNewPerformerSearchResultProps) {
-  const { foreignId, tmdbId, tpdbId, fullName, gender, status, images } =
-    performer;
+  const {
+    foreignId,
+    tmdbId,
+    tpdbId,
+    fullName,
+    gender,
+    country,
+    status,
+    images,
+  } = performer;
   const { isSmallScreen, safeForWorkMode } = useAddNewPerformerSearchResult();
   const [isNewAddPerformerModalOpen, setIsNewAddPerformerModalOpen] =
     useState(false);
@@ -89,6 +97,11 @@ function AddNewPerformerSearchResult({
             {!!gender && (
               <Label size={sizes.LARGE} kind={kinds.DEFAULT}>
                 {firstCharToUpper(gender)}
+              </Label>
+            )}
+            {!!country && (
+              <Label size={sizes.LARGE} kind={kinds.DEFAULT}>
+                {country}
               </Label>
             )}
             <Tooltip
