@@ -23,7 +23,7 @@ function createMapStateToProps() {
     createAllMoviesSelector(),
     (item, movies) => {
       const selectedMovie = item && item.selectedMovie;
-      const isExistingMovie = !!selectedMovie && _.some(movies, { tmdbId: selectedMovie.tmdbId });
+      const isExistingMovie = !!selectedMovie && _.some(movies, { foreignId: selectedMovie.foreignId });
 
       return {
         ...item,

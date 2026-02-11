@@ -8,6 +8,7 @@ interface CssExports {
   'label': string;
   'loading': string;
   'loadingButton': string;
+  'refreshButton': string;
 }
 export const cssExports: CssExports;
 export default cssExports;

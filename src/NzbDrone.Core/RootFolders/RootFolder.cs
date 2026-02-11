@@ -10,6 +10,6 @@ namespace NzbDrone.Core.RootFolders
         public long? FreeSpace { get; set; }
         public long? TotalSpace { get; set; }
 
-        public List<UnmappedFolder> UnmappedFolders { get; set; }
+        public List<ImportFile> ImportFiles { get; set; }
     }
 }

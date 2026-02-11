@@ -5,7 +5,6 @@ using NzbDrone.Core.RootFolders;
 using NzbDrone.Core.Validation.Paths;
 using NzbDrone.SignalR;
 using Whisparr.Http;
-using Whisparr.Http.Extensions;
 using Whisparr.Http.REST;
 using Whisparr.Http.REST.Attributes;
 
@@ -43,10 +42,7 @@ namespace Whisparr.Api.V3.RootFolders
 
         protected override RootFolderResource GetResourceById(int id)
         {
-            var timeout = Request?.GetBooleanQueryParameter("timeout", true) ?? true;
-            var getMovieFolder = Request?.GetBooleanQueryParameter("getMovieFolder", true) ?? true;
-
-            return _rootFolderService.Get(id, timeout, getMovieFolder).ToResource();
+            return _rootFolderService.Get(id).ToResource();
         }
 
         [RestPostById]
@@ -61,7 +57,13 @@ namespace Whisparr.Api.V3.RootFolders
         [HttpGet]
         public List<RootFolderResource> GetRootFolders()
         {
-            return _rootFolderService.AllWithUnmappedFolders().ToResource();
+            return _rootFolderService.AllWithImportFiles().ToResource();
+        }
+
+        [HttpPost("refresh/{id}")]
+        public RootFolderResource Refresh([FromRoute] int id)
+        {
+            return _rootFolderService.Refresh(id).ToResource();
         }
 
         [RestDeleteById]

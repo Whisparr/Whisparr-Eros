@@ -1,8 +1,6 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import Icon from 'Components/Icon';
 import Link from 'Components/Link/Link';
-import { icons } from 'Helpers/Props';
 import ImportMovieTitle from './ImportMovieTitle';
 import styles from './ImportMovieSearchResult.css';
 
@@ -12,7 +10,7 @@ class ImportMovieSearchResult extends Component {
   // Listeners
 
   onPress = () => {
-    this.props.onPress(this.props.tmdbId);
+    this.props.onPress(this.props.foreignId);
   };
 
   //
@@ -20,11 +18,11 @@ class ImportMovieSearchResult extends Component {
 
   render() {
     const {
-      tmdbId,
-      tpdbId,
+      itemType,
       title,
       year,
-      studio,
+      releaseDate,
+      studioTitle,
       isExistingMovie
     } = this.props;
 
@@ -35,38 +33,14 @@ class ImportMovieSearchResult extends Component {
           onPress={this.onPress}
         >
           <ImportMovieTitle
+            itemType={itemType}
             title={title}
             year={year}
-            network={studio}
+            releaseDate={releaseDate}
+            studioTitle={studioTitle}
             isExistingMovie={isExistingMovie}
           />
         </Link>
-
-        {!!tmdbId && (
-          <Link
-            className={styles.tmdbLink}
-            to={`https://www.themoviedb.org/movie/${tmdbId}`}
-          >
-            <Icon
-              className={styles.tmdbLinkIcon}
-              name={icons.EXTERNAL_LINK}
-              size={16}
-            />
-          </Link>
-        )}
-
-        {!!tpdbId && (
-          <Link
-            className={styles.tpdbLink}
-            to={`https://theporndb.net/movies/${tpdbId}`}
-          >
-            <Icon
-              className={styles.tpdbLinkIcon}
-              name={icons.EXTERNAL_LINK}
-              size={16}
-            />
-          </Link>
-        )}
 
       </div>
     );
@@ -74,11 +48,12 @@ class ImportMovieSearchResult extends Component {
 }
 
 ImportMovieSearchResult.propTypes = {
-  tmdbId: PropTypes.number.isRequired,
-  tpdbId: PropTypes.string,
+  foreignId: PropTypes.string,
+  itemType: PropTypes.string,
   title: PropTypes.string.isRequired,
   year: PropTypes.number.isRequired,
-  studio: PropTypes.string,
+  releaseDate: PropTypes.string,
+  studioTitle: PropTypes.string,
   isExistingMovie: PropTypes.bool.isRequired,
   onPress: PropTypes.func.isRequired
 };

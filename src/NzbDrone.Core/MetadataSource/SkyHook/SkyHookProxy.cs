@@ -20,6 +20,7 @@ using NzbDrone.Core.Movies.Credits;
 using NzbDrone.Core.Movies.Performers;
 using NzbDrone.Core.Movies.Studios;
 using NzbDrone.Core.Parser;
+using NzbDrone.Core.Parser.Model;
 
 namespace NzbDrone.Core.MetadataSource.SkyHook
 {
@@ -714,10 +715,39 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             }
         }
 
-        public List<object> SearchForNewEntity(string title, ItemType itemType)
+        public List<object> SearchForNewEntity(string title, ItemType? itemType = null)
         {
-            var lowerTitle = title.ToLower();
+            if (title.IsNullOrWhiteSpace())
+            {
+                return null;
+            }
+
             var result = new List<object>();
+            var movieInfo = Parser.Parser.ParseMoviePath(title);
+
+            // Null is passed when a Filename is passed where the type is not set
+            if (itemType == null)
+            {
+                if (movieInfo != null)
+                {
+                    if (movieInfo.IsScene)
+                    {
+                        itemType = ItemType.Scene;
+                    }
+                    else
+                    {
+                        itemType = ItemType.Movie;
+                    }
+                }
+                else
+                {
+                    itemType = ItemType.Movie;
+                    _logger.Debug($"Unable to parse title {title} to determine if it's a movie or scene, defaulting to movie search");
+                }
+            }
+
+            title = FormatSearchTerm(title, itemType, movieInfo);
+            var lowerTitle = title.ToLower();
 
             if (lowerTitle.StartsWith("tmdb:") || lowerTitle.StartsWith("tmdbid:") || lowerTitle.StartsWith("imdb:") || lowerTitle.StartsWith("imdbid:") || lowerTitle.StartsWith("stash:") || lowerTitle.StartsWith("stashid:") || lowerTitle.StartsWith("https:"))
             {
@@ -1325,6 +1355,46 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             {
                 return externalIdResource.StashId;
             }
+        }
+
+        private string FormatSearchTerm(string title, ItemType? itemType, ParsedMovieInfo movieInfo)
+        {
+            if (movieInfo == null)
+            {
+                return title;
+            }
+
+            var isScene = movieInfo.IsScene && itemType != ItemType.Movie;
+            var isMovie = !movieInfo.IsScene && itemType != ItemType.Scene;
+
+            if (isScene)
+            {
+                if (movieInfo.StashId.IsNotNullOrWhiteSpace())
+                {
+                    title = $"stashid:{movieInfo.StashId}";
+                }
+                else
+                {
+                    // Format the Search
+                    if (movieInfo.ReleaseDate.IsNotNullOrWhiteSpace())
+                    {
+                        title = $"{movieInfo.StudioTitle} {movieInfo.ReleaseDate}";
+                    }
+                }
+            }
+            else if (isMovie)
+            {
+                if (movieInfo.TmdbId > 0)
+                {
+                    title = $"tmdb:{movieInfo.TmdbId}";
+                }
+                else if (movieInfo.ImdbId.IsNotNullOrWhiteSpace())
+                {
+                    title = $"imdb:{movieInfo.ImdbId}";
+                }
+            }
+
+            return title;
         }
 
         private Movie MapSearchResult(MovieResource result)

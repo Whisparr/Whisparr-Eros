@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
-import { deleteRootFolder } from 'Store/Actions/rootFolderActions';
+import { deleteRootFolder, refreshRootFolder } from 'Store/Actions/rootFolderActions';
 import ImportMovieRootFolderRow from './ImportMovieRootFolderRow';
 
 function createMapStateToProps() {
@@ -15,7 +15,8 @@ function createMapStateToProps() {
 }
 
 const mapDispatchToProps = {
-  deleteRootFolder
+  deleteRootFolder,
+  refreshRootFolder
 };
 
 class ImportMovieRootFolderRowConnector extends Component {
@@ -27,6 +28,10 @@ class ImportMovieRootFolderRowConnector extends Component {
     this.props.deleteRootFolder({ id: this.props.id });
   };
 
+  onRefreshPress = () => {
+    this.props.refreshRootFolder({ id: this.props.id });
+  };
+
   //
   // Render
 
@@ -35,6 +40,7 @@ class ImportMovieRootFolderRowConnector extends Component {
       <ImportMovieRootFolderRow
         {...this.props}
         onDeletePress={this.onDeletePress}
+        onRefreshPress={this.onRefreshPress}
       />
     );
   }
@@ -42,7 +48,8 @@ class ImportMovieRootFolderRowConnector extends Component {
 
 ImportMovieRootFolderRowConnector.propTypes = {
   id: PropTypes.number.isRequired,
-  deleteRootFolder: PropTypes.func.isRequired
+  deleteRootFolder: PropTypes.func.isRequired,
+  refreshRootFolder: PropTypes.func.isRequired
 };
 
 export default connect(createMapStateToProps, mapDispatchToProps)(ImportMovieRootFolderRowConnector);

@@ -198,7 +198,8 @@ namespace Whisparr.Api.V3.Movies
                     Runtime = resource.Runtime,
                     CleanTitle = resource.CleanTitle,
                     ImdbId = resource.ImdbId,
-                    TpdbId = resource.TpdbId
+                    TpdbId = resource.TpdbId,
+                    ItemType = resource.ItemType
                 },
 
                 Path = resource.Path,

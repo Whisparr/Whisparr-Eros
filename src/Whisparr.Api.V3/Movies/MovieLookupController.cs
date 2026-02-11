@@ -82,9 +82,24 @@ namespace Whisparr.Api.V3.Movies
 
         [HttpGet]
         [Produces("application/json")]
-        public IEnumerable<MovieResource> Search([FromQuery] string term)
+        public IEnumerable<MovieResource> Search([FromQuery] string term, [FromQuery] ItemType? itemType = null)
         {
-            var searchResults = _searchProxy.SearchForNewMovie(term);
+            var searchResults = new List<Movie>();
+
+            var results = _searchProxy.SearchForNewEntity(term, itemType);
+
+            if (results == null || !results.Any())
+            {
+                return Enumerable.Empty<MovieResource>();
+            }
+
+            foreach (var result in results)
+            {
+                if (result is Movie)
+                {
+                    searchResults.Add((Movie)result);
+                }
+            }
 
             return MapToResource(searchResults);
         }

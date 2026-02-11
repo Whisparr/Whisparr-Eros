@@ -3,10 +3,10 @@
 interface CssExports {
   'actions': string;
   'freeSpace': string;
+  'importFiles': string;
   'link': string;
   'unavailableLabel': string;
   'unavailablePath': string;
-  'unmappedFolders': string;
 }
 export const cssExports: CssExports;
 export default cssExports;

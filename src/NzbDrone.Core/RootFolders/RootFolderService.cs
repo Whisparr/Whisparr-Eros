@@ -2,31 +2,38 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using NLog;
 using NzbDrone.Common;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
+using NzbDrone.Common.Instrumentation.Extensions;
 using NzbDrone.Core.Configuration;
+using NzbDrone.Core.MediaFiles;
 using NzbDrone.Core.Movies;
 using NzbDrone.Core.Organizer;
+using NzbDrone.Core.Profiles.Qualities;
 
 namespace NzbDrone.Core.RootFolders
 {
     public interface IRootFolderService
     {
         List<RootFolder> All();
-        List<RootFolder> AllWithUnmappedFolders();
+        List<RootFolder> AllWithImportFiles();
         RootFolder Add(RootFolder rootDir);
         void Remove(int id);
-        RootFolder Get(int id, bool timeout, bool getMovieFolder);
+        RootFolder Get(int id);
+        RootFolder Refresh(int id);
         string GetBestRootFolderPath(string path, List<RootFolder> rootFolders = null);
     }
 
     public class RootFolderService : IRootFolderService
     {
         private readonly IRootFolderRepository _rootFolderRepository;
+        private readonly IQualityProfileRepository _profileRepository;
+        private readonly IImportFileRepository _importFileRepository;
         private readonly IDiskProvider _diskProvider;
         private readonly IMovieRepository _movieRepository;
         private readonly IConfigService _configService;
@@ -47,16 +54,22 @@ namespace NzbDrone.Core.RootFolders
                                                                      "@eadir",
                                                                      ".grab"
                                                                  };
+        private static readonly Regex ExcludedSubFoldersRegex = new Regex(@"(?:\\|\/|^)(?:@eadir|\.@__thumb|plex versions|\.[^\\/]+)(?:\\|\/)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex ExcludedFilesRegex = new Regex(@"^\._|^Thumbs\.db$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public RootFolderService(IRootFolderRepository rootFolderRepository,
-                                 IDiskProvider diskProvider,
-                                 IMovieRepository movieRepository,
-                                 IConfigService configService,
-                                 INamingConfigService namingConfigService,
-                                 ICacheManager cacheManager,
-                                 Logger logger)
+                                    IQualityProfileRepository profileRepository,
+                                    IImportFileRepository importFileRepository,
+                                    IDiskProvider diskProvider,
+                                    IMovieRepository movieRepository,
+                                    IConfigService configService,
+                                    INamingConfigService namingConfigService,
+                                    ICacheManager cacheManager,
+                                    Logger logger)
         {
             _rootFolderRepository = rootFolderRepository;
+            _profileRepository = profileRepository;
+            _importFileRepository = importFileRepository;
             _diskProvider = diskProvider;
             _movieRepository = movieRepository;
             _configService = configService;
@@ -73,7 +86,7 @@ namespace NzbDrone.Core.RootFolders
             return rootFolders;
         }
 
-        public List<RootFolder> AllWithUnmappedFolders()
+        public List<RootFolder> AllWithImportFiles()
         {
             var rootFolders = _rootFolderRepository.All().ToList();
 
@@ -93,7 +106,7 @@ namespace NzbDrone.Core.RootFolders
                 catch (Exception ex)
                 {
                     _logger.Error(ex, "Unable to get free space and unmapped folders for root folder {0}", folder.Path);
-                    folder.UnmappedFolders = new List<UnmappedFolder>();
+                    folder.ImportFiles = new List<ImportFile>();
                 }
             });
 
@@ -201,27 +214,11 @@ namespace NzbDrone.Core.RootFolders
             return results.OrderBy(u => u.Name, StringComparer.InvariantCultureIgnoreCase).ToList();
         }
 
-        public RootFolder Get(int id, bool timeout, bool getMovieFolder = false)
+        public RootFolder Get(int id)
         {
             var rootFolder = _rootFolderRepository.Get(id);
 
-            if (getMovieFolder)
-            {
-                var namingConfig = _namingConfigService.GetConfig();
-                var moviesFolderFormat = namingConfig.MovieFolderFormat;
-                var moviesFolderName = moviesFolderFormat.Split(new char[] { '\\', '/' }, StringSplitOptions.RemoveEmptyEntries)[0];
-
-                if (moviesFolderName == moviesFolderFormat)
-                {
-                    moviesFolderName = string.Empty;
-                }
-
-                rootFolder.Path = Path.Combine(rootFolder.Path, moviesFolderName);
-            }
-
-            var moviePaths = _movieRepository.AllMoviePaths();
-
-            GetDetails(rootFolder, moviePaths, timeout);
+            rootFolder.ImportFiles = _importFileRepository.FindByRootFolderId(rootFolder.Id);
 
             return rootFolder;
         }
@@ -240,7 +237,7 @@ namespace NzbDrone.Core.RootFolders
                     rootFolder.Accessible = true;
                     rootFolder.FreeSpace = _diskProvider.GetAvailableSpace(rootFolder.Path);
                     rootFolder.TotalSpace = _diskProvider.GetTotalSize(rootFolder.Path);
-                    rootFolder.UnmappedFolders = GetUnmappedFolders(rootFolder.Path, moviePaths);
+                    rootFolder.ImportFiles = _importFileRepository.FindByRootFolderId(rootFolder.Id);
                 }
             }).Wait(timeout ? 5000 : -1);
         }
@@ -259,6 +256,90 @@ namespace NzbDrone.Core.RootFolders
             }
 
             return possibleRootFolder.Path.GetCleanPath();
+        }
+
+        public RootFolder Refresh(int id)
+        {
+            var rootFolder = Get(id);
+
+            // We want to make sure we have the latest movie paths in case any have been added or removed since the root folder was loaded
+            var importFolder = GetImportFolder(rootFolder.Path);
+
+            var folderExists = _diskProvider.FolderExists(importFolder);
+
+            var mediaFileList = new List<string>();
+
+            if (folderExists)
+            {
+                _logger.ProgressInfo("Scanning {0}", importFolder);
+
+                var files = FilterFiles(importFolder, GetVideoFiles(importFolder).ToList());
+
+                if (!files.Any())
+                {
+                    _logger.Warn("Scan folder {0} is empty.", importFolder);
+                }
+
+                mediaFileList.AddRange(files);
+
+                _logger.ProgressInfo("Scanning {0} files found in {1}", mediaFileList.Count, importFolder);
+            }
+
+            var existingUnmappedFiles = _importFileRepository.FindByRootFolderId(id);
+
+            var newUnmappedFiles = mediaFileList.Select(f => new ImportFile
+            {
+                RootFolderId = id,
+                Path = f,
+                RelativePath = importFolder.GetRelativePath(f),
+                Name = Path.GetFileName(f)
+            }).ToList();
+
+            var toAdd = newUnmappedFiles.Where(n => !existingUnmappedFiles.Any(e => e.Path.PathEquals(n.Path))).ToList();
+            var toRemove = existingUnmappedFiles.Where(e => !newUnmappedFiles.Any(n => n.Path.PathEquals(e.Path))).ToList();
+
+            _logger.ProgressInfo("Scanning Adding {0} new files to the database in {1}", toAdd.Count, importFolder);
+            _logger.ProgressInfo("Scanning Cleaning {0} old files from the database in {1}", toRemove.Count, importFolder);
+
+            _importFileRepository.InsertMany(toAdd);
+            _importFileRepository.DeleteMany(toRemove.Select(u => u.Id).ToList());
+
+            var moviePaths = _movieRepository.AllMoviePaths();
+            GetDetails(rootFolder, moviePaths, true);
+
+            _logger.ProgressInfo("Scanning {0} Completed", importFolder);
+            return rootFolder;
+        }
+
+        private string GetImportFolder(string folder)
+        {
+            var rootFolder = folder;
+            var namingConfig = _namingConfigService.GetConfig();
+            var pattern = namingConfig.SceneImportFolderFormat ?? NamingConfig.Default.SceneImportFolderFormat;
+            var sceneImportFolderName = pattern.Split(new char[] { '\\', '/' }, StringSplitOptions.RemoveEmptyEntries)[0];
+            return Path.Combine(rootFolder, sceneImportFolderName);
+        }
+
+        private List<string> FilterFiles(string basePath, List<string> files)
+        {
+            return files.Where(file => !ExcludedSubFoldersRegex.IsMatch(basePath.GetRelativePath(file)))
+                        .Where(file => !ExcludedFilesRegex.IsMatch(file))
+                        .ToList();
+        }
+
+        private string[] GetVideoFiles(string path, bool allDirectories = true)
+        {
+            _logger.Debug("Scanning '{0}' for video files", path);
+
+            var filesOnDisk = _diskProvider.GetFiles(path, allDirectories).ToList();
+
+            var mediaFileList = filesOnDisk.Where(file => MediaFileExtensions.Extensions.Contains(Path.GetExtension(file)))
+                                           .ToList();
+
+            _logger.Trace("{0} files were found in {1}", filesOnDisk.Count, path);
+            _logger.Debug("{0} video files were found in {1}", mediaFileList.Count, path);
+
+            return mediaFileList.ToArray();
         }
     }
 }

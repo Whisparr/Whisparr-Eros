@@ -6,7 +6,7 @@ import { createSelector } from 'reselect';
 import createRouteMatchShape from 'Helpers/Props/Shapes/createRouteMatchShape';
 import { setAddMovieDefault } from 'Store/Actions/addMovieActions';
 import { clearImportMovie, importMovie, setImportMovieValue } from 'Store/Actions/importMovieActions';
-import { fetchRootFolders } from 'Store/Actions/rootFolderActions';
+import { fetchRootFolders, refreshRootFolder } from 'Store/Actions/rootFolderActions';
 import ImportMovie from './ImportMovie';
 
 function createMapStateToProps() {
@@ -61,7 +61,8 @@ const mapDispatchToProps = {
   dispatchImportMovie: importMovie,
   dispatchClearImportMovie: clearImportMovie,
   dispatchFetchRootFolders: fetchRootFolders,
-  dispatchSetAddMovieDefault: setAddMovieDefault
+  dispatchSetAddMovieDefault: setAddMovieDefault,
+  dispatchRefreshRootFolder: refreshRootFolder
 };
 
 class ImportMovieConnector extends Component {
@@ -116,6 +117,7 @@ class ImportMovieConnector extends Component {
 
   onImportPress = (ids) => {
     this.props.dispatchImportMovie({ ids });
+    this.props.dispatchRefreshRootFolder();
   };
 
   //
@@ -147,7 +149,8 @@ ImportMovieConnector.propTypes = {
   dispatchImportMovie: PropTypes.func.isRequired,
   dispatchClearImportMovie: PropTypes.func.isRequired,
   dispatchFetchRootFolders: PropTypes.func.isRequired,
-  dispatchSetAddMovieDefault: PropTypes.func.isRequired
+  dispatchSetAddMovieDefault: PropTypes.func.isRequired,
+  dispatchRefreshRootFolder: PropTypes.func.isRequired
 };
 
 export default connect(createMapStateToProps, mapDispatchToProps)(ImportMovieConnector);

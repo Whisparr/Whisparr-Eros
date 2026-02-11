@@ -20,6 +20,12 @@
   height: 35px;
 }
 
+.refreshButton {
+  composes: button from '~Components/Link/SpinnerButton.css';
+
+  height: 35px;
+}
+
 .loadingButton {
   composes: importButton;
 

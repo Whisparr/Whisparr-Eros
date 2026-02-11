@@ -97,10 +97,10 @@ class ImportMovieSelectMovie extends Component {
     this.props.onSearchInputChange(this.state.term);
   };
 
-  onMovieSelect = (tmdbId) => {
+  onMovieSelect = (foreignId) => {
     this.setState({ isOpen: false });
 
-    this.props.onMovieSelect(tmdbId);
+    this.props.onMovieSelect(foreignId);
   };
 
   //
@@ -146,21 +146,13 @@ class ImportMovieSelectMovie extends Component {
                 }
 
                 {
-                  isPopulated && selectedMovie && isExistingMovie ?
-                    <Icon
-                      className={styles.warningIcon}
-                      name={icons.WARNING}
-                      kind={kinds.WARNING}
-                    /> :
-                    null
-                }
-
-                {
                   isPopulated && selectedMovie ?
                     <ImportMovieTitle
+                      itemType={selectedMovie.itemType}
                       title={selectedMovie.title}
                       year={selectedMovie.year}
-                      studio={selectedMovie.studio}
+                      releaseDate={selectedMovie.releaseDate}
+                      studioTitle={selectedMovie.studioTitle}
                       isExistingMovie={isExistingMovie}
                     /> :
                     null
@@ -255,12 +247,13 @@ class ImportMovieSelectMovie extends Component {
                             items.map((item) => {
                               return (
                                 <ImportMovieSearchResultConnector
-                                  key={item.tmdbId}
-                                  tmdbId={item.tmdbId}
-                                  tpdbId={item.tpdbId}
+                                  key={item.foreignId}
+                                  foreignId={item.foreignId}
+                                  itemType={item.itemType}
                                   title={item.title}
                                   year={item.year}
-                                  studio={item.studio}
+                                  releaseDate={item.releaseDate}
+                                  studioTitle={item.studioTitle}
                                   onPress={this.onMovieSelect}
                                 />
                               );

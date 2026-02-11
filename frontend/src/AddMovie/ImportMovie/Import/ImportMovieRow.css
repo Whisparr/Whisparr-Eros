@@ -5,27 +5,28 @@
 .folder {
   composes: cell from '~Components/Table/Cells/VirtualTableRowCell.css';
 
-  flex: 1 0 200px;
+  flex: 0 1 400px;
+  min-width: 300px;
   line-height: 36px;
 }
 
 .monitor {
   composes: cell from '~Components/Table/Cells/VirtualTableRowCell.css';
 
-  flex: 0 1 200px;
-  min-width: 185px;
+  flex: 0 1 150px;
+  min-width: 85px;
 }
 
 .qualityProfile {
   composes: cell from '~Components/Table/Cells/VirtualTableRowCell.css';
 
-  flex: 0 1 250px;
+  flex: 0 1 170px;
   min-width: 170px;
 }
 
 .movie {
   composes: cell from '~Components/Table/Cells/VirtualTableRowCell.css';
 
-  flex: 0 1 400px;
-  min-width: 300px;
+  flex: 1 0 500px;
+  min-width: 400px;
 }
