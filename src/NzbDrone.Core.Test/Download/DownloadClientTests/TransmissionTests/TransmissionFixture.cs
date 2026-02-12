@@ -298,8 +298,8 @@ namespace NzbDrone.Core.Test.Download.DownloadClientTests.TransmissionTests
         }
 
         [TestCase(2147483648)] // 2038-01-19T03:14:08Z > int.MaxValue as unix timestamp can be either an int or a long
-        [TestCase(922337203685477)] // TimeSpan.MaxValue.TotalSeconds (should not overflow)
-        [TestCase(9223372036853736645)] // Way above TimeSpan.MaxValue.TotalSeconds (should cap to TimeSpan.MaxValue)
+        [TestCase(922337203685)] // TimeSpan.MaxValue.TotalSeconds (should not overflow)
+        [TestCase(922337203686)] // Way above TimeSpan.MaxValue.TotalSeconds (should cap to TimeSpan.MaxValue)
         public void should_support_long_values_for_eta_in_seconds(long eta)
         {
             _downloading.Eta = eta;
@@ -314,7 +314,7 @@ namespace NzbDrone.Core.Test.Download.DownloadClientTests.TransmissionTests
             }
             else
             {
-                item.RemainingTime.Should().BeLessOrEqualTo(TimeSpan.MaxValue);
+                item.RemainingTime.Should().BeGreaterThanOrEqualTo(TimeSpan.MaxValue);
             }
         }
 

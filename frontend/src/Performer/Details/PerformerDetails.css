@@ -69,16 +69,20 @@
 
 .titleContainer {
   display: flex;
-  margin-bottom: 5px;
+  align-items: center;
 }
 
 .title {
+  display: flex;
+  align-items: center;
   font-size: 50px;
-  line-height: 60px;
+  line-height: 1;
 }
 
 .performerName {
+  vertical-align: middle;
   font-weight: 300;
+  line-height: 1;
 }
 
 .unmonitored {
@@ -88,9 +92,9 @@
 
 .monitorToggleButtonsContainer {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   margin-right: 20px;
-  line-height: 60px;
+  line-height: 1;
 }
 
 .toggleMonitoredContainer,
@@ -102,6 +106,7 @@
   composes: toggleButton from '~Components/MonitorToggleButton.css';
 
   width: 30px;
+  vertical-align: middle;
 
   &:hover {
     color: var(--iconButtonHoverLightColor);
@@ -161,7 +166,10 @@
 }
 
 .gender{
-  margin: auto 15px;
+  display: flex;
+  align-items: center;
+  margin: 0 15px;
+  vertical-align: middle;
 }
 
 .details {
@@ -236,6 +244,8 @@
   }
 
   .title {
+    display:flex;
+    align-items: center;
     font-size: 30px;
     line-height: 30px;
   }
