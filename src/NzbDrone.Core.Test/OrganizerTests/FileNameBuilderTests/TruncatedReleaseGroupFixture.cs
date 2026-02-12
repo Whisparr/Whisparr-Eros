@@ -61,7 +61,6 @@ namespace NzbDrone.Core.Test.OrganizerTests.FileNameBuilderTests
             _namingConfig.StandardMovieFormat = "{Movie Title} ({Release Year}) {Quality Full}-{ReleaseGroup:12}";
 
             var result = Subject.BuildFileName(_movie, _movieFile);
-            result.Length.Should().BeLessOrEqualTo(255);
             result.Should().Be("The Fantastic Life of Mr. Sisko (2024) Bluray-1080p-IWishIWas...");
         }
 
@@ -75,7 +74,6 @@ namespace NzbDrone.Core.Test.OrganizerTests.FileNameBuilderTests
             _namingConfig.StandardMovieFormat = "{Movie Title} ({Release Year}) {Quality Full}-{ReleaseGroup:-17}";
 
             var result = Subject.BuildFileName(_movie, _movieFile);
-            result.Length.Should().BeLessOrEqualTo(255);
             result.Should().Be("The Fantastic Life of Mr. Sisko (2024) Bluray-1080p-...ASixFourImpala");
         }
     }

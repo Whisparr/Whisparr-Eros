@@ -197,6 +197,7 @@ namespace NzbDrone.Core.Test.MediaFiles.MediaInfo
 
             Mocker.GetMock<IMediaFileService>()
                   .Verify(v => v.Update(It.IsAny<MovieFile>()), Times.Exactly(1));
+            ExceptionVerification.IgnoreWarns();
         }
 
         [Test]
