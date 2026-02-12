@@ -309,48 +309,44 @@ function PerformerDetails() {
               <div className={styles.titleRow}>
                 <div className={styles.titleContainer}>
                   <div className={styles.monitorToggleButtonsContainer}>
-                    <div className={styles.toggleMonitoredContainer}>
+                    <MonitorToggleButton
+                      className={
+                        monitored
+                          ? styles.monitorToggleButton
+                          : `${styles.monitorToggleButton} ${styles.unmonitored}`
+                      }
+                      monitored={monitored}
+                      moviesMonitored={moviesMonitored}
+                      type="sceneMonitor"
+                      isSaving={isSaving}
+                      size={30}
+                      onPress={handleMonitorTogglePress}
+                    />
+
+                    {showMovieMonitorToggle() ? (
                       <MonitorToggleButton
                         className={
-                          monitored
+                          moviesMonitored
                             ? styles.monitorToggleButton
                             : `${styles.monitorToggleButton} ${styles.unmonitored}`
                         }
                         monitored={monitored}
                         moviesMonitored={moviesMonitored}
-                        type="sceneMonitor"
+                        type="movieMonitor"
                         isSaving={isSaving}
                         size={30}
                         onPress={handleMonitorTogglePress}
                       />
-                    </div>
-
-                    <div className={styles.toggleMonitoredContainer}>
-                      {showMovieMonitorToggle() ? (
-                        <MonitorToggleButton
-                          className={
-                            moviesMonitored
-                              ? styles.monitorToggleButton
-                              : `${styles.monitorToggleButton} ${styles.unmonitored}`
-                          }
-                          monitored={monitored}
-                          moviesMonitored={moviesMonitored}
-                          type="movieMonitor"
-                          isSaving={isSaving}
-                          size={30}
-                          onPress={handleMonitorTogglePress}
-                        />
-                      ) : null}
-                    </div>
+                    ) : null}
                   </div>
                   <div className={styles.title}>
                     <span className={styles.performerName}>{fullName}</span>
-                    <PerformerGenderIcon
-                      className={styles.gender}
-                      gender={gender}
-                      size={34}
-                    />
                   </div>
+                  <PerformerGenderIcon
+                    className={styles.gender}
+                    gender={gender}
+                    size={34}
+                  />
                 </div>
               </div>
               <div className={styles.metadata}>
