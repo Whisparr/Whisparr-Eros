@@ -1,27 +1,34 @@
 import ModelBase from 'App/ModelBase';
-import Movie, { Image } from 'Movie/Movie';
 
+export type CoverType = 'poster' | 'fanart' | 'screenshot' | 'clearlogo';
+
+export interface Image {
+  coverType: CoverType;
+  url: string;
+  remoteUrl: string;
+}
 interface Studio extends ModelBase {
+  id: number;
   foreignId: string;
   tmdbId: number;
   tpdbId: string;
   title: string;
-  network: string;
-  monitored: boolean;
-  moviesMonitored: boolean;
-  images: Image[];
-  sortTitle: string;
-  movieCount: number;
-  totalMovieCount: number;
-  sceneCount: number;
-  totalSceneCount: number;
-  hasScenes: boolean;
-  hasMovies: boolean;
-  tags: number[];
   aliases: string[];
+  hasMovies: boolean;
+  hasScenes: boolean;
+  images: Image[];
+  monitored: boolean;
+  movieCount: number;
+  moviesMonitored: boolean;
+  network: string;
+  qualityProfileId: number;
   rootFolderPath: string;
+  sceneCount: number;
+  sortTitle: string;
+  tags: number[];
+  totalMovieCount: number;
+  totalSceneCount: number;
   website: string;
-  movies: Movie[];
 }
 
 export default Studio;

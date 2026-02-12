@@ -9,6 +9,7 @@ using NLog;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Configuration;
+using NzbDrone.Core.Datastore;
 using NzbDrone.Core.Datastore.Events;
 using NzbDrone.Core.ImportLists.ImportExclusions;
 using NzbDrone.Core.MediaCover;
@@ -18,7 +19,9 @@ using NzbDrone.Core.Movies.Studios;
 using NzbDrone.Core.Movies.Studios.Events;
 using NzbDrone.Core.MovieStats;
 using NzbDrone.SignalR;
+using Whisparr.Api.V3.Movies;
 using Whisparr.Http;
+using Whisparr.Http.Extensions;
 using Whisparr.Http.REST;
 using Whisparr.Http.REST.Attributes;
 
@@ -27,6 +30,18 @@ namespace Whisparr.Api.V3.Studios
     [V3ApiController]
     public class StudioController : RestControllerWithSignalR<StudioResource, Studio>, IHandle<StudioUpdatedEvent>
     {
+        private static readonly HashSet<string> _allowedStudioSortKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "title",
+                "sortTitle",
+                "status",
+                "qualityProfileId",
+                "rootFolderPath",
+                "totalMovieCount",
+                "totalSceneCount",
+                "sizeOnDisk"
+            };
+
         private readonly IStudioService _studioService;
         private readonly IAddStudioService _addStudioService;
         private readonly IMapCoversToLocal _coverMapper;
@@ -90,6 +105,89 @@ namespace Whisparr.Api.V3.Studios
             FetchAndLinkMovies(resource);
 
             return resource;
+        }
+
+        /// <summary>Retrieves a single studio by their external foreign ID (e.g., from StashDb)</summary>
+        /// <returns>Studio details with associated movies and local cover URLs</returns>
+        /// <response code="200">Studio found and returned</response>
+        /// <response code="404">Studio with the specified foreign ID not found</response>
+        [HttpGet("{studioForeignId}")]
+        [Produces("application/json")]
+        public ActionResult<StudioResource> GetStudioByForeignId(string studioForeignId)
+        {
+            var studioResource = GetCachedStudioResource(studioForeignId);
+            if (studioResource == null || studioResource.ForeignId != studioForeignId)
+            {
+                return NotFound();
+            }
+
+            return studioResource;
+        }
+
+        /// <summary>Retrieves all movies associated with a studio by their external foreign ID (e.g., from StashDb)</summary>
+        /// <returns>List of movies associated with the studio</returns>
+        /// <response code="200">Movies found and returned</response>
+        /// <response code="404">Studio with the specified foreign ID not found</response>
+        [HttpGet("{studioForeignId}/works")]
+        public ActionResult<List<MovieResource>> GetMoviesByStudioForeignId(string studioForeignId)
+        {
+            var studio = GetCachedStudioResource(studioForeignId);
+            if (studio == null || studio.ForeignId != studioForeignId)
+            {
+                return NotFound();
+            }
+
+            var movies = _moviesService.GetByStudioForeignId(studioForeignId);
+            var movieResources = movies
+                .Select(m => MovieResourceMapper.ToResource(m, 0))
+                .Where(r => r != null)
+                .ToList();
+
+            var movieIds = movieResources.Select(r => r.Id).ToList();
+            var movieStats = _movieStatisticsService.MovieStatistics(movieIds);
+            foreach (var resource in movieResources)
+            {
+                var stats = movieStats.FirstOrDefault(s => s.MovieId == resource.Id);
+                if (stats != null)
+                {
+                    resource.SizeOnDisk = stats.SizeOnDisk;
+                    resource.HasFile = stats.SizeOnDisk > 0;
+                }
+            }
+
+            return movieResources;
+        }
+
+        /// <summary>Retrieves a paged list of studios with advanced filtering options</summary>
+        /// <param name="request">Paging and filtering parameters</param>
+        /// <returns>Paged list of studios matching the specified criteria</returns>
+        [HttpPost("paged")]
+        [Consumes("application/json")]
+        [Produces("application/json")]
+        public ActionResult<PagingResource<StudioResource>> GetStudiosPagedPost([FromBody] StudioPagingRequestResource request)
+        {
+            if (request == null)
+            {
+                _logger.Error("Paged studio request is null. Check the request body and route.");
+                return BadRequest("Request body is null or invalid.");
+            }
+
+            var pagingResource = new PagingResource<StudioResource>(request);
+            var pageSpec = pagingResource.MapToPagingSpec<StudioResource, Studio>(
+                _allowedStudioSortKeys,
+                "sortTitle",
+                SortDirection.Ascending);
+
+            // Get file info once for bulk operation
+            var coverFileInfos = _coverMapper.GetStudioCoverFileInfos();
+
+            return pageSpec.ApplyToPage(_studioService.Paged, studio =>
+            {
+                var studioResource = studio.ToResource();
+                _coverMapper.ConvertToLocalStudioUrls(studioResource.Id, studioResource.Images, coverFileInfos);
+                FetchAndLinkMovies(studioResource);
+                return studioResource;
+            });
         }
 
         [HttpGet]
@@ -233,6 +331,39 @@ namespace Whisparr.Api.V3.Studios
             var ids = movies.Map(x => x.Id).ToList();
             var movieStats = _movieStatisticsService.MovieStatistics(ids);
             resource.SizeOnDisk = movieStats.Sum(x => x.SizeOnDisk);
+        }
+
+        private StudioResource GetCachedStudioResource(string studioForeignId)
+        {
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+            _logger.Trace($"GetCachedStudioResource: {studioForeignId}");
+
+            var studioResource = _studioResourceCache.Find(studioForeignId);
+            if (studioResource != null)
+            {
+                return studioResource;
+            }
+
+            var studio = _studioService.FindByForeignId(studioForeignId);
+            if (studio == null)
+            {
+                return null;
+            }
+
+            studioResource = MapToResource(studio);
+            var coverFileInfos = _coverMapper.GetStudioCoverFileInfos();
+            _coverMapper.ConvertToLocalStudioUrls(studioResource.Id, studioResource.Images);
+            FetchAndLinkMovies(studioResource);
+
+            _studioResourceCache.Set(studioForeignId, studioResource);
+
+            if (stopwatch.Elapsed.TotalSeconds > 1)
+            {
+                _logger.Warn($"Processed studio cache for {studioForeignId} after {stopwatch.Elapsed.TotalSeconds} seconds");
+            }
+
+            return studioResource;
         }
 
         private StudioResource GetStudioResource(string studioForeignId)

@@ -30,8 +30,8 @@ namespace Whisparr.Api.V3.Studios
         public HashSet<int> Tags { get; set; }
         public bool HasMovies { get; set; }
         public bool HasScenes { get; set; }
-        public int TotalMovieCount { get; internal set; }
-        public int TotalSceneCount { get; internal set; }
+        public int TotalMovieCount { get; set; }
+        public int TotalSceneCount { get; set; }
         public int MovieCount { get; set; }
         public int SceneCount { get; set; }
         public List<int> Years { get; set; }
@@ -68,7 +68,12 @@ namespace Whisparr.Api.V3.Studios
                 RootFolderPath = model.RootFolderPath,
                 SearchOnAdd = model.SearchOnAdd,
                 Aliases = model.Aliases,
-                Tags = model.Tags
+                Tags = model.Tags,
+                MovieCount = model.MovieCount,
+                SceneCount = model.SceneCount,
+                TotalMovieCount = model.TotalMovieCount,
+                TotalSceneCount = model.TotalSceneCount,
+                SizeOnDisk = model.SizeOnDisk
             };
         }
 
