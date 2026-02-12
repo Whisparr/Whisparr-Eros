@@ -726,26 +726,11 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             var movieInfo = Parser.Parser.ParseMoviePath(title);
 
             // Null is passed when a Filename is passed where the type is not set
-if (itemType == null)
-{
-    itemType = movieInfo?.IsScene == true ? ItemType.Scene : ItemType.Movie;
-    
-    if (movieInfo == null)
-    {
-        _logger.Debug($"Unable to parse title {title} to determine if it's a movie or scene, defaulting to movie search");
-    }
-}
+            if (itemType == null)
             {
                 if (movieInfo != null)
                 {
-                    if (movieInfo.IsScene)
-                    {
-                        itemType = ItemType.Scene;
-                    }
-                    else
-                    {
-                        itemType = ItemType.Movie;
-                    }
+                    itemType = movieInfo?.IsScene == true ? ItemType.Scene : ItemType.Movie;
                 }
                 else
                 {
@@ -1372,33 +1357,28 @@ if (itemType == null)
                 return title;
             }
 
-            var isScene = movieInfo.IsScene && itemType != ItemType.Movie;
-            var isMovie = !movieInfo.IsScene && itemType != ItemType.Scene;
-
-            if (isScene)
+            if (movieInfo.IsScene && itemType != ItemType.Movie)
             {
                 if (movieInfo.StashId.IsNotNullOrWhiteSpace())
                 {
-                    title = $"stashid:{movieInfo.StashId}";
+                    return $"stashid:{movieInfo.StashId}";
                 }
-                else
+
+                if (movieInfo.ReleaseDate.IsNotNullOrWhiteSpace())
                 {
-                    // Format the Search
-                    if (movieInfo.ReleaseDate.IsNotNullOrWhiteSpace())
-                    {
-                        title = $"{movieInfo.StudioTitle} {movieInfo.ReleaseDate}";
-                    }
+                    return $"{movieInfo.StudioTitle} {movieInfo.ReleaseDate}";
                 }
             }
-            else if (isMovie)
+            else if (!movieInfo.IsScene && itemType != ItemType.Scene)
             {
                 if (movieInfo.TmdbId > 0)
                 {
-                    title = $"tmdb:{movieInfo.TmdbId}";
+                    return $"tmdb:{movieInfo.TmdbId}";
                 }
-                else if (movieInfo.ImdbId.IsNotNullOrWhiteSpace())
+
+                if (movieInfo.ImdbId.IsNotNullOrWhiteSpace())
                 {
-                    title = $"imdb:{movieInfo.ImdbId}";
+                    return $"imdb:{movieInfo.ImdbId}";
                 }
             }
 
