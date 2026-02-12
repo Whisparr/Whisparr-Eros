@@ -165,6 +165,18 @@ namespace Whisparr.Api.V3.Performers
                 .Where(r => r != null)
                 .ToList();
 
+            var movieIds = movieResources.Select(r => r.Id).ToList();
+            var movieStats = _movieStatisticsService.MovieStatistics(movieIds);
+            foreach (var resource in movieResources)
+            {
+                var stats = movieStats.FirstOrDefault(s => s.MovieId == resource.Id);
+                if (stats != null)
+                {
+                    resource.SizeOnDisk = stats.SizeOnDisk;
+                    resource.HasFile = stats.SizeOnDisk > 0;
+                }
+            }
+
             return movieResources;
         }
 
