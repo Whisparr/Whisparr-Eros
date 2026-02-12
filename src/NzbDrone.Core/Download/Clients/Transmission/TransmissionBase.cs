@@ -96,13 +96,17 @@ namespace NzbDrone.Core.Download.Clients.Transmission
                         // TimeSpan.FromSeconds accepts double, but TimeSpan itself has a max value
                         // Use FromSeconds if within range, otherwise try FromMilliseconds, else cap
                         // 29,219 years is well beyond any reasonable ETA for a download
-                        if (torrent.Eta <= (long)TimeSpan.MaxValue.TotalSeconds)
+                        // Transmission reports ETA in seconds, but some builds return milliseconds when the value
+                        // grows very large. Use a heuristic to treat huge values as milliseconds.
+                        if (torrent.Eta >= 1000L * int.MaxValue)
+                        {
+                            item.RemainingTime = torrent.Eta <= (long)TimeSpan.MaxValue.TotalMilliseconds
+                                ? TimeSpan.FromMilliseconds(torrent.Eta)
+                                : TimeSpan.MaxValue;
+                        }
+                        else if (torrent.Eta < (long)Math.Floor(TimeSpan.MaxValue.TotalSeconds))
                         {
                             item.RemainingTime = TimeSpan.FromSeconds(torrent.Eta);
-                        }
-                        else if (torrent.Eta <= (long)TimeSpan.MaxValue.TotalMilliseconds)
-                        {
-                            item.RemainingTime = TimeSpan.FromMilliseconds(torrent.Eta);
                         }
                         else
                         {
@@ -313,9 +317,9 @@ namespace NzbDrone.Core.Download.Clients.Transmission
                 _logger.Error(ex, ex.Message);
 
                 return new NzbDroneValidationFailure("Host", _localizationService.GetLocalizedString("DownloadClientValidationUnableToConnect", new Dictionary<string, object> { { "clientName", Name } }))
-                       {
-                           DetailedDescription = ex.Message
-                       };
+                {
+                    DetailedDescription = ex.Message
+                };
             }
             catch (Exception ex)
             {
