@@ -726,7 +726,15 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             var movieInfo = Parser.Parser.ParseMoviePath(title);
 
             // Null is passed when a Filename is passed where the type is not set
-            if (itemType == null)
+if (itemType == null)
+{
+    itemType = movieInfo?.IsScene == true ? ItemType.Scene : ItemType.Movie;
+    
+    if (movieInfo == null)
+    {
+        _logger.Debug($"Unable to parse title {title} to determine if it's a movie or scene, defaulting to movie search");
+    }
+}
             {
                 if (movieInfo != null)
                 {
