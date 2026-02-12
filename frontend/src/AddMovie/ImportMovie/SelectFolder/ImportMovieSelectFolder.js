@@ -27,8 +27,8 @@ const rootFolderColumns = [
     isVisible: true
   },
   {
-    name: 'unmappedFolders',
-    label: () => translate('UnmappedFolders'),
+    name: 'importFiles',
+    label: () => translate('ImportFiles'),
     isVisible: true
   },
   {
@@ -70,7 +70,6 @@ class ImportMovieSelectFolder extends Component {
 
   render() {
     const {
-      isWindows,
       isFetching,
       isPopulated,
       isSaving,
@@ -109,31 +108,24 @@ class ImportMovieSelectFolder extends Component {
                       <div className={styles.header}>
                         {translate('ImportHeader')}
                       </div>
-
-                      <div className={styles.tips}>
-                        {translate('ImportTipsMessage')}
-                        <ul>
-                          <li className={styles.tip} dangerouslySetInnerHTML={{ __html: translate('ImportIncludeQuality', ['<code>movie.2008.bluray.mkv</code>']) }} />
-                          <li className={styles.tip} dangerouslySetInnerHTML={{ __html: translate('ImportRootPath', [`<code>${isWindows ? 'C:\\movies' : '/movies'}</code>`, `<code>${isWindows ? 'C:\\movies\\the matrix' : '/movies/the matrix'}</code>`]) }} />
-                          <li className={styles.tip}>{translate('ImportNotForDownloads')}</li>
-                        </ul>
-                      </div>
                     </> :
                     <>
                       <div className={styles.header}>
                         {translate('ImportScenesHeader')}
                       </div>
-
-                      <div className={styles.tips}>
-                        {translate('ImportTipsMessage')}
-                        <ul>
-                          <li className={styles.tip} dangerouslySetInnerHTML={{ __html: translate('ImportIncludeStudioDateQuality', ['<code>studio.releaseDate.title.bluray.mkv</code>']) }} />
-                          <li className={styles.tip} dangerouslySetInnerHTML={{ __html: translate('ImportScenesRootPath', [`<code>${isWindows ? 'C:\\root' : '/root'}</code>`, `<code>${isWindows ? 'C:\\root\\scenes\\the matrix' : '/root/scenes/the matrix'}</code>`]) }} />
-                          <li className={styles.tip}>{translate('ImportNotForDownloads')}</li>
-                        </ul>
-                      </div>
                     </>
                 }
+
+                <div className={styles.tips}>
+                  {translate('ImportTipsMessage')}
+                  <ul>
+                    <li className={styles.tip} dangerouslySetInnerHTML={{ __html: translate('ImportStep1') }} />
+                    <li className={styles.tip} dangerouslySetInnerHTML={{ __html: translate('ImportStep2') }} />
+                    <li className={styles.tip} dangerouslySetInnerHTML={{ __html: translate('ImportStep3') }} />
+                    <li className={styles.tip} dangerouslySetInnerHTML={{ __html: translate('ImportStep4') }} />
+                    <li className={styles.tip} dangerouslySetInnerHTML={{ __html: translate('ImportStep5') }} />
+                  </ul>
+                </div>
 
                 {
                   hasRootFolders ?
@@ -151,7 +143,7 @@ class ImportMovieSelectFolder extends Component {
                                     id={rootFolder.id}
                                     path={rootFolder.path}
                                     freeSpace={rootFolder.freeSpace}
-                                    unmappedFolders={rootFolder.unmappedFolders}
+                                    importFiles={rootFolder.importFiles}
                                   />
                                 );
                               })

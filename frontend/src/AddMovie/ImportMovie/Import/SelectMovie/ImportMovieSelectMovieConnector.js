@@ -38,7 +38,7 @@ class ImportMovieSelectMovieConnector extends Component {
     });
   };
 
-  onMovieSelect = (tmdbId) => {
+  onMovieSelect = (foreignId) => {
     const {
       id,
       items
@@ -46,7 +46,7 @@ class ImportMovieSelectMovieConnector extends Component {
 
     this.props.setImportMovieValue({
       id,
-      selectedMovie: _.find(items, { tmdbId })
+      selectedMovie: _.find(items, { foreignId })
     });
   };
 

@@ -82,6 +82,10 @@ class ImportMovie extends Component {
     });
   };
 
+  onRefreshPress = () => {
+    this.props.onRefreshPress();
+  };
+
   //
   // Render
 
@@ -92,7 +96,7 @@ class ImportMovie extends Component {
       rootFoldersFetching,
       rootFoldersError,
       rootFoldersPopulated,
-      unmappedFolders
+      importFiles
     } = this.props;
 
     const {
@@ -120,7 +124,7 @@ class ImportMovie extends Component {
             !rootFoldersError &&
             !rootFoldersFetching &&
             rootFoldersPopulated &&
-            !unmappedFolders.length ?
+            !importFiles.length ?
               <Alert kind={kinds.INFO}>
                 {translate('AllMoviesInPathHaveBeenImported', { path })}
               </Alert> :
@@ -131,11 +135,11 @@ class ImportMovie extends Component {
             !rootFoldersError &&
             !rootFoldersFetching &&
             rootFoldersPopulated &&
-            !!unmappedFolders.length &&
+            !!importFiles.length &&
             this.scrollerRef.current ?
               <ImportMovieTableConnector
                 rootFolderId={rootFolderId}
-                unmappedFolders={unmappedFolders}
+                importFiles={importFiles}
                 allSelected={allSelected}
                 allUnselected={allUnselected}
                 selectedState={selectedState}
@@ -151,11 +155,12 @@ class ImportMovie extends Component {
         {
           !rootFoldersError &&
           !rootFoldersFetching &&
-          !!unmappedFolders.length ?
+          !!importFiles.length ?
             <ImportMovieFooterConnector
               selectedIds={this.getSelectedIds()}
               onInputChange={this.onInputChange}
               onImportPress={this.onImportPress}
+              onRefreshPress={this.onRefreshPress}
               rootFolderId={rootFolderId}
             /> :
             null
@@ -171,14 +176,15 @@ ImportMovie.propTypes = {
   rootFoldersFetching: PropTypes.bool.isRequired,
   rootFoldersPopulated: PropTypes.bool.isRequired,
   rootFoldersError: PropTypes.object,
-  unmappedFolders: PropTypes.arrayOf(PropTypes.object),
+  importFiles: PropTypes.arrayOf(PropTypes.object),
   items: PropTypes.arrayOf(PropTypes.object),
   onInputChange: PropTypes.func.isRequired,
-  onImportPress: PropTypes.func.isRequired
+  onImportPress: PropTypes.func.isRequired,
+  onRefreshPress: PropTypes.func.isRequired
 };
 
 ImportMovie.defaultProps = {
-  unmappedFolders: []
+  importFiles: []
 };
 
 export default ImportMovie;

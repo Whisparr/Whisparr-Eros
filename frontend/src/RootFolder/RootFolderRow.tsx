@@ -7,7 +7,11 @@ import ConfirmModal from 'Components/Modal/ConfirmModal';
 import TableRowCell from 'Components/Table/Cells/TableRowCell';
 import TableRow from 'Components/Table/TableRow';
 import { icons, kinds } from 'Helpers/Props';
-import { deleteRootFolder } from 'Store/Actions/rootFolderActions';
+import {
+  deleteRootFolder,
+  refreshRootFolder,
+} from 'Store/Actions/rootFolderActions';
+import ImportFile from 'typings/ImportFile';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
 import styles from './RootFolderRow.css';
@@ -17,16 +21,21 @@ interface RootFolderRowProps {
   path: string;
   accessible: boolean;
   freeSpace?: number;
+  importFiles: ImportFile[];
 }
 
 function RootFolderRow(props: RootFolderRowProps) {
-  const { id, path, accessible, freeSpace = 0 } = props;
+  const { id, path, accessible, freeSpace = 0, importFiles = [] } = props;
 
   const isUnavailable = !accessible;
 
   const dispatch = useDispatch();
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  const onRefreshPress = useCallback(() => {
+    dispatch(refreshRootFolder({ id }));
+  }, [dispatch, id]);
 
   const onDeletePress = useCallback(() => {
     setIsDeleteModalOpen(true);
@@ -54,7 +63,9 @@ function RootFolderRow(props: RootFolderRowProps) {
             </Label>
           </div>
         ) : (
-          <Link className={styles.link}>{path}</Link>
+          <Link className={styles.link} to={`/add/import/${id}`}>
+            {path}
+          </Link>
         )}
       </TableRowCell>
 
@@ -64,7 +75,16 @@ function RootFolderRow(props: RootFolderRowProps) {
           : formatBytes(freeSpace)}
       </TableRowCell>
 
+      <TableRowCell className={styles.importFiles}>
+        {isUnavailable ? '-' : importFiles.length}
+      </TableRowCell>
+
       <TableRowCell className={styles.actions}>
+        <IconButton
+          title={translate('ScanImportFolder')}
+          name={icons.REFRESH}
+          onPress={onRefreshPress}
+        />
         <IconButton
           title={translate('RemoveRootFolder')}
           name={icons.REMOVE}

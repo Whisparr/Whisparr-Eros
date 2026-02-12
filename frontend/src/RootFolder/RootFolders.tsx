@@ -23,6 +23,11 @@ const rootFolderColumns: Column[] = [
     isVisible: true,
   },
   {
+    name: 'importFiles',
+    label: () => translate('ImportFiles'),
+    isVisible: true,
+  },
+  {
     name: 'actions',
     label: '',
     isVisible: true,
@@ -61,6 +66,7 @@ function RootFolders() {
               path={rootFolder.path}
               accessible={rootFolder.accessible}
               freeSpace={rootFolder.freeSpace}
+              importFiles={rootFolder.importFiles}
             />
           );
         })}

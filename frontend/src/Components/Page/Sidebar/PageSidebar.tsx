@@ -57,7 +57,7 @@ const LINKS: SidebarItem[] = [
       },
       {
         title: () => translate('ImportScenes'),
-        to: '/unmapped',
+        to: '/add/import/scenes',
       },
     ],
   },
@@ -72,7 +72,7 @@ const LINKS: SidebarItem[] = [
         to: '/add/new/movie',
       },
       {
-        title: () => translate('ImportLibrary'),
+        title: () => translate('ImportMovies'),
         to: '/add/import/movies',
       },
       {

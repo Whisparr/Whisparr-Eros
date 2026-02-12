@@ -25,6 +25,11 @@ class ImportMovies extends Component {
         />
 
         <Route
+          path="/add/import/:rootFolderId"
+          component={ImportMovieConnector}
+        />
+
+        <Route
           path="/add/import/movies/:rootFolderId"
           component={ImportMovieConnector}
         />

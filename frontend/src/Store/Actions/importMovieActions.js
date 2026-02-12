@@ -221,7 +221,8 @@ export const actionHandlers = handleThunks({
 
       // Make sure we have a selected movie and
       // the same movie hasn't been added yet.
-      if (selectedMovie && !acc.some((a) => a.tmdbId === selectedMovie.tmdbId)) {
+      if (selectedMovie && !acc.some((a) => a.foreignId === selectedMovie.foreignId)) {
+        item.monitored = item.monitor === 'movieOnly';
         const newMovie = getNewMovie(_.cloneDeep(selectedMovie), item);
         newMovie.path = item.path;
 

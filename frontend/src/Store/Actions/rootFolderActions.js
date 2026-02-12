@@ -18,6 +18,7 @@ export const defaultState = {
   isFetching: false,
   isPopulated: false,
   error: null,
+  isRefreshing: false,
   isSaving: false,
   saveError: null,
   items: []
@@ -29,6 +30,7 @@ export const defaultState = {
 export const FETCH_ROOT_FOLDERS = 'rootFolders/fetchRootFolders';
 export const ADD_ROOT_FOLDER = 'rootFolders/addRootFolder';
 export const DELETE_ROOT_FOLDER = 'rootFolders/deleteRootFolder';
+export const REFRESH_ROOT_FOLDER = 'rootFolders/refreshRootFolder';
 
 //
 // Action Creators
@@ -36,6 +38,7 @@ export const DELETE_ROOT_FOLDER = 'rootFolders/deleteRootFolder';
 export const fetchRootFolders = createThunk(FETCH_ROOT_FOLDERS);
 export const addRootFolder = createThunk(ADD_ROOT_FOLDER);
 export const deleteRootFolder = createThunk(DELETE_ROOT_FOLDER);
+export const refreshRootFolder = createThunk(REFRESH_ROOT_FOLDER);
 
 //
 // Action Handlers
@@ -49,6 +52,44 @@ export const actionHandlers = handleThunks({
     '/rootFolder',
     (state) => state.rootFolders
   ),
+
+  [REFRESH_ROOT_FOLDER]: function(getState, payload, dispatch) {
+    const id = payload.id;
+
+    dispatch(set({
+      section,
+      isRefreshing: true
+    }));
+
+    const promise = createAjaxRequest({
+      url: `/rootFolder/refresh/${id}`,
+      method: 'POST',
+      dataType: 'json'
+    }).request;
+
+    promise.done((data) => {
+      dispatch(batchActions([
+        updateItem({
+          section,
+          ...data
+        }),
+
+        set({
+          section,
+          isRefreshing: false,
+          saveError: null
+        })
+      ]));
+    });
+
+    promise.fail((xhr) => {
+      dispatch(set({
+        section,
+        isRefreshing: false,
+        saveError: xhr
+      }));
+    });
+  },
 
   [ADD_ROOT_FOLDER]: function(getState, payload, dispatch) {
     const path = payload.path;
