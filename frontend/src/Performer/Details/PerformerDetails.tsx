@@ -2,6 +2,7 @@ import _ from 'lodash';
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
+import Flag from 'react-world-flags';
 import AppState from 'App/State/AppState';
 import Alert from 'Components/Alert';
 import FieldSet from 'Components/FieldSet';
@@ -178,6 +179,7 @@ function PerformerDetails() {
       : formatDate(performer.birthDate, shortDateFormat);
   const ethnicity = performer.ethnicity;
   const country = performer.country;
+  const flagIconCode = country.toLowerCase();
   const careerStart = performer.careerStart;
   const careerEnd = performer.careerEnd;
   const qualityProfileId = performer.qualityProfileId;
@@ -347,6 +349,13 @@ function PerformerDetails() {
                     gender={gender}
                     size={34}
                   />
+                  {!!country && (
+                    <Flag
+                      className={styles.country}
+                      code={flagIconCode}
+                      height={38}
+                    />
+                  )}
                 </div>
               </div>
               <div className={styles.metadata}>
@@ -369,16 +378,6 @@ function PerformerDetails() {
                     >
                       <Icon name={icons.CAKE} size={17} />
                       <span className={styles.birthDate}>{formatedAge}</span>
-                    </Label>
-                  )}
-                  {!!country && (
-                    <Label
-                      className={styles.metadataLabel}
-                      title={translate('Nationality')}
-                      size={sizes.LARGE}
-                    >
-                      <Icon name={icons.FLAG} size={17} />
-                      <span className={styles.country}>{country}</span>
                     </Label>
                   )}
                   {!!ethnicity && (
