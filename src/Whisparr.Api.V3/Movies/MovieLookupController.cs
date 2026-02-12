@@ -13,6 +13,10 @@ using Whisparr.Http.REST;
 
 namespace Whisparr.Api.V3.Movies
 {
+    /// <summary>
+    /// Controller that exposes endpoints to lookup movie metadata from external sources
+    /// and search for new movies that can be added to the system.
+    /// </summary>
     [V3ApiController("movie/lookup")]
     public class MovieLookupController : RestController<MovieResource>
     {
@@ -24,6 +28,16 @@ namespace Whisparr.Api.V3.Movies
         private readonly IConfigService _configService;
         private readonly IImportListExclusionService _importListExclusionService;
 
+        /// <summary>
+        /// Creates a new instance of <see cref="MovieLookupController"/>.
+        /// </summary>
+        /// <param name="searchProxy">Search service for finding new movies.</param>
+        /// <param name="movieInfo">Provider for movie metadata.</param>
+        /// <param name="fileNameBuilder">Filename/folder builder used to compute movie folder names.</param>
+        /// <param name="namingService">Service that provides naming configuration.</param>
+        /// <param name="coverMapper">Mapper to convert remote cover urls to local urls.</param>
+        /// <param name="configService">Application configuration service.</param>
+        /// <param name="importListExclusionService">Service for import list exclusions.</param>
         public MovieLookupController(ISearchForNewMovie searchProxy,
                                  IProvideMovieInfo movieInfo,
                                  IBuildFileNames fileNameBuilder,
@@ -41,17 +55,32 @@ namespace Whisparr.Api.V3.Movies
             _importListExclusionService = importListExclusionService;
         }
 
+        /// <summary>
+        /// Not implemented for lookup controller; required by base type.
+        /// </summary>
+        /// <param name="id">The id of the movie resource.</param>
+        /// <returns>An <see cref="ActionResult{MovieResource}"/> representing the resource.</returns>
         [NonAction]
         public override ActionResult<MovieResource> GetResourceByIdWithErrorHandler(int id)
         {
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Not implemented for lookup controller; required by base type.
+        /// </summary>
+        /// <param name="id">The movie id.</param>
+        /// <returns>The <see cref="MovieResource"/>.</returns>
         protected override MovieResource GetResourceById(int id)
         {
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Lookup movie metadata by TMDB id.
+        /// </summary>
+        /// <param name="tmdbId">TMDB identifier.</param>
+        /// <returns>A <see cref="MovieResource"/> populated with metadata for the TMDB id.</returns>
         [HttpGet("tmdb")]
         [Produces("application/json")]
         public MovieResource SearchByTmdbId(int tmdbId)
@@ -61,6 +90,11 @@ namespace Whisparr.Api.V3.Movies
             return result.ToResource(availDelay);
         }
 
+        /// <summary>
+        /// Lookup movie metadata by TPDB id.
+        /// </summary>
+        /// <param name="tpdbId">TPDB identifier.</param>
+        /// <returns>A <see cref="MovieResource"/> populated with metadata for the TPDB id.</returns>
         [HttpGet("tpdb")]
         [Produces("application/json")]
         public MovieResource SearchByTpdbId(string tpdbId)
@@ -70,6 +104,11 @@ namespace Whisparr.Api.V3.Movies
             return result.ToResource(availDelay);
         }
 
+        /// <summary>
+        /// Lookup movie metadata by IMDB id.
+        /// </summary>
+        /// <param name="imdbId">IMDB identifier.</param>
+        /// <returns>A <see cref="MovieResource"/> populated with metadata for the IMDB id.</returns>
         [HttpGet("imdb")]
         [Produces("application/json")]
         public MovieResource SearchByImdbId(string imdbId)
@@ -80,6 +119,12 @@ namespace Whisparr.Api.V3.Movies
             return result.ToResource(availDelay);
         }
 
+        /// <summary>
+        /// Search for movies by free-text term. Returns candidates suitable for adding.
+        /// </summary>
+        /// <param name="term">Search term (title, partial title, etc.).</param>
+        /// <param name="itemType">Optional item type filter.</param>
+        /// <returns>Sequence of matching <see cref="MovieResource"/> objects.</returns>
         [HttpGet]
         [Produces("application/json")]
         public IEnumerable<MovieResource> Search([FromQuery] string term, [FromQuery] ItemType? itemType = null)
@@ -104,6 +149,12 @@ namespace Whisparr.Api.V3.Movies
             return MapToResource(searchResults);
         }
 
+        /// <summary>
+        /// Maps internal <see cref="Movie"/> instances to API resources, applying cover mapping,
+        /// folder name building and import-list exclusion checks.
+        /// </summary>
+        /// <param name="movies">Movies to map.</param>
+        /// <returns>Sequence of <see cref="MovieResource"/> objects.</returns>
         private IEnumerable<MovieResource> MapToResource(IEnumerable<Movie> movies)
         {
             var availDelay = _configService.AvailabilityDelay;

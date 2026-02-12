@@ -121,8 +121,8 @@ class ImportMovieSelectFolder extends Component {
                   <ul>
                     <li className={styles.tip} dangerouslySetInnerHTML={{ __html: translate('ImportStep1') }} />
                     <li className={styles.tip} dangerouslySetInnerHTML={{ __html: translate('ImportStep2') }} />
-                    <li className={styles.tip} dangerouslySetInnerHTML={{ __html: translate('ImportStep2') }} />
                     <li className={styles.tip} dangerouslySetInnerHTML={{ __html: translate('ImportStep3') }} />
+                    <li className={styles.tip} dangerouslySetInnerHTML={{ __html: translate('ImportStep4') }} />
                     <li className={styles.tip} dangerouslySetInnerHTML={{ __html: translate('ImportStep5') }} />
                   </ul>
                 </div>
