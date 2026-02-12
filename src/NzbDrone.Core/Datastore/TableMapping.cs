@@ -189,7 +189,8 @@ namespace NzbDrone.Core.Datastore
 
             Mapper.Entity<Credit>("Credits").RegisterModel();
 
-            Mapper.Entity<ImportFile>("ImportFiles").RegisterModel()
+            Mapper.Entity<ImportFile>("ImportFiles")
+                  .RegisterModel()
                   .Ignore(e => e.QualityProfileId)
                   .Ignore(e => e.ForeignId);
         }
