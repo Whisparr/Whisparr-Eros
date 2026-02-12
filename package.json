@@ -64,6 +64,7 @@
     "react-dnd-touch-backend": "14.1.1",
     "react-document-title": "2.0.3",
     "react-dom": "18.3.1",
+    "react-flag-kit": "1.1.1",
     "react-focus-lock": "2.9.4",
     "react-google-recaptcha": "2.1.0",
     "react-lazyload": "3.2.1",

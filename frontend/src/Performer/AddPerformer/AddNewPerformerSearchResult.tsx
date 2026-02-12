@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { FlagIcon, FlagIconCode } from 'react-flag-kit';
 import Icon from 'Components/Icon';
 import Label from 'Components/Label';
 import Link from 'Components/Link/Link';
@@ -33,6 +34,7 @@ function AddNewPerformerSearchResult({
     status,
     images,
   } = performer;
+  const flagIconCode = country as FlagIconCode;
   const { isSmallScreen, safeForWorkMode } = useAddNewPerformerSearchResult();
   const [isNewAddPerformerModalOpen, setIsNewAddPerformerModalOpen] =
     useState(false);
@@ -79,6 +81,13 @@ function AddNewPerformerSearchResult({
               <div className={styles.title}>{fullName}</div>
             </div>
             <PerformerGenderIcon gender={gender} size={36} />
+            {!!country && (
+              <FlagIcon
+                className={styles.country}
+                code={flagIconCode}
+                size={36}
+              />
+            )}
             <div className={styles.icons}>
               {isExistingPerformer && (
                 <Icon
@@ -97,11 +106,6 @@ function AddNewPerformerSearchResult({
             {!!gender && (
               <Label size={sizes.LARGE} kind={kinds.DEFAULT}>
                 {firstCharToUpper(gender)}
-              </Label>
-            )}
-            {!!country && (
-              <Label size={sizes.LARGE} kind={kinds.DEFAULT}>
-                {country}
               </Label>
             )}
             <Tooltip
