@@ -179,7 +179,7 @@ function PerformerDetails() {
       : formatDate(performer.birthDate, shortDateFormat);
   const ethnicity = performer.ethnicity;
   const country = performer.country;
-  const flagIconCode = country.toLowerCase();
+  const flagIconCode = country?.toLowerCase();
   const careerStart = performer.careerStart;
   const careerEnd = performer.careerEnd;
   const qualityProfileId = performer.qualityProfileId;
