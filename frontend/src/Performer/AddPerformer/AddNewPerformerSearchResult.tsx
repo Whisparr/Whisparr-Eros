@@ -34,7 +34,7 @@ function AddNewPerformerSearchResult({
     status,
     images,
   } = performer;
-  const flagIconCode = country.toLowerCase();
+  const flagIconCode = country?.toLowerCase();
   const { isSmallScreen, safeForWorkMode } = useAddNewPerformerSearchResult();
   const [isNewAddPerformerModalOpen, setIsNewAddPerformerModalOpen] =
     useState(false);
