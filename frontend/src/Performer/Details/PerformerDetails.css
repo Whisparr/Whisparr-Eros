@@ -156,7 +156,6 @@
 .ethnicity,
 .years,
 .age,
-.country,
 .birthDate,
 .status,
 .runtime {
@@ -165,10 +164,17 @@
   font-size: 17px;
 }
 
-.gender{
+.gender {
   display: flex;
   align-items: center;
-  margin: 0 15px;
+  margin: 0 4px;
+  vertical-align: middle;
+}
+
+.country {
+  display: flex;
+  align-items: center;
+  margin: 8px 4px 0;
   vertical-align: middle;
 }
 
