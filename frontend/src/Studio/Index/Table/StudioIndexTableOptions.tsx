@@ -17,10 +17,13 @@ function StudioIndexTableOptions(props: StudioIndexTableOptionsProps) {
 
   const tableOptions = useSelector(selectTableOptions);
 
-  const { showSearchAction } = tableOptions;
+  const { pageSize } = tableOptions;
 
   const onTableOptionChangeWrapper = useCallback(
-    ({ name, value }: CheckInputChanged) => {
+    ({
+      name,
+      value,
+    }: CheckInputChanged | { name: string; value: number | null }) => {
       onTableOptionChange({
         tableOptions: {
           ...tableOptions,
@@ -33,13 +36,18 @@ function StudioIndexTableOptions(props: StudioIndexTableOptionsProps) {
 
   return (
     <FormGroup>
-      <FormLabel>{translate('ShowSearch')}</FormLabel>
-
+      <FormLabel>{translate('TablePageSize')}</FormLabel>
       <FormInputGroup
-        type={inputTypes.CHECK}
-        name="showSearchAction"
-        value={showSearchAction}
-        helpText={translate('ShowSearchHelpText')}
+        type={inputTypes.NUMBER}
+        name="pageSize"
+        value={pageSize}
+        min={10}
+        max={1000}
+        helpText={translate('TablePageSizeHelpText')}
+        helpTextWarning={translate('TablePageSizeMinMaxHelpText', {
+          min: 10,
+          max: 1000,
+        })}
         onChange={onTableOptionChangeWrapper}
       />
     </FormGroup>

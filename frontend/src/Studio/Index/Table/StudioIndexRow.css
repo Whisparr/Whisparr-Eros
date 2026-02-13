@@ -1,8 +1,14 @@
 .cell {
   composes: cell from '~Components/Table/Cells/VirtualTableRowCell.css';
+  /* display: flex; */
+  /* align-items: center; */
+}
 
-  display: flex;
-  align-items: center;
+.blur {
+  composes: cell;
+
+  flex: 1 0 150px;
+  filter: blur(4px);
 }
 
 .status {
@@ -11,13 +17,13 @@
   flex: 0 0 50px;
 }
 
-.unmonitored {
-  color: var(--disabledColor);
-    opacity: 0.5;
-}
-
 .statusIcon {
   padding-left: 4px;
+}
+
+.unmonitored {
+  color: var(--disabledColor);
+  opacity: 0.5;
 }
 
 .sortTitle {
@@ -26,9 +32,12 @@
   flex: 4 0 110px;
 }
 
-.network,
-.totalSceneCount,
-.totalMovieCount,
+.network {
+  composes: cell;
+
+  flex: 1 0 125px;
+}
+
 .qualityProfileId {
   composes: cell;
 
@@ -41,16 +50,20 @@
   flex: 1 0 150px;
 }
 
-.aliases {
+.aliases,
+.tags,
+.totalMovieCount,
+.totalSceneCount,
+.sizeOnDisk,
+.placeholder {
   composes: cell;
 
   flex: 1 0 60px;
 }
 
-.tags {
-  composes: cell;
-
-  flex: 1 0 60px;
+.actions,
+.status {
+  width: 50px;
 }
 
 .actions {

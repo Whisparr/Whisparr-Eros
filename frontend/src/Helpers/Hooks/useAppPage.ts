@@ -12,7 +12,6 @@ import {
   fetchQualityProfiles,
   fetchUISettings,
 } from 'Store/Actions/settingsActions';
-import { fetchStudios } from 'Store/Actions/studioActions';
 import { fetchStatus } from 'Store/Actions/systemActions';
 import { fetchTags } from 'Store/Actions/tagActions';
 
@@ -116,7 +115,6 @@ const useAppPage = () => {
   useEffect(() => {
     dispatch(fetchMovies());
     dispatch(fetchCustomFilters());
-    dispatch(fetchStudios());
     dispatch(fetchTags());
     dispatch(fetchQualityProfiles());
     dispatch(fetchLanguages());

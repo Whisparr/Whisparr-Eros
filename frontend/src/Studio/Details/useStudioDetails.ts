@@ -1,4 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { queryClient } from 'App/queryClient';
 import AppState from 'App/State/AppState';
@@ -187,7 +193,7 @@ export const useStudioDetails = (foreignId: string): UseStudioDetailsReturn => {
   }, [generalSettings?.whisparrMovieMetadataSource]);
 
   // Handler: Refresh studio
-  function onRefreshPress() {
+  const onRefreshPress = useCallback(() => {
     if (!studioId) return;
     setIsManualRefresh(true);
     dispatch(
@@ -196,10 +202,10 @@ export const useStudioDetails = (foreignId: string): UseStudioDetailsReturn => {
         studioIds: [studioId],
       })
     );
-  }
+  }, [studioId, dispatch]);
 
   // Handler: Search for studio
-  function onSearchPress() {
+  const onSearchPress = useCallback(() => {
     if (!studioId) return;
     dispatch(
       executeCommand({
@@ -207,70 +213,82 @@ export const useStudioDetails = (foreignId: string): UseStudioDetailsReturn => {
         studioIds: [studioId],
       })
     );
-  }
+  }, [studioId, dispatch]);
 
   // Handler: Toggle monitored state
-  function onMonitorTogglePress(
-    value: boolean | { monitored: boolean; moviesMonitored: boolean },
-    _options: { shiftKey: boolean }
-  ) {
-    if (!studio || !studioId) {
-      throw new Error('Studio data not loaded');
-    }
-    // value is the entire toggle state object from MonitorToggleButton
-    const toggleState =
-      typeof value === 'boolean'
-        ? { monitored: value, moviesMonitored: studio.moviesMonitored }
-        : value;
-    const updatedStudio = {
-      ...studio,
-      monitored: toggleState.monitored,
-      moviesMonitored: toggleState.moviesMonitored,
-    };
-    monitorToggleMutation.mutate(updatedStudio);
-  }
+  const onMonitorTogglePress = useCallback(
+    (
+      value: boolean | { monitored: boolean; moviesMonitored: boolean },
+      _options: { shiftKey: boolean }
+    ) => {
+      if (!studio || !studioId) {
+        throw new Error('Studio data not loaded');
+      }
+      // value is the entire toggle state object from MonitorToggleButton
+      const toggleState =
+        typeof value === 'boolean'
+          ? { monitored: value, moviesMonitored: studio.moviesMonitored }
+          : value;
+      const updatedStudio = {
+        ...studio,
+        monitored: toggleState.monitored,
+        moviesMonitored: toggleState.moviesMonitored,
+      };
+      monitorToggleMutation.mutate(updatedStudio);
+    },
+    [studio, studioId, monitorToggleMutation]
+  );
 
   // Handler: Refresh movies in a year
-  function onYearRefreshPress(ids: number[]) {
-    if (!studioId) return;
-    setIsManualRefresh(true);
-    dispatch(
-      executeCommand({
-        name: commandNames.REFRESH_MOVIE,
-        movieIds: ids,
-      })
-    );
-  }
+  const onYearRefreshPress = useCallback(
+    (ids: number[]) => {
+      if (!studioId) return;
+      setIsManualRefresh(true);
+      dispatch(
+        executeCommand({
+          name: commandNames.REFRESH_MOVIE,
+          movieIds: ids,
+        })
+      );
+    },
+    [studioId, dispatch]
+  );
 
   // Handler: Open edit modal
-  function handleEditMoviePress() {
+  const handleEditMoviePress = useCallback(() => {
     setIsEditMovieModalOpen(true);
-  }
+  }, []);
 
   // Handler: Open delete modal
-  function handleDeleteMoviePress() {
+  const handleDeleteMoviePress = useCallback(() => {
     setIsDeleteMovieModalOpen(true);
-  }
+  }, []);
 
   // Handler: Close edit modal
-  function handleEditMovieModalClose() {
+  const handleEditMovieModalClose = useCallback(() => {
     setIsEditMovieModalOpen(false);
-  }
+  }, []);
 
   // Handler: Close delete modal
-  function handleDeleteMovieModalClose() {
+  const handleDeleteMovieModalClose = useCallback(() => {
     setIsDeleteMovieModalOpen(false);
-  }
+  }, []);
 
   // Handler: Title measure (placeholder)
-  function handleTitleMeasure(_dimensions: { width: number; height: number }) {
-    // Used by Measure component, may be needed for responsive behavior
-  }
+  const handleTitleMeasure = useCallback(
+    (_dimensions: { width: number; height: number }) => {
+      // Used by Measure component, may be needed for responsive behavior
+    },
+    []
+  );
 
   // Handler: Toggle expansion of a specific year
-  function handleExpandPress(year: number) {
-    dispatch(toggleStudioScenesExpanded({ year }));
-  }
+  const handleExpandPress = useCallback(
+    (year: number) => {
+      dispatch(toggleStudioScenesExpanded({ year }));
+    },
+    [dispatch]
+  );
 
   return {
     studio,

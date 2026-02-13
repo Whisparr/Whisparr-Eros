@@ -23,14 +23,16 @@ import PageToolbar from 'Components/Page/Toolbar/PageToolbar';
 import PageToolbarButton from 'Components/Page/Toolbar/PageToolbarButton';
 import PageToolbarSection from 'Components/Page/Toolbar/PageToolbarSection';
 import PageToolbarSeparator from 'Components/Page/Toolbar/PageToolbarSeparator';
+import posterPlaceholder from 'Components/posterPlaceholder';
 import Tooltip from 'Components/Tooltip/Tooltip';
 import { icons, kinds, sizes, tooltipPositions } from 'Helpers/Props';
 import QualityProfileName from 'Settings/Profiles/Quality/QualityProfileName';
 import { setStudioScenesExpanded } from 'Store/Actions/studioScenesActions';
-import DeleteStudioModalConnector from 'Studio/Delete/DeleteStudioModalConnector';
-import EditStudioModalConnector from 'Studio/Edit/EditStudioModalConnector';
+import DeleteStudioModal from 'Studio/Delete/DeleteStudioModal';
+import EditStudioModal from 'Studio/Edit/EditStudioModal';
 import { type Image } from 'Studio/Studio';
 import StudioLogo from 'Studio/StudioLogo';
+import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
 import StudioDetailsLinks from './StudioDetailsLinks';
 import StudioDetailsYear from './StudioDetailsYear';
@@ -285,6 +287,7 @@ function StudioDetails() {
             <StudioLogo
               safeForWorkMode={safeForWorkMode}
               className={styles.poster}
+              placeholder={posterPlaceholder}
               images={imageList}
               size={250}
               lazy={false}
@@ -339,21 +342,6 @@ function StudioDetails() {
                   <span className={styles.years}>{runningYears}</span>
 
                   <span className={styles.network}>{studio.network}</span>
-
-                  <span className={styles.links}>
-                    <Tooltip
-                      anchor={<Icon name={icons.EXTERNAL_LINK} size={20} />}
-                      tooltip={
-                        <StudioDetailsLinks
-                          foreignId={studio.foreignId}
-                          website={studio.website}
-                          tmdbId={studio.tmdbId}
-                          tpdbId={studio.tpdbId}
-                        />
-                      }
-                      position={tooltipPositions.BOTTOM}
-                    />
-                  </span>
                 </div>
               </div>
 
@@ -421,6 +409,19 @@ function StudioDetails() {
                   </Label>
                 ) : null}
 
+                {studio.sizeOnDisk >= 0 ? (
+                  <Label
+                    title={translate('SizeOnDisk')}
+                    className={styles.detailsLabel}
+                    size={sizes.LARGE}
+                  >
+                    <Icon name={icons.DRIVE} size={17} />
+                    <span className={styles.sizeOnDisk}>
+                      {formatBytes(studio.sizeOnDisk)}
+                    </span>
+                  </Label>
+                ) : null}
+
                 {!!studio.tags && studio.tags.length ? (
                   <Tooltip
                     anchor={
@@ -435,6 +436,28 @@ function StudioDetails() {
                     position={tooltipPositions.BOTTOM}
                   />
                 ) : null}
+
+                <Tooltip
+                  anchor={
+                    <Label className={styles.detailsLabel} size={sizes.LARGE}>
+                      <div>
+                        <Icon name={icons.EXTERNAL_LINK} size={17} />
+                        <span className={styles.links}>
+                          {translate('Links')}
+                        </span>
+                      </div>
+                    </Label>
+                  }
+                  tooltip={
+                    <StudioDetailsLinks
+                      tpdbId={studio.tpdbId}
+                      tmdbId={studio.tmdbId}
+                      foreignId={studio.foreignId}
+                    />
+                  }
+                  kind={kinds.INVERSE}
+                  position={tooltipPositions.BOTTOM}
+                />
 
                 {!!studio.aliases && !!studio.aliases.length && (
                   <Label
@@ -516,18 +539,22 @@ function StudioDetails() {
         </div>
 
         {/* MODALS */}
-        <EditStudioModalConnector
-          isOpen={isEditMovieModalOpen}
-          studioId={studio.id}
-          onModalClose={handleEditMovieModalClose}
-        />
+        {studio && (
+          <>
+            <EditStudioModal
+              isOpen={isEditMovieModalOpen}
+              studio={studio}
+              onModalClose={handleEditMovieModalClose}
+            />
 
-        <DeleteStudioModalConnector
-          isOpen={isDeleteMovieModalOpen}
-          studioId={studio.id}
-          onModalClose={handleDeleteMovieModalClose}
-          onDeleteMoviePress={handleDeleteMoviePress}
-        />
+            <DeleteStudioModal
+              isOpen={isDeleteMovieModalOpen}
+              studio={studio}
+              onModalClose={handleDeleteMovieModalClose}
+              onDeleteMoviePress={handleDeleteMoviePress}
+            />
+          </>
+        )}
       </PageContentBody>
     </PageContent>
   );

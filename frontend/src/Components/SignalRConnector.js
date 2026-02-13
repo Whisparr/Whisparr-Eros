@@ -89,13 +89,13 @@ Logger.prototype.log = function(logLevel, message) {
   }
 };
 
-// TODO: TempHelper to update a nested movie in performer.years[].movies[] in React Query cache
+// Helper to update a nested movie in performer.years[].movies[] in React Query cache
 // Update Performer React Query cache helper
 function updateMovieInPerformerWorksQueryCache(updatedMovie) {
   // Find all queries for performer works
   const queryCache = queryClient.getQueryCache().findAll();
   queryCache.forEach(({ queryKey }) => {
-    // Look for keys like "/api/v3/performer/{performerId}/works"
+    // Look for keys like "/performer/{performerId}/works"
     if (
       Array.isArray(queryKey) &&
       typeof queryKey[0] === 'string' &&
@@ -117,7 +117,8 @@ function updateMovieInPerformerWorksQueryCache(updatedMovie) {
   });
 }
 
-// Update Studio React Query cache helper
+// Helper to update a nested movie in performer.years[].movies[] in React Query cache
+// To avoid invalidating the entire list when a single movie is updated, we need to find the movie in the cache and update it directly.
 function updateMovieInStudioWorksQueryCache(updatedMovie) {
   if (!updatedMovie || !updatedMovie.studioForeignId) {
     return;
@@ -138,17 +139,58 @@ function updateMovieInStudioWorksQueryCache(updatedMovie) {
   });
 }
 
+// Performer React Query cache invalidation helper
+function invalidatePerformerQueryCache(updatedPerformer) {
+  if (!updatedPerformer || !updatedPerformer.foreignId) {
+    return;
+  }
+
+  // Invalidate individual performer detail pages
+  queryClient.invalidateQueries({
+    queryKey: [`/performer/${updatedPerformer.foreignId}`]
+  });
+
+  // Invalidate performer works on detail pages
+  queryClient.invalidateQueries({
+    queryKey: [`/performer/${updatedPerformer.foreignId}/works`]
+  });
+
+  // Invalidate all paged performer queries (different sort, filter, page combinations)
+  queryClient.invalidateQueries({
+    predicate: (query) => {
+      return (
+        Array.isArray(query.queryKey) &&
+        typeof query.queryKey[0] === 'string' &&
+        query.queryKey[0].startsWith('/performer/paged')
+      );
+    }
+  });
+}
+
 function invalidateStudioQueryCache(updatedStudio) {
   if (!updatedStudio || !updatedStudio.foreignId) {
     return;
   }
 
+  // Invalidate individual studio detail pages
   queryClient.invalidateQueries({
     queryKey: [`/studio/${updatedStudio.foreignId}`]
   });
 
+  // Invalidate studio works on detail pages
   queryClient.invalidateQueries({
     queryKey: [`/studio/${updatedStudio.foreignId}/works`]
+  });
+
+  // Invalidate all paged studio queries (different sort, filter, page combinations)
+  queryClient.invalidateQueries({
+    predicate: (query) => {
+      return (
+        Array.isArray(query.queryKey) &&
+        typeof query.queryKey[0] === 'string' &&
+        query.queryKey[0].startsWith('/studio/paged')
+      );
+    }
   });
 }
 
@@ -311,6 +353,7 @@ class SignalRConnector extends Component {
         this.props.dispatchUpdateItemsBatch(body.resources.map((resource) => ({ section, ...resource })));
         body.resources.forEach(updateMovieInPerformerWorksQueryCache);
         body.resources.forEach(updateMovieInStudioWorksQueryCache);
+        body.resources.forEach(updateMovieInStudioWorksQueryCache);
         repopulatePage('movieUpdated');
       } else if (body.action === 'deleted') {
         body.resources.forEach((resource) => {
@@ -326,6 +369,7 @@ class SignalRConnector extends Component {
     if (action === 'updated') {
       this.props.dispatchUpdateItem({ section, ...body.resource });
       updateMovieInPerformerWorksQueryCache(body.resource);
+      updateMovieInStudioWorksQueryCache(body.resource);
       updateMovieInStudioWorksQueryCache(body.resource);
       repopulatePage('movieUpdated');
     } else if (action === 'deleted') {
@@ -349,13 +393,13 @@ class SignalRConnector extends Component {
 
   handlePerformer = (body) => {
     const action = body.action;
-    const section = 'performers';
 
     if (action === 'updated') {
-      // Update performer item in Redux store
-      this.props.dispatchUpdateItem({ section, ...body.resource });
+      // Invalidate performer query caches
+      invalidatePerformerQueryCache(body.resource);
     } else if (action === 'deleted') {
-      this.props.dispatchRemoveItem({ section, id: body.resource.id });
+      // Invalidate performer query caches on deletion
+      invalidatePerformerQueryCache(body.resource);
     }
   };
 
@@ -379,12 +423,17 @@ class SignalRConnector extends Component {
 
   handleStudio = (body) => {
     const action = body.action;
-    const section = 'studios';
 
-    if (action === 'updated') {
-      this.props.dispatchUpdateItem({ section, ...body.resource });
-    } else if (action === 'deleted') {
-      this.props.dispatchRemoveItem({ section, id: body.resource.id });
+    if (Array.isArray(body.resources) && body.resources.length > 0) {
+      body.resources.forEach((resource) => {
+        invalidateStudioQueryCache(resource);
+      });
+      return;
+    }
+
+    if (action === 'updated' || action === 'deleted') {
+      // Invalidate studio query caches on any studio update/delete
+      invalidateStudioQueryCache(body.resource);
     }
   };
 

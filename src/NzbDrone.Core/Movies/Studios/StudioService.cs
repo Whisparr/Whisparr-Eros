@@ -88,8 +88,9 @@ namespace NzbDrone.Core.Movies.Studios
         public Studio Update(Studio studio)
         {
             RemoveStudioResourcesCache(studio.ForeignId);
-
-            return _studioRepo.Update(studio);
+            var updatedStudio = _studioRepo.Update(studio);
+            _eventAggregator.PublishEvent(new StudioUpdatedEvent(updatedStudio));
+            return updatedStudio;
         }
 
         public List<Studio> Update(List<Studio> studios)
@@ -99,6 +100,7 @@ namespace NzbDrone.Core.Movies.Studios
             foreach (var studio in studios)
             {
                 RemoveStudioResourcesCache(studio.ForeignId);
+                _eventAggregator.PublishEvent(new StudioUpdatedEvent(studio));
             }
 
             return studios;
