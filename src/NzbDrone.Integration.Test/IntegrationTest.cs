@@ -9,6 +9,7 @@ using NzbDrone.Core.Datastore.Migration.Framework;
 using NzbDrone.Core.Indexers.Newznab;
 using NzbDrone.Test.Common;
 using NzbDrone.Test.Common.Datastore;
+using RestSharp;
 
 namespace NzbDrone.Integration.Test
 {
@@ -23,7 +24,7 @@ namespace NzbDrone.Integration.Test
 
         protected int Port { get; private set; }
 
-        protected PostgresOptions PostgresOptions { get; set; } = new ();
+        protected PostgresOptions PostgresOptions { get; set; } = new();
 
         protected override string RootUrl => $"http://localhost:{Port}/";
 
@@ -48,6 +49,9 @@ namespace NzbDrone.Integration.Test
 
         protected override void InitializeTestTarget()
         {
+            // The app can briefly return 503 during startup; wait for a stable API response before assertions.
+            WaitForCompletion(IsApiReady, 30000);
+
             // Make sure tasks have been initialized so the config put below doesn't cause errors
             WaitForCompletion(() => Tasks.All().SelectList(x => x.TaskName).Contains("RssSync"), 30000);
 
@@ -70,6 +74,24 @@ namespace NzbDrone.Integration.Test
             var config = HostConfig.Get(1);
             config.ConsoleLogLevel = "Debug";
             HostConfig.Put(config);
+        }
+
+        private bool IsApiReady()
+        {
+            var request = new RestRequest("system/status")
+            {
+                RequestFormat = DataFormat.None
+            };
+
+            try
+            {
+                var response = RestClient.Execute(request);
+                return response.StatusCode == System.Net.HttpStatusCode.OK;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         protected override void StopTestTarget()
