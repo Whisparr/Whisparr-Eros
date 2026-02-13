@@ -1,13 +1,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using NzbDrone.Common.Cache;
+using NzbDrone.Core.Datastore;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Movies.Studios.Events;
+using NzbDrone.Core.MovieStats;
 using NzbDrone.Core.Parser;
 
 namespace NzbDrone.Core.Movies.Studios
 {
-    public interface IStudioService
+    public interface IStudioService : IHandle<StudioUpdatedEvent>
     {
         Studio AddStudio(Studio studio);
         List<Studio> AddStudios(List<Studio> studios);
@@ -23,6 +25,7 @@ namespace NzbDrone.Core.Movies.Studios
         Studio FindByTitle(string title);
         List<Studio> FindAllByTitle(string title);
         void RemoveStudio(Studio studio);
+        PagingSpec<Studio> Paged(PagingSpec<Studio> pagingSpec);
     }
 
     public class StudioService : IStudioService
@@ -30,13 +33,22 @@ namespace NzbDrone.Core.Movies.Studios
         private readonly IStudioRepository _studioRepo;
         private readonly IEventAggregator _eventAggregator;
         private readonly ICacheManager _cacheManager;
+        private readonly IMovieRepository _movieRepository;
+        private readonly IMovieStatisticsService _movieStatisticsService;
         private readonly string _cacheName;
 
-        public StudioService(IStudioRepository studioRepo, IEventAggregator eventAggregator, ICacheManager cacheManager)
+        public StudioService(
+            IStudioRepository studioRepo,
+            IEventAggregator eventAggregator,
+            ICacheManager cacheManager,
+            IMovieRepository movieRepository,
+            IMovieStatisticsService movieStatisticsService)
         {
             _studioRepo = studioRepo;
             _eventAggregator = eventAggregator;
             _cacheManager = cacheManager;
+            _movieRepository = movieRepository;
+            _movieStatisticsService = movieStatisticsService;
             _cacheName = "Whisparr.Api.V3.Studios.StudioResource_studioResources";
         }
 
@@ -145,6 +157,11 @@ namespace NzbDrone.Core.Movies.Studios
             return _studioRepo.AllStudioForeignIds();
         }
 
+        public PagingSpec<Studio> Paged(PagingSpec<Studio> pagingSpec)
+        {
+            return _studioRepo.GetPaged(pagingSpec);
+        }
+
         private void RemoveStudioResourcesCache(string foreignId)
         {
             var studioResourcesCache = _cacheManager.FindCache(_cacheName);
@@ -152,6 +169,25 @@ namespace NzbDrone.Core.Movies.Studios
             {
                 studioResourcesCache.Remove(foreignId);
             }
+        }
+
+        public void Handle(StudioUpdatedEvent message)
+        {
+            var movies = _movieRepository.GetByStudioForeignId(message.Studio.ForeignId);
+            var ids = movies.Select(x => x.Id).ToList();
+            var movieStats = _movieStatisticsService.MovieStatistics(ids);
+
+            message.Studio.MovieCount = movieStats
+                .Where(stat => movies.Any(m => m.Id == stat.MovieId && m.MovieMetadata.Value.ItemType == ItemType.Movie))
+                .Sum(stat => stat.MovieFileCount);
+            message.Studio.SceneCount = movieStats
+                .Where(stat => movies.Any(m => m.Id == stat.MovieId && m.MovieMetadata.Value.ItemType == ItemType.Scene))
+                .Sum(stat => stat.MovieFileCount);
+            message.Studio.TotalMovieCount = movies.Count(x => x.MovieMetadata.Value.ItemType == ItemType.Movie);
+            message.Studio.TotalSceneCount = movies.Count(x => x.MovieMetadata.Value.ItemType == ItemType.Scene);
+            message.Studio.SizeOnDisk = movieStats.Sum(x => x.SizeOnDisk);
+
+            _studioRepo.Update(message.Studio);
         }
     }
 }

@@ -5,6 +5,7 @@ interface CssExports {
   'alternateTitlesIconContainer': string;
   'backdrop': string;
   'backdropOverlay': string;
+  'blurred': string;
   'certification': string;
   'contentContainer': string;
   'details': string;
@@ -37,6 +38,7 @@ interface CssExports {
   'tab': string;
   'tabContent': string;
   'tabList': string;
+  'tags': string;
   'title': string;
   'titleContainer': string;
   'titleRow': string;
@@ -44,6 +46,9 @@ interface CssExports {
   'toggleMoviesMonitoredContainer': string;
   'unmonitored': string;
   'year': string;
+  'yearRow': string;
+  'yearRowCollapsed': string;
+  'yearRowExpanded': string;
   'years': string;
 }
 export const cssExports: CssExports;

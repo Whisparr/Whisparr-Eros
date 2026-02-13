@@ -106,7 +106,6 @@
   composes: toggleButton from '~Components/MonitorToggleButton.css';
 
   width: 30px;
-  vertical-align: middle;
 
   &:hover {
     color: var(--iconButtonHoverLightColor);

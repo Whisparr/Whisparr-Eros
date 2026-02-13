@@ -36,6 +36,11 @@ namespace NzbDrone.Core.Movies.Studios
         public bool SearchOnAdd { get; set; }
         public DateTime? LastInfoSync { get; set; }
         public HashSet<int> Tags { get; set; }
+        public int MovieCount { get; set; }
+        public int SceneCount { get; set; }
+        public int TotalMovieCount { get; set; }
+        public int TotalSceneCount { get; set; }
+        public long SizeOnDisk { get; set; }
 
         public void ApplyChanges(Studio otherStudio)
         {

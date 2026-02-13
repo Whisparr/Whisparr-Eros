@@ -117,6 +117,41 @@ function updateMovieInPerformerWorksQueryCache(updatedMovie) {
   });
 }
 
+// Update Studio React Query cache helper
+function updateMovieInStudioWorksQueryCache(updatedMovie) {
+  if (!updatedMovie || !updatedMovie.studioForeignId) {
+    return;
+  }
+
+  const studioKey = `/studio/${updatedMovie.studioForeignId}/works`;
+  queryClient.setQueryData([studioKey], (oldData) => {
+    if (!Array.isArray(oldData)) {
+      return oldData;
+    }
+    const idx = oldData.findIndex((movie) => movie.id === updatedMovie.id);
+    if (idx === -1) {
+      return oldData;
+    }
+    const newData = [...oldData];
+    newData[idx] = { ...oldData[idx], ...updatedMovie };
+    return newData;
+  });
+}
+
+function invalidateStudioQueryCache(updatedStudio) {
+  if (!updatedStudio || !updatedStudio.foreignId) {
+    return;
+  }
+
+  queryClient.invalidateQueries({
+    queryKey: [`/studio/${updatedStudio.foreignId}`]
+  });
+
+  queryClient.invalidateQueries({
+    queryKey: [`/studio/${updatedStudio.foreignId}/works`]
+  });
+}
+
 class SignalRConnector extends Component {
 
   //
@@ -275,6 +310,7 @@ class SignalRConnector extends Component {
       if (body.action === 'updated') {
         this.props.dispatchUpdateItemsBatch(body.resources.map((resource) => ({ section, ...resource })));
         body.resources.forEach(updateMovieInPerformerWorksQueryCache);
+        body.resources.forEach(updateMovieInStudioWorksQueryCache);
         repopulatePage('movieUpdated');
       } else if (body.action === 'deleted') {
         body.resources.forEach((resource) => {
@@ -290,6 +326,7 @@ class SignalRConnector extends Component {
     if (action === 'updated') {
       this.props.dispatchUpdateItem({ section, ...body.resource });
       updateMovieInPerformerWorksQueryCache(body.resource);
+      updateMovieInStudioWorksQueryCache(body.resource);
       repopulatePage('movieUpdated');
     } else if (action === 'deleted') {
       this.props.dispatchRemoveItem({ section, id: body.resource.id });
@@ -304,6 +341,7 @@ class SignalRConnector extends Component {
 
     if (action === 'updated') {
       this.props.dispatchUpdateItem({ section, ...body.resource });
+      invalidateStudioQueryCache(body.resource);
     } else if (action === 'deleted') {
       this.props.dispatchRemoveItem({ section, id: body.resource.id });
     }
