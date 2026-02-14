@@ -30,7 +30,7 @@ using Whisparr.Http.REST.Attributes;
 namespace Whisparr.Api.V3.Studios
 {
     [V3ApiController]
-    public class StudioController : RestControllerWithSignalR<StudioResource, Studio>, IHandle<StudioUpdatedEvent>, IHandle<StudiosDeletedEvent>
+    public class StudioController : RestControllerWithSignalR<StudioResource, Studio>, IHandleAsync<StudioUpdatedEvent>, IHandleAsync<StudiosDeletedEvent>
     {
         private static readonly HashSet<string> _allowedStudioSortKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
@@ -161,6 +161,24 @@ namespace Whisparr.Api.V3.Studios
             }
 
             return movieResources;
+        }
+
+        /// <summary>Retrieves a list of studios by their external foreign IDs (e.g., from StashDb)</summary>
+        /// <returns>Studio details</returns>
+        /// <remarks>If a foreign Id does not exist in Whisparr, it does not query StashDB on demand</remarks>
+        /// <response code="200">Studios found and returned, or an empty array</response>
+        [HttpPost("list")]
+        [Consumes("application/json")]
+        [Produces("application/json")]
+        public ActionResult<List<StudioResource>> GetStudiosByForeignIds([FromBody] List<string> studioForeignIds)
+        {
+            var studioResources = GetStudioResources(studioForeignIds);
+            if (studioResources == null || !studioResources.Any())
+            {
+                return Ok(new List<StudioResource>());
+            }
+
+            return Ok(studioResources);
         }
 
         /// <summary>Retrieves a paged list of studios with advanced filtering options</summary>
@@ -299,18 +317,18 @@ namespace Whisparr.Api.V3.Studios
             _coverMapper.ConvertToLocalStudioUrls(studio.Id, studio.Images);
         }
 
+        /// <summary>Handles studio updated events to broadcast changes via SignalR</summary>
         [NonAction]
-        public void Handle(StudioUpdatedEvent message)
+        public void HandleAsync(StudioUpdatedEvent message)
         {
             var resource = MapToResource(message.Studio);
 
-            _studioResourceCache.Remove(resource.ForeignId);
-            FetchAndLinkMovies(resource);
             BroadcastResourceChange(ModelAction.Updated, resource);
         }
 
+        /// <summary>Handles studios deleted events to broadcast changes via SignalR</summary>
         [NonAction]
-        public void Handle(StudiosDeletedEvent message)
+        public void HandleAsync(StudiosDeletedEvent message)
         {
             if (message?.Studios == null || !message.Studios.Any())
             {
@@ -333,9 +351,9 @@ namespace Whisparr.Api.V3.Studios
 
         private void LinkMovies(List<StudioResource> resources)
         {
-            foreach (var performer in resources)
+            foreach (var studio in resources)
             {
-                FetchAndLinkMovies(performer);
+                FetchAndLinkMovies(studio);
             }
         }
 

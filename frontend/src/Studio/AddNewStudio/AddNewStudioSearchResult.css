@@ -85,6 +85,8 @@
   margin-top: 20px;
 }
 
+.network,
+.studio,
 .links {
   margin-left: 8px;
   pointer-events: all;

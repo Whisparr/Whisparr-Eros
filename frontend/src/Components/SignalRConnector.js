@@ -139,23 +139,66 @@ function updateMovieInStudioWorksQueryCache(updatedMovie) {
   });
 }
 
-// Performer React Query cache invalidation helper
-function invalidatePerformerQueryCache(updatedPerformer) {
+// Merges updates in React Queryr cache instead of a re-fetch
+function updatePerformerQueryCache(updatedPerformer) {
   if (!updatedPerformer || !updatedPerformer.foreignId) {
     return;
   }
 
-  // Invalidate individual performer detail pages
-  queryClient.invalidateQueries({
+  const performerKey = `/performer/${updatedPerformer.foreignId}`;
+
+  queryClient.setQueryData([performerKey], (oldData) => {
+    if (!oldData || typeof oldData !== 'object') {
+      return updatedPerformer;
+    }
+    return { ...oldData, ...updatedPerformer };
+  });
+}
+
+// Merges updates in React Queryr cache instead of a re-fetch
+function updateStudioQueryCache(updatedStudio) {
+  if (!updatedStudio || !updatedStudio.foreignId) {
+    return;
+  }
+
+  const studioKey = `/studio/${updatedStudio.foreignId}`;
+  queryClient.setQueryData([studioKey], (oldData) => {
+    if (!oldData || typeof oldData !== 'object') {
+      return updatedStudio;
+    }
+    return { ...oldData, ...updatedStudio };
+  });
+}
+
+function removePerformerQueryCache(updatedPerformer) {
+  if (!updatedPerformer || !updatedPerformer.foreignId) {
+    return;
+  }
+
+  queryClient.removeQueries({
     queryKey: [`/performer/${updatedPerformer.foreignId}`]
   });
 
-  // Invalidate performer works on detail pages
-  queryClient.invalidateQueries({
+  queryClient.removeQueries({
     queryKey: [`/performer/${updatedPerformer.foreignId}/works`]
   });
+}
 
-  // Invalidate all paged performer queries (different sort, filter, page combinations)
+function removeStudioQueryCache(updatedStudio) {
+  if (!updatedStudio || !updatedStudio.foreignId) {
+    return;
+  }
+
+  queryClient.removeQueries({
+    queryKey: [`/studio/${updatedStudio.foreignId}`]
+  });
+
+  queryClient.removeQueries({
+    queryKey: [`/studio/${updatedStudio.foreignId}/works`]
+  });
+}
+
+function invalidatePerformerPagedQueryCache() {
   queryClient.invalidateQueries({
     predicate: (query) => {
       return (
@@ -167,22 +210,7 @@ function invalidatePerformerQueryCache(updatedPerformer) {
   });
 }
 
-function invalidateStudioQueryCache(updatedStudio) {
-  if (!updatedStudio || !updatedStudio.foreignId) {
-    return;
-  }
-
-  // Invalidate individual studio detail pages
-  queryClient.invalidateQueries({
-    queryKey: [`/studio/${updatedStudio.foreignId}`]
-  });
-
-  // Invalidate studio works on detail pages
-  queryClient.invalidateQueries({
-    queryKey: [`/studio/${updatedStudio.foreignId}/works`]
-  });
-
-  // Invalidate all paged studio queries (different sort, filter, page combinations)
+function invalidateStudioPagedQueryCache() {
   queryClient.invalidateQueries({
     predicate: (query) => {
       return (
@@ -385,7 +413,6 @@ class SignalRConnector extends Component {
 
     if (action === 'updated') {
       this.props.dispatchUpdateItem({ section, ...body.resource });
-      invalidateStudioQueryCache(body.resource);
     } else if (action === 'deleted') {
       this.props.dispatchRemoveItem({ section, id: body.resource.id });
     }
@@ -394,12 +421,30 @@ class SignalRConnector extends Component {
   handlePerformer = (body) => {
     const action = body.action;
 
+    if (Array.isArray(body.resources) && body.resources.length > 0) {
+      if (action === 'deleted') {
+        body.resources.forEach((resource) => {
+          removePerformerQueryCache(resource);
+        });
+      } else {
+        body.resources.forEach((resource) => {
+          updatePerformerQueryCache(resource);
+        });
+      }
+      invalidatePerformerPagedQueryCache();
+      return;
+    }
+
     if (action === 'updated') {
-      // Invalidate performer query caches
-      invalidatePerformerQueryCache(body.resource);
+      // Update individual performer query keys rather than re-fetch
+      updatePerformerQueryCache(body.resource);
+      // Force paged query re-fetch so updates are immediate
+      invalidatePerformerPagedQueryCache();
     } else if (action === 'deleted') {
-      // Invalidate performer query caches on deletion
-      invalidatePerformerQueryCache(body.resource);
+      // Remove individual performer quey keys
+      removePerformerQueryCache(body.resource);
+      // Force paged query re-fetch so updates are immediate
+      invalidatePerformerPagedQueryCache();
     }
   };
 
@@ -425,15 +470,25 @@ class SignalRConnector extends Component {
     const action = body.action;
 
     if (Array.isArray(body.resources) && body.resources.length > 0) {
-      body.resources.forEach((resource) => {
-        invalidateStudioQueryCache(resource);
-      });
+      if (action === 'deleted') {
+        body.resources.forEach((resource) => {
+          removeStudioQueryCache(resource);
+        });
+      } else {
+        body.resources.forEach((resource) => {
+          updateStudioQueryCache(resource);
+        });
+      }
+      invalidateStudioPagedQueryCache();
       return;
     }
 
-    if (action === 'updated' || action === 'deleted') {
-      // Invalidate studio query caches on any studio update/delete
-      invalidateStudioQueryCache(body.resource);
+    if (action === 'updated') {
+      updateStudioQueryCache(body.resource);
+      invalidateStudioPagedQueryCache();
+    } else if (action === 'deleted') {
+      removeStudioQueryCache(body.resource);
+      invalidateStudioPagedQueryCache();
     }
   };
 

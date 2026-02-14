@@ -35,19 +35,22 @@ export const usePerformerDetails = (foreignId: string) => {
   const performerId = performer?.id;
 
   // Mutation for toggling monitored state
+  // This mutation will update the performer and then update the cache for the performer details
   const monitorToggleMutation = useApiMutation<Performer, Performer>({
     method: 'PUT',
     path: performerId ? `/${PATH}/${performerId}` : '',
     mutationOptions: {
       onSuccess: (data) => {
         if (data?.foreignId) {
-          /* invalidate foreign ID cache keys used by the query */
-          queryClient.invalidateQueries({
-            queryKey: [`/${PATH}/${data.foreignId}`],
-          });
-          queryClient.invalidateQueries({
-            queryKey: [`/${PATH}/${data.foreignId}/works`],
-          });
+          queryClient.setQueryData(
+            [`/${PATH}/${data.foreignId}`],
+            (oldData: Performer) => {
+              if (!oldData || typeof oldData !== 'object') {
+                return data;
+              }
+              return { ...oldData, ...data };
+            }
+          );
         }
       },
     },

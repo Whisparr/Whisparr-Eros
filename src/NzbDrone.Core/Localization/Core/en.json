@@ -47,9 +47,12 @@
   "AddNewPerformerMessage": "It's easy to add a new performer, just start typing the name of the performer you want to add",
   "AddNewRestriction": "Add new restriction",
   "AddNewScene": "Add New Scene",
-  "AddNewSceneMessage": "It's easy to add a new scene, performer, or studio.  Just start typing the name of the item you want to add",
+  "AddNewSceneMessage": "It's easy to add a new scene. Just start typing the name of the item you want to add",
   "AddNewStashIdMessage": "You can also search using Stash Id of a scene. e.g. 'stash:06a8ee7b-4b90-4f31-a640-9a12aedfe7cf'",
+  "AddNewStashIdPerformerMessage": "You can also search using Stash Id of a performer. e.g. 'stash:3c0cd77e-1a34-4ca1-af02-65775ce9ea7b'",
+  "AddNewStashIdStudioMessage": "You can also search using Stash Id of a studio. e.g. 'stash:fdc29a65-0ea9-4bed-9c10-67b9f1acf54a'",
   "AddNewStudio": "Add New Studio",
+  "AddNewStudioMessage": "It's easy to add a new studio, just start typing the name of the studio you want to add",
   "AddNewTmdbIdMessage": "You can also search using TMDb Id of a movie. e.g. 'tmdb:476739'",
   "AddNotificationError": "Unable to add a new notification, please try again.",
   "AddPerformer": "Add Performer",
@@ -2355,6 +2358,7 @@
   "YesterdayAt": "Yesterday at {time}",
   "YouCanAlsoSearch": "You can also search using TMDb ID or IMDb ID of a movie. e.g. `tmdb:476739`",
   "YouCanAlsoSearchPerformer": "You can also search using the Stash ID a performer. e.g. `stash:3c0cd77e-1a34-4ca1-af02-65775ce9ea7b`",
+  "YouCanAlsoSearchStudio": "You can also search using the Stash ID a studio. e.g. `stash:06a8ee7b-4b90-4f31-a640-9a12aedfe7cf`",
   "YourFolderStructureShouldLookLikeThis": "Your folder structure should look like this:",
   "yymmdd": "yy.mm.dd"
 }

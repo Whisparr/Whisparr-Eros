@@ -14,6 +14,7 @@ interface CssExports {
   'runtime': string;
   'searchResult': string;
   'statusContainer': string;
+  'studio': string;
   'title': string;
   'titleContainer': string;
   'titleRow': string;
