@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
-import { deleteRootFolder, refreshRootFolder } from 'Store/Actions/rootFolderActions';
+import { refreshRootFolder } from 'Store/Actions/rootFolderActions';
 import ImportMovieRootFolderRow from './ImportMovieRootFolderRow';
 
 function createMapStateToProps() {
@@ -15,7 +15,6 @@ function createMapStateToProps() {
 }
 
 const mapDispatchToProps = {
-  deleteRootFolder,
   refreshRootFolder
 };
 
@@ -39,7 +38,6 @@ class ImportMovieRootFolderRowConnector extends Component {
     return (
       <ImportMovieRootFolderRow
         {...this.props}
-        onDeletePress={this.onDeletePress}
         onRefreshPress={this.onRefreshPress}
       />
     );
