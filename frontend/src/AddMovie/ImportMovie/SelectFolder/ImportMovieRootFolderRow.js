@@ -15,8 +15,7 @@ function ImportMovieRootFolderRow(props) {
     path,
     freeSpace,
     importFiles,
-    onRefreshPress,
-    onDeletePress
+    onRefreshPress
   } = props;
 
   const importFilesCount = importFiles.length || '-';
@@ -47,11 +46,6 @@ function ImportMovieRootFolderRow(props) {
           name={icons.REFRESH}
           onPress={onRefreshPress}
         />
-        <IconButton
-          title={translate('RemoveRootFolder')}
-          name={icons.REMOVE}
-          onPress={onDeletePress}
-        />
       </TableRowCell>
     </TableRow>
   );
@@ -62,8 +56,7 @@ ImportMovieRootFolderRow.propTypes = {
   path: PropTypes.string.isRequired,
   freeSpace: PropTypes.number.isRequired,
   importFiles: PropTypes.arrayOf(PropTypes.object).isRequired,
-  onRefreshPress: PropTypes.func.isRequired,
-  onDeletePress: PropTypes.func.isRequired
+  onRefreshPress: PropTypes.func.isRequired
 };
 
 ImportMovieRootFolderRow.defaultProps = {
