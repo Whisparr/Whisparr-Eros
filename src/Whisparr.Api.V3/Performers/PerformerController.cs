@@ -12,6 +12,7 @@ using NzbDrone.Common.Cache;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Datastore;
+using NzbDrone.Core.Datastore.Events;
 using NzbDrone.Core.ImportLists.ImportExclusions;
 using NzbDrone.Core.MediaCover;
 using NzbDrone.Core.Messaging.Events;
@@ -30,7 +31,7 @@ namespace Whisparr.Api.V3.Performers
 {
     /// <summary>Controller for managing performers in Whisparr</summary>
     [V3ApiController]
-    public class PerformerController : RestControllerWithSignalR<PerformerResource, Performer>, IHandle<PerformerUpdatedEvent>
+    public class PerformerController : RestControllerWithSignalR<PerformerResource, Performer>, IHandle<PerformerUpdatedEvent>, IHandle<PerformersDeletedEvent>
     {
         private static readonly HashSet<string> _allowedPerformerSortKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
@@ -293,6 +294,32 @@ namespace Whisparr.Api.V3.Performers
             var resource = MapToResource(message.Performer);
 
             _performerResourceCache.Remove(resource.ForeignId);
+            BroadcastResourceChange(ModelAction.Updated, resource);
+        }
+
+        [NonAction]
+        public void Handle(PerformersDeletedEvent message)
+        {
+            if (message?.Performers == null || !message.Performers.Any())
+            {
+                return;
+            }
+
+            foreach (var performer in message.Performers)
+            {
+                if (!string.IsNullOrWhiteSpace(performer.ForeignId))
+                {
+                    _performerResourceCache.Remove(performer.ForeignId);
+                }
+            }
+
+            BroadcastResourceChangeBatch(
+                ModelAction.Deleted,
+                message.Performers.Select(performer => new PerformerResource
+                {
+                    Id = performer.Id,
+                    ForeignId = performer.ForeignId
+                }));
         }
 
         private void LinkPerformerStatistics(PerformerResource resource, List<Movie> movies)

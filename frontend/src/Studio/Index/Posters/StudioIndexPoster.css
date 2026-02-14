@@ -15,8 +15,31 @@ $hoverScale: 1.05;
   }
 }
 
+.studioLogo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 .posterContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.posterContainer > img {
   position: relative;
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
 }
 
 .poster {
@@ -40,12 +63,32 @@ $hoverScale: 1.05;
   font-size: 20px;
 }
 
+.progressBarOverlay {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  pointer-events: none;
+}
+$hoverScale: 1.05;
+
 .title {
   @add-mixin truncate;
 
   background-color: var(--sceneBackgroundColor);
   text-align: center;
   font-size: $smallFontSize;
+}
+
+.qualityProfile,
+.sizeOnDisk,
+.totalMovieCount,
+.totalSceneCount{
+  text-align: center;
 }
 
 .monitorToggleButton {
@@ -110,7 +153,11 @@ $hoverScale: 1.05;
   composes: link from '~Components/Link/Link.css';
 
   position: relative;
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
   background-color: #374151;
 }
 

@@ -23,18 +23,23 @@ interface StudioIndexTableHeaderProps {
   sortKey?: string;
   sortDirection?: SortDirection;
   isSelectMode: boolean;
+  onSortPress?: (name: string, sortDirection?: SortDirection) => void;
 }
 
 function StudioIndexTableHeader(props: StudioIndexTableHeaderProps) {
-  const { columns, sortKey, sortDirection, isSelectMode } = props;
+  const { columns, sortKey, sortDirection, isSelectMode, onSortPress } = props;
   const dispatch = useDispatch();
   const [selectState, selectDispatch] = useSelect();
 
-  const onSortPress = useCallback(
+  const handleSortPress = useCallback(
     (value: string) => {
-      dispatch(setStudioSort({ sortKey: value }));
+      if (onSortPress) {
+        onSortPress(value);
+      } else {
+        dispatch(setStudioSort({ sortKey: value }));
+      }
     },
-    [dispatch]
+    [dispatch, onSortPress]
   );
 
   const onTableOptionChange = useCallback(
@@ -101,7 +106,7 @@ function StudioIndexTableHeader(props: StudioIndexTableHeaderProps) {
             sortKey={sortKey}
             sortDirection={sortDirection}
             isSortable={isSortable}
-            onSortPress={onSortPress}
+            onSortPress={handleSortPress}
           >
             {typeof label === 'function' ? label() : label}
           </VirtualTableHeaderCell>

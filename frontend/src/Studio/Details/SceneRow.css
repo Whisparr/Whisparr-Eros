@@ -1,6 +1,23 @@
-.blurred {
-  filter: blur(6px);
-  transition: filter 0.2s;
+.blurredText {
+  display: inline-block;
+  color: transparent;
+  text-shadow: 0 0 6px rgba(255, 255, 255, 0.6);
+}
+
+.blurredCell {
+  position: relative;
+  overflow: hidden;
+}
+
+.blurredCell::before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 1px;
+  background: var(--borderColor);
+  content: '';
+  pointer-events: none;
 }
 
 .title {
@@ -37,6 +54,7 @@
 .audio,
 .video,
 .path,
+.releaseDate,
 .status {
   composes: cell from '~Components/Table/Cells/TableRowCell.css';
 

@@ -56,5 +56,10 @@ namespace NzbDrone.Core.Movies.Studios
                 return conn.Query<string>("SELECT \"ForeignId\" FROM \"Studios\"").ToList();
             }
         }
+
+        public override PagingSpec<Studio> GetPaged(PagingSpec<Studio> pagingSpec)
+        {
+            return base.GetPaged(pagingSpec);
+        }
     }
 }

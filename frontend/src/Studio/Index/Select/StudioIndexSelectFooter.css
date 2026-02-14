@@ -1,11 +1,24 @@
 .footer {
   composes: contentFooter from '~Components/Page/PageContentFooter.css';
-
+  /* Floating, pinned footer styles */
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 210px; /* Match actual sidebar width from dimensions.js */
+  z-index: 100;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
+  padding: 16px 32px;
+  border-top: 1px solid #222;
+  background: #18191c;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.15);
 }
 
 .buttons {
   display: flex;
+  justify-content: center;
+  flex: 1;
 }
 
 .actionButtons,
@@ -20,9 +33,16 @@
 
 .selected {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
-  flex-grow: 1;
+  margin-left: 32px;
   font-weight: bold;
+}
+
+@media only screen and (max-width: 900px) {
+  .footer {
+    left: 0; /* Sidebar collapses or overlays, so footer spans full width */
+  }
 }
 
 @media only screen and (max-width: $breakpointMedium) {

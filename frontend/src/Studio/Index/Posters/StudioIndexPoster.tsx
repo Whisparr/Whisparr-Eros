@@ -8,16 +8,19 @@ import Link from 'Components/Link/Link';
 import Popover from 'Components/Tooltip/Popover';
 import { icons } from 'Helpers/Props';
 import MovieIndexPosterSelect from 'Movie/Index/Select/MovieIndexPosterSelect';
+import QualityProfileName from 'Settings/Profiles/Quality/QualityProfileName';
 import StudioDetailsLinks from 'Studio/Details/StudioDetailsLinks';
-import EditStudioModalConnector from 'Studio/Edit/EditStudioModalConnector';
+import EditStudioModal from 'Studio/Edit/EditStudioModal';
+import Studio from 'Studio/Studio';
 import StudioLogo from 'Studio/StudioLogo';
+import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
-import createStudioIndexItemSelector from '../createStudioIndexItemSelector';
 import selectPosterOptions from './selectPosterOptions';
+import StudioIndexProgressBar from './StudioIndexProgressBar';
 import styles from './StudioIndexPoster.css';
 
 interface StudioIndexPosterProps {
-  studioId: number;
+  studio: Studio;
   sortKey: string;
   isSelectMode: boolean;
   posterWidth: number;
@@ -29,11 +32,10 @@ function StudioIndexPoster(props: StudioIndexPosterProps) {
     (state: AppState) => state.settings.safeForWorkMode
   );
 
-  const { studioId, isSelectMode, posterWidth, posterHeight } = props;
+  const { studio, isSelectMode, posterWidth, posterHeight } = props;
+  const { id: studioId } = studio;
 
-  const { studio } = useSelector(createStudioIndexItemSelector(studioId));
-
-  const { showTitle } = useSelector(selectPosterOptions);
+  const { showTitle, detailedProgressBar } = useSelector(selectPosterOptions);
   const [isEditStudioModalOpen, setIsEditStudioModalOpen] = useState(false);
 
   const { title, images, foreignId, website, tmdbId, tpdbId } = studio;
@@ -65,7 +67,11 @@ function StudioIndexPoster(props: StudioIndexPosterProps) {
 
   return (
     <div className={styles.content}>
-      <div className={styles.posterContainer} title={title}>
+      <div
+        className={styles.posterContainer}
+        style={elementStyle}
+        title={title}
+      >
         {isSelectMode ? <MovieIndexPosterSelect movieId={studioId} /> : null}
 
         <Label className={styles.controls}>
@@ -93,14 +99,25 @@ function StudioIndexPoster(props: StudioIndexPosterProps) {
 
         <Link className={styles.link} style={elementStyle} to={link}>
           <StudioLogo
+            className={styles.studioLogo}
             safeForWorkMode={safeForWorkMode}
-            style={elementStyle}
             images={images}
             size={250}
             lazy={true}
             onPosterLoad={onPosterLoad}
             onPosterLoadError={onPosterLoadError}
           />
+
+          {detailedProgressBar ? (
+            <div className={styles.progressBarOverlay}>
+              <StudioIndexProgressBar
+                Studio={studio}
+                width={posterWidth}
+                detailedProgressBar={true}
+                bottomRadius={false}
+              />
+            </div>
+          ) : null}
 
           {hasPosterError ? (
             <div className={styles.overlayTitle}>{title}</div>
@@ -114,9 +131,46 @@ function StudioIndexPoster(props: StudioIndexPosterProps) {
         </div>
       ) : null}
 
-      <EditStudioModalConnector
+      {props.sortKey === 'qualityProfileId' ? (
+        <div className={styles.qualityProfile}>
+          {studio.qualityProfileId ? (
+            <QualityProfileName qualityProfileId={studio.qualityProfileId} />
+          ) : (
+            translate('Unknown')
+          )}
+        </div>
+      ) : null}
+
+      {props.sortKey === 'sizeOnDisk' ? (
+        <div className={styles.sizeOnDisk} title={translate('SizeOnDisk')}>
+          <span>
+            {formatBytes(studio.sizeOnDisk)}
+            <Icon name={icons.DRIVE} size={12} />
+          </span>
+        </div>
+      ) : null}
+
+      {props.sortKey === 'totalMovieCount' ? (
+        <div
+          className={styles.totalMovieCount}
+          title={translate('TotalMovieCount')}
+        >
+          <span>{`${studio.totalMovieCount} ${translate('Movies')}`}</span>
+        </div>
+      ) : null}
+
+      {props.sortKey === 'totalSceneCount' ? (
+        <div
+          className={styles.totalSceneCount}
+          title={translate('TotalSceneCount')}
+        >
+          <span>{`${studio.totalSceneCount} ${translate('Scenes')}`}</span>
+        </div>
+      ) : null}
+
+      <EditStudioModal
         isOpen={isEditStudioModalOpen}
-        studioId={studioId}
+        studio={studio}
         onModalClose={onEditStudioModalClose}
       />
     </div>

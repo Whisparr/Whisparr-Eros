@@ -24,6 +24,7 @@ interface Studio extends ModelBase {
   qualityProfileId: number;
   rootFolderPath: string;
   sceneCount: number;
+  sizeOnDisk: number;
   sortTitle: string;
   tags: number[];
   totalMovieCount: number;

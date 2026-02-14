@@ -42,7 +42,6 @@ function StudioIndexSelectFooter() {
   const [isTagsModalOpen, setIsTagsModalOpen] = useState(false);
   const [isSavingStudios, setIsSavingStudios] = useState(false);
   const [isSavingTags, setIsSavingTags] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const [selectState] = useSelect();
@@ -109,28 +108,10 @@ function StudioIndexSelectFooter() {
     setIsDeleteModalOpen(false);
   }, []);
 
-  const onDeleteConfirm = useCallback(
-    (options: { addListExclusion: boolean; deleteFiles: boolean }) => {
-      setIsDeleting(true);
-      setIsDeleteModalOpen(false);
-
-      dispatch(
-        saveStudioEditor({
-          studioIds,
-          delete: true,
-          addListExclusion: options.addListExclusion,
-          deleteFiles: options.deleteFiles,
-        })
-      );
-    },
-    [studioIds, dispatch]
-  );
-
   useEffect(() => {
     if (!isSaving) {
       setIsSavingStudios(false);
       setIsSavingTags(false);
-      setIsDeleting(false);
     }
   }, [isSaving]);
 
@@ -161,7 +142,7 @@ function StudioIndexSelectFooter() {
           </SpinnerButton>
 
           <SpinnerButton
-            isSpinning={isSaving && isDeleting}
+            isSpinning={isSaving}
             isDisabled={!anySelected}
             kind={kinds.DANGER}
             onPress={onDeletePress}
@@ -192,7 +173,6 @@ function StudioIndexSelectFooter() {
       <DeleteStudioModal
         isOpen={isDeleteModalOpen}
         studioIds={studioIds}
-        onDeletePress={onDeleteConfirm}
         onModalClose={onDeleteModalClose}
       />
     </PageContentFooter>
