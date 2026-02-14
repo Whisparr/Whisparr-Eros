@@ -8,7 +8,7 @@ import getSectionState from 'Utilities/State/getSectionState';
 import updateSectionState from 'Utilities/State/updateSectionState';
 import { removeItem, set, updateItem } from './baseActions';
 import createHandleActions from './Creators/createHandleActions';
-import { fetchRootFolders } from './rootFolderActions';
+import { refreshRootFolder } from './rootFolderActions';
 
 //
 // Variables
@@ -254,7 +254,7 @@ export const actionHandlers = handleThunks({
         ...addedIds.map((id) => removeItem({ section, id }))
       ]));
 
-      dispatch(fetchRootFolders({ id: rootFolderId, timeout: true, getMovieFolder: true }));
+      dispatch(refreshRootFolder({ id: rootFolderId }));
     });
 
     promise.fail((xhr) => {
