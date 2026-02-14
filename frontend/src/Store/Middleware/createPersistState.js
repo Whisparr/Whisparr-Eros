@@ -96,7 +96,7 @@ function merge(initialState, persistedState) {
   return computedState;
 }
 
-const KEY = 'whisparr';
+const KEY = 'WhisparrEros';
 
 const config = {
   slicer,
