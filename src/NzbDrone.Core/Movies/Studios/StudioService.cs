@@ -9,7 +9,7 @@ using NzbDrone.Core.Parser;
 
 namespace NzbDrone.Core.Movies.Studios
 {
-    public interface IStudioService : IHandle<StudioUpdatedEvent>
+    public interface IStudioService : IHandleAsync<StudioUpdatedEvent>
     {
         Studio AddStudio(Studio studio);
         List<Studio> AddStudios(List<Studio> studios);
@@ -173,7 +173,7 @@ namespace NzbDrone.Core.Movies.Studios
             }
         }
 
-        public void Handle(StudioUpdatedEvent message)
+        public void HandleAsync(StudioUpdatedEvent message)
         {
             var movies = _movieRepository.GetByStudioForeignId(message.Studio.ForeignId);
             var ids = movies.Select(x => x.Id).ToList();

@@ -31,7 +31,7 @@ namespace Whisparr.Api.V3.Performers
 {
     /// <summary>Controller for managing performers in Whisparr</summary>
     [V3ApiController]
-    public class PerformerController : RestControllerWithSignalR<PerformerResource, Performer>, IHandle<PerformerUpdatedEvent>, IHandle<PerformersDeletedEvent>
+    public class PerformerController : RestControllerWithSignalR<PerformerResource, Performer>, IHandleAsync<PerformerUpdatedEvent>, IHandleAsync<PerformersDeletedEvent>
     {
         private static readonly HashSet<string> _allowedPerformerSortKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
@@ -287,18 +287,17 @@ namespace Whisparr.Api.V3.Performers
             _coverMapper.ConvertToLocalPerformerUrls(performer.Id, performer.Images);
         }
 
-        /// <summary>Handles performer updated events to update the performer cache and broadcast changes via SignalR</summary>
+        /// <summary>Handles performer updated events to broadcast changes via SignalR</summary>
         [NonAction]
-        public void Handle(PerformerUpdatedEvent message)
+        public void HandleAsync(PerformerUpdatedEvent message)
         {
             var resource = MapToResource(message.Performer);
 
-            _performerResourceCache.Remove(resource.ForeignId);
             BroadcastResourceChange(ModelAction.Updated, resource);
         }
 
         [NonAction]
-        public void Handle(PerformersDeletedEvent message)
+        public void HandleAsync(PerformersDeletedEvent message)
         {
             if (message?.Performers == null || !message.Performers.Any())
             {

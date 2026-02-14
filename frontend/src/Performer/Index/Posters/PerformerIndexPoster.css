@@ -75,6 +75,11 @@ $hoverScale: 1.05;
   font-size: $smallFontSize;
 }
 
+.ageIcon,
+.sizeOnDiskIcon {
+  margin-right: 5px;
+}
+
 .controls {
   position: absolute;
   bottom: 10px;

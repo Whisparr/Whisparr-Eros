@@ -141,18 +141,22 @@ export const useStudioDetails = (foreignId: string): UseStudioDetailsReturn => {
   });
 
   // Mutation for toggling monitored state
+  // Uses a cache merge to avoid a re-fetch after toggling monitor state
   const monitorToggleMutation = useApiMutation<Studio, Studio>({
     method: 'PUT',
     path: studio?.id ? `/${PATH}/${studio.id}` : '',
     mutationOptions: {
       onSuccess: (data) => {
         if (data?.foreignId) {
-          queryClient.invalidateQueries({
-            queryKey: [`/${PATH}/${data.foreignId}`],
-          });
-          queryClient.invalidateQueries({
-            queryKey: [`/${PATH}/${data.foreignId}/works`],
-          });
+          queryClient.setQueryData(
+            [`/${PATH}/${data.foreignId}`],
+            (oldData: Studio) => {
+              if (!oldData || typeof oldData !== 'object') {
+                return data;
+              }
+              return { ...oldData, ...data };
+            }
+          );
         }
       },
     },

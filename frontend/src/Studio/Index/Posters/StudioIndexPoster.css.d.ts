@@ -17,6 +17,7 @@ interface CssExports {
   'progressBarOverlay': string;
   'qualityProfile': string;
   'sizeOnDisk': string;
+  'sizeOnDiskIcon': string;
   'studioLogo': string;
   'title': string;
   'totalMovieCount': string;

@@ -3,6 +3,7 @@
 interface CssExports {
   'action': string;
   'age': string;
+  'ageIcon': string;
   'container': string;
   'content': string;
   'controls': string;
@@ -21,6 +22,7 @@ interface CssExports {
   'progressBarOverlay': string;
   'qualityProfile': string;
   'sizeOnDisk': string;
+  'sizeOnDiskIcon': string;
   'tags': string;
   'tagsList': string;
   'title': string;

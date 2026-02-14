@@ -73,7 +73,9 @@ namespace Whisparr.Api.V3.Studios
                 SceneCount = model.SceneCount,
                 TotalMovieCount = model.TotalMovieCount,
                 TotalSceneCount = model.TotalSceneCount,
-                SizeOnDisk = model.SizeOnDisk
+                SizeOnDisk = model.SizeOnDisk,
+                HasMovies = model.TotalMovieCount > 0,
+                HasScenes = model.TotalSceneCount > 0,
             };
         }
 

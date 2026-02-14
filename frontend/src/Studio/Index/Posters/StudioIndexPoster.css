@@ -91,6 +91,10 @@ $hoverScale: 1.05;
   text-align: center;
 }
 
+.sizeOnDiskIcon {
+  margin-right: 5px;
+}
+
 .monitorToggleButton {
   position: absolute;
   top: 10px;

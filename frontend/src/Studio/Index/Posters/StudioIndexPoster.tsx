@@ -144,8 +144,12 @@ function StudioIndexPoster(props: StudioIndexPosterProps) {
       {props.sortKey === 'sizeOnDisk' ? (
         <div className={styles.sizeOnDisk} title={translate('SizeOnDisk')}>
           <span>
-            {formatBytes(studio.sizeOnDisk)}
-            <Icon name={icons.DRIVE} size={12} />
+            <Icon
+              className={styles.sizeOnDiskIcon}
+              name={icons.DRIVE}
+              size={12}
+            />
+            <span>{formatBytes(studio.sizeOnDisk)}</span>
           </span>
         </div>
       ) : null}

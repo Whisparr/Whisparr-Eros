@@ -121,8 +121,10 @@ function PerformerIndexPoster(props: PerformerIndexPosterProps) {
       {sortKey === 'age' && performer.age ? (
         <div className={styles.age}>
           <span title={`${performer.age} ${translate('YearsOld')}`}>
-            {performer.age ? `${performer.age}` : translate('Unknown')}
-            <Icon name={icons.CAKE} size={12} />
+            <Icon className={styles.ageIcon} name={icons.CAKE} size={12} />
+            <span>
+              {performer.age ? `${performer.age}` : translate('Unknown')}
+            </span>
           </span>
         </div>
       ) : null}
@@ -167,8 +169,12 @@ function PerformerIndexPoster(props: PerformerIndexPosterProps) {
       {sortKey === 'sizeOnDisk' ? (
         <div className={styles.sizeOnDisk} title={translate('SizeOnDisk')}>
           <span>
-            {formatBytes(performer.sizeOnDisk)}
-            <Icon name={icons.DRIVE} size={12} />
+            <Icon
+              className={styles.sizeOnDiskIcon}
+              name={icons.DRIVE}
+              size={12}
+            />
+            <span>{formatBytes(performer.sizeOnDisk)}</span>
           </span>
         </div>
       ) : null}
