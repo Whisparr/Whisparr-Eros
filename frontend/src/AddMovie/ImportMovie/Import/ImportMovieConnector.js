@@ -6,7 +6,7 @@ import { createSelector } from 'reselect';
 import createRouteMatchShape from 'Helpers/Props/Shapes/createRouteMatchShape';
 import { setAddMovieDefault } from 'Store/Actions/addMovieActions';
 import { clearImportMovie, importMovie, setImportMovieValue } from 'Store/Actions/importMovieActions';
-import { fetchRootFolders, refreshRootFolder } from 'Store/Actions/rootFolderActions';
+import { fetchRootFolders } from 'Store/Actions/rootFolderActions';
 import ImportMovie from './ImportMovie';
 
 function createMapStateToProps() {
