@@ -6,7 +6,7 @@
   composes: cell from '~Components/Table/Cells/VirtualTableRowCell.css';
 
   flex: 0 1 400px;
-  min-width: 300px;
+  min-width: 170px;
   line-height: 36px;
 }
 
@@ -14,19 +14,18 @@
   composes: cell from '~Components/Table/Cells/VirtualTableRowCell.css';
 
   flex: 0 1 150px;
-  min-width: 85px;
+  min-width: 100px;
 }
 
 .qualityProfile {
   composes: cell from '~Components/Table/Cells/VirtualTableRowCell.css';
 
   flex: 0 1 170px;
-  min-width: 170px;
+  min-width: 100px;
 }
 
 .movie {
   composes: cell from '~Components/Table/Cells/VirtualTableRowCell.css';
 
-  flex: 1 0 500px;
-  min-width: 400px;
+  flex: 1 0 200px;
 }
