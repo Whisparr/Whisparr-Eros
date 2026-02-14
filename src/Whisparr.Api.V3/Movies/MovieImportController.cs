@@ -55,6 +55,12 @@ namespace Whisparr.Api.V3.Movies
             _logger = logger;
         }
 
+        /// <summary>
+        /// Not implemented for this controller; required by the base type.
+        /// Intended to return a single <see cref="MovieResource"/> wrapped in an <see cref="ActionResult{T}"/>.
+        /// </summary>
+        /// <param name="id">The movie resource identifier.</param>
+        /// <returns>An <see cref="ActionResult{MovieResource}"/> for the requested movie.</returns>
         [NonAction]
         public override ActionResult<MovieResource> GetResourceByIdWithErrorHandler(int id)
         {
@@ -66,6 +72,15 @@ namespace Whisparr.Api.V3.Movies
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Imports the provided list of movie resources into the application.
+        /// Each resource must include a valid filesystem path to an existing movie file.
+        /// Files will be moved/renamed according to configured naming rules and root folders,
+        /// metadata will be augmented from configured providers, and the movies will be added to the library.
+        /// </summary>
+        /// <param name="resource">List of <see cref="MovieResource"/> objects describing movies to import.</param>
+        /// <returns>An enumerable of <see cref="MovieResource"/> representing the newly added movies.</returns>
+        /// <exception cref="FluentValidation.ValidationException">Thrown when metadata for a movie cannot be found or other validation fails during import.</exception>
         [HttpPost]
         [Consumes("application/json")]
         [Produces("application/json")]
