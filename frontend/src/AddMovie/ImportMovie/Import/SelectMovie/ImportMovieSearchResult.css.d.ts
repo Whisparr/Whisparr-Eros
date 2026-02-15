@@ -3,6 +3,8 @@
 interface CssExports {
   'container': string;
   'movie': string;
+  'stashdbLink': string;
+  'stashdbLinkIcon': string;
   'tmdbLink': string;
   'tmdbLinkIcon': string;
   'tpdbLink': string;

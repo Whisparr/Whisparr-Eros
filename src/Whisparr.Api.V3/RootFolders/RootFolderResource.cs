@@ -12,7 +12,7 @@ namespace Whisparr.Api.V3.RootFolders
         public bool Accessible { get; set; }
         public long? FreeSpace { get; set; }
 
-        public List<UnmappedFolder> UnmappedFolders { get; set; }
+        public List<ImportFile> ImportFiles { get; set; }
     }
 
     public static class RootFolderResourceMapper
@@ -27,11 +27,10 @@ namespace Whisparr.Api.V3.RootFolders
             return new RootFolderResource
             {
                 Id = model.Id,
-
                 Path = model.Path.GetCleanPath(),
                 Accessible = model.Accessible,
                 FreeSpace = model.FreeSpace,
-                UnmappedFolders = model.UnmappedFolders
+                ImportFiles = model.ImportFiles
             };
         }
 

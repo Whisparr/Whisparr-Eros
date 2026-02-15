@@ -14,12 +14,12 @@ function ImportMovieRootFolderRow(props) {
     id,
     path,
     freeSpace,
-    unmappedFolders,
-    onDeletePress
+    importFiles,
+    onRefreshPress
   } = props;
 
-  const unmappedFoldersCount = unmappedFolders.length || '-';
-  const linkProps = window.location.pathname === '/add/import/scenes' ? { to: '/unmapped' } : { to: `/add/import/movies/${id}` };
+  const importFilesCount = importFiles.length || '-';
+  const linkProps = { to: `/add/import/${id}` };
 
   return (
     <TableRow>
@@ -36,15 +36,15 @@ function ImportMovieRootFolderRow(props) {
         {formatBytes(freeSpace) || '-'}
       </TableRowCell>
 
-      <TableRowCell className={styles.unmappedFolders}>
-        {unmappedFoldersCount}
+      <TableRowCell className={styles.importFiles}>
+        {importFilesCount}
       </TableRowCell>
 
       <TableRowCell className={styles.actions}>
         <IconButton
-          title={translate('RemoveRootFolder')}
-          name={icons.REMOVE}
-          onPress={onDeletePress}
+          title={translate('ScanImportFolder')}
+          name={icons.REFRESH}
+          onPress={onRefreshPress}
         />
       </TableRowCell>
     </TableRow>
@@ -55,13 +55,13 @@ ImportMovieRootFolderRow.propTypes = {
   id: PropTypes.number.isRequired,
   path: PropTypes.string.isRequired,
   freeSpace: PropTypes.number.isRequired,
-  unmappedFolders: PropTypes.arrayOf(PropTypes.object).isRequired,
-  onDeletePress: PropTypes.func.isRequired
+  importFiles: PropTypes.arrayOf(PropTypes.object).isRequired,
+  onRefreshPress: PropTypes.func.isRequired
 };
 
 ImportMovieRootFolderRow.defaultProps = {
   freeSpace: 0,
-  unmappedFolders: []
+  importFiles: []
 };
 
 export default ImportMovieRootFolderRow;

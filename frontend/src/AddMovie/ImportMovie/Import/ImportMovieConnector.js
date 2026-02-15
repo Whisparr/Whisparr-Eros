@@ -115,7 +115,7 @@ class ImportMovieConnector extends Component {
   };
 
   onImportPress = (ids) => {
-    this.props.dispatchImportMovie({ ids });
+    this.props.dispatchImportMovie({ ids, rootFolderId: this.props.rootFolderId });
   };
 
   //

@@ -14,7 +14,7 @@
 }
 
 .freeSpace,
-.unmappedFolders {
+.importFiles {
   composes: cell from '~Components/Table/Cells/TableRowCell.css';
 
   width: 150px;
@@ -23,5 +23,5 @@
 .actions {
   composes: cell from '~Components/Table/Cells/TableRowCell.css';
 
-  width: 45px;
+  width: 70px;
 }

@@ -8,7 +8,7 @@ import getSectionState from 'Utilities/State/getSectionState';
 import updateSectionState from 'Utilities/State/updateSectionState';
 import { removeItem, set, updateItem } from './baseActions';
 import createHandleActions from './Creators/createHandleActions';
-import { fetchRootFolders } from './rootFolderActions';
+import { refreshRootFolder } from './rootFolderActions';
 
 //
 // Variables
@@ -221,7 +221,8 @@ export const actionHandlers = handleThunks({
 
       // Make sure we have a selected movie and
       // the same movie hasn't been added yet.
-      if (selectedMovie && !acc.some((a) => a.tmdbId === selectedMovie.tmdbId)) {
+      if (selectedMovie && !acc.some((a) => a.foreignId === selectedMovie.foreignId)) {
+        item.monitored = item.monitor === 'movieOnly';
         const newMovie = getNewMovie(_.cloneDeep(selectedMovie), item);
         newMovie.path = item.path;
 
@@ -253,7 +254,7 @@ export const actionHandlers = handleThunks({
         ...addedIds.map((id) => removeItem({ section, id }))
       ]));
 
-      dispatch(fetchRootFolders({ id: rootFolderId, timeout: true, getMovieFolder: true }));
+      dispatch(refreshRootFolder({ id: rootFolderId }));
     });
 
     promise.fail((xhr) => {

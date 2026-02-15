@@ -14,8 +14,9 @@ function createMapStateToProps() {
   return createSelector(
     (state) => state.addMovie,
     (state) => state.importMovie,
+    (state) => state.rootFolders,
     (state, { selectedIds }) => selectedIds,
-    (addMovie, importMovie, selectedIds) => {
+    (addMovie, importMovie, rootFolders, selectedIds) => {
       const {
         monitor: defaultMonitor,
         qualityProfileId: defaultQualityProfileId
@@ -28,6 +29,10 @@ function createMapStateToProps() {
         importError
       } = importMovie;
 
+      const {
+        isRefreshing
+      } = rootFolders;
+
       const isMonitorMixed = isMixed(items, selectedIds, defaultMonitor, 'monitor');
       const isQualityProfileIdMixed = isMixed(items, selectedIds, defaultQualityProfileId, 'qualityProfileId');
       const hasUnsearchedItems = !isLookingUpMovie && items.some((item) => !item.isPopulated);
@@ -36,6 +41,7 @@ function createMapStateToProps() {
         selectedCount: selectedIds.length,
         isLookingUpMovie,
         isImporting,
+        isRefreshing,
         defaultMonitor,
         defaultQualityProfileId,
         isMonitorMixed,
