@@ -19,15 +19,14 @@ interface MovieStatusProps {
 }
 
 function MovieStatus({ movieId, movieFileId }: MovieStatusProps) {
-  const {
-    isAvailable,
-    monitored,
-    grabbed = false,
-  } = useMovie(movieId) as Movie;
-
   const queueItem = useSelector(createQueueItemSelectorForHook(movieId));
   const movieFile = useMovieFile(movieFileId);
+  const movie = useMovie(movieId) as Movie;
+  if (!movie) {
+    return null;
+  }
 
+  const { isAvailable, monitored, grabbed = false } = movie;
   const hasMovieFile = !!movieFile;
   const isQueued = !!queueItem;
 
