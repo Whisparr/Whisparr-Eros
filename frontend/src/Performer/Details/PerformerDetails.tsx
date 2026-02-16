@@ -31,6 +31,7 @@ import QualityProfileName from 'Settings/Profiles/Quality/QualityProfileName';
 import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
 import formatDate from 'Utilities/Date/formatDate';
 import formatBytes from 'Utilities/Number/formatBytes';
+import countryCode from 'Utilities/String/countryCode';
 import firstCharToUpper from 'Utilities/String/firstCharToUpper';
 import translate from 'Utilities/String/translate';
 import EditPerformerModal from '../Edit/EditPerformerModal';
@@ -354,6 +355,7 @@ function PerformerDetails() {
                       className={styles.country}
                       code={flagIconCode}
                       height={38}
+                      title={countryCode(country)}
                     />
                   )}
                 </div>

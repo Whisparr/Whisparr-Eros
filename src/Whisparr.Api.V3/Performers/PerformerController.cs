@@ -36,6 +36,7 @@ namespace Whisparr.Api.V3.Performers
         private static readonly HashSet<string> _allowedPerformerSortKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
                 "age",
+                "country",
                 "status",
                 "sortName",
                 "gender",
@@ -524,6 +525,7 @@ namespace Whisparr.Api.V3.Performers
                 case "name": return performer.Name;
                 case "sortname": return performer.SortName;
                 case "age": return performer.Age;
+                case "country": return performer.Country;
                 case "status": return performer.Status;
                 case "gender": return performer.Gender;
                 default: return performer.SortName;
@@ -808,6 +810,58 @@ namespace Whisparr.Api.V3.Performers
         }
 
         /// <summary>
+        /// Apply string comparison filter for string properties
+        /// </summary>
+        private void ApplyCountryCodeFilter(PagingSpec<Performer> pageSpec, JsonElement element, string operation, Expression<Func<Performer, string>> propertySelector)
+        {
+            string stringValue = null;
+
+            if (element.ValueKind == JsonValueKind.String)
+            {
+                stringValue = element.GetString();
+            }
+            else if (element.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var item in element.EnumerateArray())
+                {
+                    if (item.ValueKind == JsonValueKind.String)
+                    {
+                        stringValue = item.GetString();
+                        break;
+                    }
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(stringValue))
+            {
+                return;
+            }
+
+            var param = propertySelector.Parameters[0];
+            var property = propertySelector.Body;
+
+            switch (operation)
+            {
+                case "equal":
+                    var equalExpr = Expression.Lambda<Func<Performer, bool>>(
+                        Expression.Equal(
+                            property,
+                            Expression.Constant(stringValue.ToUpperInvariant())),
+                        param);
+                    pageSpec.FilterExpressions.Add(equalExpr);
+                    break;
+                case "notequal":
+                    var notEqualExpr = Expression.Lambda<Func<Performer, bool>>(
+                        Expression.NotEqual(
+                            property,
+                            Expression.Constant(stringValue.ToUpperInvariant())),
+                        param);
+                    pageSpec.FilterExpressions.Add(notEqualExpr);
+                    break;
+            }
+        }
+
+        /// <summary>
         /// Apply boolean filter - handles both array (custom filters) and direct boolean values (standard filters)
         /// </summary>
         private void ApplyBooleanFilter(PagingSpec<Performer> pageSpec, JsonElement element, string operation, Expression<Func<Performer, bool>> propertySelector)
@@ -942,6 +996,9 @@ namespace Whisparr.Api.V3.Performers
                         break;
                     case "careerstart":
                         ApplyNumericFilterNullable(pageSpec, jsonElement, op, p => p.CareerStart);
+                        break;
+                    case "country":
+                        ApplyCountryCodeFilter(pageSpec, jsonElement, op, p => p.Country);
                         break;
                     case "ethnicity":
                         ApplyEnumFilterNullable<Ethnicity>(pageSpec, jsonElement, op, p => p.Ethnicity);
