@@ -14,7 +14,13 @@ export function createMovieSelector(movieId?: number) {
     (state: AppState) => state.movies.itemMap,
     (state: AppState) => state.movies.items,
     (itemMap, allMovies) => {
-      return movieId ? allMovies[itemMap[movieId]] : undefined;
+      return movieId &&
+        allMovies &&
+        itemMap &&
+        itemMap[movieId] !== undefined &&
+        allMovies[itemMap[movieId]]
+        ? allMovies[itemMap[movieId]]
+        : undefined;
     }
   );
 }
