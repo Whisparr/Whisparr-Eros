@@ -81,6 +81,21 @@ class SceneRow extends Component<SceneRowProps, SceneRowState> {
     this.props.onMonitorMoviePress(this.props.id, monitored, options);
   };
 
+  renderBlurredCell = ({
+    className,
+    children,
+    ...otherProps
+  }: {
+    className?: string;
+    children?: React.ReactNode;
+  }) => {
+    return (
+      <TableRowCell className={className} {...otherProps}>
+        <span className={styles.blurred}>{children}</span>
+      </TableRowCell>
+    );
+  };
+
   render() {
     const {
       id,
@@ -148,12 +163,16 @@ class SceneRow extends Component<SceneRowProps, SceneRowState> {
               <TableRowCell
                 key={name}
                 className={
-                  this.props.safeForWorkMode
+                  safeForWorkMode
                     ? `${styles.path} ${styles.blurred}`
                     : styles.path
                 }
               >
-                {movieFilePath}
+                {safeForWorkMode ? (
+                  <span className={styles.blurred}>{movieFilePath}</span>
+                ) : (
+                  movieFilePath
+                )}
               </TableRowCell>
             );
           }
@@ -162,11 +181,7 @@ class SceneRow extends Component<SceneRowProps, SceneRowState> {
             return (
               <RelativeDateCell
                 key={name}
-                className={
-                  safeForWorkMode
-                    ? `${styles.path} ${styles.blurred}`
-                    : styles.path
-                }
+                className={styles.releaseDate}
                 date={releaseDate}
               />
             );

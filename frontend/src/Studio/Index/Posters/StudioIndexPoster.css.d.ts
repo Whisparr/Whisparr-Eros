@@ -14,7 +14,14 @@ interface CssExports {
   'overlayTitle': string;
   'poster': string;
   'posterContainer': string;
+  'progressBarOverlay': string;
+  'qualityProfile': string;
+  'sizeOnDisk': string;
+  'sizeOnDiskIcon': string;
+  'studioLogo': string;
   'title': string;
+  'totalMovieCount': string;
+  'totalSceneCount': string;
 }
 export const cssExports: CssExports;
 export default cssExports;

@@ -79,7 +79,7 @@ namespace NzbDrone.Common.Test.TPLTests
 
             Subject.WaitAndPulse("me", TimeSpan.FromMilliseconds(100));
 
-            (GetRateLimitStore()["me"] - _epoch).Should().BeGreaterOrEqualTo(TimeSpan.FromMilliseconds(300));
+            (GetRateLimitStore()["me"] - _epoch).Should().BeGreaterThanOrEqualTo(TimeSpan.FromMilliseconds(300));
         }
 
         [Test]
@@ -87,7 +87,7 @@ namespace NzbDrone.Common.Test.TPLTests
         {
             Subject.WaitAndPulse("me", TimeSpan.FromMilliseconds(100));
 
-            (GetRateLimitStore()["me"] - _epoch).Should().BeGreaterOrEqualTo(TimeSpan.FromMilliseconds(100));
+            (GetRateLimitStore()["me"] - _epoch).Should().BeGreaterThanOrEqualTo(TimeSpan.FromMilliseconds(100));
         }
 
         [Test]
@@ -98,7 +98,7 @@ namespace NzbDrone.Common.Test.TPLTests
 
             Subject.WaitAndPulse("me", "sub", TimeSpan.FromMilliseconds(100));
 
-            (GetRateLimitStore()["me-sub"] - _epoch).Should().BeGreaterOrEqualTo(TimeSpan.FromMilliseconds(400));
+            (GetRateLimitStore()["me-sub"] - _epoch).Should().BeGreaterThanOrEqualTo(TimeSpan.FromMilliseconds(400));
         }
 
         [Test]
@@ -109,7 +109,7 @@ namespace NzbDrone.Common.Test.TPLTests
 
             Subject.WaitAndPulse("me", "sub", TimeSpan.FromMilliseconds(100));
 
-            (GetRateLimitStore()["me-sub"] - _epoch).Should().BeGreaterOrEqualTo(TimeSpan.FromMilliseconds(200));
+            (GetRateLimitStore()["me-sub"] - _epoch).Should().BeGreaterThanOrEqualTo(TimeSpan.FromMilliseconds(200));
         }
 
         [Test]

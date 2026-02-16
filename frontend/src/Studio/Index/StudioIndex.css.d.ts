@@ -4,6 +4,7 @@ interface CssExports {
   'contentBody': string;
   'contentBodyContainer': string;
   'errorMessage': string;
+  'pageContent': string;
   'pageContentBodyWrapper': string;
   'postersInnerContentBody': string;
   'tableInnerContentBody': string;

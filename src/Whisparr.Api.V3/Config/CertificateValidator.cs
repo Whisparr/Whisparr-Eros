@@ -13,19 +13,21 @@ namespace Whisparr.Api.V3.Config
     {
         public static IRuleBuilderOptions<T, string> IsValidCertificate<T>(this IRuleBuilder<T, string> ruleBuilder)
         {
-            return ruleBuilder.SetValidator(new CertificateValidator());
+            return ruleBuilder.SetValidator(new CertificateValidator<T>());
         }
     }
 
-    public class CertificateValidator : PropertyValidator
+    public class CertificateValidator<T> : PropertyValidator<T, string>
     {
-        protected override string GetDefaultMessageTemplate() => "Invalid SSL certificate file or password. {message}";
+        public override string Name => "CertificateValidator";
 
-        private static readonly Logger Logger = NzbDroneLogger.GetLogger(typeof(CertificateValidator));
+        protected override string GetDefaultMessageTemplate(string errorCode) => "Invalid SSL certificate file or password. {message}";
 
-        protected override bool IsValid(PropertyValidatorContext context)
+        private static readonly Logger Logger = NzbDroneLogger.GetLogger(typeof(CertificateValidator<T>));
+
+        public override bool IsValid(ValidationContext<T> context, string value)
         {
-            if (context.PropertyValue == null)
+            if (value == null)
             {
                 return false;
             }

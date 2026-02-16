@@ -8,7 +8,6 @@ import createAjaxRequest from 'Utilities/createAjaxRequest';
 import camelCaseToString from 'Utilities/String/camelCaseToString';
 import translate from 'Utilities/String/translate';
 import { set, updateItem } from './baseActions';
-import createFetchHandler from './Creators/createFetchHandler';
 import createHandleActions from './Creators/createHandleActions';
 import createRemoveItemHandler from './Creators/createRemoveItemHandler';
 import createSaveProviderHandler from './Creators/createSaveProviderHandler';
@@ -37,15 +36,20 @@ export const defaultState = {
   secondarySortKey: 'sortTitle',
   secondarySortDirection: sortDirections.ASCENDING,
   view: 'posters',
+  page: 1,
+  selectedFilterKey: 'all',
+  pageSize: 25,
   pendingChanges: {},
 
   posterOptions: {
     detailedProgressBar: false,
     size: 'large',
-    showTitle: false
+    showTitle: true,
+    pageSize: 25
   },
 
   tableOptions: {
+    pageSize: 25
   },
 
   deleteOptions: {
@@ -80,31 +84,35 @@ export const defaultState = {
       label: () => translate('Network'),
       isSortable: true,
       isVisible: true,
-      isModifiable: false
+      isModifiable: true
     },
     {
       name: 'qualityProfileId',
       label: () => translate('QualityProfile'),
       isSortable: true,
-      isVisible: true
+      isVisible: true,
+      isModifiable: true
     },
     {
       name: 'rootFolderPath',
-      label: () => translate('RootFolder'),
+      label: () => translate('RootFolderPath'),
       isSortable: true,
-      isVisible: true
+      isVisible: true,
+      isModifiable: true
     },
     {
       name: 'aliases',
       label: () => translate('Aliases'),
-      isSortable: true,
-      isVisible: true
+      isSortable: false,
+      isVisible: true,
+      isModifiable: true
     },
     {
       name: 'tags',
       label: () => translate('Tags'),
       isSortable: false,
-      isVisible: false
+      isVisible: true,
+      isModifiable: true
     },
     {
       name: 'totalMovieCount',
@@ -119,14 +127,19 @@ export const defaultState = {
       isVisible: true
     },
     {
+      name: 'sizeOnDisk',
+      label: () => translate('SizeOnDisk'),
+      isSortable: true,
+      isVisible: true,
+      isModifiable: true
+    },
+    {
       name: 'actions',
       columnLabel: () => translate('Actions'),
       isVisible: true,
       isModifiable: false
     }
   ],
-
-  selectedFilterKey: 'all',
 
   filters: [
     {
@@ -234,6 +247,18 @@ export const defaultState = {
       valueType: filterBuilderValueTypes.DEFAULT
     },
     {
+      name: 'movieCount',
+      label: () => translate('MovieCount'),
+      type: filterBuilderTypes.NUMBER,
+      valueType: filterBuilderValueTypes.DEFAULT
+    },
+    {
+      name: 'totalMovieCount',
+      label: () => translate('TotalMovieCount'),
+      type: filterBuilderTypes.NUMBER,
+      valueType: filterBuilderValueTypes.DEFAULT
+    },
+    {
       name: 'network',
       label: () => translate('Network'),
       type: filterBuilderTypes.EXACT,
@@ -268,6 +293,7 @@ export const persistState = [
   'studios.sortKey',
   'studios.sortDirection',
   'studios.view',
+  'studios.page',
   'studios.columns',
   'studios.selectedFilterKey',
   'studios.customFilters',
@@ -278,7 +304,6 @@ export const persistState = [
 //
 // Actions Types
 
-export const FETCH_STUDIOS = 'studios/fetchStudios';
 export const SAVE_STUDIO = 'studios/saveStudio';
 export const DELETE_STUDIO = 'studios/deleteStudio';
 export const SAVE_STUDIO_EDITOR = 'studios/saveStudioEditor';
@@ -293,11 +318,11 @@ export const SET_STUDIO_FILTER = 'studios/setStudioFilter';
 export const SET_STUDIO_VIEW = 'studios/setStudioView';
 export const SET_STUDIO_TABLE_OPTION = 'studios/setStudioTableOption';
 export const SET_STUDIO_POSTER_OPTION = 'studios/setStudioPosterOption';
+export const SET_STUDIO_PAGE = 'studios/setStudioPage';
 
 //
 // Action Creators
 
-export const fetchStudios = createThunk(FETCH_STUDIOS);
 export const saveStudio = createThunk(SAVE_STUDIO);
 export const saveStudioEditor = createThunk(SAVE_STUDIO_EDITOR);
 
@@ -320,6 +345,10 @@ export const setStudioFilter = createAction(SET_STUDIO_FILTER);
 export const setStudioView = createAction(SET_STUDIO_VIEW);
 export const setStudioTableOption = createAction(SET_STUDIO_TABLE_OPTION);
 export const setStudioPosterOption = createAction(SET_STUDIO_POSTER_OPTION);
+export const setStudioPage = (page) => ({
+  type: SET_STUDIO_PAGE,
+  payload: { page }
+});
 
 export const setStudioValue = createAction(SET_STUDIO_VALUE, (payload) => {
   return {
@@ -332,7 +361,6 @@ export const setStudioValue = createAction(SET_STUDIO_VALUE, (payload) => {
 // Action Handlers
 
 export const actionHandlers = handleThunks({
-  [FETCH_STUDIOS]: createFetchHandler(section, '/studio'),
   [SAVE_STUDIO]: createSaveProviderHandler(section, '/studio'),
   [DELETE_STUDIO]: createRemoveItemHandler(section, '/studio'),
 
@@ -396,18 +424,13 @@ export const actionHandlers = handleThunks({
 
     promise.done((data) => {
       dispatch(batchActions([
-        ...data.map((studio) => {
-          return updateItem({
-            id: studio.id,
-            section: 'studios',
-            ...studio
-          });
-        }),
+        updateItem({ section, ...data }),
 
         set({
           section,
           isSaving: false,
-          saveError: null
+          saveError: null,
+          pendingChanges: {}
         })
       ]));
     });
@@ -416,7 +439,7 @@ export const actionHandlers = handleThunks({
       dispatch(set({
         section,
         isSaving: false,
-        saveError: xhr
+        saveError: xhr.aborted ? null : xhr
       }));
     });
   }
@@ -427,12 +450,16 @@ export const actionHandlers = handleThunks({
 
 export const reducers = createHandleActions({
 
+  [SET_STUDIO_PAGE]: (state, { payload }) => ({
+    ...state,
+    page: payload.page
+  }),
+
   [SET_STUDIO_SORT]: createSetClientSideCollectionSortReducer(section),
   [SET_STUDIO_FILTER]: createSetClientSideCollectionFilterReducer(section),
-  [SET_STUDIO_VIEW]: function(state, { payload }) {
+  [SET_STUDIO_VIEW]: (state, { payload }) => {
     return Object.assign({}, state, { view: payload.view });
   },
-
   [SET_STUDIO_TABLE_OPTION]: createSetTableOptionReducer(section),
   [SET_STUDIO_VALUE]: createSetSettingValueReducer(section),
   [SET_DELETE_OPTION]: (state, { payload }) => {
@@ -457,3 +484,5 @@ export const reducers = createHandleActions({
   }
 
 }, defaultState, section);
+
+export const filters = defaultState.filters;

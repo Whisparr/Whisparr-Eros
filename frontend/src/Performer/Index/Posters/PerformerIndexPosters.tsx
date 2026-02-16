@@ -49,6 +49,7 @@ interface PerformerIndexPostersProps {
   scrollerRef: RefObject<HTMLElement>;
   isSelectMode: boolean;
   isSmallScreen: boolean;
+  safeForWorkMode: boolean;
 }
 
 const performerIndexSelector = createSelector(
@@ -65,7 +66,7 @@ function Cell({
   rowIndex,
   style,
   data,
-}: GridChildComponentProps<CellItemData>): JSX.Element | null {
+}: GridChildComponentProps<CellItemData> & {}): JSX.Element | null {
   const { layout, items, sortKey, isSelectMode } = data;
 
   const { columnCount, padding, posterWidth, posterHeight } = layout;
@@ -86,7 +87,7 @@ function Cell({
       }}
     >
       <PerformerIndexPoster
-        performerId={performer.id}
+        performer={performer}
         sortKey={sortKey}
         isSelectMode={isSelectMode}
         posterWidth={posterWidth}
@@ -100,18 +101,14 @@ function getWindowScrollTopPosition() {
   return document.documentElement.scrollTop || document.body.scrollTop || 0;
 }
 
-export default function PerformerIndexPosters(
-  props: PerformerIndexPostersProps
-) {
-  const {
-    scrollerRef,
-    items,
-    sortKey,
-    jumpToCharacter,
-    isSelectMode,
-    isSmallScreen,
-  } = props;
-
+function PerformerIndexPosters({
+  scrollerRef,
+  items,
+  sortKey,
+  jumpToCharacter,
+  isSelectMode,
+  isSmallScreen,
+}: PerformerIndexPostersProps) {
   const { posterOptions } = useSelector(performerIndexSelector);
   const ref = useRef<Grid>(null);
   const [measureRef, bounds] = useMeasure();
@@ -133,9 +130,7 @@ export default function PerformerIndexPosters(
     () => Math.max(Math.floor(size.width / columnWidth), 1),
     [size, columnWidth]
   );
-  const padding = props.isSmallScreen
-    ? columnPaddingSmallScreen
-    : columnPadding;
+  const padding = isSmallScreen ? columnPaddingSmallScreen : columnPadding;
   const posterWidth = columnWidth - padding * 2;
   const posterHeight = Math.ceil((250 / 170) * posterWidth);
 
@@ -281,3 +276,5 @@ export default function PerformerIndexPosters(
     </div>
   );
 }
+
+export default PerformerIndexPosters;

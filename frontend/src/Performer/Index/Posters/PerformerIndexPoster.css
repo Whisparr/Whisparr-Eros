@@ -1,3 +1,20 @@
+.posterImageWrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.progressBarOverlay {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  pointer-events: none;
+}
 $hoverScale: 1.05;
 
 .content {
@@ -22,8 +39,9 @@ $hoverScale: 1.05;
 .poster {
   position: relative;
   display: block;
-  background-color: var(--defaultColor);
   object-fit: cover;
+
+  background-color: var(--defaultColor);
 }
 
 .overlayTitle {
@@ -41,19 +59,25 @@ $hoverScale: 1.05;
   font-size: 20px;
 }
 
-.title {
+.age,
+.ethnicity,
+.gender,
+.hairColor,
+.qualityProfile,
+.sizeOnDisk,
+.title,
+.totalMovieCount,
+.totalSceneCount {
   @add-mixin truncate;
 
-  background-color: var(--sceneBackgroundColor);
+  background-color: var(--movieBackgroundColor);
   text-align: center;
   font-size: $smallFontSize;
 }
 
-.monitorToggleButton {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  z-index: 3;
+.ageIcon,
+.sizeOnDiskIcon {
+  margin-right: 5px;
 }
 
 .controls {
@@ -83,7 +107,29 @@ $hoverScale: 1.05;
   }
 }
 
-.ended {
+.age,
+.ethnicity,
+.gender,
+.hairColor,
+.qualityProfile,
+.sizeOnDisk,
+.tags,
+.title {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  flex-direction: column;
+  padding: 0 3px;
+  height: 21px;
+  background-color: var(--movieBackgroundColor);
+}
+
+.tagsList {
+  display: flex;
+  overflow: hidden;
+}
+
+.deleted {
   position: absolute;
   top: 0;
   right: 0;
@@ -92,7 +138,7 @@ $hoverScale: 1.05;
   height: 0;
   border-width: 0 25px 25px 0;
   border-style: solid;
-  border-color: transparent var(--dangerColor) transparent transparent;
+  border-color: transparent var(--gray) transparent transparent;
   color: var(--white);
 }
 

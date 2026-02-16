@@ -89,13 +89,13 @@ Logger.prototype.log = function(logLevel, message) {
   }
 };
 
-// TODO: TempHelper to update a nested movie in performer.years[].movies[] in React Query cache
+// Helper to update a nested movie in performer.years[].movies[] in React Query cache
 // Update Performer React Query cache helper
 function updateMovieInPerformerWorksQueryCache(updatedMovie) {
   // Find all queries for performer works
   const queryCache = queryClient.getQueryCache().findAll();
   queryCache.forEach(({ queryKey }) => {
-    // Look for keys like "/api/v3/performer/{performerId}/works"
+    // Look for keys like "/performer/{performerId}/works"
     if (
       Array.isArray(queryKey) &&
       typeof queryKey[0] === 'string' &&
@@ -113,6 +113,111 @@ function updateMovieInPerformerWorksQueryCache(updatedMovie) {
         newData[idx] = { ...oldData[idx], ...updatedMovie };
         return newData;
       });
+    }
+  });
+}
+
+// Helper to update a nested movie in performer.years[].movies[] in React Query cache
+// To avoid invalidating the entire list when a single movie is updated, we need to find the movie in the cache and update it directly.
+function updateMovieInStudioWorksQueryCache(updatedMovie) {
+  if (!updatedMovie || !updatedMovie.studioForeignId) {
+    return;
+  }
+
+  const studioKey = `/studio/${updatedMovie.studioForeignId}/works`;
+  queryClient.setQueryData([studioKey], (oldData) => {
+    if (!Array.isArray(oldData)) {
+      return oldData;
+    }
+    const idx = oldData.findIndex((movie) => movie.id === updatedMovie.id);
+    if (idx === -1) {
+      return oldData;
+    }
+    const newData = [...oldData];
+    newData[idx] = { ...oldData[idx], ...updatedMovie };
+    return newData;
+  });
+}
+
+// Merges updates in React Queryr cache instead of a re-fetch
+function updatePerformerQueryCache(updatedPerformer) {
+  if (!updatedPerformer || !updatedPerformer.foreignId) {
+    return;
+  }
+
+  const performerKey = `/performer/${updatedPerformer.foreignId}`;
+
+  queryClient.setQueryData([performerKey], (oldData) => {
+    if (!oldData || typeof oldData !== 'object') {
+      return updatedPerformer;
+    }
+    return { ...oldData, ...updatedPerformer };
+  });
+}
+
+// Merges updates in React Queryr cache instead of a re-fetch
+function updateStudioQueryCache(updatedStudio) {
+  if (!updatedStudio || !updatedStudio.foreignId) {
+    return;
+  }
+
+  const studioKey = `/studio/${updatedStudio.foreignId}`;
+  queryClient.setQueryData([studioKey], (oldData) => {
+    if (!oldData || typeof oldData !== 'object') {
+      return updatedStudio;
+    }
+    return { ...oldData, ...updatedStudio };
+  });
+}
+
+function removePerformerQueryCache(updatedPerformer) {
+  if (!updatedPerformer || !updatedPerformer.foreignId) {
+    return;
+  }
+
+  queryClient.removeQueries({
+    queryKey: [`/performer/${updatedPerformer.foreignId}`]
+  });
+
+  queryClient.removeQueries({
+    queryKey: [`/performer/${updatedPerformer.foreignId}/works`]
+  });
+}
+
+function removeStudioQueryCache(updatedStudio) {
+  if (!updatedStudio || !updatedStudio.foreignId) {
+    return;
+  }
+
+  queryClient.removeQueries({
+    queryKey: [`/studio/${updatedStudio.foreignId}`]
+  });
+
+  queryClient.removeQueries({
+    queryKey: [`/studio/${updatedStudio.foreignId}/works`]
+  });
+}
+
+function invalidatePerformerPagedQueryCache() {
+  queryClient.invalidateQueries({
+    predicate: (query) => {
+      return (
+        Array.isArray(query.queryKey) &&
+        typeof query.queryKey[0] === 'string' &&
+        query.queryKey[0].startsWith('/performer/paged')
+      );
+    }
+  });
+}
+
+function invalidateStudioPagedQueryCache() {
+  queryClient.invalidateQueries({
+    predicate: (query) => {
+      return (
+        Array.isArray(query.queryKey) &&
+        typeof query.queryKey[0] === 'string' &&
+        query.queryKey[0].startsWith('/studio/paged')
+      );
     }
   });
 }
@@ -275,6 +380,8 @@ class SignalRConnector extends Component {
       if (body.action === 'updated') {
         this.props.dispatchUpdateItemsBatch(body.resources.map((resource) => ({ section, ...resource })));
         body.resources.forEach(updateMovieInPerformerWorksQueryCache);
+        body.resources.forEach(updateMovieInStudioWorksQueryCache);
+        body.resources.forEach(updateMovieInStudioWorksQueryCache);
         repopulatePage('movieUpdated');
       } else if (body.action === 'deleted') {
         body.resources.forEach((resource) => {
@@ -290,6 +397,8 @@ class SignalRConnector extends Component {
     if (action === 'updated') {
       this.props.dispatchUpdateItem({ section, ...body.resource });
       updateMovieInPerformerWorksQueryCache(body.resource);
+      updateMovieInStudioWorksQueryCache(body.resource);
+      updateMovieInStudioWorksQueryCache(body.resource);
       repopulatePage('movieUpdated');
     } else if (action === 'deleted') {
       this.props.dispatchRemoveItem({ section, id: body.resource.id });
@@ -311,23 +420,31 @@ class SignalRConnector extends Component {
 
   handlePerformer = (body) => {
     const action = body.action;
-    const section = 'performers';
+
+    if (Array.isArray(body.resources) && body.resources.length > 0) {
+      if (action === 'deleted') {
+        body.resources.forEach((resource) => {
+          removePerformerQueryCache(resource);
+        });
+      } else {
+        body.resources.forEach((resource) => {
+          updatePerformerQueryCache(resource);
+        });
+      }
+      invalidatePerformerPagedQueryCache();
+      return;
+    }
 
     if (action === 'updated') {
-      // Update performer item in Redux store
-      this.props.dispatchUpdateItem({ section, ...body.resource });
-
-      // Invalidate performer query cache in React Query
-      if (body.resource && body.resource.foreignId) {
-        queryClient.invalidateQueries([
-          [`/performer/${body.resource.foreignId}`]]);
-      }
-      if (body.resource && body.resource.foreignId) {
-        queryClient.invalidateQueries([
-          [`/performer/${body.resource.foreignId}/works`]]);
-      }
+      // Update individual performer query keys rather than re-fetch
+      updatePerformerQueryCache(body.resource);
+      // Force paged query re-fetch so updates are immediate
+      invalidatePerformerPagedQueryCache();
     } else if (action === 'deleted') {
-      this.props.dispatchRemoveItem({ section, id: body.resource.id });
+      // Remove individual performer quey keys
+      removePerformerQueryCache(body.resource);
+      // Force paged query re-fetch so updates are immediate
+      invalidatePerformerPagedQueryCache();
     }
   };
 
@@ -351,12 +468,27 @@ class SignalRConnector extends Component {
 
   handleStudio = (body) => {
     const action = body.action;
-    const section = 'studios';
+
+    if (Array.isArray(body.resources) && body.resources.length > 0) {
+      if (action === 'deleted') {
+        body.resources.forEach((resource) => {
+          removeStudioQueryCache(resource);
+        });
+      } else {
+        body.resources.forEach((resource) => {
+          updateStudioQueryCache(resource);
+        });
+      }
+      invalidateStudioPagedQueryCache();
+      return;
+    }
 
     if (action === 'updated') {
-      this.props.dispatchUpdateItem({ section, ...body.resource });
+      updateStudioQueryCache(body.resource);
+      invalidateStudioPagedQueryCache();
     } else if (action === 'deleted') {
-      this.props.dispatchRemoveItem({ section, id: body.resource.id });
+      removeStudioQueryCache(body.resource);
+      invalidateStudioPagedQueryCache();
     }
   };
 

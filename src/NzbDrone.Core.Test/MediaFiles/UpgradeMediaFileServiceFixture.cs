@@ -87,6 +87,7 @@ namespace NzbDrone.Core.Test.MediaFiles
             Subject.UpgradeMovieFile(_movieFile, _localMovie);
 
             Mocker.GetMock<IMediaFileService>().Verify(v => v.Delete(_localMovie.Movie.MovieFile, DeleteMediaFileReason.Upgrade), Times.Once());
+            ExceptionVerification.IgnoreWarns();
         }
 
         [Test]
@@ -101,6 +102,7 @@ namespace NzbDrone.Core.Test.MediaFiles
             Subject.UpgradeMovieFile(_movieFile, _localMovie);
 
             Mocker.GetMock<IRecycleBinProvider>().Verify(v => v.DeleteFile(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+            ExceptionVerification.IgnoreWarns();
         }
 
         [Test]

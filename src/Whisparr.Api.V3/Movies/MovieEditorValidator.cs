@@ -8,7 +8,7 @@ namespace Whisparr.Api.V3.Movies
 {
     public class MovieEditorValidator : AbstractValidator<Movie>
     {
-        public MovieEditorValidator(RootFolderExistsValidator rootFolderExistsValidator, QualityProfileExistsValidator qualityProfileExistsValidator)
+        public MovieEditorValidator(RootFolderExistsValidator<Movie> rootFolderExistsValidator, QualityProfileExistsValidator<Movie> qualityProfileExistsValidator)
         {
             RuleFor(s => s.RootFolderPath).Cascade(CascadeMode.Stop)
                 .IsValidPath()

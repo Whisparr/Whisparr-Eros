@@ -5,7 +5,6 @@ import AppState from 'App/State/AppState';
 import { fetchTranslations } from 'Store/Actions/appActions';
 import { fetchCustomFilters } from 'Store/Actions/customFilterActions';
 import { fetchMovies } from 'Store/Actions/movieActions';
-import { fetchPerformers } from 'Store/Actions/performerActions';
 import {
   fetchImportLists,
   fetchIndexerFlags,
@@ -13,7 +12,6 @@ import {
   fetchQualityProfiles,
   fetchUISettings,
 } from 'Store/Actions/settingsActions';
-import { fetchStudios } from 'Store/Actions/studioActions';
 import { fetchStatus } from 'Store/Actions/systemActions';
 import { fetchTags } from 'Store/Actions/tagActions';
 
@@ -117,8 +115,6 @@ const useAppPage = () => {
   useEffect(() => {
     dispatch(fetchMovies());
     dispatch(fetchCustomFilters());
-    dispatch(fetchPerformers());
-    dispatch(fetchStudios());
     dispatch(fetchTags());
     dispatch(fetchQualityProfiles());
     dispatch(fetchLanguages());

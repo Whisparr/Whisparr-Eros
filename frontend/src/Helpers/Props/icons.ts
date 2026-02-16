@@ -29,6 +29,7 @@ import {
   faBackward as fasBackward,
   faBan as fasBan,
   faBars as fasBars,
+  faBirthdayCake as faBirthdayCake,
   faBolt as fasBolt,
   faBook as faBook,
   faBookmark as fasBookmark,
@@ -74,6 +75,7 @@ import {
   faFolderOpen as fasFolderOpen,
   faFolderTree as farFolderTree,
   faForward as fasForward,
+  faGlobe as fasGlobe,
   faHeart as fasHeart,
   faHistory as fasHistory,
   faHome as fasHome,
@@ -142,6 +144,7 @@ export const ARROW_RIGHT = fasArrowCircleRight;
 export const BACKUP = farFileArchive;
 export const BLOCKLIST = fasBan;
 export const BUG = fasBug;
+export const CAKE = faBirthdayCake;
 export const CALENDAR = fasCalendarAlt;
 export const CALENDAR_O = farCalendar;
 export const CARET_DOWN = fasCaretDown;
@@ -173,6 +176,7 @@ export const EXPAND = fasChevronCircleDown;
 export const EXPAND_INDETERMINATE = fasChevronCircleRight;
 export const EXPORT = fasFileExport;
 export const EXTERNAL_LINK = fasExternalLinkAlt;
+export const EYE = fasEye;
 export const FATAL = fasTimesCircle;
 export const FILE = farFile;
 export const FILE_MISSING = fasFileCircleQuestion;
@@ -184,6 +188,7 @@ export const FOOTNOTE = fasAsterisk;
 export const FOLDER = farFolder;
 export const FOLDER_OPEN = fasFolderOpen;
 export const GENRE = fasTheaterMasks;
+export const GLOBE = fasGlobe;
 export const GROUP = farObjectGroup;
 export const HEALTH = fasMedkit;
 export const HEART = fasHeart;

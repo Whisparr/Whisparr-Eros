@@ -1,9 +1,10 @@
+using FluentValidation;
 using FluentValidation.Validators;
 using NzbDrone.Core.Movies;
 
 namespace NzbDrone.Core.Validation.Paths
 {
-    public class MovieExistsValidator : PropertyValidator
+    public class MovieExistsValidator<T> : PropertyValidator<T, string>
     {
         private readonly IMovieService _movieService;
 
@@ -12,18 +13,18 @@ namespace NzbDrone.Core.Validation.Paths
             _movieService = movieService;
         }
 
-        protected override string GetDefaultMessageTemplate() => "This item has already been added";
+        public override string Name => "MovieExistsValidator";
 
-        protected override bool IsValid(PropertyValidatorContext context)
+        protected override string GetDefaultMessageTemplate(string errorCode) => "This item has already been added";
+
+        public override bool IsValid(ValidationContext<T> context, string value)
         {
-            if (context.PropertyValue == null)
+            if (value == null)
             {
                 return true;
             }
 
-            var foreignId = (string)context.PropertyValue;
-
-            return _movieService.FindByForeignId(foreignId) == null;
+            return _movieService.FindByForeignId(value) == null;
         }
     }
 }

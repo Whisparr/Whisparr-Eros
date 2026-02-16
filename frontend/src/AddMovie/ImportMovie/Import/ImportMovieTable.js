@@ -13,7 +13,7 @@ class ImportMovieTable extends Component {
 
   componentDidMount() {
     const {
-      unmappedFolders,
+      importFiles,
       defaultMonitor,
       defaultQualityProfileId,
       onMovieLookup,
@@ -25,10 +25,10 @@ class ImportMovieTable extends Component {
       qualityProfileId: defaultQualityProfileId
     };
 
-    unmappedFolders.forEach((unmappedFolder) => {
-      const id = unmappedFolder.name;
+    importFiles.forEach((importFile) => {
+      const id = importFile.name;
 
-      onMovieLookup(id, unmappedFolder.path, unmappedFolder.relativePath);
+      onMovieLookup(id, importFile.path, importFile.relativePath);
 
       onSetImportMovieValue({
         id,
@@ -65,7 +65,7 @@ class ImportMovieTable extends Component {
       const isSelected = selectedState[id];
 
       const isExistingMovie = !!selectedMovie &&
-        _.some(prevProps.allMovies, { tmdbId: selectedMovie.tmdbId });
+        _.some(prevProps.allMovies, { foreignId: selectedMovie.foreignId });
 
       // Props doesn't have a selected movie or
       // the selected movie is an existing movie.
@@ -77,7 +77,7 @@ class ImportMovieTable extends Component {
 
       // State is selected, but a movie isn't selected or
       // the selected movie is an existing movie.
-      if (isSelected && (!selectedMovie || isExistingMovie)) {
+      if (isSelected && (!selectedMovie)) {
         onSelectedChange({ id, value: false });
 
         return;
@@ -163,7 +163,7 @@ class ImportMovieTable extends Component {
 ImportMovieTable.propTypes = {
   rootFolderId: PropTypes.number.isRequired,
   items: PropTypes.arrayOf(PropTypes.object),
-  unmappedFolders: PropTypes.arrayOf(PropTypes.object),
+  importFiles: PropTypes.arrayOf(PropTypes.object),
   defaultMonitor: PropTypes.string.isRequired,
   defaultQualityProfileId: PropTypes.number,
   allSelected: PropTypes.bool.isRequired,

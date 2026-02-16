@@ -1,10 +1,20 @@
 import _ from 'lodash';
-import React, { Component } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useDispatch } from 'react-redux';
+import { useParams } from 'react-router-dom';
+import {
+  AutoSizer,
+  CellMeasurer,
+  CellMeasurerCache,
+  List,
+  type ListRowProps,
+  WindowScroller,
+} from 'react-virtualized';
 import Alert from 'Components/Alert';
-import Delayed from 'Components/Delayed';
 import FieldSet from 'Components/FieldSet';
 import Icon from 'Components/Icon';
 import Label from 'Components/Label';
+import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import Measure from 'Components/Measure';
 import MonitorToggleButton from 'Components/MonitorToggleButton';
 import PageContent from 'Components/Page/PageContent';
@@ -13,383 +23,349 @@ import PageToolbar from 'Components/Page/Toolbar/PageToolbar';
 import PageToolbarButton from 'Components/Page/Toolbar/PageToolbarButton';
 import PageToolbarSection from 'Components/Page/Toolbar/PageToolbarSection';
 import PageToolbarSeparator from 'Components/Page/Toolbar/PageToolbarSeparator';
+import posterPlaceholder from 'Components/posterPlaceholder';
 import Tooltip from 'Components/Tooltip/Tooltip';
 import { icons, kinds, sizes, tooltipPositions } from 'Helpers/Props';
-import type { CoverType, Image } from 'Movie/Movie';
 import QualityProfileName from 'Settings/Profiles/Quality/QualityProfileName';
-import DeleteStudioModalConnector from 'Studio/Delete/DeleteStudioModalConnector'; // Ensure .d.ts is present for TS typing
-import EditStudioModalConnector from 'Studio/Edit/EditStudioModalConnector';
+import { setStudioScenesExpanded } from 'Store/Actions/studioScenesActions';
+import DeleteStudioModal from 'Studio/Delete/DeleteStudioModal';
+import EditStudioModal from 'Studio/Edit/EditStudioModal';
+import { type Image } from 'Studio/Studio';
 import StudioLogo from 'Studio/StudioLogo';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
-import selectAll from 'Utilities/Table/selectAll';
-import toggleSelected from 'Utilities/Table/toggleSelected';
 import StudioDetailsLinks from './StudioDetailsLinks';
-import StudioDetailsYearConnector from './StudioDetailsYearConnector';
-import StudioTagsConnector from './StudioTagsConnector';
+import StudioDetailsYear from './StudioDetailsYear';
+import StudioTags from './StudioTags';
+import {
+  buildStudioWorksData,
+  ensureImageType,
+  useStudioDetails,
+  useStudioDetailsWorks,
+  useStudioTags,
+} from './useStudioDetails';
 import styles from './StudioDetails.css';
 
 function getFanartUrl(images: Image[]): string | undefined {
   return _.find(images, { coverType: 'fanart' })?.url;
 }
 
-function ensureImageType(
-  images: Array<{ coverType: string; url: string; remoteUrl?: string }>
-): Image[] {
-  // Convert images to Image[] with default remoteUrl and valid coverType
-  return images.map((img) => ({
-    coverType:
-      img.coverType === 'poster' ||
-      img.coverType === 'fanart' ||
-      img.coverType === 'screenshot' ||
-      img.coverType === 'clearlogo'
-        ? (img.coverType as CoverType)
-        : 'poster',
-    url: img.url,
-    remoteUrl: img.remoteUrl ?? '',
-  }));
-}
+function StudioDetails() {
+  const { studioForeignId } = useParams<{ studioForeignId: string }>();
+  const dispatch = useDispatch();
 
-interface ExpandedState {
-  allSelected: boolean;
-  allUnselected: boolean;
-  selectedState: { [year: number]: boolean };
-}
-function getExpandedState(newState: ExpandedState) {
-  return {
-    allExpanded: newState.allSelected,
-    allCollapsed: newState.allUnselected,
-    expandedState: newState.selectedState,
-  };
-}
+  const { data: allWorks = [], isFetching: isWorksFetching } =
+    useStudioDetailsWorks(studioForeignId);
 
-interface StudioDetailsProps {
-  id: number;
-  foreignId: string;
-  tmdbId?: number;
-  tpdbId?: string;
-  website?: string;
-  title: string;
-  aliases?: string[];
-  network: string;
-  rootFolderPath: string;
-  sizeOnDisk: number;
-  qualityProfileId: number;
-  monitored: boolean;
-  moviesMonitored: boolean;
-  years: number[];
-  genres: string[];
-  images: Array<{ coverType: string; url: string }>;
-  tags: number[];
-  isSaving: boolean;
-  isRefreshing: boolean;
-  isSearching: boolean;
-  isFetching: boolean;
-  isPopulated: boolean;
-  isSmallScreen: boolean;
-  isSidebarVisible: boolean;
-  previousStudio: object;
-  nextStudio: object;
-  onMonitorTogglePress: (
-    value: boolean | { monitored: boolean; moviesMonitored: boolean },
-    options: { shiftKey: boolean }
-  ) => void;
-  onRefreshPress: () => void;
-  onSearchPress: () => void;
-  onGoToStudio: () => void;
-  moviesError?: object;
-  hasMovies: boolean;
-  hasScenes: boolean;
-  movieCount: number;
-  totalMovieCount: number;
-  totalSceneCount: number;
-  sceneCount: number;
-  safeForWorkMode: boolean;
-}
+  const listRef = useRef<List>(null);
+  const cacheRef = useRef(
+    new CellMeasurerCache({
+      fixedWidth: true,
+      defaultHeight: 70,
+      minHeight: 60,
+    })
+  );
 
-interface StudioDetailsState {
-  isEditMovieModalOpen: boolean;
-  isDeleteMovieModalOpen: boolean;
-  allExpanded: boolean;
-  allCollapsed: boolean;
-  expandedState: { [year: number]: boolean };
-  titleWidth: number;
-}
+  const {
+    studio,
+    safeForWorkMode,
+    expandedState,
+    isDeleteMovieModalOpen,
+    isEditMovieModalOpen,
+    isManualRefresh,
+    isStudioDetailsFetching,
+    isStudioRefreshing,
+    showMovieMonitorToggle,
+    studioDetailsError,
+    handleDeleteMovieModalClose,
+    handleDeleteMoviePress,
+    handleEditMovieModalClose,
+    handleEditMoviePress,
+    handleExpandPress,
+    handleTitleMeasure,
+    onMonitorTogglePress,
+    onRefreshPress,
+    onSearchPress,
+    onYearRefreshPress,
+  } = useStudioDetails(studioForeignId);
 
-class StudioDetails extends Component<StudioDetailsProps, StudioDetailsState> {
-  state: StudioDetailsState = {
-    isEditMovieModalOpen: false,
-    isDeleteMovieModalOpen: false,
-    allExpanded: false,
-    allCollapsed: false,
-    expandedState: {},
-    titleWidth: 0,
-  };
+  const studioTags = useStudioTags(studio?.tags || []);
+  const studioId = studio?.id;
 
-  // Listeners
-  onDeleteMoviePress = () => {
-    this.setState({ isDeleteMovieModalOpen: true });
-  };
+  const isSaving = false;
+  const isRefreshing = isStudioRefreshing || isManualRefresh;
+  const isSearching = false;
+  const {
+    allExpanded,
+    expandIcon,
+    initialExpandedState,
+    runningYears,
+    worksByYear,
+    years,
+  } = useMemo(
+    () => buildStudioWorksData(allWorks, expandedState),
+    [allWorks, expandedState]
+  );
 
-  onDeleteMovieModalClose = () => {
-    this.setState({ isDeleteMovieModalOpen: false });
-  };
+  const isPopulated = worksByYear.length > 0;
+  const moviesError = studioDetailsError;
 
-  onEditMoviePress = () => {
-    this.setState({ isEditMovieModalOpen: true });
-  };
+  useEffect(() => {
+    if (!allWorks.length) {
+      return;
+    }
 
-  onEditMovieModalClose = () => {
-    this.setState({ isEditMovieModalOpen: false });
-  };
+    if (
+      JSON.stringify(initialExpandedState) !== JSON.stringify(expandedState)
+    ) {
+      dispatch(setStudioScenesExpanded(initialExpandedState));
+    }
+  }, [allWorks.length, dispatch, expandedState, initialExpandedState]);
 
-  onTitleMeasure = ({ width }: { width: number }) => {
-    this.setState({ titleWidth: width });
-  };
+  const yearIndexMap = useMemo(() => {
+    return new Map(worksByYear.map((entry, index) => [entry.year, index]));
+  }, [worksByYear]);
 
-  onExpandAllPress = () => {
-    const { allExpanded, expandedState } = this.state;
-    this.setState(getExpandedState(selectAll(expandedState, !allExpanded)));
-  };
-
-  onExpandPress = (year: number, isExpanded: boolean) => {
-    this.setState((state) => {
-      const convertedState = {
-        allSelected: state.allExpanded,
-        allUnselected: state.allCollapsed,
-        selectedState: state.expandedState,
-        lastToggled: null,
-      };
-      const newState = toggleSelected(
-        convertedState,
-        [],
-        year,
-        isExpanded,
-        false
-      );
-      return getExpandedState(newState);
+  const handleExpandAllPress = useCallback(() => {
+    const newExpandedState: Record<number, boolean> = {};
+    years.forEach((year) => {
+      newExpandedState[year] = !allExpanded;
     });
-  };
+    dispatch(setStudioScenesExpanded(newExpandedState));
+  }, [allExpanded, dispatch, years]);
 
-  // Updated handler for MonitorToggleButton
-  onMonitorTogglePress = (
-    value: boolean | { monitored: boolean; moviesMonitored: boolean },
-    options: { shiftKey: boolean }
-  ) => {
-    if (typeof this.props.onMonitorTogglePress === 'function') {
-      this.props.onMonitorTogglePress(value, options);
-    }
-  };
-  // Render
-  render() {
-    const {
-      id,
-      foreignId,
-      tmdbId,
-      tpdbId,
-      website,
-      title,
-      aliases = [],
-      rootFolderPath,
-      sizeOnDisk,
-      qualityProfileId,
-      monitored,
-      moviesMonitored,
-      years,
-      genres = [],
-      images,
-      network,
-      tags = [],
-      isSaving,
-      isRefreshing,
-      isSearching,
-      isFetching,
-      isPopulated,
-      isSmallScreen,
-      hasMovies,
-      hasScenes,
-      movieCount,
-      totalMovieCount,
-      totalSceneCount,
-      sceneCount,
-      onRefreshPress,
-      onSearchPress,
-      moviesError,
-      safeForWorkMode,
-    } = this.props;
-    const {
-      isEditMovieModalOpen,
-      isDeleteMovieModalOpen,
+  const handleVirtualizedExpandPress = useCallback(
+    (year: number, expand: boolean) => {
+      const isExpanded = !!expandedState[year];
+      if (expand !== isExpanded) {
+        handleExpandPress(year);
+      }
+
+      const index = yearIndexMap.get(year);
+      if (index == null) {
+        return;
+      }
+
+      cacheRef.current.clear(index, 0);
+      listRef.current?.recomputeRowHeights(index);
+    },
+    [expandedState, handleExpandPress, yearIndexMap]
+  );
+
+  useEffect(() => {
+    cacheRef.current.clearAll();
+    listRef.current?.recomputeRowHeights();
+  }, [expandedState, worksByYear.length]);
+
+  const rowRenderer = useCallback(
+    ({ index, key, parent, style }: ListRowProps) => {
+      if (!studioId) {
+        return null;
+      }
+
+      const entry = worksByYear[index];
+
+      if (!entry) {
+        return null;
+      }
+
+      const isExpanded = !!expandedState[entry.year];
+      const rowClassName = isExpanded
+        ? `${styles.yearRow} ${styles.yearRowExpanded}`
+        : `${styles.yearRow} ${styles.yearRowCollapsed}`;
+
+      return (
+        <CellMeasurer
+          key={key}
+          cache={cacheRef.current}
+          columnIndex={0}
+          rowIndex={index}
+          parent={parent}
+        >
+          <div className={rowClassName} style={style}>
+            <StudioDetailsYear
+              studioId={studioId}
+              year={entry.year}
+              works={entry.works}
+              safeForWorkMode={safeForWorkMode}
+              isExpanded={isExpanded}
+              onExpandPress={handleVirtualizedExpandPress}
+              onYearRefreshPress={onYearRefreshPress}
+            />
+          </div>
+        </CellMeasurer>
+      );
+    },
+    [
       expandedState,
-      allExpanded,
-      allCollapsed,
-    } = this.state;
+      safeForWorkMode,
+      studioId,
+      worksByYear,
+      handleVirtualizedExpandPress,
+      onYearRefreshPress,
+    ]
+  );
 
-    let expandIcon = icons.EXPAND_INDETERMINATE;
-    if (allExpanded) {
-      expandIcon = icons.COLLAPSE;
-    } else if (allCollapsed) {
-      expandIcon = icons.EXPAND;
+  if (!studio) {
+    if (isStudioDetailsFetching) {
+      return (
+        <PageContent>
+          <LoadingIndicator />
+        </PageContent>
+      );
     }
+    if (studioDetailsError || !studioForeignId) {
+      return (
+        <Alert kind={kinds.DANGER}>{translate('LoadingStudioFailed')}</Alert>
+      );
+    }
+    return null;
+  }
 
-    const runningYears = `${years[0]}-${years.slice(-1)}`;
-    const imageList: Image[] = ensureImageType(
-      images as Array<{ coverType: string; url: string; remoteUrl?: string }>
-    );
-    const fanartUrl = getFanartUrl(imageList);
+  const imageList: Image[] = ensureImageType(studio.images || []);
+  const fanartUrl = getFanartUrl(imageList);
 
-    return (
-      <PageContent title={title}>
-        <PageToolbar>
-          <PageToolbarSection>
-            <PageToolbarButton
-              label={translate('RefreshAndScan')}
-              iconName={icons.REFRESH}
-              spinningName={icons.REFRESH}
-              title={translate('RefreshInformationAndScanDisk')}
-              isSpinning={isRefreshing}
-              onPress={onRefreshPress}
+  return (
+    <PageContent title={studio.title}>
+      {/* HEADER TOOLBAR */}
+      <PageToolbar>
+        <PageToolbarSection>
+          <PageToolbarButton
+            label={translate('RefreshAndScan')}
+            iconName={icons.REFRESH}
+            spinningName={icons.REFRESH}
+            title={translate('RefreshInformationAndScanDisk')}
+            isSpinning={isRefreshing}
+            onPress={onRefreshPress}
+          />
+
+          <PageToolbarButton
+            label={translate('SearchStudio')}
+            iconName={icons.SEARCH}
+            isSpinning={isSearching}
+            title={undefined}
+            onPress={onSearchPress}
+          />
+
+          <PageToolbarSeparator />
+
+          <PageToolbarButton
+            label={translate('Edit')}
+            iconName={icons.EDIT}
+            onPress={handleEditMoviePress}
+          />
+
+          <PageToolbarButton
+            label={translate('Delete')}
+            iconName={icons.DELETE}
+            onPress={handleDeleteMoviePress}
+          />
+        </PageToolbarSection>
+
+        <PageToolbarSection alignContent="right">
+          <PageToolbarButton
+            label={allExpanded ? 'Collapse All' : 'Expand All'}
+            iconName={expandIcon}
+            onPress={handleExpandAllPress}
+          />
+        </PageToolbarSection>
+      </PageToolbar>
+
+      {/* MAIN PAGE CONTENT */}
+      <PageContentBody innerClassName={styles.innerContentBody}>
+        <div className={styles.header}>
+          <div
+            className={styles.backdrop}
+            style={
+              fanartUrl ? { backgroundImage: `url(${fanartUrl})` } : undefined
+            }
+          >
+            <div className={styles.backdropOverlay} />
+          </div>
+
+          <div className={styles.headerContent}>
+            <StudioLogo
+              safeForWorkMode={safeForWorkMode}
+              className={styles.poster}
+              placeholder={posterPlaceholder}
+              images={imageList}
+              size={250}
+              lazy={false}
             />
+            <div className={styles.info}>
+              <Measure onMeasure={handleTitleMeasure}>
+                <div className={styles.titleRow}>
+                  <div className={styles.titleContainer}>
+                    <div className={styles.monitorToggleButtonsContainer}>
+                      <div className={styles.toggleMonitoredContainer}>
+                        <MonitorToggleButton
+                          className={
+                            studio.monitored
+                              ? styles.monitorToggleButton
+                              : `${styles.monitorToggleButton} ${styles.unmonitored}`
+                          }
+                          monitored={studio.monitored}
+                          moviesMonitored={studio.moviesMonitored}
+                          type="sceneMonitor"
+                          isSaving={isSaving}
+                          size={30}
+                          onPress={onMonitorTogglePress}
+                        />
+                      </div>
 
-            <PageToolbarButton
-              label={translate('SearchStudio')}
-              iconName={icons.SEARCH}
-              isSpinning={isSearching}
-              title={undefined}
-              onPress={onSearchPress}
-            />
-
-            <PageToolbarSeparator />
-
-            <PageToolbarButton
-              label={translate('Edit')}
-              iconName={icons.EDIT}
-              onPress={this.onEditMoviePress}
-            />
-
-            <PageToolbarButton
-              label={translate('Delete')}
-              iconName={icons.DELETE}
-              onPress={this.onDeleteMoviePress}
-            />
-          </PageToolbarSection>
-
-          <PageToolbarSection alignContent="right">
-            <PageToolbarButton
-              label={allExpanded ? 'Collapse All' : 'Expand All'}
-              iconName={expandIcon}
-              onPress={this.onExpandAllPress}
-            />
-          </PageToolbarSection>
-        </PageToolbar>
-
-        <PageContentBody innerClassName={styles.innerContentBody}>
-          <div className={styles.header}>
-            <div
-              className={styles.backdrop}
-              style={
-                fanartUrl ? { backgroundImage: `url(${fanartUrl})` } : undefined
-              }
-            >
-              <div className={styles.backdropOverlay} />
-            </div>
-
-            <div className={styles.headerContent}>
-              <StudioLogo
-                safeForWorkMode={safeForWorkMode}
-                className={styles.poster}
-                images={imageList}
-                size={250}
-                lazy={false}
-              />
-              <div className={styles.info}>
-                <Measure onMeasure={this.onTitleMeasure}>
-                  <div className={styles.titleRow}>
-                    <div className={styles.titleContainer}>
-                      <div className={styles.monitorToggleButtonsContainer}>
-                        <div className={styles.toggleMonitoredContainer}>
+                      {showMovieMonitorToggle ? (
+                        <div className={styles.toggleMoviesMonitoredContainer}>
                           <MonitorToggleButton
                             className={
-                              monitored
+                              studio.moviesMonitored
                                 ? styles.monitorToggleButton
                                 : `${styles.monitorToggleButton} ${styles.unmonitored}`
                             }
-                            monitored={monitored}
-                            moviesMonitored={moviesMonitored}
-                            type="sceneMonitor"
+                            monitored={studio.monitored}
+                            moviesMonitored={studio.moviesMonitored}
+                            type="movieMonitor"
                             isSaving={isSaving}
                             size={30}
-                            onPress={this.onMonitorTogglePress}
+                            onPress={onMonitorTogglePress}
                           />
                         </div>
-
-                        {(this.props.tpdbId ||
-                          (typeof tmdbId === 'number' && tmdbId > 0)) && (
-                          <div
-                            className={styles.toggleMoviesMonitoredContainer}
-                          >
-                            <MonitorToggleButton
-                              className={
-                                moviesMonitored
-                                  ? styles.monitorToggleButton
-                                  : `${styles.monitorToggleButton} ${styles.unmonitored}`
-                              }
-                              monitored={monitored}
-                              moviesMonitored={moviesMonitored}
-                              type="movieMonitor"
-                              isSaving={isSaving}
-                              size={30}
-                              onPress={this.onMonitorTogglePress}
-                            />
-                          </div>
-                        )}
-                      </div>
-
-                      <div className={styles.title}>{title}</div>
+                      ) : null}
                     </div>
-                  </div>
-                </Measure>
 
-                <div className={styles.details}>
-                  <div>
-                    <span className={styles.years}>{runningYears}</span>
-
-                    <span className={styles.network}>{network}</span>
-
-                    <span className={styles.links}>
-                      <Tooltip
-                        anchor={<Icon name={icons.EXTERNAL_LINK} size={20} />}
-                        tooltip={
-                          <StudioDetailsLinks
-                            foreignId={foreignId}
-                            website={website}
-                            tmdbId={tmdbId}
-                            tpdbId={tpdbId}
-                          />
-                        }
-                        position={tooltipPositions.BOTTOM}
-                      />
-                    </span>
-
-                    {!!tags.length && (
-                      <span>
-                        <Tooltip
-                          anchor={<Icon name={icons.TAGS} size={20} />}
-                          tooltip={<StudioTagsConnector studioId={id} />}
-                          position={tooltipPositions.BOTTOM}
-                        />
-                      </span>
-                    )}
+                    <div className={styles.title}>{studio.title}</div>
                   </div>
                 </div>
+              </Measure>
 
+              <div className={styles.details}>
                 <div>
-                  <Label className={styles.detailsLabel} size={sizes.LARGE}>
+                  <span className={styles.years}>{runningYears}</span>
+
+                  <span className={styles.network}>{studio.network}</span>
+                </div>
+              </div>
+
+              <div>
+                {!!studio.rootFolderPath && (
+                  <Label
+                    className={styles.detailsLabel}
+                    size={sizes.LARGE}
+                    title={translate('RootFolderPath')}
+                  >
                     <Icon name={icons.FOLDER} size={17} />
-
-                    <span className={styles.path}>{rootFolderPath}</span>
+                    <span
+                      className={
+                        safeForWorkMode
+                          ? `${styles.path} ${styles.blurred}`
+                          : styles.path
+                      }
+                    >
+                      {studio.rootFolderPath}
+                    </span>
                   </Label>
+                )}
 
+                {studio.qualityProfileId ? (
                   <Label
                     className={styles.detailsLabel}
                     title={translate('QualityProfile')}
@@ -398,143 +374,190 @@ class StudioDetails extends Component<StudioDetailsProps, StudioDetailsState> {
                     <Icon name={icons.PROFILE} size={17} />
 
                     <span className={styles.qualityProfileName}>
-                      <QualityProfileName qualityProfileId={qualityProfileId} />
+                      <QualityProfileName
+                        qualityProfileId={studio.qualityProfileId}
+                      />
                     </span>
                   </Label>
+                ) : null}
 
+                {studio.hasMovies ? (
                   <Label className={styles.detailsLabel} size={sizes.LARGE}>
                     <Icon name={icons.FILM} size={17} />
 
-                    <span className={styles.movieCount}>
-                      Movies: {movieCount || 0}/{totalMovieCount}
+                    <span
+                      title={translate('Movies')}
+                      className={styles.movieCount}
+                    >
+                      {`${translate('Movies')}:
+                    ${studio.movieCount} / ${studio.totalMovieCount}`}
                     </span>
                   </Label>
+                ) : null}
 
+                {studio.hasScenes ? (
                   <Label className={styles.detailsLabel} size={sizes.LARGE}>
                     <Icon name={icons.SCENE} size={17} />
 
-                    <span className={styles.sceneCount}>
-                      Scenes: {sceneCount || 0}/{totalSceneCount}
+                    <span
+                      title={translate('Scenes')}
+                      className={styles.sceneCount}
+                    >
+                      {`${translate('Scenes')}:
+                    ${studio.sceneCount} / ${studio.totalSceneCount}`}
                     </span>
                   </Label>
+                ) : null}
 
+                {studio.sizeOnDisk >= 0 ? (
+                  <Label
+                    title={translate('SizeOnDisk')}
+                    className={styles.detailsLabel}
+                    size={sizes.LARGE}
+                  >
+                    <Icon name={icons.DRIVE} size={17} />
+                    <span className={styles.sizeOnDisk}>
+                      {formatBytes(studio.sizeOnDisk)}
+                    </span>
+                  </Label>
+                ) : null}
+
+                {!!studio.tags && studio.tags.length ? (
                   <Tooltip
                     anchor={
                       <Label className={styles.detailsLabel} size={sizes.LARGE}>
-                        <Icon name={icons.DRIVE} size={17} />
+                        <Icon name={icons.TAGS} size={17} />
 
-                        <span className={styles.sizeOnDisk}>
-                          {formatBytes(sizeOnDisk || 0)}
-                        </span>
+                        <span className={styles.tags}>{translate('Tags')}</span>
                       </Label>
                     }
-                    tooltip={<span>{null}</span>}
+                    tooltip={<StudioTags tags={studioTags} />}
                     kind={kinds.INVERSE}
                     position={tooltipPositions.BOTTOM}
                   />
+                ) : null}
 
-                  {!!genres.length && !isSmallScreen && (
-                    <Label
-                      className={styles.detailsLabel}
-                      title={translate('Genres')}
-                      size={sizes.LARGE}
-                    >
-                      <span className={styles.genres}>{genres.join(', ')}</span>
+                <Tooltip
+                  anchor={
+                    <Label className={styles.detailsLabel} size={sizes.LARGE}>
+                      <div>
+                        <Icon name={icons.EXTERNAL_LINK} size={17} />
+                        <span className={styles.links}>
+                          {translate('Links')}
+                        </span>
+                      </div>
                     </Label>
-                  )}
+                  }
+                  tooltip={
+                    <StudioDetailsLinks
+                      tpdbId={studio.tpdbId}
+                      tmdbId={studio.tmdbId}
+                      foreignId={studio.foreignId}
+                    />
+                  }
+                  kind={kinds.INVERSE}
+                  position={tooltipPositions.BOTTOM}
+                />
 
-                  {!!aliases && !!aliases.length && (
-                    <Label
-                      className={styles.detailsLabel}
-                      title={translate('Aliases')}
-                      size={sizes.LARGE}
-                    >
-                      <Icon name={icons.TAGS} size={17} />
+                {!!studio.aliases && !!studio.aliases.length && (
+                  <Label
+                    className={styles.detailsLabel}
+                    title={translate('Aliases')}
+                    size={sizes.LARGE}
+                  >
+                    <Icon name={icons.TAGS} size={17} />
 
-                      <span className={styles.aliases}>
-                        {aliases.join(', ')}
-                      </span>
-                    </Label>
-                  )}
-                </div>
+                    <span className={styles.aliases}>
+                      {studio.aliases.join(', ')}
+                    </span>
+                  </Label>
+                )}
               </div>
             </div>
           </div>
+        </div>
 
-          <div className={styles.contentContainer}>
-            {!isFetching && moviesError ? (
-              <Alert kind={kinds.DANGER}>
-                {translate('LoadingMoviesFailed')}
-              </Alert>
-            ) : null}
+        <div className={styles.contentContainer}>
+          {!isWorksFetching && moviesError && (
+            <Alert kind={kinds.DANGER}>
+              {translate('LoadingMoviesFailed')}
+            </Alert>
+          )}
 
-            {!isFetching && isPopulated && hasMovies ? (
-              <FieldSet legend={translate('Movies')}>
-                {isPopulated && !!years.length && (
-                  <div>
-                    {years
-                      .slice(0)
-                      .reverse()
-                      .map((year) => (
-                        <Delayed key={year} waitBeforeShow={50}>
-                          <StudioDetailsYearConnector
-                            key={year}
-                            studioId={id}
-                            studioForeignId={foreignId}
-                            year={year}
-                            isScenes={false}
-                            isExpanded={expandedState[year]}
-                            onExpandPress={this.onExpandPress}
+          {isWorksFetching && !isPopulated ? <LoadingIndicator /> : null}
+
+          {/* WORKS BY YEAR */}
+          {isPopulated && (studio.hasMovies || studio.hasScenes) && (
+            <FieldSet legend={translate('Works')}>
+              <WindowScroller>
+                {({
+                  height,
+                  isScrolling,
+                  onChildScroll,
+                  scrollTop,
+                  registerChild,
+                }) => {
+                  if (!height) {
+                    return null;
+                  }
+
+                  return (
+                    <div
+                      ref={(element) => {
+                        (
+                          registerChild as unknown as (
+                            el: Element | null
+                          ) => void
+                        )(element);
+                      }}
+                    >
+                      <AutoSizer disableHeight={true}>
+                        {({ width }) => (
+                          <List
+                            ref={listRef}
+                            autoHeight={true}
+                            height={height}
+                            width={width}
+                            rowCount={worksByYear.length}
+                            rowHeight={cacheRef.current.rowHeight}
+                            estimatedRowSize={80}
+                            deferredMeasurementCache={cacheRef.current}
+                            overscanRowCount={6}
+                            scrollTop={scrollTop}
+                            isScrolling={isScrolling}
+                            rowRenderer={rowRenderer}
+                            onScroll={onChildScroll}
                           />
-                        </Delayed>
-                      ))}
-                  </div>
-                )}
-              </FieldSet>
-            ) : null}
+                        )}
+                      </AutoSizer>
+                    </div>
+                  );
+                }}
+              </WindowScroller>
+            </FieldSet>
+          )}
+        </div>
 
-            {!isFetching && isPopulated && hasScenes ? (
-              <FieldSet legend={translate('Scenes')}>
-                {isPopulated && !!years.length && (
-                  <div>
-                    {years
-                      .slice(0)
-                      .reverse()
-                      .map((year) => (
-                        <Delayed key={year} waitBeforeShow={50}>
-                          <StudioDetailsYearConnector
-                            key={year}
-                            studioId={id}
-                            studioForeignId={foreignId}
-                            year={year}
-                            isScenes={true}
-                            isExpanded={expandedState[year]}
-                            onExpandPress={this.onExpandPress}
-                          />
-                        </Delayed>
-                      ))}
-                  </div>
-                )}
-              </FieldSet>
-            ) : null}
-          </div>
+        {/* MODALS */}
+        {studio && (
+          <>
+            <EditStudioModal
+              isOpen={isEditMovieModalOpen}
+              studio={studio}
+              onModalClose={handleEditMovieModalClose}
+            />
 
-          <EditStudioModalConnector
-            isOpen={isEditMovieModalOpen}
-            studioId={id}
-            onModalClose={this.onEditMovieModalClose}
-          />
-
-          <DeleteStudioModalConnector
-            isOpen={isDeleteMovieModalOpen}
-            studioId={id}
-            onModalClose={this.onDeleteMovieModalClose}
-            onDeleteMoviePress={this.onDeleteMoviePress}
-          />
-        </PageContentBody>
-      </PageContent>
-    );
-  }
+            <DeleteStudioModal
+              isOpen={isDeleteMovieModalOpen}
+              studio={studio}
+              onModalClose={handleDeleteMovieModalClose}
+              onDeleteMoviePress={handleDeleteMoviePress}
+            />
+          </>
+        )}
+      </PageContentBody>
+    </PageContent>
+  );
 }
 
 export default StudioDetails;

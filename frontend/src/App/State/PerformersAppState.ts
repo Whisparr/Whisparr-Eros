@@ -8,6 +8,8 @@ interface PerformersAppState
   extends AppSectionSaveState,
     AppSectionState<Performer> {
   sortKey: string;
+  page: number;
+  pageSize: number;
   sortDirection: SortDirection;
   secondarySortKey: string;
   secondarySortDirection: SortDirection;
@@ -15,14 +17,25 @@ interface PerformersAppState
 
   posterOptions: {
     detailedProgressBar: boolean;
+    pageSize: number;
     size: string;
     showName: boolean;
+  };
+
+  deleteOptions: {
+    addImportExclusion: boolean;
+  };
+
+  tableOptions: {
+    pageSize: number;
+    showSearchAction: boolean;
   };
 
   selectedFilterKey: string;
   filterBuilderProps: FilterBuilderProp<Performer>[];
   filters: Filter[];
   columns: Column[];
+  pendingChanges: Partial<Performer>;
 }
 
 export default PerformersAppState;

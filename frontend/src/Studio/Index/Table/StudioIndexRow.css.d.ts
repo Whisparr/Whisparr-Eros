@@ -3,12 +3,15 @@
 interface CssExports {
   'actions': string;
   'aliases': string;
+  'blur': string;
   'cell': string;
   'checkInput': string;
   'externalLinks': string;
   'network': string;
+  'placeholder': string;
   'qualityProfileId': string;
   'rootFolderPath': string;
+  'sizeOnDisk': string;
   'sortTitle': string;
   'status': string;
   'statusIcon': string;

@@ -17,5 +17,13 @@ export function getPerformerStatusDetails(status) {
     };
   }
 
+  if (status === 'unknown') {
+    statusDetails = {
+      icon: icons.SERIES_ENDED,
+      title: translate('Unknown'),
+      message: translate('UnknownPerformerDescription')
+    };
+  }
+
   return statusDetails;
 }

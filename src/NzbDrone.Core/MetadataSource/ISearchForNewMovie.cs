@@ -11,7 +11,7 @@ namespace NzbDrone.Core.MetadataSource
         List<Movie> SearchForNewScene(string title);
         List<Performer> SearchForNewPerformer(string title);
         List<Studio> SearchForNewStudio(string title);
-        List<object> SearchForNewEntity(string title, ItemType itemType);
+        List<object> SearchForNewEntity(string title, ItemType? itemType = null);
         MovieMetadata MapMovieToTmdbMovie(MovieMetadata movie);
     }
 }

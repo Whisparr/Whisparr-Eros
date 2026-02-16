@@ -35,6 +35,9 @@ export const setPerformerRefreshing = createAction(
 // State
 
 export const defaultState = {
+  page: 1,
+  selectedFilterKey: 'all',
+  pageSize: 25,
   refreshingPerformers: {},
   isFetching: false,
   isPopulated: false,
@@ -55,10 +58,13 @@ export const defaultState = {
   posterOptions: {
     detailedProgressBar: false,
     size: 'large',
-    showName: true
+    showName: true,
+    pageSize: 25
   },
 
-  tableOptions: {},
+  tableOptions: {
+    pageSize: 25
+  },
 
   deleteOptions: {
     addImportExclusion: false
@@ -75,8 +81,8 @@ export const defaultState = {
   columns: [
     {
       name: 'status',
-      columnLabel: () => translate('Monitored'),
-      isSortable: true,
+      columnLabel: () => translate('Status'),
+      isSortable: false,
       isVisible: true,
       isModifiable: false
     },
@@ -85,84 +91,101 @@ export const defaultState = {
       label: () => translate('PerformerName'),
       isSortable: true,
       isVisible: true,
-      isModifiable: false
+      isModifiable: true
     },
     {
       name: 'gender',
       label: () => translate('Gender'),
       isSortable: true,
-      isVisible: true
+      isVisible: true,
+      isModifiable: true
+
     },
     {
       name: 'age',
       label: () => translate('Age'),
       isSortable: true,
-      isVisible: false
+      isVisible: false,
+      isModifiable: true
+
     },
     {
       name: 'careerStart',
       label: () => translate('CareerStart'),
       isSortable: true,
-      isVisible: false
+      isVisible: false,
+      isModifiable: true
+
     },
     {
       name: 'careerEnd',
       label: () => translate('CareerEnd'),
       isSortable: true,
-      isVisible: false
-    },
-    {
-      name: 'status',
-      label: () => translate('Status'),
-      isSortable: true,
-      isVisible: false
+      isVisible: false,
+      isModifiable: true
     },
     {
       name: 'hairColor',
       label: () => translate('HairColor'),
       isSortable: true,
-      isVisible: true
+      isVisible: false,
+      isModifiable: true
     },
     {
       name: 'ethnicity',
       label: () => translate('Ethnicity'),
       isSortable: true,
-      isVisible: true
+      isVisible: false,
+      isModifiable: true
     },
     {
       name: 'qualityProfileId',
       label: () => translate('QualityProfile'),
       isSortable: true,
-      isVisible: true
+      isVisible: true,
+      isModifiable: true
     },
     {
       name: 'rootFolderPath',
       label: () => translate('RootFolder'),
       isSortable: true,
-      isVisible: true
+      isVisible: false,
+      isModifiable: true
     },
     {
       name: 'tags',
       label: () => translate('Tags'),
       isSortable: false,
-      isVisible: false
+      isVisible: false,
+      isModifiable: true
+
     },
     {
       name: 'totalMovieCount',
       label: () => translate('Movies'),
       isSortable: true,
-      isVisible: true
+      isVisible: true,
+      isModifiable: true
     },
     {
       name: 'totalSceneCount',
       label: () => translate('Scenes'),
       isSortable: true,
-      isVisible: true
+      isVisible: true,
+      isModifiable: true
+    },
+    {
+      name: 'sizeOnDisk',
+      label: () => translate('SizeOnDisk'),
+      isSortable: true,
+      isVisible: true,
+      isModifiable: true
     },
     {
       name: 'actions',
       columnLabel: () => translate('Actions'),
       isVisible: true,
+      isSortable: false,
       isModifiable: false
     }
   ],
@@ -174,8 +197,6 @@ export const defaultState = {
       return gender ? gender.toLowerCase() : '';
     }
   },
-
-  selectedFilterKey: 'all',
 
   filters: [
     {
@@ -215,17 +236,6 @@ export const defaultState = {
           type: filterTypes.EQUAL
         }
       ]
-    },
-    {
-      key: 'deleted',
-      label: () => translate('Deleted'),
-      filters: [
-        {
-          key: 'status',
-          value: 'deleted',
-          type: filterTypes.EQUAL
-        }
-      ]
     }
   ],
 
@@ -245,6 +255,18 @@ export const defaultState = {
     {
       name: 'sceneCount',
       label: () => translate('SceneCount'),
+      type: filterBuilderTypes.NUMBER,
+      valueType: filterBuilderValueTypes.DEFAULT
+    },
+    {
+      name: 'totalMovieCount',
+      label: () => translate('TotalMovieCount'),
+      type: filterBuilderTypes.NUMBER,
+      valueType: filterBuilderValueTypes.DEFAULT
+    },
+    {
+      name: 'movieCount',
+      label: () => translate('MovieCount'),
       type: filterBuilderTypes.NUMBER,
       valueType: filterBuilderValueTypes.DEFAULT
     },
@@ -288,12 +310,6 @@ export const defaultState = {
 
         return tags.sort(sortByProp('name'));
       }
-    },
-    {
-      name: 'fullName',
-      label: () => translate('PerformerName'),
-      type: filterBuilderTypes.EXACT,
-      valueType: filterBuilderValueTypes.DEFAULT
     },
     {
       name: 'rootFolderPath',
@@ -391,6 +407,7 @@ export const defaultState = {
   ]
 };
 
+export const filters = defaultState.filters;
 export const persistState = [
   'performers.defaults',
   'performers.sortKey',
@@ -417,10 +434,12 @@ export const SET_DELETE_OPTION = 'performers/setDeleteOption';
 export const TOGGLE_PERFORMER_MONITORED = 'performers/togglePerformerMonitored';
 
 export const SET_PERFORMER_SORT = 'performers/setPerformerSort';
+export const SET_PERFORMER_SORT_DIRECTION = 'performers/setPerformerSortDirection';
 export const SET_PERFORMER_FILTER = 'performers/setPerformerFilter';
 export const SET_PERFORMER_VIEW = 'performers/setPerformerView';
 export const SET_PERFORMER_TABLE_OPTION = 'performers/setPerformerTableOption';
 export const SET_PERFORMER_POSTER_OPTION = 'performers/setPerformerPosterOption';
+export const SET_PERFORMER_PAGE = 'performers/setPerformerPage';
 
 //
 // Action Creators
@@ -444,6 +463,7 @@ export const setDeleteOption = createAction(SET_DELETE_OPTION);
 export const togglePerformerMonitored = createThunk(TOGGLE_PERFORMER_MONITORED);
 
 export const setPerformerSort = createAction(SET_PERFORMER_SORT);
+export const setPerformerSortDirection = createAction(SET_PERFORMER_SORT_DIRECTION);
 export const setPerformerFilter = createAction(SET_PERFORMER_FILTER);
 export const setPerformerView = createAction(SET_PERFORMER_VIEW);
 export const setPerformerTableOption = createAction(SET_PERFORMER_TABLE_OPTION);
@@ -454,6 +474,11 @@ export const setPerformerValue = createAction(SET_PERFORMER_VALUE, (payload) => 
     section,
     ...payload
   };
+});
+
+export const setPerformerPage = (page) => ({
+  type: SET_PERFORMER_PAGE,
+  payload: { page }
 });
 
 //
@@ -556,6 +581,10 @@ export const actionHandlers = handleThunks({
 // Reducers
 
 export const reducers = createHandleActions({
+  [SET_PERFORMER_PAGE]: (state, { payload }) => ({
+    ...state,
+    page: payload.page
+  }),
   // Set per-performer refreshing state
   [SET_PERFORMER_REFRESHING]: function(state, { payload }) {
     const { id, isRefreshing } = payload;
@@ -568,6 +597,7 @@ export const reducers = createHandleActions({
     };
   },
 
+  [SET_PERFORMER_SORT_DIRECTION]: createSetClientSideCollectionSortReducer(section),
   [SET_PERFORMER_SORT]: createSetClientSideCollectionSortReducer(section),
   [SET_PERFORMER_FILTER]: createSetClientSideCollectionFilterReducer(section),
   [SET_PERFORMER_VIEW]: function(state, { payload }) {
@@ -595,6 +625,11 @@ export const reducers = createHandleActions({
         ...payload
       }
     };
-  }
+  },
+
+  [SET_PERFORMER_PAGE]: (state, { payload }) => ({
+    ...state,
+    page: payload.page
+  })
 
 }, defaultState, section);

@@ -2,6 +2,7 @@ import _ from 'lodash';
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
+import Flag from 'react-world-flags';
 import AppState from 'App/State/AppState';
 import Alert from 'Components/Alert';
 import FieldSet from 'Components/FieldSet';
@@ -23,14 +24,16 @@ import {
   SortDirection,
 } from 'Helpers/Props/sortDirections';
 import MovieHeadshot from 'Movie/MovieHeadshot';
-import DeletePerformerModalConnector from 'Performer/Delete/DeletePerformerModalConnector';
-import EditPerformerModalConnector from 'Performer/Edit/EditPerformerModalConnector';
+import DeletePerformerModal from 'Performer/Delete/DeletePerformerModal';
 import PerformerGenderIcon from 'Performer/PerformerGenderIcon';
 import { getPerformerStatusDetails } from 'Performer/PerformerStatus';
 import QualityProfileName from 'Settings/Profiles/Quality/QualityProfileName';
+import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
+import formatDate from 'Utilities/Date/formatDate';
 import formatBytes from 'Utilities/Number/formatBytes';
 import firstCharToUpper from 'Utilities/String/firstCharToUpper';
 import translate from 'Utilities/String/translate';
+import EditPerformerModal from '../Edit/EditPerformerModal';
 import PerformerDetailsLinks from './PerformerDetailsLinks';
 import PerformerDetailsYear from './PerformerDetailsYear';
 import PerformerTags from './PerformerTags';
@@ -51,6 +54,8 @@ function getFanartUrl(
 
 function PerformerDetails() {
   const { performerForeignId } = useParams<{ performerForeignId: string }>();
+
+  const { shortDateFormat } = useSelector(createUISettingsSelector());
 
   const generalSettings = useGeneralSettings();
   const {
@@ -161,7 +166,6 @@ function PerformerDetails() {
   }
 
   // Performer properties
-  const id = performer.id;
   const foreignId = performer.foreignId;
   const tmdbId = performer.tmdbId;
   const tpdbId = performer.tpdbId;
@@ -169,7 +173,13 @@ function PerformerDetails() {
   const rootFolderPath = performer.rootFolderPath;
   const gender = performer.gender;
   const age = performer.age;
+  const birthDate =
+    performer.birthDate === undefined
+      ? ''
+      : formatDate(performer.birthDate, shortDateFormat);
   const ethnicity = performer.ethnicity;
+  const country = performer.country;
+  const flagIconCode = country?.toLowerCase();
   const careerStart = performer.careerStart;
   const careerEnd = performer.careerEnd;
   const qualityProfileId = performer.qualityProfileId;
@@ -182,7 +192,6 @@ function PerformerDetails() {
   const totalSceneCount = performer.totalSceneCount ?? 0;
   const sceneCount = performer.sceneCount ?? 0;
   const sizeOnDisk = performer.sizeOnDisk ?? 0;
-
   // Computed variables
   const isSaving = false;
   const isRefreshing = false;
@@ -198,12 +207,12 @@ function PerformerDetails() {
       : '';
   const runningYears = `${startYear}-${endYear}`;
   const fanartUrl = getFanartUrl(Array.isArray(images) ? images : []);
+  const formatedAge = birthDate === '' ? age : `${birthDate} | ${age}`;
 
   const moviesByYear = years.map((year) => ({
     year,
     movies: movies.filter((m) => m.year === year),
   }));
-
   const showMovieMonitorToggle = () => {
     const source = generalSettings.whisparrMovieMetadataSource;
     return (
@@ -302,70 +311,91 @@ function PerformerDetails() {
               <div className={styles.titleRow}>
                 <div className={styles.titleContainer}>
                   <div className={styles.monitorToggleButtonsContainer}>
-                    <div className={styles.toggleMonitoredContainer}>
+                    <MonitorToggleButton
+                      className={
+                        monitored
+                          ? styles.monitorToggleButton
+                          : `${styles.monitorToggleButton} ${styles.unmonitored}`
+                      }
+                      monitored={monitored}
+                      moviesMonitored={moviesMonitored}
+                      type="sceneMonitor"
+                      isSaving={isSaving}
+                      size={30}
+                      onPress={handleMonitorTogglePress}
+                    />
+
+                    {showMovieMonitorToggle() ? (
                       <MonitorToggleButton
                         className={
-                          monitored
+                          moviesMonitored
                             ? styles.monitorToggleButton
                             : `${styles.monitorToggleButton} ${styles.unmonitored}`
                         }
                         monitored={monitored}
                         moviesMonitored={moviesMonitored}
-                        type="sceneMonitor"
+                        type="movieMonitor"
                         isSaving={isSaving}
                         size={30}
                         onPress={handleMonitorTogglePress}
                       />
-                    </div>
-
-                    <div className={styles.toggleMonitoredContainer}>
-                      {showMovieMonitorToggle() ? (
-                        <MonitorToggleButton
-                          className={
-                            moviesMonitored
-                              ? styles.monitorToggleButton
-                              : `${styles.monitorToggleButton} ${styles.unmonitored}`
-                          }
-                          monitored={monitored}
-                          moviesMonitored={moviesMonitored}
-                          type="movieMonitor"
-                          isSaving={isSaving}
-                          size={30}
-                          onPress={handleMonitorTogglePress}
-                        />
-                      ) : null}
-                    </div>
+                    ) : null}
                   </div>
                   <div className={styles.title}>
                     <span className={styles.performerName}>{fullName}</span>
-                    <PerformerGenderIcon
-                      className={styles.gender}
-                      gender={gender}
-                      size={40}
-                    />
                   </div>
+                  <PerformerGenderIcon
+                    className={styles.gender}
+                    gender={gender}
+                    size={34}
+                  />
+                  {!!country && (
+                    <Flag
+                      className={styles.country}
+                      code={flagIconCode}
+                      height={38}
+                    />
+                  )}
                 </div>
               </div>
-              <div className={styles.details}>
+              <div className={styles.metadata}>
                 <div>
-                  {!!ethnicity && (
-                    <span className={styles.ethnicity}>
-                      {firstCharToUpper(ethnicity)}
-                    </span>
-                  )}
-
                   {!!runningYears && (
-                    <span className={styles.years}>{runningYears}</span>
+                    <Label
+                      className={styles.metadataLabel}
+                      title={translate('Career')}
+                      size={sizes.LARGE}
+                    >
+                      <Icon name={icons.CALENDAR} size={17} />
+                      <span className={styles.years}>{runningYears}</span>
+                    </Label>
                   )}
-
-                  {!!age && (
-                    <span className={styles.age}>
-                      {age} {` ${translate('YearsOld')}`}
-                    </span>
+                  {!!formatedAge && (
+                    <Label
+                      className={styles.metadataLabel}
+                      title={translate('DateOfBirth')}
+                      size={sizes.LARGE}
+                    >
+                      <Icon name={icons.CAKE} size={17} />
+                      <span className={styles.birthDate}>{formatedAge}</span>
+                    </Label>
+                  )}
+                  {!!ethnicity && (
+                    <Label
+                      className={styles.metadataLabel}
+                      title={translate('Ethnicity')}
+                      size={sizes.LARGE}
+                    >
+                      <Icon name={icons.GLOBE} size={17} />
+                      <span className={styles.ethnicity}>
+                        {firstCharToUpper(ethnicity)}
+                      </span>
+                    </Label>
                   )}
                 </div>
               </div>
-              <div>
+
+              <div className={styles.details}>
                 {!!rootFolderPath && (
                   <Label
                     className={styles.detailsLabel}
@@ -506,7 +536,7 @@ function PerformerDetails() {
                 <PerformerDetailsYear
                   key={year}
                   year={year}
-                  performerId={id}
+                  performerId={performer.id}
                   columns={columns}
                   movies={yearMovies}
                   sortKey={sortKey}
@@ -522,14 +552,14 @@ function PerformerDetails() {
             </FieldSet>
           )}
         </div>
-        <DeletePerformerModalConnector
+        <DeletePerformerModal
           isOpen={isDeleteMovieModalOpen}
-          performerId={id}
+          performer={performer}
           onModalClose={handleDeleteMovieModalClose}
         />
-        <EditPerformerModalConnector
+        <EditPerformerModal
           isOpen={isEditMovieModalOpen}
-          performerId={id}
+          performer={performer}
           onModalClose={handleEditMovieModalClose}
         />
       </PageContentBody>

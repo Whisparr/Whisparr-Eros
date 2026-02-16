@@ -9,6 +9,7 @@ interface CssExports {
   'monitored': string;
   'path': string;
   'performers': string;
+  'releaseDate': string;
   'releaseGroup': string;
   'runtime': string;
   'size': string;

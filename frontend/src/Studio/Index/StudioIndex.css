@@ -1,3 +1,10 @@
+.pageContent {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  width: 100%;
+}
+
 .pageContentBodyWrapper {
   display: flex;
   flex: 1 0 1px;

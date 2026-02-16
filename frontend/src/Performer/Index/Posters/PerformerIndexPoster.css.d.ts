@@ -2,19 +2,32 @@
 // Please do not change this file!
 interface CssExports {
   'action': string;
+  'age': string;
+  'ageIcon': string;
   'container': string;
   'content': string;
   'controls': string;
+  'deleted': string;
   'editorSelect': string;
-  'ended': string;
+  'ethnicity': string;
   'externalLinks': string;
+  'gender': string;
+  'hairColor': string;
   'link': string;
-  'monitorToggleButton': string;
   'nextAiring': string;
   'overlayTitle': string;
   'poster': string;
   'posterContainer': string;
+  'posterImageWrapper': string;
+  'progressBarOverlay': string;
+  'qualityProfile': string;
+  'sizeOnDisk': string;
+  'sizeOnDiskIcon': string;
+  'tags': string;
+  'tagsList': string;
   'title': string;
+  'totalMovieCount': string;
+  'totalSceneCount': string;
 }
 export const cssExports: CssExports;
 export default cssExports;

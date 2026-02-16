@@ -2,13 +2,16 @@ using System.Collections.Generic;
 using System.Linq;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Extensions;
+using NzbDrone.Core.Datastore;
+using NzbDrone.Core.MediaFiles;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Movies.Performers.Events;
+using NzbDrone.Core.MovieStats;
 using NzbDrone.Core.Parser;
 
 namespace NzbDrone.Core.Movies.Performers
 {
-    public interface IPerformerService
+    public interface IPerformerService : IHandleAsync<PerformerUpdatedEvent>
     {
         Performer AddPerformer(Performer performer);
         List<Performer> AddPerformers(List<Performer> performers);
@@ -22,6 +25,8 @@ namespace NzbDrone.Core.Movies.Performers
         Performer Update(Performer performer);
         List<Performer> Update(List<Performer> performers);
         void RemovePerformer(Performer performer);
+
+        PagingSpec<Performer> Paged(PagingSpec<Performer> pagingSpec);
     }
 
     public class PerformerService : IPerformerService
@@ -29,11 +34,23 @@ namespace NzbDrone.Core.Movies.Performers
         private readonly IPerformerRepository _performerRepo;
         private readonly IEventAggregator _eventAggregator;
         private readonly ICacheManager _cacheManager;
+        private readonly MovieService _movieService;
+        private readonly MediaFileService _movieFileService;
+        private readonly MovieStatisticsService _movieStatisticsService;
         private readonly string _cacheName;
 
-        public PerformerService(IPerformerRepository performerRepo, ICacheManager cacheManager, IEventAggregator eventAggregator)
+        public PerformerService(
+            IPerformerRepository performerRepo,
+            ICacheManager cacheManager,
+            IEventAggregator eventAggregator,
+            MovieService movieService,
+            MovieStatisticsService movieStatisticsService,
+            MediaFileService movieFileService)
         {
             _performerRepo = performerRepo;
+            _movieService = movieService;
+            _movieStatisticsService = movieStatisticsService;
+            _movieFileService = movieFileService;
             _eventAggregator = eventAggregator;
             _cacheManager = cacheManager;
             _cacheName = "Whisparr.Api.V3.Performers.PerformerResource_performerResources";
@@ -110,6 +127,7 @@ namespace NzbDrone.Core.Movies.Performers
         {
             var newPerformer = _performerRepo.Update(performer);
             RemovePerformerResourcesCache(newPerformer.ForeignId);
+            _eventAggregator.PublishEvent(new PerformerUpdatedEvent(newPerformer));
             return newPerformer;
         }
 
@@ -120,6 +138,7 @@ namespace NzbDrone.Core.Movies.Performers
             foreach (var performer in performers)
             {
                 RemovePerformerResourcesCache(performer.ForeignId);
+                _eventAggregator.PublishEvent(new PerformerUpdatedEvent(performer));
             }
 
             return performers;
@@ -137,6 +156,11 @@ namespace NzbDrone.Core.Movies.Performers
             return _performerRepo.AllPerformerForeignIds();
         }
 
+        public PagingSpec<Performer> Paged(PagingSpec<Performer> pagingSpec)
+        {
+            return _performerRepo.GetPaged(pagingSpec);
+        }
+
         private void RemovePerformerResourcesCache(string cacheKey)
         {
             var movieResourcesCache = _cacheManager.FindCache(_cacheName);
@@ -144,6 +168,24 @@ namespace NzbDrone.Core.Movies.Performers
             {
                 movieResourcesCache.Remove(cacheKey);
             }
+        }
+
+        public void HandleAsync(PerformerUpdatedEvent message)
+        {
+            var movies = _movieService.GetByPerformerForeignId(message.Performer.ForeignId);
+            var ids = movies.Select(x => x.Id).ToList();
+            var movieStats = _movieStatisticsService.MovieStatistics(ids);
+
+            message.Performer.MovieCount = movieStats
+                .Where(stat => movies.Any(m => m.Id == stat.MovieId && m.MovieMetadata.Value.ItemType == ItemType.Movie))
+                .Sum(stat => stat.MovieFileCount);
+            message.Performer.SceneCount = movieStats
+                .Where(stat => movies.Any(m => m.Id == stat.MovieId && m.MovieMetadata.Value.ItemType == ItemType.Scene))
+                .Sum(stat => stat.MovieFileCount);
+            message.Performer.TotalMovieCount = movies.Count(x => x.MovieMetadata.Value.ItemType == ItemType.Movie);
+            message.Performer.TotalSceneCount = movies.Count(x => x.MovieMetadata.Value.ItemType == ItemType.Scene);
+            message.Performer.SizeOnDisk = movieStats.Sum(x => x.SizeOnDisk);
+            var updatedPerformer = _performerRepo.Update(message.Performer);
         }
     }
 }

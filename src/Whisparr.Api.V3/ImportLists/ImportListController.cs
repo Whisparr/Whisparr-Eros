@@ -14,9 +14,9 @@ namespace Whisparr.Api.V3.ImportLists
 
         public ImportListController(IBroadcastSignalRMessage signalRBroadcaster,
             IImportListFactory importListFactory,
-            RootFolderExistsValidator rootFolderExistsValidator,
+            RootFolderExistsValidator<ImportListResource> rootFolderExistsValidator,
             ImportListResourceMapper resourceMapper,
-            QualityProfileExistsValidator qualityProfileExistsValidator)
+            QualityProfileExistsValidator<ImportListResource> qualityProfileExistsValidator)
             : base(signalRBroadcaster, importListFactory, "importlist", resourceMapper, BulkResourceMapper)
         {
             SharedValidator.RuleFor(c => c.RootFolderPath).Cascade(CascadeMode.Stop)

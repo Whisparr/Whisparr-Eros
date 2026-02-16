@@ -20,6 +20,7 @@ using NzbDrone.Core.Movies.Credits;
 using NzbDrone.Core.Movies.Performers;
 using NzbDrone.Core.Movies.Studios;
 using NzbDrone.Core.Parser;
+using NzbDrone.Core.Parser.Model;
 
 namespace NzbDrone.Core.MetadataSource.SkyHook
 {
@@ -714,10 +715,32 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             }
         }
 
-        public List<object> SearchForNewEntity(string title, ItemType itemType)
+        public List<object> SearchForNewEntity(string title, ItemType? itemType = null)
         {
-            var lowerTitle = title.ToLower();
+            if (title.IsNullOrWhiteSpace())
+            {
+                return null;
+            }
+
             var result = new List<object>();
+            var movieInfo = Parser.Parser.ParseMoviePath(title);
+
+            // Null is passed when a Filename is passed where the type is not set
+            if (itemType == null)
+            {
+                if (movieInfo != null)
+                {
+                    itemType = movieInfo?.IsScene == true ? ItemType.Scene : ItemType.Movie;
+                }
+                else
+                {
+                    itemType = ItemType.Movie;
+                    _logger.Debug($"Unable to parse title {title} to determine if it's a movie or scene, defaulting to movie search");
+                }
+            }
+
+            title = FormatSearchTerm(title, itemType, movieInfo);
+            var lowerTitle = title.ToLower();
 
             if (lowerTitle.StartsWith("tmdb:") || lowerTitle.StartsWith("tmdbid:") || lowerTitle.StartsWith("imdb:") || lowerTitle.StartsWith("imdbid:") || lowerTitle.StartsWith("stash:") || lowerTitle.StartsWith("stashid:") || lowerTitle.StartsWith("https:"))
             {
@@ -1327,6 +1350,41 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             }
         }
 
+        private string FormatSearchTerm(string title, ItemType? itemType, ParsedMovieInfo movieInfo)
+        {
+            if (movieInfo == null)
+            {
+                return title;
+            }
+
+            if (movieInfo.IsScene && itemType != ItemType.Movie)
+            {
+                if (movieInfo.StashId.IsNotNullOrWhiteSpace())
+                {
+                    return $"stashid:{movieInfo.StashId}";
+                }
+
+                if (movieInfo.ReleaseDate.IsNotNullOrWhiteSpace())
+                {
+                    return $"{movieInfo.StudioTitle} {movieInfo.ReleaseDate}";
+                }
+            }
+            else if (!movieInfo.IsScene && itemType != ItemType.Scene)
+            {
+                if (movieInfo.TmdbId > 0)
+                {
+                    return $"tmdb:{movieInfo.TmdbId}";
+                }
+
+                if (movieInfo.ImdbId.IsNotNullOrWhiteSpace())
+                {
+                    return $"imdb:{movieInfo.ImdbId}";
+                }
+            }
+
+            return title;
+        }
+
         private Movie MapSearchResult(MovieResource result)
         {
             if (result == null)
@@ -1381,9 +1439,16 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                 throw new ArgumentNullException(nameof(castResource));
             }
 
+            var personName = castResource.PersonName ?? castResource.Performer.Name;
+
+            if (personName == null)
+            {
+                personName = "";
+            }
+
             var newActor = new Credit
             {
-                PersonName = castResource.PersonName.IsNotNullOrWhiteSpace() ? castResource.PersonName : castResource.Performer.Name,
+                PersonName = personName,
                 Character = castResource.Character,
                 Order = castResource.Order,
                 Type = CreditType.Cast,
@@ -1394,9 +1459,11 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                 Performer = new CreditPerformer
                 {
                     Name = castResource.Performer.Name,
+                    Disambiguation = castResource.Performer?.Disambiguation ?? string.Empty,
                     ForeignId = castResource.Performer.ForeignIds.StashId.ToString(),
                     Images = castResource.Performer.Images.Select(MapImage).ToList(),
-                    Gender = MapGender(castResource.Performer.Gender)
+                    Gender = MapGender(castResource.Performer?.Gender),
+                    Country = castResource.Performer?.Country ?? string.Empty
                 }
             };
 
@@ -1413,15 +1480,29 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             var newPerformer = new Performer
             {
                 Name = performer.Name,
+                Disambiguation = performer.Disambiguation ?? string.Empty,
+                Aliases = performer.Aliases ?? new List<string>(),
                 CleanName = performer.Name.CleanMovieTitle(),
                 SortName = Parser.Parser.NormalizeTitle(performer.Name),
                 Gender = MapGender(performer.Gender),
+                Country = performer.Country ?? string.Empty,
+                Height = performer.Height,
+                CupSize = performer.CupSize,
+                BandSize = performer.BandSize,
+                HipSize = performer.HipSize,
+                WaistSize = performer.WaistSize,
+                BreastType = performer.BreastType,
                 Status = performer.Status,
                 MergedIntoId = performer.MergedIntoId,
+                BirthDate = performer.BirthDate,
+                DeathDate = performer.DeathDate,
                 Age = performer.Age,
                 CareerStart = performer.CareerStart,
                 CareerEnd = performer.CareerEnd,
+                Tattoos = performer.Tattoos ?? new List<string>(),
+                Piercings = performer.Piercings ?? new List<string>(),
                 Ethnicity = MapEthnicity(performer.Ethnicity),
+                EyeColor = MapEyeColor(performer.EysColor),
                 HairColor = MapHairColor(performer.HairColor),
                 ForeignId = performer.ForeignIds.StashId,
                 TmdbId = performer.ForeignIds.TmdbId,
@@ -1453,6 +1534,32 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                     return Gender.Male;
                 default:
                     return Gender.Female;
+            }
+        }
+
+        private EyeColor? MapEyeColor(string eyeColor)
+        {
+            if (eyeColor.IsNullOrWhiteSpace())
+            {
+                return null;
+            }
+
+            switch (eyeColor.ToUpperInvariant())
+            {
+                case "BROWN":
+                    return EyeColor.Brown;
+                case "HAZEL":
+                    return EyeColor.Hazel;
+                case "BLUE":
+                    return EyeColor.Blue;
+                case "GREEN":
+                    return EyeColor.Green;
+                case "GREY":
+                    return EyeColor.Grey;
+                case "RED":
+                    return EyeColor.Red;
+                default:
+                    return EyeColor.Other;
             }
         }
 

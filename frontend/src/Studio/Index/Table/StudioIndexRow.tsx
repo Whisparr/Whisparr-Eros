@@ -1,54 +1,55 @@
 import React, { useCallback, useState } from 'react';
-import { useSelector } from 'react-redux';
 import { useSelect } from 'App/SelectContext';
+import { SafeForWorkModeContext } from 'App/State/SafeForWorkContext';
 import Icon from 'Components/Icon';
 import IconButton from 'Components/Link/IconButton';
 import MovieTagList from 'Components/MovieTagList';
-import VirtualTableRowCell from 'Components/Table/Cells/VirtualTableRowCell';
+import TableRowCell from 'Components/Table/Cells/TableRowCell';
 import VirtualTableSelectCell from 'Components/Table/Cells/VirtualTableSelectCell';
 import Column from 'Components/Table/Column';
 import Tooltip from 'Components/Tooltip/Tooltip';
 import { icons, kinds } from 'Helpers/Props';
+import QUalityProfileName from 'Settings/Profiles/Quality/QualityProfileName';
 import StudioDetailsLinks from 'Studio/Details/StudioDetailsLinks';
-import EditStudioModalConnector from 'Studio/Edit/EditStudioModalConnector';
-import createStudioIndexItemSelector from 'Studio/Index/createStudioIndexItemSelector';
+import EditStudioModal from 'Studio/Edit/EditStudioModal';
+import Studio from 'Studio/Studio';
 import StudioTitleLink from 'Studio/StudioTitleLink';
 import { SelectStateInputProps } from 'typings/props';
+import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
 import styles from './StudioIndexRow.css';
 
 interface StudioIndexRowProps {
-  studioId: number;
+  studio: Studio;
   sortKey: string;
   columns: Column[];
   isSelectMode: boolean;
 }
 
 function StudioIndexRow(props: StudioIndexRowProps) {
-  const { studioId, columns, isSelectMode } = props;
-
-  const { studio, qualityProfile } = useSelector(
-    createStudioIndexItemSelector(studioId)
-  );
+  const { studio, columns, isSelectMode } = props;
+  const { id: studioId, qualityProfileId } = studio;
 
   const {
-    title,
-    network,
-    monitored,
-    moviesMonitored,
-    rootFolderPath,
-    aliases = [],
-    tags = [],
-    movieCount,
-    totalMovieCount,
-    sceneCount,
-    totalSceneCount,
     foreignId,
-    website,
+    title,
     tmdbId,
     tpdbId,
+    aliases = [],
+    monitored,
+    movieCount,
+    moviesMonitored,
+    network,
+    rootFolderPath,
+    sceneCount,
+    sizeOnDisk,
+    tags = [],
+    totalMovieCount,
+    totalSceneCount,
+    website,
   } = studio;
 
+  const safeForWorkMode = React.useContext(SafeForWorkModeContext);
   const [isEditStudioModalOpen, setIsEditStudioModalOpen] = useState(false);
   const [selectState, selectDispatch] = useSelect();
 
@@ -72,155 +73,180 @@ function StudioIndexRow(props: StudioIndexRowProps) {
     [selectDispatch]
   );
 
-  return (
-    <>
-      {isSelectMode ? (
+  const cells: React.ReactNode[] = [];
+
+  if (isSelectMode) {
+    cells.push(
+      <td key="select">
         <VirtualTableSelectCell
           id={studioId}
           isSelected={selectState.selectedState[studioId]}
           isDisabled={false}
           onSelectedChange={onSelectedChange}
         />
-      ) : null}
+      </td>
+    );
+  }
 
-      {columns.map((column) => {
-        const { name, isVisible } = column;
+  columns.forEach((column) => {
+    const { name, isVisible } = column;
 
-        if (!isVisible) {
-          return null;
-        }
+    if (!isVisible) {
+      return;
+    }
 
-        if (name === 'status') {
-          return (
-            <VirtualTableRowCell key={name} className={styles[name]}>
-              <Icon
-                containerClassName={
-                  monitored
-                    ? styles.statusIcon
-                    : `${styles.statusIcon} ${styles.unmonitored}`
-                }
-                title="scene"
-                name={monitored ? icons.SCENE : icons.SCENEUNMONITOR}
-              />
-              <Icon
-                containerClassName={
-                  moviesMonitored
-                    ? styles.statusIcon
-                    : `${styles.statusIcon} ${styles.unmonitored}`
-                }
-                title="movie"
-                name={moviesMonitored ? icons.FILM : icons.FILMUNMONITOR}
-              />
-            </VirtualTableRowCell>
-          );
-        }
+    if (name === 'status') {
+      cells.push(
+        <TableRowCell key={name} className={styles[name]}>
+          <Icon
+            containerClassName={
+              monitored
+                ? styles.statusIcon
+                : `${styles.statusIcon} ${styles.unmonitored}`
+            }
+            title="scene"
+            name={monitored ? icons.SCENE : icons.SCENEUNMONITOR}
+          />
+          <Icon
+            containerClassName={
+              moviesMonitored
+                ? styles.statusIcon
+                : `${styles.statusIcon} ${styles.unmonitored}`
+            }
+            title="movie"
+            name={moviesMonitored ? icons.FILM : icons.FILMUNMONITOR}
+          />
+        </TableRowCell>
+      );
+      return;
+    }
 
-        if (name === 'sortTitle') {
-          return (
-            <VirtualTableRowCell key={name} className={styles[name]}>
-              <StudioTitleLink foreignId={foreignId} title={title} />
-            </VirtualTableRowCell>
-          );
-        }
+    if (name === 'sortTitle') {
+      cells.push(
+        <TableRowCell key={name} className={styles[name]}>
+          <StudioTitleLink foreignId={foreignId} title={title} />
+        </TableRowCell>
+      );
+      return;
+    }
 
-        if (name === 'network') {
-          return (
-            <VirtualTableRowCell key={name} className={styles[name]}>
-              {network}
-            </VirtualTableRowCell>
-          );
-        }
+    if (name === 'network') {
+      cells.push(
+        <TableRowCell key={name} className={styles[name]}>
+          {network}
+        </TableRowCell>
+      );
+      return;
+    }
 
-        if (name === 'qualityProfileId') {
-          return (
-            <VirtualTableRowCell key={name} className={styles[name]}>
-              {qualityProfile?.name ?? ''}
-            </VirtualTableRowCell>
-          );
-        }
+    if (name === 'qualityProfileId') {
+      cells.push(
+        <TableRowCell key={name} className={styles[name]}>
+          <QUalityProfileName qualityProfileId={qualityProfileId} />
+        </TableRowCell>
+      );
+      return;
+    }
 
-        if (name === 'rootFolderPath') {
-          return (
-            <VirtualTableRowCell
-              key={name}
-              className={styles[name]}
-              title={rootFolderPath}
-            >
-              {rootFolderPath}
-            </VirtualTableRowCell>
-          );
-        }
+    if (name === 'rootFolderPath') {
+      cells.push(
+        <TableRowCell
+          key={name}
+          className={safeForWorkMode ? styles.blur : styles[name]}
+          title={rootFolderPath}
+        >
+          {rootFolderPath}
+        </TableRowCell>
+      );
+      return;
+    }
 
-        if (name === 'tags') {
-          return (
-            <VirtualTableRowCell key={name} className={styles[name]}>
-              <MovieTagList tags={tags} />
-            </VirtualTableRowCell>
-          );
-        }
+    if (name === 'tags') {
+      cells.push(
+        <TableRowCell key={name} className={styles[name]}>
+          <MovieTagList tags={tags} />
+        </TableRowCell>
+      );
+      return;
+    }
 
-        if (name === 'aliases') {
-          return (
-            <VirtualTableRowCell key={name} className={styles[name]}>
-              {aliases}
-            </VirtualTableRowCell>
-          );
-        }
+    if (name === 'aliases') {
+      cells.push(
+        <TableRowCell key={name} className={styles[name]}>
+          {aliases}
+        </TableRowCell>
+      );
+      return;
+    }
 
-        if (name === 'totalMovieCount') {
-          return (
-            <VirtualTableRowCell key={name} className={styles[name]}>
-              {movieCount} / {totalMovieCount}
-            </VirtualTableRowCell>
-          );
-        }
+    if (name === 'totalMovieCount') {
+      cells.push(
+        <TableRowCell key={name} className={styles[name]}>
+          {`${movieCount} / ${totalMovieCount}`}
+        </TableRowCell>
+      );
+      return;
+    }
 
-        if (name === 'totalSceneCount') {
-          return (
-            <VirtualTableRowCell key={name} className={styles[name]}>
-              {sceneCount} / {totalSceneCount}
-            </VirtualTableRowCell>
-          );
-        }
+    if (name === 'totalSceneCount') {
+      cells.push(
+        <TableRowCell key={name} className={styles[name]}>
+          {` ${sceneCount} / ${totalSceneCount}`}
+        </TableRowCell>
+      );
+      return;
+    }
 
-        if (name === 'actions') {
-          return (
-            <VirtualTableRowCell key={name} className={styles[name]}>
-              <span className={styles.externalLinks}>
-                <Tooltip
-                  anchor={<Icon name={icons.EXTERNAL_LINK} size={12} />}
-                  tooltip={
-                    <StudioDetailsLinks
-                      foreignId={foreignId}
-                      website={website}
-                      tmdbId={tmdbId}
-                      tpdbId={tpdbId}
-                    />
-                  }
-                  canFlip={true}
-                  kind={kinds.INVERSE}
+    if (name === 'sizeOnDisk') {
+      cells.push(
+        <TableRowCell key={name} className={styles[name]}>
+          {formatBytes(sizeOnDisk)}
+        </TableRowCell>
+      );
+      return;
+    }
+
+    if (name === 'actions') {
+      cells.push(
+        <TableRowCell key={name} className={styles[name]}>
+          <span className={styles.externalLinks}>
+            <Tooltip
+              anchor={<Icon name={icons.EXTERNAL_LINK} size={12} />}
+              tooltip={
+                <StudioDetailsLinks
+                  foreignId={foreignId}
+                  website={website}
+                  tmdbId={tmdbId}
+                  tpdbId={tpdbId}
                 />
-              </span>
+              }
+              canFlip={true}
+              kind={kinds.INVERSE}
+            />
+          </span>
 
-              <IconButton
-                name={icons.EDIT}
-                title={translate('EditStudio')}
-                onPress={onEditStudioPress}
-              />
-            </VirtualTableRowCell>
-          );
-        }
+          <IconButton
+            name={icons.EDIT}
+            title={translate('EditStudio')}
+            onPress={onEditStudioPress}
+          />
+        </TableRowCell>
+      );
+      return;
+    }
+  });
 
-        return null;
-      })}
-
-      <EditStudioModalConnector
+  cells.push(
+    <TableRowCell key="edit-modal" style={{ display: 'none' }}>
+      <EditStudioModal
         isOpen={isEditStudioModalOpen}
-        studioId={studioId}
+        studio={studio}
         onModalClose={onEditStudioModalClose}
       />
-    </>
+    </TableRowCell>
   );
+
+  return cells;
 }
 
 export default StudioIndexRow;

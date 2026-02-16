@@ -3,7 +3,7 @@ import Language from 'Language/Language';
 import { MovieFile } from 'MovieFile/MovieFile';
 import MovieCredit from 'typings/MovieCredit';
 
-export type MovieMonitor = 'movieOnly' | 'sceneOnly' | 'movieAndScene' | 'none';
+export type MovieMonitor = 'monitor' | 'none';
 
 export type MovieStatus =
   | 'tba'

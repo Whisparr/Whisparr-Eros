@@ -10,8 +10,10 @@ import { savePerformerEditor } from 'Store/Actions/performerActions';
 import { fetchRootFolders } from 'Store/Actions/rootFolderActions';
 import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
-import DeletePerformerModal from './Delete/DeletePerformerModal';
+import { DeletePerformerModal } from './Delete/DeletePerformerModal';
+import { useDeletePerformerModalFooterHandler } from './Delete/useDeletePerformerModalFooterHandler';
 import EditPerformersModal from './Edit/EditPerformersModal';
+import { useEditPerformersMutation } from './Edit/useEditPerformersModalMutation';
 import TagsModal from './Tags/TagsModal';
 import styles from './PerformerIndexSelectFooter.css';
 
@@ -19,12 +21,13 @@ interface SavePayload {
   monitored?: boolean;
   qualityProfileId?: number;
   rootFolderPath?: string;
-  moveFiles?: boolean;
+  searchOnAdd?: boolean;
 }
 
 const sceneEditorSelector = createSelector(
   (state: AppState) => state.performers,
   (performers) => {
+    // Keep legacy isSaving for other features like tags and delete
     const { isSaving } = performers;
 
     return {
@@ -34,15 +37,14 @@ const sceneEditorSelector = createSelector(
 );
 
 function PerformerIndexSelectFooter() {
-  const { isSaving } = useSelector(sceneEditorSelector);
+  const { isSaving: legacyIsSaving } = useSelector(sceneEditorSelector);
 
   const dispatch = useDispatch();
+  const editMutation = useEditPerformersMutation();
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isTagsModalOpen, setIsTagsModalOpen] = useState(false);
-  const [isSavingPerformers, setIsSavingPerformers] = useState(false);
   const [isSavingTags, setIsSavingTags] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [isPerformerModalOpen, setIsPerformerModalOpen] = useState(false);
 
   const [selectState] = useSelect();
@@ -64,17 +66,14 @@ function PerformerIndexSelectFooter() {
 
   const onSavePress = useCallback(
     (payload: SavePayload) => {
-      setIsSavingPerformers(true);
       setIsEditModalOpen(false);
 
-      dispatch(
-        savePerformerEditor({
-          ...payload,
-          performerIds,
-        })
-      );
+      editMutation.mutate({
+        performerIds,
+        ...payload,
+      });
     },
-    [performerIds, dispatch]
+    [performerIds, editMutation]
   );
 
   const onTagsPress = useCallback(() => {
@@ -101,38 +100,27 @@ function PerformerIndexSelectFooter() {
     [performerIds, dispatch]
   );
 
-  const onDeletePress = useCallback(() => {
-    setIsPerformerModalOpen(true);
-  }, [setIsPerformerModalOpen]);
-
   const onDeleteModalClose = useCallback(() => {
     setIsPerformerModalOpen(false);
   }, []);
 
-  const onDeleteConfirm = useCallback(
-    (options: { addListExclusion: boolean; deleteFiles: boolean }) => {
-      setIsDeleting(true);
-      setIsPerformerModalOpen(false);
+  const onDeleteSelectedPress = useCallback(() => {
+    setIsPerformerModalOpen(true);
+  }, []);
 
-      dispatch(
-        savePerformerEditor({
-          performerIds,
-          delete: true,
-          addListExclusion: options.addListExclusion,
-          deleteFiles: options.deleteFiles,
-        })
-      );
-    },
-    [performerIds, dispatch]
-  );
+  // Handler for when delete is confirmed in modal
+  const { onDeletePress, isPending: isDeletePending } =
+    useDeletePerformerModalFooterHandler({
+      performerIds,
+      onModalClose: onDeleteModalClose,
+    });
 
   useEffect(() => {
-    if (!isSaving) {
-      setIsSavingPerformers(false);
+    // Legacy reducer-based isSaving for tags operation
+    if (!legacyIsSaving) {
       setIsSavingTags(false);
-      setIsDeleting(false);
     }
-  }, [isSaving]);
+  }, [legacyIsSaving]);
 
   useEffect(() => {
     dispatch(fetchRootFolders());
@@ -145,7 +133,7 @@ function PerformerIndexSelectFooter() {
       <div className={styles.buttons}>
         <div className={styles.actionButtons}>
           <SpinnerButton
-            isSpinning={isSaving && isSavingPerformers}
+            isSpinning={editMutation.isPending}
             isDisabled={!anySelected}
             onPress={onEditPress}
           >
@@ -153,7 +141,7 @@ function PerformerIndexSelectFooter() {
           </SpinnerButton>
 
           <SpinnerButton
-            isSpinning={isSaving && isSavingTags}
+            isSpinning={legacyIsSaving && isSavingTags}
             isDisabled={!anySelected}
             onPress={onTagsPress}
           >
@@ -161,10 +149,10 @@ function PerformerIndexSelectFooter() {
           </SpinnerButton>
 
           <SpinnerButton
-            isSpinning={isSaving && isDeleting}
+            isSpinning={isDeletePending}
             isDisabled={!anySelected}
             kind={kinds.DANGER}
-            onPress={onDeletePress}
+            onPress={onDeleteSelectedPress}
           >
             {translate('Delete')}
           </SpinnerButton>
@@ -192,7 +180,7 @@ function PerformerIndexSelectFooter() {
       <DeletePerformerModal
         isOpen={isPerformerModalOpen}
         performerIds={performerIds}
-        onDeletePress={onDeleteConfirm}
+        onDeletePress={onDeletePress}
         onModalClose={onDeleteModalClose}
       />
     </PageContentFooter>

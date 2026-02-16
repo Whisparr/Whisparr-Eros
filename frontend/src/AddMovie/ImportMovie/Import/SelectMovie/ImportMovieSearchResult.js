@@ -12,7 +12,7 @@ class ImportMovieSearchResult extends Component {
   // Listeners
 
   onPress = () => {
-    this.props.onPress(this.props.tmdbId);
+    this.props.onPress(this.props.foreignId);
   };
 
   //
@@ -20,13 +20,18 @@ class ImportMovieSearchResult extends Component {
 
   render() {
     const {
+      foreignId,
       tmdbId,
       tpdbId,
+      itemType,
       title,
       year,
-      studio,
+      releaseDate,
+      studioTitle,
       isExistingMovie
     } = this.props;
+
+    const stashId = (foreignId && tmdbId === 0 && !tpdbId) ? foreignId : '';
 
     return (
       <div className={styles.container}>
@@ -35,9 +40,11 @@ class ImportMovieSearchResult extends Component {
           onPress={this.onPress}
         >
           <ImportMovieTitle
+            itemType={itemType}
             title={title}
             year={year}
-            network={studio}
+            releaseDate={releaseDate}
+            studioTitle={studioTitle}
             isExistingMovie={isExistingMovie}
           />
         </Link>
@@ -68,17 +75,32 @@ class ImportMovieSearchResult extends Component {
           </Link>
         )}
 
+        {!!stashId && stashId !== tmdbId?.toString() && (
+          <Link
+            className={styles.stashdbLink}
+            to={`https://stashdb.org/scenes/${stashId}/`}
+          >
+            <Icon
+              className={styles.stashdbLinkIcon}
+              name={icons.EXTERNAL_LINK}
+              size={16}
+            />
+          </Link>
+        )}
       </div>
     );
   }
 }
 
 ImportMovieSearchResult.propTypes = {
-  tmdbId: PropTypes.number.isRequired,
+  foreignId: PropTypes.string,
+  tmdbId: PropTypes.number,
   tpdbId: PropTypes.string,
+  itemType: PropTypes.string,
   title: PropTypes.string.isRequired,
   year: PropTypes.number.isRequired,
-  studio: PropTypes.string,
+  releaseDate: PropTypes.string,
+  studioTitle: PropTypes.string,
   isExistingMovie: PropTypes.bool.isRequired,
   onPress: PropTypes.func.isRequired
 };

@@ -1,3 +1,8 @@
+.blurred {
+  filter: blur(6px);
+  transition: filter 0.2s;
+}
+
 .innerContentBody {
   padding: 0;
 }
@@ -64,7 +69,8 @@
 
 .titleContainer {
   display: flex;
-  margin-bottom: 5px;
+  align-items: center;
+  line-height: 1px;
 }
 
 .title {
@@ -137,10 +143,18 @@
 }
 
 .links,
+.movieCount,
 .network,
-.years,
-.runtime {
-  margin-right: 14px;
+.path,
+.qualityProfileName,
+.sceneCount,
+.sizeOnDisk,
+.statusName,
+.tags,
+.years {
+  margin-left: 8px;
+  font-weight: 300;
+  font-size: 17px;
 }
 
 .detailsLabel {
@@ -149,6 +163,7 @@
   margin: 5px 10px 5px 0;
 }
 
+.links,
 .path,
 .sizeOnDisk,
 .qualityProfileName,
@@ -173,6 +188,19 @@
 
 .contentContainer {
   padding: 20px;
+}
+
+.yearRow {
+  box-sizing: border-box;
+}
+
+.yearRowExpanded {
+  padding-bottom: 20px;
+}
+
+.yearRowCollapsed {
+  padding-bottom: 20px;
+  height: 50px;
 }
 
 .tabList {
@@ -223,7 +251,6 @@
   }
 
   .certification,
-  .links,
   .rating,
   .year,
   .runtime {

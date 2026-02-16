@@ -25,7 +25,7 @@ namespace Whisparr.Api.V3.Config
         public HostConfigController(IConfigFileProvider configFileProvider,
                                     IConfigService configService,
                                     IUserService userService,
-                                    FileExistsValidator fileExistsValidator)
+                                    FileExistsValidator<HostConfigResource> fileExistsValidator)
         {
             _configFileProvider = configFileProvider;
             _configService = configService;

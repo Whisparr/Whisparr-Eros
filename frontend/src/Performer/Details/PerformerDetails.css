@@ -69,13 +69,20 @@
 
 .titleContainer {
   display: flex;
-  margin-bottom: 5px;
+  align-items: center;
 }
 
 .title {
-  font-weight: 300;
+  display: flex;
+  align-items: center;
   font-size: 50px;
-  line-height: 60px;
+  line-height: 1;
+}
+
+.performerName {
+  vertical-align: middle;
+  font-weight: 300;
+  line-height: 1;
 }
 
 .unmonitored {
@@ -85,10 +92,9 @@
 
 .monitorToggleButtonsContainer {
   display: flex;
-
-  align-items: flex-start;
-
+  align-items: center;
   margin-right: 20px;
+  line-height: 1;
 }
 
 .toggleMonitoredContainer,
@@ -134,25 +140,45 @@
   }
 }
 
-.details {
-  margin-bottom: 8px;
-  padding-left: 7px;
-  font-weight: 300;
-  font-size: 20px;
+.metadata{
+  padding: 10px;
+}
+
+.metadataLabel{
+  composes: label from '~Components/Label.css';
+
+  margin: 5px 10px 5px 0;
+  background-color: transparent;
 }
 
 .links,
 .ethnicity,
 .years,
 .age,
+.birthDate,
 .status,
 .runtime {
-  margin-right: 14px;
+  margin-left: 8px;
+  font-weight: 300;
+  font-size: 17px;
 }
 
-.gender{
-  margin-left: 15px;
-  font-size: 50px;
+.gender {
+  display: flex;
+  align-items: center;
+  margin: 0 4px;
+  vertical-align: middle;
+}
+
+.country {
+  display: flex;
+  align-items: center;
+  margin: 8px 4px 0;
+  vertical-align: middle;
+}
+
+.details {
+  padding: 10px;
 }
 
 .detailsLabel {
@@ -222,9 +248,14 @@
     padding: 15px;
   }
 
-  .performerName {
-    font-weight: 300;
+  .title {
+    display:flex;
+    align-items: center;
     font-size: 30px;
+    line-height: 30px;
+  }
+
+  .monitorToggleButtonsContainer {
     line-height: 30px;
   }
 }
@@ -241,10 +272,6 @@
   .year,
   .runtime {
     margin-right: 9px;
-  }
-
-  .details {
-    font-size: 19px;
   }
 
   .scenesFieldSet{

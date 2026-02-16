@@ -10,17 +10,28 @@ interface StudiosAppState extends AppSectionSaveState, AppSectionState<Studio> {
   secondarySortKey: string;
   secondarySortDirection: SortDirection;
   view: string;
+  page: number;
+  selectedFilterKey: string;
+
+  deleteOptions: {
+    addImportExclusion: boolean;
+  };
 
   posterOptions: {
     detailedProgressBar: boolean;
     size: string;
     showTitle: boolean;
+    pageSize: number;
   };
 
-  selectedFilterKey: string;
+  tableOptions: {
+    pageSize: number;
+  };
+
   filterBuilderProps: FilterBuilderProp<Studio>[];
   filters: Filter[];
   columns: Column[];
+  pendingChanges: Partial<Studio>;
 }
 
 export default StudiosAppState;

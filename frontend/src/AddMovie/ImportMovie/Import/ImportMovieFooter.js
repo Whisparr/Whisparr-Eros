@@ -141,7 +141,7 @@ class ImportMovieFooter extends Component {
               isDisabled={!selectedCount || isLookingUpMovie}
               onPress={onImportPress}
             >
-              {translate('Import')} {selectedCount} {selectedCount > 1 ? translate('Movies') : translate('Movie')}
+              {translate('Import')} {selectedCount} {selectedCount > 1 ? translate('Files') : translate('File')}
             </SpinnerButton>
 
             {

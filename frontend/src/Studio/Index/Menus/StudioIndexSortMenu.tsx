@@ -43,6 +43,38 @@ function StudioIndexSortMenu(props: StudioIndexSortMenuProps) {
         >
           {translate('QualityProfile')}
         </SortMenuItem>
+        <SortMenuItem
+          name="rootFolderPath"
+          sortKey={sortKey}
+          sortDirection={sortDirection}
+          onPress={onSortSelect}
+        >
+          {translate('RootFolderPath')}
+        </SortMenuItem>
+        <SortMenuItem
+          name="totalMovieCount"
+          sortKey={sortKey}
+          sortDirection={sortDirection}
+          onPress={onSortSelect}
+        >
+          {translate('TotalMovieCount')}
+        </SortMenuItem>
+        <SortMenuItem
+          name="totalSceneCount"
+          sortKey={sortKey}
+          sortDirection={sortDirection}
+          onPress={onSortSelect}
+        >
+          {translate('TotalSceneCount')}
+        </SortMenuItem>
+        <SortMenuItem
+          name="sizeOnDisk"
+          sortKey={sortKey}
+          sortDirection={sortDirection}
+          onPress={onSortSelect}
+        >
+          {translate('SizeOnDisk')}
+        </SortMenuItem>
       </MenuContent>
     </SortMenu>
   );

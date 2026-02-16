@@ -1,11 +1,12 @@
 using System.Linq;
+using FluentValidation;
 using FluentValidation.Validators;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Movies;
 
 namespace NzbDrone.Core.Validation.Paths
 {
-    public class MovieAncestorValidator : PropertyValidator
+    public class MovieAncestorValidator<T> : PropertyValidator<T, string>
     {
         private readonly IMovieService _movieService;
 
@@ -14,18 +15,20 @@ namespace NzbDrone.Core.Validation.Paths
             _movieService = movieService;
         }
 
-        protected override string GetDefaultMessageTemplate() => "Path '{path}' is an ancestor of an existing movie";
+        public override string Name => "MovieAncestorValidator";
 
-        protected override bool IsValid(PropertyValidatorContext context)
+        protected override string GetDefaultMessageTemplate(string errorCode) => "Path '{path}' is an ancestor of an existing movie";
+
+        public override bool IsValid(ValidationContext<T> context, string value)
         {
-            if (context.PropertyValue == null)
+            if (value == null)
             {
                 return true;
             }
 
-            context.MessageFormatter.AppendArgument("path", context.PropertyValue.ToString());
+            context.MessageFormatter.AppendArgument("path", value);
 
-            return !_movieService.AllMoviePaths().Any(s => context.PropertyValue.ToString().IsParentPath(s.Value));
+            return !_movieService.AllMoviePaths().Any(s => value.IsParentPath(s.Value));
         }
     }
 }

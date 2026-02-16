@@ -9,7 +9,6 @@ import { SortDirection } from 'Helpers/Props/sortDirections';
 import StudioIndexPoster from 'Studio/Index/Posters/StudioIndexPoster';
 import Studio from 'Studio/Studio';
 import dimensions from 'Styles/Variables/dimensions';
-import getIndexOfFirstCharacter from 'Utilities/Array/getIndexOfFirstCharacter';
 
 const bodyPadding = parseInt(dimensions.pageContentBodyPadding);
 const bodyPaddingSmallScreen = parseInt(
@@ -44,8 +43,6 @@ interface StudioIndexPostersProps {
   items: Studio[];
   sortKey: string;
   sortDirection?: SortDirection;
-  jumpToCharacter?: string;
-  scrollTop?: number;
   scrollerRef: RefObject<HTMLElement>;
   isSelectMode: boolean;
   isSmallScreen: boolean;
@@ -85,7 +82,7 @@ function Cell({
       }}
     >
       <StudioIndexPoster
-        studioId={studio.id}
+        studio={studio}
         sortKey={sortKey}
         isSelectMode={isSelectMode}
         posterWidth={posterWidth}
@@ -100,14 +97,7 @@ function getWindowScrollTopPosition() {
 }
 
 export default function StudioIndexPosters(props: StudioIndexPostersProps) {
-  const {
-    scrollerRef,
-    items,
-    sortKey,
-    jumpToCharacter,
-    isSelectMode,
-    isSmallScreen,
-  } = props;
+  const { scrollerRef, items, sortKey, isSelectMode, isSmallScreen } = props;
 
   const { posterOptions } = useSelector(studioIndexSelector);
   const ref = useRef<Grid>(null);
@@ -222,29 +212,6 @@ export default function StudioIndexPosters(props: StudioIndexPostersProps) {
       }
     };
   }, [isSmallScreen, ref, scrollerRef]);
-
-  useEffect(() => {
-    if (jumpToCharacter) {
-      const index = getIndexOfFirstCharacter(items, jumpToCharacter);
-
-      if (index != null) {
-        const rowIndex = Math.floor(index / columnCount);
-
-        const scrollTop = rowIndex * rowHeight + padding;
-
-        ref.current?.scrollTo({ scrollLeft: 0, scrollTop });
-        scrollerRef.current?.scrollTo(0, scrollTop);
-      }
-    }
-  }, [
-    jumpToCharacter,
-    rowHeight,
-    columnCount,
-    padding,
-    items,
-    scrollerRef,
-    ref,
-  ]);
 
   return (
     <div ref={measureRef}>

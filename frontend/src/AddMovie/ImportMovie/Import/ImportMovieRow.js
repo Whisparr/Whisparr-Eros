@@ -26,7 +26,7 @@ function ImportMovieRow(props) {
         inputClassName={styles.selectInput}
         id={id}
         isSelected={isSelected}
-        isDisabled={!selectedMovie || isExistingMovie}
+        isDisabled={!selectedMovie}
         onSelectedChange={onSelectedChange}
       />
 

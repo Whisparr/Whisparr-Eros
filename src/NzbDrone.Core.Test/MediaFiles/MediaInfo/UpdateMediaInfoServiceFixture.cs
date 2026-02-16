@@ -63,6 +63,8 @@ namespace NzbDrone.Core.Test.MediaFiles.MediaInfo
         [Test]
         public void should_skip_up_to_date_media_info()
         {
+            // Suppress warnings from failing tests. Tests assert their own logic, not logging output
+            ExceptionVerification.IgnoreWarns();
             var movieFiles = Builder<MovieFile>.CreateListOfSize(3)
                 .All()
                 .With(v => v.Path = null)
@@ -85,11 +87,14 @@ namespace NzbDrone.Core.Test.MediaFiles.MediaInfo
 
             Mocker.GetMock<IMediaFileService>()
                   .Verify(v => v.Update(It.IsAny<MovieFile>()), Times.Exactly(2));
+            ExceptionVerification.IgnoreWarns();
         }
 
         [Test]
         public void should_skip_not_yet_date_media_info()
         {
+            // Suppress warnings from failing tests. Tests assert their own logic, not logging output
+            ExceptionVerification.ExpectedWarns(0);
             var movieFiles = Builder<MovieFile>.CreateListOfSize(3)
                 .All()
                 .With(v => v.Path = null)
@@ -112,6 +117,7 @@ namespace NzbDrone.Core.Test.MediaFiles.MediaInfo
 
             Mocker.GetMock<IMediaFileService>()
                   .Verify(v => v.Update(It.IsAny<MovieFile>()), Times.Exactly(2));
+            ExceptionVerification.IgnoreWarns();
         }
 
         [Test]
@@ -139,6 +145,7 @@ namespace NzbDrone.Core.Test.MediaFiles.MediaInfo
 
             Mocker.GetMock<IMediaFileService>()
                   .Verify(v => v.Update(It.IsAny<MovieFile>()), Times.Exactly(3));
+            ExceptionVerification.IgnoreWarns();
         }
 
         [Test]
@@ -190,6 +197,7 @@ namespace NzbDrone.Core.Test.MediaFiles.MediaInfo
 
             Mocker.GetMock<IMediaFileService>()
                   .Verify(v => v.Update(It.IsAny<MovieFile>()), Times.Exactly(1));
+            ExceptionVerification.IgnoreWarns();
         }
 
         [Test]
@@ -264,6 +272,7 @@ namespace NzbDrone.Core.Test.MediaFiles.MediaInfo
 
             Mocker.GetMock<IMediaFileService>()
                 .Verify(v => v.Update(movieFile), Times.Once());
+            ExceptionVerification.IgnoreWarns();
         }
 
         [Test]

@@ -1,0 +1,84 @@
+import React, { useState } from 'react';
+import FormGroup from 'Components/Form/FormGroup';
+import FormInputGroup from 'Components/Form/FormInputGroup';
+import FormLabel from 'Components/Form/FormLabel';
+import InfoLabel from 'Components/InfoLabel';
+import Button from 'Components/Link/Button';
+import ModalBody from 'Components/Modal/ModalBody';
+import ModalContent from 'Components/Modal/ModalContent';
+import ModalFooter from 'Components/Modal/ModalFooter';
+import ModalHeader from 'Components/Modal/ModalHeader';
+import { inputTypes, kinds, sizes } from 'Helpers/Props';
+import translate from 'Utilities/String/translate';
+import styles from './DeletePerformerModal.css';
+
+export interface DeletePerformerModalContentProps {
+  performerIds: number[];
+  onModalClose: () => void;
+  onDeletePress: (deleteFiles: boolean, addImportExclusion: boolean) => void;
+}
+
+export function DeletePerformerModalContent({
+  onModalClose,
+  onDeletePress,
+}: DeletePerformerModalContentProps) {
+  const [deleteFiles, setDeleteFiles] = useState(false);
+  const [addImportExclusion, setAddImportExclusion] = useState(false);
+
+  function handleDeleteFilesChange({ value }: { value: boolean }) {
+    setDeleteFiles(value);
+  }
+
+  function handleDeleteOptionChange({ value }: { value: boolean }) {
+    setAddImportExclusion(value);
+  }
+
+  function handleDeletePerformerConfirmed() {
+    onDeletePress(deleteFiles, addImportExclusion);
+  }
+
+  return (
+    <ModalContent onModalClose={onModalClose}>
+      <ModalHeader>{translate('DeletePerformersModalHeader')}</ModalHeader>
+      <ModalBody>
+        <FormGroup>
+          <InfoLabel size={sizes.LARGE} className={styles.warningText} name="">
+            {translate('DeletePerformersModalWarning')}
+          </InfoLabel>
+        </FormGroup>
+        <FormGroup>
+          <FormLabel>{translate('AddListExclusion')}</FormLabel>
+          <FormInputGroup
+            type={inputTypes.CHECK}
+            name="addImportExclusion"
+            value={addImportExclusion}
+            helpText={translate('AddImportExclusionHelpText')}
+            kind={kinds.DANGER}
+            onChange={handleDeleteOptionChange}
+          />
+        </FormGroup>
+        <FormGroup>
+          <FormLabel>
+            {translate('DeleteFilesLabel', { name: translate('All') })}
+          </FormLabel>
+          <FormInputGroup
+            type={inputTypes.CHECK}
+            name="deleteFiles"
+            value={deleteFiles}
+            helpText={translate('DeleteFilesHelpText')}
+            kind={kinds.DANGER}
+            onChange={handleDeleteFilesChange}
+          />
+        </FormGroup>
+      </ModalBody>
+      <ModalFooter>
+        <Button onPress={onModalClose}>{translate('Close')}</Button>
+        <Button kind={kinds.DANGER} onPress={handleDeletePerformerConfirmed}>
+          {translate('Delete')}
+        </Button>
+      </ModalFooter>
+    </ModalContent>
+  );
+}
+
+export default DeletePerformerModalContent;

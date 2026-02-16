@@ -4,9 +4,7 @@ import Blocklist from 'Activity/Blocklist/Blocklist';
 import HistoryConnector from 'Activity/History/HistoryConnector';
 import Queue from 'Activity/Queue/Queue';
 import AddNewMovieConnector from 'AddMovie/AddNewMovie/AddNewMovieConnector';
-import AddNewPerformerConnector from 'AddMovie/AddNewMovie/AddNewPerformerConnector';
 import AddNewSceneConnector from 'AddMovie/AddNewMovie/AddNewSceneConnector';
-import AddNewStudioConnector from 'AddMovie/AddNewMovie/AddNewStudioConnector';
 import ImportMovies from 'AddMovie/ImportMovie/ImportMovies';
 import CalendarPage from 'Calendar/CalendarPage';
 import CollectionConnector from 'Collection/CollectionConnector';
@@ -14,6 +12,7 @@ import NotFound from 'Components/NotFound';
 import Switch from 'Components/Router/Switch';
 import MovieDetailsPageConnector from 'Movie/Details/MovieDetailsPageConnector';
 import MovieIndex from 'Movie/Index/MovieIndex';
+import AddNewPerformer from 'Performer/AddPerformer/AddNewPerformer';
 import PerformerDetails from 'Performer/Details/PerformerDetails';
 import PerformerIndex from 'Performer/Index/PerformerIndex';
 import SceneIndex from 'Scene/Index/SceneIndex';
@@ -30,7 +29,8 @@ import QualityConnector from 'Settings/Quality/QualityConnector';
 import Settings from 'Settings/Settings';
 import TagSettings from 'Settings/Tags/TagSettings';
 import UISettingsConnector from 'Settings/UI/UISettingsConnector';
-import StudioDetailsPageConnector from 'Studio/Details/StudioDetailsPageConnector';
+import AddNewStudio from 'Studio/AddNewStudio/AddNewStudio';
+import StudioDetails from 'Studio/Details/StudioDetails';
 import StudioIndex from 'Studio/Index/StudioIndex';
 import BackupsConnector from 'System/Backup/BackupsConnector';
 import LogsTableConnector from 'System/Events/LogsTableConnector';
@@ -81,9 +81,9 @@ function AppRoutes() {
 
       <Route path="/add/new/scene" component={AddNewSceneConnector} />
 
-      <Route path="/add/new/studio" component={AddNewStudioConnector} />
+      <Route path="/add/new/studio" component={AddNewStudio} />
 
-      <Route path="/add/new/performer" component={AddNewPerformerConnector} />
+      <Route path="/add/new/performer" component={AddNewPerformer} />
 
       <Route path="/add/import" component={ImportMovies} />
 
@@ -94,7 +94,7 @@ function AppRoutes() {
         component={PerformerDetails}
       />
 
-      <Route path="/studio/:foreignId" component={StudioDetailsPageConnector} />
+      <Route path="/studio/:studioForeignId" component={StudioDetails} />
 
       <Route path="/unmapped" component={UnmappedFilesTableConnector} />
 

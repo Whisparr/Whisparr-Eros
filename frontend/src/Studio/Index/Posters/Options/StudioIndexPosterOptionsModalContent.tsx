@@ -46,7 +46,7 @@ function StudioIndexPosterOptionsModalContent(
 
   const posterOptions = useSelector(selectPosterOptions);
 
-  const { detailedProgressBar, size, showTitle } = posterOptions;
+  const { detailedProgressBar, pageSize, size, showTitle } = posterOptions;
 
   const dispatch = useDispatch();
 
@@ -71,6 +71,23 @@ function StudioIndexPosterOptionsModalContent(
               name="size"
               value={size}
               values={posterSizeOptions}
+              onChange={onPosterOptionChange}
+            />
+          </FormGroup>
+
+          <FormGroup>
+            <FormLabel>{translate('TablePageSize')}</FormLabel>
+            <FormInputGroup
+              type={inputTypes.NUMBER}
+              name="pageSize"
+              value={pageSize}
+              min={10}
+              max={1000}
+              helpText={translate('TablePageSizeHelpText')}
+              helpTextWarning={translate('TablePageSizeMinMaxHelpText', {
+                min: 10,
+                max: 1000,
+              })}
               onChange={onPosterOptionChange}
             />
           </FormGroup>

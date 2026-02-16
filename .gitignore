@@ -11,8 +11,8 @@ src/**/[Oo]bj/
 *.user
 *.sln.docstates
 .vs/
-.vscode/
-.continue/
+.continue
+.vscode
 
 # Build results
 *_i.c

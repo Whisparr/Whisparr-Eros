@@ -46,6 +46,7 @@ class TableOptionsModalWrapper extends Component {
           {...otherProps}
           isOpen={this.state.isTableOptionsModalOpen}
           columns={columns}
+          onTableOptionsChange={this.props.onTableOptionChange}
           onModalClose={this.onTableOptionsModalClose}
         />
       </Fragment>
@@ -55,7 +56,8 @@ class TableOptionsModalWrapper extends Component {
 
 TableOptionsModalWrapper.propTypes = {
   columns: PropTypes.arrayOf(PropTypes.object).isRequired,
-  children: PropTypes.node.isRequired
+  children: PropTypes.node.isRequired,
+  onTableOptionChange: PropTypes.func.isRequired
 };
 
 export default TableOptionsModalWrapper;
