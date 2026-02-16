@@ -16,6 +16,7 @@ namespace NzbDrone.Core.Movies
         List<MovieMetadata> GetMoviesByCollectionTmdbId(int collectionId);
         List<MovieMetadata> FindById(List<string> tmdbIds);
         bool UpsertMany(List<MovieMetadata> data);
+        int CountByType(ItemType itemType);
     }
 
     public class MovieMetadataRepository : BasicRepository<MovieMetadata>, IMovieMetadataRepository
@@ -97,6 +98,22 @@ namespace NzbDrone.Core.Movies
             _logger.Debug($"{upToDateMetadataCount} movie metadata up to date; Updating {updateMetadataList.Count}, Adding {addMetadataList.Count} movie metadata entries.");
 
             return updateMetadataList.Count > 0 || addMetadataList.Count > 0;
+        }
+
+        public int CountByType(ItemType itemType)
+        {
+            var count = 0;
+            switch (itemType)
+            {
+                case ItemType.Movie:
+                    count = Query(x => x.ItemType == ItemType.Movie).Count;
+                    break;
+                case ItemType.Scene:
+                    count = Query(x => x.ItemType == ItemType.Scene).Count;
+                    break;
+            }
+
+            return count;
         }
     }
 }

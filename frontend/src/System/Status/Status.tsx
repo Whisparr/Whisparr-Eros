@@ -7,6 +7,7 @@ import DiskSpace from './DiskSpace/DiskSpace';
 import Donations from './Donations/Donations';
 import Health from './Health/Health';
 import MoreInfo from './MoreInfo/MoreInfo';
+import Stats from './Stats/Stats';
 
 function Status() {
   return (
@@ -15,6 +16,7 @@ function Status() {
         <Health />
         <DiskSpace />
         <About />
+        <Stats />
         <MoreInfo />
         <Donations />
       </PageContentBody>

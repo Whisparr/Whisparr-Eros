@@ -16,6 +16,7 @@ namespace NzbDrone.Core.Movies
         bool Upsert(MovieMetadata movie);
         bool UpsertMany(List<MovieMetadata> movies);
         void DeleteMany(List<MovieMetadata> movies);
+        int CountByType(ItemType itemType);
     }
 
     public class MovieMetadataService : IMovieMetadataService
@@ -107,6 +108,11 @@ namespace NzbDrone.Core.Movies
             {
                 movieResourcesCache.Remove(cacheKey);
             }
+        }
+
+        public int CountByType(ItemType itemType)
+        {
+            return _movieMetadataRepository.CountByType(itemType);
         }
     }
 }
