@@ -12,7 +12,6 @@ import { createThunk, handleThunks } from 'Store/thunks';
 import createAjaxRequest from 'Utilities/createAjaxRequest';
 import translate from 'Utilities/String/translate';
 import { removeItem, set, updateItem } from './baseActions';
-import createFetchHandler from './Creators/createFetchHandler';
 import createHandleActions from './Creators/createHandleActions';
 import createRemoveItemHandler from './Creators/createRemoveItemHandler';
 
@@ -138,7 +137,6 @@ export const persistState = [
 //
 // Actions Types
 
-export const FETCH_MOVIE_FILES = 'movieFiles/fetchMovieFiles';
 export const DELETE_MOVIE_FILE = 'movieFiles/deleteMovieFile';
 export const DELETE_MOVIE_FILES = 'movieFiles/deleteMovieFiles';
 export const UPDATE_MOVIE_FILES = 'movieFiles/updateMovieFiles';
@@ -149,7 +147,6 @@ export const SET_MOVIE_FILES_TABLE_OPTION = 'movieFiles/setMovieFilesTableOption
 //
 // Action Creators
 
-export const fetchMovieFiles = createThunk(FETCH_MOVIE_FILES);
 export const deleteMovieFile = createThunk(DELETE_MOVIE_FILE);
 export const deleteMovieFiles = createThunk(DELETE_MOVIE_FILES);
 export const updateMovieFiles = createThunk(UPDATE_MOVIE_FILES);
@@ -166,8 +163,6 @@ const deleteMovieFileHelper = createRemoveItemHandler(section, '/movieFile');
 // Action Handlers
 
 export const actionHandlers = handleThunks({
-  [FETCH_MOVIE_FILES]: createFetchHandler(section, '/movieFile'),
-
   [DELETE_MOVIE_FILE]: function(getState, payload, dispatch) {
     const {
       id: movieFileId,

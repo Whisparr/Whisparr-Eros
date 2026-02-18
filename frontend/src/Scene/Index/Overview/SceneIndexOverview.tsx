@@ -237,7 +237,7 @@ function SceneIndexOverview(props: SceneIndexOverviewProps) {
 
       <EditMovieModal
         isOpen={isEditSceneModalOpen}
-        movieId={sceneId}
+        movie={scene}
         onModalClose={onEditSceneModalClose}
         onDeleteMoviePress={onDeleteScenePress}
       />

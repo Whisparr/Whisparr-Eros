@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import Modal from 'Components/Modal/Modal';
+import Movie from 'Movie/Movie';
 import { clearPendingChanges } from 'Store/Actions/baseActions';
 import EditMovieModalContent, {
   EditMovieModalContentProps,
@@ -8,6 +9,7 @@ import EditMovieModalContent, {
 
 interface EditMovieModalProps extends EditMovieModalContentProps {
   isOpen: boolean;
+  movie: Movie;
 }
 
 function EditMovieModal({

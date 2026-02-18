@@ -21,7 +21,7 @@ import UnmappedFilesTableHeader from './UnmappedFilesTableHeader';
 import UnmappedFilesTableRow from './UnmappedFilesTableRow';
 import styles from './UnmappedFilesTable.css';
 
-interface UnmappedFile extends ModelBase {
+export interface UnmappedFile extends ModelBase {
   originalFilePath: string;
   size: number;
   quality?: { quality?: { name?: string } } | { name?: string } | string;

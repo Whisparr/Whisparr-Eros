@@ -11,14 +11,16 @@ function createMapStateToProps() {
     (state) => state.queue.details.items,
     (state) => state.movieFiles.items,
     (state, { internalId }) => internalId,
+    (state, { foreignId }) => state.movies.items.find((m) => m.foreignId === foreignId),
     (state) => state.settings.ui.item.movieRuntimeFormat,
     (state) => state.settings.safeForWorkMode,
-    (isExistingMovie, dimensions, queueItems, movieFiles, internalId, movieRuntimeFormat, safeForWorkMode) => {
-      const queueItem = queueItems.find((item) => internalId > 0 && item.movieId === internalId);
-      const movieFile = movieFiles.find((item) => internalId > 0 && item.movieId === internalId);
+    (isExistingMovie, dimensions, queueItems, movieFiles, internalId, existingMovie, movieRuntimeFormat, safeForWorkMode) => {
+      const resolvedId = existingMovie ? existingMovie.id : internalId;
+      const queueItem = queueItems.find((item) => resolvedId > 0 && item.movieId === resolvedId);
+      const movieFile = movieFiles.find((item) => resolvedId > 0 && item.movieId === resolvedId);
 
       return {
-        existingMovieId: internalId,
+        existingMovieId: resolvedId,
         isExistingMovie,
         isSmallScreen: dimensions.isSmallScreen,
         queueItem,

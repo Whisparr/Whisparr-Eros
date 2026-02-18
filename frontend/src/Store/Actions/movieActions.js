@@ -492,6 +492,10 @@ export const actionHandlers = handleThunks({
 
     const collectionToUpdate = getState().movieCollections.items.find((collection) => collection.tmdbId === payload.collectionTmdbId);
 
+    if (!collectionToUpdate) {
+      return;
+    }
+
     // Skip updating if the last movie in the collection is being deleted
     if (collectionToUpdate.movies.length - collectionToUpdate.missingMovies === 1) {
       return;

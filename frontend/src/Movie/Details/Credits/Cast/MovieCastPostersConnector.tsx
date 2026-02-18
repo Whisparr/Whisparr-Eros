@@ -1,26 +1,27 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
-import createMovieCreditsSelector from 'Store/Selectors/createMovieCreditsSelector';
 import MovieCreditPosters from '../MovieCreditPosters';
 import MovieCastPoster from './MovieCastPoster';
+import { useMovieCastCredits } from './useMovieCastCredits';
 
 interface Props {
-  movieId: number;
+  movieId: string | number;
   isSmallScreen: boolean;
 }
 
-function MovieCastPostersConnector({ isSmallScreen }: Props) {
-  const { items: castCredits } = useSelector(
-    createMovieCreditsSelector('cast')
-  );
+function MovieCastPostersConnector({ movieId, isSmallScreen }: Props) {
+  const {
+    data: castCredits = [],
+    isLoading,
+    isError,
+  } = useMovieCastCredits(movieId);
 
-  return (
+  return !isError && !isLoading && castCredits.length > 0 ? (
     <MovieCreditPosters
       items={castCredits}
       itemComponent={MovieCastPoster}
       isSmallScreen={isSmallScreen}
     />
-  );
+  ) : null;
 }
 
 export default MovieCastPostersConnector;

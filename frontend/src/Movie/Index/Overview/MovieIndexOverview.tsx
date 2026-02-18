@@ -79,7 +79,6 @@ function MovieIndexOverview(props: MovieIndexOverviewProps) {
     tags,
     hasFile,
     isAvailable,
-    foreignId,
     tmdbId,
     tpdbId,
     studioTitle,
@@ -127,7 +126,7 @@ function MovieIndexOverview(props: MovieIndexOverviewProps) {
     setIsDeleteMovieModalOpen(false);
   }, [setIsDeleteMovieModalOpen]);
 
-  const link = `/movie/${foreignId}`;
+  const link = `/movie/${movieId}`;
 
   const elementStyle = {
     width: `${posterWidth}px`,
@@ -259,14 +258,14 @@ function MovieIndexOverview(props: MovieIndexOverviewProps) {
 
       <EditMovieModal
         isOpen={isEditMovieModalOpen}
-        movieId={movieId}
+        movie={movie}
         onModalClose={onEditMovieModalClose}
         onDeleteMoviePress={onDeleteMoviePress}
       />
 
       <DeleteMovieModal
         isOpen={isDeleteMovieModalOpen}
-        movieId={movieId}
+        movie={movie}
         onModalClose={onDeleteMovieModalClose}
       />
     </div>

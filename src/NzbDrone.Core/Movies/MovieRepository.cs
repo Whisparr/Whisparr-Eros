@@ -21,6 +21,7 @@ namespace NzbDrone.Core.Movies
         Movie FindByImdbId(string imdbid);
         Movie FindByTmdbId(int tmdbid);
         Movie FindByForeignId(string foreignId);
+        List<Movie> FindByForeignIds(List<string> foreignIds);
         List<Movie> FindByTpdbId(List<string> tpdbids);
         List<Movie> FindByTmdbId(List<int> tmdbids);
         List<Movie> FindByStudioAndDate(string studioForeignId, string date);
@@ -135,6 +136,16 @@ namespace NzbDrone.Core.Movies
                 });
 
             return data;
+        }
+
+        public List<Movie> FindByForeignIds(List<string> foreignIds)
+        {
+            if (foreignIds == null || foreignIds.Count == 0)
+            {
+                return new List<Movie>();
+            }
+
+            return Query(x => foreignIds.Contains(x.MovieMetadata.Value.ForeignId));
         }
 
         public override IEnumerable<Movie> All()
@@ -433,7 +444,7 @@ namespace NzbDrone.Core.Movies
             {
                 return conn.Query<string>("SELECT \"StashId\" FROM \"MovieMetadata\" JOIN \"Movies\" ON (\"Movies\".\"MovieMetadataId\" = \"MovieMetadata\".\"Id\") WHERE \"StashId\" IS NOT NULL").ToList();
             }
-            }
+        }
 
         public List<string> AllMovieForeignIds()
         {

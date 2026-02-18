@@ -5,8 +5,8 @@ import Icon from 'Components/Icon';
 import ProgressBar from 'Components/ProgressBar';
 import { icons, kinds, sizes } from 'Helpers/Props';
 import Movie from 'Movie/Movie';
-import useMovie, { MovieEntity } from 'Movie/useMovie';
-import useMovieFile from 'MovieFile/useMovieFile';
+import { useMovie } from 'Movie/useMovie';
+import { useSingleMovieFile } from 'MovieFile/useMovieFile';
 import { createQueueItemSelectorForHook } from 'Store/Selectors/createQueueItemSelector';
 import translate from 'Utilities/String/translate';
 import MovieQuality from './MovieQuality';
@@ -14,14 +14,14 @@ import styles from './MovieStatus.css';
 
 interface MovieStatusProps {
   movieId: number;
-  movieEntity?: MovieEntity;
+  movieEntity?: Movie;
   movieFileId: number | undefined;
 }
 
 function MovieStatus({ movieId, movieFileId }: MovieStatusProps) {
   const queueItem = useSelector(createQueueItemSelectorForHook(movieId));
-  const movieFile = useMovieFile(movieFileId);
-  const movie = useMovie(movieId) as Movie;
+  const { data: movieFile } = useSingleMovieFile(movieFileId);
+  const { data: movie } = useMovie(movieId);
   if (!movie) {
     return null;
   }

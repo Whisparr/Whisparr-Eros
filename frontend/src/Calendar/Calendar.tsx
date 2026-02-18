@@ -13,10 +13,6 @@ import {
   gotoCalendarToday,
 } from 'Store/Actions/calendarActions';
 import {
-  clearMovieFiles,
-  fetchMovieFiles,
-} from 'Store/Actions/movieFileActions';
-import {
   clearQueueDetails,
   fetchQueueDetails,
 } from 'Store/Actions/queueActions';
@@ -74,7 +70,6 @@ function Calendar() {
     return () => {
       dispatch(clearCalendar());
       dispatch(clearQueueDetails());
-      dispatch(clearMovieFiles());
       clearTimeout(updateTimeout.current);
     };
   }, [dispatch, handleScheduleUpdate]);
@@ -122,14 +117,8 @@ function Calendar() {
   useEffect(() => {
     if (!previousItems || hasDifferentItems(items, previousItems)) {
       const movieIds = selectUniqueIds(items, 'id');
-      const movieFileIds = selectUniqueIds(items, 'movieFileId');
-
       if (items.length) {
         dispatch(fetchQueueDetails({ movieIds }));
-      }
-
-      if (movieFileIds.length) {
-        dispatch(fetchMovieFiles({ movieFileIds }));
       }
     }
   }, [items, previousItems, dispatch]);

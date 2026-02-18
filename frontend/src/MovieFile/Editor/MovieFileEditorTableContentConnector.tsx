@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect } from 'react';
 import { connect } from 'react-redux';
-import { createSelector } from 'reselect';
 import Column from 'Components/Table/Column';
 import { SortDirection } from 'Helpers/Props/sortDirections';
 import Quality from 'Quality/Quality';
@@ -13,10 +12,9 @@ import {
   fetchLanguages,
   fetchQualityProfileSchema,
 } from 'Store/Actions/settingsActions';
-import createClientSideCollectionSelector from 'Store/Selectors/createClientSideCollectionSelector';
-import createMovieSelector from 'Store/Selectors/createMovieSelector';
 import getQualities from 'Utilities/Quality/getQualities';
 import { MovieFile } from '../MovieFile';
+import useMovieFile from '../useMovieFile';
 import MovieFileEditorTableContent from './MovieFileEditorTableContent';
 
 interface LanguageProfile {
@@ -51,20 +49,19 @@ interface OwnProps {
 }
 
 interface StateProps {
-  items: MovieFile[];
-  columns: unknown[];
+  columns: Column[];
   sortKey: string;
   sortDirection: string;
   isDeleting: boolean;
   isSaving: boolean;
-  error: unknown;
   languages: LanguageProfile[];
-  qualities: unknown[];
+  qualities: Quality[];
+  error: unknown;
 }
 
 interface DispatchProps {
-  fetchQualityProfileSchema: () => void;
   fetchLanguages: () => void;
+  fetchQualityProfileSchema: () => void;
   deleteMovieFile: (payload: { id: number }) => void;
   setMovieFilesTableOption: (payload: unknown) => void;
   setMovieFilesSort: (payload: {
@@ -75,56 +72,23 @@ interface DispatchProps {
 
 type Props = OwnProps & StateProps & DispatchProps;
 
-function createMapStateToProps() {
-  return createSelector(
-    (_: RootState, { movieId }: { movieId: number }) => movieId,
-    createClientSideCollectionSelector('movieFiles'),
-    (state: RootState) => state.settings.languages,
-    (state: RootState) => state.settings.qualityProfiles,
-    createMovieSelector(),
-    (
-      movieId: number,
-      movieFiles: MovieFilesState,
-      languageProfiles: { items: LanguageProfile[] },
-      qualityProfiles: { schema: QualityProfileSchema }
-    ) => {
-      const languages = languageProfiles.items;
-      const qualities = getQualities(qualityProfiles.schema.items);
-      const filesForMovie = movieFiles.items.filter(
-        (file) => file.movieId === movieId
-      );
-      return {
-        items: filesForMovie,
-        columns: movieFiles.columns,
-        sortKey: movieFiles.sortKey,
-        sortDirection: movieFiles.sortDirection,
-        isDeleting: movieFiles.isDeleting,
-        isSaving: movieFiles.isSaving,
-        error: null,
-        languages,
-        qualities,
-      };
-    }
-  );
-}
-
 const mapDispatchToProps: DispatchProps = {
-  fetchQualityProfileSchema,
   fetchLanguages,
+  fetchQualityProfileSchema,
   deleteMovieFile,
   setMovieFilesTableOption,
   setMovieFilesSort,
 };
 
-function MovieFileEditorTableContentConnector({
-  fetchLanguages,
-  fetchQualityProfileSchema,
-  ...props
-}: Props) {
+function MovieFileEditorTableContentConnector(props: Props) {
+  const { fetchLanguages, fetchQualityProfileSchema, movieId } = props;
   useEffect(() => {
     fetchLanguages();
     fetchQualityProfileSchema();
   }, [fetchLanguages, fetchQualityProfileSchema]);
+
+  // Fetch movie files via React Query
+  const { data: items } = useMovieFile(movieId);
 
   const onDeletePress = useCallback(
     (movieFileId: number) => {
@@ -140,10 +104,8 @@ function MovieFileEditorTableContentConnector({
     [props]
   );
 
-  // Table expects: (name: string, sortDirection?: SortDirection) => void
   const onSortPress = useCallback(
     (name: string, sortDirection?: SortDirection) => {
-      // Fallback to current sortDirection if not provided
       props.setMovieFilesSort({
         sortKey: name,
         sortDirection: sortDirection ?? (props.sortDirection as string),
@@ -155,6 +117,7 @@ function MovieFileEditorTableContentConnector({
   return (
     <MovieFileEditorTableContent
       {...props}
+      items={items || []}
       columns={props.columns as Column[]}
       sortDirection={props.sortDirection as SortDirection}
       onDeletePress={onDeletePress}
@@ -164,7 +127,21 @@ function MovieFileEditorTableContentConnector({
   );
 }
 
-export default connect<StateProps, DispatchProps, OwnProps, RootState>(
-  createMapStateToProps,
+export default connect<
+  Omit<StateProps, 'items'>,
+  DispatchProps,
+  OwnProps,
+  RootState
+>(
+  (state: RootState) => ({
+    columns: state.movieFiles.columns,
+    sortKey: state.movieFiles.sortKey,
+    sortDirection: state.movieFiles.sortDirection,
+    isDeleting: state.movieFiles.isDeleting,
+    isSaving: state.movieFiles.isSaving,
+    languages: state.settings.languages.items,
+    qualities: getQualities(state.settings.qualityProfiles.schema.items),
+    error: null,
+  }),
   mapDispatchToProps
 )(MovieFileEditorTableContentConnector);

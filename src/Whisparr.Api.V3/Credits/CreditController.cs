@@ -59,6 +59,7 @@ namespace NzbDrone.Api.V3.Credits
         [HttpGet]
         public List<CreditResource> GetCredits(int? movieId, int? movieMetadataId, string performerId)
         {
+            var credits = new List<Credit>();
             if (movieMetadataId.HasValue)
             {
                 return MapToResource(_creditService.GetAllCreditsForMovieMetadata(movieMetadataId.Value)).ToList();
@@ -68,7 +69,16 @@ namespace NzbDrone.Api.V3.Credits
             {
                 var movie = _movieService.GetMovie(movieId.Value);
 
-                return MapToResource(_creditService.GetAllCreditsForMovieMetadata(movie.MovieMetadataId)).ToList();
+                if (movie != null)
+                {
+                    credits = _creditService.GetAllCreditsForMovieMetadata(movie.MovieMetadataId);
+                    foreach (var credit in credits)
+                    {
+                        _coverMapper.ConvertToLocalPerformerUrls(credit.Performer.Id, credit.Images);
+                    }
+                }
+
+                return MapToResource(credits).ToList();
             }
 
             if (performerId.IsNotNullOrWhiteSpace())
@@ -89,7 +99,13 @@ namespace NzbDrone.Api.V3.Credits
             foreach (var currentCredits in credits)
             {
                 var resource = currentCredits.ToResource(_whisparrMovieMetadataSource);
-                if (resource.Images.Any())
+
+                // Fix for MovieHeadshot not loading local images in Cast section
+                if (resource.PerformerId != 0)
+                {
+                    _coverMapper.ConvertToLocalPerformerUrls(resource.PerformerId, resource.Images);
+                }
+                else if (resource.Images.Any())
                 {
                     _coverMapper.ConvertToLocalUrls(0, resource.Images);
                 }
