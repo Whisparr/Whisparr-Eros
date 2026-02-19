@@ -16,6 +16,7 @@ import PerformerNameLink from 'Performer/PerformerNameLink';
 import QualityProfileName from 'Settings/Profiles/Quality/QualityProfileName';
 import { SelectStateInputProps } from 'typings/props';
 import formatBytes from 'Utilities/Number/formatBytes';
+import countryCode from 'Utilities/String/countryCode';
 import firstCharToUpper from 'Utilities/String/firstCharToUpper';
 import translate from 'Utilities/String/translate';
 import styles from './PerformerIndexRow.css';
@@ -36,6 +37,7 @@ function PerformerIndexRow(props: PerformerIndexRowProps) {
     moviesMonitored,
     gender,
     age,
+    country,
     careerStart,
     careerEnd,
     hairColor,
@@ -52,6 +54,7 @@ function PerformerIndexRow(props: PerformerIndexRowProps) {
     tmdbId,
     tpdbId,
   } = performer;
+  const countryCodeName = countryCode(country);
 
   const [isEditPerformerModalOpen, setIsEditPerformerModalOpen] =
     useState(false);
@@ -141,6 +144,18 @@ function PerformerIndexRow(props: PerformerIndexRowProps) {
       cells.push(
         <TableRowCell key={name} className={styles[name]}>
           {age}
+        </TableRowCell>
+      );
+      return;
+    }
+    if (name === 'country') {
+      cells.push(
+        <TableRowCell
+          key={name}
+          className={styles[name]}
+          title={countryCodeName}
+        >
+          {country}
         </TableRowCell>
       );
       return;
