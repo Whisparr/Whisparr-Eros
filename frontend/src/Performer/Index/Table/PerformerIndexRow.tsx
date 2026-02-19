@@ -150,10 +150,12 @@ function PerformerIndexRow(props: PerformerIndexRowProps) {
     }
     if (name === 'country') {
       cells.push(
-        <TableRowCell key={name} className={styles[name]}>
-          {countryCodeName === country
-            ? country
-            : `${country} (${countryCodeName})`}
+        <TableRowCell
+          key={name}
+          className={styles[name]}
+          title={countryCodeName}
+        >
+          {country}
         </TableRowCell>
       );
       return;
