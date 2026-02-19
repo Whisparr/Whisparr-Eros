@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Dapper;
 using NLog;
 using NzbDrone.Core.Datastore;
 using NzbDrone.Core.Messaging.Events;
@@ -102,18 +103,10 @@ namespace NzbDrone.Core.Movies
 
         public int CountByType(ItemType itemType)
         {
-            var count = 0;
-            switch (itemType)
+            using (var conn = _database.OpenConnection())
             {
-                case ItemType.Movie:
-                    count = Query(x => x.ItemType == ItemType.Movie).Count;
-                    break;
-                case ItemType.Scene:
-                    count = Query(x => x.ItemType == ItemType.Scene).Count;
-                    break;
+                return conn.ExecuteScalar<int>($"SELECT COUNT(*) FROM \"{_table}\" WHERE \"ItemType\" = '{(int)itemType}'");
             }
-
-            return count;
         }
     }
 }

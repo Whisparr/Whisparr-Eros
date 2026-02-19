@@ -103,8 +103,8 @@ namespace Whisparr.Api.V3.System
                 PackageUpdateMechanismMessage = _deploymentInfoProvider.PackageUpdateMechanismMessage,
                 MovieCount = _movieMetadataService.CountByType(ItemType.Movie),
                 SceneCount = _movieMetadataService.CountByType(ItemType.Scene),
-                PerformerCount = _performerService.GetAllPerformers().Count,
-                StudioCount = _studioService.GetAllStudios().Count
+                PerformerCount = _performerService.Count(),
+                StudioCount = _studioService.Count()
             };
         }
 
