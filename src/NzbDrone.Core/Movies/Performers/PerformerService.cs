@@ -25,8 +25,8 @@ namespace NzbDrone.Core.Movies.Performers
         Performer Update(Performer performer);
         List<Performer> Update(List<Performer> performers);
         void RemovePerformer(Performer performer);
-
         PagingSpec<Performer> Paged(PagingSpec<Performer> pagingSpec);
+        public int Count();
     }
 
     public class PerformerService : IPerformerService
@@ -159,6 +159,11 @@ namespace NzbDrone.Core.Movies.Performers
         public PagingSpec<Performer> Paged(PagingSpec<Performer> pagingSpec)
         {
             return _performerRepo.GetPaged(pagingSpec);
+        }
+
+        public int Count()
+        {
+            return _performerRepo.Count();
         }
 
         private void RemovePerformerResourcesCache(string cacheKey)

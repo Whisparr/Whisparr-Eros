@@ -31,6 +31,10 @@ interface SystemStatus {
   startupPath: string;
   urlBase: string;
   version: string;
+  movieCount: number;
+  sceneCount: number;
+  performerCount: number;
+  studioCount: number;
 }
 
 export default SystemStatus;
