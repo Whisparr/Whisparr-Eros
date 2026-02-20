@@ -68,6 +68,7 @@ export const actionHandlers = handleThunks({
       path,
       relativePath,
       term,
+      itemType,
       topOfQueue = false
     } = payload;
 
@@ -75,6 +76,7 @@ export const actionHandlers = handleThunks({
     const item = _.find(state.items, { id: name }) || {
       id: name,
       term,
+      itemType,
       path,
       relativePath,
       isFetching: false,
@@ -86,6 +88,7 @@ export const actionHandlers = handleThunks({
       section,
       ...item,
       term,
+      itemType,
       isQueued: true,
       items: []
     }));
@@ -144,7 +147,8 @@ export const actionHandlers = handleThunks({
     const { request, abortRequest } = createAjaxRequest({
       url: '/movie/lookup',
       data: {
-        term: queued.term
+        term: queued.term,
+        itemType: queued.itemType
       }
     });
 

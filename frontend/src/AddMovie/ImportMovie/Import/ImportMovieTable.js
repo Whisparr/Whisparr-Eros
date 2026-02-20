@@ -27,8 +27,12 @@ class ImportMovieTable extends Component {
 
     importFiles.forEach((importFile) => {
       const id = importFile.name;
+      const isMovies = window.location.pathname.includes('movies');
+      const isScenes = window.location.pathname.includes('scenes');
+      // eslint-disable-next-line no-nested-ternary
+      const itemType = isMovies ? 'movie' : isScenes ? 'scene' : null;
 
-      onMovieLookup(id, importFile.path, importFile.relativePath);
+      onMovieLookup(id, importFile.path, importFile.relativePath, itemType);
 
       onSetImportMovieValue({
         id,

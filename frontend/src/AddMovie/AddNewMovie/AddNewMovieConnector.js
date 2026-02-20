@@ -84,7 +84,7 @@ class AddNewMovieConnector extends Component {
   //
   // Listeners
 
-  onMovieLookupChange = (term) => {
+  onMovieLookupChange = (term, itemType) => {
     if (this._movieLookupTimeout) {
       clearTimeout(this._movieLookupTimeout);
     }
@@ -93,7 +93,7 @@ class AddNewMovieConnector extends Component {
       this.props.clearAddMovie();
     } else {
       this._movieLookupTimeout = setTimeout(() => {
-        this.props.lookupMovie({ term });
+        this.props.lookupMovie({ term, itemType });
       }, 300);
     }
   };
