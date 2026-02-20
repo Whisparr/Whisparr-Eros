@@ -264,7 +264,7 @@ namespace NzbDrone.Common.Http
 
         public async Task DownloadFileAsync(string url, string fileName)
         {
-            var fileNamePart = fileName + ".part";
+            var fileNamePart = fileName + "." + Guid.NewGuid().ToString("N") + ".part";
 
             try
             {
