@@ -136,6 +136,15 @@ namespace NzbDrone.Core.Movies
 
                     _logger.Error("Foreign ID {0} was not added due to validation failures. {1}", m.ForeignId, ex.Message);
                 }
+                catch (ExcludedException ex)
+                {
+                    if (!ignoreErrors)
+                    {
+                        throw;
+                    }
+
+                    _logger.Warn("Foreign ID {0} was not added due to validation failures. {1}", m.ForeignId, ex.Message);
+                }
                 catch (HttpException ex)
                 {
                     if (!ignoreErrors)
@@ -265,7 +274,7 @@ namespace NzbDrone.Core.Movies
                         {
                             newExclusion.Reason = ImportExclusionReason.StudioExclusion;
                             _importListExclusionService.AddExclusion(newExclusion);
-                            throw new ValidationException($"Studio: [{newMovie.MovieMetadata.Value.Studio.Title}] has been excluded");
+                            throw new ExcludedException($"Studio: [{newMovie.MovieMetadata.Value.Studio.Title}] has been excluded");
                         }
                         else
                         {
@@ -291,7 +300,7 @@ namespace NzbDrone.Core.Movies
                                 {
                                     newExclusion.Reason = ImportExclusionReason.StudioAfterDate;
                                     _importListExclusionService.AddExclusion(newExclusion);
-                                    throw new ValidationException($"Studio After Date: [{newMovie.MovieMetadata.Value.Studio.Title}] has an after date of {dateTime.ToString("yyyy-MM-dd")}. Marking movie as unmonitored.");
+                                    throw new ExcludedException($"Studio After Date: [{newMovie.MovieMetadata.Value.Studio.Title}] has an after date of {dateTime.ToString("yyyy-MM-dd")}. Marking movie as unmonitored.");
                                 }
                                 else
                                 {
@@ -319,7 +328,7 @@ namespace NzbDrone.Core.Movies
                         {
                             newExclusion.Reason = ImportExclusionReason.CollectionExclusion;
                             _importListExclusionService.AddExclusion(newExclusion);
-                            throw new ValidationException($"Studio: [{newMovie.MovieMetadata.Value.Studio.Title}] has been excluded");
+                            throw new ExcludedException($"Studio: [{newMovie.MovieMetadata.Value.Studio.Title}] has been excluded");
                         }
                         else
                         {
@@ -346,7 +355,7 @@ namespace NzbDrone.Core.Movies
                         {
                             newExclusion.Reason = ImportExclusionReason.PerformerExclusion;
                             _importListExclusionService.AddExclusion(newExclusion);
-                            throw new ValidationException($"Performer: [{string.Join(",", excludedPerformers.Select(ep => ep.ToString()).ToList())}] has been excluded");
+                            throw new ExcludedException($"Performer: [{string.Join(",", excludedPerformers.Select(ep => ep.ToString()).ToList())}] has been excluded");
                         }
                         else
                         {
@@ -382,7 +391,7 @@ namespace NzbDrone.Core.Movies
                     {
                         newExclusion.Reason = ImportExclusionReason.TagExclusion;
                         _importListExclusionService.AddExclusion(newExclusion);
-                        throw new ValidationException($"Tag(s): [{string.Join(",", exclusions.Select(et => et.ToString()).ToList())}] excluded");
+                        throw new ExcludedException($"Tag(s): [{string.Join(",", exclusions.Select(et => et.ToString()).ToList())}] excluded");
                     }
                     else
                     {
