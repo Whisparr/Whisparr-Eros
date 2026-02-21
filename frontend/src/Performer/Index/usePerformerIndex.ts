@@ -19,6 +19,7 @@ import {
   setPerformerView,
 } from 'Store/Actions/performerActions';
 import { createCustomFiltersSelector } from 'Store/Selectors/createClientSideCollectionSelector';
+import { useGeneralSettings } from 'Studio/Details/useStudioDetails';
 import { usePerformerIndexQuery } from './usePerformerIndexQuery';
 
 /**
@@ -90,6 +91,13 @@ export function usePerformerIndex() {
     undefined
   );
   const [isSelectMode, setIsSelectMode] = useState<boolean>(false);
+
+  const generalSettings = useGeneralSettings();
+
+  // Determine if we should show the movie monitor toggle
+  const showMovieMonitorToggle = useMemo(() => {
+    return !!(generalSettings?.whisparrMovieMetadataSource !== 'none');
+  }, [generalSettings?.whisparrMovieMetadataSource]);
 
   // Pagination handlers
 
@@ -227,6 +235,10 @@ export function usePerformerIndex() {
     scrollerRef,
     selectedFilterKey,
     view,
+
+    // Derived data
+    showMovieMonitorToggle,
+
     handleFirstPagePress,
     handleLastPagePress,
     handleNextPagePress,

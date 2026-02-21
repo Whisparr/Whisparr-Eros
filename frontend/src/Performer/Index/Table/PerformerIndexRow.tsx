@@ -25,11 +25,12 @@ interface PerformerIndexRowProps {
   performer: Performer;
   sortKey: string;
   columns: Column[];
+  showMovieMonitorToggle?: boolean;
   isSelectMode: boolean;
 }
 
 function PerformerIndexRow(props: PerformerIndexRowProps) {
-  const { performer, columns, isSelectMode } = props;
+  const { performer, columns, isSelectMode, showMovieMonitorToggle } = props;
   const {
     id: performerId,
     fullName,
@@ -111,15 +112,17 @@ function PerformerIndexRow(props: PerformerIndexRowProps) {
             title="scene"
             name={monitored ? icons.SCENE : icons.SCENEUNMONITOR}
           />
-          <Icon
-            containerClassName={
-              moviesMonitored
-                ? styles.statusIcon
-                : `${styles.statusIcon} ${styles.unmonitored}`
-            }
-            title="movie"
-            name={moviesMonitored ? icons.FILM : icons.FILMUNMONITOR}
-          />
+          {showMovieMonitorToggle ? (
+            <Icon
+              containerClassName={
+                moviesMonitored
+                  ? styles.statusIcon
+                  : `${styles.statusIcon} ${styles.unmonitored}`
+              }
+              title="movie"
+              name={moviesMonitored ? icons.FILM : icons.FILMUNMONITOR}
+            />
+          ) : null}
         </TableRowCell>
       );
       return;

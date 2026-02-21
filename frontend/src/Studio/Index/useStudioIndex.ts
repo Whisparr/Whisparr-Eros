@@ -4,6 +4,7 @@ import { useHistory } from 'react-router-dom';
 import ModelBase from 'App/ModelBase';
 import { useSelect } from 'App/SelectContext';
 import AppState from 'App/State/AppState';
+import { useGeneralSettings } from 'Performer/Details/usePerformerDetails';
 import {
   setStudioFilter,
   setStudioPage,
@@ -152,6 +153,13 @@ export function useStudioIndex() {
     return null;
   }
 
+  const generalSettings = useGeneralSettings();
+
+  // Determine if we should show the movie monitor toggle
+  const showMovieMonitorToggle = useMemo(() => {
+    return !!(generalSettings?.whisparrMovieMetadataSource !== 'none');
+  }, [generalSettings?.whisparrMovieMetadataSource]);
+
   /**
    * Handle filter selection from the filter menu
    * Resets to first page
@@ -216,6 +224,10 @@ export function useStudioIndex() {
     scrollerRef,
     selectedFilterKey,
     view,
+
+    // Derived data
+    showMovieMonitorToggle,
+
     handleFirstPagePress,
     handleLastPagePress,
     handleNextPagePress,
