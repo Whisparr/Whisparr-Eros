@@ -115,6 +115,9 @@ namespace Whisparr.Api.V3.Movies
 
             var collection = model.MovieMetadata.Value.CollectionTmdbId > 0 ? new MovieCollectionResource { Title = model.MovieMetadata.Value.CollectionTitle, TmdbId = model.MovieMetadata.Value.CollectionTmdbId } : null;
 
+            // Convert to tmdb: if TmdbId is present, to allow GetMovieById(string id) to be used.
+            var titleSlug = model.TmdbId > 0 ? $"tmdb:{model.TmdbId}" : model.MovieMetadata.Value.ForeignId;
+
             return new MovieResource
             {
                 Id = model.Id,
@@ -150,7 +153,7 @@ namespace Whisparr.Api.V3.Movies
                 Runtime = model.MovieMetadata.Value.Runtime,
                 CleanTitle = model.MovieMetadata.Value.CleanTitle,
                 ImdbId = model.ImdbId,
-                TitleSlug = model.MovieMetadata.Value.ForeignId.ToString(),
+                TitleSlug = titleSlug,
                 RootFolderPath = model.RootFolderPath,
                 Website = model.MovieMetadata.Value.Website,
                 Genres = model.MovieMetadata.Value.Genres,

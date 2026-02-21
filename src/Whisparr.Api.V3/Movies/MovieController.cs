@@ -263,8 +263,19 @@ namespace Whisparr.Api.V3.Movies
 
             if (!isNumeric)
             {
-                var resourceByForeignId = _moviesService.FindByForeignId(id);
-                resource = resourceByForeignId.ToResource(_configService.AvailabilityDelay, _qualityUpgradableSpecification);
+                if (id.StartsWith("tmdb:"))
+                {
+                    if (int.TryParse(id.Replace("tmdb:", ""), out var tmdbid))
+                    {
+                        var resourceByForeignId = _moviesService.FindByTmdbId(tmdbid);
+                        resource = resourceByForeignId.ToResource(_configService.AvailabilityDelay, _qualityUpgradableSpecification);
+                    }
+                }
+                else
+                {
+                    var resourceByForeignId = _moviesService.FindByForeignId(id);
+                    resource = resourceByForeignId.ToResource(_configService.AvailabilityDelay, _qualityUpgradableSpecification);
+                }
             }
             else if (isNumeric)
             {

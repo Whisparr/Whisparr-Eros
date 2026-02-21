@@ -69,6 +69,7 @@ function MovieIndexOverview(props: MovieIndexOverviewProps) {
 
   const {
     title,
+    titleSlug,
     monitored,
     status,
     path,
@@ -126,7 +127,7 @@ function MovieIndexOverview(props: MovieIndexOverviewProps) {
     setIsDeleteMovieModalOpen(false);
   }, [setIsDeleteMovieModalOpen]);
 
-  const link = `/movie/${movieId}`;
+  const link = `/movie/${titleSlug}`;
 
   const elementStyle = {
     width: `${posterWidth}px`,
