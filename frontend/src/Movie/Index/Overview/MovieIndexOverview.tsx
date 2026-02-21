@@ -39,6 +39,7 @@ const titleRowHeight = 42;
 
 interface MovieIndexOverviewProps {
   movieId: number;
+  titleSlug: string;
   sortKey: string;
   posterWidth: number;
   posterHeight: number;
@@ -50,6 +51,7 @@ interface MovieIndexOverviewProps {
 function MovieIndexOverview(props: MovieIndexOverviewProps) {
   const {
     movieId,
+    titleSlug,
     sortKey,
     posterWidth,
     posterHeight,
@@ -126,7 +128,7 @@ function MovieIndexOverview(props: MovieIndexOverviewProps) {
     setIsDeleteMovieModalOpen(false);
   }, [setIsDeleteMovieModalOpen]);
 
-  const link = `/movie/${movieId}`;
+  const link = `/movie/${titleSlug}`;
 
   const elementStyle = {
     width: `${posterWidth}px`,

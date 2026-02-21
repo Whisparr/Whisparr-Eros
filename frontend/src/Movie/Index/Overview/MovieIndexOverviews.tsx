@@ -53,7 +53,11 @@ function Row({ index, style, data }: ListChildComponentProps<RowItemData>) {
 
   return (
     <div style={style}>
-      <MovieIndexOverview movieId={movie.id} {...otherData} />
+      <MovieIndexOverview
+        movieId={movie.id}
+        titleSlug={movie.titleSlug}
+        {...otherData}
+      />
     </div>
   );
 }

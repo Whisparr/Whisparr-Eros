@@ -63,6 +63,7 @@ function MovieIndexPoster(props: MovieIndexPosterProps) {
 
   const {
     title,
+    titleSlug,
     monitored,
     status,
     images,
@@ -155,7 +156,7 @@ function MovieIndexPoster(props: MovieIndexPosterProps) {
     [movieId, selectState.selectedState, selectDispatch, foreignId]
   );
 
-  const link = `/movie/${movieId}`;
+  const link = `/movie/${titleSlug}`;
 
   const linkProps = isSelectMode ? { onPress: onSelectPress } : { to: link };
 

@@ -263,9 +263,9 @@ namespace Whisparr.Api.V3.Movies
 
             if (!isNumeric)
             {
-                if (id.StartsWith("tmdbid:"))
+                if (id.StartsWith("tmdb:"))
                 {
-                    if (int.TryParse(id.Replace("tmdbid:", ""), out var tmdbid))
+                    if (int.TryParse(id.Replace("tmdb:", ""), out var tmdbid))
                     {
                         var resourceByForeignId = _moviesService.FindByTmdbId(tmdbid);
                         resource = resourceByForeignId.ToResource(_configService.AvailabilityDelay, _qualityUpgradableSpecification);
