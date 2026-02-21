@@ -34,7 +34,15 @@ class ImportMovieSelectMovieConnector extends Component {
     const isMovies = window.location.pathname.includes('movies');
     const isScenes = window.location.pathname.includes('scenes');
     // eslint-disable-next-line no-nested-ternary
-    const itemType = isMovies ? 'movie' : isScenes ? 'scene' : null;
+    const itemType = (() => {
+      if (isMovies) {
+        return 'movie';
+      }
+      if (isScenes) {
+        return 'scene';
+      }
+      return null;
+    })();
 
     this.props.queueLookupMovie({
       name: this.props.id,
