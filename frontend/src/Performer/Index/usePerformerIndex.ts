@@ -18,6 +18,7 @@ import {
   setPerformerTableOption,
   setPerformerView,
 } from 'Store/Actions/performerActions';
+import { fetchGeneralSettings } from 'Store/Actions/Settings/general';
 import { createCustomFiltersSelector } from 'Store/Selectors/createClientSideCollectionSelector';
 import { usePerformerIndexQuery } from './usePerformerIndexQuery';
 
@@ -28,6 +29,22 @@ interface PageFilter {
   key: string;
   operator: string;
   value: string | number | boolean;
+}
+
+/**
+ * Hook to fetch and manage general application settings.
+ * Dispatches the fetchGeneralSettings action on mount and returns the general settings state.
+ *
+ * @returns {AppState['settings']['general']['item']} The general settings object
+ */
+export function useGeneralSettings() {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(fetchGeneralSettings());
+  }, [dispatch]);
+
+  return useSelector((state: AppState) => state.settings.general.item);
 }
 
 /**
@@ -90,6 +107,13 @@ export function usePerformerIndex() {
     undefined
   );
   const [isSelectMode, setIsSelectMode] = useState<boolean>(false);
+
+  const generalSettings = useGeneralSettings();
+
+  // Determine if we should show the movie monitor toggle
+  const showMovieMonitorToggle = useMemo(() => {
+    return !!(generalSettings?.whisparrMovieMetadataSource !== 'none');
+  }, [generalSettings?.whisparrMovieMetadataSource]);
 
   // Pagination handlers
 
@@ -227,6 +251,10 @@ export function usePerformerIndex() {
     scrollerRef,
     selectedFilterKey,
     view,
+
+    // Derived data
+    showMovieMonitorToggle,
+
     handleFirstPagePress,
     handleLastPagePress,
     handleNextPagePress,

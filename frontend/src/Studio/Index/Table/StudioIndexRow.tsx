@@ -24,10 +24,11 @@ interface StudioIndexRowProps {
   sortKey: string;
   columns: Column[];
   isSelectMode: boolean;
+  showMovieMonitorToggle: boolean;
 }
 
 function StudioIndexRow(props: StudioIndexRowProps) {
-  const { studio, columns, isSelectMode } = props;
+  const { studio, columns, isSelectMode, showMovieMonitorToggle } = props;
   const { id: studioId, qualityProfileId } = studio;
 
   const {
@@ -107,15 +108,17 @@ function StudioIndexRow(props: StudioIndexRowProps) {
             title="scene"
             name={monitored ? icons.SCENE : icons.SCENEUNMONITOR}
           />
-          <Icon
-            containerClassName={
-              moviesMonitored
-                ? styles.statusIcon
-                : `${styles.statusIcon} ${styles.unmonitored}`
-            }
-            title="movie"
-            name={moviesMonitored ? icons.FILM : icons.FILMUNMONITOR}
-          />
+          {showMovieMonitorToggle ? (
+            <Icon
+              containerClassName={
+                moviesMonitored
+                  ? styles.statusIcon
+                  : `${styles.statusIcon} ${styles.unmonitored}`
+              }
+              title="movie"
+              name={moviesMonitored ? icons.FILM : icons.FILMUNMONITOR}
+            />
+          ) : null}
         </TableRowCell>
       );
       return;

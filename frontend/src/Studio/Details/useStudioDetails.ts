@@ -191,10 +191,21 @@ export const useStudioDetails = (foreignId: string): UseStudioDetailsReturn => {
     prevStudioRef.current = studio;
   }, [studio, isManualRefresh]);
 
-  // Determine if we should show the movie monitor toggle
+  // Determine if we should show the monitor toggle
   const showMovieMonitorToggle = useMemo(() => {
-    return generalSettings?.whisparrMovieMetadataSource === 'TMDb';
-  }, [generalSettings?.whisparrMovieMetadataSource]);
+    return !!(
+      (generalSettings?.whisparrMovieMetadataSource === 'tmdb' &&
+        studio?.tmdbId &&
+        studio.tmdbId > 0) ||
+      (generalSettings?.whisparrMovieMetadataSource === 'tpdb' &&
+        studio?.tpdbId &&
+        studio.tpdbId.length > 0)
+    );
+  }, [
+    generalSettings?.whisparrMovieMetadataSource,
+    studio?.tmdbId,
+    studio?.tpdbId,
+  ]);
 
   // Handler: Refresh studio
   const onRefreshPress = useCallback(() => {

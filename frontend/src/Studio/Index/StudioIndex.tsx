@@ -45,6 +45,7 @@ function StudioIndex(): JSX.Element {
     selectedFilterKey,
     sortDirection,
     view,
+    showMovieMonitorToggle,
     handleFirstPagePress,
     handleLastPagePress,
     handleNextPagePress,
@@ -173,6 +174,7 @@ function StudioIndex(): JSX.Element {
                 sortKey={sortKey}
                 sortDirection={sortDirection}
                 columns={columns}
+                showMovieMonitorToggle={showMovieMonitorToggle}
                 onSortPress={handleSortPress}
               />
               <TablePager

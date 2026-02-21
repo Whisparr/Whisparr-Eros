@@ -13,6 +13,7 @@ interface PerformerIndexTableProps {
   sortDirection?: SortDirection;
   isSelectMode: boolean;
   columns: Column[];
+  showMovieMonitorToggle?: boolean;
   onSortPress?: (name: string, sortDirection?: SortDirection) => void;
 }
 
@@ -22,6 +23,7 @@ function PerformerIndexTable({
   sortDirection,
   isSelectMode,
   columns,
+  showMovieMonitorToggle,
   onSortPress,
 }: PerformerIndexTableProps) {
   return (
@@ -37,6 +39,7 @@ function PerformerIndexTable({
           <TableRow key={performer.id}>
             <PerformerIndexRow
               performer={performer}
+              showMovieMonitorToggle={showMovieMonitorToggle}
               sortKey={sortKey}
               columns={columns}
               isSelectMode={isSelectMode}
