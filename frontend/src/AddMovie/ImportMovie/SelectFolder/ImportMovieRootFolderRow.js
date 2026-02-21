@@ -18,8 +18,10 @@ function ImportMovieRootFolderRow(props) {
     onRefreshPress
   } = props;
 
+  const isMovies = window.location.pathname === '/add/import/movies';
+
   const importFilesCount = importFiles.length || '-';
-  const linkProps = { to: `/add/import/${id}` };
+  const linkProps = { to: isMovies ? `/add/import/movies/${id}` : `/add/import/scenes/${id}` };
 
   return (
     <TableRow>
