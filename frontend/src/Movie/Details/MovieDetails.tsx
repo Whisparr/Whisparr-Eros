@@ -8,6 +8,7 @@ import Alert from 'Components/Alert';
 import FieldSet from 'Components/FieldSet';
 import Icon from 'Components/Icon';
 import InfoLabel from 'Components/InfoLabel';
+import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import Marquee from 'Components/Marquee';
 import Measure from 'Components/Measure';
 import MonitorToggleButton from 'Components/MonitorToggleButton';
@@ -94,7 +95,7 @@ function MovieDetails(props: Partial<Props>) {
   const dispatch = useDispatch();
   const safeForWorkMode = useContext(SafeForWorkModeContext);
 
-  const { data: movie, isLoading, isError, error, isFetching } = useMovie(id);
+  const { data: movie, isLoading, isError, error } = useMovie(id);
 
   // State for modals and measurements
   const { isSmallScreen } = useSelector(createDimensionsSelector());
@@ -123,10 +124,28 @@ function MovieDetails(props: Partial<Props>) {
     handleDeleteMovieModalClose,
   } = useMovieDetailsModals();
 
-  // If loading or error, show appropriate UI
-  if (isLoading) return <div>Loading...</div>;
-  if (isError || !movie)
-    return <div>Error loading movie: {error?.message || 'Not found'}</div>;
+  // Error handling for movie fetch
+  if (isError) {
+    return (
+      <PageContentBody>
+        <Alert kind={kinds.DANGER}>{`${translate('LoadingMovieFailed')}: ${
+          error?.message || 'Not found'
+        }`}</Alert>
+      </PageContentBody>
+    );
+  }
+
+  // Null check
+  if (!movie) {
+    if (isLoading) {
+      return (
+        <PageContentBody>
+          <LoadingIndicator />
+        </PageContentBody>
+      );
+    }
+    return null;
+  }
 
   // Use movie fields, fallback to props for related data not yet migrated
   const {
@@ -155,9 +174,6 @@ function MovieDetails(props: Partial<Props>) {
     images,
     tags = [],
     itemType,
-    movieFilesError,
-    extraFilesError,
-    movieCreditsError,
     hasMovieFiles,
     queueItem,
     movieRuntimeFormat,
@@ -473,31 +489,18 @@ function MovieDetails(props: Partial<Props>) {
 
         {/* FILES, CAST, TITLES */}
         <div className={styles.contentContainer}>
-          {!isFetching && movieFilesError ? (
-            <Alert kind={kinds.DANGER}>
-              {translate('LoadingMovieFilesFailed')}
-            </Alert>
-          ) : null}
-          {!isFetching && extraFilesError ? (
-            <Alert kind={kinds.DANGER}>
-              {translate('LoadingMovieExtraFilesFailed')}
-            </Alert>
-          ) : null}
           <FieldSet legend={translate('Files')}>
             <MovieFileEditorTable movieId={movieId} />
             <ExtraFileTable movieId={movieId} />
           </FieldSet>
-          {!isFetching && movieCreditsError ? (
-            <Alert kind={kinds.DANGER}>
-              {translate('LoadingMovieCreditsFailed')}
-            </Alert>
-          ) : null}
+
           <FieldSet legend={translate('Cast')}>
             <MovieCastPostersConnector
               movieId={Number(movieId)}
               isSmallScreen={isSmallScreen}
             />
           </FieldSet>
+
           <FieldSet legend={translate('Titles')}>
             <MovieTitlesTable movieId={Number(movieId)} />
           </FieldSet>

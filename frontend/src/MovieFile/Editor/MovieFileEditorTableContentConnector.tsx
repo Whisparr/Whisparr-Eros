@@ -1,5 +1,7 @@
 import React, { useCallback, useEffect } from 'react';
 import { connect } from 'react-redux';
+import Alert from 'Components/Alert';
+import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import Column from 'Components/Table/Column';
 import { SortDirection } from 'Helpers/Props/sortDirections';
 import Quality from 'Quality/Quality';
@@ -13,6 +15,7 @@ import {
   fetchQualityProfileSchema,
 } from 'Store/Actions/settingsActions';
 import getQualities from 'Utilities/Quality/getQualities';
+import translate from 'Utilities/String/translate';
 import { MovieFile } from '../MovieFile';
 import useMovieFile from '../useMovieFile';
 import MovieFileEditorTableContent from './MovieFileEditorTableContent';
@@ -88,7 +91,7 @@ function MovieFileEditorTableContentConnector(props: Props) {
   }, [fetchLanguages, fetchQualityProfileSchema]);
 
   // Fetch movie files via React Query
-  const { data: items } = useMovieFile(movieId);
+  const { data: items, isLoading, isError, error } = useMovieFile(movieId);
 
   const onDeletePress = useCallback(
     (movieFileId: number) => {
@@ -113,6 +116,17 @@ function MovieFileEditorTableContentConnector(props: Props) {
     },
     [props]
   );
+
+  if (isError) {
+    return (
+      <Alert kind="danger">{`${translate('LoadingMovieFilesFailed')}: ${
+        error?.message || translate('UnknownError')
+      }`}</Alert>
+    );
+  }
+  if (isLoading) {
+    return <LoadingIndicator />;
+  }
 
   return (
     <MovieFileEditorTableContent

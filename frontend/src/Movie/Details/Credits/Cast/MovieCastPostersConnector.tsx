@@ -1,4 +1,7 @@
 import React from 'react';
+import Alert from 'Components/Alert';
+import LoadingIndicator from 'Components/Loading/LoadingIndicator';
+import translate from 'Utilities/String/translate';
 import MovieCreditPosters from '../MovieCreditPosters';
 import MovieCastPoster from './MovieCastPoster';
 import { useMovieCastCredits } from './useMovieCastCredits';
@@ -13,7 +16,22 @@ function MovieCastPostersConnector({ movieId, isSmallScreen }: Props) {
     data: castCredits = [],
     isLoading,
     isError,
+    error,
   } = useMovieCastCredits(movieId);
+
+  if (isError) {
+    return (
+      <Alert kind="danger">
+        {`${translate('LoadingMovieCreditsFailed')} ${
+          error?.message || translate('UnknownError')
+        }`}
+      </Alert>
+    );
+  }
+
+  if (isLoading) {
+    return <LoadingIndicator />;
+  }
 
   return !isError && !isLoading && castCredits.length > 0 ? (
     <MovieCreditPosters
