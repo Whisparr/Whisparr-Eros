@@ -21,7 +21,6 @@ import styles from './SceneRow.css';
 
 interface SceneRowProps {
   id: number;
-  foreignId: string;
   movieFileId?: number;
   isAvailable: boolean;
   hasFile: boolean;
@@ -34,6 +33,7 @@ interface SceneRowProps {
   movieRuntimeFormat?: string;
   safeForWorkMode?: boolean;
   title: string;
+  titleSlug: string;
   isSaving?: boolean;
   movieFilePath?: string;
   movieFileSize?: number;
@@ -99,7 +99,6 @@ class SceneRow extends Component<SceneRowProps, SceneRowState> {
   render() {
     const {
       id,
-      foreignId,
       movieFileId,
       monitored,
       performerNames,
@@ -110,6 +109,7 @@ class SceneRow extends Component<SceneRowProps, SceneRowState> {
       movieRuntimeFormat,
       releaseDate,
       title,
+      titleSlug,
       isSaving,
       movieFilePath,
       movieFileSize,
@@ -141,7 +141,7 @@ class SceneRow extends Component<SceneRowProps, SceneRowState> {
           if (name === 'title') {
             return (
               <TableRowCell key={name} className={styles.title}>
-                <MovieTitleLink foreignId={foreignId} title={title} />
+                <MovieTitleLink titleSlug={titleSlug} title={title} />
               </TableRowCell>
             );
           }

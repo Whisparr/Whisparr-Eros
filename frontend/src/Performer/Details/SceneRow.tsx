@@ -40,6 +40,7 @@ interface SceneRowProps {
   runtime?: number;
   movieRuntimeFormat?: string;
   title: string;
+  titleSlug: string;
   isSaving?: boolean;
   path?: string;
   relativePath?: string;
@@ -107,6 +108,7 @@ class SceneRow extends Component<SceneRowProps, SceneRowState> {
       movieRuntimeFormat,
       releaseDate,
       title,
+      titleSlug,
       isSaving,
       studioTitle,
       studioForeignId,
@@ -163,7 +165,7 @@ class SceneRow extends Component<SceneRowProps, SceneRowState> {
           if (name === 'title') {
             return (
               <TableRowCell key={name} className={styles.title}>
-                <MovieTitleLink foreignId={foreignId} title={title} />
+                <MovieTitleLink titleSlug={titleSlug} title={title} />
               </TableRowCell>
             );
           }

@@ -118,7 +118,7 @@ function HistoryRow(props: HistoryRowProps) {
         if (name === 'movieMetadata.sortTitle') {
           return (
             <TableRowCell key={name}>
-              <MovieTitleLink foreignId={movie.foreignId} title={movie.title} />
+              <MovieTitleLink titleSlug={movie.titleSlug} title={movie.title} />
             </TableRowCell>
           );
         }

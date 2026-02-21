@@ -96,6 +96,7 @@ class AddNewMovieSearchResult extends Component {
       tmdbId,
       tpdbId,
       title,
+      titleSlug,
       year,
       studioTitle,
       genres,
@@ -133,7 +134,7 @@ class AddNewMovieSearchResult extends Component {
 
     const hasMovieFile = !!movieFile || sizeOnDisk > 0;
 
-    const linkProps = isExistingMovie ? { to: `/movie/${existingMovieId}` } : { onPress: this.onPress };
+    const linkProps = isExistingMovie ? { to: `/movie/${titleSlug}` } : { onPress: this.onPress };
     const providerProps = itemType === 'movie' ? { tmdbId, tpdbId, website } : { stashId: foreignId, website };
 
     let ImageItem = MoviePoster;

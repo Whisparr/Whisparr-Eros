@@ -190,7 +190,7 @@ function QueueRow(props: QueueRowProps) {
             <TableRowCell key={name}>
               {movie ? (
                 <MovieTitleLink
-                  foreignId={movie.foreignId}
+                  titleSlug={movie.titleSlug}
                   title={movie.title}
                 />
               ) : (
