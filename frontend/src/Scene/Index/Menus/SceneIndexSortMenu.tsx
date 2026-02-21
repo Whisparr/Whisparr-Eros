@@ -20,39 +20,12 @@ function SceneIndexSortMenu(props: SceneIndexSortMenuProps) {
     <SortMenu isDisabled={isDisabled} alignMenu={align.RIGHT}>
       <MenuContent>
         <SortMenuItem
-          name="status"
-          sortKey={sortKey}
-          sortDirection={sortDirection}
-          onPress={onSortSelect}
-        >
-          {translate('MonitoredStatus')}
-        </SortMenuItem>
-
-        <SortMenuItem
           name="sortTitle"
           sortKey={sortKey}
           sortDirection={sortDirection}
           onPress={onSortSelect}
         >
           {translate('Title')}
-        </SortMenuItem>
-
-        <SortMenuItem
-          name="studio"
-          sortKey={sortKey}
-          sortDirection={sortDirection}
-          onPress={onSortSelect}
-        >
-          {translate('Studio')}
-        </SortMenuItem>
-
-        <SortMenuItem
-          name="qualityProfileId"
-          sortKey={sortKey}
-          sortDirection={sortDirection}
-          onPress={onSortSelect}
-        >
-          {translate('QualityProfile')}
         </SortMenuItem>
 
         <SortMenuItem
@@ -65,21 +38,12 @@ function SceneIndexSortMenu(props: SceneIndexSortMenuProps) {
         </SortMenuItem>
 
         <SortMenuItem
-          name="year"
+          name="status"
           sortKey={sortKey}
           sortDirection={sortDirection}
           onPress={onSortSelect}
         >
-          {translate('Year')}
-        </SortMenuItem>
-
-        <SortMenuItem
-          name="releaseDate"
-          sortKey={sortKey}
-          sortDirection={sortDirection}
-          onPress={onSortSelect}
-        >
-          {translate('ReleaseDates')}
+          {translate('MonitoredStatus')}
         </SortMenuItem>
 
         <SortMenuItem
@@ -92,6 +56,24 @@ function SceneIndexSortMenu(props: SceneIndexSortMenuProps) {
         </SortMenuItem>
 
         <SortMenuItem
+          name="qualityProfileId"
+          sortKey={sortKey}
+          sortDirection={sortDirection}
+          onPress={onSortSelect}
+        >
+          {translate('QualityProfile')}
+        </SortMenuItem>
+
+        <SortMenuItem
+          name="releaseDate"
+          sortKey={sortKey}
+          sortDirection={sortDirection}
+          onPress={onSortSelect}
+        >
+          {translate('ReleaseDate')}
+        </SortMenuItem>
+
+        <SortMenuItem
           name="sizeOnDisk"
           sortKey={sortKey}
           sortDirection={sortDirection}
@@ -101,12 +83,21 @@ function SceneIndexSortMenu(props: SceneIndexSortMenuProps) {
         </SortMenuItem>
 
         <SortMenuItem
-          name="originalLanguage"
+          name="studio"
           sortKey={sortKey}
           sortDirection={sortDirection}
           onPress={onSortSelect}
         >
-          {translate('OriginalLanguage')}
+          {translate('Studio')}
+        </SortMenuItem>
+
+        <SortMenuItem
+          name="year"
+          sortKey={sortKey}
+          sortDirection={sortDirection}
+          onPress={onSortSelect}
+        >
+          {translate('Year')}
         </SortMenuItem>
       </MenuContent>
     </SortMenu>

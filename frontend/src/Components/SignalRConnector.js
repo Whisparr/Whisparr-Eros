@@ -7,7 +7,6 @@ import { queryClient } from 'App/queryClient';
 import { setAppValue, setVersion } from 'Store/Actions/appActions';
 import { removeItem, update, updateItem, updateItemsBatch } from 'Store/Actions/baseActions';
 import { fetchCommands, finishCommand, updateCommand } from 'Store/Actions/commandActions';
-import { fetchMovies } from 'Store/Actions/movieActions';
 import { fetchQueue, fetchQueueDetails } from 'Store/Actions/queueActions';
 import { fetchRootFolders } from 'Store/Actions/rootFolderActions';
 import { fetchQualityDefinitions } from 'Store/Actions/settingsActions';
@@ -53,7 +52,6 @@ const mapDispatchToProps = {
   dispatchFetchQueue: fetchQueue,
   dispatchFetchQueueDetails: fetchQueueDetails,
   dispatchFetchRootFolders: fetchRootFolders,
-  dispatchFetchMovies: fetchMovies,
   dispatchFetchTags: fetchTags,
   dispatchFetchTagDetails: fetchTagDetails
 };
@@ -91,16 +89,20 @@ Logger.prototype.log = function(logLevel, message) {
 
 // Helper to re-fetch when a movie is updated
 function updateMovieDetailsQueryCache(updatedMovie) {
-  const movieId = `/movie/${updatedMovie.id}`;
+  const tmdbId = `/movie/tmdb:${updatedMovie.foreignId}`;
   const movieForeignId = `/movie/${updatedMovie.foreignId}`;
 
   // For TMDB movies
   queryClient.invalidateQueries({
-    queryKey: [movieId]
+    queryKey: [tmdbId]
   });
   // For Stash and everything else
   queryClient.invalidateQueries({
     queryKey: [movieForeignId]
+  });
+  // For MovieIndex and SceneIndex pages
+  queryClient.invalidateQueries({
+    queryKey: ['/movie/paged']
   });
 }
 
@@ -585,7 +587,6 @@ class SignalRConnector extends Component {
 
     const {
       dispatchFetchCommands,
-      dispatchFetchMovies,
       dispatchSetAppValue
     } = this.props;
 
@@ -598,7 +599,8 @@ class SignalRConnector extends Component {
 
     // Repopulate the page (if a repopulator is set) to ensure things
     // are in sync after reconnecting.
-    dispatchFetchMovies();
+    queryClient.invalidateQueries({ queryKey: ['/movie/paged'] });
+    queryClient.invalidateQueries({ queryKey: ['/movie/stats'] });
     dispatchFetchCommands();
     repopulatePage();
   };
@@ -639,7 +641,6 @@ SignalRConnector.propTypes = {
   dispatchFetchQueue: PropTypes.func.isRequired,
   dispatchFetchQueueDetails: PropTypes.func.isRequired,
   dispatchFetchRootFolders: PropTypes.func.isRequired,
-  dispatchFetchMovies: PropTypes.func.isRequired,
   dispatchFetchTags: PropTypes.func.isRequired,
   dispatchFetchTagDetails: PropTypes.func.isRequired
 };

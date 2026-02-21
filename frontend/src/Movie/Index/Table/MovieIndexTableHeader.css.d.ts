@@ -14,7 +14,7 @@ interface CssExports {
   'sizeOnDisk': string;
   'sortTitle': string;
   'status': string;
-  'studio': string;
+  'studioTitle': string;
   'tags': string;
   'tmdbRating': string;
   'year': string;

@@ -26,13 +26,15 @@ namespace Whisparr.Api.V3.Search
         private readonly IMapCoversToLocal _coverMapper;
         private readonly IConfigService _configService;
         private readonly IImportListExclusionService _exclusionService;
+        private readonly IMovieService _movieService;
 
         public SearchController(ISearchForNewMovie searchProxy,
                                 IBuildFileNames fileNameBuilder,
                                 INamingConfigService namingService,
                                 IMapCoversToLocal coverMapper,
                                 IConfigService configService,
-                                IImportListExclusionService exclusionService)
+                                IImportListExclusionService exclusionService,
+                                IMovieService movieService)
         {
             _searchProxy = searchProxy;
             _fileNameBuilder = fileNameBuilder;
@@ -40,20 +42,25 @@ namespace Whisparr.Api.V3.Search
             _coverMapper = coverMapper;
             _configService = configService;
             _exclusionService = exclusionService;
+            _movieService = movieService;
         }
 
         [HttpGet("scene")]
         public object SearchScene([FromQuery] string term)
         {
             var searchResults = _searchProxy.SearchForNewEntity(term, ItemType.Scene);
-            return MapToResource(searchResults).ToList();
+            var searchResources = MapToResource(searchResults).ToList();
+            MapToExistingMovies(searchResources);
+            return searchResources;
         }
 
         [HttpGet("movie")]
         public object SearchMovie([FromQuery] string term)
         {
             var searchResults = _searchProxy.SearchForNewEntity(term, ItemType.Movie);
-            return MapToResource(searchResults).ToList();
+            var searchResources = MapToResource(searchResults).ToList();
+            MapToExistingMovies(searchResources);
+            return searchResources;
         }
 
         [HttpGet("studio")]
@@ -68,6 +75,19 @@ namespace Whisparr.Api.V3.Search
         {
             var searchResults = _searchProxy.SearchForNewPerformer(term);
             return MapToResource(searchResults).ToList();
+        }
+
+        private void MapToExistingMovies(List<SearchResource> searchResources)
+        {
+            var matches = _movieService.FindByForeignIds(searchResources.Select(m => m.ForeignId).ToList());
+            foreach (var s in searchResources)
+            {
+                var match = matches.Where(m => m.ForeignId == s.ForeignId);
+                if (match.Any())
+                {
+                    s.isExisting = true;
+                }
+            }
         }
 
         private IEnumerable<SearchResource> MapToResource(IEnumerable<object> results)

@@ -1,66 +1,20 @@
 import classNames from 'classnames';
 import React from 'react';
-import { useSelector } from 'react-redux';
-import { createSelector } from 'reselect';
 import { ColorImpairedConsumer } from 'App/ColorImpairedContext';
-import MoviesAppState from 'App/State/MoviesAppState';
 import DescriptionList from 'Components/DescriptionList/DescriptionList';
 import DescriptionListItem from 'Components/DescriptionList/DescriptionListItem';
-import createClientSideCollectionSelector from 'Store/Selectors/createClientSideCollectionSelector';
-import createDeepEqualSelector from 'Store/Selectors/createDeepEqualSelector';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
+import { useSceneStats } from './useSceneStats';
 import styles from './SceneIndexFooter.css';
 
-function createUnoptimizedSelector() {
-  return createSelector(
-    createClientSideCollectionSelector('movies', 'sceneIndex'),
-    (movies: MoviesAppState) => {
-      return movies.items
-        .filter((movie) => movie.itemType === 'scene')
-        .map((m) => {
-          const { monitored, status, hasFile, statistics } = m;
-
-          return {
-            monitored,
-            status,
-            hasFile,
-            statistics,
-          };
-        });
-    }
-  );
-}
-
-function createSceneSelector() {
-  return createDeepEqualSelector(
-    createUnoptimizedSelector(),
-    (scenes) => scenes
-  );
-}
-
 export default function SceneIndexFooter() {
-  const scenes = useSelector(createSceneSelector());
-  const count = scenes.length;
-  let sceneFiles = 0;
-  let monitored = 0;
-  let totalFileSize = 0;
+  const { data } = useSceneStats();
 
-  scenes.forEach((s) => {
-    const { statistics = { sizeOnDisk: 0 } } = s;
-
-    const { sizeOnDisk = 0 } = statistics;
-
-    if (s.hasFile) {
-      sceneFiles += 1;
-    }
-
-    if (s.monitored) {
-      monitored++;
-    }
-
-    totalFileSize += sizeOnDisk;
-  });
+  const count = data?.totalCount ?? 0;
+  const movieFiles = data?.movieFiles ?? 0;
+  const monitored = data?.monitoredCount ?? 0;
+  const totalFileSize = data?.totalFileSize ?? 0;
 
   return (
     <ColorImpairedConsumer>
@@ -115,7 +69,7 @@ export default function SceneIndexFooter() {
 
                 <DescriptionListItem
                   title={translate('SceneFiles')}
-                  data={sceneFiles}
+                  data={movieFiles}
                 />
               </DescriptionList>
 

@@ -1,5 +1,8 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { queryClient } from 'App/queryClient';
+import { PropertyFilter } from 'Filters/Filter';
+import useApiQuery from 'Helpers/Hooks/useApiQuery';
+import { SortDirection } from 'Helpers/Props/sortDirections';
 import History from '../../typings/History';
 import fetchJson, { apiRoot } from '../../Utilities/Fetch/fetchJson';
 
@@ -8,14 +11,6 @@ const AUTH_HEADERS = {
   'X-Api-Key': window.Whisparr.apiKey,
   'X-Whisparr-Client': 'Whisparr',
 };
-
-function apiGet<T>(path: string) {
-  return fetchJson<T, undefined>({
-    path: `${API_ROOT}${path}`,
-    method: 'GET',
-    headers: AUTH_HEADERS,
-  });
-}
 
 function apiPost<T>(path: string, body: unknown) {
   return fetchJson<T, unknown>({
@@ -26,40 +21,51 @@ function apiPost<T>(path: string, body: unknown) {
   });
 }
 
-// Fetch all history (FUTURE USE for pagination)
-export function useHistory(movieId: number | undefined) {
-  const PATH = `/history`;
-  return useQuery<History[] | undefined>({
-    queryKey: [PATH],
-    queryFn: async () => {
-      if (!movieId) return undefined;
-      return apiGet<History[]>(PATH);
-    },
-    enabled: !!movieId,
+export interface HistoryPageParams {
+  page: number;
+  pageSize: number;
+  sortKey: string;
+  sortDirection: string;
+  filters?: PropertyFilter[];
+}
+
+export interface HistoryPageResult {
+  page: number;
+  pageSize: number;
+  sortKey: string;
+  sortDirection: SortDirection;
+  totalRecords: number;
+  records: History[];
+}
+
+// Fetch all history for the main Activity > History page
+export function useHistory(params: HistoryPageParams) {
+  const { page, pageSize, sortKey, sortDirection, filters = [] } = params;
+
+  return useApiQuery<HistoryPageResult>({
+    path: '/history',
+    queryParams: { page, pageSize, sortKey, sortDirection, filters },
   });
 }
 
-// Fetch all movie history for single a movieId
+// Fetch all movie history for a single movieId
 export function useMovieHistory(movieId: number | undefined) {
-  const PATH = `/history/movie?movieId=${movieId}`;
-  return useQuery<History[] | undefined>({
-    queryKey: [PATH],
-    queryFn: async () => {
-      if (!movieId) return undefined;
-      return apiGet<History[]>(PATH);
-    },
-    enabled: !!movieId,
+  return useApiQuery<History[] | undefined>({
+    path: '/history/movie',
+    queryOptions: { enabled: !!movieId },
+    queryParams: { movieId },
   });
 }
 
+// TODO: Move to useApiMutation
 // Mark a history item as failed
-export function useMarkHistoryFailed(movieId: number) {
+export function useMarkHistoryFailed() {
   return useMutation({
     mutationFn: (historyId: number) =>
       apiPost(`/history/failed/${historyId}`, {}),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [`/history/movie/${movieId}`],
+        queryKey: ['/history'],
       });
     },
   });

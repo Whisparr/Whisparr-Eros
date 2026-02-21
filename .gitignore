@@ -13,6 +13,7 @@ src/**/[Oo]bj/
 .vs/
 .continue
 .vscode
+.claude
 
 # Build results
 *_i.c

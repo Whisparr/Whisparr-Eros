@@ -69,6 +69,15 @@ namespace NzbDrone.Core.Movies
                 return movie;
             });
 
+        // Paged queries omit the AlternativeTitles JOIN to prevent duplicate rows.
+        // The one-to-many JOIN in Builder() multiplies rows; PagedQuery maps each
+        // SQL row directly without the deduplication that Query() performs via Map().
+        // QualityProfile is intentionally excluded: QualityProfileId on Movies is sufficient
+        // for sort/filter; the client resolves the display name from its own store.
+        protected override SqlBuilder PagedBuilder() => new SqlBuilder(_database.DatabaseType)
+            .Join<Movie, MovieMetadata>((m, p) => m.MovieMetadataId == p.Id)
+            .LeftJoin<Movie, MovieFile>((m, f) => m.Id == f.MovieId);
+
         protected override SqlBuilder Builder() => new SqlBuilder(_database.DatabaseType)
             .Join<Movie, QualityProfile>((m, p) => m.QualityProfileId == p.Id)
             .Join<Movie, MovieMetadata>((m, p) => m.MovieMetadataId == p.Id)

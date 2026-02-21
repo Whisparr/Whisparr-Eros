@@ -502,7 +502,11 @@ function MovieDetails(props: Partial<Props>) {
           </FieldSet>
 
           <FieldSet legend={translate('Titles')}>
-            <MovieTitlesTable movieId={Number(movieId)} />
+            <MovieTitlesTable
+              alternateTitles={movie?.alternateTitles ?? []}
+              isLoading={isLoading}
+              error={error}
+            />
           </FieldSet>
         </div>
 

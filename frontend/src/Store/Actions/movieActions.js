@@ -255,7 +255,7 @@ export const sortPredicates = {
 
 export const defaultState = {
   isFetching: false,
-  isPopulated: false,
+  isPopulated: true,
   error: null,
   isSaving: false,
   saveError: null,
@@ -277,7 +277,6 @@ export const persistState = [
 //
 // Actions Types
 
-export const FETCH_MOVIES = 'movies/fetchMovies';
 export const SEARCH_MOVIES = 'movies/searchMovies';
 export const SET_MOVIE_VALUE = 'movies/setMovieValue';
 export const SAVE_MOVIE = 'movies/saveMovie';
@@ -293,7 +292,6 @@ export const TOGGLE_MOVIE_MONITORED = 'movies/toggleMovieMonitored';
 //
 // Action Creators
 
-export const fetchMovies = createThunk(FETCH_MOVIES);
 export const searchMovies = createThunk(SEARCH_MOVIES);
 
 export const saveMovie = createThunk(SAVE_MOVIE, (payload) => {
@@ -363,91 +361,6 @@ function getSaveAjaxOptions({ ajaxOptions, payload }) {
 // Action Handlers
 
 export const actionHandlers = handleThunks({
-
-  [FETCH_MOVIES]: (getState, payload, dispatch) => {
-    if (getState().movies.isPopulated) {
-      // Limit the repopulation to smaller datasets due to client memmory. (200,000)
-      if (getState().movies.items.length > 200000) {
-        return;
-      }
-    }
-
-    if (getState().movies.isFetching) {
-      return;
-    }
-
-    dispatch(set({ section, isFetching: true }));
-
-    const {
-      ...otherPayload
-    } = payload;
-
-    const { request, abortRequest } = createAjaxRequest({
-      url: '/movie/list',
-      data: otherPayload,
-      traditional: true
-    });
-
-    request.done((movieids) => {
-      const requests = [];
-
-      const chunkSize = 50000;
-      for (let i = 0; i < movieids.length; i += chunkSize) {
-        const chunk = movieids.slice(i, i + chunkSize);
-
-        const promise = createAjaxRequest({
-          url: '/movie/bulk',
-          method: 'POST',
-          contentType: 'application/json',
-          dataType: 'json',
-          data: JSON.stringify(chunk)
-        });
-
-        requests.push(promise.request);
-      }
-
-      Promise.all(requests)
-        .catch((xhr) => {
-          dispatch(set({
-            section,
-            isFetching: false,
-            isPopulated: false,
-            error: xhr.aborted ? null : xhr
-          }));
-        })
-        .then((results) => {
-          try {
-            const data = results.flat();
-            dispatch(batchActions([
-              update({ section, data }),
-
-              set({
-                section,
-                isFetching: false,
-                isPopulated: true,
-                error: null
-              })
-            ]));
-          } catch (error) {
-            dispatch(set({
-              section,
-              isFetching: false,
-              isPopulated: false,
-              error
-            }));
-          }
-        });
-    }).fail((xhr) => {
-      dispatch(set({
-        section,
-        isFetching: false,
-        isPopulated: false,
-        error: xhr.aborted ? null : xhr
-      }));
-    });
-
-    return abortRequest;
-  },
 
   [SEARCH_MOVIES]: (getState, payload, dispatch) => {
     if (getState().movies.isFetching) {

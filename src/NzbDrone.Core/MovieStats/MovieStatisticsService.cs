@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using NzbDrone.Core.Movies;
 
 namespace NzbDrone.Core.MovieStats
 {
@@ -8,6 +9,7 @@ namespace NzbDrone.Core.MovieStats
         List<MovieStatistics> MovieStatistics();
         List<MovieStatistics> MovieStatistics(List<int> ids);
         MovieStatistics MovieStatistics(int movieId);
+        MovieIndexOverview GetMovieIndexOverview(ItemType itemType);
     }
 
     public class MovieStatisticsService : IMovieStatisticsService
@@ -42,6 +44,11 @@ namespace NzbDrone.Core.MovieStats
             }
 
             return stats.First();
+        }
+
+        public MovieIndexOverview GetMovieIndexOverview(ItemType itemType)
+        {
+            return _movieStatisticsRepository.GetMovieIndexOverview(itemType);
         }
     }
 }

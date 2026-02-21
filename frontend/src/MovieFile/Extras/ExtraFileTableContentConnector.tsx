@@ -1,53 +1,39 @@
 import React from 'react';
-import { connect } from 'react-redux';
-import { createSelector } from 'reselect';
-import createMovieSelector from 'Store/Selectors/createMovieSelector';
-import type { ExtraFileRowProps } from './ExtraFileRow';
+import Alert from 'Components/Alert';
+import LoadingIndicator from 'Components/Loading/LoadingIndicator';
+import translate from 'Utilities/String/translate';
+import useExtraFile from '../useExtraFile';
 import ExtraFileTableContent from './ExtraFileTableContent';
-
-interface ExtraFilesState {
-  items: ExtraFileRowProps[];
-}
-
-interface RootState {
-  extraFiles: ExtraFilesState;
-}
 
 interface ExtraFileTableContentConnectorProps {
   movieId: number;
 }
 
-function createMapStateToProps() {
-  return createSelector(
-    (_: RootState, { movieId }: { movieId: number }) => movieId,
-    (state: RootState) => state.extraFiles,
-    createMovieSelector(),
-    (movieId: number, extraFiles: ExtraFilesState) => {
-      const filesForMovie = extraFiles.items.filter(
-        (file: ExtraFileRowProps) => file.movieId === movieId
-      );
-      return {
-        items: filesForMovie,
-        error: null,
-      };
-    }
+type Props = ExtraFileTableContentConnectorProps;
+
+function ExtraFileTableContentConnector(props: Props) {
+  const {
+    data: extraFiles,
+    isLoading,
+    isError,
+    error,
+  } = useExtraFile(props.movieId);
+
+  if (isError) {
+    return (
+      <Alert kind="danger">{`${translate('LoadingMovieExtraFilesFailed')}: ${
+        error?.message
+      }`}</Alert>
+    );
+  }
+
+  if (isLoading) {
+    return <LoadingIndicator />;
+  }
+
+  return (
+    <ExtraFileTableContent movieId={props.movieId} items={extraFiles || []} />
   );
 }
 
-type StateProps = {
-  items: ExtraFileRowProps[];
-  error: unknown;
-};
-
-type Props = ExtraFileTableContentConnectorProps & StateProps;
-
-function ExtraFileTableContentConnector(props: Props) {
-  return <ExtraFileTableContent {...props} />;
-}
-
-export default connect<
-  StateProps,
-  object,
-  ExtraFileTableContentConnectorProps,
-  RootState
->(createMapStateToProps)(ExtraFileTableContentConnector);
+export default ExtraFileTableContentConnector;

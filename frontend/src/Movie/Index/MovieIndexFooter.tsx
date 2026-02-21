@@ -1,66 +1,20 @@
 import classNames from 'classnames';
 import React from 'react';
-import { useSelector } from 'react-redux';
-import { createSelector } from 'reselect';
 import { ColorImpairedConsumer } from 'App/ColorImpairedContext';
-import MoviesAppState from 'App/State/MoviesAppState';
 import DescriptionList from 'Components/DescriptionList/DescriptionList';
 import DescriptionListItem from 'Components/DescriptionList/DescriptionListItem';
-import createClientSideCollectionSelector from 'Store/Selectors/createClientSideCollectionSelector';
-import createDeepEqualSelector from 'Store/Selectors/createDeepEqualSelector';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
+import { useMovieStats } from './useMovieStats';
 import styles from './MovieIndexFooter.css';
 
-function createUnoptimizedSelector() {
-  return createSelector(
-    createClientSideCollectionSelector('movies', 'movieIndex'),
-    (movies: MoviesAppState) => {
-      return movies.items
-        .filter((movie) => movie.itemType === 'movie')
-        .map((m) => {
-          const { monitored, status, hasFile, statistics } = m;
-
-          return {
-            monitored,
-            status,
-            hasFile,
-            statistics,
-          };
-        });
-    }
-  );
-}
-
-function createMovieSelector() {
-  return createDeepEqualSelector(
-    createUnoptimizedSelector(),
-    (movies) => movies
-  );
-}
-
 export default function MovieIndexFooter() {
-  const movies = useSelector(createMovieSelector());
-  const count = movies.length;
-  let movieFiles = 0;
-  let monitored = 0;
-  let totalFileSize = 0;
+  const { data } = useMovieStats();
 
-  movies.forEach((m) => {
-    const { statistics = { sizeOnDisk: 0 } } = m;
-
-    const { sizeOnDisk = 0 } = statistics;
-
-    if (m.hasFile) {
-      movieFiles += 1;
-    }
-
-    if (m.monitored) {
-      monitored++;
-    }
-
-    totalFileSize += sizeOnDisk;
-  });
+  const count = data?.totalCount ?? 0;
+  const movieFiles = data?.movieFiles ?? 0;
+  const monitored = data?.monitoredCount ?? 0;
+  const totalFileSize = data?.totalFileSize ?? 0;
 
   return (
     <ColorImpairedConsumer>

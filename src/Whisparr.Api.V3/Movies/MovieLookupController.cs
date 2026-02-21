@@ -27,6 +27,7 @@ namespace Whisparr.Api.V3.Movies
         private readonly IMapCoversToLocal _coverMapper;
         private readonly IConfigService _configService;
         private readonly IImportListExclusionService _importListExclusionService;
+        private readonly IMovieService _movieService;
 
         /// <summary>
         /// Creates a new instance of <see cref="MovieLookupController"/>.
@@ -38,13 +39,15 @@ namespace Whisparr.Api.V3.Movies
         /// <param name="coverMapper">Mapper to convert remote cover urls to local urls.</param>
         /// <param name="configService">Application configuration service.</param>
         /// <param name="importListExclusionService">Service for import list exclusions.</param>
+        /// <param name="movieService">Service to work with raw Movie objects</param>
         public MovieLookupController(ISearchForNewMovie searchProxy,
                                  IProvideMovieInfo movieInfo,
                                  IBuildFileNames fileNameBuilder,
                                  INamingConfigService namingService,
                                  IMapCoversToLocal coverMapper,
                                  IConfigService configService,
-                                 IImportListExclusionService importListExclusionService)
+                                 IImportListExclusionService importListExclusionService,
+                                 IMovieService movieService)
         {
             _movieInfo = movieInfo;
             _searchProxy = searchProxy;
@@ -53,11 +56,10 @@ namespace Whisparr.Api.V3.Movies
             _coverMapper = coverMapper;
             _configService = configService;
             _importListExclusionService = importListExclusionService;
+            _movieService = movieService;
         }
 
-        /// <summary>
-        /// Not implemented for lookup controller; required by base type.
-        /// </summary>
+        /// <summary>Not implemented for lookup controller; required by base type.</summary>
         /// <param name="id">The id of the movie resource.</param>
         /// <returns>An <see cref="ActionResult{MovieResource}"/> representing the resource.</returns>
         [NonAction]
@@ -66,9 +68,7 @@ namespace Whisparr.Api.V3.Movies
             throw new NotImplementedException();
         }
 
-        /// <summary>
-        /// Not implemented for lookup controller; required by base type.
-        /// </summary>
+        /// <summary>Not implemented for lookup controller; required by base type.</summary>
         /// <param name="id">The movie id.</param>
         /// <returns>The <see cref="MovieResource"/>.</returns>
         protected override MovieResource GetResourceById(int id)
@@ -76,9 +76,7 @@ namespace Whisparr.Api.V3.Movies
             throw new NotImplementedException();
         }
 
-        /// <summary>
-        /// Lookup movie metadata by TMDB id.
-        /// </summary>
+        /// <summary>Lookup movie metadata by TMDB id.</summary>
         /// <param name="tmdbId">TMDB identifier.</param>
         /// <returns>A <see cref="MovieResource"/> populated with metadata for the TMDB id.</returns>
         [HttpGet("tmdb")]
@@ -90,9 +88,7 @@ namespace Whisparr.Api.V3.Movies
             return result.ToResource(availDelay);
         }
 
-        /// <summary>
-        /// Lookup movie metadata by TPDB id.
-        /// </summary>
+        /// <summary>Lookup movie metadata by TPDB id.</summary>
         /// <param name="tpdbId">TPDB identifier.</param>
         /// <returns>A <see cref="MovieResource"/> populated with metadata for the TPDB id.</returns>
         [HttpGet("tpdb")]
@@ -104,9 +100,7 @@ namespace Whisparr.Api.V3.Movies
             return result.ToResource(availDelay);
         }
 
-        /// <summary>
-        /// Lookup movie metadata by IMDB id.
-        /// </summary>
+        /// <summary>Lookup movie metadata by IMDB id.</summary>
         /// <param name="imdbId">IMDB identifier.</param>
         /// <returns>A <see cref="MovieResource"/> populated with metadata for the IMDB id.</returns>
         [HttpGet("imdb")]
@@ -119,9 +113,7 @@ namespace Whisparr.Api.V3.Movies
             return result.ToResource(availDelay);
         }
 
-        /// <summary>
-        /// Search for movies by free-text term. Returns candidates suitable for adding.
-        /// </summary>
+        /// <summary>Search for movies by free-text term. Returns candidates suitable for adding.</summary>
         /// <param name="term">Search term (title, partial title, etc.).</param>
         /// <param name="itemType">Optional item type filter.</param>
         /// <returns>Sequence of matching <see cref="MovieResource"/> objects.</returns>
@@ -146,13 +138,28 @@ namespace Whisparr.Api.V3.Movies
                 }
             }
 
-            return MapToResource(searchResults);
+            var resources = MapToResource(searchResults).ToList();
+            MapToExistingMovies(resources);
+            return resources;
         }
 
-        /// <summary>
-        /// Maps internal <see cref="Movie"/> instances to API resources, applying cover mapping,
-        /// folder name building and import-list exclusion checks.
-        /// </summary>
+        /// <summary>Marks resources that already exist in the local database by setting
+        /// <see cref="MovieResource.IsExisting"/>.</summary>
+        /// <param name="resources">Resources to annotate.</param>
+        private void MapToExistingMovies(List<MovieResource> resources)
+        {
+            var matches = _movieService.FindByForeignIds(resources.Select(r => r.ForeignId).ToList());
+            foreach (var r in resources)
+            {
+                if (matches.Any(m => m.ForeignId == r.ForeignId))
+                {
+                    r.IsExisting = true;
+                }
+            }
+        }
+
+        /// <summary>Maps internal <see cref="Movie"/> instances to API resources, applying cover mapping,
+        /// folder name building and import-list exclusion checks.</summary>
         /// <param name="movies">Movies to map.</param>
         /// <returns>Sequence of <see cref="MovieResource"/> objects.</returns>
         private IEnumerable<MovieResource> MapToResource(IEnumerable<Movie> movies)

@@ -2,6 +2,7 @@ import React, { SyntheticEvent, useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useSelect } from 'App/SelectContext';
 import AppState from 'App/State/AppState';
+import Command from 'Commands/Command';
 import { MOVIE_SEARCH, REFRESH_MOVIE } from 'Commands/commandNames';
 import Icon from 'Components/Icon';
 import Label from 'Components/Label';
@@ -17,20 +18,20 @@ import MovieDetailsLinks from 'Movie/Details/MovieDetailsLinks';
 import EditMovieModal from 'Movie/Edit/EditMovieModal';
 import MovieIndexProgressBar from 'Movie/Index/ProgressBar/MovieIndexProgressBar';
 import MovieIndexPosterSelect from 'Movie/Index/Select/MovieIndexPosterSelect';
-import { Statistics } from 'Movie/Movie';
+import Movie, { Statistics } from 'Movie/Movie';
 import MoviePoster from 'Movie/MoviePoster';
 import { executeCommand } from 'Store/Actions/commandActions';
+import createExecutingCommandsSelector from 'Store/Selectors/createExecutingCommandsSelector';
 import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
 import formatDate from 'Utilities/Date/formatDate';
 import getRelativeDate from 'Utilities/Date/getRelativeDate';
 import translate from 'Utilities/String/translate';
-import createMovieIndexItemSelector from '../createMovieIndexItemSelector';
 import MovieIndexPosterInfo from './MovieIndexPosterInfo';
 import selectPosterOptions from './selectPosterOptions';
 import styles from './MovieIndexPoster.css';
 
 interface MovieIndexPosterProps {
-  movieId: number;
+  movie: Movie;
   sortKey: string;
   isSelectMode: boolean;
   posterWidth: number;
@@ -38,10 +39,26 @@ interface MovieIndexPosterProps {
 }
 
 function MovieIndexPoster(props: MovieIndexPosterProps) {
-  const { movieId, sortKey, isSelectMode, posterWidth, posterHeight } = props;
+  const { movie, sortKey, isSelectMode, posterWidth, posterHeight } = props;
+  const movieId = movie.id;
 
-  const { movie, qualityProfile, isRefreshingMovie, isSearchingMovie } =
-    useSelector(createMovieIndexItemSelector(props.movieId));
+  const qualityProfile = useSelector((state: AppState) =>
+    state.settings.qualityProfiles.items.find(
+      (p) => p.id === movie.qualityProfileId
+    )
+  );
+
+  const executingCommands = useSelector(createExecutingCommandsSelector());
+
+  const isRefreshingMovie = executingCommands.some(
+    (command: Command) =>
+      command.name === REFRESH_MOVIE && command.body.movieId === movieId
+  );
+
+  const isSearchingMovie = executingCommands.some(
+    (command: Command) =>
+      command.name === MOVIE_SEARCH && command.body.movieId === movieId
+  );
 
   const safeForWorkMode = useSelector(
     (state: AppState) => state.settings.safeForWorkMode

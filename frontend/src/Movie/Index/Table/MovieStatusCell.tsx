@@ -46,13 +46,14 @@ function MovieStatusCell(props: MovieStatusCellProps) {
         <MonitorToggleButton
           className={styles.statusIcon}
           monitored={monitored}
+          type="movieMonitor"
           isSaving={isSaving}
           onPress={onMonitoredPress}
         />
       ) : (
         <Icon
           className={styles.statusIcon}
-          name={monitored ? icons.MONITORED : icons.UNMONITORED}
+          name={monitored ? icons.FILM : icons.FILMUNMONITOR}
           title={
             monitored
               ? translate('MovieIsMonitored')

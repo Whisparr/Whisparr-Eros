@@ -49,6 +49,7 @@ function SceneIndexPosterOptionsModalContent(
   const {
     detailedProgressBar,
     size,
+    pageSize,
     showTitle,
     showMonitored,
     showQualityProfile,
@@ -72,6 +73,23 @@ function SceneIndexPosterOptionsModalContent(
 
       <ModalBody>
         <Form>
+          <FormGroup>
+            <FormLabel>{translate('TablePageSize')}</FormLabel>
+            <FormInputGroup
+              type={inputTypes.NUMBER}
+              name="pageSize"
+              value={pageSize}
+              min={10}
+              max={1000}
+              helpText={translate('TablePageSizeHelpText')}
+              helpTextWarning={translate('TablePageSizeMinMaxHelpText', {
+                min: 10,
+                max: 1000,
+              })}
+              onChange={onPosterOptionChange}
+            />
+          </FormGroup>
+
           <FormGroup>
             <FormLabel>{translate('PosterSize')}</FormLabel>
 

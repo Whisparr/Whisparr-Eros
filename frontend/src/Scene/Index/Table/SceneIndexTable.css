@@ -3,6 +3,7 @@
 }
 
 .row {
+  display: flex;
   transition: background-color 500ms;
 
   &:hover {

@@ -1,6 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import AppState from 'App/State/AppState';
 import { CheckInputProps } from 'Components/Form/CheckInput';
 import Form from 'Components/Form/Form';
 import FormGroup from 'Components/Form/FormGroup';
@@ -16,11 +14,10 @@ import ModalBody from 'Components/Modal/ModalBody';
 import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
-import usePrevious from 'Helpers/Hooks/usePrevious';
 import { icons, inputTypes, kinds, sizes } from 'Helpers/Props';
 import MoveMovieModal from 'Movie/MoveMovie/MoveMovieModal';
 import Movie from 'Movie/Movie';
-import { saveMovie, setMovieValue } from 'Store/Actions/movieActions';
+import { useSaveMovie } from 'Movie/useMovie';
 import selectSettings from 'Store/Selectors/selectSettings';
 import { InputChanged } from 'typings/inputs';
 import { ValidationError, ValidationWarning } from 'typings/pending';
@@ -40,30 +37,44 @@ function EditMovieModalContent({
   onModalClose,
   onDeleteMoviePress,
 }: EditMovieModalContentProps) {
-  const dispatch = useDispatch();
+  const { title, path: originalPath } = movie;
 
-  const {
-    title,
-    monitored,
-    qualityProfileId,
-    path,
-    tags,
-    rootFolderPath: initialRootFolderPath,
-  } = movie;
-
-  const { isSaving, saveError, pendingChanges } = useSelector(
-    (state: AppState) => state.movies
+  const [monitored, setMonitored] = useState(movie.monitored);
+  const [qualityProfileId, setQualityProfileId] = useState(
+    movie.qualityProfileId
   );
-
-  const wasSaving = usePrevious(isSaving);
+  const [path, setPath] = useState(movie.path);
+  const [tags, setTags] = useState(movie.tags ?? []);
+  const [rootFolderPath, setRootFolderPath] = useState(movie.rootFolderPath);
 
   const [isRootFolderModalOpen, setIsRootFolderModalOpen] = useState(false);
-
-  const [rootFolderPath, setRootFolderPath] = useState(initialRootFolderPath);
-
-  const isPathChanging = pendingChanges?.path && path !== pendingChanges.path;
-
   const [isConfirmMoveModalOpen, setIsConfirmMoveModalOpen] = useState(false);
+
+  const saveMovie = useSaveMovie();
+
+  const isSaving = saveMovie.isPending;
+  // Map ApiError to the { status, responseJSON } shape expected by
+  // selectSettings and SpinnerErrorButton.
+  const saveError = useMemo(() => {
+    const err = saveMovie.error;
+    if (!err) return undefined;
+    return { status: err.statusCode, responseJSON: err.statusBody };
+  }, [saveMovie.error]);
+
+  // Compute which fields have pending (unsaved) changes so selectSettings
+  // can mark them accordingly.
+  const pendingChanges = useMemo(() => {
+    const changes: Partial<Movie> = {};
+    if (monitored !== movie.monitored) changes.monitored = monitored;
+    if (qualityProfileId !== movie.qualityProfileId)
+      changes.qualityProfileId = qualityProfileId;
+    if (path !== movie.path) changes.path = path;
+    if (JSON.stringify(tags) !== JSON.stringify(movie.tags ?? []))
+      changes.tags = tags;
+    return changes;
+  }, [monitored, qualityProfileId, path, tags, movie]);
+
+  const isPathChanging = path !== originalPath;
 
   interface Setting {
     value?:
@@ -104,15 +115,9 @@ function EditMovieModalContent({
     pendingChanges: unknown;
   }
 
-  // Narrowly type the selector result to avoid using `any`.
   const memoResult = useMemo(() => {
     return selectSettings(
-      {
-        monitored,
-        qualityProfileId,
-        path,
-        tags,
-      },
+      { monitored, qualityProfileId, path, tags },
       pendingChanges,
       saveError
     );
@@ -131,13 +136,8 @@ function EditMovieModalContent({
 
   const pathSetting = useMemo<PathSetting>(() => {
     if (!rawPathSetting) {
-      return {
-        value: '',
-        errors: [],
-        warnings: [],
-      };
+      return { value: '', errors: [], warnings: [] };
     }
-
     return {
       ...rawPathSetting,
       value:
@@ -145,13 +145,24 @@ function EditMovieModalContent({
     };
   }, [rawPathSetting]);
 
-  const handleInputChange = useCallback(
-    ({ name, value }: InputChanged) => {
-      // @ts-expect-error actions aren't typed
-      dispatch(setMovieValue({ name, value }));
-    },
-    [dispatch]
-  );
+  const handleInputChange = useCallback(({ name, value }: InputChanged) => {
+    switch (name) {
+      case 'monitored':
+        setMonitored(value as boolean);
+        break;
+      case 'qualityProfileId':
+        setQualityProfileId(value as number);
+        break;
+      case 'path':
+        setPath(value as string);
+        break;
+      case 'tags':
+        setTags(value as number[]);
+        break;
+      default:
+        break;
+    }
+  }, []);
 
   const handleRootFolderPress = useCallback(() => {
     setIsRootFolderModalOpen(true);
@@ -168,46 +179,44 @@ function EditMovieModalContent({
     }: RootFolderUpdated) => {
       setIsRootFolderModalOpen(false);
       setRootFolderPath(newRootFolderPath);
-      handleInputChange({ name: 'path', value: newPath });
+      setPath(newPath);
     },
-    [handleInputChange]
+    []
   );
 
   const handleCancelPress = useCallback(() => {
     setIsConfirmMoveModalOpen(false);
   }, []);
 
+  const doSave = useCallback(
+    (moveFiles: boolean) => {
+      saveMovie.mutate({
+        movie: { ...movie, monitored, qualityProfileId, path, tags },
+        moveFiles,
+      });
+    },
+    [saveMovie, movie, monitored, qualityProfileId, path, tags]
+  );
+
   const handleSavePress = useCallback(() => {
     if (isPathChanging && !isConfirmMoveModalOpen) {
       setIsConfirmMoveModalOpen(true);
     } else {
       setIsConfirmMoveModalOpen(false);
-
-      dispatch(
-        saveMovie({
-          id: movie.id,
-          moveFiles: false,
-        })
-      );
+      doSave(false);
     }
-  }, [movie, isPathChanging, isConfirmMoveModalOpen, dispatch]);
+  }, [isPathChanging, isConfirmMoveModalOpen, doSave]);
 
   const handleMoveMoviePress = useCallback(() => {
     setIsConfirmMoveModalOpen(false);
-
-    dispatch(
-      saveMovie({
-        id: movie.id,
-        moveFiles: true,
-      })
-    );
-  }, [movie.id, dispatch]);
+    doSave(true);
+  }, [doSave]);
 
   useEffect(() => {
-    if (!isSaving && wasSaving && !saveError) {
+    if (saveMovie.isSuccess) {
       onModalClose();
     }
-  }, [isSaving, wasSaving, saveError, onModalClose]);
+  }, [saveMovie.isSuccess, onModalClose]);
 
   return (
     <ModalContent onModalClose={onModalClose}>
@@ -311,8 +320,8 @@ function EditMovieModalContent({
       />
 
       <MoveMovieModal
-        originalPath={path}
-        destinationPath={pendingChanges?.path as string | undefined}
+        originalPath={originalPath}
+        destinationPath={path === originalPath ? undefined : path}
         isOpen={isConfirmMoveModalOpen}
         onModalClose={handleCancelPress}
         onSavePress={handleSavePress}

@@ -8,10 +8,10 @@ import Movie from 'Movie/Movie';
 import { Filter, FilterBuilderProp } from './AppState';
 
 export interface MovieIndexAppState {
+  page: number;
+  indexMode: string;
   sortKey: string;
   sortDirection: SortDirection;
-  secondarySortKey: string;
-  secondarySortDirection: SortDirection;
   view: string;
 
   posterOptions: {
@@ -24,6 +24,7 @@ export interface MovieIndexAppState {
     showTmdbRating: boolean;
     showTags: boolean;
     showSearchAction: boolean;
+    pageSize: number;
   };
 
   overviewOptions: {
@@ -37,10 +38,12 @@ export interface MovieIndexAppState {
     showSizeOnDisk: boolean;
     showTags: boolean;
     showSearchAction: boolean;
+    pageSize: number;
   };
 
   tableOptions: {
     showSearchAction: boolean;
+    pageSize: number;
   };
 
   selectedFilterKey: string;

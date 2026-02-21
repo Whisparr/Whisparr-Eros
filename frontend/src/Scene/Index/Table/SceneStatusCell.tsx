@@ -43,6 +43,7 @@ function SceneStatusCell(props: SceneStatusCellProps) {
     <Component className={className} {...otherProps}>
       {isSelectMode ? (
         <MonitorToggleButton
+          type="sceneMonitor"
           className={styles.statusIcon}
           monitored={monitored}
           isSaving={isSaving}
@@ -51,7 +52,7 @@ function SceneStatusCell(props: SceneStatusCellProps) {
       ) : (
         <Icon
           className={styles.statusIcon}
-          name={monitored ? icons.MONITORED : icons.UNMONITORED}
+          name={monitored ? icons.SCENE : icons.SCENEUNMONITOR}
           title={monitored ? translate('Monitored') : translate('Unmonitored')}
         />
       )}

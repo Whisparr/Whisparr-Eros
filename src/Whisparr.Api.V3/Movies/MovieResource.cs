@@ -98,6 +98,11 @@ namespace Whisparr.Api.V3.Movies
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         [SwaggerIgnore]
         public bool IsExcluded { get; set; }
+
+        // Hiding this so people don't think its usable (only used for searches)
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        [SwaggerIgnore]
+        public bool IsExisting { get; set; }
     }
 
     public static class MovieResourceMapper
@@ -198,10 +203,12 @@ namespace Whisparr.Api.V3.Movies
                     Website = resource.Website,
                     Ratings = resource.Ratings,
                     StudioTitle = resource.StudioTitle,
+                    StudioForeignId = resource.StudioForeignId,
                     Runtime = resource.Runtime,
                     CleanTitle = resource.CleanTitle,
                     ImdbId = resource.ImdbId,
                     TpdbId = resource.TpdbId,
+                    StashId = resource.StashId,
                     ItemType = resource.ItemType
                 },
 

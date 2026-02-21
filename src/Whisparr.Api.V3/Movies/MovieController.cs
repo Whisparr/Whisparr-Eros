@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using DryIoc.ImTools;
 using FluentValidation;
@@ -130,13 +131,19 @@ namespace Whisparr.Api.V3.Movies
         {
             "title",
             "sortTitle",
+            "cleanTitle",
+            "studioTitle",
+            "releaseDate",
             "year",
             "status",
             "monitored",
             "qualityProfileId",
             "rootFolderPath",
             "sizeOnDisk",
-            "itemType"
+            "itemType",
+            "added",
+            "runtime",
+            "movieStatus"
         };
 
         // Basic search: cleanTitle or foreign ID
@@ -293,17 +300,17 @@ namespace Whisparr.Api.V3.Movies
             return resource;
         }
 
+        /// <summary>Gets a single movie by foreign Id or internal Id</summary>
+        /// <param name="id"></param>
+        /// <remarks>Overriden from RestController by tweaked to cover TMDB foreignId being numeric</remarks>
+        /// <returns>A Movie resource</returns>
         protected override MovieResource GetResourceById(int id)
         {
-            var movie = _moviesService.GetMovie(id);
-            if (movie == null)
-            {
-                movie = _moviesService.FindByForeignId(id.ToString());
-                if (movie == null)
-                {
-                    return null;
-                }
-            }
+            // Prefer Foreign Id, retry as Id for backward compatibility
+            // If GetMovie is null, it throws a MovieNotFoundException in RestController and returns NotFound()
+            var movie = _moviesService
+                .FindByForeignId(id.ToString())
+                ?? _moviesService.GetMovie(id);
 
             return movie?.ToResource(_configService.AvailabilityDelay, _qualityUpgradableSpecification);
         }
@@ -316,6 +323,21 @@ namespace Whisparr.Api.V3.Movies
             var movieTask = Task.Run(() => _moviesService.AllMovieIds());
 
             return movieTask.GetAwaiter().GetResult();
+        }
+
+        [HttpGet("stats")]
+        public ActionResult<MovieIndexStatsResource> GetStats(string itemType = null)
+        {
+            var itemTypeEnum = itemType?.ToLowerInvariant() == "scene" ? ItemType.Scene : ItemType.Movie;
+            var overview = _movieStatisticsService.GetMovieIndexOverview(itemTypeEnum);
+
+            return Ok(new MovieIndexStatsResource
+            {
+                TotalCount = overview.TotalCount,
+                MonitoredCount = overview.MonitoredCount,
+                MovieFiles = overview.MovieFiles,
+                TotalFileSize = overview.TotalFileSize
+            });
         }
 
         // Added to support bulk monitor from Studio and eventually Performer detail page groupings
@@ -848,7 +870,7 @@ namespace Whisparr.Api.V3.Movies
             {
                 Page = request.Page ?? 1,
                 PageSize = request.PageSize ?? 10,
-                SortKey = _allowedMovieSortKeys.Contains(request.SortKey ?? "") ? request.SortKey : "sortTitle",
+                SortKey = GetSortKeyNormalized(_allowedMovieSortKeys.Contains(request.SortKey ?? "") ? request.SortKey : null),
                 SortDirection = request.SortDirection ?? NzbDrone.Core.Datastore.SortDirection.Ascending
             };
 
@@ -919,7 +941,8 @@ namespace Whisparr.Api.V3.Movies
             var resources = paged.Records.Select(m => m.ToResource(availDelay, _qualityUpgradableSpecification)).ToList();
             LinkMovieStatistics(resources, sdict);
             MapCoversToLocal(resources, coverFileInfos);
-            resources.ForEach(m => m.RootFolderPath = _rootFolderService.GetBestRootFolderPath(m.Path, rootFolders));
+
+            // resources.ForEach(m => m.RootFolderPath = _rootFolderService.GetBestRootFolderPath(m.Path, rootFolders));
 
             var result = new PagingResource<MovieResource>(request)
             {
@@ -929,12 +952,37 @@ namespace Whisparr.Api.V3.Movies
             return Ok(result);
         }
 
+        private string GetSortKeyNormalized(string sortKey)
+        {
+            switch (sortKey?.ToLowerInvariant())
+            {
+                case "title": return "movieMetadata.Title";
+                case "sorttitle": return "movieMetadata.SortTitle";
+                case "cleantitle": return "movieMetadata.CleanTitle";
+                case "studiotitle": return "movieMetadata.StudioTitle";
+                case "releasedate": return "movieMetadata.ReleaseDate";
+                case "year": return "movieMetadata.Year";
+                case "status": return "movieMetadata.Status";
+                case "monitored": return "Monitored";
+                case "qualityprofileid": return "QualityProfileId";
+                case "rootfolderpath": return "Path";
+                case "sizeondisk": return "movieFiles.Size";
+                case "itemtype": return "movieMetadata.ItemType";
+                case "added": return "Added";
+                case "runtime": return "movieMetadata.Runtime";
+                case "moviestatus": return "MovieFileId";
+                default: return "movieMetadata.SortTitle";
+            }
+        }
+
         private object GetSortValue(Movie movie, string sortKey)
         {
             switch (sortKey.ToLowerInvariant())
             {
                 case "title": return movie.Title;
-                case "sorttitle": return movie.MovieMetadata.Value.SortTitle;
+                case "sorttitle": return movie.MovieMetadata.Value.CleanTitle;
+                case "studiotitle": return movie.MovieMetadata.Value.StudioTitle;
+                case "releasedate": return movie.MovieMetadata.Value.ReleaseDate;
                 case "year": return movie.Year;
                 case "status": return movie.MovieMetadata.Value.Status;
                 case "monitored": return movie.Monitored;
@@ -942,11 +990,27 @@ namespace Whisparr.Api.V3.Movies
                 case "rootfolderpath": return movie.RootFolderPath;
                 case "sizeondisk": return movie.MovieFile?.Size ?? 0;
                 case "itemtype": return movie.MovieMetadata.Value.ItemType;
-                default: return movie.MovieMetadata.Value.SortTitle;
+                case "added": return movie.Added;
+                case "runtime": return movie.MovieMetadata.Value.Runtime;
+                case "moviestatus": return movie.MovieFileId;
+                default: return movie.MovieMetadata.Value.CleanTitle;
             }
         }
 
-        // Helper methods for filter types (numeric, boolean, enum, string, tag) can be added here as needed for further refactoring.
+        private static DateTime? ShiftDateTime(DateTime baseTime, string unit, int amount)
+        {
+            return unit switch
+            {
+                "seconds" => baseTime.AddSeconds(amount),
+                "minutes" => baseTime.AddMinutes(amount),
+                "hours" => baseTime.AddHours(amount),
+                "days" => baseTime.AddDays(amount),
+                "weeks" => baseTime.AddDays(amount * 7.0),
+                "months" => baseTime.AddMonths(amount),
+                "years" => baseTime.AddYears(amount),
+                _ => (DateTime?)null
+            };
+        }
 
         private void ApplyMovieFiltersToPagingSpec(List<MovieFilterResource> filters, NzbDrone.Core.Datastore.PagingSpec<Movie> pageSpec)
         {
@@ -964,75 +1028,83 @@ namespace Whisparr.Api.V3.Movies
 
                 var key = filter.Key.ToLowerInvariant();
                 var op = filter.Type?.ToLowerInvariant() ?? "equal";
-                var value = filter.Value;
+
+                if (!(filter.Value is JsonElement jsonElement))
+                {
+                    continue;
+                }
 
                 switch (key)
                 {
                     case "title":
-                        if (value is string titleVal && !string.IsNullOrWhiteSpace(titleVal))
+                        if (jsonElement.ValueKind == JsonValueKind.String)
                         {
-                            pageSpec.FilterExpressions.Add(m => m.Title != null && m.Title.Contains(titleVal, StringComparison.OrdinalIgnoreCase));
+                            var titleVal = jsonElement.GetString();
+                            if (!string.IsNullOrWhiteSpace(titleVal))
+                            {
+                                pageSpec.FilterExpressions.Add(m => m.Title != null && m.Title.Contains(titleVal, StringComparison.OrdinalIgnoreCase));
+                            }
                         }
 
                         break;
                     case "status":
-                        if (value is int statusInt)
-                        {
-                            pageSpec.FilterExpressions.Add(m => (int)m.MovieMetadata.Value.Status == statusInt);
-                        }
-                        else if (value is string statusStr && Enum.TryParse<MovieStatusType>(statusStr, true, out var statusEnum))
+                        if (jsonElement.ValueKind == JsonValueKind.String && Enum.TryParse<MovieStatusType>(jsonElement.GetString(), true, out var statusEnum))
                         {
                             pageSpec.FilterExpressions.Add(m => m.MovieMetadata.Value.Status == statusEnum);
+                        }
+                        else if (jsonElement.ValueKind == JsonValueKind.Number && jsonElement.TryGetInt32(out var statusInt))
+                        {
+                            pageSpec.FilterExpressions.Add(m => (int)m.MovieMetadata.Value.Status == statusInt);
                         }
 
                         break;
                     case "monitored":
-                        if (value is bool monitoredBool)
+                        if (jsonElement.ValueKind == JsonValueKind.True || jsonElement.ValueKind == JsonValueKind.False)
                         {
+                            var monitoredBool = jsonElement.GetBoolean();
                             pageSpec.FilterExpressions.Add(m => m.Monitored == monitoredBool);
                         }
 
                         break;
                     case "qualityprofileid":
-                        if (value is int qpId)
+                        if (jsonElement.ValueKind == JsonValueKind.Number && jsonElement.TryGetInt32(out var qpId))
                         {
                             pageSpec.FilterExpressions.Add(m => m.QualityProfileId == qpId);
                         }
 
                         break;
                     case "itemtype":
-                        if (value is string itemTypeStr && Enum.TryParse<ItemType>(itemTypeStr, true, out var itemTypeEnum))
+                        if (jsonElement.ValueKind == JsonValueKind.String && Enum.TryParse<ItemType>(jsonElement.GetString(), true, out var itemTypeEnum))
                         {
                             pageSpec.FilterExpressions.Add(m => m.MovieMetadata.Value.ItemType == itemTypeEnum);
                         }
 
                         break;
                     case "year":
-                        if (value is int yearInt)
+                        if (jsonElement.ValueKind == JsonValueKind.Number && jsonElement.TryGetInt32(out var yearInt))
                         {
                             pageSpec.FilterExpressions.Add(m => m.Year == yearInt);
                         }
 
                         break;
                     case "rootfolderpath":
-                        if (value is string rootPath && !string.IsNullOrWhiteSpace(rootPath))
+                        if (jsonElement.ValueKind == JsonValueKind.String)
                         {
-                            pageSpec.FilterExpressions.Add(m => m.RootFolderPath != null && m.RootFolderPath.Contains(rootPath, StringComparison.OrdinalIgnoreCase));
+                            var rootPath = jsonElement.GetString();
+                            if (!string.IsNullOrWhiteSpace(rootPath))
+                            {
+                                pageSpec.FilterExpressions.Add(m => m.RootFolderPath != null && m.RootFolderPath.Contains(rootPath, StringComparison.OrdinalIgnoreCase));
+                            }
                         }
 
                         break;
                     case "tags":
-                        if (value is IEnumerable<object> tagValues)
+                        if (jsonElement.ValueKind == JsonValueKind.Array)
                         {
-                            var tagIds = tagValues.Select(v => Convert.ToInt32(v)).ToList();
-                            if (tagIds.Count > 0)
-                            {
-                                pageSpec.FilterExpressions.Add(m => m.Tags != null && tagIds.All(tagId => m.Tags.Contains(tagId)));
-                            }
-                        }
-                        else if (value is string tagStr && !string.IsNullOrWhiteSpace(tagStr))
-                        {
-                            var tagIds = tagStr.Trim('[', ']').Split(',').Select(s => int.TryParse(s.Trim(), out var id) ? id : (int?)null).Where(id => id.HasValue).Select(id => id.Value).ToList();
+                            var tagIds = jsonElement.EnumerateArray()
+                                .Where(e => e.ValueKind == JsonValueKind.Number && e.TryGetInt32(out _))
+                                .Select(e => e.GetInt32())
+                                .ToList();
                             if (tagIds.Count > 0)
                             {
                                 pageSpec.FilterExpressions.Add(m => m.Tags != null && tagIds.All(tagId => m.Tags.Contains(tagId)));
@@ -1042,31 +1114,150 @@ namespace Whisparr.Api.V3.Movies
                         break;
                     case "studio":
                     case "studiotitle":
-                        if (value is string studioTitle && !string.IsNullOrWhiteSpace(studioTitle))
+                        if (jsonElement.ValueKind == JsonValueKind.String)
                         {
-                            pageSpec.FilterExpressions.Add(m => m.MovieMetadata.Value.StudioTitle != null && m.MovieMetadata.Value.StudioTitle.Contains(studioTitle, StringComparison.OrdinalIgnoreCase));
+                            var studioTitle = jsonElement.GetString();
+                            if (!string.IsNullOrWhiteSpace(studioTitle))
+                            {
+                                pageSpec.FilterExpressions.Add(m => m.MovieMetadata.Value.StudioTitle != null && m.MovieMetadata.Value.StudioTitle.Contains(studioTitle, StringComparison.OrdinalIgnoreCase));
+                            }
                         }
 
                         break;
                     case "studioforeignid":
-                        if (value is string studioForeignId && !string.IsNullOrWhiteSpace(studioForeignId))
+                        if (jsonElement.ValueKind == JsonValueKind.String)
                         {
-                            pageSpec.FilterExpressions.Add(m => m.MovieMetadata.Value.StudioForeignId == studioForeignId);
+                            var studioForeignId = jsonElement.GetString();
+                            if (!string.IsNullOrWhiteSpace(studioForeignId))
+                            {
+                                pageSpec.FilterExpressions.Add(m => m.MovieMetadata.Value.StudioForeignId == studioForeignId);
+                            }
                         }
 
                         break;
                     case "performer":
                     case "performername":
-                        if (value is string performerName && !string.IsNullOrWhiteSpace(performerName))
+                        if (jsonElement.ValueKind == JsonValueKind.String)
                         {
-                            pageSpec.FilterExpressions.Add(m => m.MovieMetadata.Value.PerformerNames != null && m.MovieMetadata.Value.PerformerNames.Any(n => n.Contains(performerName, StringComparison.OrdinalIgnoreCase)));
+                            var performerName = jsonElement.GetString();
+                            if (!string.IsNullOrWhiteSpace(performerName))
+                            {
+                                pageSpec.FilterExpressions.Add(m => m.MovieMetadata.Value.PerformerNames != null && m.MovieMetadata.Value.PerformerNames.Any(n => n.Contains(performerName, StringComparison.OrdinalIgnoreCase)));
+                            }
                         }
 
                         break;
                     case "performerforeignid":
-                        if (value is string performerForeignId && !string.IsNullOrWhiteSpace(performerForeignId))
+                        if (jsonElement.ValueKind == JsonValueKind.String)
                         {
-                            pageSpec.FilterExpressions.Add(m => m.MovieMetadata.Value.PerformerForeignIds != null && m.MovieMetadata.Value.PerformerForeignIds.Contains(performerForeignId));
+                            var performerForeignId = jsonElement.GetString();
+                            if (!string.IsNullOrWhiteSpace(performerForeignId))
+                            {
+                                pageSpec.FilterExpressions.Add(m => m.MovieMetadata.Value.PerformerForeignIds != null && m.MovieMetadata.Value.PerformerForeignIds.Contains(performerForeignId));
+                            }
+                        }
+
+                        break;
+                    case "releasedate":
+                        if (op is "lessthan" or "greaterthan")
+                        {
+                            if (jsonElement.ValueKind == JsonValueKind.String && DateTime.TryParse(jsonElement.GetString(), out var rdDate))
+                            {
+                                DateTime? rdDateVal = rdDate;
+                                if (op == "lessthan")
+                                {
+                                    pageSpec.FilterExpressions.Add(m => m.MovieMetadata.Value.ReleaseDateUtc < rdDateVal);
+                                }
+                                else
+                                {
+                                    pageSpec.FilterExpressions.Add(m => m.MovieMetadata.Value.ReleaseDateUtc > rdDateVal);
+                                }
+                            }
+                        }
+                        else if (jsonElement.ValueKind == JsonValueKind.Object &&
+                                 jsonElement.TryGetProperty("time", out var rdTimeEl) &&
+                                 jsonElement.TryGetProperty("value", out var rdValueEl) &&
+                                 rdValueEl.TryGetInt32(out var rdAmount))
+                        {
+                            var rdUnit = rdTimeEl.GetString()?.ToLowerInvariant();
+                            if (!string.IsNullOrEmpty(rdUnit))
+                            {
+                                var rdNow = DateTime.UtcNow;
+                                var rdOffset = op is "innext" or "notinnext" ? rdAmount : -rdAmount;
+                                var rdCutoff = ShiftDateTime(rdNow, rdUnit, rdOffset);
+                                if (rdCutoff.HasValue)
+                                {
+                                    DateTime? rdNowVal = rdNow;
+                                    switch (op)
+                                    {
+                                        case "inlast":
+                                            pageSpec.FilterExpressions.Add(m => m.MovieMetadata.Value.ReleaseDateUtc >= rdCutoff);
+                                            pageSpec.FilterExpressions.Add(m => m.MovieMetadata.Value.ReleaseDateUtc <= rdNowVal);
+                                            break;
+                                        case "notinlast":
+                                            pageSpec.FilterExpressions.Add(m => m.MovieMetadata.Value.ReleaseDateUtc < rdCutoff);
+                                            break;
+                                        case "innext":
+                                            pageSpec.FilterExpressions.Add(m => m.MovieMetadata.Value.ReleaseDateUtc > rdNowVal);
+                                            pageSpec.FilterExpressions.Add(m => m.MovieMetadata.Value.ReleaseDateUtc <= rdCutoff);
+                                            break;
+                                        case "notinnext":
+                                            pageSpec.FilterExpressions.Add(m => m.MovieMetadata.Value.ReleaseDateUtc > rdCutoff);
+                                            break;
+                                    }
+                                }
+                            }
+                        }
+
+                        break;
+                    case "added":
+                        if (op is "lessthan" or "greaterthan")
+                        {
+                            if (jsonElement.ValueKind == JsonValueKind.String && DateTime.TryParse(jsonElement.GetString(), out var adDate))
+                            {
+                                if (op == "lessthan")
+                                {
+                                    pageSpec.FilterExpressions.Add(m => m.Added < adDate);
+                                }
+                                else
+                                {
+                                    pageSpec.FilterExpressions.Add(m => m.Added > adDate);
+                                }
+                            }
+                        }
+                        else if (jsonElement.ValueKind == JsonValueKind.Object &&
+                                 jsonElement.TryGetProperty("time", out var adTimeEl) &&
+                                 jsonElement.TryGetProperty("value", out var adValueEl) &&
+                                 adValueEl.TryGetInt32(out var adAmount))
+                        {
+                            var adUnit = adTimeEl.GetString()?.ToLowerInvariant();
+                            if (!string.IsNullOrEmpty(adUnit))
+                            {
+                                var adNow = DateTime.UtcNow;
+                                var adOffset = op is "innext" or "notinnext" ? adAmount : -adAmount;
+                                var adCutoffNullable = ShiftDateTime(adNow, adUnit, adOffset);
+                                if (adCutoffNullable.HasValue)
+                                {
+                                    var adCutoff = adCutoffNullable.Value;
+                                    switch (op)
+                                    {
+                                        case "inlast":
+                                            pageSpec.FilterExpressions.Add(m => m.Added >= adCutoff);
+                                            pageSpec.FilterExpressions.Add(m => m.Added <= adNow);
+                                            break;
+                                        case "notinlast":
+                                            pageSpec.FilterExpressions.Add(m => m.Added < adCutoff);
+                                            break;
+                                        case "innext":
+                                            pageSpec.FilterExpressions.Add(m => m.Added > adNow);
+                                            pageSpec.FilterExpressions.Add(m => m.Added <= adCutoff);
+                                            break;
+                                        case "notinnext":
+                                            pageSpec.FilterExpressions.Add(m => m.Added > adCutoff);
+                                            break;
+                                    }
+                                }
+                            }
                         }
 
                         break;
