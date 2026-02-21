@@ -7,8 +7,7 @@ import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { BOTH } from 'Helpers/Props/scrollDirections';
 import InteractiveSearch from 'InteractiveSearch/InteractiveSearch';
-import Movie from 'Movie/Movie';
-import useMovie from 'Movie/useMovie';
+import { useMovie } from 'Movie/useMovie';
 import { clearMovieBlocklist } from 'Store/Actions/movieBlocklistActions';
 import { clearMovieHistory } from 'Store/Actions/movieHistoryActions';
 import {
@@ -30,7 +29,7 @@ function MovieInteractiveSearchModalContent({
 }: MovieInteractiveSearchModalContentProps) {
   const dispatch = useDispatch();
 
-  const { title, releaseDate } = useMovie(movieId) as Movie;
+  const movie = useMovie(movieId).data;
 
   useEffect(() => {
     return () => {
@@ -45,12 +44,18 @@ function MovieInteractiveSearchModalContent({
   const { showRelativeDates, shortDateFormat } = useSelector(
     createUISettingsSelector()
   );
+
+  if (!movie) {
+    return null;
+  }
+
   const date = getRelativeDate({
-    date: releaseDate,
+    date: movie.releaseDate,
     shortDateFormat,
     showRelativeDates,
   });
-  const movieTitle = `${title}${date ? ` (${date})` : ''}`;
+
+  const movieTitle = `${movie.title}${date ? ` (${date})` : ''}`;
 
   return (
     <ModalContent onModalClose={onModalClose}>

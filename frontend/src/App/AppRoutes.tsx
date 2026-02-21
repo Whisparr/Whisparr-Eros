@@ -10,7 +10,7 @@ import CalendarPage from 'Calendar/CalendarPage';
 import CollectionConnector from 'Collection/CollectionConnector';
 import NotFound from 'Components/NotFound';
 import Switch from 'Components/Router/Switch';
-import MovieDetailsPageConnector from 'Movie/Details/MovieDetailsPageConnector';
+import MovieDetails from 'Movie/Details/MovieDetails';
 import MovieIndex from 'Movie/Index/MovieIndex';
 import AddNewPerformer from 'Performer/AddPerformer/AddNewPerformer';
 import PerformerDetails from 'Performer/Details/PerformerDetails';
@@ -87,7 +87,7 @@ function AppRoutes() {
 
       <Route path="/add/import" component={ImportMovies} />
 
-      <Route path="/movie/:titleSlug" component={MovieDetailsPageConnector} />
+      <Route path="/movie/:id" component={MovieDetails} />
 
       <Route
         path="/performer/:performerForeignId"

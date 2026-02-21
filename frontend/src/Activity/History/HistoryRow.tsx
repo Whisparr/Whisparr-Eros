@@ -63,7 +63,7 @@ function HistoryRow(props: HistoryRowProps) {
 
   const wasMarkingAsFailed = usePrevious(isMarkingAsFailed);
   const dispatch = useDispatch();
-  const movie = useMovie(movieId);
+  const { data: movie } = useMovie(movieId);
 
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 

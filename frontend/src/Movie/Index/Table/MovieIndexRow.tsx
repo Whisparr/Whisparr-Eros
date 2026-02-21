@@ -4,6 +4,7 @@ import { useSelect } from 'App/SelectContext';
 import { MOVIE_SEARCH, REFRESH_MOVIE } from 'Commands/commandNames';
 import Icon from 'Components/Icon';
 import IconButton from 'Components/Link/IconButton';
+import Link from 'Components/Link/Link';
 import SpinnerIconButton from 'Components/Link/SpinnerIconButton';
 import MovieTagList from 'Components/MovieTagList';
 import RelativeDateCell from 'Components/Table/Cells/RelativeDateCell';
@@ -18,7 +19,6 @@ import MovieDetailsLinks from 'Movie/Details/MovieDetailsLinks';
 import EditMovieModal from 'Movie/Edit/EditMovieModal';
 import createMovieIndexItemSelector from 'Movie/Index/createMovieIndexItemSelector';
 import { Statistics } from 'Movie/Movie';
-import MovieTitleLink from 'Movie/MovieTitleLink';
 import { executeCommand } from 'Store/Actions/commandActions';
 import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
 import { SelectStateInputProps } from 'typings/props';
@@ -162,7 +162,7 @@ function MovieIndexRow(props: MovieIndexRowProps) {
         if (name === 'sortTitle') {
           return (
             <VirtualTableRowCell key={name} className={styles[name]}>
-              <MovieTitleLink foreignId={foreignId} title={title} />
+              <Link to={`/movie/${movieId}`}>{title}</Link>
             </VirtualTableRowCell>
           );
         }
@@ -358,14 +358,14 @@ function MovieIndexRow(props: MovieIndexRowProps) {
 
       <EditMovieModal
         isOpen={isEditMovieModalOpen}
-        movieId={movieId}
+        movie={movie}
         onModalClose={onEditMovieModalClose}
         onDeleteMoviePress={onDeleteMoviePress}
       />
 
       <DeleteMovieModal
         isOpen={isDeleteMovieModalOpen}
-        movieId={movieId}
+        movie={movie}
         onModalClose={onDeleteMovieModalClose}
       />
     </>

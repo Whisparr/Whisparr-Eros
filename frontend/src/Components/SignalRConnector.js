@@ -89,6 +89,21 @@ Logger.prototype.log = function(logLevel, message) {
   }
 };
 
+// Helper to re-fetch when a movie is updated
+function updateMovieDetailsQueryCache(updatedMovie) {
+  const movieId = `/movie/${updatedMovie.id}`;
+  const movieForeignId = `/movie/${updatedMovie.foreignId}`;
+
+  // For TMDB movies
+  queryClient.invalidateQueries({
+    queryKey: [movieId]
+  });
+  // For Stash and everything else
+  queryClient.invalidateQueries({
+    queryKey: [movieForeignId]
+  });
+}
+
 // Helper to update a nested movie in performer.years[].movies[] in React Query cache
 // Update Performer React Query cache helper
 function updateMovieInPerformerWorksQueryCache(updatedMovie) {
@@ -382,6 +397,7 @@ class SignalRConnector extends Component {
         body.resources.forEach(updateMovieInPerformerWorksQueryCache);
         body.resources.forEach(updateMovieInStudioWorksQueryCache);
         body.resources.forEach(updateMovieInStudioWorksQueryCache);
+        body.resources.forEach(updateMovieDetailsQueryCache);
         repopulatePage('movieUpdated');
       } else if (body.action === 'deleted') {
         body.resources.forEach((resource) => {
@@ -399,6 +415,7 @@ class SignalRConnector extends Component {
       updateMovieInPerformerWorksQueryCache(body.resource);
       updateMovieInStudioWorksQueryCache(body.resource);
       updateMovieInStudioWorksQueryCache(body.resource);
+      updateMovieDetailsQueryCache(body.resource);
       repopulatePage('movieUpdated');
     } else if (action === 'deleted') {
       this.props.dispatchRemoveItem({ section, id: body.resource.id });

@@ -35,7 +35,7 @@ function createQualitySchemaSelector() {
       const { isSchemaFetching, isSchemaPopulated, schemaError, schema } =
         qualityProfiles;
 
-      const items = getQualities(schema) as Quality[];
+      const items = getQualities(schema.items) as Quality[];
 
       return {
         isFetching: isSchemaFetching,

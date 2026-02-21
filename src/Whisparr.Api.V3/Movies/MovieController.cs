@@ -126,6 +126,19 @@ namespace Whisparr.Api.V3.Movies
             PutValidator.RuleFor(s => s.Path).IsValidPath();
         }
 
+        private static readonly HashSet<string> _allowedMovieSortKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "title",
+            "sortTitle",
+            "year",
+            "status",
+            "monitored",
+            "qualityProfileId",
+            "rootFolderPath",
+            "sizeOnDisk",
+            "itemType"
+        };
+
         // Basic search: cleanTitle or foreign ID
         // Added for SelectMovieModalContent performance but will reuse elsewhere
         [HttpGet("search")]
@@ -242,16 +255,46 @@ namespace Whisparr.Api.V3.Movies
             return moviesResources;
         }
 
-        protected override MovieResource GetResourceById(int id)
+        [HttpGet("{id}")]
+        public ActionResult<MovieResource> GetMovieById(string id)
         {
-            if (_useCache)
+            var resource = new MovieResource();
+            var isNumeric = int.TryParse(id, out var numericId);
+
+            if (!isNumeric)
             {
-                return GetMovieResource(id);
+                var resourceByForeignId = _moviesService.FindByForeignId(id);
+                resource = resourceByForeignId.ToResource(_configService.AvailabilityDelay, _qualityUpgradableSpecification);
+            }
+            else if (isNumeric)
+            {
+                resource = GetMovieResource(numericId);
             }
 
-            var movie = _moviesService.GetMovie(id);
+            if (resource == null || resource.Id == 0)
+            {
+                return NotFound();
+            }
 
-            return MapToResource(movie);
+            var stats = _movieStatisticsService.MovieStatistics(resource.Id);
+            LinkMovieStatistics(resource, stats);
+            _coverMapper.ConvertToLocalUrls(resource.Id, resource.Images);
+            return resource;
+        }
+
+        protected override MovieResource GetResourceById(int id)
+        {
+            var movie = _moviesService.GetMovie(id);
+            if (movie == null)
+            {
+                movie = _moviesService.FindByForeignId(id.ToString());
+                if (movie == null)
+                {
+                    return null;
+                }
+            }
+
+            return movie?.ToResource(_configService.AvailabilityDelay, _qualityUpgradableSpecification);
         }
 
         [HttpGet("list")]
@@ -747,6 +790,277 @@ namespace Whisparr.Api.V3.Movies
             }
 
             return moviesResources;
+        }
+
+        /// <summary>
+        /// POST /movie/list - Look up movies by a list of foreignIds
+        /// </summary>
+        [HttpPost("list")]
+        [Produces("application/json")]
+        public ActionResult<List<MovieResource>> ListByForeignIds([FromBody] List<string> foreignIds)
+        {
+            if (foreignIds == null || !foreignIds.Any())
+            {
+                return new List<MovieResource>();
+            }
+
+            var movies = _moviesService.FindByForeignIds(foreignIds);
+            var availDelay = _configService.AvailabilityDelay;
+            var movieStats = _movieStatisticsService.MovieStatistics(movies.Select(m => m.Id).ToList());
+            var sdict = movieStats.ToDictionary(x => x.MovieId);
+            var coverFileInfos = _coverMapper.GetMovieCoverFileInfos();
+            var rootFolders = _rootFolderService.All();
+
+            var resources = movies.Select(m => m.ToResource(availDelay, _qualityUpgradableSpecification)).ToList();
+            LinkMovieStatistics(resources, sdict);
+            MapCoversToLocal(resources, coverFileInfos);
+            resources.ForEach(m => m.RootFolderPath = _rootFolderService.GetBestRootFolderPath(m.Path, rootFolders));
+            return resources;
+        }
+
+        /// <summary>
+        /// POST /movie/paged - Paged, filtered, and sorted movie index results
+        /// </summary>
+        [HttpPost("paged")]
+        [Produces("application/json")]
+        public ActionResult<PagingResource<MovieResource>> GetPaged([FromBody] MoviePagingRequestResource request)
+        {
+            if (request == null)
+            {
+                _logger.Error("Paged movie request is null. Check the request body and route.");
+                return BadRequest("Request body is null or invalid.");
+            }
+
+            var hasTagFilter = request.Filters != null && request.Filters.Any(f => f.Key?.ToLowerInvariant() == "tags" && f.Value != null);
+            var pagingResource = new PagingResource<MovieResource>(request);
+            var pageSpec = new NzbDrone.Core.Datastore.PagingSpec<Movie>
+            {
+                Page = request.Page ?? 1,
+                PageSize = request.PageSize ?? 10,
+                SortKey = _allowedMovieSortKeys.Contains(request.SortKey ?? "") ? request.SortKey : "sortTitle",
+                SortDirection = request.SortDirection ?? NzbDrone.Core.Datastore.SortDirection.Ascending
+            };
+
+            if (hasTagFilter)
+            {
+                return GetPagedMoviesWithTags(request, pageSpec);
+            }
+            else
+            {
+                return GetPagedMoviesStandard(request, pageSpec);
+            }
+        }
+
+        private ActionResult<PagingResource<MovieResource>> GetPagedMoviesWithTags(MoviePagingRequestResource request, NzbDrone.Core.Datastore.PagingSpec<Movie> pageSpec)
+        {
+            var allMovies = _moviesService.GetAllMovies();
+            ApplyMovieFiltersToPagingSpec(request.Filters, pageSpec);
+            var filteredMovies = allMovies.AsQueryable();
+            foreach (var expr in pageSpec.FilterExpressions)
+            {
+                filteredMovies = filteredMovies.Where(expr);
+            }
+
+            var sortKey = pageSpec.SortKey ?? "sortTitle";
+            var pageSize = pageSpec.PageSize > 0 && pageSpec.PageSize < 1000 ? pageSpec.PageSize : 10;
+            var sortDir = pageSpec.SortDirection;
+            filteredMovies = sortDir == NzbDrone.Core.Datastore.SortDirection.Descending
+                ? filteredMovies.OrderByDescending(m => GetSortValue(m, sortKey))
+                : filteredMovies.OrderBy(m => GetSortValue(m, sortKey));
+
+            var offset = ((pageSpec.Page > 0 ? pageSpec.Page : 1) - 1) * pageSize;
+            var totalCount = filteredMovies.Count();
+            var page = filteredMovies
+                .Skip(offset)
+                .Take(pageSize)
+                .ToList();
+
+            var availDelay = _configService.AvailabilityDelay;
+            var movieStats = _movieStatisticsService.MovieStatistics(page.Select(m => m.Id).ToList());
+            var sdict = movieStats.ToDictionary(x => x.MovieId);
+            var coverFileInfos = _coverMapper.GetMovieCoverFileInfos();
+            var rootFolders = _rootFolderService.All();
+
+            var resources = page.Select(m => m.ToResource(availDelay, _qualityUpgradableSpecification)).ToList();
+            LinkMovieStatistics(resources, sdict);
+            MapCoversToLocal(resources, coverFileInfos);
+            resources.ForEach(m => m.RootFolderPath = _rootFolderService.GetBestRootFolderPath(m.Path, rootFolders));
+
+            var result = new PagingResource<MovieResource>(request)
+            {
+                Records = resources,
+                TotalRecords = totalCount
+            };
+            return Ok(result);
+        }
+
+        private ActionResult<PagingResource<MovieResource>> GetPagedMoviesStandard(MoviePagingRequestResource request, NzbDrone.Core.Datastore.PagingSpec<Movie> pageSpec)
+        {
+            ApplyMovieFiltersToPagingSpec(request.Filters, pageSpec);
+
+            var paged = _moviesService.Paged(pageSpec);
+            var availDelay = _configService.AvailabilityDelay;
+            var movieStats = _movieStatisticsService.MovieStatistics(paged.Records.Select(m => m.Id).ToList());
+            var sdict = movieStats.ToDictionary(x => x.MovieId);
+            var coverFileInfos = _coverMapper.GetMovieCoverFileInfos();
+            var rootFolders = _rootFolderService.All();
+
+            var resources = paged.Records.Select(m => m.ToResource(availDelay, _qualityUpgradableSpecification)).ToList();
+            LinkMovieStatistics(resources, sdict);
+            MapCoversToLocal(resources, coverFileInfos);
+            resources.ForEach(m => m.RootFolderPath = _rootFolderService.GetBestRootFolderPath(m.Path, rootFolders));
+
+            var result = new PagingResource<MovieResource>(request)
+            {
+                Records = resources,
+                TotalRecords = paged.TotalRecords
+            };
+            return Ok(result);
+        }
+
+        private object GetSortValue(Movie movie, string sortKey)
+        {
+            switch (sortKey.ToLowerInvariant())
+            {
+                case "title": return movie.Title;
+                case "sorttitle": return movie.MovieMetadata.Value.SortTitle;
+                case "year": return movie.Year;
+                case "status": return movie.MovieMetadata.Value.Status;
+                case "monitored": return movie.Monitored;
+                case "qualityprofileid": return movie.QualityProfileId;
+                case "rootfolderpath": return movie.RootFolderPath;
+                case "sizeondisk": return movie.MovieFile?.Size ?? 0;
+                case "itemtype": return movie.MovieMetadata.Value.ItemType;
+                default: return movie.MovieMetadata.Value.SortTitle;
+            }
+        }
+
+        // Helper methods for filter types (numeric, boolean, enum, string, tag) can be added here as needed for further refactoring.
+
+        private void ApplyMovieFiltersToPagingSpec(List<MovieFilterResource> filters, NzbDrone.Core.Datastore.PagingSpec<Movie> pageSpec)
+        {
+            if (filters == null || !filters.Any())
+            {
+                return;
+            }
+
+            foreach (var filter in filters)
+            {
+                if (filter == null || string.IsNullOrWhiteSpace(filter.Key))
+                {
+                    continue;
+                }
+
+                var key = filter.Key.ToLowerInvariant();
+                var op = filter.Type?.ToLowerInvariant() ?? "equal";
+                var value = filter.Value;
+
+                switch (key)
+                {
+                    case "title":
+                        if (value is string titleVal && !string.IsNullOrWhiteSpace(titleVal))
+                        {
+                            pageSpec.FilterExpressions.Add(m => m.Title != null && m.Title.Contains(titleVal, StringComparison.OrdinalIgnoreCase));
+                        }
+
+                        break;
+                    case "status":
+                        if (value is int statusInt)
+                        {
+                            pageSpec.FilterExpressions.Add(m => (int)m.MovieMetadata.Value.Status == statusInt);
+                        }
+                        else if (value is string statusStr && Enum.TryParse<MovieStatusType>(statusStr, true, out var statusEnum))
+                        {
+                            pageSpec.FilterExpressions.Add(m => m.MovieMetadata.Value.Status == statusEnum);
+                        }
+
+                        break;
+                    case "monitored":
+                        if (value is bool monitoredBool)
+                        {
+                            pageSpec.FilterExpressions.Add(m => m.Monitored == monitoredBool);
+                        }
+
+                        break;
+                    case "qualityprofileid":
+                        if (value is int qpId)
+                        {
+                            pageSpec.FilterExpressions.Add(m => m.QualityProfileId == qpId);
+                        }
+
+                        break;
+                    case "itemtype":
+                        if (value is string itemTypeStr && Enum.TryParse<ItemType>(itemTypeStr, true, out var itemTypeEnum))
+                        {
+                            pageSpec.FilterExpressions.Add(m => m.MovieMetadata.Value.ItemType == itemTypeEnum);
+                        }
+
+                        break;
+                    case "year":
+                        if (value is int yearInt)
+                        {
+                            pageSpec.FilterExpressions.Add(m => m.Year == yearInt);
+                        }
+
+                        break;
+                    case "rootfolderpath":
+                        if (value is string rootPath && !string.IsNullOrWhiteSpace(rootPath))
+                        {
+                            pageSpec.FilterExpressions.Add(m => m.RootFolderPath != null && m.RootFolderPath.Contains(rootPath, StringComparison.OrdinalIgnoreCase));
+                        }
+
+                        break;
+                    case "tags":
+                        if (value is IEnumerable<object> tagValues)
+                        {
+                            var tagIds = tagValues.Select(v => Convert.ToInt32(v)).ToList();
+                            if (tagIds.Count > 0)
+                            {
+                                pageSpec.FilterExpressions.Add(m => m.Tags != null && tagIds.All(tagId => m.Tags.Contains(tagId)));
+                            }
+                        }
+                        else if (value is string tagStr && !string.IsNullOrWhiteSpace(tagStr))
+                        {
+                            var tagIds = tagStr.Trim('[', ']').Split(',').Select(s => int.TryParse(s.Trim(), out var id) ? id : (int?)null).Where(id => id.HasValue).Select(id => id.Value).ToList();
+                            if (tagIds.Count > 0)
+                            {
+                                pageSpec.FilterExpressions.Add(m => m.Tags != null && tagIds.All(tagId => m.Tags.Contains(tagId)));
+                            }
+                        }
+
+                        break;
+                    case "studio":
+                    case "studiotitle":
+                        if (value is string studioTitle && !string.IsNullOrWhiteSpace(studioTitle))
+                        {
+                            pageSpec.FilterExpressions.Add(m => m.MovieMetadata.Value.StudioTitle != null && m.MovieMetadata.Value.StudioTitle.Contains(studioTitle, StringComparison.OrdinalIgnoreCase));
+                        }
+
+                        break;
+                    case "studioforeignid":
+                        if (value is string studioForeignId && !string.IsNullOrWhiteSpace(studioForeignId))
+                        {
+                            pageSpec.FilterExpressions.Add(m => m.MovieMetadata.Value.StudioForeignId == studioForeignId);
+                        }
+
+                        break;
+                    case "performer":
+                    case "performername":
+                        if (value is string performerName && !string.IsNullOrWhiteSpace(performerName))
+                        {
+                            pageSpec.FilterExpressions.Add(m => m.MovieMetadata.Value.PerformerNames != null && m.MovieMetadata.Value.PerformerNames.Any(n => n.Contains(performerName, StringComparison.OrdinalIgnoreCase)));
+                        }
+
+                        break;
+                    case "performerforeignid":
+                        if (value is string performerForeignId && !string.IsNullOrWhiteSpace(performerForeignId))
+                        {
+                            pageSpec.FilterExpressions.Add(m => m.MovieMetadata.Value.PerformerForeignIds != null && m.MovieMetadata.Value.PerformerForeignIds.Contains(performerForeignId));
+                        }
+
+                        break;
+                }
+            }
         }
     }
 }

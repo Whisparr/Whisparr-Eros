@@ -1,6 +1,8 @@
-import React, { useCallback, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import AppState from 'App/State/AppState';
+import React from 'react';
+import {
+  useMarkHistoryFailed,
+  useMovieHistory,
+} from 'Activity/History/useHistory';
 import Alert from 'Components/Alert';
 import Icon from 'Components/Icon';
 import Button from 'Components/Link/Button';
@@ -13,11 +15,6 @@ import Column from 'Components/Table/Column';
 import Table from 'Components/Table/Table';
 import TableBody from 'Components/Table/TableBody';
 import { icons, kinds } from 'Helpers/Props';
-import {
-  clearMovieHistory,
-  fetchMovieHistory,
-  movieHistoryMarkAsFailed,
-} from 'Store/Actions/movieHistoryActions';
 import translate from 'Utilities/String/translate';
 import MovieHistoryRow from './MovieHistoryRow';
 
@@ -78,50 +75,29 @@ function MovieHistoryModalContent({
   movieId,
   onModalClose,
 }: MovieHistoryModalContentProps) {
-  const dispatch = useDispatch();
+  const { data: items, isFetching, error } = useMovieHistory(movieId);
+  const { mutate: markHistoryFailed } = useMarkHistoryFailed(movieId);
 
-  const { isFetching, isPopulated, error, items } = useSelector(
-    (state: AppState) => state.movieHistory
-  );
-
-  const hasItems = !!items.length;
-
-  const handleMarkAsFailedPress = useCallback(
-    (historyId: number) => {
-      dispatch(
-        movieHistoryMarkAsFailed({
-          historyId,
-          movieId,
-        })
-      );
-    },
-    [movieId, dispatch]
-  );
-
-  useEffect(() => {
-    dispatch(fetchMovieHistory({ movieId }));
-
-    return () => {
-      dispatch(clearMovieHistory());
-    };
-  }, [movieId, dispatch]);
+  function handleMarkAsFailedPress(historyId: number) {
+    markHistoryFailed(historyId);
+  }
 
   return (
     <ModalContent onModalClose={onModalClose}>
       <ModalHeader>{translate('History')}</ModalHeader>
 
       <ModalBody>
-        {isFetching && !isPopulated ? <LoadingIndicator /> : null}
+        {isFetching && !items ? <LoadingIndicator /> : null}
 
         {!isFetching && !!error ? (
           <Alert kind={kinds.DANGER}>{translate('HistoryLoadError')}</Alert>
         ) : null}
 
-        {isPopulated && !hasItems && !error ? (
+        {!isFetching && !items && !error ? (
           <div>{translate('NoHistory')}</div>
         ) : null}
 
-        {isPopulated && hasItems && !error && (
+        {!isFetching && items && !error && (
           <Table columns={columns}>
             <TableBody>
               {items.map((item) => {

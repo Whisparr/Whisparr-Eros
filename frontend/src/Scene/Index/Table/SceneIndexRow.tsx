@@ -350,7 +350,7 @@ function SceneIndexRow(props: SceneIndexRowProps) {
 
       <EditMovieModal
         isOpen={isEditSceneModalOpen}
-        movieId={sceneId}
+        movie={scene}
         onModalClose={onEditSceneModalClose}
         onDeleteMoviePress={onDeleteScenePress}
       />

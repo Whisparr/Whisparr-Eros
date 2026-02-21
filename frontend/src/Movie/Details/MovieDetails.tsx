@@ -1,9 +1,14 @@
-import React, { Component } from 'react';
+import React, { useContext, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useParams } from 'react-router-dom';
 import TextTruncate from 'react-text-truncate';
+import { SafeForWorkModeContext } from 'App/State/SafeForWorkContext';
+import { MOVIE_SEARCH, REFRESH_MOVIE } from 'Commands/commandNames';
 import Alert from 'Components/Alert';
 import FieldSet from 'Components/FieldSet';
 import Icon from 'Components/Icon';
 import InfoLabel from 'Components/InfoLabel';
+import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import Marquee from 'Components/Marquee';
 import Measure from 'Components/Measure';
 import MonitorToggleButton from 'Components/MonitorToggleButton';
@@ -30,20 +35,20 @@ import getMovieStatusDetails from 'Movie/getMovieStatusDetails';
 import MovieHistoryModal from 'Movie/History/MovieHistoryModal';
 import {
   Image as MovieImageType,
-  MovieStatus,
-  Ratings,
   Statistics as MovieStatistics,
 } from 'Movie/Movie';
 import MovieCollectionLabel from 'Movie/MovieCollectionLabel';
 import MovieGenres from 'Movie/MovieGenres';
 import MovieImage from 'Movie/MovieImage';
 import MovieInteractiveSearchModal from 'Movie/Search/MovieInteractiveSearchModal';
+import { useMovie, useToggleMovieMonitored } from 'Movie/useMovie';
 import MovieFileEditorTable from 'MovieFile/Editor/MovieFileEditorTable';
 import ExtraFileTable from 'MovieFile/Extras/ExtraFileTable';
 import OrganizePreviewModal from 'Organize/OrganizePreviewModal';
 import QualityProfileName from 'Settings/Profiles/Quality/QualityProfileName';
+import { executeCommand } from 'Store/Actions/commandActions';
+import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import fonts from 'Styles/Variables/fonts';
-import MovieCollection from 'typings/MovieCollection';
 import formatRuntime from 'Utilities/Date/formatRuntime';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
@@ -54,48 +59,10 @@ import MovieStudioLink from './MovieStudioLink';
 import MovieTagsConnector from './MovieTagsConnector';
 import ReleaseDateDisplay from './ReleaseDateDisplay';
 import MovieTitlesTable from './Titles/MovieTitlesTable';
+import useMovieDetailsModals from './useMovieDetailsModals';
 import styles from './MovieDetails.css';
 
-// InfoLabel is a JS component; types provided via declaration file
-
-const defaultFontSize = Number(fonts.defaultFontSize as string);
-const lineHeight = parseFloat(fonts.lineHeight as string);
-
-function getFanartUrl(images: MovieImageType[]) {
-  const image = images.find((img) => img.coverType === 'fanart');
-  return image?.url ?? image?.remoteUrl;
-}
-
 interface Props {
-  id: number;
-  tmdbId: number;
-  tpdbId: string;
-  foreignId?: string;
-  stashId?: string;
-  title: string;
-  code?: string;
-  year: number;
-  runtime: number;
-  certification?: string;
-  ratings: Ratings;
-  path: string;
-  statistics: MovieStatistics;
-  qualityProfileId: number;
-  monitored: boolean;
-  status: MovieStatus;
-  studio?: string;
-  studioTitle?: string;
-  studioForeignId?: string;
-  genres: string[];
-  collection?: MovieCollection;
-  isAvailable: boolean;
-  releaseDate?: string;
-  overview: string;
-  website: string;
-  images: MovieImageType[];
-  alternateTitles: string[];
-  tags: number[];
-  itemType: string;
   isSaving: boolean;
   isRefreshing: boolean;
   isSearching: boolean;
@@ -106,573 +73,483 @@ interface Props {
   movieFilesError?: unknown;
   extraFilesError?: unknown;
   movieCreditsError?: unknown;
-  hasMovieFiles: boolean;
-  onMonitorTogglePress: () => void;
+  hasMovieFiles?: boolean;
   onRefreshPress: () => void;
   onSearchPress: () => void;
   onGoToMovie: () => void;
   queueItem?: object | null | undefined;
   movieRuntimeFormat: string;
-  safeForWorkMode?: boolean;
 }
 
-interface State {
-  isOrganizeModalOpen: boolean;
-  isEditMovieModalOpen: boolean;
-  isDeleteMovieModalOpen: boolean;
-  isInteractiveImportModalOpen: boolean;
-  isInteractiveSearchModalOpen: boolean;
-  isMovieHistoryModalOpen: boolean;
-  overviewHeight: number;
-  titleWidth: number;
+const defaultFontSize = Number(fonts.defaultFontSize as string);
+const lineHeight = parseFloat(fonts.lineHeight as string);
+
+function getFanartUrl(images: MovieImageType[]) {
+  const image = images.find((img) => img.coverType === 'fanart');
+  return image?.url ?? image?.remoteUrl;
 }
 
-class MovieDetails extends Component<Props, State> {
-  static defaultProps = {
-    genres: [] as string[],
-    statistics: {} as MovieStatistics,
-    tags: [] as number[],
-    isSaving: false,
-  };
+function MovieDetails(props: Partial<Props>) {
+  // Get id from route params and fetch movie data
+  const { id } = useParams<{ id: string }>();
+  const dispatch = useDispatch();
+  const safeForWorkMode = useContext(SafeForWorkModeContext);
 
-  constructor(props: Props) {
-    super(props);
+  const { data: movie, isLoading, isError, error } = useMovie(id);
 
-    this.state = {
-      isOrganizeModalOpen: false,
-      isEditMovieModalOpen: false,
-      isDeleteMovieModalOpen: false,
-      isInteractiveImportModalOpen: false,
-      isInteractiveSearchModalOpen: false,
-      isMovieHistoryModalOpen: false,
-      overviewHeight: 0,
-      titleWidth: 0,
-    };
-  }
+  // State for modals and measurements
+  const { isSmallScreen } = useSelector(createDimensionsSelector());
+  const [overviewHeight, setOverviewHeight] = useState(0);
+  const [titleWidth, setTitleWidth] = useState(0);
+  const { mutate: toggleMonitored } = useToggleMovieMonitored(id);
 
-  componentDidMount() {
-    // touch gesture listeners removed — gestures disabled
-    window.addEventListener('keyup', this.onKeyUp as EventListener);
-  }
+  const {
+    isOrganizeModalOpen,
+    isMovieHistoryModalOpen,
+    isInteractiveSearchModalOpen,
+    isInteractiveImportModalOpen,
+    isEditMovieModalOpen,
+    isDeleteMovieModalOpen,
+    handleOrganizePress,
+    handleOrganizeModalClose,
+    handleMovieHistoryPress,
+    handleMovieHistoryModalClose,
+    handleInteractiveSearchPress,
+    handleInteractiveSearchModalClose,
+    handleInteractiveImportPress,
+    handleInteractiveImportModalClose,
+    handleEditMoviePress,
+    handleEditMovieModalClose,
+    handleDeleteMoviePress,
+    handleDeleteMovieModalClose,
+  } = useMovieDetailsModals();
 
-  componentWillUnmount() {
-    // touch gesture listeners removed — gestures disabled
-    window.removeEventListener('keyup', this.onKeyUp as EventListener);
-  }
-
-  // gesture handling removed
-
-  onOrganizePress = () => {
-    this.setState({ isOrganizeModalOpen: true });
-  };
-
-  onOrganizeModalClose = () => {
-    this.setState({ isOrganizeModalOpen: false });
-  };
-
-  onInteractiveImportPress = () => {
-    this.setState({ isInteractiveImportModalOpen: true });
-  };
-
-  onInteractiveImportModalClose = () => {
-    this.setState({ isInteractiveImportModalOpen: false });
-  };
-
-  onEditMoviePress = () => {
-    this.setState({ isEditMovieModalOpen: true });
-  };
-
-  onEditMovieModalClose = () => {
-    this.setState({ isEditMovieModalOpen: false });
-  };
-
-  onInteractiveSearchPress = () => {
-    this.setState({ isInteractiveSearchModalOpen: true });
-  };
-
-  onInteractiveSearchModalClose = () => {
-    this.setState({ isInteractiveSearchModalOpen: false });
-  };
-
-  onDeleteMoviePress = () => {
-    this.setState({
-      isEditMovieModalOpen: false,
-      isDeleteMovieModalOpen: true,
-    });
-  };
-
-  onDeleteMovieModalClose = () => {
-    this.setState({ isDeleteMovieModalOpen: false });
-  };
-
-  onMovieHistoryPress = () => {
-    this.setState({ isMovieHistoryModalOpen: true });
-  };
-
-  onMovieHistoryModalClose = () => {
-    this.setState({ isMovieHistoryModalOpen: false });
-  };
-
-  onMeasure = ({ height }: { height: number }) => {
-    this.setState({ overviewHeight: height });
-  };
-
-  onTitleMeasure = ({ width }: { width: number }) => {
-    this.setState({ titleWidth: width });
-  };
-
-  // touch gesture handlers removed — gestures disabled
-
-  onKeyUp = (_event: KeyboardEvent) => {
-    // noop in JS version; retained for parity
-    return;
-  };
-
-  render() {
-    const {
-      id,
-      tmdbId,
-      tpdbId,
-      stashId,
-      title,
-      code,
-      year,
-      releaseDate,
-      runtime,
-      certification,
-      ratings,
-      path,
-      statistics = {},
-      qualityProfileId,
-      monitored,
-      studioTitle,
-      studioForeignId,
-      genres,
-      collection,
-      overview,
-      website,
-      status,
-      studio,
-      isAvailable,
-      images,
-      tags,
-      itemType,
-      isSaving,
-      isRefreshing,
-      isSearching,
-      isFetching,
-      isSmallScreen,
-      movieFilesError,
-      extraFilesError,
-      movieCreditsError,
-      hasMovieFiles,
-      onMonitorTogglePress,
-      onRefreshPress,
-      onSearchPress,
-      queueItem,
-      movieRuntimeFormat,
-      safeForWorkMode,
-    } = this.props as Props;
-
-    const { sizeOnDisk = 0 } = statistics as MovieStatistics;
-
-    const {
-      isOrganizeModalOpen,
-      isEditMovieModalOpen,
-      isDeleteMovieModalOpen,
-      isInteractiveImportModalOpen,
-      isInteractiveSearchModalOpen,
-      isMovieHistoryModalOpen,
-      overviewHeight,
-      titleWidth,
-    } = this.state;
-
-    const statusDetails = getMovieStatusDetails(status);
-
-    const fanartUrl = getFanartUrl(images);
-    const marqueeWidth = isSmallScreen ? titleWidth : titleWidth - 150;
-
-    const titleWithYear = `${title}${year > 0 ? ` (${year})` : ''}`;
-
+  // Error handling for movie fetch
+  if (isError) {
     return (
-      <PageContent title={titleWithYear}>
-        <PageToolbar>
-          <PageToolbarSection>
-            <PageToolbarButton
-              label={translate('RefreshAndScan')}
-              iconName={icons.REFRESH}
-              spinningName={icons.REFRESH}
-              title={translate('RefreshInformationAndScanDisk')}
-              isSpinning={isRefreshing}
-              onPress={onRefreshPress}
-            />
+      <PageContentBody>
+        <Alert kind={kinds.DANGER}>{`${translate('LoadingMovieFailed')}: ${
+          error?.message || 'Not found'
+        }`}</Alert>
+      </PageContentBody>
+    );
+  }
 
-            <PageToolbarButton
-              label={translate('SearchMovie')}
-              iconName={icons.SEARCH}
-              isSpinning={isSearching}
-              title={undefined}
-              onPress={onSearchPress}
-            />
+  // Null check
+  if (!movie) {
+    if (isLoading) {
+      return (
+        <PageContentBody>
+          <LoadingIndicator />
+        </PageContentBody>
+      );
+    }
+    return null;
+  }
 
-            <PageToolbarButton
-              label={translate('InteractiveSearch')}
-              iconName={icons.INTERACTIVE}
-              isSpinning={isSearching}
-              title={undefined}
-              onPress={this.onInteractiveSearchPress}
-            />
+  // Use movie fields, fallback to props for related data not yet migrated
+  const {
+    tmdbId,
+    tpdbId,
+    stashId,
+    title,
+    code,
+    year,
+    releaseDate,
+    runtime,
+    certification,
+    ratings,
+    path,
+    statistics = {},
+    qualityProfileId,
+    monitored,
+    studioTitle,
+    studioForeignId,
+    genres = [],
+    collection,
+    overview,
+    website,
+    status,
+    isAvailable,
+    images,
+    tags = [],
+    itemType,
+    hasMovieFiles,
+    queueItem,
+    movieRuntimeFormat,
+    isSaving,
+    isRefreshing,
+    isSearching,
+  } = { ...props, ...movie };
 
-            <PageToolbarSeparator />
+  const movieId = movie.id;
+  const { sizeOnDisk = 0 } = statistics as MovieStatistics;
+  const statusDetails = getMovieStatusDetails(status);
+  const fanartUrl = getFanartUrl(images);
+  const marqueeWidth = isSmallScreen ? titleWidth : titleWidth - 150;
+  const titleWithYear = `${title}${year > 0 ? ` (${year})` : ''}`;
 
-            <PageToolbarButton
-              label={translate('PreviewRename')}
-              iconName={icons.ORGANIZE}
-              isDisabled={!hasMovieFiles}
-              onPress={this.onOrganizePress}
-            />
+  function handleTitleMeasure({ width }: { width: number }) {
+    setTitleWidth(width);
+  }
+  function handleOverviewMeasure({ height }: { height: number }) {
+    setOverviewHeight(height);
+  }
 
-            <PageToolbarButton
-              label={translate('ManageFiles')}
-              iconName={icons.MOVIE_FILE}
-              onPress={this.onInteractiveImportPress}
-            />
+  function handleRefreshPress() {
+    dispatch(
+      executeCommand({
+        name: REFRESH_MOVIE,
+        movieIds: [movieId],
+      })
+    );
+  }
+  function handleSearchPress() {
+    dispatch(
+      executeCommand({
+        name: MOVIE_SEARCH,
+        movieIds: [movieId],
+      })
+    );
+  }
 
-            <PageToolbarButton
-              label={translate('History')}
-              iconName={icons.HISTORY}
-              onPress={this.onMovieHistoryPress}
-            />
+  function handleMonitoredPress() {
+    if (!movie) return;
+    toggleMonitored({ movie, monitored: !monitored });
+  }
 
-            <PageToolbarSeparator />
-
-            <PageToolbarButton
-              label={translate('Edit')}
-              iconName={icons.EDIT}
-              onPress={this.onEditMoviePress}
-            />
-
-            <PageToolbarButton
-              label={translate('Delete')}
-              iconName={icons.DELETE}
-              onPress={this.onDeleteMoviePress}
-            />
-          </PageToolbarSection>
-        </PageToolbar>
-
-        <PageContentBody innerClassName={styles.innerContentBody}>
+  return (
+    <PageContent title={titleWithYear}>
+      <PageToolbar>
+        <PageToolbarSection>
+          <PageToolbarButton
+            label={translate('RefreshAndScan')}
+            iconName={icons.REFRESH}
+            spinningName={icons.REFRESH}
+            title={translate('RefreshInformationAndScanDisk')}
+            isSpinning={isRefreshing}
+            onPress={handleRefreshPress}
+          />
+          <PageToolbarButton
+            label={translate('SearchMovie')}
+            iconName={icons.SEARCH}
+            isSpinning={isSearching}
+            title={undefined}
+            onPress={handleSearchPress}
+          />
+          <PageToolbarButton
+            label={translate('InteractiveSearch')}
+            iconName={icons.INTERACTIVE}
+            isSpinning={isSearching}
+            title={undefined}
+            onPress={handleInteractiveSearchPress}
+          />
+          <PageToolbarSeparator />
+          <PageToolbarButton
+            label={translate('PreviewRename')}
+            iconName={icons.ORGANIZE}
+            isDisabled={!!hasMovieFiles}
+            onPress={handleOrganizePress}
+          />
+          <PageToolbarButton
+            label={translate('ManageFiles')}
+            iconName={icons.MOVIE_FILE}
+            onPress={handleInteractiveImportPress}
+          />
+          <PageToolbarButton
+            label={translate('History')}
+            iconName={icons.HISTORY}
+            onPress={handleMovieHistoryPress}
+          />
+          <PageToolbarSeparator />
+          <PageToolbarButton
+            label={translate('Edit')}
+            iconName={icons.EDIT}
+            onPress={handleEditMoviePress}
+          />
+          <PageToolbarButton
+            label={translate('Delete')}
+            iconName={icons.DELETE}
+            onPress={handleDeleteMoviePress}
+          />
+        </PageToolbarSection>
+      </PageToolbar>
+      <PageContentBody innerClassName={styles.innerContentBody}>
+        <div
+          className={itemType === 'movie' ? styles.header : styles.sceneHeader}
+        >
           <div
-            className={
-              itemType === 'movie' ? styles.header : styles.sceneHeader
+            className={styles.backdrop}
+            style={
+              fanartUrl && !safeForWorkMode
+                ? { backgroundImage: `url(${fanartUrl})` }
+                : undefined
             }
           >
-            <div
-              className={styles.backdrop}
-              style={
-                fanartUrl && !safeForWorkMode
-                  ? { backgroundImage: `url(${fanartUrl})` }
-                  : undefined
+            <div className={styles.backdropOverlay} />
+          </div>
+          <div className={styles.headerContent}>
+            <MovieImage
+              safeForWorkMode={safeForWorkMode}
+              className={
+                itemType === 'movie' ? styles.poster : styles.screenshot
               }
-            >
-              <div className={styles.backdropOverlay} />
-            </div>
-
-            <div className={styles.headerContent}>
-              <MovieImage
-                safeForWorkMode={safeForWorkMode}
-                className={
-                  itemType === 'movie' ? styles.poster : styles.screenshot
-                }
-                coverType={itemType === 'movie' ? 'poster' : 'screenshot'}
-                images={images}
-                size={500}
-                lazy={false}
-                placeholder={posterPlaceholder}
-              />
-
-              <div className={styles.info}>
-                <Measure onMeasure={this.onTitleMeasure}>
-                  <div className={styles.titleRow}>
-                    <div className={styles.titleContainer}>
-                      <div className={styles.toggleMonitoredContainer}>
-                        <MonitorToggleButton
-                          className={styles.monitorToggleButton}
-                          monitored={monitored}
-                          isSaving={isSaving}
-                          size={40}
-                          onPress={onMonitorTogglePress}
-                        />
-                      </div>
-
-                      <div
-                        className={styles.title}
-                        style={{ width: marqueeWidth }}
-                      >
-                        <Marquee text={title} />
-                      </div>
+              coverType={itemType === 'movie' ? 'poster' : 'screenshot'}
+              images={images}
+              size={500}
+              lazy={true}
+              placeholder={posterPlaceholder}
+            />
+            <div className={styles.info}>
+              <Measure onMeasure={handleTitleMeasure}>
+                <div className={styles.titleRow}>
+                  <div className={styles.titleContainer}>
+                    <div className={styles.toggleMonitoredContainer}>
+                      <MonitorToggleButton
+                        className={styles.monitorToggleButton}
+                        monitored={monitored}
+                        isSaving={isSaving}
+                        size={40}
+                        onPress={handleMonitoredPress}
+                      />
+                    </div>
+                    <div
+                      className={styles.title}
+                      style={{ width: marqueeWidth }}
+                    >
+                      <Marquee text={title} />
                     </div>
                   </div>
-                </Measure>
+                </div>
+              </Measure>
+              <div className={styles.details}>
+                <div>
+                  {certification ? (
+                    <span
+                      className={styles.certification}
+                      title={translate('Certification')}
+                    >
+                      {certification}
+                    </span>
+                  ) : null}
+                  {releaseDate ? (
+                    <ReleaseDateDisplay releaseDate={releaseDate} />
+                  ) : null}
+                  {studioTitle ? (
+                    <span className={styles.studio}>
+                      <MovieStudioLink
+                        foreignId={studioForeignId}
+                        studioTitle={studioTitle}
+                      />
+                    </span>
+                  ) : null}
+                  {runtime ? (
+                    <span
+                      className={styles.runtime}
+                      title={translate('Runtime')}
+                    >
+                      {formatRuntime(runtime, movieRuntimeFormat)}
+                    </span>
+                  ) : null}
 
-                <div className={styles.details}>
-                  <div>
-                    {certification ? (
-                      <span
-                        className={styles.certification}
-                        title={translate('Certification')}
-                      >
-                        {certification}
-                      </span>
-                    ) : null}
-
-                    {releaseDate ? (
-                      <ReleaseDateDisplay releaseDate={releaseDate} />
-                    ) : null}
-
-                    {studioTitle ? (
-                      <span className={styles.studio}>
-                        <MovieStudioLink
-                          foreignId={studioForeignId}
-                          studioTitle={studioTitle}
+                  <span className={styles.links}>
+                    <Tooltip
+                      anchor={<Icon name={icons.EXTERNAL_LINK} size={20} />}
+                      tooltip={
+                        <MovieDetailsLinks
+                          tmdbId={tmdbId}
+                          tpdbId={tpdbId}
+                          stashId={stashId ?? undefined}
+                          website={website}
                         />
-                      </span>
-                    ) : null}
+                      }
+                      position={tooltipPositions.BOTTOM}
+                    />
+                  </span>
 
-                    {runtime ? (
-                      <span
-                        className={styles.runtime}
-                        title={translate('Runtime')}
-                      >
-                        {formatRuntime(runtime, movieRuntimeFormat)}
-                      </span>
-                    ) : null}
-
-                    <span className={styles.links}>
+                  {!!tags.length && (
+                    <span>
                       <Tooltip
-                        anchor={<Icon name={icons.EXTERNAL_LINK} size={20} />}
+                        anchor={<Icon name={icons.TAGS} size={20} />}
                         tooltip={
-                          <MovieDetailsLinks
-                            tmdbId={tmdbId}
-                            tpdbId={tpdbId}
-                            stashId={stashId ?? undefined}
-                            website={website}
+                          <MovieTagsConnector
+                            key={Number(movieId)}
+                            movieId={Number(movieId)}
                           />
                         }
                         position={tooltipPositions.BOTTOM}
                       />
                     </span>
-
-                    {!!tags.length && (
-                      <span>
-                        <Tooltip
-                          anchor={<Icon name={icons.TAGS} size={20} />}
-                          tooltip={<MovieTagsConnector key={id} movieId={id} />}
-                          position={tooltipPositions.BOTTOM}
-                        />
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className={styles.details}>
-                  {!!ratings.tmdb && (
-                    <span className={styles.rating}>
-                      <TmdbRating ratings={ratings} iconSize={20} />
-                    </span>
                   )}
                 </div>
-
-                <div className={styles.detailsInfoLabelContainer}>
-                  <InfoLabel
-                    className={styles.detailsInfoLabel}
-                    name={translate('Path')}
-                    size={sizes.LARGE}
-                  >
-                    <span className={styles.path}>{path}</span>
-                  </InfoLabel>
-
-                  <InfoLabel
-                    className={styles.detailsInfoLabel}
-                    name={translate('Status')}
-                    title={statusDetails.message}
-                    kind={kinds.DELETE}
-                    size={sizes.LARGE}
-                  >
-                    <span className={styles.statusName}>
-                      <MovieStatusLabel
-                        status={status}
-                        hasMovieFiles={hasMovieFiles}
-                        monitored={monitored}
-                        isAvailable={isAvailable}
-                        queueItem={queueItem}
-                      />
-                    </span>
-                  </InfoLabel>
-
-                  <InfoLabel
-                    className={styles.detailsInfoLabel}
-                    name={translate('QualityProfile')}
-                    size={sizes.LARGE}
-                  >
-                    <span className={styles.qualityProfileName}>
-                      <QualityProfileName qualityProfileId={qualityProfileId} />
-                    </span>
-                  </InfoLabel>
-
-                  <InfoLabel
-                    className={styles.detailsInfoLabel}
-                    name={translate('Size')}
-                    size={sizes.LARGE}
-                  >
-                    <span className={styles.sizeOnDisk}>
-                      {formatBytes(sizeOnDisk)}
-                    </span>
-                  </InfoLabel>
-
-                  {collection ? (
-                    <InfoLabel
-                      className={styles.detailsInfoLabel}
-                      name={translate('Collection')}
-                      size={sizes.LARGE}
-                    >
-                      <div className={styles.collection}>
-                        <MovieCollectionLabel tmdbId={collection.tmdbId} />
-                      </div>
-                    </InfoLabel>
-                  ) : null}
-
-                  {!!code && !!code.length && (
-                    <InfoLabel
-                      className={styles.detailsInfoLabel}
-                      name={translate('Code')}
-                      title={translate('Code')}
-                      size={sizes.LARGE}
-                    >
-                      <span className={styles.code}>{code}</span>
-                    </InfoLabel>
-                  )}
-
-                  {studio && !isSmallScreen ? (
-                    <InfoLabel
-                      className={styles.detailsInfoLabel}
-                      name={translate('Studio')}
-                      size={sizes.LARGE}
-                    >
-                      <span className={styles.studio}>{studio}</span>
-                    </InfoLabel>
-                  ) : null}
-
-                  {genres.length && !isSmallScreen ? (
-                    <InfoLabel
-                      className={styles.detailsInfoLabel}
-                      name={translate('Genres')}
-                      size={sizes.LARGE}
-                    >
-                      <MovieGenres className={styles.genres} genres={genres} />
-                    </InfoLabel>
-                  ) : null}
-                </div>
-
-                <Measure onMeasure={this.onMeasure}>
-                  <div className={styles.overview}>
-                    <TextTruncate
-                      line={Math.floor(
-                        overviewHeight / (defaultFontSize * lineHeight)
-                      )}
-                      text={overview}
-                    />
-                  </div>
-                </Measure>
               </div>
+              <div className={styles.details}>
+                {!!ratings?.tmdb && (
+                  <span className={styles.rating}>
+                    <TmdbRating ratings={ratings} iconSize={20} />
+                  </span>
+                )}
+              </div>
+              <div className={styles.detailsInfoLabelContainer}>
+                <InfoLabel
+                  className={styles.detailsInfoLabel}
+                  name={translate('Path')}
+                  size={sizes.LARGE}
+                >
+                  <span className={styles.path}>{path}</span>
+                </InfoLabel>
+                <InfoLabel
+                  className={styles.detailsInfoLabel}
+                  name={translate('Status')}
+                  title={statusDetails.message}
+                  kind={kinds.DELETE}
+                  size={sizes.LARGE}
+                >
+                  <span className={styles.statusName}>
+                    <MovieStatusLabel
+                      status={status}
+                      hasMovieFiles={hasMovieFiles ?? false}
+                      monitored={monitored}
+                      isAvailable={isAvailable}
+                      queueItem={queueItem}
+                    />
+                  </span>
+                </InfoLabel>
+                <InfoLabel
+                  className={styles.detailsInfoLabel}
+                  name={translate('QualityProfile')}
+                  size={sizes.LARGE}
+                >
+                  <span className={styles.qualityProfileName}>
+                    <QualityProfileName qualityProfileId={qualityProfileId} />
+                  </span>
+                </InfoLabel>
+                <InfoLabel
+                  className={styles.detailsInfoLabel}
+                  name={translate('Size')}
+                  size={sizes.LARGE}
+                >
+                  <span className={styles.sizeOnDisk}>
+                    {formatBytes(sizeOnDisk)}
+                  </span>
+                </InfoLabel>
+                {collection ? (
+                  <InfoLabel
+                    className={styles.detailsInfoLabel}
+                    name={translate('Collection')}
+                    size={sizes.LARGE}
+                  >
+                    <div className={styles.collection}>
+                      <MovieCollectionLabel tmdbId={collection.tmdbId} />
+                    </div>
+                  </InfoLabel>
+                ) : null}
+                {!!code && !!code.length && (
+                  <InfoLabel
+                    className={styles.detailsInfoLabel}
+                    name={translate('Code')}
+                    title={translate('Code')}
+                    size={sizes.LARGE}
+                  >
+                    <span className={styles.code}>{code}</span>
+                  </InfoLabel>
+                )}
+                {studioTitle && !isSmallScreen ? (
+                  <InfoLabel
+                    className={styles.detailsInfoLabel}
+                    name={translate('Studio')}
+                    size={sizes.LARGE}
+                  >
+                    <span className={styles.studio}>{studioTitle}</span>
+                  </InfoLabel>
+                ) : null}
+                {genres.length && !isSmallScreen ? (
+                  <InfoLabel
+                    className={styles.detailsInfoLabel}
+                    name={translate('Genres')}
+                    size={sizes.LARGE}
+                  >
+                    <MovieGenres className={styles.genres} genres={genres} />
+                  </InfoLabel>
+                ) : null}
+              </div>
+              <Measure onMeasure={handleOverviewMeasure}>
+                <div className={styles.overview}>
+                  <TextTruncate
+                    line={Math.floor(
+                      overviewHeight / (defaultFontSize * lineHeight)
+                    )}
+                    text={overview}
+                  />
+                </div>
+              </Measure>
             </div>
           </div>
+        </div>
 
-          <div className={styles.contentContainer}>
-            {!isFetching && movieFilesError ? (
-              <Alert kind={kinds.DANGER}>
-                {translate('LoadingMovieFilesFailed')}
-              </Alert>
-            ) : null}
+        {/* FILES, CAST, TITLES */}
+        <div className={styles.contentContainer}>
+          <FieldSet legend={translate('Files')}>
+            <MovieFileEditorTable movieId={movieId} />
+            <ExtraFileTable movieId={movieId} />
+          </FieldSet>
 
-            {!isFetching && extraFilesError ? (
-              <Alert kind={kinds.DANGER}>
-                {translate('LoadingMovieExtraFilesFailed')}
-              </Alert>
-            ) : null}
+          <FieldSet legend={translate('Cast')}>
+            <MovieCastPostersConnector
+              movieId={Number(movieId)}
+              isSmallScreen={isSmallScreen}
+            />
+          </FieldSet>
 
-            <FieldSet legend={translate('Files')}>
-              <MovieFileEditorTable movieId={id} />
+          <FieldSet legend={translate('Titles')}>
+            <MovieTitlesTable movieId={Number(movieId)} />
+          </FieldSet>
+        </div>
 
-              <ExtraFileTable movieId={id} />
-            </FieldSet>
-
-            {!isFetching && movieCreditsError ? (
-              <Alert kind={kinds.DANGER}>
-                {translate('LoadingMovieCreditsFailed')}
-              </Alert>
-            ) : null}
-
-            <FieldSet legend={translate('Cast')}>
-              <MovieCastPostersConnector
-                movieId={id}
-                isSmallScreen={isSmallScreen}
-              />
-            </FieldSet>
-
-            <FieldSet legend={translate('Titles')}>
-              <MovieTitlesTable movieId={id} />
-            </FieldSet>
-          </div>
-
-          <OrganizePreviewModal
-            isOpen={isOrganizeModalOpen}
-            movieId={id}
-            onModalClose={this.onOrganizeModalClose}
-          />
-
-          <EditMovieModal
-            isOpen={isEditMovieModalOpen}
-            movieId={id}
-            onModalClose={this.onEditMovieModalClose}
-            onDeleteMoviePress={this.onDeleteMoviePress}
-          />
-
-          <MovieHistoryModal
-            isOpen={isMovieHistoryModalOpen}
-            movieId={id}
-            onModalClose={this.onMovieHistoryModalClose}
-          />
-
-          <DeleteMovieModal
-            isOpen={isDeleteMovieModalOpen}
-            movieId={id}
-            onModalClose={this.onDeleteMovieModalClose}
-          />
-
-          <InteractiveImportModal
-            isOpen={isInteractiveImportModalOpen}
-            movieId={id}
-            title={title}
-            folder={path}
-            initialSortKey="relativePath"
-            initialSortDirection={sortDirections.ASCENDING}
-            showMovie={false}
-            allowMovieChange={false}
-            showDelete={true}
-            showImportMode={false}
-            modalTitle={translate('ManageFiles')}
-            onModalClose={this.onInteractiveImportModalClose}
-          />
-
-          <MovieInteractiveSearchModal
-            isOpen={isInteractiveSearchModalOpen}
-            movieId={id}
-            onModalClose={this.onInteractiveSearchModalClose}
-          />
-        </PageContentBody>
-      </PageContent>
-    );
-  }
+        {/* MODALS */}
+        <OrganizePreviewModal
+          isOpen={isOrganizeModalOpen}
+          movieId={Number(movieId)}
+          onModalClose={handleOrganizeModalClose}
+        />
+        <EditMovieModal
+          isOpen={isEditMovieModalOpen}
+          movie={movie}
+          onModalClose={handleEditMovieModalClose}
+          onDeleteMoviePress={handleDeleteMoviePress}
+        />
+        <MovieHistoryModal
+          isOpen={isMovieHistoryModalOpen}
+          movieId={movieId}
+          onModalClose={handleMovieHistoryModalClose}
+        />
+        <DeleteMovieModal
+          isOpen={isDeleteMovieModalOpen}
+          movie={movie}
+          onModalClose={handleDeleteMovieModalClose}
+        />
+        <InteractiveImportModal
+          isOpen={isInteractiveImportModalOpen}
+          movie={movie}
+          title={title}
+          folder={path}
+          initialSortKey="relativePath"
+          initialSortDirection={sortDirections.ASCENDING}
+          showMovie={false}
+          allowMovieChange={false}
+          showDelete={true}
+          showImportMode={false}
+          modalTitle={translate('ManageFiles')}
+          onModalClose={handleInteractiveImportModalClose}
+        />
+        <MovieInteractiveSearchModal
+          isOpen={isInteractiveSearchModalOpen}
+          movieId={movieId}
+          onModalClose={handleInteractiveSearchModalClose}
+        />
+      </PageContentBody>
+    </PageContent>
+  );
 }
 
 export default MovieDetails;

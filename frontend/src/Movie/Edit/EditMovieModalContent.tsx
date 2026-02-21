@@ -19,7 +19,7 @@ import ModalHeader from 'Components/Modal/ModalHeader';
 import usePrevious from 'Helpers/Hooks/usePrevious';
 import { icons, inputTypes, kinds, sizes } from 'Helpers/Props';
 import MoveMovieModal from 'Movie/MoveMovie/MoveMovieModal';
-import useMovie from 'Movie/useMovie';
+import Movie from 'Movie/Movie';
 import { saveMovie, setMovieValue } from 'Store/Actions/movieActions';
 import selectSettings from 'Store/Selectors/selectSettings';
 import { InputChanged } from 'typings/inputs';
@@ -30,17 +30,18 @@ import { RootFolderUpdated } from './RootFolder/RootFolderModalContent';
 import styles from './EditMovieModalContent.css';
 
 export interface EditMovieModalContentProps {
-  movieId: number;
+  movie: Movie;
   onModalClose: () => void;
   onDeleteMoviePress: () => void;
 }
 
 function EditMovieModalContent({
-  movieId,
+  movie,
   onModalClose,
   onDeleteMoviePress,
 }: EditMovieModalContentProps) {
   const dispatch = useDispatch();
+
   const {
     title,
     monitored,
@@ -48,7 +49,7 @@ function EditMovieModalContent({
     path,
     tags,
     rootFolderPath: initialRootFolderPath,
-  } = useMovie(movieId)!;
+  } = movie;
 
   const { isSaving, saveError, pendingChanges } = useSelector(
     (state: AppState) => state.movies
@@ -184,23 +185,23 @@ function EditMovieModalContent({
 
       dispatch(
         saveMovie({
-          id: movieId,
+          id: movie.id,
           moveFiles: false,
         })
       );
     }
-  }, [movieId, isPathChanging, isConfirmMoveModalOpen, dispatch]);
+  }, [movie, isPathChanging, isConfirmMoveModalOpen, dispatch]);
 
   const handleMoveMoviePress = useCallback(() => {
     setIsConfirmMoveModalOpen(false);
 
     dispatch(
       saveMovie({
-        id: movieId,
+        id: movie.id,
         moveFiles: true,
       })
     );
-  }, [movieId, dispatch]);
+  }, [movie.id, dispatch]);
 
   useEffect(() => {
     if (!isSaving && wasSaving && !saveError) {
@@ -303,7 +304,7 @@ function EditMovieModalContent({
 
       <RootFolderModal
         isOpen={isRootFolderModalOpen}
-        movieId={movieId}
+        movieId={movie.id}
         rootFolderPath={rootFolderPath}
         onSavePress={handleRootFolderChange}
         onModalClose={handleRootFolderModalClose}

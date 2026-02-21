@@ -18,6 +18,8 @@ export interface MovieFileEditorTableContentProps {
   onTableOptionChange: (option: unknown) => void;
   onSortPress: (name: string, sortDirection?: SortDirection) => void;
   onDeletePress: (id: number) => void;
+  isLoading?: boolean;
+  error?: unknown;
 }
 
 function MovieFileEditorTableContent({
@@ -28,7 +30,17 @@ function MovieFileEditorTableContent({
   onSortPress,
   onTableOptionChange,
   onDeletePress,
+  isLoading,
+  error,
 }: MovieFileEditorTableContentProps) {
+  if (isLoading) {
+    return <div className={styles.blankpad}>{translate('Loading')}</div>;
+  }
+  if (error) {
+    return (
+      <div className={styles.blankpad}>{translate('MovieFilesLoadError')}</div>
+    );
+  }
   return (
     <div>
       {!items.length && (

@@ -261,7 +261,7 @@ function SceneIndexPoster(props: SceneIndexPosterProps) {
 
       <EditMovieModal
         isOpen={isEditSceneModalOpen}
-        movieId={sceneId}
+        movie={scene}
         onModalClose={onEditSceneModalClose}
         onDeleteMoviePress={onDeleteScenePress}
       />
