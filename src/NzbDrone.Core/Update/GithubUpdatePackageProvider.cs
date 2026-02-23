@@ -162,6 +162,14 @@ namespace NzbDrone.Core.Update
                         a.name.Contains(arch, StringComparison.OrdinalIgnoreCase) &&
                         a.name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase));
                 }
+                else if (OsInfo.Os == Os.Linux)
+                {
+                    // Exclude musl assets for non-musl Linux: "linux" matches "linux-musl-x64" too
+                    asset = release.assets.FirstOrDefault(a =>
+                        a.name.Contains(osAssetString, StringComparison.OrdinalIgnoreCase) &&
+                        a.name.Contains(arch, StringComparison.OrdinalIgnoreCase) &&
+                        !a.name.Contains("musl", StringComparison.OrdinalIgnoreCase));
+                }
                 else
                 {
                     asset = release.assets.FirstOrDefault(a =>
