@@ -199,5 +199,34 @@ namespace NzbDrone.Core.Test.Datastore
 
             _subject.ToString().Should().Be($"(\"MovieMetadata\".\"Status\" IN @Clause1_P1)");
         }
+
+        [Test]
+        public void where_not_in_list()
+        {
+            var list = new List<int> { 1, 2, 3 };
+            _subject = Where(x => !list.Contains(x.Id));
+
+            _subject.ToString().Should().Be($"NOT (\"Movies\".\"Id\" IN (1, 2, 3))");
+            _subject.Parameters.ParameterNames.Should().BeEmpty();
+        }
+
+        [Test]
+        public void where_not_in_list_single_value()
+        {
+            var list = new List<int> { 5 };
+            _subject = Where(x => !list.Contains(x.Id));
+
+            _subject.ToString().Should().Be($"NOT (\"Movies\".\"Id\" IN (5))");
+            _subject.Parameters.ParameterNames.Should().BeEmpty();
+        }
+
+        [Test]
+        public void where_not_in_string_list()
+        {
+            var list = new List<string> { "first", "second" };
+            _subject = WhereMeta(x => !list.Contains(x.CleanTitle));
+
+            _subject.ToString().Should().Be($"NOT (\"MovieMetadata\".\"CleanTitle\" IN @Clause1_P1)");
+        }
     }
 }
