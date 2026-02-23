@@ -742,6 +742,7 @@
   "FailedDownloadHandling": "Failed Download Handling",
   "FailedLoadingSearchResults": "Failed to load search results, please try again.",
   "FailedToFetchUpdates": "Failed to fetch updates",
+  "FailedToLoadIndexFooter": "Failed to load index footer",
   "FailedToLoadMovieFromAPI": "Failed to load movie from API",
   "FailedToUpdateSettings": "Failed to update settings",
   "Fallback": "Fallback",

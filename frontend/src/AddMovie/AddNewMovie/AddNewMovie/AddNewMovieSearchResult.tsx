@@ -24,6 +24,7 @@ import {
 import AddNewMovieModal from './AddNewMovieModal';
 import styles from './AddNewMovieSearchResult.css';
 
+// TODO: Use actual credit type instead
 interface Credit {
   id?: number | string;
   name?: string;
@@ -34,6 +35,7 @@ interface Credit {
   gender?: string;
 }
 
+// TODO: use the GenderIcon component
 function genderToIcon(gender?: string): IconName {
   switch (gender) {
     case 'male':
@@ -54,6 +56,7 @@ interface AddNewMovieSearchResultProps extends MovieLookupResult {
   colorImpairedMode?: boolean;
 }
 
+// TODO: movie props to proper typing, this seems to be a deconstruct of Movie.ts
 function AddNewMovieSearchResult(props: AddNewMovieSearchResultProps) {
   const { colorImpairedMode, ...item } = props;
   const {
@@ -87,7 +90,7 @@ function AddNewMovieSearchResult(props: AddNewMovieSearchResultProps) {
   const { isSmallScreen, safeForWorkMode, shortDateFormat, showRelativeDates } =
     useAddNewMovieSearchResult();
 
-  // For now movieRuntimeFormat isn't part of UiSettings selector; fall back to 'hoursMinutes'
+  // TODO: For now movieRuntimeFormat isn't part of UiSettings selector; fall back to 'hoursMinutes'
   const movieRuntimeFormat = 'hoursMinutes';
 
   const [isAddMovieModalOpen, setIsAddMovieModalOpen] = useState(false);

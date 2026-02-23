@@ -1,20 +1,33 @@
 import classNames from 'classnames';
 import React from 'react';
 import { ColorImpairedConsumer } from 'App/ColorImpairedContext';
+import Alert from 'Components/Alert';
 import DescriptionList from 'Components/DescriptionList/DescriptionList';
 import DescriptionListItem from 'Components/DescriptionList/DescriptionListItem';
+import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
 import { useSceneStats } from './useSceneStats';
 import styles from './SceneIndexFooter.css';
 
 export default function SceneIndexFooter() {
-  const { data } = useSceneStats();
+  const { data, isFetching, isError, error } = useSceneStats();
 
   const count = data?.totalCount ?? 0;
   const movieFiles = data?.movieFiles ?? 0;
   const monitored = data?.monitoredCount ?? 0;
   const totalFileSize = data?.totalFileSize ?? 0;
+
+  if (isError) {
+    return (
+      <Alert kind="danger">
+        {`${translate('FailedToLoadIndexFooter:')} ${error?.message}`}
+      </Alert>
+    );
+  }
+  if (isFetching) {
+    return <LoadingIndicator />;
+  }
 
   return (
     <ColorImpairedConsumer>

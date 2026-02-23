@@ -1,3 +1,4 @@
+// TODO: Move functions like page handlers, sort handlers, filter handlers, and table option handlers to a custom hook (e.g., useHistoryHandlers) to keep the component cleaner and more focused on rendering.
 import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { queryClient } from 'App/queryClient';

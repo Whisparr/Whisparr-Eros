@@ -1,3 +1,4 @@
+// TODO: Standardize the "when" on React Query Key invalidation to avoid rapid-fire reloads during bulk operations.
 import * as signalR from '@microsoft/signalr/dist/browser/signalr.js';
 import PropTypes from 'prop-types';
 import { Component } from 'react';

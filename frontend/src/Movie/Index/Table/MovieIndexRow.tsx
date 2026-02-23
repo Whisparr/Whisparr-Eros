@@ -1,7 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useSelect } from 'App/SelectContext';
-import AppState from 'App/State/AppState';
 import Command from 'Commands/Command';
 import { MOVIE_SEARCH, REFRESH_MOVIE } from 'Commands/commandNames';
 import Icon from 'Components/Icon';
@@ -19,6 +18,7 @@ import MovieDetailsLinks from 'Movie/Details/MovieDetailsLinks';
 import EditMovieModal from 'Movie/Edit/EditMovieModal';
 import Movie, { Statistics } from 'Movie/Movie';
 import MovieTitleLink from 'Movie/MovieTitleLink';
+import QualityProfileName from 'Settings/Profiles/Quality/QualityProfileName';
 import { executeCommand } from 'Store/Actions/commandActions';
 import createExecutingCommandsSelector from 'Store/Selectors/createExecutingCommandsSelector';
 import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
@@ -41,12 +41,6 @@ interface MovieIndexRowProps {
 function MovieIndexRow(props: MovieIndexRowProps) {
   const { movie, columns, isSelectMode } = props;
   const movieId = movie.id;
-
-  const qualityProfile = useSelector((state: AppState) =>
-    state.settings.qualityProfiles.items.find(
-      (p) => p.id === movie.qualityProfileId
-    )
-  );
 
   const executingCommands = useSelector(createExecutingCommandsSelector());
 
@@ -203,7 +197,7 @@ function MovieIndexRow(props: MovieIndexRowProps) {
         if (name === 'qualityProfileId') {
           return (
             <VirtualTableRowCell key={name} className={styles[name]}>
-              {qualityProfile?.name ?? ''}
+              <QualityProfileName qualityProfileId={movie.qualityProfileId} />
             </VirtualTableRowCell>
           );
         }

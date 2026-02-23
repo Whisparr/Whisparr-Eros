@@ -147,7 +147,7 @@ function MovieDetails(props: Partial<Props>) {
     return null;
   }
 
-  // Use movie fields, fallback to props for related data not yet migrated
+  // TODO: Reduce deconstruction to minimum needed.
   const {
     tmdbId,
     tpdbId,

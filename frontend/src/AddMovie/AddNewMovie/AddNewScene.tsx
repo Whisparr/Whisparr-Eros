@@ -72,6 +72,11 @@ function AddNewScene() {
               {error?.statusBody?.message ?? error?.message ?? ''}
             </Alert>
             <div>
+              {/*  TODO: This link is pretty specific to TMDb-related search
+              failures. We should consider a more general troubleshooting guide
+              for search failures that can cover other potential failure
+              scenarios (e.g., failures related to other scene metadata
+              providers, or failures related to parsing stash IDs). */}
               <Link to="https://wiki.servarr.com/whisparr/troubleshooting#invalid-response-received-from-tmdb">
                 {translate('WhySearchesCouldBeFailing')}
               </Link>
@@ -103,6 +108,7 @@ function AddNewScene() {
             </div>
             <div>{translate('YouCanAlsoSearch')}</div>
             <div>
+              {/* TODO: This link needs a refresh.  Unsuer if we keep Servarr for wiki or not */}
               <Link to="https://wiki.servarr.com/whisparr/faq#why-can-i-not-add-a-new-movie-to-whisparr">
                 {translate('CantFindScene')}
               </Link>

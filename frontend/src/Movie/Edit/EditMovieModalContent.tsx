@@ -76,6 +76,7 @@ function EditMovieModalContent({
 
   const isPathChanging = path !== originalPath;
 
+  // TODO: move to a .ts or reuse an existing one.
   interface Setting {
     value?:
       | string
@@ -115,6 +116,7 @@ function EditMovieModalContent({
     pendingChanges: unknown;
   }
 
+  // TODO: Move to a hook
   const memoResult = useMemo(() => {
     return selectSettings(
       { monitored, qualityProfileId, path, tags },
