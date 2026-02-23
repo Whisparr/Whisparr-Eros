@@ -66,6 +66,7 @@ function PerformerDetailsYear(props: PerformerDetailsYearProps) {
   const movieFileCount = movies.filter(
     (m) => m.sizeOnDisk && m.sizeOnDisk > 0
   ).length;
+  const missingMonitored = movies.some((m) => m.monitored && !m.movieFileId);
   const sizeOnDisk = movies.reduce((total, movie) => {
     if (movie.sizeOnDisk) {
       return total + movie.sizeOnDisk;
@@ -88,19 +89,25 @@ function PerformerDetailsYear(props: PerformerDetailsYearProps) {
   const sortedMovies = moviesCopy;
 
   // Determine movie count background color
-  function getMovieCountKind(
-    monitored: boolean,
-    movieFileCount: number,
-    movieCount: number
-  ) {
-    if (movieFileCount === movieCount && movieCount > 0) {
-      return kinds.SUCCESS;
+  function getMovieCountKind() {
+    switch (true) {
+      case missingMonitored:
+        return kinds.DANGER;
+      case movieFileCount !== totalMovieCount &&
+        !missingMonitored &&
+        monitoredMovieCount > 0:
+        return kinds.WARNING;
+      case movieFileCount !== totalMovieCount &&
+        !missingMonitored &&
+        monitoredMovieCount === 0:
+        return kinds.DEFAULT;
+      case movieFileCount === totalMovieCount:
+        return kinds.SUCCESS;
+      default:
+        return kinds.DANGER;
     }
-    if (!monitored) {
-      return kinds.WARNING;
-    }
-    return kinds.DANGER;
   }
+  const yearKind = getMovieCountKind();
 
   function handleBulkMonitorPress() {
     bulkMonitor(movies);
@@ -148,10 +155,7 @@ function PerformerDetailsYear(props: PerformerDetailsYearProps) {
             className={styles.movieCountTooltip}
             canFlip={true}
             anchor={
-              <Label
-                kind={getMovieCountKind(true, movieFileCount, totalMovieCount)}
-                size={sizes.LARGE}
-              >
+              <Label kind={yearKind} size={sizes.LARGE}>
                 <span>
                   {movieFileCount} / {totalMovieCount}
                 </span>
@@ -228,7 +232,7 @@ function PerformerDetailsYear(props: PerformerDetailsYearProps) {
                     return (
                       <SceneRow
                         key={movie.id}
-                        {...movie}
+                        movie={movie}
                         safeForWorkMode={safeForWorkMode}
                         columns={columns}
                         onMonitorMoviePress={handleMonitorMoviePress}

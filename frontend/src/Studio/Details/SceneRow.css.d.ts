@@ -7,6 +7,7 @@ interface CssExports {
   'customFormatScore': string;
   'languages': string;
   'monitored': string;
+  'monitorToggleButton': string;
   'path': string;
   'performers': string;
   'releaseDate': string;
