@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import React from 'react';
 import Icon from 'Components/Icon';
 import Label from 'Components/Label';
@@ -37,53 +36,28 @@ interface StudioDetailsYearProps {
   onYearRefreshPress?: (ids: number[]) => void;
 }
 
-function getYearStatistics(movies: Movie[]) {
-  let movieCount = 0;
-  let movieFileCount = 0;
-  let totalMovieCount = 0;
-  let monitoredMovieCount = 0;
-  let hasMonitoredMovies = false;
-
-  movies.forEach((movie) => {
-    if (movie.movieFile || (movie.monitored && movie.isAvailable)) {
-      movieCount++;
-    }
-
-    if (movie.movieFile) {
-      movieFileCount++;
-    }
-
-    if (movie.monitored) {
-      monitoredMovieCount++;
-      hasMonitoredMovies = true;
-    }
-
-    totalMovieCount++;
-  });
-
-  return {
-    movieCount,
-    movieFileCount,
-    totalMovieCount,
-    monitoredMovieCount,
-    hasMonitoredMovies,
-  };
-}
-
 function getMovieCountKind(
-  monitored: boolean,
+  missingMonitored: boolean,
   movieFileCount: number,
-  movieCount: number
+  totalMovieCount: number,
+  monitoredMovieCount: number
 ) {
-  if (movieFileCount === movieCount && movieCount > 0) {
-    return kinds.SUCCESS;
+  switch (true) {
+    case missingMonitored:
+      return kinds.DANGER;
+    case movieFileCount !== totalMovieCount &&
+      !missingMonitored &&
+      monitoredMovieCount > 0:
+      return kinds.WARNING;
+    case movieFileCount !== totalMovieCount &&
+      !missingMonitored &&
+      monitoredMovieCount === 0:
+      return kinds.DEFAULT;
+    case movieFileCount === totalMovieCount:
+      return kinds.SUCCESS;
+    default:
+      return kinds.DANGER;
   }
-
-  if (!monitored) {
-    return kinds.WARNING;
-  }
-
-  return kinds.DANGER;
 }
 
 function StudioDetailsYear(props: StudioDetailsYearProps) {
@@ -106,6 +80,19 @@ function StudioDetailsYear(props: StudioDetailsYearProps) {
     sortKey,
     sortDirection,
   } = useStudioDetailsYearData(studioId, works);
+
+  const totalMovieCount = works.length;
+  const monitoredMovieCount = works.filter((m) => m.monitored).length;
+  const movieFileCount = works.filter(
+    (m) => m.sizeOnDisk && m.sizeOnDisk > 0
+  ).length;
+  const missingMonitored = works.some((m) => m.monitored && !m.movieFileId);
+  const sizeOnDisk = works.reduce((total, movie) => {
+    if (movie.sizeOnDisk) {
+      return total + movie.sizeOnDisk;
+    }
+    return total;
+  }, 0);
 
   const {
     onMonitorYearPress,
@@ -145,15 +132,12 @@ function StudioDetailsYear(props: StudioDetailsYearProps) {
     return null;
   }
 
-  const {
-    movieCount,
+  const yearKind = getMovieCountKind(
+    missingMonitored,
     movieFileCount,
     totalMovieCount,
-    monitoredMovieCount,
-    hasMonitoredMovies,
-  } = getYearStatistics(items);
-
-  const sizeOnDisk = _.sumBy(items, 'sizeOnDisk');
+    monitoredMovieCount
+  );
 
   return (
     <div className={styles.season}>
@@ -169,16 +153,9 @@ function StudioDetailsYear(props: StudioDetailsYearProps) {
             className={styles.movieCountTooltip}
             canFlip={true}
             anchor={
-              <Label
-                kind={getMovieCountKind(
-                  studioMonitored,
-                  movieFileCount,
-                  movieCount
-                )}
-                size={sizes.LARGE}
-              >
+              <Label kind={yearKind} size={sizes.LARGE}>
                 <span>
-                  {movieFileCount} / {movieCount}
+                  {movieFileCount} / {totalMovieCount}
                 </span>
               </Label>
             }
@@ -226,7 +203,7 @@ function StudioDetailsYear(props: StudioDetailsYearProps) {
               </MenuItem>
               <MenuItem
                 isDisabled={
-                  isSearching || !hasMonitoredMovies || !studioMonitored
+                  isSearching || monitoredMovieCount === 0 || !studioMonitored
                 }
                 onPress={onSearchPress}
               >
@@ -254,14 +231,14 @@ function StudioDetailsYear(props: StudioDetailsYearProps) {
               className={styles.actionButton}
               name={icons.SEARCH}
               title={
-                hasMonitoredMovies && studioMonitored
+                monitoredMovieCount > 0 && studioMonitored
                   ? translate('SearchForMonitoredMoviesYear')
                   : translate('NoMonitoredMoviesYear')
               }
               size={24}
               isSpinning={isSearching}
               isDisabled={
-                isSearching || !hasMonitoredMovies || !studioMonitored
+                isSearching || monitoredMovieCount === 0 || !studioMonitored
               }
               onPress={onSearchPress}
             />
@@ -287,6 +264,7 @@ function StudioDetailsYear(props: StudioDetailsYearProps) {
                   {items.map((item: Movie) => (
                     <SceneRow
                       key={item.id}
+                      movie={item}
                       columns={columns}
                       {...item}
                       safeForWorkMode={safeForWorkMode}

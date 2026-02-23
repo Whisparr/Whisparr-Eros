@@ -56,30 +56,10 @@ export const defaultState = {
       isSortable: true
     },
     {
-      name: 'audioInfo',
-      label: () => translate('AudioInfo'),
-      isVisible: false
-    },
-    {
-      name: 'videoCodec',
-      label: () => translate('VideoCodec'),
-      isVisible: false
-    },
-    {
-      name: 'videoDynamicRangeType',
-      label: () => translate('VideoDynamicRange'),
-      isVisible: false
-    },
-    {
       name: 'sizeOnDisk',
       label: () => translate('Size'),
       isVisible: false,
       isSortable: true
-    },
-    {
-      name: 'releaseGroup',
-      label: () => translate('ReleaseGroup'),
-      isVisible: false
     },
     {
       name: 'status',
