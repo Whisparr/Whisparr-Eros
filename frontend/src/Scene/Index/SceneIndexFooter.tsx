@@ -5,13 +5,13 @@ import Alert from 'Components/Alert';
 import DescriptionList from 'Components/DescriptionList/DescriptionList';
 import DescriptionListItem from 'Components/DescriptionList/DescriptionListItem';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
+import { useMovieStats } from 'Movie/Index/useMovieStats';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
-import { useSceneStats } from './useSceneStats';
 import styles from './SceneIndexFooter.css';
 
 export default function SceneIndexFooter() {
-  const { data, isFetching, isError, error } = useSceneStats();
+  const { data, error, isError, isFetching } = useMovieStats();
 
   const count = data?.totalCount ?? 0;
   const movieFiles = data?.movieFiles ?? 0;
@@ -78,10 +78,10 @@ export default function SceneIndexFooter() {
 
             <div className={styles.statistics}>
               <DescriptionList>
-                <DescriptionListItem title={translate('Scenes')} data={count} />
+                <DescriptionListItem title={translate('Movies')} data={count} />
 
                 <DescriptionListItem
-                  title={translate('SceneFiles')}
+                  title={translate('MovieFiles')}
                   data={movieFiles}
                 />
               </DescriptionList>

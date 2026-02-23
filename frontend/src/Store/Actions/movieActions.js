@@ -58,8 +58,8 @@ export const filters = [
         type: filterTypes.EQUAL
       },
       {
-        key: 'hasFile',
-        value: false,
+        key: 'sizeOnDisk',
+        value: 0,
         type: filterTypes.EQUAL
       }
     ]
@@ -74,9 +74,9 @@ export const filters = [
         type: filterTypes.EQUAL
       },
       {
-        key: 'hasFile',
-        value: false,
-        type: filterTypes.EQUAL
+        key: 'sizeOnDisk',
+        value: 0,
+        type: filterTypes.GREATER_THAN
       },
       {
         key: 'isAvailable',
@@ -95,9 +95,9 @@ export const filters = [
         type: filterTypes.EQUAL
       },
       {
-        key: 'hasFile',
-        value: true,
-        type: filterTypes.EQUAL
+        key: 'sizeOnDisk',
+        value: 0,
+        type: filterTypes.GREATER_THAN
       },
       {
         key: 'qualityCutoffNotMet',

@@ -3,7 +3,6 @@
 interface CssExports {
   'actionButtons': string;
   'buttons': string;
-  'deleteButtons': string;
   'footer': string;
   'selected': string;
 }

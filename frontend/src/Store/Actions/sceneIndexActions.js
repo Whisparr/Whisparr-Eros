@@ -2,6 +2,7 @@ import { createAction } from 'redux-actions';
 import { filterBuilderTypes, filterBuilderValueTypes, sortDirections } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import createHandleActions from './Creators/createHandleActions';
+import createSetTableOptionReducer from './Creators/Reducers/createSetTableOptionReducer';
 import { filterPredicates, filters, sortPredicates } from './movieActions';
 
 //
@@ -299,17 +300,7 @@ export const reducers = createHandleActions({
     return Object.assign({}, state, { view: payload.view, page: 1 });
   },
 
-  [SET_MOVIE_TABLE_OPTION]: function(state, { payload }) {
-    const tableOptions = state.tableOptions;
-
-    return {
-      ...state,
-      tableOptions: {
-        ...tableOptions,
-        ...payload
-      }
-    };
-  },
+  [SET_MOVIE_TABLE_OPTION]: createSetTableOptionReducer(section),
 
   [SET_MOVIE_POSTER_OPTION]: function(state, { payload }) {
     const posterOptions = state.posterOptions;

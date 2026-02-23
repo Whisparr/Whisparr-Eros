@@ -28,7 +28,7 @@ function MovieIndexSelectModeButton(props: MovieIndexSelectModeButtonProps) {
   const onPressWrapper = useCallback(() => {
     if (isSelectMode) {
       selectDispatch({
-        type: 'reset',
+        type: 'unselectAll',
       });
     }
 

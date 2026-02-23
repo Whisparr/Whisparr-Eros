@@ -3,70 +3,85 @@
 
   align-items: center;
 }
-
-.buttons {
+/* Floating, pinned footer styles */
+.footer {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 210px; /* Match actual sidebar width from dimensions.js */
+  z-index: 100;
   display: flex;
-}
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 32px;
+  border-top: 1px solid #222;
+  background: #18191c;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.15);
+  /* No left border or margin, flush with sidebar */
 
-.actionButtons,
-.deleteButtons {
-  display: flex;
-  gap: 10px;
-}
-
-.deleteButtons {
-  margin-left: 50px;
-}
-
-.selected {
-  display: flex;
-  justify-content: flex-end;
-  flex-grow: 1;
-  font-weight: bold;
-}
-
-@media only screen and (max-width: $breakpointMedium) {
   .buttons {
-    justify-content: center;
-    width: 100%;
-  }
-
-  .selected {
-    justify-content: center;
-    margin-bottom: 20px;
-    width: 100%;
-    order: -1;
-  }
-}
-
-@media only screen and (max-width: $breakpointSmall) {
-  .footer {
     display: flex;
-    flex-direction: column;
-  }
-
-  .buttons {
-    flex-direction: column;
-    margin-top: 20px;
-    gap: 20px;
+    justify-content: center;
+    flex: 1;
   }
 
   .actionButtons {
-    flex-wrap: wrap;
-  }
-
-  .actionButtons,
-  .deleteButtons {
     display: flex;
-    justify-content: center;
-  }
+    gap: 10px;
 
-  .deleteButtons {
-    margin-left: 0;
+    justify-content: center;
+    width: 100%;
   }
 
   .selected {
-    justify-content: center;
-    order: -1;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    margin-left: 32px;
+    font-weight: bold;
+  }
+  @media only screen and (max-width: 900px) {
+    .footer {
+      left: 0; /* Sidebar collapses or overlays, so footer spans full width */
+    }
+  }
+  @media only screen and (max-width: $breakpointMedium) {
+    .buttons {
+      justify-content: center;
+      width: 100%;
+    }
+
+    .selected {
+      justify-content: center;
+      margin-bottom: 20px;
+      width: 100%;
+      order: -1;
+    }
+  }
+  @media only screen and (max-width: $breakpointSmall) {
+    .footer {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .buttons {
+      flex-direction: column;
+      margin-top: 20px;
+      gap: 20px;
+    }
+
+    .actionButtons {
+      flex-wrap: wrap;
+    }
+
+    .actionButtons {
+      display: flex;
+      justify-content: center;
+    }
+
+    .selected {
+      justify-content: center;
+      order: -1;
+    }
   }
 }
