@@ -49,6 +49,7 @@ import QualityProfileName from 'Settings/Profiles/Quality/QualityProfileName';
 import { executeCommand } from 'Store/Actions/commandActions';
 import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import fonts from 'Styles/Variables/fonts';
+import Queue from 'typings/Queue';
 import formatRuntime from 'Utilities/Date/formatRuntime';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
@@ -56,7 +57,7 @@ import MovieCastPostersConnector from './Credits/Cast/MovieCastPostersConnector'
 import MovieDetailsLinks from './MovieDetailsLinks';
 import MovieStatusLabel from './MovieStatusLabel';
 import MovieStudioLink from './MovieStudioLink';
-import MovieTagsConnector from './MovieTagsConnector';
+import MovieTags from './MovieTags';
 import ReleaseDateDisplay from './ReleaseDateDisplay';
 import MovieTitlesTable from './Titles/MovieTitlesTable';
 import useMovieDetailsModals from './useMovieDetailsModals';
@@ -73,11 +74,11 @@ interface Props {
   movieFilesError?: unknown;
   extraFilesError?: unknown;
   movieCreditsError?: unknown;
-  hasMovieFiles?: boolean;
+  hasFile?: boolean;
   onRefreshPress: () => void;
   onSearchPress: () => void;
   onGoToMovie: () => void;
-  queueItem?: object | null | undefined;
+  queueItem?: Queue | false | undefined;
   movieRuntimeFormat: string;
 }
 
@@ -164,7 +165,6 @@ function MovieDetails(props: Partial<Props>) {
     qualityProfileId,
     monitored,
     studioTitle,
-    studioForeignId,
     genres = [],
     collection,
     overview,
@@ -174,7 +174,7 @@ function MovieDetails(props: Partial<Props>) {
     images,
     tags = [],
     itemType,
-    hasMovieFiles,
+    hasFile,
     queueItem,
     movieRuntimeFormat,
     isSaving,
@@ -248,7 +248,7 @@ function MovieDetails(props: Partial<Props>) {
           <PageToolbarButton
             label={translate('PreviewRename')}
             iconName={icons.ORGANIZE}
-            isDisabled={!!hasMovieFiles}
+            isDisabled={!!hasFile}
             onPress={handleOrganizePress}
           />
           <PageToolbarButton
@@ -342,12 +342,9 @@ function MovieDetails(props: Partial<Props>) {
                   {releaseDate ? (
                     <ReleaseDateDisplay releaseDate={releaseDate} />
                   ) : null}
-                  {studioTitle ? (
+                  {movie ? (
                     <span className={styles.studio}>
-                      <MovieStudioLink
-                        foreignId={studioForeignId}
-                        studioTitle={studioTitle}
-                      />
+                      <MovieStudioLink movie={movie} />
                     </span>
                   ) : null}
                   {runtime ? (
@@ -373,17 +370,11 @@ function MovieDetails(props: Partial<Props>) {
                       position={tooltipPositions.BOTTOM}
                     />
                   </span>
-
                   {!!tags.length && (
                     <span>
                       <Tooltip
                         anchor={<Icon name={icons.TAGS} size={20} />}
-                        tooltip={
-                          <MovieTagsConnector
-                            key={Number(movieId)}
-                            movieId={Number(movieId)}
-                          />
-                        }
+                        tooltip={<MovieTags key={movieId} movie={movie} />}
                         position={tooltipPositions.BOTTOM}
                       />
                     </span>
@@ -415,7 +406,7 @@ function MovieDetails(props: Partial<Props>) {
                   <span className={styles.statusName}>
                     <MovieStatusLabel
                       status={status}
-                      hasMovieFiles={hasMovieFiles ?? false}
+                      hasMovieFiles={hasFile ?? false}
                       monitored={monitored}
                       isAvailable={isAvailable}
                       queueItem={queueItem}

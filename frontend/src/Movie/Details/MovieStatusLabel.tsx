@@ -1,20 +1,44 @@
-import PropTypes from 'prop-types';
 import React from 'react';
 import Label from 'Components/Label';
 import { kinds, sizes } from 'Helpers/Props';
+import { Kind } from 'Helpers/Props/kinds';
+import Queue from 'typings/Queue';
 import getQueueStatusText from 'Utilities/Movie/getQueueStatusText';
 import firstCharToUpper from 'Utilities/String/firstCharToUpper';
 import translate from 'Utilities/String/translate';
 import styles from './MovieStatusLabel.css';
 
-function getMovieStatus(status, hasFile, isMonitored, isAvailable, queueItem = false) {
+type MovieStatus =
+  | 'availNotMonitored'
+  | 'ended'
+  | 'deleted'
+  | 'missingUnmonitored'
+  | 'missingMonitored'
+  | 'continuing';
+
+interface MovieStatusLabelProps {
+  status: string;
+  hasMovieFiles: boolean;
+  monitored: boolean;
+  isAvailable: boolean;
+  queueItem?: Queue | false;
+  useLabel?: boolean;
+}
+
+function getMovieStatus(
+  status: string,
+  hasFile: boolean,
+  isMonitored: boolean,
+  isAvailable: boolean,
+  queueItem?: Queue | false
+): MovieStatus {
   if (queueItem) {
     const queueStatus = queueItem.status;
     const queueState = queueItem.trackedDownloadStatus;
     const queueStatusText = getQueueStatusText(queueStatus, queueState);
 
     if (queueStatusText) {
-      return queueStatusText;
+      return queueStatusText as MovieStatus;
     }
   }
 
@@ -41,26 +65,33 @@ function getMovieStatus(status, hasFile, isMonitored, isAvailable, queueItem = f
   return 'continuing';
 }
 
-function MovieStatusLabel(props) {
-  const {
+function MovieStatusLabel({
+  status,
+  hasMovieFiles,
+  monitored,
+  isAvailable,
+  queueItem,
+  useLabel = false,
+}: MovieStatusLabelProps) {
+  let movieStatus = getMovieStatus(
     status,
     hasMovieFiles,
     monitored,
     isAvailable,
-    queueItem,
-    useLabel,
-    colorImpairedMode
-  } = props;
+    queueItem
+  );
+  let statusClass: string = movieStatus;
 
-  let movieStatus = getMovieStatus(status, hasMovieFiles, monitored, isAvailable, queueItem);
-  let statusClass = movieStatus;
-
+  // Normalize movieStatus for display
   if (movieStatus === 'availNotMonitored' || movieStatus === 'ended') {
-    movieStatus = 'downloaded';
-  } else if (movieStatus === 'missingMonitored' || movieStatus === 'missingUnmonitored') {
-    movieStatus = 'missing';
+    movieStatus = 'downloaded' as MovieStatus;
+  } else if (
+    movieStatus === 'missingMonitored' ||
+    movieStatus === 'missingUnmonitored'
+  ) {
+    movieStatus = 'missing' as MovieStatus;
   } else if (movieStatus === 'continuing') {
-    movieStatus = 'notAvailable';
+    movieStatus = 'notAvailable' as MovieStatus;
   }
 
   if (queueItem) {
@@ -68,7 +99,7 @@ function MovieStatusLabel(props) {
   }
 
   if (useLabel) {
-    let kind = kinds.SUCCESS;
+    let kind: Kind = kinds.SUCCESS;
 
     switch (statusClass) {
       case 'queue':
@@ -93,38 +124,17 @@ function MovieStatusLabel(props) {
     }
 
     return (
-      <Label
-        kind={kind}
-        size={sizes.LARGE}
-        colorImpairedMode={colorImpairedMode}
-      >
+      <Label kind={kind} size={sizes.LARGE}>
         {translate(firstCharToUpper(movieStatus))}
       </Label>
     );
   }
 
   return (
-    <span
-      className={styles[statusClass]}
-    >
+    <span className={styles[statusClass as keyof typeof styles]}>
       {translate(firstCharToUpper(movieStatus))}
     </span>
   );
 }
-
-MovieStatusLabel.propTypes = {
-  status: PropTypes.string.isRequired,
-  hasMovieFiles: PropTypes.bool.isRequired,
-  monitored: PropTypes.bool.isRequired,
-  isAvailable: PropTypes.bool.isRequired,
-  queueItem: PropTypes.object,
-  useLabel: PropTypes.bool,
-  colorImpairedMode: PropTypes.bool
-};
-
-MovieStatusLabel.defaultProps = {
-  useLabel: false,
-  colorImpairedMode: false
-};
 
 export default MovieStatusLabel;

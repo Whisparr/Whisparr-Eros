@@ -292,7 +292,6 @@ function AddNewMovieSearchResult(props: AddNewMovieSearchResultProps) {
                 monitored={monitored}
                 isAvailable={isAvailable}
                 useLabel={true}
-                colorImpairedMode={colorImpairedMode}
               />
             )}
           </div>
