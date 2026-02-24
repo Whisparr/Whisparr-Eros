@@ -76,7 +76,7 @@ namespace NzbDrone.Core.Movies
         // for sort/filter; the client resolves the display name from its own store.
         protected override SqlBuilder PagedBuilder() => new SqlBuilder(_database.DatabaseType)
             .Join<Movie, MovieMetadata>((m, p) => m.MovieMetadataId == p.Id)
-            .LeftJoin<Movie, MovieFile>((m, f) => m.Id == f.MovieId);
+            .LeftJoin<Movie, MovieFile>((m, f) => m.MovieFileId == f.Id);
 
         protected override SqlBuilder Builder() => new SqlBuilder(_database.DatabaseType)
             .Join<Movie, QualityProfile>((m, p) => m.QualityProfileId == p.Id)

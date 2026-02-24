@@ -107,7 +107,7 @@ namespace NzbDrone.Core.MovieStats
                     COALESCE(SUM(mf.""Size""), 0) AS TotalFileSize
                 FROM ""Movies"" m
                 INNER JOIN ""MovieMetadata"" mm ON m.""MovieMetadataId"" = mm.""Id""
-                LEFT JOIN ""MovieFiles"" mf ON m.""Id"" = mf.""MovieId""
+                LEFT JOIN ""MovieFiles"" mf ON m.""MovieFileId"" = mf.""Id""
                 WHERE mm.""ItemType"" = @itemType";
 
             using var conn = _database.OpenConnection();

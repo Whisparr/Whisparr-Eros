@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 using DryIoc.ImTools;
 using FluentValidation;
@@ -12,6 +11,7 @@ using NLog;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Configuration;
+using NzbDrone.Core.Datastore;
 using NzbDrone.Core.Datastore.Events;
 using NzbDrone.Core.DecisionEngine.Specifications;
 using NzbDrone.Core.MediaCover;
@@ -28,6 +28,7 @@ using NzbDrone.Core.RootFolders;
 using NzbDrone.Core.Validation;
 using NzbDrone.Core.Validation.Paths;
 using NzbDrone.SignalR;
+using Whisparr.Api.V3.Movies.Helpers;
 using Whisparr.Http;
 using Whisparr.Http.REST;
 using Whisparr.Http.REST.Attributes;
@@ -146,8 +147,9 @@ namespace Whisparr.Api.V3.Movies
             "movieStatus"
         };
 
-        // Basic search: cleanTitle or foreign ID
-        // Added for SelectMovieModalContent performance but will reuse elsewhere
+        /// <summary>GET /movie/search?query=term</summary>
+        /// <remarks> Search movies by clean title (or foreign ID)</remarks>
+        /// <param name="query">The search query, which can be a clean title or a foreign ID</param>
         [HttpGet("search")]
         [Produces("application/json")]
         public List<MovieResource> SearchMovies(string query)
@@ -191,6 +193,12 @@ namespace Whisparr.Api.V3.Movies
             return moviesResources;
         }
 
+        /// <summary>GET /movie?tmdbId=12345 OR /movie?tpdbId=tpdb-12345 OR /movie?stashId=stash-12345</summary>
+        /// <param name="tmdbId"></param>
+        /// <param name="tpdbId"></param>
+        /// <param name="stashId"></param>
+        /// <param name="excludeLocalCovers"></param>
+        /// <remarks> Look up movies by TMDB ID, TPDB ID, or Stash ID. If no query parameters are provided, returns all movies. </remarks>
         [HttpGet]
         public List<MovieResource> AllMovie(int? tmdbId, string tpdbId, string stashId, bool excludeLocalCovers = false)
         {
@@ -825,9 +833,9 @@ namespace Whisparr.Api.V3.Movies
             return moviesResources;
         }
 
-        /// <summary>
-        /// POST /movie/list - Look up movies by a list of foreignIds
-        /// </summary>
+        /// <summary>POST /movie/list </summary>
+        /// <param name="foreignIds">List of foreign IDs to look up</param>
+        /// <remarks>Look up movies by a list of foreignIds</remarks>
         [HttpPost("list")]
         [Produces("application/json")]
         public ActionResult<List<MovieResource>> ListByForeignIds([FromBody] List<string> foreignIds)
@@ -851,9 +859,8 @@ namespace Whisparr.Api.V3.Movies
             return resources;
         }
 
-        /// <summary>
-        /// POST /movie/paged - Paged, filtered, and sorted movie index results
-        /// </summary>
+        /// <summary>POST /movie/paged</summary>
+        /// <remarks>Paged, filtered, and sorted movie/scene results</remarks>
         [HttpPost("paged")]
         [Produces("application/json")]
         public ActionResult<PagingResource<MovieResource>> GetPaged([FromBody] MoviePagingRequestResource request)
@@ -870,7 +877,7 @@ namespace Whisparr.Api.V3.Movies
             {
                 Page = request.Page ?? 1,
                 PageSize = request.PageSize ?? 10,
-                SortKey = GetSortKeyNormalized(_allowedMovieSortKeys.Contains(request.SortKey ?? "") ? request.SortKey : null),
+                SortKey = Sorting.GetSortKeyNormalized(_allowedMovieSortKeys.Contains(request.SortKey ?? "") ? request.SortKey : null),
                 SortDirection = request.SortDirection ?? NzbDrone.Core.Datastore.SortDirection.Ascending
             };
 
@@ -884,10 +891,12 @@ namespace Whisparr.Api.V3.Movies
             }
         }
 
+        /// <summary> Gets paged movies with in-memory tag filtering. </summary>
+        /// <remarks> Used when tag filters are included since they can't be efficiently filtered at the database level. </remarks>
         private ActionResult<PagingResource<MovieResource>> GetPagedMoviesWithTags(MoviePagingRequestResource request, NzbDrone.Core.Datastore.PagingSpec<Movie> pageSpec)
         {
             var allMovies = _moviesService.GetAllMovies();
-            ApplyMovieFiltersToPagingSpec(request.Filters, pageSpec);
+            Paging.ApplyMovieFiltersToPagingSpec(request.Filters, pageSpec);
             var filteredMovies = allMovies.AsQueryable();
             foreach (var expr in pageSpec.FilterExpressions)
             {
@@ -898,8 +907,8 @@ namespace Whisparr.Api.V3.Movies
             var pageSize = pageSpec.PageSize > 0 && pageSpec.PageSize < 1000 ? pageSpec.PageSize : 10;
             var sortDir = pageSpec.SortDirection;
             filteredMovies = sortDir == NzbDrone.Core.Datastore.SortDirection.Descending
-                ? filteredMovies.OrderByDescending(m => GetSortValue(m, sortKey))
-                : filteredMovies.OrderBy(m => GetSortValue(m, sortKey));
+                ? filteredMovies.OrderByDescending(m => Sorting.GetSortValue(m, sortKey))
+                : filteredMovies.OrderBy(m => Sorting.GetSortValue(m, sortKey));
 
             var offset = ((pageSpec.Page > 0 ? pageSpec.Page : 1) - 1) * pageSize;
             var totalCount = filteredMovies.Count();
@@ -927,9 +936,10 @@ namespace Whisparr.Api.V3.Movies
             return Ok(result);
         }
 
+        /// <summary> Standard paged movie index without tag filtering. </summary>
         private ActionResult<PagingResource<MovieResource>> GetPagedMoviesStandard(MoviePagingRequestResource request, NzbDrone.Core.Datastore.PagingSpec<Movie> pageSpec)
         {
-            ApplyMovieFiltersToPagingSpec(request.Filters, pageSpec);
+            Paging.ApplyMovieFiltersToPagingSpec(request.Filters, pageSpec);
 
             var paged = _moviesService.Paged(pageSpec);
             var availDelay = _configService.AvailabilityDelay;
@@ -950,319 +960,6 @@ namespace Whisparr.Api.V3.Movies
                 TotalRecords = paged.TotalRecords
             };
             return Ok(result);
-        }
-
-        private string GetSortKeyNormalized(string sortKey)
-        {
-            switch (sortKey?.ToLowerInvariant())
-            {
-                case "title": return "movieMetadata.Title";
-                case "sorttitle": return "movieMetadata.SortTitle";
-                case "cleantitle": return "movieMetadata.CleanTitle";
-                case "studiotitle": return "movieMetadata.StudioTitle";
-                case "releasedate": return "movieMetadata.ReleaseDate";
-                case "year": return "movieMetadata.Year";
-                case "status": return "movieMetadata.Status";
-                case "monitored": return "Monitored";
-                case "qualityprofileid": return "QualityProfileId";
-                case "rootfolderpath": return "Path";
-                case "sizeondisk": return "movieFiles.Size";
-                case "itemtype": return "movieMetadata.ItemType";
-                case "added": return "Added";
-                case "runtime": return "movieMetadata.Runtime";
-                case "moviestatus": return "MovieFileId";
-                default: return "movieMetadata.SortTitle";
-            }
-        }
-
-        private object GetSortValue(Movie movie, string sortKey)
-        {
-            switch (sortKey.ToLowerInvariant())
-            {
-                case "title": return movie.Title;
-                case "sorttitle": return movie.MovieMetadata.Value.CleanTitle;
-                case "studiotitle": return movie.MovieMetadata.Value.StudioTitle;
-                case "releasedate": return movie.MovieMetadata.Value.ReleaseDate;
-                case "year": return movie.Year;
-                case "status": return movie.MovieMetadata.Value.Status;
-                case "monitored": return movie.Monitored;
-                case "qualityprofileid": return movie.QualityProfileId;
-                case "rootfolderpath": return movie.RootFolderPath;
-                case "sizeondisk": return movie.MovieFile?.Size ?? 0;
-                case "itemtype": return movie.MovieMetadata.Value.ItemType;
-                case "added": return movie.Added;
-                case "runtime": return movie.MovieMetadata.Value.Runtime;
-                case "moviestatus": return movie.MovieFileId;
-                default: return movie.MovieMetadata.Value.CleanTitle;
-            }
-        }
-
-        private static DateTime? ShiftDateTime(DateTime baseTime, string unit, int amount)
-        {
-            return unit switch
-            {
-                "seconds" => baseTime.AddSeconds(amount),
-                "minutes" => baseTime.AddMinutes(amount),
-                "hours" => baseTime.AddHours(amount),
-                "days" => baseTime.AddDays(amount),
-                "weeks" => baseTime.AddDays(amount * 7.0),
-                "months" => baseTime.AddMonths(amount),
-                "years" => baseTime.AddYears(amount),
-                _ => (DateTime?)null
-            };
-        }
-
-        private void ApplyMovieFiltersToPagingSpec(List<MovieFilterResource> filters, NzbDrone.Core.Datastore.PagingSpec<Movie> pageSpec)
-        {
-            if (filters == null || !filters.Any())
-            {
-                return;
-            }
-
-            foreach (var filter in filters)
-            {
-                if (filter == null || string.IsNullOrWhiteSpace(filter.Key))
-                {
-                    continue;
-                }
-
-                var key = filter.Key.ToLowerInvariant();
-                var op = filter.Type?.ToLowerInvariant() ?? "equal";
-
-                if (!(filter.Value is JsonElement jsonElement))
-                {
-                    continue;
-                }
-
-                switch (key)
-                {
-                    case "title":
-                        if (jsonElement.ValueKind == JsonValueKind.String)
-                        {
-                            var titleVal = jsonElement.GetString();
-                            if (!string.IsNullOrWhiteSpace(titleVal))
-                            {
-                                pageSpec.FilterExpressions.Add(m => m.Title != null && m.Title.Contains(titleVal, StringComparison.OrdinalIgnoreCase));
-                            }
-                        }
-
-                        break;
-                    case "status":
-                        if (jsonElement.ValueKind == JsonValueKind.String && Enum.TryParse<MovieStatusType>(jsonElement.GetString(), true, out var statusEnum))
-                        {
-                            pageSpec.FilterExpressions.Add(m => m.MovieMetadata.Value.Status == statusEnum);
-                        }
-                        else if (jsonElement.ValueKind == JsonValueKind.Number && jsonElement.TryGetInt32(out var statusInt))
-                        {
-                            pageSpec.FilterExpressions.Add(m => (int)m.MovieMetadata.Value.Status == statusInt);
-                        }
-
-                        break;
-                    case "monitored":
-                        if (jsonElement.ValueKind == JsonValueKind.True || jsonElement.ValueKind == JsonValueKind.False)
-                        {
-                            var monitoredBool = jsonElement.GetBoolean();
-                            pageSpec.FilterExpressions.Add(m => m.Monitored == monitoredBool);
-                        }
-
-                        break;
-                    case "qualityprofileid":
-                        if (jsonElement.ValueKind == JsonValueKind.Number && jsonElement.TryGetInt32(out var qpId))
-                        {
-                            pageSpec.FilterExpressions.Add(m => m.QualityProfileId == qpId);
-                        }
-
-                        break;
-                    case "itemtype":
-                        if (jsonElement.ValueKind == JsonValueKind.String && Enum.TryParse<ItemType>(jsonElement.GetString(), true, out var itemTypeEnum))
-                        {
-                            pageSpec.FilterExpressions.Add(m => m.MovieMetadata.Value.ItemType == itemTypeEnum);
-                        }
-
-                        break;
-                    case "year":
-                        if (jsonElement.ValueKind == JsonValueKind.Number && jsonElement.TryGetInt32(out var yearInt))
-                        {
-                            pageSpec.FilterExpressions.Add(m => m.Year == yearInt);
-                        }
-
-                        break;
-                    case "rootfolderpath":
-                        if (jsonElement.ValueKind == JsonValueKind.String)
-                        {
-                            var rootPath = jsonElement.GetString();
-                            if (!string.IsNullOrWhiteSpace(rootPath))
-                            {
-                                pageSpec.FilterExpressions.Add(m => m.RootFolderPath != null && m.RootFolderPath.Contains(rootPath, StringComparison.OrdinalIgnoreCase));
-                            }
-                        }
-
-                        break;
-                    case "tags":
-                        if (jsonElement.ValueKind == JsonValueKind.Array)
-                        {
-                            var tagIds = jsonElement.EnumerateArray()
-                                .Where(e => e.ValueKind == JsonValueKind.Number && e.TryGetInt32(out _))
-                                .Select(e => e.GetInt32())
-                                .ToList();
-                            if (tagIds.Count > 0)
-                            {
-                                pageSpec.FilterExpressions.Add(m => m.Tags != null && tagIds.All(tagId => m.Tags.Contains(tagId)));
-                            }
-                        }
-
-                        break;
-                    case "studio":
-                    case "studiotitle":
-                        if (jsonElement.ValueKind == JsonValueKind.String)
-                        {
-                            var studioTitle = jsonElement.GetString();
-                            if (!string.IsNullOrWhiteSpace(studioTitle))
-                            {
-                                pageSpec.FilterExpressions.Add(m => m.MovieMetadata.Value.StudioTitle != null && m.MovieMetadata.Value.StudioTitle.Contains(studioTitle, StringComparison.OrdinalIgnoreCase));
-                            }
-                        }
-
-                        break;
-                    case "studioforeignid":
-                        if (jsonElement.ValueKind == JsonValueKind.String)
-                        {
-                            var studioForeignId = jsonElement.GetString();
-                            if (!string.IsNullOrWhiteSpace(studioForeignId))
-                            {
-                                pageSpec.FilterExpressions.Add(m => m.MovieMetadata.Value.StudioForeignId == studioForeignId);
-                            }
-                        }
-
-                        break;
-                    case "performer":
-                    case "performername":
-                        if (jsonElement.ValueKind == JsonValueKind.String)
-                        {
-                            var performerName = jsonElement.GetString();
-                            if (!string.IsNullOrWhiteSpace(performerName))
-                            {
-                                pageSpec.FilterExpressions.Add(m => m.MovieMetadata.Value.PerformerNames != null && m.MovieMetadata.Value.PerformerNames.Any(n => n.Contains(performerName, StringComparison.OrdinalIgnoreCase)));
-                            }
-                        }
-
-                        break;
-                    case "performerforeignid":
-                        if (jsonElement.ValueKind == JsonValueKind.String)
-                        {
-                            var performerForeignId = jsonElement.GetString();
-                            if (!string.IsNullOrWhiteSpace(performerForeignId))
-                            {
-                                pageSpec.FilterExpressions.Add(m => m.MovieMetadata.Value.PerformerForeignIds != null && m.MovieMetadata.Value.PerformerForeignIds.Contains(performerForeignId));
-                            }
-                        }
-
-                        break;
-                    case "releasedate":
-                        if (op is "lessthan" or "greaterthan")
-                        {
-                            if (jsonElement.ValueKind == JsonValueKind.String && DateTime.TryParse(jsonElement.GetString(), out var rdDate))
-                            {
-                                DateTime? rdDateVal = rdDate;
-                                if (op == "lessthan")
-                                {
-                                    pageSpec.FilterExpressions.Add(m => m.MovieMetadata.Value.ReleaseDateUtc < rdDateVal);
-                                }
-                                else
-                                {
-                                    pageSpec.FilterExpressions.Add(m => m.MovieMetadata.Value.ReleaseDateUtc > rdDateVal);
-                                }
-                            }
-                        }
-                        else if (jsonElement.ValueKind == JsonValueKind.Object &&
-                                 jsonElement.TryGetProperty("time", out var rdTimeEl) &&
-                                 jsonElement.TryGetProperty("value", out var rdValueEl) &&
-                                 rdValueEl.TryGetInt32(out var rdAmount))
-                        {
-                            var rdUnit = rdTimeEl.GetString()?.ToLowerInvariant();
-                            if (!string.IsNullOrEmpty(rdUnit))
-                            {
-                                var rdNow = DateTime.UtcNow;
-                                var rdOffset = op is "innext" or "notinnext" ? rdAmount : -rdAmount;
-                                var rdCutoff = ShiftDateTime(rdNow, rdUnit, rdOffset);
-                                if (rdCutoff.HasValue)
-                                {
-                                    DateTime? rdNowVal = rdNow;
-                                    switch (op)
-                                    {
-                                        case "inlast":
-                                            pageSpec.FilterExpressions.Add(m => m.MovieMetadata.Value.ReleaseDateUtc >= rdCutoff);
-                                            pageSpec.FilterExpressions.Add(m => m.MovieMetadata.Value.ReleaseDateUtc <= rdNowVal);
-                                            break;
-                                        case "notinlast":
-                                            pageSpec.FilterExpressions.Add(m => m.MovieMetadata.Value.ReleaseDateUtc < rdCutoff);
-                                            break;
-                                        case "innext":
-                                            pageSpec.FilterExpressions.Add(m => m.MovieMetadata.Value.ReleaseDateUtc > rdNowVal);
-                                            pageSpec.FilterExpressions.Add(m => m.MovieMetadata.Value.ReleaseDateUtc <= rdCutoff);
-                                            break;
-                                        case "notinnext":
-                                            pageSpec.FilterExpressions.Add(m => m.MovieMetadata.Value.ReleaseDateUtc > rdCutoff);
-                                            break;
-                                    }
-                                }
-                            }
-                        }
-
-                        break;
-                    case "added":
-                        if (op is "lessthan" or "greaterthan")
-                        {
-                            if (jsonElement.ValueKind == JsonValueKind.String && DateTime.TryParse(jsonElement.GetString(), out var adDate))
-                            {
-                                if (op == "lessthan")
-                                {
-                                    pageSpec.FilterExpressions.Add(m => m.Added < adDate);
-                                }
-                                else
-                                {
-                                    pageSpec.FilterExpressions.Add(m => m.Added > adDate);
-                                }
-                            }
-                        }
-                        else if (jsonElement.ValueKind == JsonValueKind.Object &&
-                                 jsonElement.TryGetProperty("time", out var adTimeEl) &&
-                                 jsonElement.TryGetProperty("value", out var adValueEl) &&
-                                 adValueEl.TryGetInt32(out var adAmount))
-                        {
-                            var adUnit = adTimeEl.GetString()?.ToLowerInvariant();
-                            if (!string.IsNullOrEmpty(adUnit))
-                            {
-                                var adNow = DateTime.UtcNow;
-                                var adOffset = op is "innext" or "notinnext" ? adAmount : -adAmount;
-                                var adCutoffNullable = ShiftDateTime(adNow, adUnit, adOffset);
-                                if (adCutoffNullable.HasValue)
-                                {
-                                    var adCutoff = adCutoffNullable.Value;
-                                    switch (op)
-                                    {
-                                        case "inlast":
-                                            pageSpec.FilterExpressions.Add(m => m.Added >= adCutoff);
-                                            pageSpec.FilterExpressions.Add(m => m.Added <= adNow);
-                                            break;
-                                        case "notinlast":
-                                            pageSpec.FilterExpressions.Add(m => m.Added < adCutoff);
-                                            break;
-                                        case "innext":
-                                            pageSpec.FilterExpressions.Add(m => m.Added > adNow);
-                                            pageSpec.FilterExpressions.Add(m => m.Added <= adCutoff);
-                                            break;
-                                        case "notinnext":
-                                            pageSpec.FilterExpressions.Add(m => m.Added > adCutoff);
-                                            break;
-                                    }
-                                }
-                            }
-                        }
-
-                        break;
-                }
-            }
         }
     }
 }

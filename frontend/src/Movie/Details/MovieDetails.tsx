@@ -307,7 +307,14 @@ function MovieDetails(props: Partial<Props>) {
                     <div className={styles.toggleMonitoredContainer}>
                       <MonitorToggleButton
                         className={styles.monitorToggleButton}
+                        isDisabled={false}
                         monitored={monitored}
+                        moviesMonitored={monitored}
+                        type={
+                          movie.itemType === 'movie'
+                            ? 'movieMonitor'
+                            : 'sceneMonitor'
+                        }
                         isSaving={isSaving}
                         size={40}
                         onPress={handleMonitoredPress}
