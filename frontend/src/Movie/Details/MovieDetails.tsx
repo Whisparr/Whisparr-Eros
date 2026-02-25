@@ -74,7 +74,6 @@ interface Props {
   movieFilesError?: unknown;
   extraFilesError?: unknown;
   movieCreditsError?: unknown;
-  hasFile?: boolean;
   onRefreshPress: () => void;
   onSearchPress: () => void;
   onGoToMovie: () => void;
@@ -102,7 +101,7 @@ function MovieDetails(props: Partial<Props>) {
   const { isSmallScreen } = useSelector(createDimensionsSelector());
   const [overviewHeight, setOverviewHeight] = useState(0);
   const [titleWidth, setTitleWidth] = useState(0);
-  const { mutate: toggleMonitored } = useToggleMovieMonitored(id);
+  const { mutate: toggleMonitored } = useToggleMovieMonitored();
 
   const {
     isOrganizeModalOpen,
@@ -174,7 +173,6 @@ function MovieDetails(props: Partial<Props>) {
     images,
     tags = [],
     itemType,
-    hasFile,
     queueItem,
     movieRuntimeFormat,
     isSaving,
@@ -183,7 +181,8 @@ function MovieDetails(props: Partial<Props>) {
   } = { ...props, ...movie };
 
   const movieId = movie.id;
-  const { sizeOnDisk = 0 } = statistics as MovieStatistics;
+  const { sizeOnDisk } = statistics as MovieStatistics;
+  const hasFile = !!movie.movieFileId || sizeOnDisk > 0;
   const statusDetails = getMovieStatusDetails(status);
   const fanartUrl = getFanartUrl(images);
   const marqueeWidth = isSmallScreen ? titleWidth : titleWidth - 150;
@@ -405,7 +404,7 @@ function MovieDetails(props: Partial<Props>) {
                 >
                   <span className={styles.statusName}>
                     <MovieStatusLabel
-                      status={status}
+                      status={statusDetails.title}
                       hasMovieFiles={hasFile ?? false}
                       monitored={monitored}
                       isAvailable={isAvailable}

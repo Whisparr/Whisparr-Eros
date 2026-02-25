@@ -88,22 +88,14 @@ Logger.prototype.log = function(logLevel, message) {
   }
 };
 
-// Helper to re-fetch when a movie is updated
+// Helper to ensure updated data when a movie is updated in the background
 function updateMovieDetailsQueryCache(updatedMovie) {
-  const tmdbId = `/movie/tmdb:${updatedMovie.foreignId}`;
-  const movieForeignId = `/movie/${updatedMovie.foreignId}`;
+  const queryKey = `/movie/${updatedMovie.titleSlug}`;
 
-  // For TMDB movies
+  // Don't trigger a re-fetch, as this method can be called rapid-fire
   queryClient.invalidateQueries({
-    queryKey: [tmdbId]
-  });
-  // For Stash and everything else
-  queryClient.invalidateQueries({
-    queryKey: [movieForeignId]
-  });
-  // For MovieIndex and SceneIndex pages
-  queryClient.invalidateQueries({
-    queryKey: ['/movie/paged']
+    queryKey: [queryKey],
+    refetchType: 'none'
   });
 }
 
@@ -185,6 +177,16 @@ function updateStudioQueryCache(updatedStudio) {
       return updatedStudio;
     }
     return { ...oldData, ...updatedStudio };
+  });
+}
+
+function removeMovieQueryCache(updatedMovie) {
+  if (!updatedMovie || !updatedMovie.foreignId) {
+    return;
+  }
+
+  queryClient.removeQueries({
+    queryKey: [`/performer/${updatedMovie.foreignId}`]
   });
 }
 
@@ -390,38 +392,29 @@ class SignalRConnector extends Component {
   };
 
   handleMovie = (body) => {
-    const section = 'movies';
-
     // Support batch payloads (Resources) and single (resource)
     if (Array.isArray(body.resources) && body.resources.length > 0) {
       // Batched update
       if (body.action === 'updated') {
-        this.props.dispatchUpdateItemsBatch(body.resources.map((resource) => ({ section, ...resource })));
         body.resources.forEach(updateMovieInPerformerWorksQueryCache);
         body.resources.forEach(updateMovieInStudioWorksQueryCache);
         body.resources.forEach(updateMovieInStudioWorksQueryCache);
         body.resources.forEach(updateMovieDetailsQueryCache);
-        repopulatePage('movieUpdated');
       } else if (body.action === 'deleted') {
-        body.resources.forEach((resource) => {
-          this.props.dispatchRemoveItem({ section, id: resource.id });
-        });
+        body.resources.forEach(removeMovieQueryCache);
       }
-      repopulatePage('movieUpdated');
       return;
     }
 
     // Fallback: single resource
     const action = body.action;
     if (action === 'updated') {
-      this.props.dispatchUpdateItem({ section, ...body.resource });
       updateMovieInPerformerWorksQueryCache(body.resource);
       updateMovieInStudioWorksQueryCache(body.resource);
       updateMovieInStudioWorksQueryCache(body.resource);
       updateMovieDetailsQueryCache(body.resource);
-      repopulatePage('movieUpdated');
     } else if (action === 'deleted') {
-      this.props.dispatchRemoveItem({ section, id: body.resource.id });
+      removeMovieQueryCache(body.resource);
     }
   };
 

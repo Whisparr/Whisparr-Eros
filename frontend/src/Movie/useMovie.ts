@@ -2,7 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 import { queryClient } from 'App/queryClient';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import fetchJson, { ApiError } from '../Utilities/Fetch/fetchJson';
-import Movie from './Movie';
+import Movie, { MoviePatchResource } from './Movie';
 
 // Shared auth headers for all API calls
 const AUTH_HEADERS = {
@@ -20,11 +20,20 @@ function apiPut<T, TBody>(path: string, body: TBody) {
   });
 }
 
-// Fetch a single movie by ID or foreignId
-export function useMovie(idOrForeignId: string | number | undefined) {
+function apiPatch<T, TBody>(path: string, body: TBody) {
+  return fetchJson<T, TBody>({
+    path: `${apiRoot}${path}`,
+    method: 'PATCH',
+    body,
+    headers: AUTH_HEADERS,
+  });
+}
+
+// Fetch a single movie by titleSlug or movieId
+export function useMovie(titleSlug: string | number | undefined) {
   return useApiQuery<Movie | undefined>({
-    path: `/movie/${idOrForeignId}`,
-    queryOptions: { enabled: !!idOrForeignId },
+    path: `/movie/${titleSlug}`,
+    queryOptions: { enabled: !!titleSlug },
   });
 }
 
@@ -39,12 +48,15 @@ export function useMoviesByForeignIds(foreignIds: string[] | undefined) {
 }
 
 // TODO: Move to useApiMutation
-export function useToggleMovieMonitored(idOrForeignId: string | number) {
+export function useToggleMovieMonitored() {
   return useMutation({
     mutationFn: ({ movie, monitored }: { movie: Movie; monitored: boolean }) =>
-      apiPut<Movie, Movie>(`/movie/${movie.id}`, { ...movie, monitored }),
+      apiPatch<Movie, MoviePatchResource>(`/movie/${movie.id}`, {
+        id: movie.id,
+        monitored,
+      }),
     onSuccess: (data) => {
-      queryClient.setQueryData([`/movie/${idOrForeignId}`], data);
+      queryClient.setQueryData([`/movie/${data.titleSlug}`], data);
     },
   });
 }

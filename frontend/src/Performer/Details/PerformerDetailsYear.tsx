@@ -49,13 +49,8 @@ function PerformerDetailsYear(props: PerformerDetailsYearProps) {
     onSortPress: propOnSortPress,
   } = props;
 
-  const {
-    searchMonitoredMovies,
-    monitorMovie,
-    bulkMonitor,
-    tableOptionChange,
-    sortPress,
-  } = usePerformerDetailsYearActions();
+  const { searchMonitoredMovies, bulkMonitor, tableOptionChange, sortPress } =
+    usePerformerDetailsYearActions();
 
   function handleExpandPress() {
     onExpandPress(year, !isExpanded);
@@ -132,10 +127,6 @@ function PerformerDetailsYear(props: PerformerDetailsYearProps) {
       sortDirection,
       propOnSortPress
     );
-  }
-
-  function handleMonitorMoviePress(movieId: number, monitored: boolean) {
-    monitorMovie(movieId, monitored);
   }
 
   return (
@@ -235,7 +226,6 @@ function PerformerDetailsYear(props: PerformerDetailsYearProps) {
                         movie={movie}
                         safeForWorkMode={safeForWorkMode}
                         columns={columns}
-                        onMonitorMoviePress={handleMonitorMoviePress}
                       />
                     );
                   })}

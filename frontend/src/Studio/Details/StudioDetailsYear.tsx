@@ -96,7 +96,6 @@ function StudioDetailsYear(props: StudioDetailsYearProps) {
 
   const {
     onMonitorYearPress,
-    onMonitorMoviePress,
     onTableOptionChange,
     onSortPress,
     onSearchPress,
@@ -110,18 +109,6 @@ function StudioDetailsYear(props: StudioDetailsYearProps) {
     if (!onYearRefreshPress) return;
     const ids = items.map((item) => item.id);
     onYearRefreshPress(ids);
-  }
-
-  function handleMonitorMoviePress(
-    id: number,
-    monitored: boolean,
-    options?: object
-  ) {
-    const shiftKey =
-      options && typeof options === 'object' && 'shiftKey' in options
-        ? Boolean(options.shiftKey)
-        : false;
-    onMonitorMoviePress(id, monitored, { shiftKey });
   }
 
   function handleSortPress(name: string, direction?: SortDirection) {
@@ -268,7 +255,6 @@ function StudioDetailsYear(props: StudioDetailsYearProps) {
                       columns={columns}
                       {...item}
                       safeForWorkMode={safeForWorkMode}
-                      onMonitorMoviePress={handleMonitorMoviePress}
                     />
                   ))}
                 </TableBody>

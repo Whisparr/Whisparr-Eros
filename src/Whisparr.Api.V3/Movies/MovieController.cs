@@ -495,10 +495,26 @@ namespace Whisparr.Api.V3.Movies
             }
 
             var model = moviesResource.ToModel(movie);
-
             var updatedMovie = _moviesService.UpdateMovie(model);
+            return Accepted(MapToResource(updatedMovie));
+        }
 
-            return Accepted(moviesResource.Id);
+        [HttpPatch("{id}")]
+        [Consumes("application/json")]
+        [Produces("application/json")]
+        public IActionResult PatchMovieMonitored(int id, [FromBody] MoviePatchResource request)
+        {
+            // Load the movie
+            var movie = _moviesService.GetMovie(id);
+
+            // Update only the monitored flag
+            movie.Monitored = request.Monitored;
+
+            // Persist the update
+            var updated = _moviesService.UpdateMovie(movie);
+
+            // Map and return resource
+            return Ok(MapToResource(updated));
         }
 
         [RestDeleteById]
