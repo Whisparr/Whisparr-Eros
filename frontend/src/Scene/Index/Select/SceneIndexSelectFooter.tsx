@@ -183,7 +183,7 @@ function SceneIndexSelectFooter() {
       </div>
 
       <div className={styles.selected}>
-        {translate('MoviesSelectedInterp', { count: selectedCount })}
+        {translate('ScenesSelectedInterp', { count: selectedCount })}
       </div>
 
       <EditScenesModal

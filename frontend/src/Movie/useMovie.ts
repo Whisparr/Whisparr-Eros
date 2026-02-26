@@ -77,9 +77,20 @@ export function useSaveMovie() {
       return apiPut<Movie, Movie>(url, movie);
     },
     onSuccess: (data) => {
-      queryClient.setQueryData([`/movie/${data.id}`], data);
+      queryClient.setQueryData([`/movie/${data.titleSlug}`], data);
       queryClient.invalidateQueries({ queryKey: ['/movie/paged'] });
     },
+    onError: (error) => {
+      console.error('useSaveMovie error', error);
+    },
+  });
+}
+
+export function useSearchMovies(query: string, limit: number = 10) {
+  return useApiQuery<Movie[]>({
+    path: `/movie/search`,
+    queryParams: { query, limit },
+    queryOptions: { enabled: !!query },
   });
 }
 

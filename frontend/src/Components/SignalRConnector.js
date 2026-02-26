@@ -130,7 +130,7 @@ function updateMovieInPerformerWorksQueryCache(updatedMovie) {
 // Helper to update a nested movie in performer.years[].movies[] in React Query cache
 // To avoid invalidating the entire list when a single movie is updated, we need to find the movie in the cache and update it directly.
 function updateMovieInStudioWorksQueryCache(updatedMovie) {
-  if (!updatedMovie || !updatedMovie.studioForeignId) {
+  if (!updatedMovie?.studioForeignId) {
     return;
   }
 
@@ -151,7 +151,7 @@ function updateMovieInStudioWorksQueryCache(updatedMovie) {
 
 // Merges updates in React Queryr cache instead of a re-fetch
 function updatePerformerQueryCache(updatedPerformer) {
-  if (!updatedPerformer || !updatedPerformer.foreignId) {
+  if (!updatedPerformer?.foreignId) {
     return;
   }
 
@@ -167,7 +167,7 @@ function updatePerformerQueryCache(updatedPerformer) {
 
 // Merges updates in React Queryr cache instead of a re-fetch
 function updateStudioQueryCache(updatedStudio) {
-  if (!updatedStudio || !updatedStudio.foreignId) {
+  if (!updatedStudio?.foreignId) {
     return;
   }
 
@@ -181,17 +181,17 @@ function updateStudioQueryCache(updatedStudio) {
 }
 
 function removeMovieQueryCache(updatedMovie) {
-  if (!updatedMovie || !updatedMovie.foreignId) {
+  if (!updatedMovie?.foreignId) {
     return;
   }
 
   queryClient.removeQueries({
-    queryKey: [`/performer/${updatedMovie.foreignId}`]
+    queryKey: [`/movie/${updatedMovie.titleSlug}`]
   });
 }
 
 function removePerformerQueryCache(updatedPerformer) {
-  if (!updatedPerformer || !updatedPerformer.foreignId) {
+  if (!updatedPerformer?.foreignId) {
     return;
   }
 
@@ -205,7 +205,7 @@ function removePerformerQueryCache(updatedPerformer) {
 }
 
 function removeStudioQueryCache(updatedStudio) {
-  if (!updatedStudio || !updatedStudio.foreignId) {
+  if (!updatedStudio?.foreignId) {
     return;
   }
 
@@ -398,7 +398,6 @@ class SignalRConnector extends Component {
       if (body.action === 'updated') {
         body.resources.forEach(updateMovieInPerformerWorksQueryCache);
         body.resources.forEach(updateMovieInStudioWorksQueryCache);
-        body.resources.forEach(updateMovieInStudioWorksQueryCache);
         body.resources.forEach(updateMovieDetailsQueryCache);
       } else if (body.action === 'deleted') {
         body.resources.forEach(removeMovieQueryCache);
@@ -410,7 +409,6 @@ class SignalRConnector extends Component {
     const action = body.action;
     if (action === 'updated') {
       updateMovieInPerformerWorksQueryCache(body.resource);
-      updateMovieInStudioWorksQueryCache(body.resource);
       updateMovieInStudioWorksQueryCache(body.resource);
       updateMovieDetailsQueryCache(body.resource);
     } else if (action === 'deleted') {

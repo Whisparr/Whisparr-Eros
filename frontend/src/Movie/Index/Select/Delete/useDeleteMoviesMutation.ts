@@ -36,7 +36,7 @@ export function useDeleteMoviesMutation() {
         );
 
         if (!response.ok) {
-          throw new Error(`Failed to delete performer ${id}`);
+          throw new Error(`Failed to delete item ${id}`);
         }
       }
     },

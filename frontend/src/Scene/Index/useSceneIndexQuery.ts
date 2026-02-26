@@ -48,7 +48,7 @@ export function useSceneIndexQuery(params: SceneIndexQueryParams) {
     ...params,
     filters: [
       // Always filter for scenes only
-      { key: 'itemtype', type: 'equal', value: 'scene' },
+      { key: 'itemType', type: 'equal', value: 'scene' },
       ...filters,
     ],
   };

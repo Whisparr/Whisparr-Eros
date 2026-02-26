@@ -150,9 +150,10 @@ namespace Whisparr.Api.V3.Movies
         /// <summary>GET /movie/search?query=term</summary>
         /// <remarks> Search movies by clean title (or foreign ID)</remarks>
         /// <param name="query">The search query, which can be a clean title or a foreign ID</param>
+        /// <param name="limit">The maximum number of search results to return (default is 100)</param>
         [HttpGet("search")]
         [Produces("application/json")]
-        public List<MovieResource> SearchMovies(string query)
+        public List<MovieResource> SearchMovies(string query, [FromQuery] int limit = 100)
         {
             var moviesResources = new List<MovieResource>();
 
@@ -169,7 +170,7 @@ namespace Whisparr.Api.V3.Movies
                 moviesResources = GetMovieResources(ids).Where(m =>
                     (!string.IsNullOrEmpty(m.CleanTitle) && m.CleanTitle.Contains(cleanTitle, StringComparison.OrdinalIgnoreCase)) ||
                     m.ForeignId == query)
-                .Take(100)
+                .Take(limit)
                 .ToList();
 
                 return moviesResources;
@@ -181,7 +182,7 @@ namespace Whisparr.Api.V3.Movies
             var movieStats = _movieStatisticsService.MovieStatistics();
             var sdict = movieStats.ToDictionary(x => x.MovieId);
 
-            var movies = _moviesService.SearchMovies(query).Take(100).ToList();
+            var movies = _moviesService.SearchMovies(query).Take(limit).ToList();
 
             foreach (var movie in movies)
             {

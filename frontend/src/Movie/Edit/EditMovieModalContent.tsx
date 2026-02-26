@@ -36,7 +36,7 @@ function EditMovieModalContent({
   movie,
   onModalClose,
   onDeleteMoviePress,
-}: EditMovieModalContentProps) {
+}: Readonly<EditMovieModalContentProps>) {
   const { title, path: originalPath } = movie;
 
   const [monitored, setMonitored] = useState(movie.monitored);

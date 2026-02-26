@@ -33,7 +33,7 @@ namespace NzbDrone.Core.Datastore.PagedFilters
                         Expression.Call(
                             typeof(Enumerable),
                             "Contains",
-                            new[] { typeof(int) },
+                            new[] { typeof(long) },
                             Expression.Constant(values),
                             property),
                         param);
@@ -43,7 +43,7 @@ namespace NzbDrone.Core.Datastore.PagedFilters
                     var notEqualCall = Expression.Call(
                         typeof(Enumerable),
                         "Contains",
-                        new[] { typeof(int) },
+                        new[] { typeof(long) },
                         Expression.Constant(values),
                         property);
                     var notEqualExpr = Expression.Lambda<Func<T, bool>>(Expression.Not(notEqualCall), param);

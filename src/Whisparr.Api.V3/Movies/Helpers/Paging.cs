@@ -55,7 +55,7 @@ namespace Whisparr.Api.V3.Movies.Helpers
 
                         break;
                     case "releasedate": // OK
-                        DateFilter.Apply(pageSpec, jsonElement, op, p => (DateTime)p.MovieMetadata.Value.ReleaseDateUtc);
+                        DateFilter.Apply(pageSpec, jsonElement, op, p => p.MovieMetadata.Value.ReleaseDateUtc ?? DateTime.MinValue);
 
                         break;
                     case "status": // TODO: test

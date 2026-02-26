@@ -10,22 +10,21 @@ export function useDeleteMovieModalFooterHandler({
   movieIds,
   onModalClose,
 }: UseDeleteMovieModalFooterHandlerProps) {
-  const deleteMutation = useDeleteMoviesMutation();
+  const { mutate, isPending } = useDeleteMoviesMutation();
 
-  // Returns a function that takes delete options and performs the deletion
   const handleDelete = useCallback(
     (deleteFiles: boolean, addImportExclusion: boolean) => {
-      onModalClose(); // Close modal immediately when delete is confirmed
-      deleteMutation.mutate({
+      onModalClose();
+      mutate({
         movieIds,
         options: { deleteFiles, addImportExclusion },
       });
     },
-    [movieIds, onModalClose, deleteMutation]
+    [movieIds, onModalClose, mutate]
   );
 
   return {
     onDeletePress: handleDelete,
-    isPending: deleteMutation.isPending,
+    isPending,
   };
 }
