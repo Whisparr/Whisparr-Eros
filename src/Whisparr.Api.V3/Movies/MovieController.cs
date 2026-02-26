@@ -270,6 +270,9 @@ namespace Whisparr.Api.V3.Movies
             return moviesResources;
         }
 
+        /// <summary>GET /movie/{id}</summary>
+        /// <param name="id"></param>
+        /// <remarks>Get a single movie by foreign Id or internal Id. If the ID starts with "tmdb:", it will be treated as a TMDB ID. Otherwise, it will first attempt to find by foreign ID, then fallback to internal ID for backward compatibility.</remarks>
         [HttpGet("{id}")]
         public ActionResult<MovieResource> GetMovieById(string id)
         {
@@ -308,9 +311,9 @@ namespace Whisparr.Api.V3.Movies
             return resource;
         }
 
-        /// <summary>Gets a single movie by foreign Id or internal Id</summary>
+        /// <summary>GET /movie/{id}</summary>
         /// <param name="id"></param>
-        /// <remarks>Overriden from RestController by tweaked to cover TMDB foreignId being numeric</remarks>
+        /// <remarks>Get a single movie by foreign Id (TMDB only) or internal Id. If the ID starts with "tmdb:", it will be treated as a TMDB ID. Otherwise, it will first attempt to find by foreign ID, then fallback to internal ID for backward compatibility.</remarks>
         /// <returns>A Movie resource</returns>
         protected override MovieResource GetResourceById(int id)
         {
@@ -323,6 +326,8 @@ namespace Whisparr.Api.V3.Movies
             return movie?.ToResource(_configService.AvailabilityDelay, _qualityUpgradableSpecification);
         }
 
+        /// <summary>POST /movie/list</summary>
+        /// <returns>List of Movie IDs.  Legacy for un-paged movie index and scene index</returns>
         [HttpGet("list")]
         public List<int> ListMovies()
         {
@@ -333,6 +338,10 @@ namespace Whisparr.Api.V3.Movies
             return movieTask.GetAwaiter().GetResult();
         }
 
+        /// <summary>GET /movie/stats?itemType=movie|scene</summary>
+        /// <param name="itemType">Optional query parameter to specify whether to return stats for movies or scenes. Defaults to movies if not provided.</param>
+        /// <remarks>Returns statistics for the item type, including total count, monitored count, file count, and total file size.
+        /// If itemType is specified, returns stats for that item type instead of movies + scenes.</remarks>
         [HttpGet("stats")]
         public ActionResult<MovieIndexStatsResource> GetStats(string itemType = null)
         {
@@ -348,7 +357,10 @@ namespace Whisparr.Api.V3.Movies
             });
         }
 
-        // Added to support bulk monitor from Studio and eventually Performer detail page groupings
+        /// <summary>PATCH /movie/monitor</summary>
+        /// <param name="ids">List of movie IDs to update</param>
+        /// <param name="monitored">The monitored value to set for the specified movies</param>
+        /// <returns>Result indicating the success or failure of the operation</returns>
         [HttpPatch("bulk/monitor")]
         public IActionResult SetMoviesMonitored([FromBody] List<int> ids, [FromQuery] bool? monitored)
         {
@@ -385,6 +397,10 @@ namespace Whisparr.Api.V3.Movies
             return Ok();
         }
 
+        /// <summary>POST /movie/list</summary>
+        /// <param name="ids">List of movie IDs to retrieve</param>
+        /// <returns>List of Movie resources corresponding to the provided IDs
+        /// Legacy: Formerly used for Movie/Scene index to hydrate Redux</returns>
         [HttpPost("bulk")]
         public List<MovieResource> GetResourceByIds([FromBody] List<int> ids)
         {
@@ -416,6 +432,9 @@ namespace Whisparr.Api.V3.Movies
             return moviesResources;
         }
 
+        /// <summary>GET /movie/listByPerformerForeignId?performerForeignId=tmdb-12345</summary>
+        /// <param name="performerForeignId">The foreign ID of the performer (e.g. "tmdb-12345")</param>
+        /// <returns>List of Movie IDs that have the specified performer foreign ID</returns>
         [HttpGet("listByPerformerForeignId")]
         public List<int> ListByPerformerForeignId(string performerForeignId)
         {
@@ -433,6 +452,9 @@ namespace Whisparr.Api.V3.Movies
             return moviesList;
         }
 
+        /// <summary>GET /movie/listByStudioForeignId?studioForeignId=tmdb-12345</summary>
+        /// <param name="studioForeignId">The foreign ID of the studio (e.g. "tmdb-12345")</param>
+        /// <returns>List of Movie IDs that have the specified studio foreign ID</returns>
         [HttpGet("listByStudioForeignId")]
         public List<int> ListByStudioForeignId(string studioForeignId)
         {
@@ -464,6 +486,9 @@ namespace Whisparr.Api.V3.Movies
             return resource;
         }
 
+        /// <summary>POST /movie</summary>
+        /// <param name="moviesResource">The movie resource to add</param>
+        /// <returns>The created Movie resource with assigned ID</returns>
         [RestPostById]
         [Consumes("application/json")]
         [Produces("application/json")]
@@ -474,6 +499,10 @@ namespace Whisparr.Api.V3.Movies
             return Created(movie.Id);
         }
 
+        /// <summary>PUT /movie/{id}</summary>
+        /// <param name="moviesResource">The movie resource with updated information. The ID in the resource must match the ID in the URL.</param>
+        /// <param name="moveFiles">Whether to move the movie files to a new location</param>
+        /// <returns>The updated Movie resource</returns>
         [RestPutById]
         [Consumes("application/json")]
         [Produces("application/json")]
@@ -499,16 +528,19 @@ namespace Whisparr.Api.V3.Movies
             return Accepted(MapToResource(updatedMovie));
         }
 
+        /// <summary>PATCH /movie/{id}</summary>
+        /// <param name="id">The ID of the movie to update</param>
+        /// <param name="moviePatchResource">The patch request containing the monitored flag</param>
         [HttpPatch("{id}")]
         [Consumes("application/json")]
         [Produces("application/json")]
-        public IActionResult PatchMovieMonitored(int id, [FromBody] MoviePatchResource request)
+        public IActionResult PatchMovieMonitored(int id, [FromBody] MoviePatchResource moviePatchResource)
         {
             // Load the movie
             var movie = _moviesService.GetMovie(id);
 
             // Update only the monitored flag
-            movie.Monitored = request.Monitored;
+            movie.Monitored = moviePatchResource.Monitored;
 
             // Persist the update
             var updated = _moviesService.UpdateMovie(movie);
@@ -517,10 +549,72 @@ namespace Whisparr.Api.V3.Movies
             return Ok(MapToResource(updated));
         }
 
+        /// <summary>DELETE /movie/{id}</summary>
+        /// <param name="id">The ID of the movie to delete</param>
+        /// <param name="deleteFiles">Whether to delete the movie files from disk</param>
+        /// <param name="addImportExclusion">Whether to add an import exclusion for the movie's path to prevent re-importing if files are left on disk</param>
         [RestDeleteById]
         public void DeleteMovie(int id, bool deleteFiles = false, bool addImportExclusion = false)
         {
             _moviesService.DeleteMovie(id, deleteFiles, addImportExclusion);
+        }
+
+        /// <summary>POST /movie/list </summary>
+        /// <param name="foreignIds">List of foreign IDs to look up</param>
+        /// <remarks>Look up movies by a list of foreignIds</remarks>
+        [HttpPost("list")]
+        [Produces("application/json")]
+        public ActionResult<List<MovieResource>> ListByForeignIds([FromBody] List<string> foreignIds)
+        {
+            if (foreignIds == null || !foreignIds.Any())
+            {
+                return new List<MovieResource>();
+            }
+
+            var movies = _moviesService.FindByForeignIds(foreignIds);
+            var availDelay = _configService.AvailabilityDelay;
+            var movieStats = _movieStatisticsService.MovieStatistics(movies.Select(m => m.Id).ToList());
+            var sdict = movieStats.ToDictionary(x => x.MovieId);
+            var coverFileInfos = _coverMapper.GetMovieCoverFileInfos();
+            var rootFolders = _rootFolderService.All();
+
+            var resources = movies.Select(m => m.ToResource(availDelay, _qualityUpgradableSpecification)).ToList();
+            LinkMovieStatistics(resources, sdict);
+            MapCoversToLocal(resources, coverFileInfos);
+            resources.ForEach(m => m.RootFolderPath = _rootFolderService.GetBestRootFolderPath(m.Path, rootFolders));
+            return resources;
+        }
+
+        /// <summary>POST /movie/paged</summary>
+        /// <remarks>Paged, filtered, and sorted movie/scene results</remarks>
+        [HttpPost("paged")]
+        [Produces("application/json")]
+        public ActionResult<PagingResource<MovieResource>> GetPaged([FromBody] MoviePagingRequestResource request)
+        {
+            if (request == null)
+            {
+                _logger.Error("Paged movie request is null. Check the request body and route.");
+                return BadRequest("Request body is null or invalid.");
+            }
+
+            var hasTagFilter = request.Filters != null && request.Filters.Any(f => f.Key?.ToLowerInvariant() == "tags" && f.Value != null);
+            var pagingResource = new PagingResource<MovieResource>(request);
+            var pageSpec = new NzbDrone.Core.Datastore.PagingSpec<Movie>
+            {
+                Page = request.Page ?? 1,
+                PageSize = request.PageSize ?? 10,
+                SortKey = Sorting.GetSortKeyNormalized(_allowedMovieSortKeys.Contains(request.SortKey ?? "") ? request.SortKey : null),
+                SortDirection = request.SortDirection ?? NzbDrone.Core.Datastore.SortDirection.Ascending
+            };
+
+            if (hasTagFilter)
+            {
+                return GetPagedMoviesWithTags(request, pageSpec);
+            }
+            else
+            {
+                return GetPagedMoviesStandard(request, pageSpec);
+            }
         }
 
         private void MapCoversToLocal(MovieResource movie)
@@ -591,108 +685,6 @@ namespace Whisparr.Api.V3.Movies
             resource.Statistics = movieStatistics.ToResource();
             resource.HasFile = movieStatistics.MovieFileCount > 0;
             resource.SizeOnDisk = movieStatistics.SizeOnDisk;
-        }
-
-        [NonAction]
-        public void Handle(MovieFileImportedEvent message)
-        {
-            _movieResourcesCache.Remove(message.MovieInfo.Movie.Id.ToString());
-
-            var updatedMovie = _moviesService.GetMovie(message.MovieInfo.Movie.Id);
-            if (updatedMovie != null)
-            {
-                BroadcastResourceChange(ModelAction.Updated, MapToResource(updatedMovie));
-            }
-            else
-            {
-                BroadcastResourceChange(ModelAction.Updated, message.MovieInfo.Movie.Id);
-            }
-        }
-
-        [NonAction]
-        public void Handle(MovieFileDeletedEvent message)
-        {
-            if (message.Reason == DeleteMediaFileReason.Upgrade
-                || message.MovieFile.MovieId == 0)
-            {
-                return;
-            }
-
-            _movieResourcesCache.Remove(message.MovieFile.MovieId.ToString());
-            var updatedMovie = _moviesService.GetMovie(message.MovieFile.MovieId);
-            if (updatedMovie != null)
-            {
-                BroadcastResourceChange(ModelAction.Updated, MapToResource(updatedMovie));
-            }
-            else
-            {
-                BroadcastResourceChange(ModelAction.Updated, message.MovieFile.MovieId);
-            }
-        }
-
-        [NonAction]
-        public void Handle(MovieUpdatedEvent message)
-        {
-            _movieResourcesCache.Remove(message.Movie.Id.ToString());
-            BroadcastResourceChange(ModelAction.Updated, MapToResource(message.Movie));
-        }
-
-        [NonAction]
-        public void Handle(MovieEditedEvent message)
-        {
-            _movieResourcesCache.Remove(message.Movie.Id.ToString());
-            BroadcastResourceChange(ModelAction.Updated, MapToResource(message.Movie));
-        }
-
-        [NonAction]
-        public void Handle(MoviesDeletedEvent message)
-        {
-            if (message?.Movies == null || !message.Movies.Any())
-            {
-                return;
-            }
-
-            foreach (var movie in message.Movies)
-            {
-                _movieResourcesCache.Remove(movie.Id.ToString());
-            }
-
-            BroadcastResourceChangeBatch(ModelAction.Deleted, message.Movies.Select(m => new MovieResource { Id = m.Id }));
-        }
-
-        [NonAction]
-        public void Handle(MoviesBulkEditedEvent message)
-        {
-            if (message?.Movies == null || !message.Movies.Any())
-            {
-                return;
-            }
-
-            foreach (var movie in message.Movies)
-            {
-                _movieResourcesCache.Remove(movie.Id.ToString());
-            }
-
-            // Batch broadcast with mapped resources
-            BroadcastResourceChangeBatch(ModelAction.Updated, message.Movies.Select(MapToResource));
-        }
-
-        [NonAction]
-        public void Handle(MovieRenamedEvent message)
-        {
-            _movieResourcesCache.Remove(message.Movie.Id.ToString());
-            BroadcastResourceChange(ModelAction.Updated, MapToResource(message.Movie));
-        }
-
-        [NonAction]
-        public void Handle(MediaCoversUpdatedEvent message)
-        {
-            if (message.Updated)
-            {
-                _movieResourcesCache.Remove(message.Movie.Id.ToString());
-                var updatedMovie = _moviesService.GetMovie(message.Movie.Id);
-                BroadcastResourceChange(ModelAction.Updated, MapToResource(updatedMovie));
-            }
         }
 
         private MovieResource GetMovieResource(int id)
@@ -849,64 +841,6 @@ namespace Whisparr.Api.V3.Movies
             return moviesResources;
         }
 
-        /// <summary>POST /movie/list </summary>
-        /// <param name="foreignIds">List of foreign IDs to look up</param>
-        /// <remarks>Look up movies by a list of foreignIds</remarks>
-        [HttpPost("list")]
-        [Produces("application/json")]
-        public ActionResult<List<MovieResource>> ListByForeignIds([FromBody] List<string> foreignIds)
-        {
-            if (foreignIds == null || !foreignIds.Any())
-            {
-                return new List<MovieResource>();
-            }
-
-            var movies = _moviesService.FindByForeignIds(foreignIds);
-            var availDelay = _configService.AvailabilityDelay;
-            var movieStats = _movieStatisticsService.MovieStatistics(movies.Select(m => m.Id).ToList());
-            var sdict = movieStats.ToDictionary(x => x.MovieId);
-            var coverFileInfos = _coverMapper.GetMovieCoverFileInfos();
-            var rootFolders = _rootFolderService.All();
-
-            var resources = movies.Select(m => m.ToResource(availDelay, _qualityUpgradableSpecification)).ToList();
-            LinkMovieStatistics(resources, sdict);
-            MapCoversToLocal(resources, coverFileInfos);
-            resources.ForEach(m => m.RootFolderPath = _rootFolderService.GetBestRootFolderPath(m.Path, rootFolders));
-            return resources;
-        }
-
-        /// <summary>POST /movie/paged</summary>
-        /// <remarks>Paged, filtered, and sorted movie/scene results</remarks>
-        [HttpPost("paged")]
-        [Produces("application/json")]
-        public ActionResult<PagingResource<MovieResource>> GetPaged([FromBody] MoviePagingRequestResource request)
-        {
-            if (request == null)
-            {
-                _logger.Error("Paged movie request is null. Check the request body and route.");
-                return BadRequest("Request body is null or invalid.");
-            }
-
-            var hasTagFilter = request.Filters != null && request.Filters.Any(f => f.Key?.ToLowerInvariant() == "tags" && f.Value != null);
-            var pagingResource = new PagingResource<MovieResource>(request);
-            var pageSpec = new NzbDrone.Core.Datastore.PagingSpec<Movie>
-            {
-                Page = request.Page ?? 1,
-                PageSize = request.PageSize ?? 10,
-                SortKey = Sorting.GetSortKeyNormalized(_allowedMovieSortKeys.Contains(request.SortKey ?? "") ? request.SortKey : null),
-                SortDirection = request.SortDirection ?? NzbDrone.Core.Datastore.SortDirection.Ascending
-            };
-
-            if (hasTagFilter)
-            {
-                return GetPagedMoviesWithTags(request, pageSpec);
-            }
-            else
-            {
-                return GetPagedMoviesStandard(request, pageSpec);
-            }
-        }
-
         /// <summary> Gets paged movies with in-memory tag filtering. </summary>
         /// <remarks> Used when tag filters are included since they can't be efficiently filtered at the database level. </remarks>
         private ActionResult<PagingResource<MovieResource>> GetPagedMoviesWithTags(MoviePagingRequestResource request, NzbDrone.Core.Datastore.PagingSpec<Movie> pageSpec)
@@ -976,6 +910,108 @@ namespace Whisparr.Api.V3.Movies
                 TotalRecords = paged.TotalRecords
             };
             return Ok(result);
+        }
+
+        [NonAction]
+        public void Handle(MovieFileImportedEvent message)
+        {
+            _movieResourcesCache.Remove(message.MovieInfo.Movie.Id.ToString());
+
+            var updatedMovie = _moviesService.GetMovie(message.MovieInfo.Movie.Id);
+            if (updatedMovie != null)
+            {
+                BroadcastResourceChange(ModelAction.Updated, MapToResource(updatedMovie));
+            }
+            else
+            {
+                BroadcastResourceChange(ModelAction.Updated, message.MovieInfo.Movie.Id);
+            }
+        }
+
+        [NonAction]
+        public void Handle(MovieFileDeletedEvent message)
+        {
+            if (message.Reason == DeleteMediaFileReason.Upgrade
+                || message.MovieFile.MovieId == 0)
+            {
+                return;
+            }
+
+            _movieResourcesCache.Remove(message.MovieFile.MovieId.ToString());
+            var updatedMovie = _moviesService.GetMovie(message.MovieFile.MovieId);
+            if (updatedMovie != null)
+            {
+                BroadcastResourceChange(ModelAction.Updated, MapToResource(updatedMovie));
+            }
+            else
+            {
+                BroadcastResourceChange(ModelAction.Updated, message.MovieFile.MovieId);
+            }
+        }
+
+        [NonAction]
+        public void Handle(MovieUpdatedEvent message)
+        {
+            _movieResourcesCache.Remove(message.Movie.Id.ToString());
+            BroadcastResourceChange(ModelAction.Updated, MapToResource(message.Movie));
+        }
+
+        [NonAction]
+        public void Handle(MovieEditedEvent message)
+        {
+            _movieResourcesCache.Remove(message.Movie.Id.ToString());
+            BroadcastResourceChange(ModelAction.Updated, MapToResource(message.Movie));
+        }
+
+        [NonAction]
+        public void Handle(MoviesDeletedEvent message)
+        {
+            if (message?.Movies == null || !message.Movies.Any())
+            {
+                return;
+            }
+
+            foreach (var movie in message.Movies)
+            {
+                _movieResourcesCache.Remove(movie.Id.ToString());
+            }
+
+            BroadcastResourceChangeBatch(ModelAction.Deleted, message.Movies.Select(m => new MovieResource { Id = m.Id }));
+        }
+
+        [NonAction]
+        public void Handle(MoviesBulkEditedEvent message)
+        {
+            if (message?.Movies == null || !message.Movies.Any())
+            {
+                return;
+            }
+
+            foreach (var movie in message.Movies)
+            {
+                _movieResourcesCache.Remove(movie.Id.ToString());
+            }
+
+            // Batch broadcast with mapped resources
+            BroadcastResourceChangeBatch(ModelAction.Updated, message.Movies.Select(MapToResource));
+        }
+
+        [NonAction]
+        public void Handle(MovieRenamedEvent message)
+        {
+            _movieResourcesCache.Remove(message.Movie.Id.ToString());
+            BroadcastResourceChange(ModelAction.Updated, MapToResource(message.Movie));
+        }
+
+        [NonAction]
+        public void Handle(MediaCoversUpdatedEvent message)
+        {
+            if (message.Updated)
+            {
+                _movieResourcesCache.Remove(message.Movie.Id.ToString());
+                var updatedMovie = _moviesService.GetMovie(message.Movie.Id);
+                BroadcastResourceChange(ModelAction.Updated, MapToResource(updatedMovie));
+            }
         }
     }
 }
