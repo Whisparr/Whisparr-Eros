@@ -86,11 +86,11 @@ export function useSaveMovie() {
   });
 }
 
-export function useSearchMovies(query: string, limit: number = 10) {
+export function useSearchMovie(query: string, limit: number = 10) {
   return useApiQuery<Movie[]>({
     path: `/movie/search`,
     queryParams: { query, limit },
-    queryOptions: { enabled: !!query },
+    queryOptions: { enabled: !!query && query.length > 2 },
   });
 }
 
