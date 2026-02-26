@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
+using System.Threading.Tasks;
 using DryIoc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -260,6 +262,20 @@ namespace NzbDrone.Host
             {
                 firewallAdapter.MakeAccessible();
             }
+
+            app.Use(async (context, next) =>
+            {
+                var sw = Stopwatch.StartNew();
+                context.Response.OnStarting(() =>
+                {
+                    context.Response.Headers["X-Total-Request-Time"] = sw.ElapsedMilliseconds.ToString();
+                    return Task.CompletedTask;
+                });
+
+                await next();
+
+                sw.Stop();
+            });
 
             app.UseForwardedHeaders();
             app.UseMiddleware<LoggingMiddleware>();
