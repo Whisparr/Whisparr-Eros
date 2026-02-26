@@ -85,6 +85,8 @@ export const filters = [
       }
     ]
   },
+
+  /* removing, duplicated by Wanted > Cutoff Unmet page
   {
     key: 'cutoffunmet',
     label: () => translate('CutoffUnmet'),
@@ -105,7 +107,7 @@ export const filters = [
         type: filterTypes.EQUAL
       }
     ]
-  },
+  }*/
   {
     key: 'deleted',
     label: () => translate('Deleted'),

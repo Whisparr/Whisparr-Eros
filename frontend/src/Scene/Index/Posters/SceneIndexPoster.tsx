@@ -8,7 +8,6 @@ import Label from 'Components/Label';
 import IconButton from 'Components/Link/IconButton';
 import Link from 'Components/Link/Link';
 import SpinnerIconButton from 'Components/Link/SpinnerIconButton';
-import TmdbRating from 'Components/TmdbRating';
 import Popover from 'Components/Tooltip/Popover';
 import { icons } from 'Helpers/Props';
 import EditMovieModal from 'Movie/Edit/EditMovieModal';
@@ -67,7 +66,6 @@ function SceneIndexPoster(props: SceneIndexPosterProps) {
     showMonitored,
     showQualityProfile,
     showReleaseDate,
-    showTmdbRating,
     showSearchAction,
   } = useSelector(selectPosterOptions);
 
@@ -250,12 +248,6 @@ function SceneIndexPoster(props: SceneIndexPosterProps) {
         </div>
       ) : null}
 
-      {showTmdbRating && !!ratings.tmdb ? (
-        <div className={styles.title}>
-          <TmdbRating ratings={ratings} iconSize={12} />
-        </div>
-      ) : null}
-
       <SceneIndexPosterInfo
         studio={studioTitle}
         qualityProfile={qualityProfile}
@@ -273,7 +265,6 @@ function SceneIndexPoster(props: SceneIndexPosterProps) {
         sortKey={sortKey}
         path={path}
         originalLanguage={originalLanguage}
-        showTmdbRating={showTmdbRating}
       />
 
       <EditMovieModal
