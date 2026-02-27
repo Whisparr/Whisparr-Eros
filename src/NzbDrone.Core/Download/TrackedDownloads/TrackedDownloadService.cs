@@ -31,7 +31,7 @@ namespace NzbDrone.Core.Download.TrackedDownloads
                                           IHandle<MovieAddedEvent>,
                                           IHandleAsync<MovieEditedEvent>,
                                           IHandleAsync<MoviesBulkEditedEvent>,
-                                          IHandle<MoviesDeletedEvent>
+                                          IHandleAsync<MoviesDeletedEvent>
     {
         private readonly IParsingService _parsingService;
         private readonly IHistoryService _historyService;
@@ -282,11 +282,13 @@ namespace NzbDrone.Core.Download.TrackedDownloads
 
         public void HandleAsync(MovieEditedEvent message)
         {
+            if (message == null || message.Movie == null)
+            {
+                return;
+            }
+
             var cachedItems = _cache.Values
-                .Where(t =>
-                    t.RemoteMovie?.Movie != null &&
-                    message.Movie.TmdbId != 0 &&
-                    (t.RemoteMovie.Movie.Id == message.Movie?.Id || t.RemoteMovie.Movie.TmdbId == message.Movie?.TmdbId))
+                .Where(t => MovieMatches(t.RemoteMovie?.Movie, message.Movie))
                 .ToList();
 
             if (cachedItems.Any())
@@ -299,10 +301,13 @@ namespace NzbDrone.Core.Download.TrackedDownloads
 
         public void HandleAsync(MoviesBulkEditedEvent message)
         {
+            if (message == null || message.Movies == null || !message.Movies.Any())
+            {
+                return;
+            }
+
             var cachedItems = _cache.Values
-                .Where(t =>
-                    t.RemoteMovie?.Movie != null &&
-                    message.Movies.Any(m => (m.Id == t.RemoteMovie.Movie.Id || (m.TmdbId != 0 && m.TmdbId == t.RemoteMovie.Movie.TmdbId))))
+                .Where(t => message.Movies.Any(m => MovieMatches(t.RemoteMovie?.Movie, m)))
                 .ToList();
 
             if (cachedItems.Any())
@@ -313,12 +318,15 @@ namespace NzbDrone.Core.Download.TrackedDownloads
             }
         }
 
-        public void Handle(MoviesDeletedEvent message)
+        public void HandleAsync(MoviesDeletedEvent message)
         {
+            if (message == null || message.Movies == null || !message.Movies.Any())
+            {
+                return;
+            }
+
             var cachedItems = _cache.Values
-                .Where(t =>
-                    t.RemoteMovie?.Movie != null &&
-                    message.Movies.Any(m => m.Id == t.RemoteMovie.Movie.Id || m.TmdbId == t.RemoteMovie.Movie.TmdbId))
+                .Where(t => message.Movies.Any(m => MovieMatches(t.RemoteMovie?.Movie, m)))
                 .ToList();
 
             if (cachedItems.Any())
@@ -327,6 +335,17 @@ namespace NzbDrone.Core.Download.TrackedDownloads
 
                 _eventAggregator.PublishEvent(new TrackedDownloadRefreshedEvent(GetTrackedDownloads()));
             }
+        }
+
+        private static bool MovieMatches(Movie cachedMovie, Movie messageMovie)
+        {
+            if (cachedMovie == null || messageMovie == null)
+            {
+                return false;
+            }
+
+            return cachedMovie.Id == messageMovie.Id ||
+                   (messageMovie.TmdbId != 0 && cachedMovie.TmdbId == messageMovie.TmdbId);
         }
     }
 }
