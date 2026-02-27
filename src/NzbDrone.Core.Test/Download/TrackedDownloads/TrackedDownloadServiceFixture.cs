@@ -134,7 +134,7 @@ namespace NzbDrone.Core.Test.Download.TrackedDownloads
                   .Setup(s => s.Map(It.IsAny<ParsedMovieInfo>(), It.IsAny<string>(), It.IsAny<int>(), null))
                   .Returns(default(RemoteMovie));
 
-            Subject.Handle(new MoviesDeletedEvent(new List<Movie> { remoteMovie.Movie }, false, false));
+            Subject.HandleAsync(new MoviesDeletedEvent(new List<Movie> { remoteMovie.Movie }, false, false));
 
             var trackedDownloads = Subject.GetTrackedDownloads();
             trackedDownloads.Should().HaveCount(1);
@@ -191,7 +191,7 @@ namespace NzbDrone.Core.Test.Download.TrackedDownloads
                   .Setup(s => s.Map(It.IsAny<ParsedMovieInfo>(), It.IsAny<string>(), It.IsAny<int>(), null))
                   .Returns(default(RemoteMovie));
 
-            Subject.Handle(new MoviesDeletedEvent(new List<Movie> { remoteMovie.Movie }, false, false));
+            Subject.HandleAsync(new MoviesDeletedEvent(new List<Movie> { remoteMovie.Movie }, false, false));
 
             var trackedDownloads = Subject.GetTrackedDownloads();
             trackedDownloads.Should().HaveCount(1);
