@@ -48,8 +48,8 @@ import OrganizePreviewModal from 'Organize/OrganizePreviewModal';
 import QualityProfileName from 'Settings/Profiles/Quality/QualityProfileName';
 import { executeCommand } from 'Store/Actions/commandActions';
 import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
+import { createQueueItemSelectorForHook } from 'Store/Selectors/createQueueItemSelector';
 import fonts from 'Styles/Variables/fonts';
-import Queue from 'typings/Queue';
 import formatRuntime from 'Utilities/Date/formatRuntime';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
@@ -77,25 +77,26 @@ interface Props {
   onRefreshPress: () => void;
   onSearchPress: () => void;
   onGoToMovie: () => void;
-  queueItem?: Queue | false | undefined;
   movieRuntimeFormat: string;
 }
 
-const defaultFontSize = Number(fonts.defaultFontSize as string);
-const lineHeight = parseFloat(fonts.lineHeight as string);
+const defaultFontSize = Number(fonts.defaultFontSize);
+const lineHeight = Number.parseFloat(fonts.lineHeight);
 
 function getFanartUrl(images: MovieImageType[]) {
   const image = images.find((img) => img.coverType === 'fanart');
   return image?.url ?? image?.remoteUrl;
 }
 
-function MovieDetails(props: Partial<Props>) {
+function MovieDetails(props: Readonly<Partial<Props>>) {
   // Get id from route params and fetch movie data
   const { id } = useParams<{ id: string }>();
   const dispatch = useDispatch();
   const safeForWorkMode = useContext(SafeForWorkModeContext);
 
   const { data: movie, isLoading, isError, error } = useMovie(id);
+  const statusDetails = getMovieStatusDetails(movie?.status);
+  const queueItem = useSelector(createQueueItemSelectorForHook(movie?.id ?? 0));
 
   // State for modals and measurements
   const { isSmallScreen } = useSelector(createDimensionsSelector());
@@ -147,7 +148,6 @@ function MovieDetails(props: Partial<Props>) {
     return null;
   }
 
-  // TODO: Reduce deconstruction to minimum needed.
   const {
     tmdbId,
     tpdbId,
@@ -168,12 +168,10 @@ function MovieDetails(props: Partial<Props>) {
     collection,
     overview,
     website,
-    status,
     isAvailable,
     images,
     tags = [],
     itemType,
-    queueItem,
     movieRuntimeFormat,
     isSaving,
     isRefreshing,
@@ -183,10 +181,9 @@ function MovieDetails(props: Partial<Props>) {
   const movieId = movie.id;
   const { sizeOnDisk } = statistics as MovieStatistics;
   const hasFile = !!movie.movieFileId || sizeOnDisk > 0;
-  const statusDetails = getMovieStatusDetails(status);
   const fanartUrl = getFanartUrl(images);
   const marqueeWidth = isSmallScreen ? titleWidth : titleWidth - 150;
-  const titleWithYear = `${title}${year > 0 ? ` (${year})` : ''}`;
+  const titleWithYear = year > 0 ? `${title} (${year})` : title;
 
   function handleTitleMeasure({ width }: { width: number }) {
     setTitleWidth(width);
@@ -408,7 +405,7 @@ function MovieDetails(props: Partial<Props>) {
                       hasMovieFiles={hasFile ?? false}
                       monitored={monitored}
                       isAvailable={isAvailable}
-                      queueItem={queueItem}
+                      queueItem={queueItem ?? false}
                     />
                   </span>
                 </InfoLabel>
