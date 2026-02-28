@@ -2,7 +2,7 @@ import { icons } from 'Helpers/Props';
 import { MovieStatus } from 'Movie/Movie';
 import translate from 'Utilities/String/translate';
 
-export default function getMovieStatusDetails(status: MovieStatus) {
+export default function getMovieStatusDetails(status?: MovieStatus) {
   let statusDetails = {
     icon: icons.ANNOUNCED,
     title: translate('Announced'),

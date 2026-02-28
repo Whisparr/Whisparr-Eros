@@ -72,7 +72,7 @@ function MovieStatusLabel({
   isAvailable,
   queueItem,
   useLabel = false,
-}: MovieStatusLabelProps) {
+}: Readonly<MovieStatusLabelProps>) {
   let movieStatus = getMovieStatus(
     status,
     hasMovieFiles,
