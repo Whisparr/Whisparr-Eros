@@ -100,6 +100,7 @@ namespace NzbDrone.Integration.Test
             RestClient = new RestClient(RootUrl + "api/v3/");
             RestClient.AddDefaultHeader("Authentication", ApiKey);
             RestClient.AddDefaultHeader("X-Api-Key", ApiKey);
+            RestClient.Timeout = 15000;
 
             AutoTagging = new ClientBase<AutoTaggingResource>(RestClient, ApiKey);
             Blocklist = new ClientBase<BlocklistResource>(RestClient, ApiKey);

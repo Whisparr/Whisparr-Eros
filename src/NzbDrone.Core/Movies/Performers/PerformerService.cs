@@ -11,7 +11,7 @@ using NzbDrone.Core.Parser;
 
 namespace NzbDrone.Core.Movies.Performers
 {
-    public interface IPerformerService : IHandleAsync<PerformerUpdatedEvent>
+    public interface IPerformerService : IHandle<PerformerUpdatedEvent>
     {
         Performer AddPerformer(Performer performer);
         List<Performer> AddPerformers(List<Performer> performers);
@@ -175,7 +175,7 @@ namespace NzbDrone.Core.Movies.Performers
             }
         }
 
-        public void HandleAsync(PerformerUpdatedEvent message)
+        public void Handle(PerformerUpdatedEvent message)
         {
             var movies = _movieService.GetByPerformerForeignId(message.Performer.ForeignId);
             var ids = movies.Select(x => x.Id).ToList();

@@ -31,7 +31,7 @@ namespace Whisparr.Api.V3.Performers
 {
     /// <summary>Controller for managing performers in Whisparr</summary>
     [V3ApiController]
-    public class PerformerController : RestControllerWithSignalR<PerformerResource, Performer>, IHandleAsync<PerformerUpdatedEvent>, IHandleAsync<PerformersDeletedEvent>
+    public class PerformerController : RestControllerWithSignalR<PerformerResource, Performer>, IHandle<PerformerUpdatedEvent>, IHandle<PerformersDeletedEvent>
     {
         private static readonly HashSet<string> _allowedPerformerSortKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
@@ -290,7 +290,7 @@ namespace Whisparr.Api.V3.Performers
 
         /// <summary>Handles performer updated events to broadcast changes via SignalR</summary>
         [NonAction]
-        public void HandleAsync(PerformerUpdatedEvent message)
+        public void Handle(PerformerUpdatedEvent message)
         {
             var resource = MapToResource(message.Performer);
 
@@ -298,7 +298,7 @@ namespace Whisparr.Api.V3.Performers
         }
 
         [NonAction]
-        public void HandleAsync(PerformersDeletedEvent message)
+        public void Handle(PerformersDeletedEvent message)
         {
             if (message?.Performers == null || !message.Performers.Any())
             {

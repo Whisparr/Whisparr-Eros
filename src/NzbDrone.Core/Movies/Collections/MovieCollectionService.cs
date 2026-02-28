@@ -20,7 +20,7 @@ namespace NzbDrone.Core.Movies.Collections
         bool UpsertMany(List<MovieCollection> collections);
     }
 
-    public class MovieCollectionService : IMovieCollectionService, IHandleAsync<MoviesDeletedEvent>
+    public class MovieCollectionService : IMovieCollectionService, IHandle<MoviesDeletedEvent>
     {
         private readonly IMovieCollectionRepository _repo;
         private readonly IMovieService _movieService;
@@ -70,7 +70,7 @@ namespace NzbDrone.Core.Movies.Collections
         {
             var storedCollection = GetCollection(collection.Id);
 
-            var updatedCollection =  _repo.Update(collection);
+            var updatedCollection = _repo.Update(collection);
 
             _eventAggregator.PublishEvent(new CollectionEditedEvent(updatedCollection, storedCollection));
 
@@ -109,7 +109,7 @@ namespace NzbDrone.Core.Movies.Collections
             return _repo.UpsertMany(collections);
         }
 
-        public void HandleAsync(MoviesDeletedEvent message)
+        public void Handle(MoviesDeletedEvent message)
         {
             var collections = message.Movies.Select(x => x.MovieMetadata.Value.CollectionTmdbId).Distinct();
 

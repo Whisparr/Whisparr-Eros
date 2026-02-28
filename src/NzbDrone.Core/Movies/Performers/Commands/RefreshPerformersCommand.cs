@@ -20,6 +20,8 @@ namespace NzbDrone.Core.Movies.Performers.Commands
 
         public override bool SendUpdatesToClient => true;
 
+        public override bool IsTypeExclusive => true;
+
         public override bool UpdateScheduledTask => !PerformerIds.Any();
     }
 }
