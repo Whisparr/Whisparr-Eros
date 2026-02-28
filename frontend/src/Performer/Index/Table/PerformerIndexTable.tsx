@@ -13,7 +13,7 @@ interface PerformerIndexTableProps {
   sortDirection?: SortDirection;
   isSelectMode: boolean;
   columns: Column[];
-  showMovieMonitorToggle?: boolean;
+  showMovieMonitorToggle: boolean;
   onSortPress?: (name: string, sortDirection?: SortDirection) => void;
 }
 

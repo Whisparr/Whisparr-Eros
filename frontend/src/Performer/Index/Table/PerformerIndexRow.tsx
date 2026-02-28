@@ -25,7 +25,7 @@ interface PerformerIndexRowProps {
   performer: Performer;
   sortKey: string;
   columns: Column[];
-  showMovieMonitorToggle?: boolean;
+  showMovieMonitorToggle: boolean;
   isSelectMode: boolean;
 }
 
@@ -280,6 +280,7 @@ function PerformerIndexRow(props: PerformerIndexRowProps) {
       <EditPerformerModal
         isOpen={isEditPerformerModalOpen}
         performer={performer}
+        showMovieMonitor={showMovieMonitorToggle}
         onModalClose={onEditPerformerModalClose}
       />
     </TableRowCell>

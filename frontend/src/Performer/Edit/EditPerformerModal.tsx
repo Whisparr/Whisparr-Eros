@@ -9,11 +9,12 @@ import useEditPerformerModal from './useEditPerformerModal';
 interface EditPerformerModalProps {
   isOpen: boolean;
   performer: Performer;
+  showMovieMonitor: boolean;
   onModalClose: () => void;
 }
 
 function EditPerformerModal(props: EditPerformerModalProps) {
-  const { isOpen, performer, onModalClose } = props;
+  const { isOpen, performer, showMovieMonitor, onModalClose } = props;
   const dispatch = useDispatch();
 
   // Get editing state and handlers from hook
@@ -42,6 +43,7 @@ function EditPerformerModal(props: EditPerformerModalProps) {
     <Modal isOpen={isOpen} onModalClose={handleModalClose}>
       <EditPerformerModalContent
         performerId={performer.id}
+        showMovieMonitor={showMovieMonitor}
         fullName={modalData.fullName}
         images={modalData.images}
         overview={modalData.overview}
