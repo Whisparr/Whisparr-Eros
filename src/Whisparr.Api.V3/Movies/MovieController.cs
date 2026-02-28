@@ -37,14 +37,14 @@ namespace Whisparr.Api.V3.Movies
 {
     [V3ApiController]
     public class MovieController : RestControllerWithSignalR<MovieResource, Movie>,
-                                IHandleAsync<MovieFileImportedEvent>,
-                                IHandleAsync<MovieFileDeletedEvent>,
-                                IHandleAsync<MovieUpdatedEvent>,
-                                IHandleAsync<MovieEditedEvent>,
-                                IHandleAsync<MoviesDeletedEvent>,
-                                IHandleAsync<MovieRenamedEvent>,
-                                IHandleAsync<MoviesBulkEditedEvent>,
-                                IHandleAsync<MediaCoversUpdatedEvent>
+                                IHandle<MovieFileImportedEvent>,
+                                IHandle<MovieFileDeletedEvent>,
+                                IHandle<MovieUpdatedEvent>,
+                                IHandle<MovieEditedEvent>,
+                                IHandle<MoviesDeletedEvent>,
+                                IHandle<MovieRenamedEvent>,
+                                IHandle<MoviesBulkEditedEvent>,
+                                IHandle<MediaCoversUpdatedEvent>
     {
         private readonly IMovieService _moviesService;
         private readonly IAddMovieService _addMovieService;
@@ -473,7 +473,6 @@ namespace Whisparr.Api.V3.Movies
 
             var resource = movie.ToResource(availDelay, _qualityUpgradableSpecification);
 
-            // TODO: movie this to the movie updated event handler instead
             MapCoversToLocal(resource);
             FetchAndLinkMovieStatistics(resource);
 
@@ -903,8 +902,6 @@ namespace Whisparr.Api.V3.Movies
             LinkMovieStatistics(resources, sdict);
             MapCoversToLocal(resources, coverFileInfos);
 
-            // resources.ForEach(m => m.RootFolderPath = _rootFolderService.GetBestRootFolderPath(m.Path, rootFolders));
-
             var result = new PagingResource<MovieResource>(request)
             {
                 Records = resources,
@@ -914,7 +911,7 @@ namespace Whisparr.Api.V3.Movies
         }
 
         [NonAction]
-        public void HandleAsync(MovieFileImportedEvent message)
+        public void Handle(MovieFileImportedEvent message)
         {
             _movieResourcesCache.Remove(message.MovieInfo.Movie.Id.ToString());
 
@@ -930,7 +927,7 @@ namespace Whisparr.Api.V3.Movies
         }
 
         [NonAction]
-        public void HandleAsync(MovieFileDeletedEvent message)
+        public void Handle(MovieFileDeletedEvent message)
         {
             if (message.Reason == DeleteMediaFileReason.Upgrade
                 || message.MovieFile.MovieId == 0)
@@ -951,21 +948,21 @@ namespace Whisparr.Api.V3.Movies
         }
 
         [NonAction]
-        public void HandleAsync(MovieUpdatedEvent message)
+        public void Handle(MovieUpdatedEvent message)
         {
             _movieResourcesCache.Remove(message.Movie.Id.ToString());
             BroadcastResourceChange(ModelAction.Updated, MapToResource(message.Movie));
         }
 
         [NonAction]
-        public void HandleAsync(MovieEditedEvent message)
+        public void Handle(MovieEditedEvent message)
         {
             _movieResourcesCache.Remove(message.Movie.Id.ToString());
             BroadcastResourceChange(ModelAction.Updated, MapToResource(message.Movie));
         }
 
         [NonAction]
-        public void HandleAsync(MoviesDeletedEvent message)
+        public void Handle(MoviesDeletedEvent message)
         {
             if (message?.Movies == null || !message.Movies.Any())
             {
@@ -981,7 +978,7 @@ namespace Whisparr.Api.V3.Movies
         }
 
         [NonAction]
-        public void HandleAsync(MoviesBulkEditedEvent message)
+        public void Handle(MoviesBulkEditedEvent message)
         {
             if (message?.Movies == null || !message.Movies.Any())
             {
@@ -998,14 +995,14 @@ namespace Whisparr.Api.V3.Movies
         }
 
         [NonAction]
-        public void HandleAsync(MovieRenamedEvent message)
+        public void Handle(MovieRenamedEvent message)
         {
             _movieResourcesCache.Remove(message.Movie.Id.ToString());
             BroadcastResourceChange(ModelAction.Updated, MapToResource(message.Movie));
         }
 
         [NonAction]
-        public void HandleAsync(MediaCoversUpdatedEvent message)
+        public void Handle(MediaCoversUpdatedEvent message)
         {
             if (message.Updated)
             {
