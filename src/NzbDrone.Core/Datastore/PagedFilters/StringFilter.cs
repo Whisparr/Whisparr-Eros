@@ -41,7 +41,7 @@ namespace NzbDrone.Core.Datastore.PagedFilters
                     final = Expression.AndAlso(notNull, containsCall);
                     break;
 
-                case "doesnotcontain":
+                case "notcontains":
                     final = Expression.OrElse(
                         Expression.Equal(property, Expression.Constant(null, typeof(string))),
                         Expression.Not(containsCall));
@@ -54,6 +54,33 @@ namespace NzbDrone.Core.Datastore.PagedFilters
 
                 case "notequal":
                     final = Expression.NotEqual(property, Expression.Constant(value));
+                    break;
+
+                case "startswith":
+                    var startsWithMethod = typeof(string).GetMethod("StartsWith", new[] { typeof(string) });
+                    var startsWithCall = Expression.Call(property, startsWithMethod, Expression.Constant(value));
+                    final = Expression.AndAlso(notNull, startsWithCall);
+                    break;
+                case "notstartswith":
+                    var notStartsWithMethod = typeof(string).GetMethod("StartsWith", new[] { typeof(string) });
+                    var notStartsWithCall = Expression.Call(property, notStartsWithMethod, Expression.Constant(value));
+                    final = Expression.OrElse(
+                        Expression.Equal(property, Expression.Constant(null, typeof(string))),
+                        Expression.Not(notStartsWithCall));
+
+                    break;
+                case "endswith":
+                    var endsWithMethod = typeof(string).GetMethod("EndsWith", new[] { typeof(string) });
+                    var endsWithCall = Expression.Call(property, endsWithMethod, Expression.Constant(value));
+                    final = Expression.AndAlso(notNull, endsWithCall);
+                    break;
+                case "notendswith":
+                    var notEndsWithMethod = typeof(string).GetMethod("EndsWith", new[] { typeof(string) });
+                    var notEndsWithCall = Expression.Call(property, notEndsWithMethod, Expression.Constant(value));
+                    final = Expression.OrElse(
+                        Expression.Equal(property, Expression.Constant(null, typeof(string))),
+                        Expression.Not(notEndsWithCall));
+
                     break;
 
                 default:

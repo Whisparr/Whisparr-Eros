@@ -12,118 +12,87 @@ namespace Whisparr.Api.V3.Movies.Helpers
     {
         public static void ApplyMovieFiltersToPagingSpec(List<MovieFilterResource> filters, NzbDrone.Core.Datastore.PagingSpec<Movie> pageSpec)
         {
+            ArgumentNullException.ThrowIfNull(pageSpec);
+
             if (filters == null || !filters.Any())
             {
                 return;
             }
 
+            filters = ValidatedFilters(filters);
+
             foreach (var filter in filters)
             {
-                if (filter == null || string.IsNullOrWhiteSpace(filter.Key))
-                {
-                    continue;
-                }
-
                 var key = filter.Key.ToLowerInvariant();
                 var op = filter.Type?.ToLowerInvariant() ?? "equal";
-
-                if (!(filter.Value is JsonElement jsonElement))
-                {
-                    continue;
-                }
+                var jsonElement = (JsonElement)filter.Value;
 
                 switch (key)
                 {
-                    case "added": // OK
+                    case "added":
                         DateFilter.Apply(pageSpec, jsonElement, op, p => p.Added);
 
                         break;
-                    case "itemtype": // OK
+                    case "itemtype":
                         EnumFilterLazy.Apply(pageSpec, jsonElement, op, p => p.MovieMetadata.Value.ItemType);
 
                         break;
-                    case "monitored": // OK
+                    case "monitored":
                         BooleanFilter.Apply<Movie>(pageSpec, jsonElement, op, p => p.Monitored);
 
                         break;
-                    case "path": // TODO: test
+                    case "path":
                         StringFilter.Apply(pageSpec, jsonElement, op, p => p.Path);
 
                         break;
-                    case "qualityprofileid": // TODO: test
+                    case "qualityprofileid":
                         NumericFilterInt.Apply(pageSpec, jsonElement, op, p => p.QualityProfileId);
 
                         break;
-                    case "releasedate": // OK
-                        DateFilter.Apply(pageSpec, jsonElement, op, p => p.MovieMetadata.Value.ReleaseDateUtc ?? DateTime.MinValue);
+                    case "releasedate":
+                        DateFilter.Apply(pageSpec, jsonElement, op, p => p.MovieMetadata.Value.ReleaseDateUtc);
 
                         break;
-                    case "status": // TODO: test
+                    case "status":
                         EnumFilterLazy.Apply(pageSpec, jsonElement, op, p => p.MovieMetadata.Value.Status);
 
                         break;
-                    case "runtime": // TODO: Test
+                    case "runtime":
                         NumericFilterInt.Apply(pageSpec, jsonElement, op, p => p.MovieMetadata.Value.Runtime);
                         break;
                     case "sizeondisk": // Special case due to optional inner join on MovieFile and wanting to support filtering for movies without files (size 0 or null)
-                        long sizeOnDisk = 0;
+                        SizeOnDiskFilter.Apply(pageSpec, jsonElement, op);
+                        break;
 
-                        if (jsonElement.ValueKind == JsonValueKind.Array)
-                        {
-                            sizeOnDisk = jsonElement.EnumerateArray()
-                                .Where(e => e.ValueKind == JsonValueKind.Number)
-                                .Select(e => e.GetInt64())
-                                .FirstOrDefault();
-                        }
-                        else if (jsonElement.ValueKind == JsonValueKind.Number &&
-                                 jsonElement.TryGetInt64(out var size))
-                        {
-                            sizeOnDisk = size;
-                        }
-
-                        if (op == "equal" && sizeOnDisk == 0)
-                        {
-                            // Special case: no MovieFile OR size == 0
-                            pageSpec.FilterExpressions
-                            .Add(m => m.MovieFileId == 0 || m.MovieFile.Size == 0);
-                        }
-                        else if (op == "notequal" && sizeOnDisk == 0)
-                        {
-                            // Special case: has MovieFile with size > 0
-                            pageSpec.FilterExpressions
-                            .Add(m => m.MovieFileId != 0 && m.MovieFile.Size > 0);
-                        }
-                        else
-                        {
-                            // Normal numeric comparison
-                            NumericFilterLong.Apply(pageSpec, jsonElement, op, p => p.MovieFile.Size);
-                        }
+                    case "tags": // In-memory filtering for tags, with special handling for contains and notcontains operations
+                        TagsFilter.Apply(pageSpec, jsonElement, op);
 
                         break;
-                    case "tags": // TODO: test
-                        if (jsonElement.ValueKind == JsonValueKind.Array)
-                        {
-                            var tagIds = jsonElement.EnumerateArray()
-                                .Where(e => e.ValueKind == JsonValueKind.Number && e.TryGetInt32(out _))
-                                .Select(e => e.GetInt32())
-                                .ToList();
-                            if (tagIds.Count > 0)
-                            {
-                                pageSpec.FilterExpressions.Add(m => m.Tags != null && tagIds.All(tagId => m.Tags.Contains(tagId)));
-                            }
-                        }
 
-                        break;
-                    case "title": // TODO: Test
+                    case "title":
                         StringFilter.Apply(pageSpec, jsonElement, op, p => p.MovieMetadata.Value.Title);
 
                         break;
-                    case "year": // TODO: test
+                    case "year":
                         NumericFilterInt.Apply(pageSpec, jsonElement, op, p => p.Year);
 
                         break;
                 }
             }
+        }
+
+        private static bool ValidateFilter(MovieFilterResource filter)
+        {
+            return !(
+                filter == null
+                || string.IsNullOrWhiteSpace(filter.Key)
+                || filter.Value is not JsonElement);
+        }
+
+        private static List<MovieFilterResource> ValidatedFilters(List<MovieFilterResource> filters)
+        {
+            var validatedFilters = filters.Where(f => ValidateFilter(f)).ToList();
+            return validatedFilters;
         }
     }
 }
