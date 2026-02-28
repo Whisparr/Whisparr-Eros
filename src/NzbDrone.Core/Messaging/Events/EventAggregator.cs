@@ -72,15 +72,34 @@ namespace NzbDrone.Core.Messaging.Events
 
             _logger.Trace("Publishing {0}", eventName);
 
+            // Resolve subscribers outside the lock to avoid deadlock:
+            // DI resolution can trigger constructor logging (NLog), and ProgressMessageTarget
+            // calls PublishEvent while holding the NLog Target lock. If we hold _eventSubscribers
+            // during DI resolution, we get: NLog lock → _eventSubscribers (thread A) vs
+            // _eventSubscribers → DI → NLog lock (thread B) = deadlock.
             EventSubscribers<TEvent> subscribers;
             lock (_eventSubscribers)
             {
-                if (!_eventSubscribers.TryGetValue(eventName, out var target))
-                {
-                    _eventSubscribers[eventName] = target = new EventSubscribers<TEvent>(_serviceFactory);
-                }
+                _eventSubscribers.TryGetValue(eventName, out var cached);
+                subscribers = cached as EventSubscribers<TEvent>;
+            }
 
-                subscribers = target as EventSubscribers<TEvent>;
+            if (subscribers == null)
+            {
+                var newSubscribers = new EventSubscribers<TEvent>(_serviceFactory);
+
+                lock (_eventSubscribers)
+                {
+                    if (!_eventSubscribers.TryGetValue(eventName, out var cached))
+                    {
+                        _eventSubscribers[eventName] = newSubscribers;
+                        subscribers = newSubscribers;
+                    }
+                    else
+                    {
+                        subscribers = cached as EventSubscribers<TEvent>;
+                    }
+                }
             }
 
             // call synchronous handlers first.
