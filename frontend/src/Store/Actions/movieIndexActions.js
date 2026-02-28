@@ -3,10 +3,8 @@ import { filterBuilderTypes, filterBuilderValueTypes, sortDirections } from 'Hel
 import sortByProp from 'Utilities/Array/sortByProp';
 import translate from 'Utilities/String/translate';
 import createHandleActions from './Creators/createHandleActions';
-import createSetClientSideCollectionFilterReducer from './Creators/Reducers/createSetClientSideCollectionFilterReducer';
-import createSetClientSideCollectionSortReducer from './Creators/Reducers/createSetClientSideCollectionSortReducer';
 import createSetTableOptionReducer from './Creators/Reducers/createSetTableOptionReducer';
-import { filterPredicates, filters, sortPredicates } from './movieActions';
+import { filters } from './movieActions';
 
 //
 // Variables
@@ -22,10 +20,9 @@ export const defaultState = {
   isDeleting: false,
   deleteError: null,
   indexMode: 'movie',
-  sortKey: 'sortTitle',
+  page: 1,
+  sortKey: 'cleanTitle',
   sortDirection: sortDirections.ASCENDING,
-  secondarySortKey: 'sortTitle',
-  secondarySortDirection: sortDirections.ASCENDING,
   view: 'posters',
 
   posterOptions: {
@@ -37,7 +34,8 @@ export const defaultState = {
     showReleaseDate: false,
     showTmdbRating: false,
     showTags: false,
-    showSearchAction: false
+    showSearchAction: false,
+    pageSize: 25
   },
 
   overviewOptions: {
@@ -50,11 +48,13 @@ export const defaultState = {
     showPath: false,
     showSizeOnDisk: false,
     showTags: false,
-    showSearchAction: false
+    showSearchAction: false,
+    pageSize: 20
   },
 
   tableOptions: {
-    showSearchAction: false
+    showSearchAction: false,
+    pageSize: 20
   },
 
   columns: [
@@ -69,7 +69,7 @@ export const defaultState = {
     {
       name: 'status',
       columnLabel: () => translate('ReleaseStatus'),
-      isSortable: true,
+      isSortable: false,
       isVisible: true,
       isModifiable: false
     },
@@ -81,7 +81,7 @@ export const defaultState = {
       isModifiable: false
     },
     {
-      name: 'studio',
+      name: 'studioTitle',
       label: () => translate('Studio'),
       isSortable: true,
       isVisible: true
@@ -99,20 +99,14 @@ export const defaultState = {
       isVisible: false
     },
     {
+      name: 'releaseDate',
+      label: () => translate('ReleaseDate'),
+      isSortable: true,
+      isVisible: false
+    },
+    {
       name: 'year',
       label: () => translate('Year'),
-      isSortable: true,
-      isVisible: false
-    },
-    {
-      name: 'releaseDate',
-      label: () => translate('ReleaseDate'),
-      isSortable: true,
-      isVisible: false
-    },
-    {
-      name: 'releaseDate',
-      label: () => translate('ReleaseDate'),
       isSortable: true,
       isVisible: false
     },
@@ -147,24 +141,6 @@ export const defaultState = {
       isVisible: true
     },
     {
-      name: 'tmdbRating',
-      label: () => translate('TmdbRating'),
-      isSortable: true,
-      isVisible: false
-    },
-    {
-      name: 'popularity',
-      label: () => translate('Popularity'),
-      isSortable: true,
-      isVisible: false
-    },
-    {
-      name: 'certification',
-      label: () => translate('Certification'),
-      isSortable: true,
-      isVisible: false
-    },
-    {
       name: 'releaseGroups',
       label: () => translate('ReleaseGroup'),
       isSortable: true,
@@ -184,43 +160,9 @@ export const defaultState = {
     }
   ],
 
-  sortPredicates: {
-    ...sortPredicates,
-
-    studio: function(item) {
-      const studio = item.studio;
-
-      return studio ? studio.toLowerCase() : '';
-    },
-
-    collection: function(item) {
-      const { collection = {} } = item;
-
-      return collection.title;
-    },
-
-    originalLanguage: function(item) {
-      const { originalLanguage = {} } = item;
-
-      return originalLanguage.name;
-    },
-
-    releaseGroups: function(item) {
-      const { statistics = {} } = item;
-      const { releaseGroups = [] } = statistics;
-
-      return releaseGroups.length ?
-        releaseGroups
-          .map((group) => group.toLowerCase())
-          .sort((a, b) => a.localeCompare(b)) :
-        undefined;
-    }
-  },
-
   selectedFilterKey: 'all',
 
   filters,
-  filterPredicates,
 
   filterBuilderProps: [
     {
@@ -311,12 +253,6 @@ export const defaultState = {
       valueType: filterBuilderValueTypes.DATE
     },
     {
-      name: 'releaseDate',
-      label: () => translate('ReleaseDate'),
-      type: filterBuilderTypes.DATE,
-      valueType: filterBuilderValueTypes.DATE
-    },
-    {
       name: 'runtime',
       label: () => translate('Runtime'),
       type: filterBuilderTypes.NUMBER
@@ -352,16 +288,6 @@ export const defaultState = {
       }
     },
     {
-      name: 'tmdbRating',
-      label: () => translate('TmdbRating'),
-      type: filterBuilderTypes.NUMBER
-    },
-    {
-      name: 'tmdbVotes',
-      label: () => translate('TmdbVotes'),
-      type: filterBuilderTypes.NUMBER
-    },
-    {
       name: 'tags',
       label: () => translate('Tags'),
       type: filterBuilderTypes.ARRAY,
@@ -385,6 +311,7 @@ export const persistState = [
 //
 // Actions Types
 
+export const SET_MOVIE_PAGE = 'movieIndex/setMoviePage';
 export const SET_MOVIE_SORT = 'movieIndex/setMovieSort';
 export const SET_MOVIE_FILTER = 'movieIndex/setMovieFilter';
 export const SET_MOVIE_VIEW = 'movieIndex/setMovieView';
@@ -396,6 +323,7 @@ export const SET_MOVIE_INDEX_MODE = 'movieIndex/setMovieIndexMode';
 //
 // Action Creators
 
+export const setMoviePage = createAction(SET_MOVIE_PAGE);
 export const setMovieSort = createAction(SET_MOVIE_SORT);
 export const setMovieFilter = createAction(SET_MOVIE_FILTER);
 export const setMovieView = createAction(SET_MOVIE_VIEW);
@@ -409,11 +337,27 @@ export const setMovieIndexMode = createAction(SET_MOVIE_INDEX_MODE);
 
 export const reducers = createHandleActions({
 
-  [SET_MOVIE_SORT]: createSetClientSideCollectionSortReducer(section),
-  [SET_MOVIE_FILTER]: createSetClientSideCollectionFilterReducer(section),
+  [SET_MOVIE_PAGE]: function(state, { payload }) {
+    return Object.assign({}, state, { page: payload });
+  },
+
+  [SET_MOVIE_SORT]: function(state, { payload }) {
+    const { sortKey } = payload;
+    const isSameKey = sortKey === state.sortKey;
+    let newDirection = sortDirections.ASCENDING;
+    if (isSameKey && state.sortDirection === sortDirections.ASCENDING) {
+      newDirection = sortDirections.DESCENDING;
+    }
+
+    return Object.assign({}, state, { sortKey, sortDirection: newDirection, page: 1 });
+  },
+
+  [SET_MOVIE_FILTER]: function(state, { payload }) {
+    return Object.assign({}, state, { selectedFilterKey: payload.selectedFilterKey, page: 1 });
+  },
 
   [SET_MOVIE_VIEW]: function(state, { payload }) {
-    return Object.assign({}, state, { view: payload.view });
+    return Object.assign({}, state, { view: payload.view, page: 1 });
   },
 
   [SET_MOVIE_TABLE_OPTION]: createSetTableOptionReducer(section),

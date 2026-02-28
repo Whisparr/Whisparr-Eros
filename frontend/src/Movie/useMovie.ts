@@ -1,8 +1,8 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { queryClient } from 'App/queryClient';
-import fetchJson from '../Utilities/Fetch/fetchJson';
-import Movie from './Movie';
-import { MoviePagingRequest, PagingResource } from './Movie.types';
+import useApiQuery from 'Helpers/Hooks/useApiQuery';
+import fetchJson, { ApiError } from '../Utilities/Fetch/fetchJson';
+import Movie, { MoviePatchResource } from './Movie';
 
 // Shared auth headers for all API calls
 const AUTH_HEADERS = {
@@ -10,25 +10,6 @@ const AUTH_HEADERS = {
   'X-Whisparr-Client': 'Whisparr',
 };
 const apiRoot = '/api/v3';
-
-// Helper for GET
-function apiGet<T>(path: string) {
-  return fetchJson<T, undefined>({
-    path: `${apiRoot}${path}`,
-    method: 'GET',
-    headers: AUTH_HEADERS,
-  });
-}
-
-// Helper for POST
-function apiPost<T, TBody>(path: string, body: TBody) {
-  return fetchJson<T, TBody>({
-    path: `${apiRoot}${path}`,
-    method: 'POST',
-    body,
-    headers: AUTH_HEADERS,
-  });
-}
 
 function apiPut<T, TBody>(path: string, body: TBody) {
   return fetchJson<T, TBody>({
@@ -39,50 +20,77 @@ function apiPut<T, TBody>(path: string, body: TBody) {
   });
 }
 
-// Fetch a single movie by ID or foreignId
-export function useMovie(idOrForeignId: string | number | undefined) {
-  return useQuery<Movie | undefined>({
-    queryKey: [`/movie/${idOrForeignId}`],
-    queryFn: async () => {
-      if (!idOrForeignId) return undefined;
-      return apiGet<Movie>(`/movie/${idOrForeignId}`);
-    },
-    enabled: !!idOrForeignId,
+function apiPatch<T, TBody>(path: string, body: TBody) {
+  return fetchJson<T, TBody>({
+    path: `${apiRoot}${path}`,
+    method: 'PATCH',
+    body,
+    headers: AUTH_HEADERS,
   });
 }
 
-// Fetch paged movies/scenes for index views
-export function useMovieIndexQuery(params: MoviePagingRequest) {
-  return useQuery<PagingResource<Movie>>({
-    queryKey: ['/movie/paged', params],
-    queryFn: () =>
-      apiPost<PagingResource<Movie>, MoviePagingRequest>(
-        '/movie/paged',
-        params
-      ),
-    placeholderData: (prev) => prev,
+// Fetch a single movie by titleSlug or movieId
+export function useMovie(titleSlug: string | number | undefined) {
+  return useApiQuery<Movie | undefined>({
+    path: `/movie/${titleSlug}`,
+    queryOptions: { enabled: !!titleSlug },
   });
 }
 
 // Fetch multiple movies by foreignIds
 export function useMoviesByForeignIds(foreignIds: string[] | undefined) {
-  return useQuery<Movie[]>({
-    queryKey: ['moviesByForeignIds', foreignIds],
-    queryFn: () =>
-      foreignIds && foreignIds.length > 0
-        ? apiPost<Movie[], string[]>('/movie/list', foreignIds)
-        : [],
-    enabled: !!foreignIds && foreignIds.length > 0,
+  return useApiQuery<Movie[]>({
+    method: 'POST',
+    path: '/moviesByForeignIds',
+    queryOptions: { enabled: !!foreignIds && foreignIds.length > 0 },
+    queryParams: { foreignIds },
   });
 }
 
-export function useToggleMovieMonitored(idOrForeignId: string | number) {
+// TODO: Move to useApiMutation
+export function useToggleMovieMonitored() {
   return useMutation({
     mutationFn: ({ movie, monitored }: { movie: Movie; monitored: boolean }) =>
-      apiPut<Movie, Movie>(`/movie/${movie.id}`, { ...movie, monitored }),
+      apiPatch<Movie, MoviePatchResource>(`/movie/${movie.id}`, {
+        id: movie.id,
+        monitored,
+      }),
     onSuccess: (data) => {
-      queryClient.setQueryData([`/movie/${idOrForeignId}`], data);
+      queryClient.setQueryData([`/movie/${data.titleSlug}`], data);
     },
+  });
+}
+
+// TODO: Move to useApiMutation
+export function useSaveMovie() {
+  return useMutation<Movie, ApiError, { movie: Movie; moveFiles?: boolean }>({
+    mutationFn: ({
+      movie,
+      moveFiles = false,
+    }: {
+      movie: Movie;
+      moveFiles?: boolean;
+    }) => {
+      const url = moveFiles
+        ? `/movie/${movie.id}?moveFiles=true`
+        : `/movie/${movie.id}`;
+      return apiPut<Movie, Movie>(url, movie);
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData([`/movie/${data.titleSlug}`], data);
+      queryClient.invalidateQueries({ queryKey: ['/movie/paged'] });
+    },
+    onError: (error) => {
+      console.error('useSaveMovie error', error);
+    },
+  });
+}
+
+export function useSearchMovie(query: string, limit: number = 10) {
+  return useApiQuery<Movie[]>({
+    path: `/movie/search`,
+    queryParams: { query, limit },
+    queryOptions: { enabled: !!query && query.length > 2 },
   });
 }
 

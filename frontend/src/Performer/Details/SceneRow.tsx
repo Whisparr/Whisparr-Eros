@@ -13,6 +13,7 @@ import MovieIndexProgressBar from 'Movie/Index/ProgressBar/MovieIndexProgressBar
 import Movie, { MovieStatus } from 'Movie/Movie';
 import MovieSearchCell from 'Movie/MovieSearchCell';
 import MovieTitleLink from 'Movie/MovieTitleLink';
+import { useToggleMovieMonitored } from 'Movie/useMovie';
 import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
 import formatRuntime from 'Utilities/Date/formatRuntime';
 import formatBytes from 'Utilities/Number/formatBytes';
@@ -24,39 +25,12 @@ interface SceneRowProps {
   isSaving?: boolean;
   safeForWorkMode?: boolean;
   columns: Column[];
-  onMonitorMoviePress: (
-    id: number,
-    monitored: boolean,
-    options?: object
-  ) => void;
 }
-
-/*
-interface SceneRowState {
-  isDetailsModalOpen: boolean;
-}
-*/
 
 export default function SceneRow(props: SceneRowProps) {
   const { movieRuntimeFormat } = useSelector(createUISettingsSelector());
 
-  /*
-const onManualSearchPress = (): void => {
-  setIsDetailsModalOpen(true);
-};
-
-
-const onDetailsModalClose = (): void => {
-  setIsDetailsModalOpen(false);
-};
-*/
-  function onMonitorToggle(): void {
-    const { id, monitored } = props.movie;
-    props.onMonitorMoviePress(id, !monitored);
-  }
-
   const { isSaving, columns, movie } = props;
-
   const {
     id,
     itemType,
@@ -94,6 +68,11 @@ const onDetailsModalClose = (): void => {
     // failsafe, though we shouldn't ever need this
     return `https://stashdb.org/scene/${foreignId}`;
   };
+
+  const { mutate: toggleMonitored } = useToggleMovieMonitored();
+  function onMonitorToggle(): void {
+    toggleMonitored({ movie, monitored: !movie.monitored });
+  }
 
   const url = externalLink();
   return (

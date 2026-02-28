@@ -66,7 +66,7 @@ function SceneIndexTableHeader(props: SceneIndexTableHeaderProps) {
       {columns.map((column) => {
         const { name, label, isSortable, isVisible } = column;
 
-        if (!isVisible) {
+        if (!isVisible || name === 'select') {
           return null;
         }
 

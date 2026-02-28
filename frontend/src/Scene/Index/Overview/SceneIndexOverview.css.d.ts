@@ -3,6 +3,7 @@
 interface CssExports {
   'actions': string;
   'content': string;
+  'controls': string;
   'details': string;
   'editorSelect': string;
   'ended': string;

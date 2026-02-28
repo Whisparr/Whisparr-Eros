@@ -28,7 +28,7 @@
   border-left: 4px solid var(--warningColor);
 }
 
-.deleted {
+.delete {
   padding-left: 2px;
   border-left: 4px solid var(--inverseLabelColor);
   color: var(--dangerColor);

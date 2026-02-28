@@ -18,7 +18,7 @@
   flex: 4 0 110px;
 }
 
-.studio {
+.studioTitle {
   composes: cell;
 
   flex: 2 0 90px;

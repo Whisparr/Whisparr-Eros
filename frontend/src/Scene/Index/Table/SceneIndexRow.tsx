@@ -1,6 +1,8 @@
 import React, { useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useSelect } from 'App/SelectContext';
+import AppState from 'App/State/AppState';
+import Command from 'Commands/Command';
 import { MOVIE_SEARCH, REFRESH_MOVIE } from 'Commands/commandNames';
 import Icon from 'Components/Icon';
 import IconButton from 'Components/Link/IconButton';
@@ -13,13 +15,13 @@ import Column from 'Components/Table/Column';
 import Tooltip from 'Components/Tooltip/Tooltip';
 import { icons, kinds } from 'Helpers/Props';
 import EditMovieModal from 'Movie/Edit/EditMovieModal';
-import { Statistics } from 'Movie/Movie';
+import Movie, { Statistics } from 'Movie/Movie';
 import DeleteSceneModal from 'Scene/Delete/DeleteSceneModal';
 import SceneDetailsLinks from 'Scene/Details/SceneDetailsLinks';
-import createSceneIndexItemSelector from 'Scene/Index/createSceneIndexItemSelector';
 import SceneStudioTitleLink from 'Scene/SceneStudioTitleLink';
 import SceneTitleLink from 'Scene/SceneTitleLink';
 import { executeCommand } from 'Store/Actions/commandActions';
+import createExecutingCommandsSelector from 'Store/Selectors/createExecutingCommandsSelector';
 import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
 import { SelectStateInputProps } from 'typings/props';
 import formatRuntime from 'Utilities/Date/formatRuntime';
@@ -31,17 +33,33 @@ import selectTableOptions from './selectTableOptions';
 import styles from './SceneIndexRow.css';
 
 interface SceneIndexRowProps {
-  sceneId: number;
+  scene: Movie;
   sortKey: string;
   columns: Column[];
   isSelectMode: boolean;
 }
 
 function SceneIndexRow(props: SceneIndexRowProps) {
-  const { sceneId, columns, isSelectMode } = props;
+  const { scene, columns, isSelectMode } = props;
+  const sceneId = scene.id;
 
-  const { scene, qualityProfile, isRefreshingScene, isSearchingScene } =
-    useSelector(createSceneIndexItemSelector(props.sceneId));
+  const qualityProfile = useSelector((state: AppState) =>
+    state.settings.qualityProfiles.items.find(
+      (p) => p.id === scene.qualityProfileId
+    )
+  );
+
+  const executingCommands = useSelector(createExecutingCommandsSelector());
+
+  const isRefreshingScene = executingCommands.some(
+    (command: Command) =>
+      command.name === REFRESH_MOVIE && command.body.movieId === sceneId
+  );
+
+  const isSearchingScene = executingCommands.some(
+    (command: Command) =>
+      command.name === MOVIE_SEARCH && command.body.movieId === sceneId
+  );
 
   const { showSearchAction } = useSelector(selectTableOptions);
 
@@ -165,13 +183,13 @@ function SceneIndexRow(props: SceneIndexRowProps) {
           );
         }
 
-        if (name === 'studio') {
+        if (name === 'studioTitle') {
           return (
             <VirtualTableRowCell key={name} className={styles[name]}>
               <SceneStudioTitleLink
                 studioForeignId={studioForeignId}
                 studioTitle={studioTitle}
-                className={styles.studio}
+                className={styles[name]}
               >
                 {studioTitle}
               </SceneStudioTitleLink>

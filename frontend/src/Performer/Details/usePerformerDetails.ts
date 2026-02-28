@@ -17,7 +17,6 @@ export const usePerformerDetails = (foreignId: string) => {
   const [isManualRefresh, setIsManualRefresh] = useState(false);
   const prevPerformerRef = useRef<Performer | undefined>();
 
-  // Lookup performer by foreignId using useQuery
   const {
     data: performer,
     error: performerDetailsError,
@@ -56,6 +55,7 @@ export const usePerformerDetails = (foreignId: string) => {
     },
   });
 
+  // TODO: Move to useApiQuery
   function onRefreshPress() {
     if (!performerId) return;
     setIsManualRefresh(true);
@@ -67,6 +67,7 @@ export const usePerformerDetails = (foreignId: string) => {
     );
   }
 
+  // TODO: Move to useApiQuery
   function onYearRefreshPress(ids: number[]) {
     if (!performerId) return;
     setIsManualRefresh(true);
@@ -90,6 +91,7 @@ export const usePerformerDetails = (foreignId: string) => {
     prevPerformerRef.current = performer;
   }, [performer, isManualRefresh]);
 
+  // TODO: Move to useApiQuery
   function onSearchPress() {
     if (!performerId) return;
     dispatch(
@@ -115,6 +117,7 @@ export const usePerformerDetails = (foreignId: string) => {
     monitorToggleMutation.mutate(updatedPerformer);
   }
 
+  // TODO: Move to useApiQuery
   function searchMoviesByIds(movieIds: number[]) {
     if (!movieIds || movieIds.length === 0) return;
     for (const id of movieIds) {

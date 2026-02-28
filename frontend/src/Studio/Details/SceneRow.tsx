@@ -9,6 +9,7 @@ import MovieIndexProgressBar from 'Movie/Index/ProgressBar/MovieIndexProgressBar
 import Movie, { MovieStatus } from 'Movie/Movie';
 import MovieSearchCell from 'Movie/MovieSearchCell';
 import MovieTitleLink from 'Movie/MovieTitleLink';
+import { useToggleMovieMonitored } from 'Movie/useMovie';
 import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
 import formatRuntime from 'Utilities/Date/formatRuntime';
 import formatBytes from 'Utilities/Number/formatBytes';
@@ -19,11 +20,6 @@ interface SceneRowProps {
   isSaving?: boolean;
   safeForWorkMode?: boolean;
   columns: Column[];
-  onMonitorMoviePress: (
-    id: number,
-    monitored: boolean,
-    options?: object
-  ) => void;
 }
 
 /*
@@ -45,10 +41,6 @@ const onDetailsModalClose = (): void => {
   setIsDetailsModalOpen(false);
   };
 */
-  function onMonitorToggle(): void {
-    const { id, monitored } = props.movie;
-    props.onMonitorMoviePress(id, !monitored);
-  }
 
   const { isSaving, columns, movie } = props;
 
@@ -69,6 +61,11 @@ const onDetailsModalClose = (): void => {
   } = movie;
 
   const status = movie.status as MovieStatus;
+
+  const { mutate: toggleMonitored } = useToggleMovieMonitored();
+  function onMonitorToggle(): void {
+    toggleMonitored({ movie, monitored: !movie.monitored });
+  }
 
   return (
     <TableRow>

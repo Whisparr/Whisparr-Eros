@@ -76,7 +76,7 @@ function MovieHistoryModalContent({
   onModalClose,
 }: MovieHistoryModalContentProps) {
   const { data: items, isFetching, error } = useMovieHistory(movieId);
-  const { mutate: markHistoryFailed } = useMarkHistoryFailed(movieId);
+  const { mutate: markHistoryFailed } = useMarkHistoryFailed();
 
   function handleMarkAsFailedPress(historyId: number) {
     markHistoryFailed(historyId);

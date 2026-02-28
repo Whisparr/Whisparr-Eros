@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useSelect } from 'App/SelectContext';
+import Command from 'Commands/Command';
 import { MOVIE_SEARCH, REFRESH_MOVIE } from 'Commands/commandNames';
 import Icon from 'Components/Icon';
 import IconButton from 'Components/Link/IconButton';
@@ -10,16 +11,16 @@ import RelativeDateCell from 'Components/Table/Cells/RelativeDateCell';
 import VirtualTableRowCell from 'Components/Table/Cells/VirtualTableRowCell';
 import VirtualTableSelectCell from 'Components/Table/Cells/VirtualTableSelectCell';
 import Column from 'Components/Table/Column';
-import TmdbRating from 'Components/TmdbRating';
 import Tooltip from 'Components/Tooltip/Tooltip';
 import { icons, kinds } from 'Helpers/Props';
 import DeleteMovieModal from 'Movie/Delete/DeleteMovieModal';
 import MovieDetailsLinks from 'Movie/Details/MovieDetailsLinks';
 import EditMovieModal from 'Movie/Edit/EditMovieModal';
-import createMovieIndexItemSelector from 'Movie/Index/createMovieIndexItemSelector';
-import { Statistics } from 'Movie/Movie';
+import Movie, { Statistics } from 'Movie/Movie';
 import MovieTitleLink from 'Movie/MovieTitleLink';
+import QualityProfileName from 'Settings/Profiles/Quality/QualityProfileName';
 import { executeCommand } from 'Store/Actions/commandActions';
+import createExecutingCommandsSelector from 'Store/Selectors/createExecutingCommandsSelector';
 import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
 import { SelectStateInputProps } from 'typings/props';
 import formatRuntime from 'Utilities/Date/formatRuntime';
@@ -31,17 +32,27 @@ import selectTableOptions from './selectTableOptions';
 import styles from './MovieIndexRow.css';
 
 interface MovieIndexRowProps {
-  movieId: number;
+  movie: Movie;
   sortKey: string;
   columns: Column[];
   isSelectMode: boolean;
 }
 
 function MovieIndexRow(props: MovieIndexRowProps) {
-  const { movieId, columns, isSelectMode } = props;
+  const { movie, columns, isSelectMode } = props;
+  const movieId = movie.id;
 
-  const { movie, qualityProfile, isRefreshingMovie, isSearchingMovie } =
-    useSelector(createMovieIndexItemSelector(props.movieId));
+  const executingCommands = useSelector(createExecutingCommandsSelector());
+
+  const isRefreshingMovie = executingCommands.some(
+    (command: Command) =>
+      command.name === REFRESH_MOVIE && command.body.movieId === movieId
+  );
+
+  const isSearchingMovie = executingCommands.some(
+    (command: Command) =>
+      command.name === MOVIE_SEARCH && command.body.movieId === movieId
+  );
 
   const { showSearchAction } = useSelector(selectTableOptions);
 
@@ -63,7 +74,6 @@ function MovieIndexRow(props: MovieIndexRowProps) {
     runtime,
     path,
     genres = [],
-    ratings,
     tags = [],
     tmdbId,
     tpdbId,
@@ -168,7 +178,7 @@ function MovieIndexRow(props: MovieIndexRowProps) {
           );
         }
 
-        if (name === 'studio') {
+        if (name === 'studioTitle') {
           return (
             <VirtualTableRowCell key={name} className={styles[name]}>
               {studioTitle}
@@ -187,7 +197,7 @@ function MovieIndexRow(props: MovieIndexRowProps) {
         if (name === 'qualityProfileId') {
           return (
             <VirtualTableRowCell key={name} className={styles[name]}>
-              {qualityProfile?.name ?? ''}
+              <QualityProfileName qualityProfileId={movie.qualityProfileId} />
             </VirtualTableRowCell>
           );
         }
@@ -276,14 +286,6 @@ function MovieIndexRow(props: MovieIndexRowProps) {
                 bottomRadius={false}
                 isStandAlone={true}
               />
-            </VirtualTableRowCell>
-          );
-        }
-
-        if (name === 'tmdbRating') {
-          return (
-            <VirtualTableRowCell key={name} className={styles[name]}>
-              {ratings.tmdb ? <TmdbRating ratings={ratings} /> : null}
             </VirtualTableRowCell>
           );
         }

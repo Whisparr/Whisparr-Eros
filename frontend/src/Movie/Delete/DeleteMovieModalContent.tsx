@@ -117,7 +117,7 @@ function DeleteMovieModalContent({
             <div>
               <InlineMarkdown
                 data={translate('DeleteMovieFolderConfirmation', {
-                  movie: movie.path,
+                  path: movie.path,
                 })}
                 blockClassName={styles.folderPath}
               />

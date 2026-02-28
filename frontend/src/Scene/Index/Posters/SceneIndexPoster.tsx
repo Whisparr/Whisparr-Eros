@@ -1,33 +1,33 @@
 import React, { useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import AppState from 'App/State/AppState';
+import Command from 'Commands/Command';
 import { MOVIE_SEARCH, REFRESH_MOVIE } from 'Commands/commandNames';
 import Icon from 'Components/Icon';
 import Label from 'Components/Label';
 import IconButton from 'Components/Link/IconButton';
 import Link from 'Components/Link/Link';
 import SpinnerIconButton from 'Components/Link/SpinnerIconButton';
-import TmdbRating from 'Components/TmdbRating';
 import Popover from 'Components/Tooltip/Popover';
 import { icons } from 'Helpers/Props';
 import EditMovieModal from 'Movie/Edit/EditMovieModal';
 import MovieIndexPosterSelect from 'Movie/Index/Select/MovieIndexPosterSelect';
-import { Statistics } from 'Movie/Movie';
+import Movie, { Statistics } from 'Movie/Movie';
 import DeleteSceneModal from 'Scene/Delete/DeleteSceneModal';
 import SceneDetailsLinks from 'Scene/Details/SceneDetailsLinks';
 import SceneIndexProgressBar from 'Scene/Index/ProgressBar/SceneIndexProgressBar';
 import ScenePoster from 'Scene/ScenePoster';
 import { executeCommand } from 'Store/Actions/commandActions';
+import createExecutingCommandsSelector from 'Store/Selectors/createExecutingCommandsSelector';
 import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
 import getRelativeDate from 'Utilities/Date/getRelativeDate';
 import translate from 'Utilities/String/translate';
-import createSceneIndexItemSelector from '../createSceneIndexItemSelector';
 import SceneIndexPosterInfo from './SceneIndexPosterInfo';
 import selectPosterOptions from './selectPosterOptions';
 import styles from './SceneIndexPoster.css';
 
 interface SceneIndexPosterProps {
-  sceneId: number;
+  scene: Movie;
   sortKey: string;
   isSelectMode: boolean;
   posterWidth: number;
@@ -35,10 +35,26 @@ interface SceneIndexPosterProps {
 }
 
 function SceneIndexPoster(props: SceneIndexPosterProps) {
-  const { sceneId, sortKey, isSelectMode, posterWidth, posterHeight } = props;
+  const { scene, sortKey, isSelectMode, posterWidth, posterHeight } = props;
+  const sceneId = scene.id;
 
-  const { scene, qualityProfile, isRefreshingScene, isSearchingScene } =
-    useSelector(createSceneIndexItemSelector(props.sceneId));
+  const qualityProfile = useSelector((state: AppState) =>
+    state.settings.qualityProfiles.items.find(
+      (p) => p.id === scene.qualityProfileId
+    )
+  );
+
+  const executingCommands = useSelector(createExecutingCommandsSelector());
+
+  const isRefreshingScene = executingCommands.some(
+    (command: Command) =>
+      command.name === REFRESH_MOVIE && command.body.movieId === sceneId
+  );
+
+  const isSearchingScene = executingCommands.some(
+    (command: Command) =>
+      command.name === MOVIE_SEARCH && command.body.movieId === sceneId
+  );
 
   const safeForWorkMode = useSelector(
     (state: AppState) => state.settings.safeForWorkMode
@@ -50,7 +66,6 @@ function SceneIndexPoster(props: SceneIndexPosterProps) {
     showMonitored,
     showQualityProfile,
     showReleaseDate,
-    showTmdbRating,
     showSearchAction,
   } = useSelector(selectPosterOptions);
 
@@ -233,12 +248,6 @@ function SceneIndexPoster(props: SceneIndexPosterProps) {
         </div>
       ) : null}
 
-      {showTmdbRating && !!ratings.tmdb ? (
-        <div className={styles.title}>
-          <TmdbRating ratings={ratings} iconSize={12} />
-        </div>
-      ) : null}
-
       <SceneIndexPosterInfo
         studio={studioTitle}
         qualityProfile={qualityProfile}
@@ -256,7 +265,6 @@ function SceneIndexPoster(props: SceneIndexPosterProps) {
         sortKey={sortKey}
         path={path}
         originalLanguage={originalLanguage}
-        showTmdbRating={showTmdbRating}
       />
 
       <EditMovieModal

@@ -1,3 +1,4 @@
+// TODO: Standardize the "when" on React Query Key invalidation to avoid rapid-fire reloads during bulk operations.
 import * as signalR from '@microsoft/signalr/dist/browser/signalr.js';
 import PropTypes from 'prop-types';
 import { Component } from 'react';
@@ -7,7 +8,6 @@ import { queryClient } from 'App/queryClient';
 import { setAppValue, setVersion } from 'Store/Actions/appActions';
 import { removeItem, update, updateItem, updateItemsBatch } from 'Store/Actions/baseActions';
 import { fetchCommands, finishCommand, updateCommand } from 'Store/Actions/commandActions';
-import { fetchMovies } from 'Store/Actions/movieActions';
 import { fetchQueue, fetchQueueDetails } from 'Store/Actions/queueActions';
 import { fetchRootFolders } from 'Store/Actions/rootFolderActions';
 import { fetchQualityDefinitions } from 'Store/Actions/settingsActions';
@@ -53,7 +53,6 @@ const mapDispatchToProps = {
   dispatchFetchQueue: fetchQueue,
   dispatchFetchQueueDetails: fetchQueueDetails,
   dispatchFetchRootFolders: fetchRootFolders,
-  dispatchFetchMovies: fetchMovies,
   dispatchFetchTags: fetchTags,
   dispatchFetchTagDetails: fetchTagDetails
 };
@@ -89,18 +88,14 @@ Logger.prototype.log = function(logLevel, message) {
   }
 };
 
-// Helper to re-fetch when a movie is updated
+// Helper to ensure updated data when a movie is updated in the background
 function updateMovieDetailsQueryCache(updatedMovie) {
-  const movieId = `/movie/${updatedMovie.id}`;
-  const movieForeignId = `/movie/${updatedMovie.foreignId}`;
+  const queryKey = `/movie/${updatedMovie.titleSlug}`;
 
-  // For TMDB movies
+  // Don't trigger a re-fetch, as this method can be called rapid-fire
   queryClient.invalidateQueries({
-    queryKey: [movieId]
-  });
-  // For Stash and everything else
-  queryClient.invalidateQueries({
-    queryKey: [movieForeignId]
+    queryKey: [queryKey],
+    refetchType: 'none'
   });
 }
 
@@ -135,7 +130,7 @@ function updateMovieInPerformerWorksQueryCache(updatedMovie) {
 // Helper to update a nested movie in performer.years[].movies[] in React Query cache
 // To avoid invalidating the entire list when a single movie is updated, we need to find the movie in the cache and update it directly.
 function updateMovieInStudioWorksQueryCache(updatedMovie) {
-  if (!updatedMovie || !updatedMovie.studioForeignId) {
+  if (!updatedMovie?.studioForeignId) {
     return;
   }
 
@@ -156,7 +151,7 @@ function updateMovieInStudioWorksQueryCache(updatedMovie) {
 
 // Merges updates in React Queryr cache instead of a re-fetch
 function updatePerformerQueryCache(updatedPerformer) {
-  if (!updatedPerformer || !updatedPerformer.foreignId) {
+  if (!updatedPerformer?.foreignId) {
     return;
   }
 
@@ -172,7 +167,7 @@ function updatePerformerQueryCache(updatedPerformer) {
 
 // Merges updates in React Queryr cache instead of a re-fetch
 function updateStudioQueryCache(updatedStudio) {
-  if (!updatedStudio || !updatedStudio.foreignId) {
+  if (!updatedStudio?.foreignId) {
     return;
   }
 
@@ -185,8 +180,18 @@ function updateStudioQueryCache(updatedStudio) {
   });
 }
 
+function removeMovieQueryCache(updatedMovie) {
+  if (!updatedMovie?.foreignId) {
+    return;
+  }
+
+  queryClient.removeQueries({
+    queryKey: [`/movie/${updatedMovie.titleSlug}`]
+  });
+}
+
 function removePerformerQueryCache(updatedPerformer) {
-  if (!updatedPerformer || !updatedPerformer.foreignId) {
+  if (!updatedPerformer?.foreignId) {
     return;
   }
 
@@ -200,7 +205,7 @@ function removePerformerQueryCache(updatedPerformer) {
 }
 
 function removeStudioQueryCache(updatedStudio) {
-  if (!updatedStudio || !updatedStudio.foreignId) {
+  if (!updatedStudio?.foreignId) {
     return;
   }
 
@@ -387,38 +392,27 @@ class SignalRConnector extends Component {
   };
 
   handleMovie = (body) => {
-    const section = 'movies';
-
     // Support batch payloads (Resources) and single (resource)
     if (Array.isArray(body.resources) && body.resources.length > 0) {
       // Batched update
       if (body.action === 'updated') {
-        this.props.dispatchUpdateItemsBatch(body.resources.map((resource) => ({ section, ...resource })));
         body.resources.forEach(updateMovieInPerformerWorksQueryCache);
         body.resources.forEach(updateMovieInStudioWorksQueryCache);
-        body.resources.forEach(updateMovieInStudioWorksQueryCache);
         body.resources.forEach(updateMovieDetailsQueryCache);
-        repopulatePage('movieUpdated');
       } else if (body.action === 'deleted') {
-        body.resources.forEach((resource) => {
-          this.props.dispatchRemoveItem({ section, id: resource.id });
-        });
+        body.resources.forEach(removeMovieQueryCache);
       }
-      repopulatePage('movieUpdated');
       return;
     }
 
     // Fallback: single resource
     const action = body.action;
     if (action === 'updated') {
-      this.props.dispatchUpdateItem({ section, ...body.resource });
       updateMovieInPerformerWorksQueryCache(body.resource);
       updateMovieInStudioWorksQueryCache(body.resource);
-      updateMovieInStudioWorksQueryCache(body.resource);
       updateMovieDetailsQueryCache(body.resource);
-      repopulatePage('movieUpdated');
     } else if (action === 'deleted') {
-      this.props.dispatchRemoveItem({ section, id: body.resource.id });
+      removeMovieQueryCache(body.resource);
     }
   };
 
@@ -585,7 +579,6 @@ class SignalRConnector extends Component {
 
     const {
       dispatchFetchCommands,
-      dispatchFetchMovies,
       dispatchSetAppValue
     } = this.props;
 
@@ -598,7 +591,8 @@ class SignalRConnector extends Component {
 
     // Repopulate the page (if a repopulator is set) to ensure things
     // are in sync after reconnecting.
-    dispatchFetchMovies();
+    queryClient.invalidateQueries({ queryKey: ['/movie/paged'] });
+    queryClient.invalidateQueries({ queryKey: ['/movie/stats'] });
     dispatchFetchCommands();
     repopulatePage();
   };
@@ -639,7 +633,6 @@ SignalRConnector.propTypes = {
   dispatchFetchQueue: PropTypes.func.isRequired,
   dispatchFetchQueueDetails: PropTypes.func.isRequired,
   dispatchFetchRootFolders: PropTypes.func.isRequired,
-  dispatchFetchMovies: PropTypes.func.isRequired,
   dispatchFetchTags: PropTypes.func.isRequired,
   dispatchFetchTagDetails: PropTypes.func.isRequired
 };

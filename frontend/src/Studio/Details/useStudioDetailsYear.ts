@@ -8,10 +8,7 @@ import { sortDirections } from 'Helpers/Props';
 import { SortDirection } from 'Helpers/Props/sortDirections';
 import Movie from 'Movie/Movie';
 import { executeCommand } from 'Store/Actions/commandActions';
-import {
-  bulkMonitorMovie,
-  toggleMovieMonitored,
-} from 'Store/Actions/movieActions';
+import { bulkMonitorMovie } from 'Store/Actions/movieActions';
 import {
   setStudioScenesSort,
   setStudioScenesTableOption,
@@ -32,11 +29,6 @@ interface StudioDetailsYearState {
 
 interface StudioDetailsYearActions {
   onMonitorYearPress: () => void;
-  onMonitorMoviePress: (
-    movieId: number,
-    monitored: boolean,
-    event: { shiftKey: boolean }
-  ) => void;
   onTableOptionChange: (payload: TableOptionsChangePayload) => void;
   onSortPress: (
     sortKey: string,
@@ -149,18 +141,6 @@ export function useStudioDetailsYearActions(
     dispatch(bulkMonitorMovie({ ids, monitored: newMonitoredState }));
   }, [dispatch, items]);
 
-  const onMonitorMoviePress = useCallback(
-    (movieId: number, monitored: boolean, _event: { shiftKey: boolean }) => {
-      dispatch(
-        toggleMovieMonitored({
-          movieId,
-          monitored,
-        })
-      );
-    },
-    [dispatch]
-  );
-
   const onTableOptionChange = useCallback(
     (payload: TableOptionsChangePayload) => {
       dispatch(setStudioScenesTableOption(payload));
@@ -209,7 +189,6 @@ export function useStudioDetailsYearActions(
 
   return {
     onMonitorYearPress,
-    onMonitorMoviePress,
     onTableOptionChange,
     onSortPress,
     onSearchPress,

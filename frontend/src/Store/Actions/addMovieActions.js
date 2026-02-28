@@ -3,7 +3,6 @@ import { createAction } from 'redux-actions';
 import { batchActions } from 'redux-batched-actions';
 import { createThunk, handleThunks } from 'Store/thunks';
 import createAjaxRequest from 'Utilities/createAjaxRequest';
-import getNewMovie from 'Utilities/Movie/getNewMovie';
 import getNewPerformer from 'Utilities/Performer/getNewPerformer';
 import getSectionState from 'Utilities/State/getSectionState';
 import updateSectionState from 'Utilities/State/updateSectionState';
@@ -65,11 +64,8 @@ export const persistState = [
 //
 // Actions Types
 
-export const LOOKUP_MOVIE = 'addMovie/lookupMovie';
-export const LOOKUP_SCENE = 'addMovie/lookupScene';
 export const LOOKUP_STUDIO = 'addMovie/lookupStudio';
 export const LOOKUP_PERFORMER = 'addMovie/lookupPerformer';
-export const ADD_MOVIE = 'addMovie/addMovie';
 export const ADD_PERFORMER = 'addMovie/addPerformer';
 export const ADD_STUDIO = 'addMovie/addStudio';
 export const SET_ADD_MOVIE_VALUE = 'addMovie/setAddMovieValue';
@@ -84,11 +80,8 @@ export const SET_STUDIOS_WITH_STATUS = 'addMovie/setStudiosWithStatus';
 //
 // Action Creators
 
-export const lookupMovie = createThunk(LOOKUP_MOVIE);
-export const lookupScene = createThunk(LOOKUP_SCENE);
 export const lookupStudio = createThunk(LOOKUP_STUDIO);
 export const lookupPerformer = createThunk(LOOKUP_PERFORMER);
-export const addMovie = createThunk(ADD_MOVIE);
 export const addPerformer = createThunk(ADD_PERFORMER);
 export const addStudio = createThunk(ADD_STUDIO);
 export const clearAddMovie = createAction(CLEAR_ADD_MOVIE);
@@ -119,88 +112,6 @@ export const setAddStudioValue = createAction(SET_ADD_STUDIO_VALUE, (payload) =>
 // Action Handlers
 
 export const actionHandlers = handleThunks({
-
-  [LOOKUP_MOVIE]: function(getState, payload, dispatch) {
-    dispatch(set({ section, isFetching: true }));
-
-    if (abortCurrentRequest) {
-      abortCurrentRequest();
-    }
-
-    const { request, abortRequest } = createAjaxRequest({
-      url: '/lookup/movie',
-      data: {
-        term: payload.term
-      }
-    });
-
-    abortCurrentRequest = abortRequest;
-
-    request.done((data) => {
-      data = data.map((movie) => ({ ...movie, internalId: movie.id, id: movie.foreignId }));
-
-      dispatch(batchActions([
-        update({ section, data }),
-
-        set({
-          section,
-          isFetching: false,
-          isPopulated: true,
-          error: null
-        })
-      ]));
-    });
-
-    request.fail((xhr) => {
-      dispatch(set({
-        section,
-        isFetching: false,
-        isPopulated: false,
-        error: xhr.aborted ? null : xhr
-      }));
-    });
-  },
-
-  [LOOKUP_SCENE]: function(getState, payload, dispatch) {
-    dispatch(set({ section, isFetching: true }));
-
-    if (abortCurrentRequest) {
-      abortCurrentRequest();
-    }
-
-    const { request, abortRequest } = createAjaxRequest({
-      url: '/lookup/scene',
-      data: {
-        term: payload.term
-      }
-    });
-
-    abortCurrentRequest = abortRequest;
-
-    request.done((data) => {
-      data = data.map((movie) => ({ ...movie, internalId: movie.id, id: movie.foreignId }));
-
-      dispatch(batchActions([
-        update({ section, data }),
-
-        set({
-          section,
-          isFetching: false,
-          isPopulated: true,
-          error: null
-        })
-      ]));
-    });
-
-    request.fail((xhr) => {
-      dispatch(set({
-        section,
-        isFetching: false,
-        isPopulated: false,
-        error: xhr.aborted ? null : xhr
-      }));
-    });
-  },
 
   [LOOKUP_STUDIO]: function(getState, payload, dispatch) {
     dispatch(set({ section, isFetching: true }));
@@ -280,54 +191,6 @@ export const actionHandlers = handleThunks({
         isFetching: false,
         isPopulated: false,
         error: xhr.aborted ? null : xhr
-      }));
-    });
-  },
-
-  [ADD_MOVIE]: function(getState, payload, dispatch) {
-    dispatch(set({ section, isAdding: true }));
-
-    const foreignId = payload.foreignId;
-    const items = getState().addMovie.items;
-    const itemToAdd = _.find(items, { foreignId });
-    const newMovie = getNewMovie(_.cloneDeep(itemToAdd.movie), payload);
-    newMovie.id = 0;
-
-    const promise = createAjaxRequest({
-      url: '/movie',
-      method: 'POST',
-      dataType: 'json',
-      contentType: 'application/json',
-      data: JSON.stringify(newMovie)
-    }).request;
-
-    promise.done((data) => {
-      const updatedItem = _.cloneDeep(data);
-      updatedItem.internalId = updatedItem.id;
-      updatedItem.id = updatedItem.foreignId;
-      delete updatedItem.images;
-
-      const actions = [
-        updateItem({ section: 'movies', ...data }),
-        updateItem({ section: 'addMovie', ...updatedItem }),
-
-        set({
-          section,
-          isAdding: false,
-          isAdded: true,
-          addError: null
-        })
-      ];
-
-      dispatch(batchActions(actions));
-    });
-
-    promise.fail((xhr) => {
-      dispatch(set({
-        section,
-        isAdding: false,
-        isAdded: false,
-        addError: xhr
       }));
     });
   },

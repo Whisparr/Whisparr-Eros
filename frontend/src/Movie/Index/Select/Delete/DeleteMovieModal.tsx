@@ -1,24 +1,38 @@
 import React from 'react';
 import Modal from 'Components/Modal/Modal';
+import { sizes } from 'Helpers/Props';
 import DeleteMovieModalContent from './DeleteMovieModalContent';
+import { useDeleteMovieModal } from './useDeleteMovieModal';
 
-interface DeleteMovieModalProps {
+export interface DeleteMovieModalProps {
   isOpen: boolean;
   movieIds: number[];
-  onModalClose(): void;
+  onDeletePress: (deleteFiles: boolean, addImportExclusion: boolean) => void;
+  onModalClose: () => void;
+  [key: string]: string | unknown;
 }
 
-function DeleteMovieModal(props: DeleteMovieModalProps) {
-  const { isOpen, movieIds, onModalClose } = props;
-
+export function DeleteMovieModal({
+  isOpen,
+  onModalClose,
+  movieIds,
+  onDeletePress,
+  ...otherProps
+}: DeleteMovieModalProps) {
+  const { onModalClose: enhancedOnModalClose } =
+    useDeleteMovieModal(onModalClose);
   return (
-    <Modal isOpen={isOpen} onModalClose={onModalClose}>
+    <Modal
+      isOpen={isOpen}
+      size={sizes.MEDIUM}
+      onModalClose={enhancedOnModalClose}
+    >
       <DeleteMovieModalContent
+        {...otherProps}
         movieIds={movieIds}
-        onModalClose={onModalClose}
+        onDeletePress={onDeletePress}
+        onModalClose={enhancedOnModalClose}
       />
     </Modal>
   );
 }
-
-export default DeleteMovieModal;

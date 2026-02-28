@@ -49,6 +49,7 @@ import QualityProfileName from 'Settings/Profiles/Quality/QualityProfileName';
 import { executeCommand } from 'Store/Actions/commandActions';
 import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import fonts from 'Styles/Variables/fonts';
+import Queue from 'typings/Queue';
 import formatRuntime from 'Utilities/Date/formatRuntime';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
@@ -56,7 +57,7 @@ import MovieCastPostersConnector from './Credits/Cast/MovieCastPostersConnector'
 import MovieDetailsLinks from './MovieDetailsLinks';
 import MovieStatusLabel from './MovieStatusLabel';
 import MovieStudioLink from './MovieStudioLink';
-import MovieTagsConnector from './MovieTagsConnector';
+import MovieTags from './MovieTags';
 import ReleaseDateDisplay from './ReleaseDateDisplay';
 import MovieTitlesTable from './Titles/MovieTitlesTable';
 import useMovieDetailsModals from './useMovieDetailsModals';
@@ -73,11 +74,10 @@ interface Props {
   movieFilesError?: unknown;
   extraFilesError?: unknown;
   movieCreditsError?: unknown;
-  hasMovieFiles?: boolean;
   onRefreshPress: () => void;
   onSearchPress: () => void;
   onGoToMovie: () => void;
-  queueItem?: object | null | undefined;
+  queueItem?: Queue | false | undefined;
   movieRuntimeFormat: string;
 }
 
@@ -101,7 +101,7 @@ function MovieDetails(props: Partial<Props>) {
   const { isSmallScreen } = useSelector(createDimensionsSelector());
   const [overviewHeight, setOverviewHeight] = useState(0);
   const [titleWidth, setTitleWidth] = useState(0);
-  const { mutate: toggleMonitored } = useToggleMovieMonitored(id);
+  const { mutate: toggleMonitored } = useToggleMovieMonitored();
 
   const {
     isOrganizeModalOpen,
@@ -147,7 +147,7 @@ function MovieDetails(props: Partial<Props>) {
     return null;
   }
 
-  // Use movie fields, fallback to props for related data not yet migrated
+  // TODO: Reduce deconstruction to minimum needed.
   const {
     tmdbId,
     tpdbId,
@@ -164,7 +164,6 @@ function MovieDetails(props: Partial<Props>) {
     qualityProfileId,
     monitored,
     studioTitle,
-    studioForeignId,
     genres = [],
     collection,
     overview,
@@ -174,7 +173,6 @@ function MovieDetails(props: Partial<Props>) {
     images,
     tags = [],
     itemType,
-    hasMovieFiles,
     queueItem,
     movieRuntimeFormat,
     isSaving,
@@ -183,7 +181,8 @@ function MovieDetails(props: Partial<Props>) {
   } = { ...props, ...movie };
 
   const movieId = movie.id;
-  const { sizeOnDisk = 0 } = statistics as MovieStatistics;
+  const { sizeOnDisk } = statistics as MovieStatistics;
+  const hasFile = !!movie.movieFileId || sizeOnDisk > 0;
   const statusDetails = getMovieStatusDetails(status);
   const fanartUrl = getFanartUrl(images);
   const marqueeWidth = isSmallScreen ? titleWidth : titleWidth - 150;
@@ -248,7 +247,7 @@ function MovieDetails(props: Partial<Props>) {
           <PageToolbarButton
             label={translate('PreviewRename')}
             iconName={icons.ORGANIZE}
-            isDisabled={!!hasMovieFiles}
+            isDisabled={!!hasFile}
             onPress={handleOrganizePress}
           />
           <PageToolbarButton
@@ -307,7 +306,14 @@ function MovieDetails(props: Partial<Props>) {
                     <div className={styles.toggleMonitoredContainer}>
                       <MonitorToggleButton
                         className={styles.monitorToggleButton}
+                        isDisabled={false}
                         monitored={monitored}
+                        moviesMonitored={monitored}
+                        type={
+                          movie.itemType === 'movie'
+                            ? 'movieMonitor'
+                            : 'sceneMonitor'
+                        }
                         isSaving={isSaving}
                         size={40}
                         onPress={handleMonitoredPress}
@@ -335,12 +341,9 @@ function MovieDetails(props: Partial<Props>) {
                   {releaseDate ? (
                     <ReleaseDateDisplay releaseDate={releaseDate} />
                   ) : null}
-                  {studioTitle ? (
+                  {movie ? (
                     <span className={styles.studio}>
-                      <MovieStudioLink
-                        foreignId={studioForeignId}
-                        studioTitle={studioTitle}
-                      />
+                      <MovieStudioLink movie={movie} />
                     </span>
                   ) : null}
                   {runtime ? (
@@ -366,17 +369,11 @@ function MovieDetails(props: Partial<Props>) {
                       position={tooltipPositions.BOTTOM}
                     />
                   </span>
-
                   {!!tags.length && (
                     <span>
                       <Tooltip
                         anchor={<Icon name={icons.TAGS} size={20} />}
-                        tooltip={
-                          <MovieTagsConnector
-                            key={Number(movieId)}
-                            movieId={Number(movieId)}
-                          />
-                        }
+                        tooltip={<MovieTags key={movieId} movie={movie} />}
                         position={tooltipPositions.BOTTOM}
                       />
                     </span>
@@ -407,8 +404,8 @@ function MovieDetails(props: Partial<Props>) {
                 >
                   <span className={styles.statusName}>
                     <MovieStatusLabel
-                      status={status}
-                      hasMovieFiles={hasMovieFiles ?? false}
+                      status={statusDetails.title}
+                      hasMovieFiles={hasFile ?? false}
                       monitored={monitored}
                       isAvailable={isAvailable}
                       queueItem={queueItem}
@@ -502,7 +499,11 @@ function MovieDetails(props: Partial<Props>) {
           </FieldSet>
 
           <FieldSet legend={translate('Titles')}>
-            <MovieTitlesTable movieId={Number(movieId)} />
+            <MovieTitlesTable
+              alternateTitles={movie?.alternateTitles ?? []}
+              isLoading={isLoading}
+              error={error}
+            />
           </FieldSet>
         </div>
 

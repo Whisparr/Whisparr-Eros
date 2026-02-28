@@ -46,9 +46,12 @@ $hoverScale: 1.05;
 
 .title {
   @add-mixin truncate;
-
+  overflow: hidden;
+  width: 100%;
   background-color: var(--sceneBackgroundColor);
   text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: $smallFontSize;
 }
 

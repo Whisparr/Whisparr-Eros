@@ -6,15 +6,16 @@ import AppState from 'App/State/AppState';
 import { RENAME_MOVIE } from 'Commands/commandNames';
 import SpinnerButton from 'Components/Link/SpinnerButton';
 import PageContentFooter from 'Components/Page/PageContentFooter';
-import usePrevious from 'Helpers/Hooks/usePrevious';
 import { kinds } from 'Helpers/Props';
 import { saveMovieEditor } from 'Store/Actions/movieActions';
 import { fetchRootFolders } from 'Store/Actions/rootFolderActions';
 import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
 import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
-import DeleteSceneModal from './Delete/DeleteSceneModal';
+import { DeleteSceneModal } from './Delete/DeleteSceneModal';
+import { useDeleteSceneModalFooterHandler } from './Delete/useDeleteSceneModalFooterHandler';
 import EditScenesModal from './Edit/EditScenesModal';
+import { useEditScenesModalMutation } from './Edit/useEditScenesModalMutation';
 import OrganizeScenesModal from './Organize/OrganizeScenesModal';
 import TagsModal from './Tags/TagsModal';
 import styles from './SceneIndexSelectFooter.css';
@@ -23,41 +24,37 @@ interface SavePayload {
   monitored?: boolean;
   qualityProfileId?: number;
   rootFolderPath?: string;
-  moveFiles?: boolean;
+  searchOnAdd?: boolean;
 }
 
 const sceneEditorSelector = createSelector(
   (state: AppState) => state.movies,
-  (scenes) => {
-    const { isSaving, isDeleting, deleteError } = scenes;
+  (movies) => {
+    // Keep legacy isSaving for other features like tags and delete
+    const { isSaving } = movies;
 
     return {
       isSaving,
-      isDeleting,
-      deleteError,
     };
   }
 );
 
 function SceneIndexSelectFooter() {
-  const { isSaving, isDeleting, deleteError } =
-    useSelector(sceneEditorSelector);
-
-  const isOrganizingScenes = useSelector(
+  const { isSaving: legacyIsSaving } = useSelector(sceneEditorSelector);
+  const isOrganizingMovies = useSelector(
     createCommandExecutingSelector(RENAME_MOVIE)
   );
 
   const dispatch = useDispatch();
+  const editMutation = useEditScenesModalMutation();
 
+  const [isDeleteSceneModalOpen, setIsDeleteSceneModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isOrganizeModalOpen, setIsOrganizeModalOpen] = useState(false);
   const [isTagsModalOpen, setIsTagsModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isSavingScenes, setIsSavingScenes] = useState(false);
   const [isSavingTags, setIsSavingTags] = useState(false);
-  const previousIsDeleting = usePrevious(isDeleting);
 
-  const [selectState, selectDispatch] = useSelect();
+  const [selectState] = useSelect();
   const { selectedState } = selectState;
 
   const sceneIds = useMemo(() => {
@@ -76,17 +73,14 @@ function SceneIndexSelectFooter() {
 
   const onSavePress = useCallback(
     (payload: SavePayload) => {
-      setIsSavingScenes(true);
       setIsEditModalOpen(false);
 
-      dispatch(
-        saveMovieEditor({
-          ...payload,
-          movieIds: sceneIds,
-        })
-      );
+      editMutation.mutate({
+        movieIds: sceneIds,
+        ...payload,
+      });
     },
-    [sceneIds, dispatch]
+    [sceneIds, editMutation]
   );
 
   const onOrganizePress = useCallback(() => {
@@ -121,26 +115,27 @@ function SceneIndexSelectFooter() {
     [sceneIds, dispatch]
   );
 
-  const onDeletePress = useCallback(() => {
-    setIsDeleteModalOpen(true);
-  }, [setIsDeleteModalOpen]);
-
   const onDeleteModalClose = useCallback(() => {
-    setIsDeleteModalOpen(false);
+    setIsDeleteSceneModalOpen(false);
   }, []);
 
-  useEffect(() => {
-    if (!isSaving) {
-      setIsSavingScenes(false);
-      setIsSavingTags(false);
-    }
-  }, [isSaving]);
+  const onDeleteSelectedPress = useCallback(() => {
+    setIsDeleteSceneModalOpen(true);
+  }, []);
+
+  // Handler for when delete is confirmed in modal
+  const { onDeletePress, isPending: isDeletePending } =
+    useDeleteSceneModalFooterHandler({
+      sceneIds,
+      onModalClose: onDeleteModalClose,
+    });
 
   useEffect(() => {
-    if (previousIsDeleting && !isDeleting && !deleteError) {
-      selectDispatch({ type: 'unselectAll' });
+    // Legacy reducer-based isSaving for tags operation
+    if (!legacyIsSaving) {
+      setIsSavingTags(false);
     }
-  }, [previousIsDeleting, isDeleting, deleteError, selectDispatch]);
+  }, [legacyIsSaving]);
 
   useEffect(() => {
     dispatch(fetchRootFolders());
@@ -153,37 +148,34 @@ function SceneIndexSelectFooter() {
       <div className={styles.buttons}>
         <div className={styles.actionButtons}>
           <SpinnerButton
-            isSpinning={isSaving && isSavingScenes}
-            isDisabled={!anySelected || isOrganizingScenes}
+            isSpinning={editMutation.isPending}
+            isDisabled={!anySelected}
             onPress={onEditPress}
           >
             {translate('Edit')}
           </SpinnerButton>
-
           <SpinnerButton
             kind={kinds.WARNING}
-            isSpinning={isOrganizingScenes}
-            isDisabled={!anySelected || isOrganizingScenes}
+            isSpinning={isOrganizingMovies}
+            isDisabled={!anySelected || isOrganizingMovies}
             onPress={onOrganizePress}
           >
             {translate('RenameFiles')}
           </SpinnerButton>
 
           <SpinnerButton
-            isSpinning={isSaving && isSavingTags}
-            isDisabled={!anySelected || isOrganizingScenes}
+            isSpinning={legacyIsSaving && isSavingTags}
+            isDisabled={!anySelected}
             onPress={onTagsPress}
           >
             {translate('SetTags')}
           </SpinnerButton>
-        </div>
 
-        <div className={styles.deleteButtons}>
           <SpinnerButton
+            isSpinning={isDeletePending}
+            isDisabled={!anySelected}
             kind={kinds.DANGER}
-            isSpinning={isDeleting}
-            isDisabled={!anySelected || isDeleting}
-            onPress={onDeletePress}
+            onPress={onDeleteSelectedPress}
           >
             {translate('Delete')}
           </SpinnerButton>
@@ -215,8 +207,9 @@ function SceneIndexSelectFooter() {
       />
 
       <DeleteSceneModal
-        isOpen={isDeleteModalOpen}
+        isOpen={isDeleteSceneModalOpen}
         sceneIds={sceneIds}
+        onDeletePress={onDeletePress}
         onModalClose={onDeleteModalClose}
       />
     </PageContentFooter>
