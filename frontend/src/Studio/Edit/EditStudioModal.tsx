@@ -49,6 +49,7 @@ function EditStudioModal({
         images={modalData.images}
         overview={modalData.overview}
         item={modalData.item}
+        showMovieMonitor={modalData.showMovieMonitor}
         isSaving={modalData.isSaving}
         saveError={modalData.saveError}
         isPathChanging={modalData.isPathChanging}

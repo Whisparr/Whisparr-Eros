@@ -214,11 +214,12 @@ function PerformerDetails() {
     year,
     movies: movies.filter((m) => m.year === year),
   }));
-  const showMovieMonitorToggle = () => {
+  const showMovieMonitorToggle = (): boolean => {
     const source = generalSettings.whisparrMovieMetadataSource;
     return (
       (source?.toLowerCase() === 'tmdb' && tmdbId && tmdbId > 0) ||
-      (source?.toLowerCase() === 'tpdb' && tpdbId && tpdbId.length > 0)
+      (source?.toLowerCase() === 'tpdb' && tpdbId && tpdbId.length > 0) ||
+      false
     );
   };
 
@@ -562,6 +563,7 @@ function PerformerDetails() {
         <EditPerformerModal
           isOpen={isEditMovieModalOpen}
           performer={performer}
+          showMovieMonitor={showMovieMonitorToggle()}
           onModalClose={handleEditMovieModalClose}
         />
       </PageContentBody>

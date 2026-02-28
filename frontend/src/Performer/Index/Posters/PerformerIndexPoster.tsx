@@ -16,6 +16,7 @@ import QualityProfileName from 'Settings/Profiles/Quality/QualityProfileName';
 import formatBytes from 'Utilities/Number/formatBytes';
 import titleCase from 'Utilities/String/titleCase';
 import translate from 'Utilities/String/translate';
+import { useGeneralSettings } from '../usePerformerIndex';
 import PerformerIndexProgressBar from './PerformerIndexProgressBar';
 import styles from './PerformerIndexPoster.css';
 
@@ -58,6 +59,21 @@ function PerformerIndexPoster(props: PerformerIndexPosterProps) {
   const elementStyle = {
     width: `${posterWidth}px`,
     height: `${posterHeight}px`,
+  };
+
+  const generalSettings = useGeneralSettings();
+
+  const showMovieMonitorToggle = (): boolean => {
+    const source = generalSettings.whisparrMovieMetadataSource;
+    return (
+      (source?.toLowerCase() === 'tmdb' &&
+        performer.tmdbId &&
+        performer.tmdbId > 0) ||
+      (source?.toLowerCase() === 'tpdb' &&
+        performer.tpdbId &&
+        performer.tpdbId.length > 0) ||
+      false
+    );
   };
 
   return (
@@ -200,6 +216,7 @@ function PerformerIndexPoster(props: PerformerIndexPosterProps) {
       <EditPerformerModal
         isOpen={isEditPerformerModalOpen}
         performer={performer}
+        showMovieMonitor={showMovieMonitorToggle()}
         onModalClose={onEditPerformerModalClose}
       />
     </div>

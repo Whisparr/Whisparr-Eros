@@ -49,6 +49,7 @@ function EditStudioModalContent(props: EditStudioModalContentProps) {
     images,
     overview,
     item,
+    showMovieMonitor,
     isSaving,
     onInputChange,
     onModalClose,
@@ -110,16 +111,20 @@ function EditStudioModalContent(props: EditStudioModalContentProps) {
                   onChange={onInputChange}
                 />
               </FormGroup>
-              <FormGroup>
-                <FormLabel>{translate('MonitoredMovie')}</FormLabel>
-                <FormInputGroup
-                  type={inputTypes.CHECK}
-                  name="moviesMonitored"
-                  helpText={translate('MonitoredStudioMovieHelpText')}
-                  {...moviesMonitored}
-                  onChange={onInputChange}
-                />
-              </FormGroup>
+
+              {showMovieMonitor ? (
+                <FormGroup>
+                  <FormLabel>{translate('MonitoredMovie')}</FormLabel>
+                  <FormInputGroup
+                    type={inputTypes.CHECK}
+                    name="moviesMonitored"
+                    helpText={translate('MonitoredStudioMovieHelpText')}
+                    {...moviesMonitored}
+                    onChange={onInputChange}
+                  />
+                </FormGroup>
+              ) : null}
+
               <FormGroup>
                 <FormLabel>{translate('MonitorAfter')}</FormLabel>
                 <FormInputGroup
