@@ -30,7 +30,7 @@ using Whisparr.Http.REST.Attributes;
 namespace Whisparr.Api.V3.Studios
 {
     [V3ApiController]
-    public class StudioController : RestControllerWithSignalR<StudioResource, Studio>, IHandleAsync<StudioUpdatedEvent>, IHandleAsync<StudiosDeletedEvent>
+    public class StudioController : RestControllerWithSignalR<StudioResource, Studio>, IHandle<StudioUpdatedEvent>, IHandle<StudiosDeletedEvent>
     {
         private static readonly HashSet<string> _allowedStudioSortKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
@@ -319,7 +319,7 @@ namespace Whisparr.Api.V3.Studios
 
         /// <summary>Handles studio updated events to broadcast changes via SignalR</summary>
         [NonAction]
-        public void HandleAsync(StudioUpdatedEvent message)
+        public void Handle(StudioUpdatedEvent message)
         {
             var resource = MapToResource(message.Studio);
 
@@ -328,7 +328,7 @@ namespace Whisparr.Api.V3.Studios
 
         /// <summary>Handles studios deleted events to broadcast changes via SignalR</summary>
         [NonAction]
-        public void HandleAsync(StudiosDeletedEvent message)
+        public void Handle(StudiosDeletedEvent message)
         {
             if (message?.Studios == null || !message.Studios.Any())
             {
