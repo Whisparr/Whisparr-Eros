@@ -36,12 +36,10 @@
   align-items: center;
   flex: 1 0 200px;
   flex-wrap: wrap;
-  overflow: hidden;
   margin-right: 10px;
+  padding: 4px 0;
   min-width: 1px;
-  max-height: 35px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  word-break: break-word;
 }
 
 .releaseDate {
