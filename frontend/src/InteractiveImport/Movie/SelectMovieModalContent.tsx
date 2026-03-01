@@ -1,14 +1,5 @@
 import { debounce } from 'lodash';
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { FixedSizeList as List, ListChildComponentProps } from 'react-window';
-import AppState from 'App/State/AppState';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import TextInput from 'Components/Form/TextInput';
 import Button from 'Components/Link/Button';
 import ModalBody from 'Components/Modal/ModalBody';
@@ -20,8 +11,7 @@ import Column from 'Components/Table/Column';
 import VirtualTableRowButton from 'Components/Table/VirtualTableRowButton';
 import { NONE } from 'Helpers/Props/scrollDirections';
 import Movie from 'Movie/Movie';
-import { searchMoviesModal } from 'Store/Actions/movieSearchActions';
-import dimensions from 'Styles/Variables/dimensions';
+import { useSearchMovie } from 'Movie/useMovie';
 import { InputChanged } from 'typings/inputs';
 import translate from 'Utilities/String/translate';
 import SelectMovieModalTableHeader from './SelectMovieModalTableHeader';
@@ -39,63 +29,35 @@ const columns: Column[] = [
   },
 ];
 
-const bodyPadding = parseInt(dimensions.pageContentBodyPadding);
+const rowStyle = {
+  display: 'flex',
+  alignItems: 'center',
+  borderTop: '1px solid #858585',
+  justifyContent: 'space-between',
+};
 
-interface SelectMovieModalContentProps {
-  modalTitle: string;
-  relativePath: string;
+interface MovieRowItemProps {
+  movie: Movie;
   onMovieSelect(movie: Movie): void;
-  onModalClose(): void;
 }
 
-interface RowItemData {
-  items: Movie[];
-  columns: Column[];
-  onMovieSelect(movieId: number): void;
-}
-
-function Row({ index, style, data }: ListChildComponentProps<RowItemData>) {
-  const { items, onMovieSelect } = data;
-  const movie = index >= items.length ? null : items[index];
-
+function MovieRowItem({ movie, onMovieSelect }: Readonly<MovieRowItemProps>) {
   const handlePress = useCallback(() => {
-    if (movie?.id) {
-      onMovieSelect(movie.id);
-    }
-  }, [movie?.id, onMovieSelect]);
+    onMovieSelect(movie);
+  }, [movie, onMovieSelect]);
 
   const joinedPerformers = useMemo(() => {
-    const credits = Array.isArray(movie?.performerNames)
-      ? movie!.performerNames
-      : [];
-
-    // Map/guard for expected shape { performer: { name: string } }
-    const names = credits
+    if (!Array.isArray(movie.performerNames)) return '';
+    return movie.performerNames
       .slice(0, 5)
-      .map((name) => {
-        return typeof name === 'string' ? name : '';
-      })
-      .filter((n) => n && n.length > 0)
-      .sort((a, b) => a.localeCompare(b));
-
-    return names.join(', ');
-  }, [movie]);
-
-  if (!movie) return null;
+      .filter((n): n is string => typeof n === 'string' && n.length > 0)
+      .sort((a, b) => a.localeCompare(b))
+      .join(', ');
+  }, [movie.performerNames]);
 
   return (
-    <VirtualTableRowButton
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        borderTop: '1px solid #858585',
-        justifyContent: 'space-between',
-        ...style,
-      }}
-      onPress={handlePress}
-    >
+    <VirtualTableRowButton style={rowStyle} onPress={handlePress}>
       <SelectMovieRow
-        key={movie.id}
         title={movie.title}
         performers={joinedPerformers}
         studioTitle={movie.studioTitle}
@@ -105,94 +67,42 @@ function Row({ index, style, data }: ListChildComponentProps<RowItemData>) {
   );
 }
 
+interface SelectMovieModalContentProps {
+  modalTitle: string;
+  relativePath: string;
+  onMovieSelect(movie: Movie): void;
+  onModalClose(): void;
+}
+
 function SelectMovieModalContent(props: SelectMovieModalContentProps) {
   const { modalTitle, relativePath, onMovieSelect, onModalClose } = props;
 
-  const dispatch = useDispatch();
-
-  const debouncedDispatchSearch = useMemo(
-    // only fire API call once every 300ms, for those fast typers
-    () => debounce((val: string) => dispatch(searchMoviesModal(val)), 300),
-    [dispatch]
-  );
-
-  const listRef = useRef<List<RowItemData>>(null);
-  const scrollerRef = useRef<HTMLDivElement>(null);
-
   const [filter, setFilter] = useState('');
-  const [size, setSize] = useState({ width: 0, height: 0 });
-  const windowHeight = window.innerHeight;
+  const [debouncedQuery, setDebouncedQuery] = useState('');
 
-  // movies come straight from Redux after searchMovies thunk runs
-  const items: Movie[] = useSelector(
-    (state: AppState) => state.movieSearch.items
-  );
-
-  // measure scroller size
-  useEffect(() => {
-    const current = scrollerRef.current;
-    if (current) {
-      const width = current.clientWidth;
-      const height = current.clientHeight;
-      const padding = bodyPadding - 5;
-      setSize({ width: width - padding * 2, height: height + padding });
-    }
-  }, [windowHeight]);
-
-  // sync scroller with react-window list
-  useEffect(() => {
-    const currentScrollerRef = scrollerRef.current;
-    if (!currentScrollerRef) return;
-
-    const handleScroll = () => {
-      const { offsetTop = 0 } = currentScrollerRef;
-      const scrollTop = currentScrollerRef.scrollTop - offsetTop;
-      listRef.current?.scrollTo(scrollTop);
-    };
-
-    const throttled = debounce(handleScroll, 10);
-    currentScrollerRef.addEventListener('scroll', throttled);
-
-    return () => {
-      currentScrollerRef.removeEventListener('scroll', throttled);
-      throttled.cancel();
-    };
-  }, []);
-
-  // debounce filter input to prevent browser throttling
-  const debouncedSetFilter = useMemo(
-    () => debounce((val: string) => setFilter(val), 50),
+  const debouncedSetQuery = useMemo(
+    () => debounce((val: string) => setDebouncedQuery(val), 250),
     []
   );
 
+  const { data } = useSearchMovie(debouncedQuery, 25);
+
+  // Force results to clear if the filter is cleared/reset
+  const items = debouncedQuery.length > 2 ? data ?? [] : [];
+
   const onFilterChange = useCallback(
     ({ value }: InputChanged<string>) => {
-      setFilter(value); // update instantly
-      if (value.length >= 3 || value.length === 0) {
-        // debounce API call to avoid flooding
-        debouncedDispatchSearch(value);
-      }
+      setFilter(value);
+      debouncedSetQuery(value);
     },
-    [debouncedDispatchSearch]
+    [debouncedSetQuery]
   );
 
-  // cleanup debounce on unmount
   useEffect(() => {
     return () => {
-      debouncedSetFilter.cancel();
-      debouncedDispatchSearch.cancel();
+      debouncedSetQuery.cancel();
     };
-  }, [debouncedSetFilter, debouncedDispatchSearch]);
-
-  const onMovieSelectWrapper = useCallback(
-    (movieId: number) => {
-      const movie = items.find((m) => m.id === movieId);
-      if (movie) {
-        onMovieSelect(movie);
-      }
-    },
-    [items, onMovieSelect]
-  );
+  }, [debouncedSetQuery]);
 
   return (
     <ModalContent onModalClose={onModalClose}>
@@ -210,23 +120,17 @@ function SelectMovieModalContent(props: SelectMovieModalContentProps) {
           onChange={onFilterChange}
         />
 
-        <Scroller
-          ref={scrollerRef}
-          className={styles.scroller}
-          autoFocus={false}
-        >
+        {items.length > 0 ? (
           <SelectMovieModalTableHeader columns={columns} />
-          <List<RowItemData>
-            ref={listRef}
-            style={{ width: '100%', height: '100%', overflow: 'hidden' }}
-            width={size.width}
-            height={size.height}
-            itemCount={items.length}
-            itemSize={38}
-            itemData={{ items, columns, onMovieSelect: onMovieSelectWrapper }}
-          >
-            {Row}
-          </List>
+        ) : null}
+        <Scroller className={styles.scroller} autoFocus={false}>
+          {items.map((movie) => (
+            <MovieRowItem
+              key={movie.id}
+              movie={movie}
+              onMovieSelect={onMovieSelect}
+            />
+          ))}
         </Scroller>
       </ModalBody>
 
