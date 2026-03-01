@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
-import { Navigation, type Swiper as SwiperType } from 'swiper';
+import { type Swiper as SwiperType } from 'swiper';
+import { Navigation } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import dimensions from 'Styles/Variables/dimensions';
 import MovieCredit from 'typings/MovieCredit';
@@ -56,7 +57,6 @@ function MovieCreditPosters({ items, itemComponent, isSmallScreen }: Props) {
         slidesPerGroup={isSmallScreen ? 1 : 3}
         navigation={true}
         loop={false}
-        loopFillGroupWithBlank={true}
         className="mySwiper"
         modules={[Navigation]}
         onInit={handleInit}
