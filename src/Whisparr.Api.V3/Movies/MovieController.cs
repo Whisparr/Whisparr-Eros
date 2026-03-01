@@ -271,6 +271,13 @@ namespace Whisparr.Api.V3.Movies
             return moviesResources;
         }
 
+        // Hidden from Swagger: base class route GET {id:int} conflicts with GetMovieById's GET {id}.
+        // ASP.NET Core routing distinguishes them at runtime via the int constraint, but Swagger
+        // cannot and throws in Swashbuckle 10.1.3+. Integer requests still route here at runtime.
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public override ActionResult<MovieResource> GetResourceByIdWithErrorHandler(int id)
+            => base.GetResourceByIdWithErrorHandler(id);
+
         /// <summary>GET /movie/{id}</summary>
         /// <param name="id"></param>
         /// <remarks>Get a single movie by foreign Id or internal Id. If the ID starts with "tmdb:", it will be treated as a TMDB ID. Otherwise, it will first attempt to find by foreign ID, then fallback to internal ID for backward compatibility.</remarks>
