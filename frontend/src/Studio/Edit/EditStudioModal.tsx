@@ -19,7 +19,7 @@ function EditStudioModal({
   onModalClose,
   studio,
   ...otherProps
-}: EditStudioModalProps) {
+}: Readonly<EditStudioModalProps>) {
   const dispatch = useDispatch();
   const modalData = useEditStudioModal(studio);
   const prevIsSavingRef = useRef(modalData.isSaving);

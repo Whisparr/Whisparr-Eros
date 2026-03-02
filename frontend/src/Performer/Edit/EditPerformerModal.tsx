@@ -13,7 +13,7 @@ interface EditPerformerModalProps {
   onModalClose: () => void;
 }
 
-function EditPerformerModal(props: EditPerformerModalProps) {
+function EditPerformerModal(props: Readonly<EditPerformerModalProps>) {
   const { isOpen, performer, showMovieMonitor, onModalClose } = props;
   const dispatch = useDispatch();
 

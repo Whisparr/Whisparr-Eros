@@ -8,6 +8,7 @@ import TableRowCell from 'Components/Table/Cells/TableRowCell';
 import VirtualTableSelectCell from 'Components/Table/Cells/VirtualTableSelectCell';
 import Column from 'Components/Table/Column';
 import Tooltip from 'Components/Tooltip/Tooltip';
+import { useShowMovieMonitorToggleButton } from 'Helpers/Hooks/useShowMovieMonitorToggleButton';
 import { icons, kinds } from 'Helpers/Props';
 import PerformerDetailsLinks from 'Performer/Details/PerformerDetailsLinks';
 import EditPerformerModal from 'Performer/Edit/EditPerformerModal';
@@ -25,12 +26,11 @@ interface PerformerIndexRowProps {
   performer: Performer;
   sortKey: string;
   columns: Column[];
-  showMovieMonitorToggle: boolean;
   isSelectMode: boolean;
 }
 
 function PerformerIndexRow(props: PerformerIndexRowProps) {
-  const { performer, columns, isSelectMode, showMovieMonitorToggle } = props;
+  const { performer, columns, isSelectMode } = props;
   const {
     id: performerId,
     fullName,
@@ -56,6 +56,10 @@ function PerformerIndexRow(props: PerformerIndexRowProps) {
     tpdbId,
   } = performer;
   const countryCodeName = countryCode(country);
+  const showMovieMonitorToggle = useShowMovieMonitorToggleButton(
+    tmdbId,
+    tpdbId
+  );
 
   const [isEditPerformerModalOpen, setIsEditPerformerModalOpen] =
     useState(false);

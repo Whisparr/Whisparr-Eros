@@ -138,10 +138,7 @@ export const usePerformerDetails = (foreignId: string) => {
       monitorToggleMutation.isPending ||
       isManualRefresh,
     isManualRefresh,
-    performerDetailsError:
-      performerDetailsError ||
-      performerDetailsError ||
-      monitorToggleMutation.error,
+    performerDetailsError: performerDetailsError || monitorToggleMutation.error,
     onRefreshPress,
     onYearRefreshPress,
     onSearchPress,

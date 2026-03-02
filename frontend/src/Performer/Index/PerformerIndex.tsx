@@ -35,7 +35,7 @@ interface PerformerIndexProps {
   initialScrollTop?: number;
 }
 
-function PerformerIndex(_: PerformerIndexProps): JSX.Element {
+function PerformerIndex(_: Readonly<PerformerIndexProps>): JSX.Element {
   const {
     items,
     totalItems,
@@ -50,7 +50,6 @@ function PerformerIndex(_: PerformerIndexProps): JSX.Element {
     selectedFilterKey,
     sortDirection,
     view,
-    showMovieMonitorToggle,
     handleFirstPagePress,
     handleLastPagePress,
     handleNextPagePress,
@@ -178,7 +177,6 @@ function PerformerIndex(_: PerformerIndexProps): JSX.Element {
                 sortKey={sortKey}
                 sortDirection={sortDirection}
                 columns={columns}
-                showMovieMonitorToggle={showMovieMonitorToggle}
                 onSortPress={handleSortPress}
               />
               <TablePager
