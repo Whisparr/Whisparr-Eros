@@ -1,7 +1,10 @@
 .info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background-color: var(--sceneBackgroundColor);
-  text-align: center;
   font-size: $smallFontSize;
+  gap: 5px;
 }
 
 .title {

@@ -114,14 +114,16 @@ function MovieIndexPosterInfo(props: MovieIndexPosterInfoProps) {
           longDateFormat
         )}`}
       >
-        <Icon name={icons.CALENDAR} />{' '}
-        {getRelativeDate({
-          date: releaseDate,
-          shortDateFormat,
-          showRelativeDates,
-          timeFormat,
-          timeForToday: false,
-        })}
+        <Icon name={icons.CALENDAR} />
+        <span>
+          {getRelativeDate({
+            date: releaseDate,
+            shortDateFormat,
+            showRelativeDates,
+            timeFormat,
+            timeForToday: false,
+          })}
+        </span>
       </div>
     );
   }
@@ -155,7 +157,8 @@ function MovieIndexPosterInfo(props: MovieIndexPosterInfoProps) {
   if (sortKey === 'sizeOnDisk') {
     return (
       <div className={styles.info} title={translate('SizeOnDisk')}>
-        {formatBytes(sizeOnDisk)}
+        <Icon name={icons.DRIVE} />
+        <span>{formatBytes(sizeOnDisk)}</span>
       </div>
     );
   }
