@@ -13,7 +13,6 @@ interface StudioIndexTableProps {
   sortDirection?: SortDirection;
   isSelectMode: boolean;
   columns: Column[];
-  showMovieMonitorToggle: boolean;
   onSortPress?: (name: string, sortDirection?: SortDirection) => void;
 }
 
@@ -23,7 +22,6 @@ function StudioIndexTable({
   sortDirection,
   isSelectMode,
   columns,
-  showMovieMonitorToggle,
   onSortPress,
 }: StudioIndexTableProps) {
   return (
@@ -42,7 +40,6 @@ function StudioIndexTable({
               sortKey={sortKey}
               columns={columns}
               isSelectMode={isSelectMode}
-              showMovieMonitorToggle={showMovieMonitorToggle}
             />
           </TableRow>
         ))}
