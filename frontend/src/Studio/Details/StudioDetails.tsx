@@ -25,6 +25,7 @@ import PageToolbarSection from 'Components/Page/Toolbar/PageToolbarSection';
 import PageToolbarSeparator from 'Components/Page/Toolbar/PageToolbarSeparator';
 import posterPlaceholder from 'Components/posterPlaceholder';
 import Tooltip from 'Components/Tooltip/Tooltip';
+import { useShowMovieMonitorToggleButton } from 'Helpers/Hooks/useShowMovieMonitorToggleButton';
 import { icons, kinds, sizes, tooltipPositions } from 'Helpers/Props';
 import QualityProfileName from 'Settings/Profiles/Quality/QualityProfileName';
 import { setStudioScenesExpanded } from 'Store/Actions/studioScenesActions';
@@ -75,7 +76,6 @@ function StudioDetails() {
     isManualRefresh,
     isStudioDetailsFetching,
     isStudioRefreshing,
-    showMovieMonitorToggle,
     studioDetailsError,
     handleDeleteMovieModalClose,
     handleDeleteMoviePress,
@@ -88,6 +88,11 @@ function StudioDetails() {
     onSearchPress,
     onYearRefreshPress,
   } = useStudioDetails(studioForeignId);
+
+  const showMovieMonitorToggle = useShowMovieMonitorToggleButton(
+    studio?.tmdbId,
+    studio?.tpdbId
+  );
 
   const studioTags = useStudioTags(studio?.tags || []);
   const studioId = studio?.id;

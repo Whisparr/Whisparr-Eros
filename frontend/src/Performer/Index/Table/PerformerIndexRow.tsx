@@ -113,7 +113,7 @@ function PerformerIndexRow(props: PerformerIndexRowProps) {
                 ? styles.statusIcon
                 : `${styles.statusIcon} ${styles.unmonitored}`
             }
-            title="scene"
+            title={translate('MonitoredScene')}
             name={monitored ? icons.SCENE : icons.SCENEUNMONITOR}
           />
           {showMovieMonitorToggle ? (
@@ -123,7 +123,7 @@ function PerformerIndexRow(props: PerformerIndexRowProps) {
                   ? styles.statusIcon
                   : `${styles.statusIcon} ${styles.unmonitored}`
               }
-              title="movie"
+              title={translate('MonitorMovies')}
               name={moviesMonitored ? icons.FILM : icons.FILMUNMONITOR}
             />
           ) : null}
@@ -275,7 +275,6 @@ function PerformerIndexRow(props: PerformerIndexRowProps) {
           />
         </TableRowCell>
       );
-      return;
     }
   });
 

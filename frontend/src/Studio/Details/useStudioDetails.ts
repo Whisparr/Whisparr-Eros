@@ -425,8 +425,7 @@ export function buildStudioWorksData(
     works: allWorks.filter((w) => w.year === year),
   }));
 
-  const runningYears =
-    years.length > 0 ? `${years[years.length - 1]}-${years[0]}` : '';
+  const runningYears = years.length > 0 ? `${years.at(-1)}-${years[0]}` : '';
 
   const allExpanded =
     years.length > 0 && years.every((year) => expandedState[year]);
