@@ -43,12 +43,13 @@ interface EditStudioModalContentProps {
   [key: string]: unknown;
 }
 
-function EditStudioModalContent(props: EditStudioModalContentProps) {
+function EditStudioModalContent(props: Readonly<EditStudioModalContentProps>) {
   const {
     title,
     images,
     overview,
     item,
+    showMovieMonitor,
     isSaving,
     onInputChange,
     onModalClose,
@@ -110,16 +111,20 @@ function EditStudioModalContent(props: EditStudioModalContentProps) {
                   onChange={onInputChange}
                 />
               </FormGroup>
-              <FormGroup>
-                <FormLabel>{translate('MonitoredMovie')}</FormLabel>
-                <FormInputGroup
-                  type={inputTypes.CHECK}
-                  name="moviesMonitored"
-                  helpText={translate('MonitoredStudioMovieHelpText')}
-                  {...moviesMonitored}
-                  onChange={onInputChange}
-                />
-              </FormGroup>
+
+              {showMovieMonitor ? (
+                <FormGroup>
+                  <FormLabel>{translate('MonitoredMovie')}</FormLabel>
+                  <FormInputGroup
+                    type={inputTypes.CHECK}
+                    name="moviesMonitored"
+                    helpText={translate('MonitoredStudioMovieHelpText')}
+                    {...moviesMonitored}
+                    onChange={onInputChange}
+                  />
+                </FormGroup>
+              ) : null}
+
               <FormGroup>
                 <FormLabel>{translate('MonitorAfter')}</FormLabel>
                 <FormInputGroup

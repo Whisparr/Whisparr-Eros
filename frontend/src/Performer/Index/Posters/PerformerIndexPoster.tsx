@@ -5,6 +5,7 @@ import Label from 'Components/Label';
 import IconButton from 'Components/Link/IconButton';
 import Link from 'Components/Link/Link';
 import Popover from 'Components/Tooltip/Popover';
+import { useShowMovieMonitorToggleButton } from 'Helpers/Hooks/useShowMovieMonitorToggleButton';
 import { icons } from 'Helpers/Props';
 import MovieIndexPosterSelect from 'Movie/Index/Select/MovieIndexPosterSelect';
 import MovieHeadshot from 'Movie/MovieHeadshot';
@@ -59,6 +60,11 @@ function PerformerIndexPoster(props: PerformerIndexPosterProps) {
     width: `${posterWidth}px`,
     height: `${posterHeight}px`,
   };
+
+  const showMovieMonitorToggle = useShowMovieMonitorToggleButton(
+    performer?.tmdbId,
+    performer?.tpdbId
+  );
 
   return (
     <div className={styles.content}>
@@ -200,6 +206,7 @@ function PerformerIndexPoster(props: PerformerIndexPosterProps) {
       <EditPerformerModal
         isOpen={isEditPerformerModalOpen}
         performer={performer}
+        showMovieMonitor={showMovieMonitorToggle}
         onModalClose={onEditPerformerModalClose}
       />
     </div>

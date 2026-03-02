@@ -5,6 +5,7 @@ import useApiMutation from 'Helpers/Hooks/useApiMutation';
 import { setStudioValue } from 'Store/Actions/studioActions';
 import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import selectSettings from 'Store/Selectors/selectSettings';
+import { useGeneralSettings } from 'Studio/Index/useStudioIndex';
 import Studio from 'Studio/Studio';
 import type { PendingSection } from 'typings/pending';
 
@@ -29,6 +30,7 @@ interface UseEditStudioModalResult {
   isPathChanging: boolean;
   originalPath: string;
   item: PendingSection<StudioSettings>;
+  showMovieMonitor: boolean;
   isSmallScreen: boolean;
   onInputChange: (payload: { name: string; value: unknown }) => void;
   onSavePress: () => void;
@@ -88,6 +90,21 @@ export default function useEditStudioModal(
 
   const settings = selectSettings(studioSettings, pendingChanges, saveError);
 
+  const generalSettings = useGeneralSettings();
+
+  const showMovieMonitorToggle = (): boolean => {
+    const source = generalSettings.whisparrMovieMetadataSource;
+    return (
+      (source?.toLowerCase() === 'tmdb' &&
+        studio.tmdbId &&
+        studio.tmdbId > 0) ||
+      (source?.toLowerCase() === 'tpdb' &&
+        studio.tpdbId &&
+        studio.tpdbId.length > 0) ||
+      false
+    );
+  };
+
   return {
     title: studio.title,
     images: studio.images,
@@ -96,6 +113,7 @@ export default function useEditStudioModal(
     isPathChanging,
     originalPath: (studio as unknown as { path?: string }).path || '',
     item: settings.settings,
+    showMovieMonitor: showMovieMonitorToggle(),
     isSmallScreen: dimensions.isSmallScreen,
     onInputChange,
     onSavePress,

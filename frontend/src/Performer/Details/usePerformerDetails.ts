@@ -8,7 +8,6 @@ import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import Movie from 'Movie/Movie';
 import Performer from 'Performer/Performer';
 import { executeCommand } from 'Store/Actions/commandActions';
-import { fetchGeneralSettings } from 'Store/Actions/Settings/general';
 
 const PATH = 'performer';
 
@@ -138,10 +137,7 @@ export const usePerformerDetails = (foreignId: string) => {
       monitorToggleMutation.isPending ||
       isManualRefresh,
     isManualRefresh,
-    performerDetailsError:
-      performerDetailsError ||
-      performerDetailsError ||
-      monitorToggleMutation.error,
+    performerDetailsError: performerDetailsError || monitorToggleMutation.error,
     onRefreshPress,
     onYearRefreshPress,
     onSearchPress,
@@ -149,17 +145,6 @@ export const usePerformerDetails = (foreignId: string) => {
     searchMoviesByIds,
   };
 };
-
-// Used to fetch general.whisparrMovieMetadataSource setting
-export function useGeneralSettings() {
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    dispatch(fetchGeneralSettings());
-  }, [dispatch]);
-
-  return useSelector((state: AppState) => state.settings.general.item);
-}
 
 export function usePerformerDetailsMovies(performerForeignId: string) {
   return useApiQuery<Movie[]>({

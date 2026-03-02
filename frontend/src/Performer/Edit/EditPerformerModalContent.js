@@ -36,6 +36,7 @@ class EditPerformerModalContent extends Component {
       fullName,
       images,
       item,
+      showMovieMonitor,
       isSaving,
       onInputChange,
       onModalClose,
@@ -90,17 +91,19 @@ class EditPerformerModalContent extends Component {
                   />
                 </FormGroup>
 
-                <FormGroup>
-                  <FormLabel>{translate('MonitoredMovie')}</FormLabel>
+                {showMovieMonitor && (
+                  <FormGroup>
+                    <FormLabel>{translate('MonitoredMovie')}</FormLabel>
 
-                  <FormInputGroup
-                    type={inputTypes.CHECK}
-                    name="moviesMonitored"
-                    helpText={translate('MonitoredPerformerMovieHelpText')}
-                    {...moviesMonitored}
-                    onChange={onInputChange}
-                  />
-                </FormGroup>
+                    <FormInputGroup
+                      type={inputTypes.CHECK}
+                      name="moviesMonitored"
+                      helpText={translate('MonitoredPerformerMovieHelpText')}
+                      {...moviesMonitored}
+                      onChange={onInputChange}
+                    />
+                  </FormGroup>
+                )}
 
                 <FormGroup>
                   <FormLabel>{translate('QualityProfile')}</FormLabel>
@@ -177,6 +180,7 @@ EditPerformerModalContent.propTypes = {
   fullName: PropTypes.string.isRequired,
   images: PropTypes.arrayOf(PropTypes.object).isRequired,
   item: PropTypes.object.isRequired,
+  showMovieMonitor: PropTypes.bool.isRequired,
   isSaving: PropTypes.bool.isRequired,
   isPathChanging: PropTypes.bool.isRequired,
   isSmallScreen: PropTypes.bool.isRequired,
