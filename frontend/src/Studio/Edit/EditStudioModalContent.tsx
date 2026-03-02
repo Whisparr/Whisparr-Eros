@@ -43,7 +43,7 @@ interface EditStudioModalContentProps {
   [key: string]: unknown;
 }
 
-function EditStudioModalContent(props: EditStudioModalContentProps) {
+function EditStudioModalContent(props: Readonly<EditStudioModalContentProps>) {
   const {
     title,
     images,
