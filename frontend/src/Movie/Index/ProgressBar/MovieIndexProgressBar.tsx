@@ -24,33 +24,41 @@ interface MovieIndexProgressBarProps {
   isStandAlone?: boolean;
 }
 
-function MovieIndexProgressBar({
-  movieId,
-  movieFile,
-  monitored,
-  status,
-  hasFile,
-  isAvailable,
-  width,
-  detailedProgressBar,
-  bottomRadius,
-  isStandAlone,
-}: MovieIndexProgressBarProps) {
+function MovieIndexProgressBar(props: Readonly<MovieIndexProgressBarProps>) {
+  const {
+    movieId,
+    movieFile,
+    monitored,
+    status,
+    hasFile,
+    isAvailable,
+    width,
+    detailedProgressBar,
+    bottomRadius,
+    isStandAlone,
+  } = props;
+
   const queueDetails: MovieQueueDetails = useSelector(
     createMovieQueueItemsDetailsSelector(movieId)
   );
 
   const progress = 100;
   const queueStatusText =
-    queueDetails.count > 0 && !hasFile ? translate('Downloading') : null;
+    queueDetails.count > 0 ? translate('Downloading') : null;
+  let movieStatus = status === 'released' && hasFile ? 'downloaded' : status;
 
-  let movieStatus = translate('NotAvailable');
-  if (hasFile) {
+  if (movieStatus === 'deleted') {
+    movieStatus = translate('Missing');
+
+    if (hasFile) {
+      movieStatus = movieFile?.quality?.quality.name ?? translate('Downloaded');
+    }
+  } else if (hasFile) {
     movieStatus = movieFile?.quality?.quality.name ?? translate('Downloaded');
-  } else if (status === 'deleted') {
-    movieStatus = translate('Deleted');
   } else if (isAvailable && !hasFile) {
     movieStatus = translate('Missing');
+  } else {
+    movieStatus = translate('NotAvailable');
   }
 
   const attachedClassName = bottomRadius

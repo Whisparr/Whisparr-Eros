@@ -98,14 +98,16 @@ function SceneIndexPosterInfo(props: SceneIndexPosterInfoProps) {
   if (sortKey === 'releaseDate' && releaseDate && !showReleaseDate) {
     return (
       <div className={styles.info} title={translate('ReleaseDate')}>
-        <Icon name={icons.CALENDAR} />{' '}
-        {getRelativeDate({
-          date: releaseDate,
-          shortDateFormat,
-          showRelativeDates,
-          timeFormat,
-          timeForToday: false,
-        })}
+        <Icon name={icons.CALENDAR} />
+        <span>
+          {getRelativeDate({
+            date: releaseDate,
+            shortDateFormat,
+            showRelativeDates,
+            timeFormat,
+            timeForToday: false,
+          })}
+        </span>
       </div>
     );
   }
@@ -121,7 +123,8 @@ function SceneIndexPosterInfo(props: SceneIndexPosterInfoProps) {
   if (sortKey === 'sizeOnDisk') {
     return (
       <div className={styles.info} title={translate('SizeOnDisk')}>
-        {formatBytes(sizeOnDisk)}
+        <Icon name={icons.DRIVE} />
+        <span>{formatBytes(sizeOnDisk)}</span>
       </div>
     );
   }
