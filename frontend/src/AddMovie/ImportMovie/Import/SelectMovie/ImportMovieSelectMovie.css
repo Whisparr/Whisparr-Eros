@@ -65,3 +65,14 @@
 
   border-radius: 0;
 }
+
+
+.noMatches {
+  display: flex;
+  align-items: center;
+}
+
+.results {
+  overflow-y: auto;
+  max-height: 300px;
+}
