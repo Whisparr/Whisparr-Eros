@@ -333,10 +333,20 @@ namespace Whisparr.Api.V3.Performers
         private PerformerResource GetCachedPerformerResource(string performerForeignId)
         {
             var performerResource = _performerResourceCache.Find(performerForeignId);
-            if (performerResource == null)
+            if (performerResource != null)
             {
-                performerResource = MapToResource(_performerService.FindByForeignId(performerForeignId));
+                return performerResource;
             }
+
+            var performer = _performerService.FindByForeignId(performerForeignId);
+            if (performer == null)
+            {
+                return null;
+            }
+
+            performerResource = performer.ToResource();
+            _coverMapper.ConvertToLocalPerformerUrls(performerResource.Id, performerResource.Images);
+            _performerResourceCache.Set(performerForeignId, performerResource);
 
             return performerResource;
         }
@@ -349,14 +359,18 @@ namespace Whisparr.Api.V3.Performers
                 var performerResource = _performerResourceCache.Find(id);
                 if (performerResource == null)
                 {
-                    performerResource = _performerService.FindByForeignId(id).ToResource();
+                    var performer = _performerService.FindByForeignId(id);
+                    if (performer == null)
+                    {
+                        continue;
+                    }
+
+                    performerResource = performer.ToResource();
+                    _coverMapper.ConvertToLocalPerformerUrls(performerResource.Id, performerResource.Images);
+                    _performerResourceCache.Set(id, performerResource);
                 }
 
-                if (performerResource != null)
-                {
-                    _coverMapper.ConvertToLocalPerformerUrls(performerResource.Id, performerResource.Images);
-                    performerResources.Add(performerResource);
-                }
+                performerResources.Add(performerResource);
             }
 
             return performerResources;
