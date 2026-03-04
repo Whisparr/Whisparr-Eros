@@ -835,7 +835,8 @@ namespace NzbDrone.Core.Movies
                 }
 
                 // WhisparrAutoMatchOnDate enabled and only one match, return it
-                if (_configService.WhisparrAutoMatchOnDate && movies.Count == 1)
+                // Only applies when the date query itself found the match (verifyDate=false means we didn't fall back to studio-only)
+                if (_configService.WhisparrAutoMatchOnDate && movies.Count == 1 && !verifyDate)
                 {
                     _logger.Debug("{0}: WhisparrAutoMatchOnDate enabled, returning single movie match by studio and date.", methodName);
                     return movies.First();
