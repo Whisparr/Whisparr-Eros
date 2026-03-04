@@ -110,214 +110,275 @@ function IndexerOptions({
   }, [dispatch]);
 
   return (
-    <FieldSet legend={translate('Options')}>
-      {isFetching ? <LoadingIndicator /> : null}
+    <div>
+      <FieldSet legend={translate('Options')}>
+        {isFetching ? <LoadingIndicator /> : null}
 
-      {!isFetching && error ? (
-        <Alert kind={kinds.DANGER}>
-          {translate('IndexerOptionsLoadError')}
-        </Alert>
+        {!isFetching && error ? (
+          <Alert kind={kinds.DANGER}>
+            {translate('IndexerOptionsLoadError')}
+          </Alert>
+        ) : null}
+
+        {hasSettings && isPopulated && !error ? (
+          <Form>
+            <FormGroup>
+              <FormLabel>{translate('MinimumAge')}</FormLabel>
+
+              <FormInputGroup
+                type={inputTypes.NUMBER}
+                name="minimumAge"
+                min={0}
+                unit="minutes"
+                helpText={translate('MinimumAgeHelpText')}
+                onChange={handleInputChange}
+                {...settings.minimumAge}
+              />
+            </FormGroup>
+
+            <FormGroup>
+              <FormLabel>{translate('Retention')}</FormLabel>
+
+              <FormInputGroup
+                type={inputTypes.NUMBER}
+                name="retention"
+                min={0}
+                unit="days"
+                helpText={translate('RetentionHelpText')}
+                onChange={handleInputChange}
+                {...settings.retention}
+              />
+            </FormGroup>
+
+            <FormGroup>
+              <FormLabel>{translate('MaximumSize')}</FormLabel>
+
+              <FormInputGroup
+                type={inputTypes.NUMBER}
+                name="maximumSize"
+                min={0}
+                unit="MB"
+                helpText={translate('MaximumSizeHelpText')}
+                onChange={handleInputChange}
+                {...settings.maximumSize}
+              />
+            </FormGroup>
+
+            <FormGroup>
+              <FormLabel>{translate('PreferIndexerFlags')}</FormLabel>
+
+              <FormInputGroup
+                type={inputTypes.CHECK}
+                name="preferIndexerFlags"
+                helpText={translate('PreferIndexerFlagsHelpText')}
+                helpLink="https://wiki.servarr.com/whisparr/settings#indexer-flags"
+                onChange={handleInputChange}
+                {...settings.preferIndexerFlags}
+              />
+            </FormGroup>
+
+            <FormGroup>
+              <FormLabel>{translate('AvailabilityDelay')}</FormLabel>
+
+              <FormInputGroup
+                type={inputTypes.NUMBER}
+                name="availabilityDelay"
+                unit="days"
+                helpText={translate('AvailabilityDelayHelpText')}
+                onChange={handleInputChange}
+                {...settings.availabilityDelay}
+              />
+            </FormGroup>
+
+            <FormGroup
+              advancedSettings={showAdvancedSettings}
+              isAdvanced={true}
+            >
+              <FormLabel>{translate('RssSyncInterval')}</FormLabel>
+
+              <FormInputGroup
+                type={inputTypes.NUMBER}
+                name="rssSyncInterval"
+                min={0}
+                max={120}
+                unit="minutes"
+                helpText={translate('RssSyncIntervalHelpText')}
+                helpTextWarning={translate('RssSyncIntervalHelpTextWarning')}
+                helpLink="https://wiki.servarr.com/whisparr/faq#how-does-whisparr-work"
+                onChange={handleInputChange}
+                {...settings.rssSyncInterval}
+              />
+            </FormGroup>
+
+            <FormGroup
+              advancedSettings={showAdvancedSettings}
+              isAdvanced={true}
+            >
+              <FormLabel>{translate('WhitelistedSubtitleTags')}</FormLabel>
+
+              <FormInputGroup
+                type={inputTypes.TEXT_TAG}
+                name="whitelistedHardcodedSubs"
+                helpText={translate('WhitelistedHardcodedSubsHelpText')}
+                onChange={handleWhitelistedSubtitleChange}
+                {...settings.whitelistedHardcodedSubs}
+              />
+            </FormGroup>
+
+            <FormGroup
+              advancedSettings={showAdvancedSettings}
+              isAdvanced={true}
+            >
+              <FormLabel>{translate('AllowHardcodedSubs')}</FormLabel>
+
+              <FormInputGroup
+                type={inputTypes.CHECK}
+                name="allowHardcodedSubs"
+                helpText={translate('AllowHardcodedSubsHelpText')}
+                onChange={handleInputChange}
+                {...settings.allowHardcodedSubs}
+              />
+            </FormGroup>
+          </Form>
+        ) : null}
+      </FieldSet>
+      {showAdvancedSettings ? (
+        <FieldSet legend={translate('AdvancedSearchOptions')}>
+          <Form>
+            <Alert kind={kinds.WARNING}>
+              <p>{translate('IndexerAdvancedSearchWarning1')}</p>
+              <p>{translate('IndexerAdvancedSearchWarning2')}</p>
+              <p>{translate('IndexerAdvancedSearchWarning3')}</p>
+            </Alert>
+            <FormGroup
+              advancedSettings={showAdvancedSettings}
+              isAdvanced={true}
+            >
+              <FormLabel>{translate('SearchTitleOnly')}</FormLabel>
+
+              <FormInputGroup
+                type={inputTypes.CHECK}
+                name="searchTitleOnly"
+                helpText={translate('SearchTitleOnlyHelpText')}
+                helpTextWarning={`${translate('Default')}: ${translate(
+                  'Disabled'
+                )}`}
+                onChange={handleInputChange}
+                {...settings.searchTitleOnly}
+              />
+            </FormGroup>
+
+            <FormGroup
+              advancedSettings={showAdvancedSettings}
+              isAdvanced={true}
+            >
+              <FormLabel>{translate('SearchTitleDate')}</FormLabel>
+
+              <FormInputGroup
+                type={inputTypes.CHECK}
+                name="searchTitleDate"
+                helpText={translate('SearchTitleDateHelpText')}
+                helpTextWarning={`${translate('Default')}: ${translate(
+                  'Disabled'
+                )}`}
+                onChange={handleInputChange}
+                {...settings.searchTitleDate}
+              />
+            </FormGroup>
+
+            <FormGroup
+              advancedSettings={showAdvancedSettings}
+              isAdvanced={true}
+            >
+              <FormLabel>{translate('SearchStudioCode')}</FormLabel>
+
+              <FormInputGroup
+                type={inputTypes.CHECK}
+                name="searchStudioCode"
+                helpText={translate('SearchStudioCodeHelpText')}
+                helpTextWarning={`${translate('Default')}: ${translate(
+                  'Disabled'
+                )}`}
+                onChange={handleInputChange}
+                {...settings.searchStudioCode}
+              />
+            </FormGroup>
+
+            <FormGroup
+              advancedSettings={showAdvancedSettings}
+              isAdvanced={true}
+            >
+              <FormLabel>{translate('SearchStudioDate')}</FormLabel>
+
+              <FormInputGroup
+                type={inputTypes.CHECK}
+                name="searchStudioDate"
+                helpText={translate('SearchStudioDateHelpText')}
+                helpTextWarning={`${translate('Default')}: ${translate(
+                  'Enabled'
+                )}`}
+                onChange={handleInputChange}
+                {...settings.searchStudioDate}
+              />
+            </FormGroup>
+
+            <FormGroup
+              advancedSettings={showAdvancedSettings}
+              isAdvanced={true}
+            >
+              <FormLabel>{translate('SearchStudioTitle')}</FormLabel>
+
+              <FormInputGroup
+                type={inputTypes.CHECK}
+                name="searchStudioTitle"
+                helpText={translate('SearchStudioTitleHelpText')}
+                helpTextWarning={`${translate('Default')}: ${translate(
+                  'Disabled'
+                )}`}
+                onChange={handleInputChange}
+                {...settings.searchStudioTitle}
+              />
+            </FormGroup>
+
+            <FormGroup
+              advancedSettings={showAdvancedSettings}
+              isAdvanced={true}
+            >
+              <FormLabel>{translate('SearchDateFormat')}</FormLabel>
+
+              <FormInputGroup
+                type={inputTypes.SELECT}
+                name="searchDateFormat"
+                values={searchDateFormatOptions}
+                helpText={translate('SearchDateFormatHelpText')}
+                helpTextWarning={`${translate('Default')}: YYMMDD`}
+                onChange={handleInputChange}
+                {...settings.searchDateFormat}
+              />
+            </FormGroup>
+
+            <FormGroup
+              advancedSettings={showAdvancedSettings}
+              isAdvanced={true}
+            >
+              <FormLabel>{translate('SearchStudioFormat')}</FormLabel>
+
+              <FormInputGroup
+                type={inputTypes.SELECT}
+                name="searchStudioFormat"
+                values={searchStudioFormatOptions}
+                helpText={translate('SearchStudioFormatHelpText')}
+                helpTextWarning={`${translate('Default')}: ${translate(
+                  'Clean'
+                )}`}
+                onChange={handleInputChange}
+                {...settings.searchStudioFormat}
+              />
+            </FormGroup>
+          </Form>
+        </FieldSet>
       ) : null}
-
-      {hasSettings && isPopulated && !error ? (
-        <Form>
-          <FormGroup>
-            <FormLabel>{translate('MinimumAge')}</FormLabel>
-
-            <FormInputGroup
-              type={inputTypes.NUMBER}
-              name="minimumAge"
-              min={0}
-              unit="minutes"
-              helpText={translate('MinimumAgeHelpText')}
-              onChange={handleInputChange}
-              {...settings.minimumAge}
-            />
-          </FormGroup>
-
-          <FormGroup>
-            <FormLabel>{translate('Retention')}</FormLabel>
-
-            <FormInputGroup
-              type={inputTypes.NUMBER}
-              name="retention"
-              min={0}
-              unit="days"
-              helpText={translate('RetentionHelpText')}
-              onChange={handleInputChange}
-              {...settings.retention}
-            />
-          </FormGroup>
-
-          <FormGroup>
-            <FormLabel>{translate('MaximumSize')}</FormLabel>
-
-            <FormInputGroup
-              type={inputTypes.NUMBER}
-              name="maximumSize"
-              min={0}
-              unit="MB"
-              helpText={translate('MaximumSizeHelpText')}
-              onChange={handleInputChange}
-              {...settings.maximumSize}
-            />
-          </FormGroup>
-
-          <FormGroup>
-            <FormLabel>{translate('PreferIndexerFlags')}</FormLabel>
-
-            <FormInputGroup
-              type={inputTypes.CHECK}
-              name="preferIndexerFlags"
-              helpText={translate('PreferIndexerFlagsHelpText')}
-              helpLink="https://wiki.servarr.com/whisparr/settings#indexer-flags"
-              onChange={handleInputChange}
-              {...settings.preferIndexerFlags}
-            />
-          </FormGroup>
-
-          <FormGroup>
-            <FormLabel>{translate('AvailabilityDelay')}</FormLabel>
-
-            <FormInputGroup
-              type={inputTypes.NUMBER}
-              name="availabilityDelay"
-              unit="days"
-              helpText={translate('AvailabilityDelayHelpText')}
-              onChange={handleInputChange}
-              {...settings.availabilityDelay}
-            />
-          </FormGroup>
-
-          <FormGroup advancedSettings={showAdvancedSettings} isAdvanced={true}>
-            <FormLabel>{translate('RssSyncInterval')}</FormLabel>
-
-            <FormInputGroup
-              type={inputTypes.NUMBER}
-              name="rssSyncInterval"
-              min={0}
-              max={120}
-              unit="minutes"
-              helpText={translate('RssSyncIntervalHelpText')}
-              helpTextWarning={translate('RssSyncIntervalHelpTextWarning')}
-              helpLink="https://wiki.servarr.com/whisparr/faq#how-does-whisparr-work"
-              onChange={handleInputChange}
-              {...settings.rssSyncInterval}
-            />
-          </FormGroup>
-
-          <FormGroup advancedSettings={showAdvancedSettings} isAdvanced={true}>
-            <FormLabel>{translate('WhitelistedSubtitleTags')}</FormLabel>
-
-            <FormInputGroup
-              type={inputTypes.TEXT_TAG}
-              name="whitelistedHardcodedSubs"
-              helpText={translate('WhitelistedHardcodedSubsHelpText')}
-              onChange={handleWhitelistedSubtitleChange}
-              {...settings.whitelistedHardcodedSubs}
-            />
-          </FormGroup>
-
-          <FormGroup advancedSettings={showAdvancedSettings} isAdvanced={true}>
-            <FormLabel>{translate('AllowHardcodedSubs')}</FormLabel>
-
-            <FormInputGroup
-              type={inputTypes.CHECK}
-              name="allowHardcodedSubs"
-              helpText={translate('AllowHardcodedSubsHelpText')}
-              onChange={handleInputChange}
-              {...settings.allowHardcodedSubs}
-            />
-          </FormGroup>
-
-          <FormGroup advancedSettings={showAdvancedSettings} isAdvanced={true}>
-            <FormLabel>{translate('SearchTitleOnly')}</FormLabel>
-
-            <FormInputGroup
-              type={inputTypes.CHECK}
-              name="searchTitleOnly"
-              helpText={translate('SearchTitleOnlyHelpText')}
-              onChange={handleInputChange}
-              {...settings.searchTitleOnly}
-            />
-          </FormGroup>
-
-          <FormGroup advancedSettings={showAdvancedSettings} isAdvanced={true}>
-            <FormLabel>{translate('SearchTitleDate')}</FormLabel>
-
-            <FormInputGroup
-              type={inputTypes.CHECK}
-              name="searchTitleDate"
-              helpText={translate('SearchTitleDateHelpText')}
-              onChange={handleInputChange}
-              {...settings.searchTitleDate}
-            />
-          </FormGroup>
-
-          <FormGroup advancedSettings={showAdvancedSettings} isAdvanced={true}>
-            <FormLabel>{translate('SearchStudioCode')}</FormLabel>
-
-            <FormInputGroup
-              type={inputTypes.CHECK}
-              name="searchStudioCode"
-              helpText={translate('SearchStudioCodeHelpText')}
-              onChange={handleInputChange}
-              {...settings.searchStudioCode}
-            />
-          </FormGroup>
-
-          <FormGroup advancedSettings={showAdvancedSettings} isAdvanced={true}>
-            <FormLabel>{translate('SearchStudioDate')}</FormLabel>
-
-            <FormInputGroup
-              type={inputTypes.CHECK}
-              name="searchStudioDate"
-              helpText={translate('SearchStudioDateHelpText')}
-              onChange={handleInputChange}
-              {...settings.searchStudioDate}
-            />
-          </FormGroup>
-
-          <FormGroup advancedSettings={showAdvancedSettings} isAdvanced={true}>
-            <FormLabel>{translate('SearchStudioTitle')}</FormLabel>
-
-            <FormInputGroup
-              type={inputTypes.CHECK}
-              name="searchStudioTitle"
-              helpText={translate('SearchStudioTitleHelpText')}
-              onChange={handleInputChange}
-              {...settings.searchStudioTitle}
-            />
-          </FormGroup>
-
-          <FormGroup advancedSettings={showAdvancedSettings} isAdvanced={true}>
-            <FormLabel>{translate('SearchDateFormat')}</FormLabel>
-
-            <FormInputGroup
-              type={inputTypes.SELECT}
-              name="searchDateFormat"
-              values={searchDateFormatOptions}
-              helpText={translate('SearchDateFormatHelpText')}
-              onChange={handleInputChange}
-              {...settings.searchDateFormat}
-            />
-          </FormGroup>
-
-          <FormGroup advancedSettings={showAdvancedSettings} isAdvanced={true}>
-            <FormLabel>{translate('SearchStudioFormat')}</FormLabel>
-
-            <FormInputGroup
-              type={inputTypes.SELECT}
-              name="searchStudioFormat"
-              values={searchStudioFormatOptions}
-              helpText={translate('SearchStudioFormatHelpText')}
-              onChange={handleInputChange}
-              {...settings.searchStudioFormat}
-            />
-          </FormGroup>
-        </Form>
-      ) : null}
-    </FieldSet>
+    </div>
   );
 }
 
