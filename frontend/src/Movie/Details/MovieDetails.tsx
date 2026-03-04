@@ -244,7 +244,7 @@ function MovieDetails(props: Readonly<Partial<Props>>) {
           <PageToolbarButton
             label={translate('PreviewRename')}
             iconName={icons.ORGANIZE}
-            isDisabled={!!hasFile}
+            isDisabled={!hasFile}
             onPress={handleOrganizePress}
           />
           <PageToolbarButton
