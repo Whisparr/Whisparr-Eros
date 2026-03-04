@@ -1,6 +1,6 @@
 # Whisparr
 
-[![Build Status](https://dev.azure.com/Servarr/Whisparr/_apis/build/status/Whisparr.Whisparr?branchName=eros)](https://dev.azure.com/Servarr/Whisparr/_build/latest?definitionId=1&branchName=eros)
+[![Build-Develop](https://github.com/Whisparr/Whisparr-Eros/actions/workflows/build_v3.yml/badge.svg?branch=eros-develop)](https://github.com/Whisparr/Whisparr-Eros/actions/workflows/build_v3.yml)
 [![Translation status](https://translate.servarr.com/widget/servarr/whisparr/svg-badge.svg)](https://translate.servarr.com/engage/servarr/?utm_source=widget)
 [![Docker](https://img.shields.io/badge/Docker-Info-blue)](https://wiki.servarr.com/whisparr/installation/docker)
 [![Backers on Open Collective](https://opencollective.com/Whisparr/backers/badge.svg)](#backers)
@@ -12,20 +12,16 @@ Note that only one type of a given movie is supported. If you want both an 4k ve
 
 ## Major Features Include
 
-* Adding new movies with lots of information, such as trailers, ratings, etc.
+* Adding new content with lots of information, such as trailers, ratings, etc.
 * Support for major platforms: Windows, Linux, macOS, Raspberry Pi, etc.
 * Can watch for better quality of the movies you have and do an automatic upgrade. _eg. from DVD to Blu-Ray_
 * Automatic failed download handling will try another release if one fails
 * Manual search so you can pick any release or to see why a release was not downloaded automatically
 * Full integration with SABnzbd and NZBGet
 * Automatically searching for releases as well as RSS Sync
-* Automatically importing downloaded movies
-* Recognizing Special Editions, Director's Cut, etc.
-* Identifying releases with hardcoded subs
-* Identifying releases with AKA movie names
+* Automatically importing downloaded content
 * SABnzbd, NZBGet, QBittorrent, Deluge, rTorrent, Transmission, uTorrent, and other download clients are supported and integrated
 * Full integration with Kodi and Plex (notifications, library updates)
-* Importing Metadata such as trailers or subtitles
 * Adding metadata such as posters and information for Kodi and others to use
 * Advanced customization for profiles, such that Whisparr will always download the copy you want
 * A beautiful UI
@@ -74,16 +70,7 @@ Thank you to [<img src="https://resources.jetbrains.com/storage/products/company
 * [<img src="https://resources.jetbrains.com/storage/products/company/brand/logos/Rider_icon.png" alt="Rider" width="32"> Rider](http://www.jetbrains.com/rider/)
 * [<img src="https://resources.jetbrains.com/storage/products/company/brand/logos/dotTrace_icon.png" alt="dotTrace" width="32"> dotTrace](http://www.jetbrains.com/dottrace/)
 
-## DigitalOcean
-
-This project is also supported by DigitalOcean
-<p>
-  <a href="https://www.digitalocean.com/">
-    <img src="https://opensource.nyc3.cdn.digitaloceanspaces.com/attribution/assets/SVG/DO_Logo_horizontal_blue.svg" width="201px">
-  </a>
-</p>
-
 ### License
 
 * [GNU GPL v3](http://www.gnu.org/licenses/gpl.html)
-* Copyright 2010-2025
+* Copyright 2010-2026
