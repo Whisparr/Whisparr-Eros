@@ -230,14 +230,12 @@ function MovieDetails(props: Readonly<Partial<Props>>) {
             label={translate('SearchMovie')}
             iconName={icons.SEARCH}
             isSpinning={isSearching}
-            title={undefined}
             onPress={handleSearchPress}
           />
           <PageToolbarButton
             label={translate('InteractiveSearch')}
             iconName={icons.INTERACTIVE}
             isSpinning={isSearching}
-            title={undefined}
             onPress={handleInteractiveSearchPress}
           />
           <PageToolbarSeparator />
