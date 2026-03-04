@@ -68,6 +68,54 @@ namespace NzbDrone.Core.Test.MovieTests.MovieServiceTests
 
             Assert.That(result, Is.Null);
         }
+
+        [Test]
+        public void Should_not_match_release_with_different_date_via_studio_fallback_when_WhisparrAutoMatchOnDate_enabled()
+        {
+            // Regression: searching for a movie by date returns releases from the same studio with
+            // different dates. The studio has only one library movie, so GetByStudioForeignId returns
+            // a single result. WhisparrAutoMatchOnDate must NOT fire here because the date query
+            // itself found nothing — we fell back to the studio-only query (verifyDate=true).
+            var studioId = "studio-1";
+            var libraryMovieDate = "2022-11-16";
+            var releaseDateNotInLibrary = "2022-11-30";
+
+            var libraryMovie = new Movie { Id = 1 };
+            libraryMovie.MovieMetadata.Value.StudioForeignId = studioId;
+            libraryMovie.MovieMetadata.Value.ReleaseDate = libraryMovieDate;
+
+            _movieRepositoryMock.Setup(r => r.FindByStudioAndDate(studioId, releaseDateNotInLibrary))
+                .Returns(new List<Movie>());
+            _movieRepositoryMock.Setup(r => r.GetByStudioForeignId(studioId))
+                .Returns(new List<Movie> { libraryMovie });
+            _configServiceMock.SetupGet(c => c.WhisparrAutoMatchOnDate).Returns(true);
+
+            var result = _movieService.InvokeFindByStudioAndReleaseDate(studioId, releaseDateNotInLibrary, "", "", "");
+
+            Assert.That(result, Is.Null);
+        }
+
+        [Test]
+        public void Should_still_match_when_date_query_finds_exactly_one_movie_and_WhisparrAutoMatchOnDate_enabled()
+        {
+            // The date query itself returns the one matching movie — WhisparrAutoMatchOnDate
+            // should still fire in this case (verifyDate=false, genuine date match).
+            var studioId = "studio-1";
+            var releaseDate = "2022-11-16";
+
+            var movie = new Movie { Id = 1 };
+            movie.MovieMetadata.Value.StudioForeignId = studioId;
+            movie.MovieMetadata.Value.ReleaseDate = releaseDate;
+
+            _movieRepositoryMock.Setup(r => r.FindByStudioAndDate(studioId, releaseDate))
+                .Returns(new List<Movie> { movie });
+            _configServiceMock.SetupGet(c => c.WhisparrAutoMatchOnDate).Returns(true);
+
+            var result = _movieService.InvokeFindByStudioAndReleaseDate(studioId, releaseDate, "", "", "");
+
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Id, Is.EqualTo(movie.Id));
+        }
     }
 
     public static class MovieServiceTestExtensions
