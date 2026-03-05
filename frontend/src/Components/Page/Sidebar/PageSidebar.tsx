@@ -17,6 +17,7 @@ import usePrevious from 'Helpers/Hooks/usePrevious';
 import { icons } from 'Helpers/Props';
 import { VERTICAL } from 'Helpers/Props/scrollDirections';
 import { setIsSidebarVisible } from 'Store/Actions/appActions';
+import { useGeneralSettings } from 'Studio/Details/useStudioDetails';
 import dimensions from 'Styles/Variables/dimensions';
 import HealthStatus from 'System/Status/Health/HealthStatus';
 import translate from 'Utilities/String/translate';
@@ -44,7 +45,7 @@ interface SidebarItem {
   }[];
 }
 
-const LINKS: SidebarItem[] = [
+let LINKS: SidebarItem[] = [
   {
     iconName: icons.SCENE,
     title: () => translate('Scenes'),
@@ -275,6 +276,18 @@ function PageSidebar({ isSidebarVisible, isSmallScreen }: PageSidebarProps) {
     top: dimensions.headerHeight,
     height: `${window.innerHeight - HEADER_HEIGHT}px`,
   });
+
+  const generalSettings = useGeneralSettings();
+
+  if (generalSettings.whisparrMovieMetadataSource?.toLowerCase() === 'none') {
+    LINKS = LINKS.reduce((acc, link) => {
+      if (link.title && link.iconName === icons.FILM) {
+        return acc;
+      }
+      acc.push(link);
+      return acc;
+    }, [] as SidebarItem[]);
+  }
 
   const urlBase = window.Whisparr?.urlBase;
   const pathname = urlBase

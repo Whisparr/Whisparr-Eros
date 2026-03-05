@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Dapper;
 using NLog;
 using NzbDrone.Core.Datastore;
 using NzbDrone.Core.Messaging.Events;
@@ -16,6 +17,7 @@ namespace NzbDrone.Core.Movies
         List<MovieMetadata> GetMoviesByCollectionTmdbId(int collectionId);
         List<MovieMetadata> FindById(List<string> tmdbIds);
         bool UpsertMany(List<MovieMetadata> data);
+        int CountByType(ItemType itemType);
     }
 
     public class MovieMetadataRepository : BasicRepository<MovieMetadata>, IMovieMetadataRepository
@@ -97,6 +99,14 @@ namespace NzbDrone.Core.Movies
             _logger.Debug($"{upToDateMetadataCount} movie metadata up to date; Updating {updateMetadataList.Count}, Adding {addMetadataList.Count} movie metadata entries.");
 
             return updateMetadataList.Count > 0 || addMetadataList.Count > 0;
+        }
+
+        public int CountByType(ItemType itemType)
+        {
+            using (var conn = _database.OpenConnection())
+            {
+                return conn.ExecuteScalar<int>($"SELECT COUNT(*) FROM \"{_table}\" WHERE \"ItemType\" = '{(int)itemType}'");
+            }
         }
     }
 }

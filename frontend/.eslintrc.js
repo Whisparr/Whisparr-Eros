@@ -29,7 +29,8 @@ module.exports = {
     expect: false,
     chai: false,
     sinon: false,
-    JSX: true
+    JSX: true,
+    globalThis: true
   },
 
   parserOptions: {

@@ -2,6 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import TextTruncate from 'react-text-truncate';
 import AppState from 'App/State/AppState';
+import Command from 'Commands/Command';
 import { MOVIE_SEARCH, REFRESH_MOVIE } from 'Commands/commandNames';
 import Icon from 'Components/Icon';
 import IconButton from 'Components/Link/IconButton';
@@ -11,16 +12,16 @@ import Popover from 'Components/Tooltip/Popover';
 import { icons } from 'Helpers/Props';
 import EditMovieModal from 'Movie/Edit/EditMovieModal';
 import MovieIndexPosterSelect from 'Movie/Index/Select/MovieIndexPosterSelect';
-import { Statistics } from 'Movie/Movie';
+import Movie, { Statistics } from 'Movie/Movie';
 import DeleteSceneModal from 'Scene/Delete/DeleteSceneModal';
 import SceneDetailsLinks from 'Scene/Details/SceneDetailsLinks';
 import SceneIndexProgressBar from 'Scene/Index/ProgressBar/SceneIndexProgressBar';
 import ScenePoster from 'Scene/ScenePoster';
 import { executeCommand } from 'Store/Actions/commandActions';
+import createExecutingCommandsSelector from 'Store/Selectors/createExecutingCommandsSelector';
 import dimensions from 'Styles/Variables/dimensions';
 import fonts from 'Styles/Variables/fonts';
 import translate from 'Utilities/String/translate';
-import createSceneIndexItemSelector from '../createSceneIndexItemSelector';
 import SceneIndexOverviewInfo from './SceneIndexOverviewInfo';
 import selectOverviewOptions from './selectOverviewOptions';
 import styles from './SceneIndexOverview.css';
@@ -37,7 +38,7 @@ const lineHeight = parseFloat(fonts.lineHeight);
 const titleRowHeight = 42;
 
 interface SceneIndexOverviewProps {
-  sceneId: number;
+  scene: Movie;
   sortKey: string;
   posterWidth: number;
   posterHeight: number;
@@ -48,7 +49,7 @@ interface SceneIndexOverviewProps {
 
 function SceneIndexOverview(props: SceneIndexOverviewProps) {
   const {
-    sceneId,
+    scene,
     sortKey,
     posterWidth,
     posterHeight,
@@ -57,12 +58,29 @@ function SceneIndexOverview(props: SceneIndexOverviewProps) {
     isSmallScreen,
   } = props;
 
+  const sceneId = scene.id;
+
   const safeForWorkMode = useSelector(
     (state: AppState) => state.settings.safeForWorkMode
   );
 
-  const { scene, qualityProfile, isRefreshingScene, isSearchingScene } =
-    useSelector(createSceneIndexItemSelector(props.sceneId));
+  const qualityProfile = useSelector((state: AppState) =>
+    state.settings.qualityProfiles.items.find(
+      (p) => p.id === scene.qualityProfileId
+    )
+  );
+
+  const executingCommands = useSelector(createExecutingCommandsSelector());
+
+  const isRefreshingScene = executingCommands.some(
+    (command: Command) =>
+      command.name === REFRESH_MOVIE && command.body.movieId === sceneId
+  );
+
+  const isSearchingScene = executingCommands.some(
+    (command: Command) =>
+      command.name === MOVIE_SEARCH && command.body.movieId === sceneId
+  );
 
   const overviewOptions = useSelector(selectOverviewOptions);
 
@@ -237,7 +255,7 @@ function SceneIndexOverview(props: SceneIndexOverviewProps) {
 
       <EditMovieModal
         isOpen={isEditSceneModalOpen}
-        movieId={sceneId}
+        movie={scene}
         onModalClose={onEditSceneModalClose}
         onDeleteMoviePress={onDeleteScenePress}
       />

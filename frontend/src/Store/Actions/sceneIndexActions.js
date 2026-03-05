@@ -1,11 +1,7 @@
-import _ from 'lodash';
 import { createAction } from 'redux-actions';
 import { filterBuilderTypes, filterBuilderValueTypes, sortDirections } from 'Helpers/Props';
-import sortByProp from 'Utilities/Array/sortByProp';
 import translate from 'Utilities/String/translate';
 import createHandleActions from './Creators/createHandleActions';
-import createSetClientSideCollectionFilterReducer from './Creators/Reducers/createSetClientSideCollectionFilterReducer';
-import createSetClientSideCollectionSortReducer from './Creators/Reducers/createSetClientSideCollectionSortReducer';
 import createSetTableOptionReducer from './Creators/Reducers/createSetTableOptionReducer';
 import { filterPredicates, filters, sortPredicates } from './movieActions';
 
@@ -23,6 +19,7 @@ export const defaultState = {
   isDeleting: false,
   deleteError: null,
   indexMode: 'scene',
+  page: 1,
   sortKey: 'sortTitle',
   sortDirection: sortDirections.ASCENDING,
   secondarySortKey: 'sortTitle',
@@ -36,8 +33,8 @@ export const defaultState = {
     showMonitored: true,
     showQualityProfile: true,
     showReleaseDate: false,
-    showTmdbRating: false,
-    showSearchAction: false
+    showSearchAction: false,
+    pageSize: 25
   },
 
   overviewOptions: {
@@ -49,10 +46,12 @@ export const defaultState = {
     showAdded: false,
     showPath: false,
     showSizeOnDisk: false,
-    showSearchAction: false
+    showSearchAction: false,
+    pageSize: 25
   },
 
   tableOptions: {
+    pageSize: 25,
     showSearchAction: false
   },
 
@@ -80,7 +79,7 @@ export const defaultState = {
       isModifiable: false
     },
     {
-      name: 'studio',
+      name: 'studioTitle',
       label: () => translate('Studio'),
       isSortable: true,
       isVisible: true
@@ -193,27 +192,6 @@ export const defaultState = {
       valueType: filterBuilderValueTypes.RELEASE_STATUS
     },
     {
-      name: 'studioTitle',
-      label: () => translate('Studio'),
-      type: filterBuilderTypes.EXACT,
-      optionsSelector: function(items) {
-        const tagList = (items || []).reduce((acc, scene) => {
-          if (scene && scene.studioTitle) {
-            acc.push({
-              id: scene.studioTitle,
-              name: scene.studioTitle
-            });
-          }
-
-          return acc;
-        }, []);
-
-        const tags = _.uniqBy(tagList, 'id');
-
-        return tags.sort(sortByProp('name'));
-      }
-    },
-    {
       name: 'qualityProfileId',
       label: () => translate('QualityProfile'),
       type: filterBuilderTypes.EXACT,
@@ -253,29 +231,6 @@ export const defaultState = {
       valueType: filterBuilderValueTypes.BYTES
     },
     {
-      name: 'genres',
-      label: () => translate('Genres'),
-      type: filterBuilderTypes.ARRAY,
-      optionsSelector: function(items) {
-        const genreList = (items || []).reduce((acc, scene) => {
-          if (scene && Array.isArray(scene.genres)) {
-            scene.genres.forEach((genre) => {
-              acc.push({
-                id: genre,
-                name: genre
-              });
-            });
-          }
-
-          return acc;
-        }, []);
-
-        const genres = _.uniqBy(genreList, 'id');
-
-        return genres.sort(sortByProp('name'));
-      }
-    },
-    {
       name: 'tags',
       label: () => translate('Tags'),
       type: filterBuilderTypes.ARRAY,
@@ -299,6 +254,7 @@ export const persistState = [
 //
 // Actions Types
 
+export const SET_SCENE_PAGE = 'sceneIndex/setScenePage';
 export const SET_MOVIE_SORT = 'sceneIndex/setSceneSort';
 export const SET_MOVIE_FILTER = 'sceneIndex/setSceneFilter';
 export const SET_MOVIE_VIEW = 'sceneIndex/setSceneView';
@@ -310,6 +266,7 @@ export const SET_MOVIE_INDEX_MODE = 'sceneIndex/setSceneIndexMode';
 //
 // Action Creators
 
+export const setScenePage = createAction(SET_SCENE_PAGE);
 export const setSceneSort = createAction(SET_MOVIE_SORT);
 export const setSceneFilter = createAction(SET_MOVIE_FILTER);
 export const setSceneView = createAction(SET_MOVIE_VIEW);
@@ -323,11 +280,24 @@ export const setSceneIndexMode = createAction(SET_MOVIE_INDEX_MODE);
 
 export const reducers = createHandleActions({
 
-  [SET_MOVIE_SORT]: createSetClientSideCollectionSortReducer(section),
-  [SET_MOVIE_FILTER]: createSetClientSideCollectionFilterReducer(section),
+  [SET_SCENE_PAGE]: function(state, { payload }) {
+    return Object.assign({}, state, { page: payload });
+  },
+
+  [SET_MOVIE_SORT]: function(state, { payload }) {
+    const { sortKey } = payload;
+    const newDirection = state.sortKey === sortKey && state.sortDirection === 'ascending' ?
+      'descending' :
+      'ascending';
+    return Object.assign({}, state, { sortKey, sortDirection: newDirection, page: 1 });
+  },
+
+  [SET_MOVIE_FILTER]: function(state, { payload }) {
+    return Object.assign({}, state, { selectedFilterKey: payload.selectedFilterKey, page: 1 });
+  },
 
   [SET_MOVIE_VIEW]: function(state, { payload }) {
-    return Object.assign({}, state, { view: payload.view });
+    return Object.assign({}, state, { view: payload.view, page: 1 });
   },
 
   [SET_MOVIE_TABLE_OPTION]: createSetTableOptionReducer(section),

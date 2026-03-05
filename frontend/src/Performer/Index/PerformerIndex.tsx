@@ -35,7 +35,7 @@ interface PerformerIndexProps {
   initialScrollTop?: number;
 }
 
-function PerformerIndex(_: PerformerIndexProps): JSX.Element {
+function PerformerIndex(_: Readonly<PerformerIndexProps>): JSX.Element {
   const {
     items,
     totalItems,

@@ -6,11 +6,13 @@ using System.Net;
 using System.Threading;
 using NLog;
 using NzbDrone.Common;
+using NzbDrone.Common.Cache;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
 using NzbDrone.Core.Configuration;
+using NzbDrone.Core.Lifecycle;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Movies;
 using NzbDrone.Core.Movies.Events;
@@ -38,6 +40,7 @@ namespace NzbDrone.Core.MediaCover
     }
 
     public class MediaCoverService :
+        IHandle<ApplicationStartedEvent>,
         IHandleAsync<MovieUpdatedEvent>,
         IHandleAsync<PerformerUpdatedEvent>,
         IHandleAsync<StudioUpdatedEvent>,
@@ -46,6 +49,7 @@ namespace NzbDrone.Core.MediaCover
         IHandleAsync<StudiosDeletedEvent>,
         IMapCoversToLocal
     {
+        private const string CoverFileInfosCacheKey = "all";
         private readonly IMediaCoverProxy _mediaCoverProxy;
         private readonly IImageResizer _resizer;
         private readonly IHttpClient _httpClient;
@@ -56,6 +60,11 @@ namespace NzbDrone.Core.MediaCover
         private readonly Logger _logger;
 
         private readonly string _coverRootFolder;
+
+        private readonly ICached<Dictionary<string, FileInfo>> _movieCoverFileInfosCache;
+        private readonly ICached<Dictionary<string, FileInfo>> _performerCoverFileInfosCache;
+        private readonly ICached<Dictionary<string, FileInfo>> _studioCoverFileInfosCache;
+        private static readonly TimeSpan CoverFileInfosCacheTtl = TimeSpan.FromSeconds(900);
 
         // ImageSharp is slow on ARM (no hardware acceleration on mono yet)
         // So limit the number of concurrent resizing tasks
@@ -69,6 +78,7 @@ namespace NzbDrone.Core.MediaCover
                                  ICoverExistsSpecification coverExistsSpecification,
                                  IConfigFileProvider configFileProvider,
                                  IEventAggregator eventAggregator,
+                                 ICacheManager cacheManager,
                                  Logger logger)
         {
             _mediaCoverProxy = mediaCoverProxy;
@@ -81,6 +91,10 @@ namespace NzbDrone.Core.MediaCover
             _logger = logger;
 
             _coverRootFolder = appFolderInfo.GetMediaCoverPath();
+
+            _movieCoverFileInfosCache = cacheManager.GetCache<Dictionary<string, FileInfo>>(GetType(), "movieCoverFileInfos");
+            _performerCoverFileInfosCache = cacheManager.GetCache<Dictionary<string, FileInfo>>(GetType(), "performerCoverFileInfos");
+            _studioCoverFileInfosCache = cacheManager.GetCache<Dictionary<string, FileInfo>>(GetType(), "studioCoverFileInfos");
         }
 
         public string GetMovieCoverPath(int movieId, MediaCoverTypes coverType, int? height = null)
@@ -106,17 +120,17 @@ namespace NzbDrone.Core.MediaCover
 
         public Dictionary<string, FileInfo> GetMovieCoverFileInfos()
         {
-            return GetCoverFileInfos("movie");
+            return _movieCoverFileInfosCache.Get(CoverFileInfosCacheKey, () => GetCoverFileInfos("movie"), CoverFileInfosCacheTtl);
         }
 
         public Dictionary<string, FileInfo> GetPerformerCoverFileInfos()
         {
-            return GetCoverFileInfos("performer");
+            return _performerCoverFileInfosCache.Get(CoverFileInfosCacheKey, () => GetCoverFileInfos("performer"), CoverFileInfosCacheTtl);
         }
 
         public Dictionary<string, FileInfo> GetStudioCoverFileInfos()
         {
-            return GetCoverFileInfos("studio");
+            return _studioCoverFileInfosCache.Get(CoverFileInfosCacheKey, () => GetCoverFileInfos("studio"), CoverFileInfosCacheTtl);
         }
 
         public void ConvertToLocalUrls(int movieId, IEnumerable<MediaCover> covers, Dictionary<string, FileInfo> fileInfos = null)
@@ -693,10 +707,16 @@ namespace NzbDrone.Core.MediaCover
                     .ToDictionary(x => x.FullName, PathEqualityComparer.Instance);
         }
 
+        public void Handle(ApplicationStartedEvent message)
+        {
+            GetMovieCoverFileInfos();
+            GetPerformerCoverFileInfos();
+            GetStudioCoverFileInfos();
+        }
+
         public void HandleAsync(MovieUpdatedEvent message)
         {
             var updated = EnsureCovers(message.Movie);
-
             _eventAggregator.PublishEvent(new MediaCoversUpdatedEvent(message.Movie, updated));
         }
 

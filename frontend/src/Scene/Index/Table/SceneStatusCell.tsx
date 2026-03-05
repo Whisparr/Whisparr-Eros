@@ -1,11 +1,8 @@
-import React, { useCallback } from 'react';
-import { useDispatch } from 'react-redux';
+import React from 'react';
 import Icon from 'Components/Icon';
-import MonitorToggleButton from 'Components/MonitorToggleButton';
 import VirtualTableRowCell from 'Components/Table/Cells/TableRowCell';
 import { icons } from 'Helpers/Props';
 import { getSceneStatusDetails } from 'Scene/SceneStatus';
-import { toggleMovieMonitored } from 'Store/Actions/movieActions';
 import translate from 'Utilities/String/translate';
 import styles from './SceneStatusCell.css';
 
@@ -33,28 +30,13 @@ function SceneStatusCell(props: SceneStatusCellProps) {
 
   const statusDetails = getSceneStatusDetails(status);
 
-  const dispatch = useDispatch();
-
-  const onMonitoredPress = useCallback(() => {
-    dispatch(toggleMovieMonitored({ movieId, monitored: !monitored }));
-  }, [movieId, monitored, dispatch]);
-
   return (
     <Component className={className} {...otherProps}>
-      {isSelectMode ? (
-        <MonitorToggleButton
-          className={styles.statusIcon}
-          monitored={monitored}
-          isSaving={isSaving}
-          onPress={onMonitoredPress}
-        />
-      ) : (
-        <Icon
-          className={styles.statusIcon}
-          name={monitored ? icons.MONITORED : icons.UNMONITORED}
-          title={monitored ? translate('Monitored') : translate('Unmonitored')}
-        />
-      )}
+      <Icon
+        className={styles.statusIcon}
+        name={monitored ? icons.SCENE : icons.SCENEUNMONITOR}
+        title={monitored ? translate('Monitored') : translate('Unmonitored')}
+      />
 
       <Icon
         className={styles.statusIcon}

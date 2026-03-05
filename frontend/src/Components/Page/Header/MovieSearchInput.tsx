@@ -1,4 +1,3 @@
-import { push } from 'connected-react-router';
 import { ExtendedKeyboardEvent } from 'mousetrap';
 import React, {
   FormEvent,
@@ -11,18 +10,14 @@ import React, {
   useState,
 } from 'react';
 import Autosuggest from 'react-autosuggest';
-import { useDispatch, useSelector } from 'react-redux';
-import { createSelector } from 'reselect';
-import { useDebouncedCallback } from 'use-debounce';
-import { Tag } from 'App/State/TagsAppState';
+import { useHistory } from 'react-router-dom';
+import { useDebounce } from 'use-debounce';
 import Icon from 'Components/Icon';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import useKeyboardShortcuts from 'Helpers/Hooks/useKeyboardShortcuts';
 import { icons } from 'Helpers/Props';
 import Movie from 'Movie/Movie';
-import createAllMoviesSelector from 'Store/Selectors/createAllMoviesSelector';
-import createDeepEqualSelector from 'Store/Selectors/createDeepEqualSelector';
-import createTagsSelector from 'Store/Selectors/createTagsSelector';
+import { useSearchMovie } from 'Movie/useMovie';
 import translate from 'Utilities/String/translate';
 import MovieSearchResult from './MovieSearchResult';
 import styles from './MovieSearchInput.css';
@@ -57,7 +52,7 @@ export interface SuggestedMovie
     | 'releaseDate'
   > {
   firstCharacter: string;
-  tags: Tag[];
+  tags: number[];
 }
 
 interface MovieSuggestion {
@@ -74,159 +69,51 @@ interface Section {
   suggestions: MovieSuggestion[] | AddNewMovieSuggestion[];
 }
 
-function createUnoptimizedSelector() {
-  return createSelector(
-    createAllMoviesSelector(),
-    createTagsSelector(),
-    (allMovies, allTags) => {
-      return allMovies.map((movie): SuggestedMovie => {
-        const {
-          title,
-          year,
-          titleSlug,
-          sortTitle,
-          images,
-          tmdbId,
-          itemType,
-          studioTitle,
-          genres = [],
-          performerNames = [],
-          runtime,
-          releaseDate,
-          tags = [],
-        } = movie;
-
-        return {
-          title,
-          year,
-          titleSlug,
-          sortTitle,
-          images,
-          tmdbId,
-          itemType,
-          studioTitle,
-          genres,
-          performerNames,
-          runtime,
-          releaseDate,
-          firstCharacter: title.charAt(0).toLowerCase(),
-          tags: tags.reduce<Tag[]>((acc, id) => {
-            const matchingTag = allTags.find((tag) => tag.id === id);
-
-            if (matchingTag) {
-              acc.push(matchingTag);
-            }
-
-            return acc;
-          }, []),
-        };
-      });
-    }
-  );
-}
-
-function createMoviesSelector() {
-  return createDeepEqualSelector(
-    createUnoptimizedSelector(),
-    (movies) => movies
-  );
+function moviesToSuggestions(movies: Movie[]): MovieSuggestion[] {
+  return movies.map((m, i) => ({
+    title: m.title,
+    indices: [],
+    item: {
+      ...m,
+      firstCharacter: m.title.charAt(0).toLowerCase(),
+      tags: m.tags || [],
+    },
+    matches: [],
+    refIndex: i,
+  }));
 }
 
 function MovieSearchInput() {
-  const movies = useSelector(createMoviesSelector());
-  const dispatch = useDispatch();
-  const { bindShortcut, unbindShortcut } = useKeyboardShortcuts();
-
+  const history = useHistory();
   const [value, setValue] = useState('');
-  const [requestLoading, setRequestLoading] = useState(false);
-  const [suggestions, setSuggestions] = useState<MovieSuggestion[]>([]);
+  const [debouncedValue] = useDebounce(value, 250);
 
+  const { data: movies = [], isLoading } = useSearchMovie(debouncedValue);
+
+  const { bindShortcut, unbindShortcut } = useKeyboardShortcuts();
   const autosuggestRef = useRef<Autosuggest>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const worker = useRef<Worker | null>(null);
-  const isLoading = useRef(false);
-  const requestValue = useRef<string | null>(null);
+
+  const suggestions = useMemo(() => moviesToSuggestions(movies), [movies]);
 
   const suggestionGroups = useMemo(() => {
     const result: Section[] = [];
-
-    if (suggestions.length || isLoading.current) {
+    if (suggestions.length || isLoading) {
       result.push({
         title: translate('Existing'),
-        loading: isLoading.current,
+        loading: isLoading,
         suggestions,
       });
     }
-
     result.push({
       title: translate('Add'),
       suggestions: [
-        {
-          type: ADD_NEW_MOVIE,
-          title: value,
-        },
-        {
-          type: ADD_NEW_SCENE,
-          title: value,
-        },
+        { type: ADD_NEW_MOVIE, title: value },
+        { type: ADD_NEW_SCENE, title: value },
       ],
     });
-
     return result;
-  }, [suggestions, value]);
-
-  const handleSuggestionsReceived = useCallback(
-    (message: { data: { value: string; suggestions: MovieSuggestion[] } }) => {
-      const { value, suggestions } = message.data;
-
-      if (!isLoading.current) {
-        requestValue.current = null;
-        setRequestLoading(false);
-      } else if (value === requestValue.current) {
-        setSuggestions(suggestions);
-        requestValue.current = null;
-        setRequestLoading(false);
-        isLoading.current = false;
-        // setLoading(false);
-      } else {
-        setSuggestions(suggestions);
-        setRequestLoading(true);
-
-        const payload = {
-          value: requestValue,
-          movies,
-        };
-
-        worker.current?.postMessage(payload);
-      }
-    },
-    [movies]
-  );
-
-  const requestSuggestions = useDebouncedCallback((value: string) => {
-    if (!isLoading.current) {
-      return;
-    }
-
-    requestValue.current = value;
-    setRequestLoading(true);
-
-    if (!requestLoading) {
-      const payload = {
-        value,
-        movies,
-      };
-
-      worker.current?.postMessage(payload);
-    }
-  }, 250);
-
-  const reset = useCallback(() => {
-    setValue('');
-    setSuggestions([]);
-    // setLoading(false);
-    isLoading.current = false;
-  }, []);
+  }, [suggestions, value, isLoading]);
 
   const focusInput = useCallback((event: ExtendedKeyboardEvent) => {
     event.preventDefault();
@@ -270,7 +157,6 @@ function MovieSearchInput() {
             </div>
           );
         }
-
         if (item.type === ADD_NEW_SCENE) {
           return (
             <div className={styles.addNewMovieSuggestion}>
@@ -279,7 +165,6 @@ function MovieSearchInput() {
           );
         }
       }
-
       const movieItem = item as MovieSuggestion;
       return (
         <MovieSearchResult {...movieItem.item} match={movieItem.matches[0]} />
@@ -299,10 +184,7 @@ function MovieSearchInput() {
         method: 'down' | 'up' | 'escape' | 'enter' | 'click' | 'type';
       }
     ) => {
-      if (method === 'up' || method === 'down') {
-        return;
-      }
-
+      if (method === 'up' || method === 'down') return;
       setValue(newValue);
     },
     []
@@ -310,78 +192,35 @@ function MovieSearchInput() {
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent<HTMLElement>) => {
-      if (event.shiftKey || event.altKey || event.ctrlKey) {
-        return;
-      }
-
+      if (event.shiftKey || event.altKey || event.ctrlKey) return;
       if (event.key === 'Escape') {
-        reset();
+        setValue('');
         return;
       }
-
-      if (event.key !== 'Tab' && event.key !== 'Enter') {
-        return;
-      }
-
-      if (!autosuggestRef.current) {
-        return;
-      }
-
+      if (event.key !== 'Tab' && event.key !== 'Enter') return;
+      if (!autosuggestRef.current) return;
       const { highlightedSectionIndex, highlightedSuggestionIndex } =
         autosuggestRef.current.state;
-
       if (!suggestions.length || highlightedSectionIndex) {
-        dispatch(
-          push(
-            `${window.Whisparr.urlBase}/add/new/movie?term=${encodeURIComponent(
-              value
-            )}`
-          )
+        history.push(
+          `${window.Whisparr.urlBase}/add/new/movie?term=${encodeURIComponent(
+            value
+          )}`
         );
-
         inputRef.current?.blur();
-        reset();
-
         return;
       }
-
-      // If a suggestion is not selected go to the first movie,
-      // otherwise go to the selected movie.
-
       const selectedSuggestion =
         highlightedSuggestionIndex == null
           ? suggestions[0]
           : suggestions[highlightedSuggestionIndex];
-
-      dispatch(
-        push(
-          `${window.Whisparr.urlBase}/movie/${selectedSuggestion.item.titleSlug}`
-        )
+      history.push(
+        `${window.Whisparr.urlBase}/movie/${selectedSuggestion.item.titleSlug}`
       );
-
       inputRef.current?.blur();
-      reset();
     },
-    [value, suggestions, dispatch, reset]
+    [value, suggestions, history]
   );
-
-  const handleBlur = useCallback(() => {
-    reset();
-  }, [reset]);
-
-  const handleSuggestionsFetchRequested = useCallback(
-    ({ value }: { value: string }) => {
-      isLoading.current = true;
-
-      requestSuggestions(value);
-    },
-    [requestSuggestions]
-  );
-
-  const handleSuggestionsClearRequested = useCallback(() => {
-    setSuggestions([]);
-    isLoading.current = false;
-  }, []);
 
   const handleSuggestionSelected = useCallback(
     (
@@ -390,30 +229,26 @@ function MovieSearchInput() {
     ) => {
       if ('type' in suggestion) {
         if (suggestion.type === ADD_NEW_MOVIE) {
-          dispatch(
-            push(
-              `${
-                window.Whisparr.urlBase
-              }/add/new/movie?term=${encodeURIComponent(value)}`
-            )
+          history.push(
+            `${window.Whisparr.urlBase}/add/new/movie?term=${encodeURIComponent(
+              value
+            )}`
           );
         } else if (suggestion.type === ADD_NEW_SCENE) {
-          dispatch(
-            push(
-              `${
-                window.Whisparr.urlBase
-              }/add/new/scene?term=${encodeURIComponent(value)}`
-            )
+          history.push(
+            `${window.Whisparr.urlBase}/add/new/scene?term=${encodeURIComponent(
+              value
+            )}`
           );
         }
       } else {
         setValue('');
-        dispatch(
-          push(`${window.Whisparr.urlBase}/movie/${suggestion.item.titleSlug}`)
+        history.push(
+          `${window.Whisparr.urlBase}/movie/${suggestion.item.titleSlug}`
         );
       }
     },
-    [value, dispatch]
+    [value, history]
   );
 
   const inputProps = {
@@ -426,7 +261,6 @@ function MovieSearchInput() {
     spellCheck: false,
     onChange: handleChange,
     onKeyDown: handleKeyDown,
-    onBlur: handleBlur,
   };
 
   const theme = {
@@ -439,46 +273,19 @@ function MovieSearchInput() {
   };
 
   useEffect(() => {
-    worker.current = new Worker(new URL('./fuse.worker.ts', import.meta.url));
-
-    return () => {
-      if (worker.current) {
-        worker.current.terminate();
-        worker.current = null;
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    worker.current?.addEventListener(
-      'message',
-      handleSuggestionsReceived,
-      false
-    );
-
-    return () => {
-      if (worker.current) {
-        worker.current.removeEventListener(
-          'message',
-          handleSuggestionsReceived,
-          false
-        );
-      }
-    };
-  }, [handleSuggestionsReceived]);
-
-  useEffect(() => {
     bindShortcut('focusMovieSearchInput', focusInput);
-
     return () => {
       unbindShortcut('focusMovieSearchInput');
     };
   }, [bindShortcut, unbindShortcut, focusInput]);
 
+  // Dummy handlers for Autosuggest (required)
+  const handleSuggestionsFetchRequested = useCallback(() => {}, []);
+  const handleSuggestionsClearRequested = useCallback(() => {}, []);
+
   return (
     <div className={styles.wrapper}>
       <Icon name={icons.SEARCH} />
-
       <Autosuggest
         ref={autosuggestRef}
         inputProps={inputProps}

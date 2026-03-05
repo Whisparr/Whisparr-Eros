@@ -4,7 +4,6 @@ import { createSelector } from 'reselect';
 import AppState from 'App/State/AppState';
 import { fetchTranslations } from 'Store/Actions/appActions';
 import { fetchCustomFilters } from 'Store/Actions/customFilterActions';
-import { fetchMovies } from 'Store/Actions/movieActions';
 import {
   fetchImportLists,
   fetchIndexerFlags,
@@ -17,8 +16,6 @@ import { fetchTags } from 'Store/Actions/tagActions';
 
 const createErrorsSelector = () =>
   createSelector(
-    (state: AppState) => state.movies.error,
-    // movie collections are not part of Whisparr
     (state: AppState) => state.customFilters.error,
     (state: AppState) => state.performers.error,
     (state: AppState) => state.studios.error,
@@ -31,8 +28,6 @@ const createErrorsSelector = () =>
     (state: AppState) => state.system.status.error,
     (state: AppState) => state.app.translations.error,
     (
-      moviesError,
-      // movieCollectionsError,
       customFiltersError,
       performersError,
       studiosError,
@@ -46,7 +41,6 @@ const createErrorsSelector = () =>
       translationsError
     ) => {
       const hasError = !!(
-        moviesError ||
         customFiltersError ||
         performersError ||
         studiosError ||
@@ -63,8 +57,6 @@ const createErrorsSelector = () =>
       return {
         hasError,
         errors: {
-          moviesError,
-          // movieCollectionsError,
           customFiltersError,
           performersError,
           studiosError,
@@ -113,7 +105,6 @@ const useAppPage = () => {
   }, []);
 
   useEffect(() => {
-    dispatch(fetchMovies());
     dispatch(fetchCustomFilters());
     dispatch(fetchTags());
     dispatch(fetchQualityProfiles());

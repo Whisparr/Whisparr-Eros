@@ -4,6 +4,7 @@ import { useHistory } from 'react-router-dom';
 import ModelBase from 'App/ModelBase';
 import { useSelect } from 'App/SelectContext';
 import AppState from 'App/State/AppState';
+import { fetchGeneralSettings } from 'Store/Actions/Settings/general';
 import {
   setStudioFilter,
   setStudioPage,
@@ -21,6 +22,22 @@ interface PageFilter {
   key: string;
   operator: string;
   value: string | number | boolean;
+}
+
+/**
+ * Hook to fetch and manage general application settings.
+ * Dispatches the fetchGeneralSettings action on mount and returns the general settings state.
+ *
+ * @returns {AppState['settings']['general']['item']} The general settings object
+ */
+export function useGeneralSettings() {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(fetchGeneralSettings());
+  }, [dispatch]);
+
+  return useSelector((state: AppState) => state.settings.general.item);
 }
 
 /**
@@ -152,6 +169,13 @@ export function useStudioIndex() {
     return null;
   }
 
+  const generalSettings = useGeneralSettings();
+
+  // Determine if we should show the movie monitor toggle
+  const showMovieMonitorToggle = useMemo(() => {
+    return !!(generalSettings?.whisparrMovieMetadataSource !== 'none');
+  }, [generalSettings?.whisparrMovieMetadataSource]);
+
   /**
    * Handle filter selection from the filter menu
    * Resets to first page
@@ -216,6 +240,10 @@ export function useStudioIndex() {
     scrollerRef,
     selectedFilterKey,
     view,
+
+    // Derived data
+    showMovieMonitorToggle,
+
     handleFirstPagePress,
     handleLastPagePress,
     handleNextPagePress,

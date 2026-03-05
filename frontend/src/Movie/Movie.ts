@@ -55,6 +55,8 @@ interface Movie extends ModelBase {
   tmdbId: number;
   tpdbId: string;
   stashId: string;
+  code: string;
+  certification: string;
   itemType: string;
   added: string;
   addOptions: MovieAddOptions;
@@ -94,6 +96,11 @@ interface Movie extends ModelBase {
   titleSlug: string;
   website: string;
   year: number;
+}
+
+// Added to allow for faster updates to monitored status.  Can be extended in the future
+export interface MoviePatchResource extends ModelBase {
+  monitored: boolean;
 }
 
 export default Movie;

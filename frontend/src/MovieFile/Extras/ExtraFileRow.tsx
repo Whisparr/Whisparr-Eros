@@ -3,16 +3,11 @@ import IconButton from 'Components/Link/IconButton';
 import TableRowCell from 'Components/Table/Cells/TableRowCell';
 import TableRow from 'Components/Table/TableRow';
 import { icons } from 'Helpers/Props';
+import { ExtraFile } from 'MovieFile/ExtraFile';
 import titleCase from 'Utilities/String/titleCase';
 import styles from './ExtraFileRow.css';
 
-export interface ExtraFileRowProps {
-  id: number;
-  extension: string;
-  type: string;
-  relativePath: string;
-  movieId: number;
-}
+export type ExtraFileRowProps = Omit<ExtraFile, 'movieFileId'>;
 
 function ExtraFileRow({ relativePath, extension, type }: ExtraFileRowProps) {
   return (

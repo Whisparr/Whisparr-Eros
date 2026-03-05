@@ -8,6 +8,7 @@ import TableRowCell from 'Components/Table/Cells/TableRowCell';
 import VirtualTableSelectCell from 'Components/Table/Cells/VirtualTableSelectCell';
 import Column from 'Components/Table/Column';
 import Tooltip from 'Components/Tooltip/Tooltip';
+import { useShowMovieMonitorToggleButton } from 'Helpers/Hooks/useShowMovieMonitorToggleButton';
 import { icons, kinds } from 'Helpers/Props';
 import QUalityProfileName from 'Settings/Profiles/Quality/QualityProfileName';
 import StudioDetailsLinks from 'Studio/Details/StudioDetailsLinks';
@@ -52,6 +53,10 @@ function StudioIndexRow(props: StudioIndexRowProps) {
   const safeForWorkMode = React.useContext(SafeForWorkModeContext);
   const [isEditStudioModalOpen, setIsEditStudioModalOpen] = useState(false);
   const [selectState, selectDispatch] = useSelect();
+  const showMovieMonitorToggle = useShowMovieMonitorToggleButton(
+    studio?.tmdbId,
+    studio?.tpdbId
+  );
 
   const onEditStudioPress = useCallback(() => {
     setIsEditStudioModalOpen(true);
@@ -104,18 +109,20 @@ function StudioIndexRow(props: StudioIndexRowProps) {
                 ? styles.statusIcon
                 : `${styles.statusIcon} ${styles.unmonitored}`
             }
-            title="scene"
+            title={translate('MonitoredScene')}
             name={monitored ? icons.SCENE : icons.SCENEUNMONITOR}
           />
-          <Icon
-            containerClassName={
-              moviesMonitored
-                ? styles.statusIcon
-                : `${styles.statusIcon} ${styles.unmonitored}`
-            }
-            title="movie"
-            name={moviesMonitored ? icons.FILM : icons.FILMUNMONITOR}
-          />
+          {showMovieMonitorToggle ? (
+            <Icon
+              containerClassName={
+                moviesMonitored
+                  ? styles.statusIcon
+                  : `${styles.statusIcon} ${styles.unmonitored}`
+              }
+              title={translate('MonitorMovies')}
+              name={moviesMonitored ? icons.FILM : icons.FILMUNMONITOR}
+            />
+          ) : null}
         </TableRowCell>
       );
       return;
@@ -232,7 +239,6 @@ function StudioIndexRow(props: StudioIndexRowProps) {
           />
         </TableRowCell>
       );
-      return;
     }
   });
 

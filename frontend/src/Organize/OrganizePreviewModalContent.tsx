@@ -13,7 +13,7 @@ import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import useSelectState from 'Helpers/Hooks/useSelectState';
 import { kinds } from 'Helpers/Props';
-import useMovie from 'Movie/useMovie';
+import { useMovie } from 'Movie/useMovie';
 import { executeCommand } from 'Store/Actions/commandActions';
 import { fetchOrganizePreview } from 'Store/Actions/organizePreviewActions';
 import { fetchNamingSettings } from 'Store/Actions/settingsActions';
@@ -58,7 +58,7 @@ function OrganizePreviewModalContent({
     item: naming,
   } = useSelector((state: AppState) => state.settings.naming);
 
-  const movie = useMovie(movieId)!;
+  const movie = useMovie(movieId).data;
   const [selectState, setSelectState] = useSelectState();
 
   const { allSelected, allUnselected, selectedState } = selectState;
@@ -107,6 +107,10 @@ function OrganizePreviewModalContent({
     dispatch(fetchOrganizePreview({ movieId }));
     dispatch(fetchNamingSettings());
   }, [movieId, dispatch]);
+
+  if (!movie) {
+    return null;
+  }
 
   return (
     <ModalContent onModalClose={onModalClose}>

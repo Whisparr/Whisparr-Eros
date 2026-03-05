@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
@@ -1354,6 +1355,12 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
         {
             if (movieInfo == null)
             {
+                var path = Path.GetFileNameWithoutExtension(title);
+                if (path.IsNotNullOrWhiteSpace() && path != title)
+                {
+                    title = path;
+                }
+
                 return title;
             }
 

@@ -12,6 +12,7 @@ namespace NzbDrone.Core.MovieStats
         List<MovieStatistics> MovieStatistics();
         List<MovieStatistics> MovieStatistics(List<int> ids);
         List<MovieStatistics> MovieStatistics(int movieId);
+        MovieIndexOverview GetMovieIndexOverview(ItemType itemType);
     }
 
     public class MovieStatisticsRepository : IMovieStatisticsRepository
@@ -90,6 +91,27 @@ namespace NzbDrone.Core.MovieStats
                         SUM(COALESCE(""Size"", 0)) AS SizeOnDisk,
                         string_agg(""ReleaseGroup"", '|') AS ReleaseGroupsString")
                 .GroupBy<MovieFile>(x => x.MovieId);
+        }
+
+        public MovieIndexOverview GetMovieIndexOverview(ItemType itemType)
+        {
+            var monitoredExpr = _database.DatabaseType == DatabaseType.SQLite
+                ? @"SUM(CASE WHEN m.""Monitored"" = 1 THEN 1 ELSE 0 END)"
+                : @"SUM(CASE WHEN m.""Monitored"" = true THEN 1 ELSE 0 END)";
+
+            var sql = $@"
+                SELECT
+                    COUNT(*) AS TotalCount,
+                    {monitoredExpr} AS MonitoredCount,
+                    SUM(CASE WHEN m.""MovieFileId"" > 0 THEN 1 ELSE 0 END) AS MovieFiles,
+                    COALESCE(SUM(mf.""Size""), 0) AS TotalFileSize
+                FROM ""Movies"" m
+                INNER JOIN ""MovieMetadata"" mm ON m.""MovieMetadataId"" = mm.""Id""
+                LEFT JOIN ""MovieFiles"" mf ON m.""MovieFileId"" = mf.""Id""
+                WHERE mm.""ItemType"" = @itemType";
+
+            using var conn = _database.OpenConnection();
+            return conn.QueryFirst<MovieIndexOverview>(sql, new { itemType = (int)itemType });
         }
     }
 }

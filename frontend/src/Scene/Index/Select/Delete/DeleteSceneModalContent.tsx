@@ -1,153 +1,79 @@
-import { orderBy } from 'lodash';
-import React, { useCallback, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { createSelector } from 'reselect';
-import AppState from 'App/State/AppState';
+import React, { useState } from 'react';
 import FormGroup from 'Components/Form/FormGroup';
 import FormInputGroup from 'Components/Form/FormInputGroup';
 import FormLabel from 'Components/Form/FormLabel';
+import InfoLabel from 'Components/InfoLabel';
 import Button from 'Components/Link/Button';
 import ModalBody from 'Components/Modal/ModalBody';
 import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
-import { inputTypes, kinds } from 'Helpers/Props';
-import Movie from 'Movie/Movie';
-import { bulkDeleteMovie, setDeleteOption } from 'Store/Actions/movieActions';
-import createAllScenesSelector from 'Store/Selectors/createAllScenesSelector';
-import { CheckInputChanged } from 'typings/inputs';
+import { inputTypes, kinds, sizes } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './DeleteSceneModalContent.css';
+import styles from './DeleteSceneModal.css';
 
-interface DeleteSceneModalContentProps {
+export interface DeleteSceneModalContentProps {
   sceneIds: number[];
-  onModalClose(): void;
+  onModalClose: () => void;
+  onDeletePress: (deleteFiles: boolean, addImportExclusion: boolean) => void;
 }
 
-const selectDeleteOptions = createSelector(
-  (state: AppState) => state.movies.deleteOptions,
-  (deleteOptions) => deleteOptions
-);
-
-function DeleteSceneModalContent(props: DeleteSceneModalContentProps) {
-  const { sceneIds, onModalClose } = props;
-
-  const { addImportExclusion } = useSelector(selectDeleteOptions);
-  const allScenes: Movie[] = useSelector(createAllScenesSelector());
-  const dispatch = useDispatch();
-
+export function DeleteSceneModalContent({
+  onModalClose,
+  onDeletePress,
+}: DeleteSceneModalContentProps) {
   const [deleteFiles, setDeleteFiles] = useState(false);
+  const [addImportExclusion, setAddImportExclusion] = useState(false);
 
-  const scenes = useMemo((): Movie[] => {
-    const scenes = sceneIds.map((id) => {
-      return allScenes.find((s) => s.id === id);
-    }) as Movie[];
+  function handleDeleteFilesChange({ value }: { value: boolean }) {
+    setDeleteFiles(value);
+  }
 
-    return orderBy(scenes, ['sortTitle']);
-  }, [sceneIds, allScenes]);
+  function handleDeleteOptionChange({ value }: { value: boolean }) {
+    setAddImportExclusion(value);
+  }
 
-  const onDeleteFilesChange = useCallback(
-    ({ value }: CheckInputChanged) => {
-      setDeleteFiles(value);
-    },
-    [setDeleteFiles]
-  );
-
-  const onDeleteOptionChange = useCallback(
-    ({ name, value }: { name: string; value: boolean }) => {
-      dispatch(
-        setDeleteOption({
-          [name]: value,
-        })
-      );
-    },
-    [dispatch]
-  );
-
-  const onDeleteScenesConfirmed = useCallback(() => {
-    setDeleteFiles(false);
-
-    dispatch(
-      bulkDeleteMovie({
-        movieIds: sceneIds,
-        deleteFiles,
-        addImportExclusion,
-      })
-    );
-
-    onModalClose();
-  }, [
-    sceneIds,
-    deleteFiles,
-    addImportExclusion,
-    setDeleteFiles,
-    dispatch,
-    onModalClose,
-  ]);
+  function handleDeleteMovieConfirmed() {
+    onDeletePress(deleteFiles, addImportExclusion);
+  }
 
   return (
     <ModalContent onModalClose={onModalClose}>
-      <ModalHeader>{translate('DeleteSelectedScene')}</ModalHeader>
-
+      <ModalHeader>{translate('DeleteMoviesModalHeader')}</ModalHeader>
       <ModalBody>
-        <div>
-          <FormGroup>
-            <FormLabel>{translate('AddListExclusion')}</FormLabel>
-
-            <FormInputGroup
-              type={inputTypes.CHECK}
-              name="addImportExclusion"
-              value={addImportExclusion}
-              helpText={translate('AddImportExclusionHelpText')}
-              onChange={onDeleteOptionChange}
-            />
-          </FormGroup>
-
-          <FormGroup>
-            <FormLabel>{`Delete Scene Folder${
-              scenes.length > 1 ? 's' : ''
-            }`}</FormLabel>
-
-            <FormInputGroup
-              type={inputTypes.CHECK}
-              name="deleteFiles"
-              value={deleteFiles}
-              helpText={`Delete Scene Folder${
-                scenes.length > 1 ? 's' : ''
-              } and all contents`}
-              kind={kinds.DANGER}
-              onChange={onDeleteFilesChange}
-            />
-          </FormGroup>
-        </div>
-
-        <div className={styles.message}>
-          {`Are you sure you want to delete ${scenes.length} selected scene(s)${
-            deleteFiles ? ' and all contents' : ''
-          }?`}
-        </div>
-
-        <ul>
-          {scenes.map((s) => {
-            return (
-              <li key={s.title}>
-                <span>{s.title}</span>
-
-                {deleteFiles && (
-                  <span className={styles.pathContainer}>
-                    -<span className={styles.path}>{s.path}</span>
-                  </span>
-                )}
-              </li>
-            );
-          })}
-        </ul>
+        <FormGroup>
+          <InfoLabel size={sizes.LARGE} className={styles.warningText} name="">
+            {translate('DeleteMoviesModalWarning')}
+          </InfoLabel>
+        </FormGroup>
+        <FormGroup>
+          <FormLabel>{translate('AddListExclusion')}</FormLabel>
+          <FormInputGroup
+            type={inputTypes.CHECK}
+            name="addImportExclusion"
+            value={addImportExclusion}
+            helpText={translate('AddImportExclusionHelpText')}
+            kind={kinds.DANGER}
+            onChange={handleDeleteOptionChange}
+          />
+        </FormGroup>
+        <FormGroup>
+          <FormLabel>
+            {translate('DeleteFilesLabel', { name: translate('All') })}
+          </FormLabel>
+          <FormInputGroup
+            type={inputTypes.CHECK}
+            name="deleteFiles"
+            value={deleteFiles}
+            helpText={translate('DeleteFilesHelpText')}
+            kind={kinds.DANGER}
+            onChange={handleDeleteFilesChange}
+          />
+        </FormGroup>
       </ModalBody>
-
       <ModalFooter>
-        <Button onPress={onModalClose}>{translate('Cancel')}</Button>
-
-        <Button kind={kinds.DANGER} onPress={onDeleteScenesConfirmed}>
+        <Button onPress={onModalClose}>{translate('Close')}</Button>
+        <Button kind={kinds.DANGER} onPress={handleDeleteMovieConfirmed}>
           {translate('Delete')}
         </Button>
       </ModalFooter>

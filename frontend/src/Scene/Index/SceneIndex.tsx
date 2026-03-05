@@ -1,27 +1,18 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { SelectProvider } from 'App/SelectContext';
-import ClientSideCollectionAppState from 'App/State/ClientSideCollectionAppState';
-import MoviesAppState, { MovieIndexAppState } from 'App/State/MoviesAppState';
 import { RSS_SYNC } from 'Commands/commandNames';
 import Alert from 'Components/Alert';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import PageContent from 'Components/Page/PageContent';
 import PageContentBody from 'Components/Page/PageContentBody';
-import PageJumpBar from 'Components/Page/PageJumpBar';
 import PageToolbar from 'Components/Page/Toolbar/PageToolbar';
 import PageToolbarButton from 'Components/Page/Toolbar/PageToolbarButton';
 import PageToolbarSection from 'Components/Page/Toolbar/PageToolbarSection';
 import PageToolbarSeparator from 'Components/Page/Toolbar/PageToolbarSeparator';
 import TableOptionsModalWrapper from 'Components/Table/TableOptions/TableOptionsModalWrapper';
-import withScrollPosition from 'Components/withScrollPosition';
-import { align, icons, kinds, sortDirections } from 'Helpers/Props';
+import TablePager from 'Components/Table/TablePager';
+import { align, icons, kinds } from 'Helpers/Props';
 import InteractiveImportModal from 'InteractiveImport/InteractiveImportModal';
 import MovieIndexSelectAllButton from 'Movie/Index/Select/MovieIndexSelectAllButton';
 import MovieIndexSelectAllMenuItem from 'Movie/Index/Select/MovieIndexSelectAllMenuItem';
@@ -31,16 +22,8 @@ import ParseToolbarButton from 'Parse/ParseToolbarButton';
 import NoScene from 'Scene/NoScene';
 import { executeCommand } from 'Store/Actions/commandActions';
 import { fetchQueueDetails } from 'Store/Actions/queueActions';
-import {
-  setSceneFilter,
-  setSceneSort,
-  setSceneTableOption,
-  setSceneView,
-} from 'Store/Actions/sceneIndexActions';
-import scrollPositions from 'Store/scrollPositions';
 import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
 import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
-import createMovieClientSideCollectionItemsSelector from 'Store/Selectors/createMovieClientSideCollectionItemsSelector';
 import translate from 'Utilities/String/translate';
 import SceneIndexFilterMenu from './Menus/SceneIndexFilterMenu';
 import SceneIndexSortMenu from './Menus/SceneIndexSortMenu';
@@ -55,177 +38,87 @@ import SceneIndexSearchButton from './SceneIndexSearchButton';
 import SceneIndexSelectFooter from './Select/SceneIndexSelectFooter';
 import SceneIndexTable from './Table/SceneIndexTable';
 import SceneIndexTableOptions from './Table/SceneIndexTableOptions';
+import { useSceneIndex } from './useSceneIndex';
 import styles from './SceneIndex.css';
 
-function getViewComponent(view: string) {
-  if (view === 'posters') {
-    return SceneIndexPosters;
-  }
-
-  if (view === 'overview') {
-    return SceneIndexOverviews;
-  }
-
-  return SceneIndexTable;
-}
-
-interface SceneIndexProps {
-  initialScrollTop?: number;
-}
-
-const SceneIndex = withScrollPosition((props: SceneIndexProps) => {
+function SceneIndex() {
   const {
-    isFetching,
-    isPopulated,
-    error,
-    totalItems,
     items,
-    columns,
-    selectedFilterKey,
-    filters,
-    customFilters,
+    totalItems,
+    page,
+    totalPages,
     sortKey,
     sortDirection,
     view,
-  }: MoviesAppState & MovieIndexAppState & ClientSideCollectionAppState =
-    useSelector(
-      createMovieClientSideCollectionItemsSelector('sceneIndex', 'scene')
-    );
+    columns,
+    filters,
+    customFilters,
+    selectedFilterKey,
+    isLoading,
+    isError,
+    isSelectMode,
+    scrollerRef,
+    handleFirstPagePress,
+    handlePreviousPagePress,
+    handleNextPagePress,
+    handleLastPagePress,
+    handlePageSelect,
+    handleSortPress,
+    handleFilterSelect,
+    handleViewSelect,
+    handleTableOptionChange,
+    handleSelectModePress,
+  } = useSceneIndex();
 
   const isRssSyncExecuting = useSelector(
     createCommandExecutingSelector(RSS_SYNC)
   );
   const { isSmallScreen } = useSelector(createDimensionsSelector());
   const dispatch = useDispatch();
-  const scrollerRef = useRef<HTMLDivElement>(null);
+
   const [isOptionsModalOpen, setIsOptionsModalOpen] = useState(false);
   const [isInteractiveImportModalOpen, setIsInteractiveImportModalOpen] =
     useState(false);
-  const [jumpToCharacter, setJumpToCharacter] = useState<string | undefined>(
-    undefined
-  );
-  const [isSelectMode, setIsSelectMode] = useState(false);
 
   useEffect(() => {
     dispatch(fetchQueueDetails({ all: true }));
   }, [dispatch]);
 
-  const onRssSyncPress = useCallback(() => {
-    dispatch(
-      executeCommand({
-        name: RSS_SYNC,
-      })
-    );
+  const handleRssSyncPress = useCallback(() => {
+    dispatch(executeCommand({ name: RSS_SYNC }));
   }, [dispatch]);
 
-  const onSelectModePress = useCallback(() => {
-    setIsSelectMode(!isSelectMode);
-  }, [isSelectMode, setIsSelectMode]);
-
-  const onTableOptionChange = useCallback(
-    (payload: unknown) => {
-      dispatch(setSceneTableOption(payload));
-    },
-    [dispatch]
-  );
-
-  const onViewSelect = useCallback(
-    (value: string) => {
-      dispatch(setSceneView({ view: value }));
-
-      if (scrollerRef.current) {
-        scrollerRef.current.scrollTo(0, 0);
-      }
-    },
-    [scrollerRef, dispatch]
-  );
-
-  const onSortSelect = useCallback(
-    (value: string) => {
-      dispatch(setSceneSort({ sortKey: value }));
-    },
-    [dispatch]
-  );
-
-  const onFilterSelect = useCallback(
-    (value: string | number) => {
-      dispatch(setSceneFilter({ selectedFilterKey: value }));
-    },
-    [dispatch]
-  );
-
-  const onOptionsPress = useCallback(() => {
+  const handleOptionsPress = useCallback(() => {
     setIsOptionsModalOpen(true);
-  }, [setIsOptionsModalOpen]);
+  }, []);
 
-  const onOptionsModalClose = useCallback(() => {
+  const handleOptionsModalClose = useCallback(() => {
     setIsOptionsModalOpen(false);
-  }, [setIsOptionsModalOpen]);
+  }, []);
 
-  const onInteractiveImportPress = useCallback(() => {
+  const handleInteractiveImportPress = useCallback(() => {
     setIsInteractiveImportModalOpen(true);
-  }, [setIsInteractiveImportModalOpen]);
+  }, []);
 
-  const onInteractiveImportModalClose = useCallback(() => {
+  const handleInteractiveImportModalClose = useCallback(() => {
     setIsInteractiveImportModalOpen(false);
-  }, [setIsInteractiveImportModalOpen]);
+  }, []);
 
-  const onJumpBarItemPress = useCallback(
-    (character: string) => {
-      setJumpToCharacter(character);
-    },
-    [setJumpToCharacter]
+  const hasNoScene = totalItems === 0 && !isLoading;
+
+  const pager = (
+    <TablePager
+      page={page}
+      totalPages={totalPages}
+      totalRecords={totalItems}
+      isFetching={isLoading}
+      onFirstPagePress={handleFirstPagePress}
+      onPreviousPagePress={handlePreviousPagePress}
+      onNextPagePress={handleNextPagePress}
+      onLastPagePress={handleLastPagePress}
+      onPageSelect={handlePageSelect}
+    />
   );
-
-  const onScroll = useCallback(
-    ({ scrollTop }: { scrollTop: number }) => {
-      setJumpToCharacter(undefined);
-      scrollPositions.sceneIndex = scrollTop;
-    },
-    [setJumpToCharacter]
-  );
-
-  const jumpBarItems = useMemo(() => {
-    // Reset if not sorting by sortTitle
-    if (sortKey !== 'sortTitle') {
-      return {
-        characters: {},
-        order: [],
-      };
-    }
-
-    const characters = items.reduce((acc: Record<string, number>, item) => {
-      let char = item.sortTitle.charAt(0);
-
-      if (!isNaN(Number(char))) {
-        char = '#';
-      }
-
-      if (char in acc) {
-        acc[char] = acc[char] + 1;
-      } else {
-        acc[char] = 1;
-      }
-
-      return acc;
-    }, {});
-
-    const order = Object.keys(characters).sort();
-
-    // Reverse if sorting descending
-    if (sortDirection === sortDirections.DESCENDING) {
-      order.reverse();
-    }
-
-    return {
-      characters,
-      order,
-    };
-  }, [items, sortKey, sortDirection]);
-  const ViewComponent = useMemo(() => getViewComponent(view), [view]);
-
-  const isLoaded = !!(!error && isPopulated && items.length);
-  const hasNoScene = !totalItems;
 
   return (
     <SelectProvider items={items}>
@@ -235,14 +128,15 @@ const SceneIndex = withScrollPosition((props: SceneIndexProps) => {
             <SceneIndexRefreshSceneButton
               isSelectMode={isSelectMode}
               selectedFilterKey={selectedFilterKey}
+              items={items}
             />
 
             <PageToolbarButton
               label={translate('RssSync')}
               iconName={icons.RSS}
               isSpinning={isRssSyncExecuting}
-              isDisabled={hasNoScene}
-              onPress={onRssSyncPress}
+              isDisabled={isRssSyncExecuting}
+              onPress={handleRssSyncPress}
             />
 
             <PageToolbarSeparator />
@@ -250,13 +144,13 @@ const SceneIndex = withScrollPosition((props: SceneIndexProps) => {
             <SceneIndexSearchButton
               isSelectMode={isSelectMode}
               selectedFilterKey={selectedFilterKey}
+              items={items}
             />
 
             <PageToolbarButton
               label={translate('ManualImport')}
               iconName={icons.INTERACTIVE}
-              isDisabled={hasNoScene}
-              onPress={onInteractiveImportPress}
+              onPress={handleInteractiveImportPress}
             />
 
             <PageToolbarSeparator />
@@ -272,7 +166,8 @@ const SceneIndex = withScrollPosition((props: SceneIndexProps) => {
               iconName={isSelectMode ? icons.SERIES_ENDED : icons.EDIT}
               isSelectMode={isSelectMode}
               overflowComponent={MovieIndexSelectModeMenuItem}
-              onPress={onSelectModePress}
+              isDisabled={hasNoScene}
+              onPress={handleSelectModePress}
             />
 
             <MovieIndexSelectAllButton
@@ -290,7 +185,7 @@ const SceneIndex = withScrollPosition((props: SceneIndexProps) => {
               <TableOptionsModalWrapper
                 columns={columns}
                 optionsComponent={SceneIndexTableOptions}
-                onTableOptionChange={onTableOptionChange}
+                onTableOptionChange={handleTableOptionChange}
               >
                 <PageToolbarButton
                   label={translate('Options')}
@@ -301,8 +196,8 @@ const SceneIndex = withScrollPosition((props: SceneIndexProps) => {
               <PageToolbarButton
                 label={translate('Options')}
                 iconName={view === 'posters' ? icons.POSTER : icons.OVERVIEW}
-                isDisabled={hasNoScene}
-                onPress={onOptionsPress}
+                isDisabled={false}
+                onPress={handleOptionsPress}
               />
             )}
 
@@ -310,95 +205,115 @@ const SceneIndex = withScrollPosition((props: SceneIndexProps) => {
 
             <SceneIndexViewMenu
               view={view}
-              isDisabled={hasNoScene}
-              onViewSelect={onViewSelect}
+              isDisabled={false}
+              onViewSelect={handleViewSelect}
             />
 
             <SceneIndexSortMenu
               sortKey={sortKey}
               sortDirection={sortDirection}
-              isDisabled={hasNoScene}
-              onSortSelect={onSortSelect}
+              isDisabled={false}
+              onSortSelect={handleSortPress}
             />
 
             <SceneIndexFilterMenu
               selectedFilterKey={selectedFilterKey}
               filters={filters}
               customFilters={customFilters}
-              isDisabled={hasNoScene}
-              onFilterSelect={onFilterSelect}
+              isDisabled={false}
+              onFilterSelect={handleFilterSelect}
             />
           </PageToolbarSection>
         </PageToolbar>
-        <div className={styles.pageContentBodyWrapper}>
-          <PageContentBody
-            ref={scrollerRef}
-            className={styles.contentBody}
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            innerClassName={styles[`${view}InnerContentBody`]}
-            initialScrollTop={props.initialScrollTop}
-            onScroll={onScroll}
-          >
-            {isFetching && !isPopulated ? <LoadingIndicator /> : null}
 
-            {!isFetching && !!error ? (
-              <Alert kind={kinds.DANGER}>
-                {translate('UnableToLoadScenes')}
-              </Alert>
-            ) : null}
+        <PageContentBody
+          ref={scrollerRef}
+          className={styles.contentBody}
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          innerClassName={styles[`${view}InnerContentBody`]}
+        >
+          {isLoading ? <LoadingIndicator /> : null}
 
-            {isLoaded ? (
-              <div className={styles.contentBodyContainer}>
-                <ViewComponent
-                  scrollerRef={scrollerRef}
-                  items={items}
-                  sortKey={sortKey}
-                  sortDirection={sortDirection}
-                  jumpToCharacter={jumpToCharacter}
-                  isSelectMode={isSelectMode}
-                  isSmallScreen={isSmallScreen}
-                />
-
-                <SceneIndexFooter />
-              </div>
-            ) : null}
-
-            {!error && isPopulated && !items.length ? (
-              <NoScene totalItems={totalItems} />
-            ) : null}
-          </PageContentBody>
-
-          {isLoaded && !!jumpBarItems.order.length ? (
-            <PageJumpBar
-              items={jumpBarItems}
-              onItemPress={onJumpBarItemPress}
-            />
+          {!isLoading && isError ? (
+            <Alert kind={kinds.DANGER}>{translate('UnableToLoadScenes')}</Alert>
           ) : null}
-        </div>
+
+          {!isLoading && !isError && items.length > 0 ? (
+            <div className={styles.contentBodyContainer}>
+              {view === 'table' ? (
+                <>
+                  <SceneIndexTable
+                    items={items}
+                    sortKey={sortKey}
+                    sortDirection={sortDirection}
+                    isSelectMode={isSelectMode}
+                    isSmallScreen={isSmallScreen}
+                  />
+                  {pager}
+                </>
+              ) : null}
+
+              {view === 'posters' ? (
+                <>
+                  <SceneIndexPosters
+                    items={items}
+                    sortKey={sortKey}
+                    sortDirection={sortDirection}
+                    scrollerRef={scrollerRef}
+                    isSelectMode={isSelectMode}
+                    isSmallScreen={isSmallScreen}
+                  />
+                  {pager}
+                </>
+              ) : null}
+
+              {view === 'overview' ? (
+                <>
+                  <SceneIndexOverviews
+                    items={items}
+                    sortKey={sortKey}
+                    sortDirection={sortDirection}
+                    scrollerRef={scrollerRef}
+                    isSelectMode={isSelectMode}
+                    isSmallScreen={isSmallScreen}
+                  />
+                  {pager}
+                </>
+              ) : null}
+
+              <SceneIndexFooter />
+            </div>
+          ) : null}
+
+          {!isLoading && !isError && items.length === 0 ? (
+            <NoScene totalItems={totalItems} />
+          ) : null}
+        </PageContentBody>
 
         {isSelectMode ? <SceneIndexSelectFooter /> : null}
 
         <InteractiveImportModal
           isOpen={isInteractiveImportModalOpen}
-          onModalClose={onInteractiveImportModalClose}
+          onModalClose={handleInteractiveImportModalClose}
         />
 
         {view === 'posters' ? (
           <SceneIndexPosterOptionsModal
             isOpen={isOptionsModalOpen}
-            onModalClose={onOptionsModalClose}
+            onModalClose={handleOptionsModalClose}
           />
         ) : null}
+
         {view === 'overview' ? (
           <SceneIndexOverviewOptionsModal
             isOpen={isOptionsModalOpen}
-            onModalClose={onOptionsModalClose}
+            onModalClose={handleOptionsModalClose}
           />
         ) : null}
       </PageContent>
     </SelectProvider>
   );
-}, 'sceneIndex');
+}
 
 export default SceneIndex;

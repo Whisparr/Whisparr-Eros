@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useHistory } from 'react-router-dom';
 import AppState from 'App/State/AppState';
 import FormGroup from 'Components/Form/FormGroup';
 import FormInputGroup from 'Components/Form/FormInputGroup';
@@ -12,8 +13,7 @@ import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { icons, inputTypes, kinds } from 'Helpers/Props';
-import { Statistics } from 'Movie/Movie';
-import useMovie from 'Movie/useMovie';
+import Movie from 'Movie/Movie';
 import { deleteMovie, setDeleteOption } from 'Store/Actions/movieActions';
 import { CheckInputChanged } from 'typings/inputs';
 import formatBytes from 'Utilities/Number/formatBytes';
@@ -21,26 +21,21 @@ import translate from 'Utilities/String/translate';
 import styles from './DeleteMovieModalContent.css';
 
 export interface DeleteMovieModalContentProps {
-  movieId: number;
+  movie: Movie;
   onModalClose: () => void;
 }
 
 function DeleteMovieModalContent({
-  movieId,
+  movie,
   onModalClose,
 }: DeleteMovieModalContentProps) {
   const dispatch = useDispatch();
-  const {
-    title,
-    path,
-    collection,
-    statistics = {} as Statistics,
-  } = useMovie(movieId)!;
+  const history = useHistory();
   const { addImportExclusion } = useSelector(
     (state: AppState) => state.movies.deleteOptions
   );
 
-  const { movieFileCount = 0, sizeOnDisk = 0 } = statistics;
+  const { movieFileCount = 0, sizeOnDisk = 0 } = movie.statistics || {};
 
   const [deleteFiles, setDeleteFiles] = useState(false);
 
@@ -54,22 +49,14 @@ function DeleteMovieModalContent({
   const handleDeleteMovieConfirmed = useCallback(() => {
     dispatch(
       deleteMovie({
-        id: movieId,
-        collectionTmdbId: collection?.tmdbId,
+        id: movie.id,
+        collectionTmdbId: movie.collection?.tmdbId,
         deleteFiles,
         addImportExclusion,
       })
     );
-
-    onModalClose();
-  }, [
-    movieId,
-    collection,
-    addImportExclusion,
-    deleteFiles,
-    dispatch,
-    onModalClose,
-  ]);
+    history.push(movie.itemType === 'movie' ? '/movies' : '/scenes');
+  }, [movie, addImportExclusion, deleteFiles, history, dispatch]);
 
   const handleDeleteOptionChange = useCallback(
     ({ name, value }: CheckInputChanged) => {
@@ -80,13 +67,15 @@ function DeleteMovieModalContent({
 
   return (
     <ModalContent onModalClose={onModalClose}>
-      <ModalHeader>{translate('DeleteHeader', { title })}</ModalHeader>
+      <ModalHeader>
+        {translate('DeleteHeader', { movie: movie.title })}
+      </ModalHeader>
 
       <ModalBody>
         <div className={styles.pathContainer}>
           <Icon className={styles.pathIcon} name={icons.FOLDER} />
 
-          {path}
+          {movie.path}
         </div>
 
         <FormGroup>
@@ -127,7 +116,9 @@ function DeleteMovieModalContent({
           <div className={styles.deleteFilesMessage}>
             <div>
               <InlineMarkdown
-                data={translate('DeleteMovieFolderConfirmation', { path })}
+                data={translate('DeleteMovieFolderConfirmation', {
+                  path: movie.path,
+                })}
                 blockClassName={styles.folderPath}
               />
             </div>

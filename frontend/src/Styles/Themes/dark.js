@@ -225,10 +225,11 @@ module.exports = {
   tableRowHoverBackgroundColor: 'rgba(255, 255, 255, 0.08)',
 
   //
-  // Movie
+  // Movie / Scene
 
   addMovieBackgroundColor: '#2a2a2a',
   movieBackgroundColor: '#2a2a2a',
+  sceneBackgroundColor: '#2a2a2a',
   searchIconContainerBackgroundColor: '#2b2b2b',
 
   //

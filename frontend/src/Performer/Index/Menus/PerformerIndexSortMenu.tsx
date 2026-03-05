@@ -36,6 +36,14 @@ function PerformerIndexSortMenu(props: PerformerIndexSortMenuProps) {
           {translate('Age')}
         </SortMenuItem>
         <SortMenuItem
+          name="country"
+          sortKey={sortKey}
+          sortDirection={sortDirection}
+          onPress={onSortSelect}
+        >
+          {translate('Country')}
+        </SortMenuItem>
+        <SortMenuItem
           name="ethnicity"
           sortKey={sortKey}
           sortDirection={sortDirection}

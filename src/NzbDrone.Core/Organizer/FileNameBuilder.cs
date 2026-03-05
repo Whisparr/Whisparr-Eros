@@ -553,7 +553,7 @@ namespace NzbDrone.Core.Organizer
         {
             tokenHandlers["{ImdbId}"] = m => movie.MovieMetadata.Value.ImdbId ?? string.Empty;
             tokenHandlers["{TmdbId}"] = m => movie.MovieMetadata.Value.TmdbId.ToString();
-            tokenHandlers["{StashId}"] = m => movie.MovieMetadata.Value.StashId;
+            tokenHandlers["{StashId}"] = m => movie.MovieMetadata.Value.StashId ?? string.Empty;
         }
 
         private void AddMovieFileTokens(Dictionary<string, Func<TokenMatch, string>> tokenHandlers, MovieFile movieFile, bool multipleTokens)

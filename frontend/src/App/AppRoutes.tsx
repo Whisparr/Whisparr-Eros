@@ -1,16 +1,16 @@
 import React from 'react';
 import { Redirect, Route } from 'react-router-dom';
 import Blocklist from 'Activity/Blocklist/Blocklist';
-import HistoryConnector from 'Activity/History/HistoryConnector';
+import History from 'Activity/History/History';
 import Queue from 'Activity/Queue/Queue';
-import AddNewMovieConnector from 'AddMovie/AddNewMovie/AddNewMovieConnector';
-import AddNewSceneConnector from 'AddMovie/AddNewMovie/AddNewSceneConnector';
+import AddNewMovie from 'AddMovie/AddNewMovie/AddNewMovie';
+import AddNewScene from 'AddMovie/AddNewMovie/AddNewScene';
 import ImportMovies from 'AddMovie/ImportMovie/ImportMovies';
 import CalendarPage from 'Calendar/CalendarPage';
 import CollectionConnector from 'Collection/CollectionConnector';
 import NotFound from 'Components/NotFound';
 import Switch from 'Components/Router/Switch';
-import MovieDetailsPageConnector from 'Movie/Details/MovieDetailsPageConnector';
+import MovieDetails from 'Movie/Details/MovieDetails';
 import MovieIndex from 'Movie/Index/MovieIndex';
 import AddNewPerformer from 'Performer/AddPerformer/AddNewPerformer';
 import PerformerDetails from 'Performer/Details/PerformerDetails';
@@ -77,9 +77,9 @@ function AppRoutes() {
 
       <Route path="/studios" component={StudioIndex} />
 
-      <Route path="/add/new/movie" component={AddNewMovieConnector} />
+      <Route path="/add/new/movie" component={AddNewMovie} />
 
-      <Route path="/add/new/scene" component={AddNewSceneConnector} />
+      <Route path="/add/new/scene" component={AddNewScene} />
 
       <Route path="/add/new/studio" component={AddNewStudio} />
 
@@ -87,7 +87,7 @@ function AppRoutes() {
 
       <Route path="/add/import" component={ImportMovies} />
 
-      <Route path="/movie/:titleSlug" component={MovieDetailsPageConnector} />
+      <Route path="/movie/:id" component={MovieDetails} />
 
       <Route
         path="/performer/:performerForeignId"
@@ -108,7 +108,7 @@ function AppRoutes() {
         Activity
       */}
 
-      <Route path="/activity/history" component={HistoryConnector} />
+      <Route path="/activity/history" component={History} />
 
       <Route path="/activity/queue" component={Queue} />
 

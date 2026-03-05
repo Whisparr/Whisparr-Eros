@@ -12,6 +12,7 @@ using NzbDrone.Core.MediaFiles;
 using NzbDrone.Core.MediaFiles.MovieImport.Aggregation;
 using NzbDrone.Core.MetadataSource;
 using NzbDrone.Core.Movies;
+using NzbDrone.Core.Movies.Credits;
 using NzbDrone.Core.Organizer;
 using NzbDrone.Core.Parser;
 using NzbDrone.Core.Parser.Model;
@@ -179,12 +180,14 @@ namespace Whisparr.Api.V3.Movies
 
             try
             {
-                movie.MovieMetadata = GetMetadata(newMovie);
+                var (metadata, credits) = GetMetadata(newMovie);
+                movie.MovieMetadata = metadata;
+                movie.MovieMetadata.Value.Credits = credits;
             }
-            catch (MovieNotFoundException)
+            catch (MovieNotFoundException ex)
             {
                 var source = string.IsNullOrEmpty(newMovie.ForeignId) ? "TMDb" : "StashDB";
-                _logger.Error("{1} was not found, it may have been removed from {0}. Path: {2}", source, newMovie.ForeignId, newMovie.Path);
+                _logger.Error(ex, "{ForeignId} was not found, it may have been removed from {Source}. Path: {Path}", newMovie.ForeignId, source, newMovie.Path);
 
                 throw new ValidationException(new List<ValidationFailure>
                                               {
@@ -197,27 +200,32 @@ namespace Whisparr.Api.V3.Movies
             return movie;
         }
 
-        private MovieMetadata GetMetadata(Movie movie)
+        private (MovieMetadata Metadata, List<Credit> Credits) GetMetadata(Movie movie)
         {
             if (int.TryParse(movie.ForeignId, out var tmdbId))
             {
-                return _movieInfo.GetMovieInfo(tmdbId).Item1;
+                var result = _movieInfo.GetMovieInfo(tmdbId);
+                return (result.Item1, result.Item4);
             }
             else if (movie.TmdbId > 0)
             {
-                return _movieInfo.GetMovieInfo(movie.TmdbId).Item1;
+                var result = _movieInfo.GetMovieInfo(movie.TmdbId);
+                return (result.Item1, result.Item4);
             }
             else if (movie.TpdbId.IsNotNullOrWhiteSpace())
             {
-                return _movieInfo.GetTpdbMovieInfo(movie.TpdbId).Item1;
+                var result = _movieInfo.GetTpdbMovieInfo(movie.TpdbId);
+                return (result.Item1, result.Item4);
             }
             else if (movie.ForeignId.StartsWith("tpdbid:"))
             {
-                return _movieInfo.GetTpdbMovieInfo(movie.ForeignId.Replace("tpdbid:", "")).Item1;
+                var result = _movieInfo.GetTpdbMovieInfo(movie.ForeignId.Replace("tpdbid:", ""));
+                return (result.Item1, result.Item4);
             }
             else
             {
-                return _movieInfo.GetSceneInfo(movie.ForeignId).Item1;
+                var result = _movieInfo.GetSceneInfo(movie.ForeignId);
+                return (result.Item1, result.Item4);
             }
         }
     }
