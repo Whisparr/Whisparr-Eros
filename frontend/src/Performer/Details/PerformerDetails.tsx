@@ -17,6 +17,7 @@ import PageToolbarButton from 'Components/Page/Toolbar/PageToolbarButton';
 import PageToolbarSection from 'Components/Page/Toolbar/PageToolbarSection';
 import PageToolbarSeparator from 'Components/Page/Toolbar/PageToolbarSeparator';
 import Tooltip from 'Components/Tooltip/Tooltip';
+import { useShowMovieMonitorToggleButton } from 'Helpers/Hooks/useShowMovieMonitorToggleButton';
 import { icons, kinds, sizes, tooltipPositions } from 'Helpers/Props';
 import {
   ASCENDING,
@@ -31,6 +32,7 @@ import QualityProfileName from 'Settings/Profiles/Quality/QualityProfileName';
 import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
 import formatDate from 'Utilities/Date/formatDate';
 import formatBytes from 'Utilities/Number/formatBytes';
+import countryCode from 'Utilities/String/countryCode';
 import firstCharToUpper from 'Utilities/String/firstCharToUpper';
 import translate from 'Utilities/String/translate';
 import EditPerformerModal from '../Edit/EditPerformerModal';
@@ -38,7 +40,6 @@ import PerformerDetailsLinks from './PerformerDetailsLinks';
 import PerformerDetailsYear from './PerformerDetailsYear';
 import PerformerTags from './PerformerTags';
 import {
-  useGeneralSettings,
   usePerformerDetails,
   usePerformerDetailsMovies,
   usePerformerScenesColumns,
@@ -57,7 +58,6 @@ function PerformerDetails() {
 
   const { shortDateFormat } = useSelector(createUISettingsSelector());
 
-  const generalSettings = useGeneralSettings();
   const {
     performer,
     isPerformerDetailsFetching,
@@ -67,6 +67,11 @@ function PerformerDetails() {
     onMonitorTogglePress,
     onYearRefreshPress,
   } = usePerformerDetails(performerForeignId);
+
+  const showMovieMonitorToggle = useShowMovieMonitorToggleButton(
+    performer?.tmdbId,
+    performer?.tpdbId
+  );
 
   const { data: movies = [] } = usePerformerDetailsMovies(performerForeignId);
   const years = Array.from(
@@ -213,13 +218,6 @@ function PerformerDetails() {
     year,
     movies: movies.filter((m) => m.year === year),
   }));
-  const showMovieMonitorToggle = () => {
-    const source = generalSettings.whisparrMovieMetadataSource;
-    return (
-      (source?.toLowerCase() === 'tmdb' && tmdbId && tmdbId > 0) ||
-      (source?.toLowerCase() === 'tpdb' && tpdbId && tpdbId.length > 0)
-    );
-  };
 
   // Handlers
   function handleDeleteMovieModalClose() {
@@ -325,7 +323,7 @@ function PerformerDetails() {
                       onPress={handleMonitorTogglePress}
                     />
 
-                    {showMovieMonitorToggle() ? (
+                    {showMovieMonitorToggle ? (
                       <MonitorToggleButton
                         className={
                           moviesMonitored
@@ -354,6 +352,7 @@ function PerformerDetails() {
                       className={styles.country}
                       code={flagIconCode}
                       height={38}
+                      title={countryCode(country)}
                     />
                   )}
                 </div>
@@ -560,6 +559,7 @@ function PerformerDetails() {
         <EditPerformerModal
           isOpen={isEditMovieModalOpen}
           performer={performer}
+          showMovieMonitor={showMovieMonitorToggle}
           onModalClose={handleEditMovieModalClose}
         />
       </PageContentBody>

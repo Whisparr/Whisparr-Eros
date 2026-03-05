@@ -30,13 +30,11 @@ function SelectMovieRow({
         {performers}
       </VirtualTableRowCell>
 
-      <VirtualTableRowCell className={styles.releaseDate}>
-        <RelativeDateCell
-          key={title}
-          date={releaseDate}
-          className={styles.releaseDate}
-        />
-      </VirtualTableRowCell>
+      <RelativeDateCell
+        date={releaseDate}
+        className={styles.releaseDate}
+        component={VirtualTableRowCell}
+      />
     </>
   );
 }

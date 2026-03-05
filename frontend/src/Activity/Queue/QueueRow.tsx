@@ -106,7 +106,7 @@ function QueueRow(props: QueueRowProps) {
   } = props;
 
   const dispatch = useDispatch();
-  const movie = useMovie(movieId);
+  const { data: movie } = useMovie(movieId);
   const { showRelativeDates, shortDateFormat, timeFormat } = useSelector(
     createUISettingsSelector()
   );
@@ -190,7 +190,7 @@ function QueueRow(props: QueueRowProps) {
             <TableRowCell key={name}>
               {movie ? (
                 <MovieTitleLink
-                  foreignId={movie.foreignId}
+                  titleSlug={movie.titleSlug}
                   title={movie.title}
                 />
               ) : (

@@ -23,7 +23,7 @@ function PerformerIndexTable({
   isSelectMode,
   columns,
   onSortPress,
-}: PerformerIndexTableProps) {
+}: Readonly<PerformerIndexTableProps>) {
   return (
     <Table
       columns={columns}

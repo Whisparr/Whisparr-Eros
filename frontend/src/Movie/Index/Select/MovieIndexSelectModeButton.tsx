@@ -6,6 +6,7 @@ type MovieIndexSelectModeButtonProps = React.ComponentProps<
   typeof PageToolbarButton
 > & {
   isSelectMode: boolean;
+  isDisabled?: boolean;
   onPress: () => void;
   // Keep `any` here to match `PageToolbarButton`'s `overflowComponent` type
   // and avoid creating an intersection type that breaks assignment.
@@ -14,13 +15,20 @@ type MovieIndexSelectModeButtonProps = React.ComponentProps<
 };
 
 function MovieIndexSelectModeButton(props: MovieIndexSelectModeButtonProps) {
-  const { label, iconName, isSelectMode, overflowComponent, onPress } = props;
+  const {
+    label,
+    iconName,
+    isSelectMode,
+    isDisabled,
+    overflowComponent,
+    onPress,
+  } = props;
   const [, selectDispatch] = useSelect();
 
   const onPressWrapper = useCallback(() => {
     if (isSelectMode) {
       selectDispatch({
-        type: 'reset',
+        type: 'unselectAll',
       });
     }
 
@@ -32,6 +40,7 @@ function MovieIndexSelectModeButton(props: MovieIndexSelectModeButtonProps) {
       label={label}
       iconName={iconName}
       overflowComponent={overflowComponent}
+      isDisabled={isDisabled}
       onPress={onPressWrapper}
     />
   );

@@ -110,6 +110,14 @@ export const defaultState = {
 
     },
     {
+      name: 'country',
+      label: () => translate('Country'),
+      isSortable: true,
+      isVisible: false,
+      isModifiable: true
+
+    },
+    {
       name: 'careerStart',
       label: () => translate('CareerStart'),
       isSortable: true,
@@ -280,6 +288,12 @@ export const defaultState = {
       name: 'age',
       label: () => translate('Age'),
       type: filterBuilderTypes.NUMBER,
+      valueType: filterBuilderValueTypes.DEFAULT
+    },
+    {
+      name: 'country',
+      label: () => translate('Country'),
+      type: filterBuilderTypes.STRING,
       valueType: filterBuilderValueTypes.DEFAULT
     },
     {

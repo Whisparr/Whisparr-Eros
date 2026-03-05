@@ -47,6 +47,7 @@ function SceneIndexOverviewOptionsModalContent(
   const {
     detailedProgressBar,
     size,
+    pageSize,
     showMonitored,
     showStudio,
     showQualityProfile,
@@ -72,6 +73,22 @@ function SceneIndexOverviewOptionsModalContent(
       <ModalBody>
         <Form>
           <FormGroup>
+            <FormLabel>{translate('TablePageSize')}</FormLabel>
+            <FormInputGroup
+              type={inputTypes.NUMBER}
+              name="pageSize"
+              value={pageSize}
+              min={10}
+              max={1000}
+              helpText={translate('TablePageSizeHelpText')}
+              helpTextWarning={translate('TablePageSizeMinMaxHelpText', {
+                min: 10,
+                max: 1000,
+              })}
+              onChange={onOverviewOptionChange}
+            />
+          </FormGroup>{' '}
+          <FormGroup>
             <FormLabel>{translate('PosterSize')}</FormLabel>
 
             <FormInputGroup
@@ -82,7 +99,6 @@ function SceneIndexOverviewOptionsModalContent(
               onChange={onOverviewOptionChange}
             />
           </FormGroup>
-
           <FormGroup>
             <FormLabel>{translate('DetailedProgressBar')}</FormLabel>
 
@@ -94,7 +110,6 @@ function SceneIndexOverviewOptionsModalContent(
               onChange={onOverviewOptionChange}
             />
           </FormGroup>
-
           <FormGroup>
             <FormLabel>{translate('ShowMonitored')}</FormLabel>
 
@@ -105,7 +120,6 @@ function SceneIndexOverviewOptionsModalContent(
               onChange={onOverviewOptionChange}
             />
           </FormGroup>
-
           <FormGroup>
             <FormLabel>{translate('ShowStudio')}</FormLabel>
 
@@ -116,7 +130,6 @@ function SceneIndexOverviewOptionsModalContent(
               onChange={onOverviewOptionChange}
             />
           </FormGroup>
-
           <FormGroup>
             <FormLabel>{translate('ShowQualityProfile')}</FormLabel>
 
@@ -127,7 +140,6 @@ function SceneIndexOverviewOptionsModalContent(
               onChange={onOverviewOptionChange}
             />
           </FormGroup>
-
           <FormGroup>
             <FormLabel>{translate('ShowDateAdded')}</FormLabel>
 
@@ -138,7 +150,6 @@ function SceneIndexOverviewOptionsModalContent(
               onChange={onOverviewOptionChange}
             />
           </FormGroup>
-
           <FormGroup>
             <FormLabel>{translate('ShowPath')}</FormLabel>
 
@@ -149,7 +160,6 @@ function SceneIndexOverviewOptionsModalContent(
               onChange={onOverviewOptionChange}
             />
           </FormGroup>
-
           <FormGroup>
             <FormLabel>{translate('ShowSizeOnDisk')}</FormLabel>
 
@@ -160,7 +170,6 @@ function SceneIndexOverviewOptionsModalContent(
               onChange={onOverviewOptionChange}
             />
           </FormGroup>
-
           <FormGroup>
             <FormLabel>{translate('ShowSearch')}</FormLabel>
 

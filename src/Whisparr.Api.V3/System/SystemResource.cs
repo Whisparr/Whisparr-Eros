@@ -39,5 +39,9 @@ namespace Whisparr.Api.V3.System
         public string PackageAuthor { get; set; }
         public UpdateMechanism PackageUpdateMechanism { get; set; }
         public string PackageUpdateMechanismMessage { get; set; }
+        public int MovieCount { get; set; }
+        public int SceneCount { get; set; }
+        public int PerformerCount { get; set; }
+        public int StudioCount { get; set; }
     }
 }

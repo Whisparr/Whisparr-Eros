@@ -1,6 +1,11 @@
 $hoverScale: 1.05;
 
 .content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  margin-bottom: 10px;
+  background-color: var(--movieBackgroundColor);
   transition: all 200ms ease-in;
 
   &:hover {
@@ -23,6 +28,7 @@ $hoverScale: 1.05;
   position: relative;
   display: block;
   background-color: var(--defaultColor);
+  object-fit: cover;
 }
 
 .overlayTitle {
@@ -42,9 +48,12 @@ $hoverScale: 1.05;
 
 .title {
   @add-mixin truncate;
-
-  background-color: var(--movieBackgroundColor);
+  overflow: hidden;
+  width: 100%;
+  background-color: var(--sceneBackgroundColor);
   text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: $smallFontSize;
 }
 
@@ -98,7 +107,7 @@ $hoverScale: 1.05;
   height: 0;
   border-width: 0 25px 25px 0;
   border-style: solid;
-  border-color: transparent var(--gray) transparent transparent;
+  border-color: transparent var(--dangerColor) transparent transparent;
   color: var(--white);
 }
 
@@ -126,3 +135,4 @@ $hoverScale: 1.05;
   text-align: center;
   font-size: $smallFontSize;
 }
+

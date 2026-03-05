@@ -26,11 +26,11 @@ interface CutoffUnmetRowProps {
 
 function CutoffUnmetRow({
   id,
-  foreignId,
   movieFileId,
   releaseDate,
   lastSearchTime,
   title,
+  titleSlug,
   year,
   isSelected,
   columns,
@@ -58,7 +58,7 @@ function CutoffUnmetRow({
         if (name === 'movieMetadata.sortTitle') {
           return (
             <TableRowCell key={name}>
-              <MovieTitleLink foreignId={foreignId} title={title} />
+              <MovieTitleLink titleSlug={titleSlug} title={title} />
             </TableRowCell>
           );
         }
@@ -90,23 +90,13 @@ function CutoffUnmetRow({
         if (name === 'status') {
           return (
             <TableRowCell key={name} className={styles.status}>
-              <MovieStatus
-                movieId={id}
-                movieFileId={movieFileId}
-                movieEntity="wanted.cutoffUnmet"
-              />
+              <MovieStatus movieId={id} movieFileId={movieFileId} />
             </TableRowCell>
           );
         }
 
         if (name === 'actions') {
-          return (
-            <MovieSearchCell
-              key={name}
-              movieId={id}
-              movieEntity="wanted.cutoffUnmet"
-            />
-          );
+          return <MovieSearchCell key={name} movieId={id} />;
         }
 
         return null;

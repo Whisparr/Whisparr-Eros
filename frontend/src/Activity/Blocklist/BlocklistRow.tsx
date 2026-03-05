@@ -42,7 +42,7 @@ function BlocklistRow(props: BlocklistRowProps) {
     onSelectedChange,
   } = props;
 
-  const movie = useMovie(movieId);
+  const { data: movie } = useMovie(movieId);
   const dispatch = useDispatch();
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
@@ -80,7 +80,7 @@ function BlocklistRow(props: BlocklistRowProps) {
         if (name === 'movieMetadata.sortTitle') {
           return (
             <TableRowCell key={name}>
-              <MovieTitleLink foreignId={movie.foreignId} title={movie.title} />
+              <MovieTitleLink titleSlug={movie.titleSlug} title={movie.title} />
             </TableRowCell>
           );
         }

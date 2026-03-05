@@ -8,7 +8,6 @@ import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import Movie from 'Movie/Movie';
 import Performer from 'Performer/Performer';
 import { executeCommand } from 'Store/Actions/commandActions';
-import { fetchGeneralSettings } from 'Store/Actions/Settings/general';
 
 const PATH = 'performer';
 
@@ -17,7 +16,6 @@ export const usePerformerDetails = (foreignId: string) => {
   const [isManualRefresh, setIsManualRefresh] = useState(false);
   const prevPerformerRef = useRef<Performer | undefined>();
 
-  // Lookup performer by foreignId using useQuery
   const {
     data: performer,
     error: performerDetailsError,
@@ -56,6 +54,7 @@ export const usePerformerDetails = (foreignId: string) => {
     },
   });
 
+  // TODO: Move to useApiQuery
   function onRefreshPress() {
     if (!performerId) return;
     setIsManualRefresh(true);
@@ -67,6 +66,7 @@ export const usePerformerDetails = (foreignId: string) => {
     );
   }
 
+  // TODO: Move to useApiQuery
   function onYearRefreshPress(ids: number[]) {
     if (!performerId) return;
     setIsManualRefresh(true);
@@ -90,6 +90,7 @@ export const usePerformerDetails = (foreignId: string) => {
     prevPerformerRef.current = performer;
   }, [performer, isManualRefresh]);
 
+  // TODO: Move to useApiQuery
   function onSearchPress() {
     if (!performerId) return;
     dispatch(
@@ -115,6 +116,7 @@ export const usePerformerDetails = (foreignId: string) => {
     monitorToggleMutation.mutate(updatedPerformer);
   }
 
+  // TODO: Move to useApiQuery
   function searchMoviesByIds(movieIds: number[]) {
     if (!movieIds || movieIds.length === 0) return;
     for (const id of movieIds) {
@@ -135,10 +137,7 @@ export const usePerformerDetails = (foreignId: string) => {
       monitorToggleMutation.isPending ||
       isManualRefresh,
     isManualRefresh,
-    performerDetailsError:
-      performerDetailsError ||
-      performerDetailsError ||
-      monitorToggleMutation.error,
+    performerDetailsError: performerDetailsError || monitorToggleMutation.error,
     onRefreshPress,
     onYearRefreshPress,
     onSearchPress,
@@ -146,17 +145,6 @@ export const usePerformerDetails = (foreignId: string) => {
     searchMoviesByIds,
   };
 };
-
-// Used to fetch general.whisparrMovieMetadataSource setting
-export function useGeneralSettings() {
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    dispatch(fetchGeneralSettings());
-  }, [dispatch]);
-
-  return useSelector((state: AppState) => state.settings.general.item);
-}
 
 export function usePerformerDetailsMovies(performerForeignId: string) {
   return useApiQuery<Movie[]>({

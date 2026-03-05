@@ -11,5 +11,6 @@ namespace Whisparr.Api.V3.Search
         public MovieResource Movie { get; set; }
         public PerformerResource Performer { get; set; }
         public Studios.StudioResource Studio { get; set; }
+        public bool isExisting { get; set; }
     }
 }

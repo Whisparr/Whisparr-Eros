@@ -19,6 +19,7 @@ interface MissingRowProps {
   physicalRelease?: string;
   lastSearchTime?: string;
   title: string;
+  titleSlug: string;
   year: number;
   releaseDate?: string;
   isSelected?: boolean;
@@ -28,11 +29,11 @@ interface MissingRowProps {
 
 function MissingRow({
   id,
-  foreignId,
   movieFileId,
   releaseDate,
   lastSearchTime,
   title,
+  titleSlug,
   year,
   isSelected,
   columns,
@@ -60,7 +61,7 @@ function MissingRow({
         if (name === 'movieMetadata.sortTitle') {
           return (
             <TableRowCell key={name}>
-              <MovieTitleLink foreignId={foreignId} title={title} />
+              <MovieTitleLink titleSlug={titleSlug} title={title} />
             </TableRowCell>
           );
         }
@@ -92,23 +93,13 @@ function MissingRow({
         if (name === 'status') {
           return (
             <TableRowCell key={name} className={styles.status}>
-              <MovieStatus
-                movieId={id}
-                movieFileId={movieFileId}
-                movieEntity="wanted.missing"
-              />
+              <MovieStatus movieId={id} movieFileId={movieFileId} />
             </TableRowCell>
           );
         }
 
         if (name === 'actions') {
-          return (
-            <MovieSearchCell
-              key={name}
-              movieId={id}
-              movieEntity="wanted.missing"
-            />
-          );
+          return <MovieSearchCell key={name} movieId={id} />;
         }
 
         return null;

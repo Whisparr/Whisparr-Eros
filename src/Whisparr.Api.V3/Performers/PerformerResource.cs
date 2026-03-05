@@ -17,8 +17,14 @@ namespace Whisparr.Api.V3.Performers
         /// <summary>The performer's name</summary>
         public string Name { get; set; }
 
+        /// <summary>List of alternative names or aliases for the performer</summary>
+        public List<string> Aliases { get; set; }
+
         /// <summary>The performer's gender</summary>
         public Gender Gender { get; set; }
+
+        /// <summary>Gets or sets the eye color of the person.</summary>
+        public EyeColor? EyeColor { get; set; }
 
         /// <summary>The performer's hair color (optional)</summary>
         public HairColor? HairColor { get; set; }
@@ -28,6 +34,29 @@ namespace Whisparr.Api.V3.Performers
 
         /// <summary>The performer's country of origin (optional)  ISO 3166 codes</summary>
         public string Country { get; set; }
+
+        /// <summary>The performer's eye color (optional)</summary>
+        public EyeColor? EyesColor { get; set; }
+
+        public HairColor? HairColour { get; set; }
+
+        /// <summary>The performer's height in centimeters (optional)</summary>
+        public int? Height { get; set; }
+
+        /// <summary>The performer's cup size (optional)</summary>
+        public string CupSize { get; set; }
+
+        /// <summary>The performer's band size (optional)</summary>
+        public int? BandSize { get; set; }
+
+        /// <summary>The performer's waist size in centimeters (optional)</summary>
+        public int? WaistSize { get; set; }
+
+        /// <summary>The performer's hip size in centimeters (optional)</summary>
+        public int? HipSize { get; set; }
+
+        /// <summary>The performer's breast type (optional)</summary>
+        public BreastTypeEnum BreastType { get; set; }
 
         /// <summary>The performer's career status (active, retired, etc.)</summary>
         public PerformerStatus Status { get; set; }
@@ -41,8 +70,17 @@ namespace Whisparr.Api.V3.Performers
         /// <summary>The performer's birth date (optional)</summary>
         public DateTime? BirthDate { get; set; }
 
+        /// <summary>The performer's death date (optional)</summary>
+        public DateTime? DeathDate { get; set; }
+
         /// <summary>Current age of the performer (optional)</summary>
         public int? Age { get; set; }
+
+        /// <summary>List of the performer's tattoos (optional)</summary>
+        public List<string> Tattoos { get; set; }
+
+        /// <summary>List of the performer's piercings (optional)</summary>
+        public List<string> Piercings { get; set; }
 
         /// <summary>External foreign ID from metadata source (e.g., StashDB ID)</summary>
         public string ForeignId { get; set; }
@@ -139,13 +177,23 @@ namespace Whisparr.Api.V3.Performers
                 Gender = model.Gender,
                 Age = model.Age,
                 BirthDate = model.BirthDate,
+                DeathDate = model.DeathDate,
                 Ethnicity = model.Ethnicity,
                 Country = model.Country,
+                EyeColor = model.EyeColor,
+                HairColor = model.HairColor,
+                Height = model.Height,
+                CupSize = model.CupSize,
+                BandSize = model.BandSize,
+                WaistSize = model.WaistSize,
+                HipSize = model.HipSize,
+                BreastType = model.BreastType,
                 Status = model.Status,
                 CareerStart = model.CareerStart,
                 CareerEnd = model.CareerEnd,
                 Name = model.Name,
                 FullName = fullname,
+                Aliases = model.Aliases,
                 Monitored = model.Monitored,
                 MoviesMonitored = model.MoviesMonitored,
                 Images = model.Images,

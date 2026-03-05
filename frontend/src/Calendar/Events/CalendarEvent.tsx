@@ -7,7 +7,7 @@ import getStatusStyle from 'Calendar/getStatusStyle';
 import Icon from 'Components/Icon';
 import Link from 'Components/Link/Link';
 import { icons, kinds } from 'Helpers/Props';
-import useMovieFile from 'MovieFile/useMovieFile';
+import { useSingleMovieFile } from 'MovieFile/useMovieFile';
 import { createQueueItemSelectorForHook } from 'Store/Selectors/createQueueItemSelector';
 import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
 import translate from 'Utilities/String/translate';
@@ -47,7 +47,7 @@ function CalendarEvent({
   hasFile,
   grabbed,
 }: CalendarEventProps) {
-  const movieFile = useMovieFile(movieFileId);
+  const { data: movieFile } = useSingleMovieFile(movieFileId);
   const queueItem = useSelector(createQueueItemSelectorForHook(id));
 
   const { enableColorImpairedMode } = useSelector(createUISettingsSelector());

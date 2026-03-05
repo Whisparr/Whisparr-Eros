@@ -11,7 +11,7 @@ using NzbDrone.Core.Parser;
 
 namespace NzbDrone.Core.Movies.Performers
 {
-    public interface IPerformerService : IHandleAsync<PerformerUpdatedEvent>
+    public interface IPerformerService : IHandle<PerformerUpdatedEvent>
     {
         Performer AddPerformer(Performer performer);
         List<Performer> AddPerformers(List<Performer> performers);
@@ -25,8 +25,8 @@ namespace NzbDrone.Core.Movies.Performers
         Performer Update(Performer performer);
         List<Performer> Update(List<Performer> performers);
         void RemovePerformer(Performer performer);
-
         PagingSpec<Performer> Paged(PagingSpec<Performer> pagingSpec);
+        public int Count();
     }
 
     public class PerformerService : IPerformerService
@@ -161,6 +161,11 @@ namespace NzbDrone.Core.Movies.Performers
             return _performerRepo.GetPaged(pagingSpec);
         }
 
+        public int Count()
+        {
+            return _performerRepo.Count();
+        }
+
         private void RemovePerformerResourcesCache(string cacheKey)
         {
             var movieResourcesCache = _cacheManager.FindCache(_cacheName);
@@ -170,7 +175,7 @@ namespace NzbDrone.Core.Movies.Performers
             }
         }
 
-        public void HandleAsync(PerformerUpdatedEvent message)
+        public void Handle(PerformerUpdatedEvent message)
         {
             var movies = _movieService.GetByPerformerForeignId(message.Performer.ForeignId);
             var ids = movies.Select(x => x.Id).ToList();

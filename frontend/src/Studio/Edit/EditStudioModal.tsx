@@ -19,7 +19,7 @@ function EditStudioModal({
   onModalClose,
   studio,
   ...otherProps
-}: EditStudioModalProps) {
+}: Readonly<EditStudioModalProps>) {
   const dispatch = useDispatch();
   const modalData = useEditStudioModal(studio);
   const prevIsSavingRef = useRef(modalData.isSaving);
@@ -49,6 +49,7 @@ function EditStudioModal({
         images={modalData.images}
         overview={modalData.overview}
         item={modalData.item}
+        showMovieMonitor={modalData.showMovieMonitor}
         isSaving={modalData.isSaving}
         saveError={modalData.saveError}
         isPathChanging={modalData.isPathChanging}

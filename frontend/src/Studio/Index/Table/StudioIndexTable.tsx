@@ -23,7 +23,7 @@ function StudioIndexTable({
   isSelectMode,
   columns,
   onSortPress,
-}: StudioIndexTableProps) {
+}: Readonly<StudioIndexTableProps>) {
   return (
     <Table
       columns={columns}

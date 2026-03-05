@@ -3,6 +3,20 @@ $hoverScale: 1.05;
 .content {
   display: flex;
   flex-grow: 1;
+  margin-bottom: 10px;
+  background-color: var(--movieBackgroundColor);
+  transition: all 200ms ease-in;
+
+  &:hover {
+    z-index: 2;
+    box-shadow: 0 0 12px var(--black);
+    transition: all 200ms ease-in;
+
+    .controls {
+      opacity: 0.9;
+      transition: opacity 200ms linear 150ms;
+    }
+  }
 }
 
 .poster {

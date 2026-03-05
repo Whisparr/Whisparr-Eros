@@ -98,6 +98,11 @@ namespace Whisparr.Api.V3.Movies
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         [SwaggerIgnore]
         public bool IsExcluded { get; set; }
+
+        // Hiding this so people don't think its usable (only used for searches)
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        [SwaggerIgnore]
+        public bool IsExisting { get; set; }
     }
 
     public static class MovieResourceMapper
@@ -114,6 +119,9 @@ namespace Whisparr.Api.V3.Movies
             var movieFile = model.MovieFile?.ToResource(model, upgradableSpecification, formatCalculationService);
 
             var collection = model.MovieMetadata.Value.CollectionTmdbId > 0 ? new MovieCollectionResource { Title = model.MovieMetadata.Value.CollectionTitle, TmdbId = model.MovieMetadata.Value.CollectionTmdbId } : null;
+
+            // Convert to tmdb: if TmdbId is present, to allow GetMovieById(string id) to be used.
+            var titleSlug = model.TmdbId > 0 ? $"tmdb:{model.TmdbId}" : model.MovieMetadata.Value.ForeignId;
 
             return new MovieResource
             {
@@ -150,7 +158,7 @@ namespace Whisparr.Api.V3.Movies
                 Runtime = model.MovieMetadata.Value.Runtime,
                 CleanTitle = model.MovieMetadata.Value.CleanTitle,
                 ImdbId = model.ImdbId,
-                TitleSlug = model.MovieMetadata.Value.ForeignId.ToString(),
+                TitleSlug = titleSlug,
                 RootFolderPath = model.RootFolderPath,
                 Website = model.MovieMetadata.Value.Website,
                 Genres = model.MovieMetadata.Value.Genres,
@@ -195,10 +203,12 @@ namespace Whisparr.Api.V3.Movies
                     Website = resource.Website,
                     Ratings = resource.Ratings,
                     StudioTitle = resource.StudioTitle,
+                    StudioForeignId = resource.StudioForeignId,
                     Runtime = resource.Runtime,
                     CleanTitle = resource.CleanTitle,
                     ImdbId = resource.ImdbId,
                     TpdbId = resource.TpdbId,
+                    StashId = resource.StashId,
                     ItemType = resource.ItemType
                 },
 

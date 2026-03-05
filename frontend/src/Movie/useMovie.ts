@@ -1,26 +1,97 @@
-import { useSelector } from 'react-redux';
-import { createSelector } from 'reselect';
-import AppState from 'App/State/AppState';
+import { useMutation } from '@tanstack/react-query';
+import { queryClient } from 'App/queryClient';
+import useApiQuery from 'Helpers/Hooks/useApiQuery';
+import fetchJson, { ApiError } from '../Utilities/Fetch/fetchJson';
+import Movie, { MoviePatchResource } from './Movie';
 
-export type MovieEntity =
-  | 'calendar'
-  | 'movies'
-  | 'interactiveImport.movies'
-  | 'wanted.cutoffUnmet'
-  | 'wanted.missing';
+// Shared auth headers for all API calls
+const AUTH_HEADERS = {
+  'X-Api-Key': window.Whisparr.apiKey,
+  'X-Whisparr-Client': 'Whisparr',
+};
+const apiRoot = '/api/v3';
 
-export function createMovieSelector(movieId?: number) {
-  return createSelector(
-    (state: AppState) => state.movies.itemMap,
-    (state: AppState) => state.movies.items,
-    (itemMap, allMovies) => {
-      return movieId ? allMovies[itemMap[movieId]] : undefined;
-    }
-  );
+function apiPut<T, TBody>(path: string, body: TBody) {
+  return fetchJson<T, TBody>({
+    path: `${apiRoot}${path}`,
+    method: 'PUT',
+    body,
+    headers: AUTH_HEADERS,
+  });
 }
 
-function useMovie(movieId: number | undefined) {
-  return useSelector(createMovieSelector(movieId));
+function apiPatch<T, TBody>(path: string, body: TBody) {
+  return fetchJson<T, TBody>({
+    path: `${apiRoot}${path}`,
+    method: 'PATCH',
+    body,
+    headers: AUTH_HEADERS,
+  });
+}
+
+// Fetch a single movie by titleSlug or movieId
+export function useMovie(titleSlug: string | number | undefined) {
+  return useApiQuery<Movie | undefined>({
+    path: `/movie/${titleSlug}`,
+    queryOptions: { enabled: !!titleSlug },
+  });
+}
+
+// Fetch multiple movies by foreignIds
+export function useMoviesByForeignIds(foreignIds: string[] | undefined) {
+  return useApiQuery<Movie[]>({
+    method: 'POST',
+    path: '/moviesByForeignIds',
+    queryOptions: { enabled: !!foreignIds && foreignIds.length > 0 },
+    queryParams: { foreignIds },
+  });
+}
+
+// TODO: Move to useApiMutation
+export function useToggleMovieMonitored() {
+  return useMutation({
+    mutationFn: ({ movie, monitored }: { movie: Movie; monitored: boolean }) =>
+      apiPatch<Movie, MoviePatchResource>(`/movie/${movie.id}`, {
+        id: movie.id,
+        monitored,
+      }),
+    onSuccess: (data) => {
+      queryClient.setQueryData([`/movie/${data.titleSlug}`], data);
+    },
+  });
+}
+
+// TODO: Move to useApiMutation
+export function useSaveMovie() {
+  return useMutation<Movie, ApiError, { movie: Movie; moveFiles?: boolean }>({
+    mutationFn: ({
+      movie,
+      moveFiles = false,
+    }: {
+      movie: Movie;
+      moveFiles?: boolean;
+    }) => {
+      const url = moveFiles
+        ? `/movie/${movie.id}?moveFiles=true`
+        : `/movie/${movie.id}`;
+      return apiPut<Movie, Movie>(url, movie);
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData([`/movie/${data.titleSlug}`], data);
+      queryClient.invalidateQueries({ queryKey: ['/movie/paged'] });
+    },
+    onError: (error) => {
+      console.error('useSaveMovie error', error);
+    },
+  });
+}
+
+export function useSearchMovie(query: string, limit: number = 10) {
+  return useApiQuery<Movie[]>({
+    path: `/movie/search`,
+    queryParams: { query, limit },
+    queryOptions: { enabled: !!query && query.length > 2 },
+  });
 }
 
 export default useMovie;

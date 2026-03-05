@@ -26,7 +26,7 @@ namespace NzbDrone.Core.Housekeeping.Housekeepers
             var usedTags = new[]
                 {
                     "Movies", "Notifications", "DelayProfiles", "ReleaseProfiles", "ImportLists", "Indexers",
-                    "AutoTagging", "DownloadClients"
+                    "AutoTagging", "DownloadClients", "Studios", "Performers"
                 }
                 .SelectMany(v => GetUsedTags(v, mapper))
                 .Concat(GetAutoTaggingTagSpecificationTags(mapper))

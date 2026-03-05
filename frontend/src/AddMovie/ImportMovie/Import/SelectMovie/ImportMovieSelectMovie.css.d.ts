@@ -7,6 +7,8 @@ interface CssExports {
   'dropdownArrowContainer': string;
   'existing': string;
   'loading': string;
+  'noMatches': string;
+  'results': string;
   'searchContainer': string;
   'searchIconContainer': string;
   'searchInput': string;

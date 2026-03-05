@@ -1,7 +1,7 @@
 import React from 'react';
 import getLanguageName from 'Utilities/String/getLanguageName';
 import translate from 'Utilities/String/translate';
-import useMovieFile from './useMovieFile';
+import { useSingleMovieFile } from './useMovieFile';
 
 function formatLanguages(languages: string | undefined) {
   if (!languages) {
@@ -43,7 +43,7 @@ interface MediaInfoProps {
 }
 
 function MediaInfo({ movieFileId, type }: MediaInfoProps) {
-  const movieFile = useMovieFile(movieFileId);
+  const { data: movieFile } = useSingleMovieFile(movieFileId);
 
   if (!movieFile?.mediaInfo) {
     return null;

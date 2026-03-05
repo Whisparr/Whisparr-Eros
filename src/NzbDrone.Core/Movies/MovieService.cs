@@ -35,6 +35,7 @@ namespace NzbDrone.Core.Movies
         Movie FindByImdbId(string imdbid);
         Movie FindByTmdbId(int tmdbid);
         Movie FindByForeignId(string foreignId);
+        List<Movie> FindByForeignIds(List<string> foreignIds);
         Movie FindByTitle(string title);
         Movie FindByTitle(string title, int year);
         Movie FindByTitle(List<string> titles, int? year, List<string> otherTitles, List<Movie> candidates);
@@ -292,6 +293,11 @@ namespace NzbDrone.Core.Movies
         public Movie FindByForeignId(string foreignId)
         {
             return _movieRepository.FindByForeignId(foreignId);
+        }
+
+        public List<Movie> FindByForeignIds(List<string> foreignIds)
+        {
+            return _movieRepository.FindByForeignIds(foreignIds);
         }
 
         /// <summary> Find a movie by its file system path. </summary>

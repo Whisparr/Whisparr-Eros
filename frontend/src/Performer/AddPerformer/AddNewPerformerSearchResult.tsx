@@ -9,6 +9,7 @@ import MovieHeadshot from 'Movie/MovieHeadshot';
 import PerformerDetailsLinks from 'Performer/Details/PerformerDetailsLinks';
 import Performer from 'Performer/Performer';
 import PerformerGenderIcon from 'Performer/PerformerGenderIcon';
+import countryCode from 'Utilities/String/countryCode';
 import firstCharToUpper from 'Utilities/String/firstCharToUpper';
 import translate from 'Utilities/String/translate';
 import AddNewPerformerModal from './AddNewPerformerModal';
@@ -86,6 +87,7 @@ function AddNewPerformerSearchResult({
                 className={styles.country}
                 code={flagIconCode}
                 height={36}
+                title={countryCode(country)}
               />
             )}
             <div className={styles.icons}>

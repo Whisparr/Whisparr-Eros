@@ -7,10 +7,7 @@ import {
 } from 'Helpers/Props/sortDirections';
 import Movie from 'Movie/Movie';
 import { executeCommand } from 'Store/Actions/commandActions';
-import {
-  bulkMonitorMovie,
-  toggleMovieMonitored,
-} from 'Store/Actions/movieActions';
+import { bulkMonitorMovie } from 'Store/Actions/movieActions';
 import {
   setPerformerScenesSort,
   setPerformerScenesTableOption,
@@ -31,10 +28,6 @@ export function usePerformerDetailsYearActions() {
         movieIds: monitoredMovieIds,
       })
     );
-  }
-
-  function monitorMovie(movieId: number, monitored: boolean) {
-    dispatch(toggleMovieMonitored({ movieId, monitored }));
   }
 
   function bulkMonitor(movies: Movie[]) {
@@ -73,7 +66,6 @@ export function usePerformerDetailsYearActions() {
 
   return {
     searchMonitoredMovies,
-    monitorMovie,
     bulkMonitor,
     tableOptionChange,
     sortPress,

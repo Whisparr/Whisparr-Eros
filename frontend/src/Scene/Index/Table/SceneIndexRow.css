@@ -25,16 +25,16 @@
   text-overflow: ellipsis;
 }
 
-.studio {
+.studioTitle {
   composes: cell;
 
   flex: 2 0 90px;
 }
 
-.studio>a:link,
-.studio>a:visited,
-.studio>a:hover,
-.studio>a:active {
+.studioTitle>a:link,
+.studioTitle>a:visited,
+.studioTitle>a:hover,
+.studioTitle>a:active {
   color: var(--defaultColor);
 }
 

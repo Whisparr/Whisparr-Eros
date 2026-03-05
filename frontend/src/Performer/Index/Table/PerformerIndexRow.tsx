@@ -8,6 +8,7 @@ import TableRowCell from 'Components/Table/Cells/TableRowCell';
 import VirtualTableSelectCell from 'Components/Table/Cells/VirtualTableSelectCell';
 import Column from 'Components/Table/Column';
 import Tooltip from 'Components/Tooltip/Tooltip';
+import { useShowMovieMonitorToggleButton } from 'Helpers/Hooks/useShowMovieMonitorToggleButton';
 import { icons, kinds } from 'Helpers/Props';
 import PerformerDetailsLinks from 'Performer/Details/PerformerDetailsLinks';
 import EditPerformerModal from 'Performer/Edit/EditPerformerModal';
@@ -16,6 +17,7 @@ import PerformerNameLink from 'Performer/PerformerNameLink';
 import QualityProfileName from 'Settings/Profiles/Quality/QualityProfileName';
 import { SelectStateInputProps } from 'typings/props';
 import formatBytes from 'Utilities/Number/formatBytes';
+import countryCode from 'Utilities/String/countryCode';
 import firstCharToUpper from 'Utilities/String/firstCharToUpper';
 import translate from 'Utilities/String/translate';
 import styles from './PerformerIndexRow.css';
@@ -36,6 +38,7 @@ function PerformerIndexRow(props: PerformerIndexRowProps) {
     moviesMonitored,
     gender,
     age,
+    country,
     careerStart,
     careerEnd,
     hairColor,
@@ -52,6 +55,11 @@ function PerformerIndexRow(props: PerformerIndexRowProps) {
     tmdbId,
     tpdbId,
   } = performer;
+  const countryCodeName = countryCode(country);
+  const showMovieMonitorToggle = useShowMovieMonitorToggleButton(
+    tmdbId,
+    tpdbId
+  );
 
   const [isEditPerformerModalOpen, setIsEditPerformerModalOpen] =
     useState(false);
@@ -105,18 +113,20 @@ function PerformerIndexRow(props: PerformerIndexRowProps) {
                 ? styles.statusIcon
                 : `${styles.statusIcon} ${styles.unmonitored}`
             }
-            title="scene"
+            title={translate('MonitoredScene')}
             name={monitored ? icons.SCENE : icons.SCENEUNMONITOR}
           />
-          <Icon
-            containerClassName={
-              moviesMonitored
-                ? styles.statusIcon
-                : `${styles.statusIcon} ${styles.unmonitored}`
-            }
-            title="movie"
-            name={moviesMonitored ? icons.FILM : icons.FILMUNMONITOR}
-          />
+          {showMovieMonitorToggle ? (
+            <Icon
+              containerClassName={
+                moviesMonitored
+                  ? styles.statusIcon
+                  : `${styles.statusIcon} ${styles.unmonitored}`
+              }
+              title={translate('MonitorMovies')}
+              name={moviesMonitored ? icons.FILM : icons.FILMUNMONITOR}
+            />
+          ) : null}
         </TableRowCell>
       );
       return;
@@ -141,6 +151,18 @@ function PerformerIndexRow(props: PerformerIndexRowProps) {
       cells.push(
         <TableRowCell key={name} className={styles[name]}>
           {age}
+        </TableRowCell>
+      );
+      return;
+    }
+    if (name === 'country') {
+      cells.push(
+        <TableRowCell
+          key={name}
+          className={styles[name]}
+          title={countryCodeName}
+        >
+          {country}
         </TableRowCell>
       );
       return;
@@ -253,7 +275,6 @@ function PerformerIndexRow(props: PerformerIndexRowProps) {
           />
         </TableRowCell>
       );
-      return;
     }
   });
 
@@ -262,6 +283,7 @@ function PerformerIndexRow(props: PerformerIndexRowProps) {
       <EditPerformerModal
         isOpen={isEditPerformerModalOpen}
         performer={performer}
+        showMovieMonitor={showMovieMonitorToggle}
         onModalClose={onEditPerformerModalClose}
       />
     </TableRowCell>

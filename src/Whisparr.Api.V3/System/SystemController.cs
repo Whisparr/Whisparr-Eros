@@ -8,6 +8,9 @@ using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Datastore;
 using NzbDrone.Core.Lifecycle;
+using NzbDrone.Core.Movies;
+using NzbDrone.Core.Movies.Performers;
+using NzbDrone.Core.Movies.Studios;
 using Whisparr.Http;
 using Whisparr.Http.Validation;
 
@@ -24,6 +27,9 @@ namespace Whisparr.Api.V3.System
         private readonly IMainDatabase _database;
         private readonly ILifecycleService _lifecycleService;
         private readonly IDeploymentInfoProvider _deploymentInfoProvider;
+        private readonly IMovieMetadataService _movieMetadataService;
+        private readonly IPerformerService _performerService;
+        private readonly IStudioService _studioService;
         private readonly EndpointDataSource _endpointData;
         private readonly DfaGraphWriter _graphWriter;
         private readonly DuplicateEndpointDetector _detector;
@@ -36,6 +42,9 @@ namespace Whisparr.Api.V3.System
                                 IMainDatabase database,
                                 ILifecycleService lifecycleService,
                                 IDeploymentInfoProvider deploymentInfoProvider,
+                                IMovieMetadataService movieMetadataService,
+                                IPerformerService performerService,
+                                IStudioService studioService,
                                 EndpointDataSource endpoints,
                                 DfaGraphWriter graphWriter,
                                 DuplicateEndpointDetector detector)
@@ -48,6 +57,9 @@ namespace Whisparr.Api.V3.System
             _database = database;
             _lifecycleService = lifecycleService;
             _deploymentInfoProvider = deploymentInfoProvider;
+            _movieMetadataService = movieMetadataService;
+            _performerService = performerService;
+            _studioService = studioService;
             _endpointData = endpoints;
             _graphWriter = graphWriter;
             _detector = detector;
@@ -88,7 +100,11 @@ namespace Whisparr.Api.V3.System
                 PackageVersion = _deploymentInfoProvider.PackageVersion,
                 PackageAuthor = _deploymentInfoProvider.PackageAuthor,
                 PackageUpdateMechanism = _deploymentInfoProvider.PackageUpdateMechanism,
-                PackageUpdateMechanismMessage = _deploymentInfoProvider.PackageUpdateMechanismMessage
+                PackageUpdateMechanismMessage = _deploymentInfoProvider.PackageUpdateMechanismMessage,
+                MovieCount = _movieMetadataService.CountByType(ItemType.Movie),
+                SceneCount = _movieMetadataService.CountByType(ItemType.Scene),
+                PerformerCount = _performerService.Count(),
+                StudioCount = _studioService.Count()
             };
         }
 

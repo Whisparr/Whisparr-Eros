@@ -57,6 +57,23 @@ namespace NzbDrone.Core.Datastore
             return expression;
         }
 
+        protected override Expression VisitUnary(UnaryExpression expression)
+        {
+            switch (expression.NodeType)
+            {
+                case ExpressionType.Not:
+                    _sb.Append("NOT ");
+                    Visit(expression.Operand);
+                    return expression;
+                case ExpressionType.Convert:
+                case ExpressionType.ConvertChecked:
+                    Visit(expression.Operand);
+                    return expression;
+                default:
+                    return base.VisitUnary(expression);
+            }
+        }
+
         protected override Expression VisitMethodCall(MethodCallExpression expression)
         {
             var method = expression.Method.Name;

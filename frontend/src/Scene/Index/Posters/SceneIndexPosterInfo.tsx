@@ -1,6 +1,5 @@
 import React from 'react';
 import Icon from 'Components/Icon';
-import TmdbRating from 'Components/TmdbRating';
 import { icons } from 'Helpers/Props';
 import Language from 'Language/Language';
 import { Ratings } from 'Movie/Movie';
@@ -28,7 +27,6 @@ interface SceneIndexPosterInfoProps {
   shortDateFormat: string;
   longDateFormat: string;
   timeFormat: string;
-  showTmdbRating: boolean;
 }
 
 function SceneIndexPosterInfo(props: SceneIndexPosterInfoProps) {
@@ -40,7 +38,6 @@ function SceneIndexPosterInfo(props: SceneIndexPosterInfoProps) {
     year,
     releaseDate,
     path,
-    ratings,
     originalLanguage,
     sizeOnDisk,
     sortKey,
@@ -49,7 +46,6 @@ function SceneIndexPosterInfo(props: SceneIndexPosterInfoProps) {
     shortDateFormat,
     longDateFormat,
     timeFormat,
-    showTmdbRating,
   } = props;
 
   if (sortKey === 'studio' && studio) {
@@ -102,22 +98,16 @@ function SceneIndexPosterInfo(props: SceneIndexPosterInfoProps) {
   if (sortKey === 'releaseDate' && releaseDate && !showReleaseDate) {
     return (
       <div className={styles.info} title={translate('ReleaseDate')}>
-        <Icon name={icons.CALENDAR} />{' '}
-        {getRelativeDate({
-          date: releaseDate,
-          shortDateFormat,
-          showRelativeDates,
-          timeFormat,
-          timeForToday: false,
-        })}
-      </div>
-    );
-  }
-
-  if (!showTmdbRating && sortKey === 'tmdbRating' && !!ratings.tmdb) {
-    return (
-      <div className={styles.info}>
-        <TmdbRating ratings={ratings} iconSize={12} />
+        <Icon name={icons.CALENDAR} />
+        <span>
+          {getRelativeDate({
+            date: releaseDate,
+            shortDateFormat,
+            showRelativeDates,
+            timeFormat,
+            timeForToday: false,
+          })}
+        </span>
       </div>
     );
   }
@@ -133,7 +123,8 @@ function SceneIndexPosterInfo(props: SceneIndexPosterInfoProps) {
   if (sortKey === 'sizeOnDisk') {
     return (
       <div className={styles.info} title={translate('SizeOnDisk')}>
-        {formatBytes(sizeOnDisk)}
+        <Icon name={icons.DRIVE} />
+        <span>{formatBytes(sizeOnDisk)}</span>
       </div>
     );
   }

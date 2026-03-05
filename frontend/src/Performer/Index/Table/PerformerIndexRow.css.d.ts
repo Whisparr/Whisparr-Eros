@@ -8,6 +8,7 @@ interface CssExports {
   'careerStart': string;
   'cell': string;
   'checkInput': string;
+  'country': string;
   'ethnicity': string;
   'externalLinks': string;
   'fullName': string;

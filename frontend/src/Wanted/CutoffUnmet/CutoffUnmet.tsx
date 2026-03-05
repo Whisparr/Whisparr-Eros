@@ -24,10 +24,6 @@ import { align, icons, kinds } from 'Helpers/Props';
 import Movie from 'Movie/Movie';
 import { executeCommand } from 'Store/Actions/commandActions';
 import {
-  clearMovieFiles,
-  fetchMovieFiles,
-} from 'Store/Actions/movieFileActions';
-import {
   clearQueueDetails,
   fetchQueueDetails,
 } from 'Store/Actions/queueActions';
@@ -219,7 +215,6 @@ function CutoffUnmet() {
     return () => {
       dispatch(clearCutoffUnmet());
       dispatch(clearQueueDetails());
-      dispatch(clearMovieFiles());
     };
   }, [requestCurrentPage, dispatch]);
 
@@ -242,14 +237,9 @@ function CutoffUnmet() {
   useEffect(() => {
     if (!previousItems || hasDifferentItems(items, previousItems)) {
       const movieIds = selectUniqueIds<Movie, number>(items, 'id');
-      const movieFileIds = selectUniqueIds<Movie, number>(items, 'movieFileId');
 
       if (movieIds.length) {
         dispatch(fetchQueueDetails({ movieIds }));
-      }
-
-      if (movieFileIds.length) {
-        dispatch(fetchMovieFiles({ movieFileIds }));
       }
     }
   }, [items, previousItems, dispatch]);
