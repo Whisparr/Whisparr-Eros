@@ -548,6 +548,12 @@ namespace NzbDrone.Core.Configuration
             set { SetValue("WhisparrCorruptFileDetection", value); }
         }
 
+        public int WhisparrFuzzyTitleMatchingThreshold
+        {
+            get { return GetValueInt("WhisparrFuzzyTitleMatchingThreshold", 80); }
+            set { SetValue("WhisparrFuzzyTitleMatchingThreshold", value); }
+        }
+
         public bool WhisparrValidateRuntime
         {
             get { return GetValueBoolean("WhisparrValidateRuntime", false); }
