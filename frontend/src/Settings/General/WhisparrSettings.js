@@ -26,6 +26,7 @@ function WhisparrSettings(props) {
     whisparrCachePerformerAPI,
     whisparrCacheStudioAPI,
     whisparrCorruptFileDetection,
+    whisparrFuzzyTitleMatchingThreshold,
     whisparrMovieMetadataSource,
     whisparrValidateRuntime,
     whisparrValidateRuntimeLimit
@@ -125,6 +126,19 @@ function WhisparrSettings(props) {
           helpTextWarning={translate('WhisparrAutoMatchOnDateHelpTextWarning')}
           onChange={onInputChange}
           {...whisparrAutoMatchOnDate}
+        />
+      </FormGroup>
+      <FormGroup
+        advancedSettings={advancedSettings}
+        isAdvanced={true}
+      >
+        <FormLabel>{translate('WhisparrFuzzyTitleMatchingThreshold')}</FormLabel>
+        <FormInputGroup
+          type={inputTypes.NUMBER}
+          name="whisparrFuzzyTitleMatchingThreshold"
+          helpText={translate('WhisparrFuzzyTitleMatchingThresholdHelpText')}
+          onChange={onInputChange}
+          {...whisparrFuzzyTitleMatchingThreshold}
         />
       </FormGroup>
       <FormGroup

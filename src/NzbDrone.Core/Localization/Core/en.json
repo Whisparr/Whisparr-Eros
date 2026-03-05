@@ -2344,6 +2344,8 @@
   "WhisparrCalendarFeed": "{appName} Calendar Feed",
   "WhisparrCorruptFileDetection": "Corrupt File Detection",
   "WhisparrCorruptFileDetectionHelpText": "The file will be checked and if it is not found to be valid it will fail to automatically import.",
+  "WhisparrFuzzyTitleMatchingThreshold": "Matching Threshold",
+  "WhisparrFuzzyTitleMatchingThresholdHelpText": "The threshold can be set between 70 and 100 to enable fuzzy matching; higher values require a closer match. Setting the value below 70 disables this feature, reverting the system to standard matching only.",
   "WhisparrFolderLimit": "Import File Limit",
   "WhisparrFolderLimitHelpText": "Limit the manual import tp a number of files within a folder",
   "WhisparrMovieMetadataSource": "Movie metadata source",
