@@ -135,6 +135,8 @@ function WhisparrSettings(props) {
         <FormLabel>{translate('WhisparrFuzzyTitleMatchingThreshold')}</FormLabel>
         <FormInputGroup
           type={inputTypes.NUMBER}
+          min={0}
+          max={100}
           name="whisparrFuzzyTitleMatchingThreshold"
           helpText={translate('WhisparrFuzzyTitleMatchingThresholdHelpText')}
           onChange={onInputChange}
