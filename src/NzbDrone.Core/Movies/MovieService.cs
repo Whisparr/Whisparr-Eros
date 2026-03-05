@@ -768,9 +768,10 @@ namespace NzbDrone.Core.Movies
             // Try fuzzy release token matching if we've made it this far
             // Use Levenshtein Distance to find the closest match above 80%
             var fuzzyMatchMoviesWithScores = new List<(Movie movie, int score)>();
-            if (_configService.WhisparrFuzzyTitleMatchingThreshold >= 70)
+            var fuzzyTitleMatchingThreshold = _configService.WhisparrFuzzyTitleMatchingThreshold;
+            if (fuzzyTitleMatchingThreshold >= 70)
             {
-                _logger.Trace("Fuzzy match running with a score of {1}", _configService.WhisparrFuzzyTitleMatchingThreshold);
+                _logger.Trace("Fuzzy match running with a score of {1}", fuzzyTitleMatchingThreshold);
 
                 foreach (var movie in movies)
                 {
@@ -786,7 +787,7 @@ namespace NzbDrone.Core.Movies
 
                     var fuzzyMatch = FuzzyMatchReleaseTokens(releaseTokens, movie);
 
-                    if (fuzzyMatch.score >= _configService.WhisparrFuzzyTitleMatchingThreshold)
+                    if (fuzzyMatch.score >= fuzzyTitleMatchingThreshold)
                     {
                         fuzzyMatchMoviesWithScores.Add(fuzzyMatch);
                     }
@@ -794,7 +795,7 @@ namespace NzbDrone.Core.Movies
             }
             else
             {
-                _logger.Trace("Fuzzy match disabled with a threshold of {1}", _configService.WhisparrFuzzyTitleMatchingThreshold);
+                _logger.Trace("Fuzzy match disabled with a threshold of {1}", fuzzyTitleMatchingThreshold);
             }
 
             if (fuzzyMatchMoviesWithScores.Any())
