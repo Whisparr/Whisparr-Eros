@@ -8,7 +8,7 @@
     <PackageReference Include="Equ" Version="2.3.0" />
     <PackageReference Include="FuzzySharp" Version="2.0.2" />
     <PackageReference Include="MailKit" Version="4.15.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="8.0.17" />
+    <PackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="10.0.3" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.4" />
     <PackageReference Include="Npgsql" Version="9.0.3" />
     <PackageReference Include="Polly" Version="8.6.6" />
@@ -16,7 +16,7 @@
     <PackageReference Include="Openur.FFprobeStatic" Version="8.0.1.302" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.3" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.3" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.3" />
     <PackageReference Include="FluentMigrator.Runner.Core" Version="6.2.0" />
     <PackageReference Include="FluentMigrator.Runner.SQLite" Version="6.2.0" />
     <PackageReference Include="FluentMigrator.Runner.Postgres" Version="6.2.0" />
