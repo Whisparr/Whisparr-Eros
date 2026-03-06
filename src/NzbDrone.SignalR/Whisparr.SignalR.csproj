@@ -4,6 +4,13 @@
     <OutputType>Library</OutputType>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="FluentMigrator.Runner.Core" Version="8.0.1" />
+    <PackageReference Include="FluentMigrator.Runner.Postgres" Version="8.0.1" />
+  <PackageReference Include="FluentMigrator.Runner.SQLite" Version="8.0.1" />
+  <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.3" />
+  <PackageReference Include="Npgsql" Version="10.0.1" />
+  <PackageReference Include="Sentry" Version="6.1.0" />
+  <PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.3" />
     <ProjectReference Include="..\NzbDrone.Core\Whisparr.Core.csproj" />
     <ProjectReference Include="..\NzbDrone.Common\Whisparr.Common.csproj" />
   </ItemGroup>
