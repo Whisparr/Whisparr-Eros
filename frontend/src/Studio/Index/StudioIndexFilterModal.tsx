@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { createSelector } from 'reselect';
 import AppState from 'App/State/AppState';
 import FilterModal from 'Components/Filter/FilterModal';
-import { setStudioFilter } from 'Store/Actions/studioActions';
+import { setStudioFilter, setStudioPage } from 'Store/Actions/studioActions';
 
 function createStudioSelector() {
   return createSelector(
@@ -39,6 +39,7 @@ export default function StudioIndexFilterModal(
   const dispatchSetFilter = useCallback(
     (payload: unknown) => {
       dispatch(setStudioFilter(payload));
+      dispatch(setStudioPage(1));
     },
     [dispatch]
   );

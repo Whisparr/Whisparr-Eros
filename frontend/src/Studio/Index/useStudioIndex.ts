@@ -40,6 +40,25 @@ export function useGeneralSettings() {
   return useSelector((state: AppState) => state.settings.general.item);
 }
 
+function StudioSelectModeReinitializer({
+  isSelectMode,
+  items,
+}: {
+  isSelectMode: boolean;
+  items: ModelBase[];
+}) {
+  const [, selectDispatch] = useSelect();
+
+  // When entering select mode, reinitialize the selection state based on current items
+  useEffect(() => {
+    if (isSelectMode) {
+      selectDispatch({ type: 'updateItems', items });
+    }
+  }, [isSelectMode, items, selectDispatch]);
+
+  return null;
+}
+
 /**
  * Custom hook for managing the Studio Index page state and interactions.
  *
@@ -150,30 +169,12 @@ export function useStudioIndex() {
    * Monitors isSelectMode and reinitializes the selection state when entering select mode.
    * This ensures that the select all button works correctly after exiting and re-entering select mode.
    */
-  function StudioSelectModeReinitializer({
-    isSelectMode,
-    items,
-  }: {
-    isSelectMode: boolean;
-    items: ModelBase[];
-  }) {
-    const [, selectDispatch] = useSelect();
-
-    // When entering select mode, reinitialize the selection state based on current items
-    useEffect(() => {
-      if (isSelectMode) {
-        selectDispatch({ type: 'updateItems', items });
-      }
-    }, [isSelectMode, items, selectDispatch]);
-
-    return null;
-  }
 
   const generalSettings = useGeneralSettings();
 
   // Determine if we should show the movie monitor toggle
   const showMovieMonitorToggle = useMemo(() => {
-    return !!(generalSettings?.whisparrMovieMetadataSource !== 'none');
+    return generalSettings?.whisparrMovieMetadataSource !== 'none';
   }, [generalSettings?.whisparrMovieMetadataSource]);
 
   /**

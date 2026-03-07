@@ -259,6 +259,12 @@ export const defaultState = {
       valueType: filterBuilderValueTypes.DEFAULT
     },
     {
+      name: 'sizeOnDisk',
+      label: () => translate('SizeOnDisk'),
+      type: filterBuilderTypes.NUMBER,
+      valueType: filterBuilderValueTypes.DEFAULT
+    },
+    {
       name: 'network',
       label: () => translate('Network'),
       type: filterBuilderTypes.EXACT,

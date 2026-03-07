@@ -45,9 +45,9 @@ export const defaultState = {
   items: [],
   isSaving: false,
   saveError: null,
-  sortKey: 'fullName',
+  sortKey: 'sortName',
   sortDirection: sortDirections.ASCENDING,
-  secondarySortKey: 'fullName',
+  secondarySortKey: 'sortName',
   secondarySortDirection: sortDirections.ASCENDING,
   view: 'posters',
   pendingChanges: {},
@@ -281,6 +281,12 @@ export const defaultState = {
     {
       name: 'totalSceneCount',
       label: () => translate('TotalSceneCount'),
+      type: filterBuilderTypes.NUMBER,
+      valueType: filterBuilderValueTypes.DEFAULT
+    },
+    {
+      name: 'sizeOnDisk',
+      label: () => translate('SizeOnDisk'),
       type: filterBuilderTypes.NUMBER,
       valueType: filterBuilderValueTypes.DEFAULT
     },
