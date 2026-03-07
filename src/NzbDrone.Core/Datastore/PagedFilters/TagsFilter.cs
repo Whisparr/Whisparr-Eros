@@ -2,6 +2,7 @@ using System.Linq;
 using System.Text.Json;
 using NzbDrone.Core.Movies;
 using NzbDrone.Core.Movies.Performers;
+using NzbDrone.Core.Movies.Studios;
 
 namespace NzbDrone.Core.Datastore.PagedFilters
 {
@@ -61,6 +62,36 @@ namespace NzbDrone.Core.Datastore.PagedFilters
             }
 
             // For "notcontains", we want performers that do not have any of the specified tags
+            else if (op == "notcontains")
+            {
+                pageSpec.FilterExpressions.Add(m => m.Tags == null || !m.Tags.Any(tagId => tagIds.Contains(tagId)));
+            }
+        }
+
+        /// <summary>Apply tags filter, with special-casing for contains and notcontains operations</summary>
+        /// <param name="pageSpec">The paging specification to which the filter expressions will be added</param>
+        /// <param name="jsonElement">The JSON element containing the filter value, expected to be an array of integers representing tag IDs</param>
+        /// <param name="op">The filter operation, expected to be either "contains" or "notcontains"</param>
+        /// <remarks>This method is designed to handle paging for in-memory filtering</remarks>
+        public static void Apply(PagingSpec<Studio> pageSpec, JsonElement jsonElement, string op)
+        {
+            if (jsonElement.ValueKind != JsonValueKind.Array)
+            {
+                return;
+            }
+
+            var tagIds = jsonElement.EnumerateArray()
+                .Where(e => e.ValueKind == JsonValueKind.Number && e.TryGetInt32(out _))
+                .Select(e => e.GetInt32())
+                .ToList();
+
+            // For "contains", we want Studio that have any of the specified tags
+            if (op == "contains")
+            {
+                pageSpec.FilterExpressions.Add(m => m.Tags != null && tagIds.Any(tagId => m.Tags.Contains(tagId)));
+            }
+
+            // For "notcontains", we want Studio that do not have any of the specified tags
             else if (op == "notcontains")
             {
                 pageSpec.FilterExpressions.Add(m => m.Tags == null || !m.Tags.Any(tagId => tagIds.Contains(tagId)));

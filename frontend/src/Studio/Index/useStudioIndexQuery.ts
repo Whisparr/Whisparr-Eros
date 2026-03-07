@@ -88,17 +88,17 @@ export function useStudioIndexQuery(
   if (
     selectedFilterKey !== undefined &&
     selectedFilterKey !== null &&
-    !isNaN(Number(selectedFilterKey))
+    !Number.isNaN(selectedFilterKey)
   ) {
     // Numeric ID indicates a custom filter
     filterDef = customFilters.find(
       (f: CustomFilter) => String(f.id) === String(selectedFilterKey)
     );
-    filters = filterDef && filterDef.filters ? filterDef.filters : [];
+    filters = filterDef?.filters ?? [];
   } else {
     // String key indicates a predefined filter
     filterDef = studioFilters.find((f: Filter) => f.key === selectedFilterKey);
-    filters = filterDef && filterDef.filters ? filterDef.filters : [];
+    filters = filterDef?.filters ?? [];
   }
 
   // Combine query parameters with resolved filters
