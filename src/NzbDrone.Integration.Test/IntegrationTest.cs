@@ -9,7 +9,6 @@ using NzbDrone.Core.Datastore.Migration.Framework;
 using NzbDrone.Core.Indexers.Newznab;
 using NzbDrone.Test.Common;
 using NzbDrone.Test.Common.Datastore;
-using RestSharp;
 
 namespace NzbDrone.Integration.Test
 {
@@ -78,18 +77,18 @@ namespace NzbDrone.Integration.Test
 
         private bool IsApiReady()
         {
-            var request = new RestRequest("system/status")
-            {
-                RequestFormat = DataFormat.None
-            };
-
             try
             {
-                var response = RestClient.Execute(request);
+                using var client = new System.Net.Http.HttpClient();
+                client.DefaultRequestHeaders.Add("X-Api-Key", ApiKey);
+                var url = $"http://localhost:{Port}/api/v3/system/status";
+                var response = client.GetAsync(url).GetAwaiter().GetResult();
+                TestContext.Progress.WriteLine($"IsApiReady: {response.StatusCode} key={ApiKey?.Substring(0, 8)}");
                 return response.StatusCode == System.Net.HttpStatusCode.OK;
             }
-            catch
+            catch (Exception ex)
             {
+                TestContext.Progress.WriteLine($"IsApiReady exception: {ex.GetType().Name}: {ex.Message}");
                 return false;
             }
         }

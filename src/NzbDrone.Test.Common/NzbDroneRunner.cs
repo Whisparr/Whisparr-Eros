@@ -45,6 +45,9 @@ namespace NzbDrone.Test.Common
 
             GenerateConfigFile(enableAuth);
 
+            _restClient.AddDefaultHeader("Authorization", ApiKey);
+            _restClient.AddDefaultHeader("X-Api-Key", ApiKey);
+
             string consoleExe;
             if (OsInfo.IsWindows)
             {
@@ -74,18 +77,23 @@ namespace NzbDrone.Test.Common
                 }
 
                 var request = new RestRequest("system/status");
-                request.AddHeader("Authorization", ApiKey);
-                request.AddHeader("X-Api-Key", ApiKey);
 
-                var statusCall = _restClient.Get(request);
-
-                if (statusCall.ResponseStatus == ResponseStatus.Completed)
+                try
                 {
-                    TestContext.Progress.WriteLine($"Whisparr {Port} is started. Running Tests");
-                    return;
-                }
+                    var statusCall = _restClient.Get(request);
 
-                TestContext.Progress.WriteLine("Waiting for Whisparr to start. Response Status : {0}  [{1}] {2}", statusCall.ResponseStatus, statusCall.StatusDescription, statusCall.ErrorException.Message);
+                    if (statusCall.IsSuccessful)
+                    {
+                        TestContext.Progress.WriteLine($"Whisparr {Port} is started. Running Tests. Key={ApiKey?.Substring(0, 8)} Status={statusCall.StatusCode}");
+                        return;
+                    }
+
+                    TestContext.Progress.WriteLine("Waiting for Whisparr to start. Response Status : {0}  [{1}] {2}", statusCall.ResponseStatus, statusCall.StatusDescription, statusCall.ErrorException?.Message);
+                }
+                catch (Exception ex)
+                {
+                    TestContext.Progress.WriteLine("Waiting for Whisparr to start on port {0}: {1}", Port, ex.Message);
+                }
 
                 Thread.Sleep(500);
             }

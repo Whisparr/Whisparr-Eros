@@ -171,7 +171,7 @@ namespace NzbDrone.Integration.Test.ApiTests
         [Test]
         public void get_movie_by_unknown_id_should_return_404()
         {
-            var result = Movies.InvalidGet(1000000);
+            Movies.InvalidGet(1000000);
         }
 
         [Test]
