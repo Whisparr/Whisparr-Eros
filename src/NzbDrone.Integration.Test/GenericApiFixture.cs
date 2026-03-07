@@ -25,7 +25,7 @@ namespace NzbDrone.Integration.Test
             var response = RestClient.Execute(request);
 
             response.StatusCode.Should().Be(HttpStatusCode.OK);
-            response.ContentType.Should().Be("application/json; charset=utf-8");
+            response.ContentType.Should().Be("application/json");
         }
 
         [TestCase("application/xml")]
