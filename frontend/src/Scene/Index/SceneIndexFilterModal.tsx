@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { createSelector } from 'reselect';
 import AppState from 'App/State/AppState';
 import FilterModal from 'Components/Filter/FilterModal';
-import { setSceneFilter } from 'Store/Actions/sceneIndexActions';
+import { setSceneFilter, setScenePage } from 'Store/Actions/sceneIndexActions';
 
 function createSceneSelector() {
   return createSelector(
@@ -39,6 +39,7 @@ export default function SceneIndexFilterModal(
   const dispatchSetFilter = useCallback(
     (payload: unknown) => {
       dispatch(setSceneFilter(payload));
+      dispatch(setScenePage(1));
     },
     [dispatch]
   );
