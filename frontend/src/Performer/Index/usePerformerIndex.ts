@@ -1,14 +1,6 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-import ModelBase from 'App/ModelBase';
-import { useSelect } from 'App/SelectContext';
 import AppState from 'App/State/AppState';
 import { SafeForWorkModeContext } from 'App/State/SafeForWorkContext';
 import {
@@ -18,64 +10,27 @@ import {
   setPerformerTableOption,
   setPerformerView,
 } from 'Store/Actions/performerActions';
-import { fetchGeneralSettings } from 'Store/Actions/Settings/general';
 import { createCustomFiltersSelector } from 'Store/Selectors/createClientSideCollectionSelector';
 import { usePerformerIndexQuery } from './usePerformerIndexQuery';
 
-/**
- * Filter configuration for performer queries
- */
-interface PageFilter {
-  key: string;
-  operator: string;
-  value: string | number | boolean;
-}
-
-/**
- * Hook to fetch and manage general application settings.
- * Dispatches the fetchGeneralSettings action on mount and returns the general settings state.
- *
- * @returns {AppState['settings']['general']['item']} The general settings object
- */
-export function useGeneralSettings() {
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    dispatch(fetchGeneralSettings());
-  }, [dispatch]);
-
-  return useSelector((state: AppState) => state.settings.general.item);
-}
-
-/**
- * Custom hook for managing the Performer Index page state and interactions.
- *
- * Provides a centralized interface for:
- * - Server-side paginated performer data fetching
- * - Pagination controls and state management
- * - Sorting and filtering operations
- * - View mode toggling (table, posters, etc.)
- * - UI interactions (options modal, select mode, etc.)
- *
- * @returns An object containing performer data, state, and event handlers
- */
 export function usePerformerIndex() {
-  // Paging and sorting state from Redux store
-  const filters: PageFilter[] = [];
-  const customFilters = useSelector(createCustomFiltersSelector('performer'));
-  const columns = useSelector((state: AppState) => state.performers.columns);
+  const dispatch = useDispatch();
+  const history = useHistory();
   const safeForWorkMode = React.useContext(SafeForWorkModeContext);
-  const selectedFilterKey = useSelector(
-    (state: AppState) => state.performers.selectedFilterKey
-  );
-  const sortKey = useSelector((state: AppState) => state.performers.sortKey);
+
   const page = useSelector((state: AppState) => state.performers.page);
+  const sortKey = useSelector((state: AppState) => state.performers.sortKey);
   const sortDirection = useSelector(
     (state: AppState) => state.performers.sortDirection
   );
   const view = useSelector((state: AppState) => state.performers.view);
+  const selectedFilterKey = useSelector(
+    (state: AppState) => state.performers.selectedFilterKey
+  );
+  const columns = useSelector((state: AppState) => state.performers.columns);
+  const filters = useSelector((state: AppState) => state.performers.filters);
+  const customFilters = useSelector(createCustomFiltersSelector('performers'));
 
-  // Read pageSize from the appropriate options based on view
   const pageSize = useSelector((state: AppState) => {
     if (view === 'posters') {
       return state.performers.posterOptions?.pageSize ?? 25;
@@ -83,130 +38,45 @@ export function usePerformerIndex() {
     return state.performers.tableOptions?.pageSize ?? 25;
   });
 
-  // Build query parameters for data fetching
-  const queryParams = {
+  const { data, isPending, isError } = usePerformerIndexQuery({
     page,
     pageSize,
     sortKey,
     sortDirection,
-    filters,
-  };
-
-  const history = useHistory();
-  const dispatch = useDispatch();
-
-  // Fetch performer data with React Query, keeping previous data during refetch
-  const { data, isPending } = usePerformerIndexQuery(queryParams, {
-    placeholderData: (prev) => prev,
   });
 
-  // UI state
+  const totalRecords = data?.totalRecords ?? 0;
+  const totalPages = Math.max(Math.ceil(totalRecords / pageSize), 1);
+
   const scrollerRef = useRef<HTMLDivElement>(null);
-  const [isOptionsModalOpen, setIsOptionsModalOpen] = useState<boolean>(false);
+  const [isOptionsModalOpen, setIsOptionsModalOpen] = useState(false);
   const [jumpToCharacter, setJumpToCharacter] = useState<string | undefined>(
     undefined
   );
-  const [isSelectMode, setIsSelectMode] = useState<boolean>(false);
-
-  const generalSettings = useGeneralSettings();
-
-  // Determine if we should show the movie monitor toggle
-  const showMovieMonitorToggle = useMemo(() => {
-    return !!(generalSettings?.whisparrMovieMetadataSource !== 'none');
-  }, [generalSettings?.whisparrMovieMetadataSource]);
+  const [isSelectMode, setIsSelectMode] = useState(false);
 
   // Pagination handlers
-
-  const totalRecords = data?.totalRecords || 0;
-  const totalPages = data ? Math.ceil(data.totalRecords / pageSize) : 1;
-
-  /** Navigate to the first page */
-  const handleFirstPagePress = () => dispatch(setPerformerPage(1));
-
-  /** Navigate to the previous page (clamped to page 1) */
-  const handlePreviousPagePress = () =>
-    dispatch(setPerformerPage(Math.max(1, page - 1)));
-
-  /** Navigate to the next page (clamped to last page) */
-  const handleNextPagePress = () =>
-    dispatch(setPerformerPage(Math.min(totalPages, page + 1)));
-
-  /** Navigate to the last page */
-  const handleLastPagePress = () => dispatch(setPerformerPage(totalPages));
-
-  /** Navigate to a specific page */
-  const handlePageSelect = (newPage: number) =>
-    dispatch(setPerformerPage(newPage));
-
-  /** Open the table options modal */
-  const onOptionsPress = useCallback(() => {
-    setIsOptionsModalOpen(true);
-  }, [setIsOptionsModalOpen]);
-
-  /** Close the table options modal */
-  const onOptionsModalClose = useCallback(() => {
-    setIsOptionsModalOpen(false);
-  }, [setIsOptionsModalOpen]);
-
-  /** Navigate to the add performer page */
-  const onAddPerformerPress = useCallback(() => {
-    history.push('/add/new/performer');
-  }, [history]);
-
-  /** Handle changes to table display options (columns, etc.) */
-  const onTableOptionChange = useCallback(
-    (payload: unknown) => {
-      dispatch(setPerformerTableOption(payload));
-    },
+  const handleFirstPagePress = useCallback(
+    () => dispatch(setPerformerPage(1)),
+    [dispatch]
+  );
+  const handlePreviousPagePress = useCallback(
+    () => dispatch(setPerformerPage(Math.max(1, page - 1))),
+    [dispatch, page]
+  );
+  const handleNextPagePress = useCallback(
+    () => dispatch(setPerformerPage(Math.min(totalPages, page + 1))),
+    [dispatch, page, totalPages]
+  );
+  const handleLastPagePress = useCallback(
+    () => dispatch(setPerformerPage(totalPages)),
+    [dispatch, totalPages]
+  );
+  const handlePageSelect = useCallback(
+    (newPage: number) => dispatch(setPerformerPage(newPage)),
     [dispatch]
   );
 
-  /**
-   * Monitors isSelectMode and reinitializes the selection state when entering select mode.
-   * This ensures that the select all button works correctly after exiting and re-entering select mode.
-   */
-  function PerformerSelectModeReinitializer({
-    isSelectMode,
-    items,
-  }: {
-    isSelectMode: boolean;
-    items: ModelBase[];
-  }) {
-    const [, selectDispatch] = useSelect();
-
-    // When entering select mode, reinitialize the selection state based on current items
-    useEffect(() => {
-      if (isSelectMode) {
-        selectDispatch({ type: 'updateItems', items });
-      }
-    }, [isSelectMode, items, selectDispatch]);
-
-    return null;
-  }
-
-  /**
-   * Handle filter selection from the filter menu
-   * Resets to default sort (sortName, ascending) and first page
-   */
-  const onFilterSelect = useCallback(
-    (value: string | number) => {
-      // dispatch(setPerformerSort({ sortKey: 'sortName' }));
-      dispatch(setPerformerFilter({ selectedFilterKey: value }));
-      // dispatch(setPerformerSortDirection({ sortDirection: ASCENDING }));
-      dispatch(setPerformerPage(1));
-    },
-    [dispatch]
-  );
-
-  /** Toggle multi-select mode for bulk operations */
-  const onSelectModePress = useCallback(() => {
-    setIsSelectMode(!isSelectMode);
-  }, [isSelectMode, setIsSelectMode]);
-
-  /**
-   * Change the sort column and reset to first page
-   * @param value - The column key to sort by
-   */
   const handleSortPress = useCallback(
     (value: string) => {
       dispatch(setPerformerSort({ sortKey: value }));
@@ -215,60 +85,81 @@ export function usePerformerIndex() {
     [dispatch]
   );
 
-  /**
-   * Change the view mode (table, posters, etc.) and scroll to top
-   * @param value - table | posters
-   */
-  const onViewSelect = useCallback(
+  const handleFilterSelect = useCallback(
+    (value: string | number) => {
+      dispatch(setPerformerFilter({ selectedFilterKey: value }));
+      dispatch(setPerformerPage(1));
+    },
+    [dispatch]
+  );
+
+  const handleViewSelect = useCallback(
     (value: string) => {
       dispatch(setPerformerView({ view: value }));
-
       if (scrollerRef.current) {
         scrollerRef.current.scrollTo(0, 0);
       }
     },
-    [scrollerRef, dispatch]
+    [dispatch, scrollerRef]
   );
 
-  // Memoize items to ensure SelectProvider receives consistent references for its useEffect
-  const memoizedItems = useMemo(() => data?.records || [], [data?.records]);
+  const handleTableOptionChange = useCallback(
+    (payload: unknown) => dispatch(setPerformerTableOption(payload)),
+    [dispatch]
+  );
+
+  const handleOptionsPress = useCallback(() => setIsOptionsModalOpen(true), []);
+
+  const handleOptionsModalClose = useCallback(
+    () => setIsOptionsModalOpen(false),
+    []
+  );
+
+  const handleAddPerformerPress = useCallback(
+    () => history.push('/add/new/performer'),
+    [history]
+  );
+
+  const handleSelectModePress = useCallback(
+    () => setIsSelectMode((prev) => !prev),
+    []
+  );
+
+  const items = useMemo(() => data?.records ?? [], [data?.records]);
 
   return {
-    items: memoizedItems,
+    items,
     totalItems: totalRecords,
     page,
     pageSize,
     totalPages,
     sortKey,
     sortDirection,
+    view,
     columns,
+    filters,
     customFilters,
-    isFetching: isPending,
+    selectedFilterKey,
+    isLoading: isPending,
+    isError,
     isOptionsModalOpen,
     isSelectMode,
     jumpToCharacter,
     safeForWorkMode,
     scrollerRef,
-    selectedFilterKey,
-    view,
-
-    // Derived data
-    showMovieMonitorToggle,
-
     handleFirstPagePress,
-    handleLastPagePress,
-    handleNextPagePress,
-    handlePageSelect,
     handlePreviousPagePress,
+    handleNextPagePress,
+    handleLastPagePress,
+    handlePageSelect,
     handleSortPress,
-    PerformerSelectModeReinitializer,
-    onAddPerformerPress,
-    onFilterSelect,
-    onOptionsModalClose,
-    onOptionsPress,
-    onSelectModePress,
-    onTableOptionChange,
-    onViewSelect,
+    handleFilterSelect,
+    handleViewSelect,
+    handleTableOptionChange,
+    handleOptionsPress,
+    handleOptionsModalClose,
+    handleAddPerformerPress,
+    handleSelectModePress,
     setIsSelectMode,
     setJumpToCharacter,
   };
