@@ -75,6 +75,9 @@ namespace Whisparr.Api.V3.Performers.Helpers
                     case "totalmoviecount":
                         NumericFilterInt.Apply(pageSpec, jsonElement, op, p => p.TotalMovieCount);
                         break;
+                    case "sizeondisk":
+                        NumericFilterLong.Apply(pageSpec, jsonElement, op, p => p.SizeOnDisk);
+                        break;
                     case "tags":
                         TagsFilter.Apply(pageSpec, jsonElement, op);
                         break;

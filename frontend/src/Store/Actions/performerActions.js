@@ -285,6 +285,12 @@ export const defaultState = {
       valueType: filterBuilderValueTypes.DEFAULT
     },
     {
+      name: 'sizeOnDisk',
+      label: () => translate('SizeOnDisk'),
+      type: filterBuilderTypes.NUMBER,
+      valueType: filterBuilderValueTypes.DEFAULT
+    },
+    {
       name: 'age',
       label: () => translate('Age'),
       type: filterBuilderTypes.NUMBER,
