@@ -1,5 +1,3 @@
-using System;
-using System.Linq;
 using FluentAssertions;
 using NUnit.Framework;
 
@@ -15,16 +13,13 @@ namespace NzbDrone.Integration.Test
             config.LogLevel = "Trace";
             HostConfig.Put(config);
 
-            var resultGet = Movies.All();
+            Movies.All();
 
             var logFile = "whisparr.trace.txt";
-            var logLines = Logs.GetLogFileLines(logFile);
 
             Movies.InvalidPost(new Whisparr.Api.V3.Movies.MovieResource());
 
-            // Skip 2 and 1 to ignore the logs endpoint
-            logLines = Logs.GetLogFileLines(logFile).Skip(logLines.Length + 2).ToArray();
-            Array.Resize(ref logLines, logLines.Length - 1);
+            var logLines = Logs.GetLogFileLines(logFile);
 
             logLines.Should().Contain(v => v.Contains("|Trace|Http|Req") && v.Contains("/api/v3/movie/"));
             logLines.Should().Contain(v => v.Contains("|Trace|Http|Res") && v.Contains("/api/v3/movie/: 400.BadRequest"));
