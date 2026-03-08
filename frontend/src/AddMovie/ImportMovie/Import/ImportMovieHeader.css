@@ -1,7 +1,7 @@
 .folder {
   composes: headerCell from '~Components/Table/VirtualTableHeaderCell.css';
 
-  flex: 0 1 400px;
+  flex: 0 1 250px;
   min-width: 170px;
 }
 

@@ -55,6 +55,7 @@ function ImportMovieRow({
   return (
     <>
       <VirtualTableSelectCell
+        className={styles.selectCell}
         inputClassName={styles.selectInput}
         id={id}
         isSelected={isSelected}

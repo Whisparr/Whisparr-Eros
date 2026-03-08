@@ -1,0 +1,15 @@
+.tableBody {
+  min-width: min-content;
+  width: 100%;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  border-top: 1px solid var(--borderColor);
+  transition: background-color 500ms;
+
+  &:hover {
+    background-color: var(--tableRowHoverBackgroundColor);
+  }
+}
