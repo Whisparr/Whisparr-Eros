@@ -11,6 +11,7 @@ interface CssExports {
   'placeholder': string;
   'qualityProfileId': string;
   'rootFolderPath': string;
+  'select': string;
   'sizeOnDisk': string;
   'sortTitle': string;
   'status': string;

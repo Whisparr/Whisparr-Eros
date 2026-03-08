@@ -1,11 +1,11 @@
 import React, { useCallback, useState } from 'react';
 import { useSelect } from 'App/SelectContext';
 import { SafeForWorkModeContext } from 'App/State/SafeForWorkContext';
+import CheckInput from 'Components/Form/CheckInput';
 import Icon from 'Components/Icon';
 import IconButton from 'Components/Link/IconButton';
 import MovieTagList from 'Components/MovieTagList';
 import TableRowCell from 'Components/Table/Cells/TableRowCell';
-import VirtualTableSelectCell from 'Components/Table/Cells/VirtualTableSelectCell';
 import Column from 'Components/Table/Column';
 import Tooltip from 'Components/Tooltip/Tooltip';
 import { useShowMovieMonitorToggleButton } from 'Helpers/Hooks/useShowMovieMonitorToggleButton';
@@ -15,6 +15,7 @@ import StudioDetailsLinks from 'Studio/Details/StudioDetailsLinks';
 import EditStudioModal from 'Studio/Edit/EditStudioModal';
 import Studio from 'Studio/Studio';
 import StudioTitleLink from 'Studio/StudioTitleLink';
+import { CheckInputChanged } from 'typings/inputs';
 import { SelectStateInputProps } from 'typings/props';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
@@ -78,18 +79,26 @@ function StudioIndexRow(props: StudioIndexRowProps) {
     [selectDispatch]
   );
 
+  const onCheckInputChange = useCallback(
+    ({ value, shiftKey }: CheckInputChanged) => {
+      onSelectedChange({ id: studioId, value, shiftKey });
+    },
+    [studioId, onSelectedChange]
+  );
+
   const cells: React.ReactNode[] = [];
 
   if (isSelectMode) {
     cells.push(
-      <td key="select">
-        <VirtualTableSelectCell
-          id={studioId}
-          isSelected={selectState.selectedState[studioId]}
+      <TableRowCell key="select" className={styles.select}>
+        <CheckInput
+          className={styles.checkInput}
+          name={studioId.toString()}
+          value={!!selectState.selectedState[studioId]}
           isDisabled={false}
-          onSelectedChange={onSelectedChange}
+          onChange={onCheckInputChange}
         />
-      </td>
+      </TableRowCell>
     );
   }
 
