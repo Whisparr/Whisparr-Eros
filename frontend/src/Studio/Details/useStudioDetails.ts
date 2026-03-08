@@ -11,7 +11,6 @@ import AppState from 'App/State/AppState';
 import { SafeForWorkModeContext } from 'App/State/SafeForWorkContext';
 import * as commandNames from 'Commands/commandNames';
 import type { IconName } from 'Components/Icon';
-import useApiMutation from 'Helpers/Hooks/useApiMutation';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import { icons } from 'Helpers/Props';
 import Movie from 'Movie/Movie';
@@ -19,6 +18,7 @@ import { executeCommand } from 'Store/Actions/commandActions';
 import { fetchGeneralSettings } from 'Store/Actions/Settings/general';
 import { toggleStudioScenesExpanded } from 'Store/Actions/studioScenesActions';
 import Studio, { type CoverType, type Image } from 'Studio/Studio';
+import { useToggleStudioMonitored } from 'Studio/useStudio';
 
 const PATH = 'studio';
 
@@ -140,27 +140,7 @@ export const useStudioDetails = (foreignId: string): UseStudioDetailsReturn => {
     path: `/${PATH}/${foreignId}`,
   });
 
-  // Mutation for toggling monitored state
-  // Uses a cache merge to avoid a re-fetch after toggling monitor state
-  const monitorToggleMutation = useApiMutation<Studio, Studio>({
-    method: 'PUT',
-    path: studio?.id ? `/${PATH}/${studio.id}` : '',
-    mutationOptions: {
-      onSuccess: (data) => {
-        if (data?.foreignId) {
-          queryClient.setQueryData(
-            [`/${PATH}/${data.foreignId}`],
-            (oldData: Studio) => {
-              if (!oldData || typeof oldData !== 'object') {
-                return data;
-              }
-              return { ...oldData, ...data };
-            }
-          );
-        }
-      },
-    },
-  });
+  const monitorToggleMutation = useToggleStudioMonitored();
 
   // Redux selectors
   const isStudioRefreshing = useSelector((state: AppState) => {
@@ -239,17 +219,16 @@ export const useStudioDetails = (foreignId: string): UseStudioDetailsReturn => {
       if (!studio || !studioId) {
         throw new Error('Studio data not loaded');
       }
-      // value is the entire toggle state object from MonitorToggleButton
       const toggleState =
         typeof value === 'boolean'
           ? { monitored: value, moviesMonitored: studio.moviesMonitored }
           : value;
-      const updatedStudio = {
-        ...studio,
+      monitorToggleMutation.mutate({
+        studioId,
+        foreignId: studio.foreignId,
         monitored: toggleState.monitored,
         moviesMonitored: toggleState.moviesMonitored,
-      };
-      monitorToggleMutation.mutate(updatedStudio);
+      });
     },
     [studio, studioId, monitorToggleMutation]
   );
@@ -312,8 +291,7 @@ export const useStudioDetails = (foreignId: string): UseStudioDetailsReturn => {
       studioDetailsFetching || monitorToggleMutation.isPending,
     isManualRefresh,
     isStudioRefreshing,
-    studioDetailsError: (studioDetailsError ||
-      monitorToggleMutation.error) as Error | null,
+    studioDetailsError: studioDetailsError || monitorToggleMutation.error,
     isEditMovieModalOpen,
     isDeleteMovieModalOpen,
     expandedState,
