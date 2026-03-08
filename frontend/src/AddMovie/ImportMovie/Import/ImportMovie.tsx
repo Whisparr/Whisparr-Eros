@@ -90,7 +90,7 @@ function ImportMovie() {
       state.settings.qualityProfiles.items
   );
 
-  const defaultMonitor = addMovieState.monitor;
+  const defaultMonitor = addMovieState.monitor ?? 'movieOnly';
   const defaultQualityProfileId = addMovieState.qualityProfileId;
 
   const rootFolder = rootFolderItems.find((rf) => rf.id === rootFolderId);
