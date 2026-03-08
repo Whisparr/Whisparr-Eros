@@ -1,12 +1,11 @@
-import React, { useCallback, useEffect, useRef } from 'react';
-import { GridCellProps } from 'react-virtualized';
-import ModelBase from 'App/ModelBase';
-import VirtualTable from 'Components/Table/VirtualTable';
-import VirtualTableRow from 'Components/Table/VirtualTableRow';
+import React, { useEffect, useRef } from 'react';
+import Scroller from 'Components/Scroller/Scroller';
+import { HORIZONTAL } from 'Helpers/Props/scrollDirections';
 import { SelectStateInputProps } from 'typings/props';
 import { ImportItem, MovieLookupResult } from '../ImportMovieTypes';
 import ImportMovieHeader from './ImportMovieHeader';
 import ImportMovieRow from './ImportMovieRow';
+import styles from './ImportMovieTable.css';
 
 interface ImportMovieTableProps {
   readonly items: ImportItem[];
@@ -14,8 +13,6 @@ interface ImportMovieTableProps {
   readonly allSelected: boolean;
   readonly allUnselected: boolean;
   readonly selectedState: Record<string, boolean>;
-  readonly isSmallScreen: boolean;
-  readonly scroller: Element;
   readonly onSelectAllChange: (opts: { value: boolean }) => void;
   readonly onSelectedChange: (opts: SelectStateInputProps) => void;
   readonly onRemoveSelectedStateItem: (id: string) => void;
@@ -39,8 +36,6 @@ function ImportMovieTable({
   allSelected,
   allUnselected,
   selectedState,
-  isSmallScreen,
-  scroller,
   onSelectAllChange,
   onSelectedChange,
   onRemoveSelectedStateItem,
@@ -91,54 +86,34 @@ function ImportMovieTable({
     prevItemsRef.current = items;
   }, [items, onRemoveSelectedStateItem, onSelectedChange, selectedState]);
 
-  const rowRenderer = useCallback(
-    ({ key, rowIndex, style }: GridCellProps) => {
-      const item = items[rowIndex];
-
-      return (
-        <VirtualTableRow key={key} style={style}>
-          <ImportMovieRow
-            item={item}
-            isSelected={selectedState[item.id] ?? false}
-            isLookingUp={isLookingUp}
-            onSelectedChange={onSelectedChange}
-            onLookup={onLookup}
-            onMovieSelect={onMovieSelect}
-            onItemValueChange={onItemValueChange}
-          />
-        </VirtualTableRow>
-      );
-    },
-    [
-      items,
-      selectedState,
-      isLookingUp,
-      onSelectedChange,
-      onLookup,
-      onMovieSelect,
-      onItemValueChange,
-    ]
-  );
-
   if (!items.length) {
     return null;
   }
 
   return (
-    <VirtualTable
-      items={items as unknown as ModelBase[]}
-      isSmallScreen={isSmallScreen}
-      scroller={scroller}
-      rowHeight={52}
-      rowRenderer={rowRenderer}
-      header={
+    <Scroller scrollDirection={HORIZONTAL}>
+      <div className={styles.tableBody}>
         <ImportMovieHeader
           allSelected={allSelected}
           allUnselected={allUnselected}
           onSelectAllChange={onSelectAllChange}
         />
-      }
-    />
+
+        {items.map((item) => (
+          <div key={item.id} className={styles.row}>
+            <ImportMovieRow
+              item={item}
+              isSelected={selectedState[item.id] ?? false}
+              isLookingUp={isLookingUp}
+              onSelectedChange={onSelectedChange}
+              onLookup={onLookup}
+              onMovieSelect={onMovieSelect}
+              onItemValueChange={onItemValueChange}
+            />
+          </div>
+        ))}
+      </div>
+    </Scroller>
   );
 }
 

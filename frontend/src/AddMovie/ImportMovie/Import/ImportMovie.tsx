@@ -15,7 +15,6 @@ import PageContentBody from 'Components/Page/PageContentBody';
 import { kinds } from 'Helpers/Props';
 import { setAddMovieDefault } from 'Store/Actions/addMovieActions';
 import { fetchRootFolders } from 'Store/Actions/rootFolderActions';
-import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import createRootFoldersSelector from 'Store/Selectors/createRootFoldersSelector';
 import { SelectStateInputProps } from 'typings/props';
 import { ApiError } from 'Utilities/Fetch/fetchJson';
@@ -61,9 +60,6 @@ function ImportMovie() {
   const itemType: 'movie' | 'scene' = scenesMatch ? 'scene' : 'movie';
 
   const reduxDispatch = useDispatch();
-  const scrollerRef = useRef<Element>(null);
-
-  const { isSmallScreen } = useSelector(createDimensionsSelector());
 
   const rootFoldersState = useSelector(createRootFoldersSelector());
   const {
@@ -301,7 +297,7 @@ function ImportMovie() {
 
   return (
     <PageContent title={translate('ImportMovies')}>
-      <PageContentBody ref={scrollerRef as React.RefObject<HTMLDivElement>}>
+      <PageContentBody>
         {rootFoldersFetching ? <LoadingIndicator /> : null}
 
         {!rootFoldersFetching && !!rootFoldersError ? (
@@ -329,16 +325,13 @@ function ImportMovie() {
         {!rootFoldersError &&
         !rootFoldersFetching &&
         rootFoldersPopulated &&
-        !!importFiles.length &&
-        scrollerRef.current ? (
+        !!importFiles.length ? (
           <ImportMovieTable
             items={importState.items}
             isLookingUp={isLookingUp}
             allSelected={selectionState.allSelected}
             allUnselected={selectionState.allUnselected}
             selectedState={selectionState.selectedState}
-            isSmallScreen={isSmallScreen}
-            scroller={scrollerRef.current}
             onSelectAllChange={onSelectAllChange}
             onSelectedChange={onSelectedChange}
             onRemoveSelectedStateItem={onRemoveSelectedStateItem}
