@@ -3,10 +3,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import { queryClient } from 'App/queryClient';
 import AppState from 'App/State/AppState';
 import * as commandNames from 'Commands/commandNames';
-import useApiMutation from 'Helpers/Hooks/useApiMutation';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import Movie from 'Movie/Movie';
 import Performer from 'Performer/Performer';
+import { useTogglePerformerMonitored } from 'Performer/usePerformer';
 import { executeCommand } from 'Store/Actions/commandActions';
 
 const PATH = 'performer';
@@ -32,27 +32,7 @@ export const usePerformerDetails = (foreignId: string) => {
 
   const performerId = performer?.id;
 
-  // Mutation for toggling monitored state
-  // This mutation will update the performer and then update the cache for the performer details
-  const monitorToggleMutation = useApiMutation<Performer, Performer>({
-    method: 'PUT',
-    path: performerId ? `/${PATH}/${performerId}` : '',
-    mutationOptions: {
-      onSuccess: (data) => {
-        if (data?.foreignId) {
-          queryClient.setQueryData(
-            [`/${PATH}/${data.foreignId}`],
-            (oldData: Performer) => {
-              if (!oldData || typeof oldData !== 'object') {
-                return data;
-              }
-              return { ...oldData, ...data };
-            }
-          );
-        }
-      },
-    },
-  });
+  const monitorToggleMutation = useTogglePerformerMonitored();
 
   // TODO: Move to useApiQuery
   function onRefreshPress() {
@@ -107,13 +87,12 @@ export const usePerformerDetails = (foreignId: string) => {
   }) {
     if (!performer || !performerId)
       throw new Error('Performer data not loaded');
-    // Clone the performer object and update monitored fields
-    const updatedPerformer = {
-      ...performer,
+    monitorToggleMutation.mutate({
+      performerId,
+      foreignId: performer.foreignId,
       monitored: args.monitored,
       moviesMonitored: args.moviesMonitored,
-    };
-    monitorToggleMutation.mutate(updatedPerformer);
+    });
   }
 
   // TODO: Move to useApiQuery
