@@ -20,14 +20,7 @@ namespace NzbDrone.Integration.Test
             var logFile = "whisparr.trace.txt";
             var logLines = Logs.GetLogFileLines(logFile);
 
-            try
-            {
-                Movies.InvalidPost(new Whisparr.Api.V3.Movies.MovieResource());
-            }
-            catch
-            {
-                // swallow, we are just validating logging
-            }
+            Movies.InvalidPost(new Whisparr.Api.V3.Movies.MovieResource());
 
             // Skip 2 and 1 to ignore the logs endpoint
             logLines = Logs.GetLogFileLines(logFile).Skip(logLines.Length + 2).ToArray();
