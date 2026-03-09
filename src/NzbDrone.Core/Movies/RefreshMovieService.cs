@@ -415,9 +415,11 @@ namespace NzbDrone.Core.Movies
                     foreach (var movie in allMovie)
                     {
                         var movieLocal = movie;
-                        if ((updatedMovies.Count == 0 && _checkIfMovieShouldBeRefreshed.ShouldRefresh(movie.MovieMetadata)) ||
-                            updatedMovies.Contains(movie.ForeignId) ||
-                            updatedScenes.Contains(movie.ForeignId) ||
+                        var isScene = movie.MovieMetadata.Value.ItemType == ItemType.Scene;
+                        var inChangedList = isScene ? updatedScenes.Contains(movie.ForeignId) : updatedMovies.Contains(movie.ForeignId);
+                        var noChangedList = isScene ? updatedScenes.Count == 0 : updatedMovies.Count == 0;
+                        if ((noChangedList && _checkIfMovieShouldBeRefreshed.ShouldRefresh(movie.MovieMetadata)) ||
+                            inChangedList ||
                             message.Trigger == CommandTrigger.Manual)
                         {
                             try
