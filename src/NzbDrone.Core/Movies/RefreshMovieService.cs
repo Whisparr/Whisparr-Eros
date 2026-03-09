@@ -418,9 +418,11 @@ namespace NzbDrone.Core.Movies
                         var isScene = movie.MovieMetadata.Value.ItemType == ItemType.Scene;
                         var inChangedList = isScene ? updatedScenes.Contains(movie.ForeignId) : updatedMovies.Contains(movie.ForeignId);
                         var noChangedList = isScene ? updatedScenes.Count == 0 : updatedMovies.Count == 0;
-                        if ((noChangedList && _checkIfMovieShouldBeRefreshed.ShouldRefresh(movie.MovieMetadata)) ||
-                            inChangedList ||
-                            message.Trigger == CommandTrigger.Manual)
+                        if ((
+                            noChangedList
+                            && _checkIfMovieShouldBeRefreshed.ShouldRefresh(movie.MovieMetadata))
+                            || inChangedList
+                            || message.Trigger == CommandTrigger.Manual)
                         {
                             try
                             {
@@ -428,7 +430,7 @@ namespace NzbDrone.Core.Movies
                             }
                             catch (MovieNotFoundException)
                             {
-                                _logger.Error("Item '{0}' (ForeignId {1}) was not found, it may have been removed from The Movie Database.", movieLocal.Title, movieLocal.ForeignId);
+                                _logger.Error("Item '{0}' (ForeignId {1}) was not found, it may have been removed from the metadata source.", movieLocal.Title, movieLocal.ForeignId);
                                 continue;
                             }
                             catch (Exception e)
@@ -442,8 +444,6 @@ namespace NzbDrone.Core.Movies
                         else
                         {
                             _logger.Debug("Skipping refresh of movie: {0}", movieLocal.Title);
-                            UpdateTags(movie, false);
-                            RescanMovie(movieLocal, false, trigger);
                         }
                     }
                 }
