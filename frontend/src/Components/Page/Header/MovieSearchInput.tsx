@@ -17,7 +17,7 @@ import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import useKeyboardShortcuts from 'Helpers/Hooks/useKeyboardShortcuts';
 import { icons } from 'Helpers/Props';
 import Movie from 'Movie/Movie';
-import { useSearchMovie } from 'Movie/useMovie';
+import { useSearchMovieUncached } from 'Movie/useMovie';
 import translate from 'Utilities/String/translate';
 import MovieSearchResult from './MovieSearchResult';
 import styles from './MovieSearchInput.css';
@@ -89,7 +89,8 @@ function MovieSearchInput() {
   const [value, setValue] = useState('');
   const [debouncedValue] = useDebounce(value, 250);
 
-  const { data: movies = [], isLoading } = useSearchMovie(debouncedValue);
+  const { data: movies = [], isLoading } =
+    useSearchMovieUncached(debouncedValue);
 
   const { bindShortcut, unbindShortcut } = useKeyboardShortcuts();
   const autosuggestRef = useRef<Autosuggest>(null);
