@@ -15,8 +15,12 @@ import MovieFormats from 'Movie/MovieFormats';
 import MovieLanguages from 'Movie/MovieLanguages';
 import MovieQuality from 'Movie/MovieQuality';
 import FileEditModal from 'MovieFile/Edit/FileEditModal';
-import MediaInfo from 'MovieFile/MediaInfo';
+import {
+  MediaInfoDisplay,
+  MediaInfoType as MediaInfoKind,
+} from 'MovieFile/MediaInfo';
 import * as mediaInfoTypes from 'MovieFile/mediaInfoTypes';
+import { MovieFile } from 'MovieFile/MovieFile';
 import { QualityModel } from 'Quality/Quality';
 import CustomFormat from 'typings/CustomFormat';
 import MediaInfoType from 'typings/MediaInfo';
@@ -24,10 +28,10 @@ import formatBytes from 'Utilities/Number/formatBytes';
 import formatCustomFormatScore from 'Utilities/Number/formatCustomFormatScore';
 import translate from 'Utilities/String/translate';
 import FileDetailsModal from '../FileDetailsModal';
-import { MediaInfoType as MediaInfoKind } from '../MediaInfo';
 import styles from './MovieFileEditorRow.css';
 
 interface MovieFileEditorRowProps {
+  movieFile: MovieFile;
   id: number;
   size: number;
   relativePath: string;
@@ -46,6 +50,7 @@ interface MovieFileEditorRowProps {
 
 function MovieFileEditorRow(props: MovieFileEditorRowProps) {
   const {
+    movieFile,
     id,
     size,
     relativePath,
@@ -140,9 +145,9 @@ function MovieFileEditorRow(props: MovieFileEditorRowProps) {
         if (name === 'audioInfo') {
           return (
             <TableRowCell key={name} className={styles.audio}>
-              <MediaInfo
+              <MediaInfoDisplay
                 type={mediaInfoTypes.AUDIO as MediaInfoKind}
-                movieFileId={id}
+                mediaInfo={mediaInfo}
               />
             </TableRowCell>
           );
@@ -150,9 +155,9 @@ function MovieFileEditorRow(props: MovieFileEditorRowProps) {
         if (name === 'audioLanguages') {
           return (
             <TableRowCell key={name} className={styles.audioLanguages}>
-              <MediaInfo
+              <MediaInfoDisplay
                 type={mediaInfoTypes.AUDIO_LANGUAGES as MediaInfoKind}
-                movieFileId={id}
+                mediaInfo={mediaInfo}
               />
             </TableRowCell>
           );
@@ -161,9 +166,9 @@ function MovieFileEditorRow(props: MovieFileEditorRowProps) {
         if (name === 'subtitleLanguages') {
           return (
             <TableRowCell key={name} className={styles.subtitles}>
-              <MediaInfo
+              <MediaInfoDisplay
                 type={mediaInfoTypes.SUBTITLES as MediaInfoKind}
-                movieFileId={id}
+                mediaInfo={mediaInfo}
               />
             </TableRowCell>
           );
@@ -172,9 +177,9 @@ function MovieFileEditorRow(props: MovieFileEditorRowProps) {
         if (name === 'videoCodec') {
           return (
             <TableRowCell key={name} className={styles.video}>
-              <MediaInfo
+              <MediaInfoDisplay
                 type={mediaInfoTypes.VIDEO as MediaInfoKind}
-                movieFileId={id}
+                mediaInfo={mediaInfo}
               />
             </TableRowCell>
           );
@@ -183,9 +188,9 @@ function MovieFileEditorRow(props: MovieFileEditorRowProps) {
         if (name === 'videoDynamicRangeType') {
           return (
             <TableRowCell key={name} className={styles.videoDynamicRangeType}>
-              <MediaInfo
+              <MediaInfoDisplay
                 type={mediaInfoTypes.VIDEO_DYNAMIC_RANGE_TYPE as MediaInfoKind}
-                movieFileId={id}
+                mediaInfo={mediaInfo}
               />
             </TableRowCell>
           );
@@ -288,7 +293,7 @@ function MovieFileEditorRow(props: MovieFileEditorRowProps) {
       />
 
       <FileEditModal
-        movieFileId={id}
+        movieFile={movieFile}
         isOpen={isFileEditModalOpen}
         onModalClose={handleFileEditModalClose}
       />

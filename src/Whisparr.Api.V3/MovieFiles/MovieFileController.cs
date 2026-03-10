@@ -24,6 +24,7 @@ namespace Whisparr.Api.V3.MovieFiles
     [V3ApiController]
     public class MovieFileController : RestControllerWithSignalR<MovieFileResource, MovieFile>,
                                  IHandle<MovieFileAddedEvent>,
+                                 IHandle<MovieFileUpdatedEvent>,
                                  IHandle<MovieFileDeletedEvent>
     {
         private readonly IMediaFileService _mediaFileService;
@@ -81,7 +82,7 @@ namespace Whisparr.Api.V3.MovieFiles
                 return files.ConvertAll(f => MapToResource(f));
             }
 
-            var movieFiles  = new List<MovieFile>();
+            var movieFiles = new List<MovieFile>();
 
             if (!movieIds.Any() && !movieFileIds.Any())
             {
@@ -278,6 +279,13 @@ namespace Whisparr.Api.V3.MovieFiles
         [NonAction]
         public void Handle(MovieFileAddedEvent message)
         {
+            BroadcastResourceChange(ModelAction.Updated, message.MovieFile.Id);
+        }
+
+        [NonAction]
+        public void Handle(MovieFileUpdatedEvent message)
+        {
+            ArgumentNullException.ThrowIfNull(message?.MovieFile);
             BroadcastResourceChange(ModelAction.Updated, message.MovieFile.Id);
         }
 

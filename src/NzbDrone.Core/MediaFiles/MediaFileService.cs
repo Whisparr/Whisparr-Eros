@@ -83,16 +83,17 @@ namespace NzbDrone.Core.MediaFiles
         {
             RemoveMovieResourcesCache(movieFile.MovieId.ToString());
             _mediaFileRepository.Update(movieFile);
+            _eventAggregator.PublishEvent(new MovieFileUpdatedEvent(movieFile));
         }
 
         public void Update(List<MovieFile> movieFiles)
         {
+            _mediaFileRepository.UpdateMany(movieFiles);
             foreach (var movieFile in movieFiles)
             {
                 RemoveMovieResourcesCache(movieFile.MovieId.ToString());
+                _eventAggregator.PublishEvent(new MovieFileUpdatedEvent(movieFile));
             }
-
-            _mediaFileRepository.UpdateMany(movieFiles);
         }
 
         public void Delete(MovieFile movieFile, DeleteMediaFileReason reason)
