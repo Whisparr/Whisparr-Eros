@@ -1,9 +1,10 @@
 import React from 'react';
+import MediaInfoData from 'typings/MediaInfo';
 import getLanguageName from 'Utilities/String/getLanguageName';
 import translate from 'Utilities/String/translate';
 import { useSingleMovieFile } from './useMovieFile';
 
-function formatLanguages(languages: string | undefined) {
+export function formatLanguages(languages: string | undefined) {
   if (!languages) {
     return null;
   }
@@ -37,15 +38,16 @@ export type MediaInfoType =
   | 'video'
   | 'videoDynamicRangeType';
 
-interface MediaInfoProps {
-  movieFileId?: number;
+interface MediaInfoDisplayProps {
+  mediaInfo: MediaInfoData | undefined;
   type: MediaInfoType;
 }
 
-function MediaInfo({ movieFileId, type }: MediaInfoProps) {
-  const { data: movieFile } = useSingleMovieFile(movieFileId);
-
-  if (!movieFile?.mediaInfo) {
+export function MediaInfoDisplay({
+  mediaInfo,
+  type,
+}: Readonly<MediaInfoDisplayProps>) {
+  if (!mediaInfo) {
     return null;
   }
 
@@ -56,7 +58,7 @@ function MediaInfo({ movieFileId, type }: MediaInfoProps) {
     subtitles,
     videoCodec,
     videoDynamicRangeType,
-  } = movieFile.mediaInfo;
+  } = mediaInfo;
 
   if (type === 'audio') {
     return (
@@ -87,6 +89,18 @@ function MediaInfo({ movieFileId, type }: MediaInfoProps) {
   }
 
   return null;
+}
+
+interface MediaInfoProps {
+  movieFileId: number;
+  type: MediaInfoType;
+}
+
+// Fetching wrapper — use when only movieFileId is available (e.g. Calendar).
+function MediaInfo({ movieFileId, type }: Readonly<MediaInfoProps>) {
+  const { data: movieFile } = useSingleMovieFile(movieFileId);
+
+  return <MediaInfoDisplay mediaInfo={movieFile?.mediaInfo} type={type} />;
 }
 
 export default MediaInfo;
