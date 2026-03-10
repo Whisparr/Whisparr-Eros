@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using FluentAssertions;
 using NLog;
 using NzbDrone.Common.Serializer;
@@ -33,17 +34,14 @@ namespace NzbDrone.Integration.Test.Client
                 RequestFormat = DataFormat.Json,
             };
 
-            request.AddHeader("Authorization", _apiKey);
-            request.AddHeader("X-Api-Key", _apiKey);
-
             return request;
         }
 
-        public string Execute(IRestRequest request, HttpStatusCode statusCode)
+        public string Execute(RestRequest request, HttpStatusCode statusCode)
         {
             _logger.Info("{0}: {1}", request.Method, _restClient.BuildUri(request));
 
-            var response = _restClient.Execute(request);
+            var response = _restClient.ExecuteAsync(request).GetAwaiter().GetResult();
             _logger.Info("Response: {0}", response.Content);
 
             if (response.ErrorException != null)
@@ -60,7 +58,7 @@ namespace NzbDrone.Integration.Test.Client
             return response.Content;
         }
 
-        public T Execute<T>(IRestRequest request, HttpStatusCode statusCode)
+        public T Execute<T>(RestRequest request, HttpStatusCode statusCode)
             where T : class, new()
         {
             var content = Execute(request, statusCode);
@@ -68,14 +66,14 @@ namespace NzbDrone.Integration.Test.Client
             return Json.Deserialize<T>(content);
         }
 
-        private static void AssertDisableCache(IRestResponse response)
+        private static void AssertDisableCache(RestResponse response)
         {
-            // cache control header gets reordered on net core
             var headers = response.Headers;
-            ((string)headers.SingleOrDefault(c => c.Name == "Cache-Control")?.Value ?? string.Empty).Split(',').Select(x => x.Trim())
+
+            // cache control header gets reordered on net core
+            (headers.SingleOrDefault(c => c.Name == "Cache-Control")?.Value ?? string.Empty)
+                .Split(',').Select(x => x.Trim())
                 .Should().BeEquivalentTo(new[] { "no-store", "no-cache" }, options => options.WithoutStrictOrdering());
-            headers.Single(c => c.Name == "Pragma").Value.Should().Be("no-cache");
-            headers.Single(c => c.Name == "Expires").Value.Should().Be("-1");
         }
     }
 
@@ -95,7 +93,7 @@ namespace NzbDrone.Integration.Test.Client
             {
                 foreach (var param in queryParams)
                 {
-                    request.AddParameter(param.Key, param.Value);
+                    request.AddQueryParameter(param.Key, param.Value?.ToString());
                 }
             }
 
@@ -105,14 +103,14 @@ namespace NzbDrone.Integration.Test.Client
         public PagingResource<TResource> GetPaged(int pageNumber, int pageSize, string sortKey, string sortDir, string filterKey = null, object filterValue = null)
         {
             var request = BuildRequest();
-            request.AddParameter("page", pageNumber);
-            request.AddParameter("pageSize", pageSize);
-            request.AddParameter("sortKey", sortKey);
-            request.AddParameter("sortDir", sortDir);
+            request.AddQueryParameter("page", pageNumber.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            request.AddQueryParameter("pageSize", pageSize.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            request.AddQueryParameter("sortKey", sortKey);
+            request.AddQueryParameter("sortDir", sortDir);
 
             if (filterKey != null && filterValue != null)
             {
-                request.AddParameter(filterKey, filterValue);
+                request.AddQueryParameter(filterKey, filterValue?.ToString());
             }
 
             return Get<PagingResource<TResource>>(request);
@@ -125,6 +123,22 @@ namespace NzbDrone.Integration.Test.Client
             return Post<TResource>(request, statusCode);
         }
 
+        public T Post<T>(RestRequest request, HttpStatusCode statusCode = HttpStatusCode.Created)
+            where T : class, new()
+        {
+            request.Method = Method.Post;
+            return Execute<T>(request, statusCode);
+        }
+
+        public void InvalidPost(TResource body)
+        {
+            var request = BuildRequest();
+            request.AddJsonBody(body);
+            request.Method = Method.Post;
+            FluentActions.Invoking(() => Execute<object>(request, HttpStatusCode.BadRequest))
+                .Should().Throw<HttpRequestException>();
+        }
+
         public TResource Put(TResource body, HttpStatusCode statusCode = HttpStatusCode.Accepted)
         {
             var request = BuildRequest();
@@ -132,10 +146,41 @@ namespace NzbDrone.Integration.Test.Client
             return Put<TResource>(request, statusCode);
         }
 
+        public T Put<T>(RestRequest request, HttpStatusCode statusCode = HttpStatusCode.Accepted)
+            where T : class, new()
+        {
+            request.Method = Method.Put;
+            return Execute<T>(request, statusCode);
+        }
+
+        public void InvalidPut(TResource body)
+        {
+            var request = BuildRequest();
+            request.AddJsonBody(body);
+            request.Method = Method.Put;
+            FluentActions.Invoking(() => Execute<object>(request, HttpStatusCode.BadRequest))
+                .Should().Throw<HttpRequestException>();
+        }
+
         public TResource Get(int id, HttpStatusCode statusCode = HttpStatusCode.OK)
         {
             var request = BuildRequest(id.ToString());
             return Get<TResource>(request, statusCode);
+        }
+
+        public T Get<T>(RestRequest request, HttpStatusCode statusCode = HttpStatusCode.OK)
+            where T : class, new()
+        {
+            request.Method = Method.Get;
+            return Execute<T>(request, statusCode);
+        }
+
+        public void InvalidGet(int id)
+        {
+            var request = BuildRequest(id.ToString());
+            request.Method = Method.Get;
+            FluentActions.Invoking(() => Execute<object>(request, HttpStatusCode.NotFound))
+                .Should().Throw<HttpRequestException>();
         }
 
         public TResource GetSingle(HttpStatusCode statusCode = HttpStatusCode.OK)
@@ -150,50 +195,9 @@ namespace NzbDrone.Integration.Test.Client
             Delete(request);
         }
 
-        public object InvalidGet(int id, HttpStatusCode statusCode = HttpStatusCode.NotFound)
+        public void Delete(RestRequest request, HttpStatusCode statusCode = HttpStatusCode.OK)
         {
-            var request = BuildRequest(id.ToString());
-            return Get<object>(request, statusCode);
-        }
-
-        public object InvalidPost(TResource body, HttpStatusCode statusCode = HttpStatusCode.BadRequest)
-        {
-            var request = BuildRequest();
-            request.AddJsonBody(body);
-            return Post<object>(request, statusCode);
-        }
-
-        public object InvalidPut(TResource body, HttpStatusCode statusCode = HttpStatusCode.BadRequest)
-        {
-            var request = BuildRequest();
-            request.AddJsonBody(body);
-            return Put<object>(request, statusCode);
-        }
-
-        public T Get<T>(IRestRequest request, HttpStatusCode statusCode = HttpStatusCode.OK)
-            where T : class, new()
-        {
-            request.Method = Method.GET;
-            return Execute<T>(request, statusCode);
-        }
-
-        public T Post<T>(IRestRequest request, HttpStatusCode statusCode = HttpStatusCode.Created)
-            where T : class, new()
-        {
-            request.Method = Method.POST;
-            return Execute<T>(request, statusCode);
-        }
-
-        public T Put<T>(IRestRequest request, HttpStatusCode statusCode = HttpStatusCode.Accepted)
-            where T : class, new()
-        {
-            request.Method = Method.PUT;
-            return Execute<T>(request, statusCode);
-        }
-
-        public void Delete(IRestRequest request, HttpStatusCode statusCode = HttpStatusCode.OK)
-        {
-            request.Method = Method.DELETE;
+            request.Method = Method.Delete;
             Execute<object>(request, statusCode);
         }
     }

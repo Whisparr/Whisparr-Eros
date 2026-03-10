@@ -10,7 +10,7 @@
 @media only screen and (max-width: $breakpointSmall) {
   .contentBody {
     flex-basis: auto;
-    overflow-y: hidden !important;
+    overflow: visible !important;
   }
 
   .innerContentBody {

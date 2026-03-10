@@ -5,6 +5,7 @@ using FluentAssertions;
 using NUnit.Framework;
 using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Integration.Test.Client;
+using RestSharp;
 using Whisparr.Api.V3.Queue;
 using Whisparr.Http;
 
@@ -16,7 +17,7 @@ namespace NzbDrone.Integration.Test.ApiTests
         private PagingResource<QueueResource> GetFirstPage()
         {
             var request = Queue.BuildRequest();
-            request.AddParameter("includeUnknownMovieItems", true);
+            request.AddQueryParameter("includeUnknownMovieItems", true);
 
             return Queue.Get<PagingResource<QueueResource>>(request);
         }

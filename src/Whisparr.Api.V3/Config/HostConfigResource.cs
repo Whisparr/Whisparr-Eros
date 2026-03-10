@@ -57,6 +57,7 @@ namespace Whisparr.Api.V3.Config
         public bool WhisparrCachePerformerAPI { get; set; }
         public bool WhisparrCacheStudioAPI { get; set; }
         public bool WhisparrCorruptFileDetection { get; set; }
+        public int WhisparrFuzzyTitleMatchingThreshold { get; set; }
         public MovieMetadataType WhisparrMovieMetadataSource { get; set; }
         public bool WhisparrValidateRuntime { get; set; }
         public int WhisparrValidateRuntimeLimit { get; set; }
@@ -116,6 +117,7 @@ namespace Whisparr.Api.V3.Config
                 WhisparrCachePerformerAPI = configService.WhisparrCachePerformerAPI,
                 WhisparrCacheStudioAPI = configService.WhisparrCacheStudioAPI,
                 WhisparrCorruptFileDetection = configService.WhisparrCorruptFileDetection,
+                WhisparrFuzzyTitleMatchingThreshold = configService.WhisparrFuzzyTitleMatchingThreshold,
                 WhisparrMovieMetadataSource = configService.WhisparrMovieMetadataSource,
                 WhisparrValidateRuntime = configService.WhisparrValidateRuntime,
                 WhisparrValidateRuntimeLimit = configService.WhisparrValidateRuntimeLimit

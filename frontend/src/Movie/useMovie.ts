@@ -6,7 +6,7 @@ import Movie, { MoviePatchResource } from './Movie';
 
 // Shared auth headers for all API calls
 const AUTH_HEADERS = {
-  'X-Api-Key': window.Whisparr.apiKey,
+  'X-Api-Key': globalThis.Whisparr.apiKey,
   'X-Whisparr-Client': 'Whisparr',
 };
 const apiRoot = '/api/v3';

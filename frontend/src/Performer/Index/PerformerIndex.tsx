@@ -1,6 +1,6 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
-import { SelectProvider } from 'App/SelectContext';
+import { SelectProvider, useSelect } from 'App/SelectContext';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import PageContent from 'Components/Page/PageContent';
 import PageContentBody from 'Components/Page/PageContentBody';
@@ -35,6 +35,24 @@ interface PerformerIndexProps {
   initialScrollTop?: number;
 }
 
+function SelectModeReinitializer({
+  isSelectMode,
+  items,
+}: {
+  isSelectMode: boolean;
+  items: { id: number }[];
+}) {
+  const [, selectDispatch] = useSelect();
+
+  useEffect(() => {
+    if (isSelectMode) {
+      selectDispatch({ type: 'updateItems', items });
+    }
+  }, [isSelectMode, items, selectDispatch]);
+
+  return null;
+}
+
 function PerformerIndex(_: Readonly<PerformerIndexProps>): JSX.Element {
   const {
     items,
@@ -43,7 +61,7 @@ function PerformerIndex(_: Readonly<PerformerIndexProps>): JSX.Element {
     totalPages,
     sortKey,
     columns,
-    isFetching,
+    isLoading,
     isOptionsModalOpen,
     isSelectMode,
     safeForWorkMode,
@@ -56,14 +74,13 @@ function PerformerIndex(_: Readonly<PerformerIndexProps>): JSX.Element {
     handlePageSelect,
     handlePreviousPagePress,
     handleSortPress,
-    onAddPerformerPress,
-    onFilterSelect,
-    onOptionsModalClose,
-    onOptionsPress,
-    onSelectModePress,
-    onTableOptionChange,
-    onViewSelect,
-    PerformerSelectModeReinitializer,
+    handleAddPerformerPress,
+    handleFilterSelect,
+    handleOptionsModalClose,
+    handleOptionsPress,
+    handleSelectModePress,
+    handleTableOptionChange,
+    handleViewSelect,
   } = usePerformerIndex();
 
   const filters = defaultState.filters || [];
@@ -74,10 +91,7 @@ function PerformerIndex(_: Readonly<PerformerIndexProps>): JSX.Element {
 
   return (
     <SelectProvider items={items}>
-      <PerformerSelectModeReinitializer
-        isSelectMode={isSelectMode}
-        items={items}
-      />
+      <SelectModeReinitializer isSelectMode={isSelectMode} items={items} />
       <PageContent className={styles.pageContent}>
         {/*
           HEADER TOOLBAR
@@ -99,7 +113,7 @@ function PerformerIndex(_: Readonly<PerformerIndexProps>): JSX.Element {
               iconName={isSelectMode ? icons.SERIES_ENDED : icons.EDIT}
               isSelectMode={isSelectMode}
               overflowComponent={MovieIndexSelectModeMenuItem}
-              onPress={onSelectModePress}
+              onPress={handleSelectModePress}
             />
             <MovieIndexSelectAllButton
               label="SelectAll"
@@ -109,7 +123,7 @@ function PerformerIndex(_: Readonly<PerformerIndexProps>): JSX.Element {
             <PageToolbarButton
               label={translate('AddPerformer')}
               iconName={icons.ADD}
-              onPress={onAddPerformerPress}
+              onPress={handleAddPerformerPress}
             />
           </PageToolbarSection>
           <PageToolbarSection
@@ -120,7 +134,7 @@ function PerformerIndex(_: Readonly<PerformerIndexProps>): JSX.Element {
               <TableOptionsModalWrapper
                 columns={columns}
                 optionsComponent={PerformerIndexTableOptions}
-                onTableOptionChange={onTableOptionChange}
+                onTableOptionChange={handleTableOptionChange}
               >
                 <PageToolbarButton
                   label={translate('Options')}
@@ -131,7 +145,7 @@ function PerformerIndex(_: Readonly<PerformerIndexProps>): JSX.Element {
               <PageToolbarButton
                 label={translate('Options')}
                 iconName={view === 'posters' ? icons.POSTER : icons.OVERVIEW}
-                onPress={onOptionsPress}
+                onPress={handleOptionsPress}
               />
             )}
 
@@ -140,7 +154,7 @@ function PerformerIndex(_: Readonly<PerformerIndexProps>): JSX.Element {
             <PerformerIndexViewMenu
               view={view}
               isDisabled={hasNoPerformer}
-              onViewSelect={onViewSelect}
+              onViewSelect={handleViewSelect}
             />
 
             <PerformerIndexSortMenu
@@ -155,7 +169,7 @@ function PerformerIndex(_: Readonly<PerformerIndexProps>): JSX.Element {
               filters={filters}
               customFilters={customFilters || ''}
               isDisabled={false}
-              onFilterSelect={onFilterSelect}
+              onFilterSelect={handleFilterSelect}
             />
           </PageToolbarSection>
         </PageToolbar>
@@ -164,7 +178,7 @@ function PerformerIndex(_: Readonly<PerformerIndexProps>): JSX.Element {
         MAIN PAGE BODY
         */}
         <PageContentBody ref={scrollerRef}>
-          {isFetching ? <LoadingIndicator /> : null}
+          {isLoading ? <LoadingIndicator /> : null}
 
           {/*
           TABLE VIEW
@@ -183,7 +197,7 @@ function PerformerIndex(_: Readonly<PerformerIndexProps>): JSX.Element {
                 page={page}
                 totalRecords={totalItems}
                 totalPages={totalPages}
-                isFetching={isFetching}
+                isFetching={isLoading}
                 onFirstPagePress={handleFirstPagePress}
                 onPreviousPagePress={handlePreviousPagePress}
                 onNextPagePress={handleNextPagePress}
@@ -209,7 +223,7 @@ function PerformerIndex(_: Readonly<PerformerIndexProps>): JSX.Element {
                 page={page}
                 totalRecords={totalItems}
                 totalPages={totalPages}
-                isFetching={isFetching}
+                isFetching={isLoading}
                 onFirstPagePress={handleFirstPagePress}
                 onPreviousPagePress={handlePreviousPagePress}
                 onNextPagePress={handleNextPagePress}
@@ -222,7 +236,7 @@ function PerformerIndex(_: Readonly<PerformerIndexProps>): JSX.Element {
           {/*
           NO ITEMS PLACEHOLDER
           */}
-          {items.length === 0 && !isFetching ? <NoPerformer /> : null}
+          {items.length === 0 && !isLoading ? <NoPerformer /> : null}
 
           {/*
           FOOTER - SELECT MODE
@@ -235,7 +249,7 @@ function PerformerIndex(_: Readonly<PerformerIndexProps>): JSX.Element {
           {view === 'posters' ? (
             <PerformerIndexPosterOptionsModal
               isOpen={isOptionsModalOpen}
-              onModalClose={onOptionsModalClose}
+              onModalClose={handleOptionsModalClose}
             />
           ) : null}
         </PageContentBody>

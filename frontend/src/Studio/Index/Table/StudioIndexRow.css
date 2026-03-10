@@ -1,7 +1,5 @@
 .cell {
   composes: cell from '~Components/Table/Cells/VirtualTableRowCell.css';
-  /* display: flex; */
-  /* align-items: center; */
 }
 
 .blur {
@@ -71,6 +69,12 @@
 
   flex: 0 1 90px;
   min-width: 90px;
+}
+
+.select {
+  composes: cell from '~Components/Table/Cells/TableRowCell.css';
+
+  width: 36px;
 }
 
 .checkInput {

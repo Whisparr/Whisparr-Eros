@@ -47,8 +47,7 @@ namespace NzbDrone.Integration.Test.ApiTests
                 Path = "invalid_path"
             };
 
-            var postResponse = RootFolders.InvalidPost(rootFolder);
-            postResponse.Should().NotBeNull();
+            RootFolders.InvalidPost(rootFolder);
         }
     }
 }

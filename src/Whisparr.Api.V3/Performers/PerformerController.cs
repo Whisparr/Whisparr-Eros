@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Text.Json;
 using DryIoc.ImTools;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
@@ -22,6 +20,7 @@ using NzbDrone.Core.Movies.Performers.Events;
 using NzbDrone.Core.MovieStats;
 using NzbDrone.SignalR;
 using Whisparr.Api.V3.Movies;
+using Whisparr.Api.V3.Performers.Helpers;
 using Whisparr.Http;
 using Whisparr.Http.Extensions;
 using Whisparr.Http.REST;
@@ -36,6 +35,8 @@ namespace Whisparr.Api.V3.Performers
         private static readonly HashSet<string> _allowedPerformerSortKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
                 "age",
+                "careerStart",
+                "careerEnd",
                 "country",
                 "status",
                 "sortName",
@@ -278,16 +279,6 @@ namespace Whisparr.Api.V3.Performers
             _performerService.RemovePerformer(performer);
         }
 
-        private void MapCoversToLocal(Performer performer)
-        {
-            if (performer == null || !performer.Images.Any())
-            {
-                return;
-            }
-
-            _coverMapper.ConvertToLocalPerformerUrls(performer.Id, performer.Images);
-        }
-
         /// <summary>Handles performer updated events to broadcast changes via SignalR</summary>
         [NonAction]
         public void Handle(PerformerUpdatedEvent message)
@@ -305,13 +296,10 @@ namespace Whisparr.Api.V3.Performers
                 return;
             }
 
-            foreach (var performer in message.Performers)
-            {
-                if (!string.IsNullOrWhiteSpace(performer.ForeignId))
-                {
-                    _performerResourceCache.Remove(performer.ForeignId);
-                }
-            }
+            message.Performers
+                .Where(p => !string.IsNullOrWhiteSpace(p.ForeignId))
+                .ToList()
+                .ForEach(p => _performerResourceCache.Remove(p.ForeignId));
 
             BroadcastResourceChangeBatch(
                 ModelAction.Deleted,
@@ -322,21 +310,23 @@ namespace Whisparr.Api.V3.Performers
                 }));
         }
 
-        private void LinkPerformerStatistics(PerformerResource resource, List<Movie> movies)
-        {
-            var ids = movies.Map(x => x.Id).ToList();
-            var movieStats = _movieStatisticsService.MovieStatistics(ids);
-            resource.HasMovies = resource.MovieCount > 0;
-            resource.HasScenes = resource.SceneCount > 0;
-        }
-
         private PerformerResource GetCachedPerformerResource(string performerForeignId)
         {
             var performerResource = _performerResourceCache.Find(performerForeignId);
-            if (performerResource == null)
+            if (performerResource != null)
             {
-                performerResource = MapToResource(_performerService.FindByForeignId(performerForeignId));
+                return performerResource;
             }
+
+            var performer = _performerService.FindByForeignId(performerForeignId);
+            if (performer == null)
+            {
+                return null;
+            }
+
+            performerResource = performer.ToResource();
+            _coverMapper.ConvertToLocalPerformerUrls(performerResource.Id, performerResource.Images);
+            _performerResourceCache.Set(performerForeignId, performerResource);
 
             return performerResource;
         }
@@ -349,14 +339,18 @@ namespace Whisparr.Api.V3.Performers
                 var performerResource = _performerResourceCache.Find(id);
                 if (performerResource == null)
                 {
-                    performerResource = _performerService.FindByForeignId(id).ToResource();
+                    var performer = _performerService.FindByForeignId(id);
+                    if (performer == null)
+                    {
+                        continue;
+                    }
+
+                    performerResource = performer.ToResource();
+                    _coverMapper.ConvertToLocalPerformerUrls(performerResource.Id, performerResource.Images);
+                    _performerResourceCache.Set(id, performerResource);
                 }
 
-                if (performerResource != null)
-                {
-                    _coverMapper.ConvertToLocalPerformerUrls(performerResource.Id, performerResource.Images);
-                    performerResources.Add(performerResource);
-                }
+                performerResources.Add(performerResource);
             }
 
             return performerResources;
@@ -367,18 +361,6 @@ namespace Whisparr.Api.V3.Performers
             var resource = performer.ToResource();
             _coverMapper.ConvertToLocalPerformerUrls(resource.Id, resource.Images);
             return resource;
-        }
-
-        private List<PerformerResource> MapToResource(List<Performer> performers)
-        {
-            var resources = performers.Select(performer =>
-            {
-                var resource = performer.ToResource();
-                _coverMapper.ConvertToLocalPerformerUrls(resource.Id, resource.Images);
-                return resource;
-            }).ToList();
-
-            return resources;
         }
 
         private List<PerformerResource> GetPerformerResources()
@@ -518,545 +500,25 @@ namespace Whisparr.Api.V3.Performers
             }
         }
 
-        private object GetSortValue(Performer performer, string sortKey)
+        private ActionResult<PagingResource<PerformerResource>> GetPagedPerformersStandard(PerformerPagingRequestResource request, PagingSpec<Performer> pageSpec)
         {
-            switch (sortKey.ToLowerInvariant())
+            Paging.ApplyPerformerFiltersToPagingSpec(request.Filters, pageSpec);
+
+            // Get file info once for bulk operation
+            var coverFileInfos = _coverMapper.GetPerformerCoverFileInfos();
+
+            return pageSpec.ApplyToPage(_performerService.Paged, resource =>
             {
-                case "name": return performer.Name;
-                case "sortname": return performer.SortName;
-                case "age": return performer.Age;
-                case "country": return performer.Country;
-                case "status": return performer.Status;
-                case "gender": return performer.Gender;
-                default: return performer.SortName;
-            }
-        }
-
-        /// <summary>
-        /// Helper to parse integer arrays from JsonElement
-        /// </summary>
-        private List<int> ParseIntArray(JsonElement element)
-        {
-            var list = new List<int>();
-            if (element.ValueKind != JsonValueKind.Array)
-            {
-                return list;
-            }
-
-            foreach (var item in element.EnumerateArray())
-            {
-                if (item.ValueKind == JsonValueKind.Number && item.TryGetInt32(out var intValue))
-                {
-                    list.Add(intValue);
-                }
-                else if (item.ValueKind == JsonValueKind.String && int.TryParse(item.GetString(), out var strIntValue))
-                {
-                    list.Add(strIntValue);
-                }
-            }
-
-            return list;
-        }
-
-        /// <summary>
-        /// Apply numeric comparison filter for nullable int properties
-        /// </summary>
-        private void ApplyNumericFilterNullable(PagingSpec<Performer> pageSpec, JsonElement element, string operation, Expression<Func<Performer, int?>> propertySelector)
-        {
-            var values = ParseIntArray(element);
-            if (values.Count == 0)
-            {
-                return;
-            }
-
-            // For comparison operators, use the first value
-            // TODO: UI currently allows multiple values even for comparison ops - consider fixing UI
-            var param = propertySelector.Parameters[0];
-            var property = propertySelector.Body;
-            var convertedProperty = Expression.Convert(property, typeof(int));
-
-            switch (operation)
-            {
-                case "equal":
-                    var equalExpr = Expression.Lambda<Func<Performer, bool>>(
-                        Expression.Call(
-                            typeof(Enumerable),
-                            "Contains",
-                            new[] { typeof(int) },
-                            Expression.Constant(values),
-                            convertedProperty),
-                        param);
-                    pageSpec.FilterExpressions.Add(equalExpr);
-                    break;
-                case "notequal":
-                    var notEqualCall = Expression.Call(
-                        typeof(Enumerable),
-                        "Contains",
-                        new[] { typeof(int) },
-                        Expression.Constant(values),
-                        convertedProperty);
-                    var notEqualExpr = Expression.Lambda<Func<Performer, bool>>(Expression.Not(notEqualCall), param);
-                    pageSpec.FilterExpressions.Add(notEqualExpr);
-                    break;
-                case "greaterthan":
-                    var gtValue = values.First();
-                    var gtExpr = Expression.Lambda<Func<Performer, bool>>(
-                        Expression.LessThan(Expression.Constant(gtValue), convertedProperty),
-                        param);
-                    pageSpec.FilterExpressions.Add(gtExpr);
-                    break;
-                case "lessthan":
-                    var ltValue = values.First();
-                    var ltExpr = Expression.Lambda<Func<Performer, bool>>(
-                        Expression.GreaterThan(Expression.Constant(ltValue), convertedProperty),
-                        param);
-                    pageSpec.FilterExpressions.Add(ltExpr);
-                    break;
-                case "greaterthanorequal":
-                    var gteValue = values.First();
-                    var gteExpr = Expression.Lambda<Func<Performer, bool>>(
-                        Expression.LessThanOrEqual(Expression.Constant(gteValue), convertedProperty),
-                        param);
-                    pageSpec.FilterExpressions.Add(gteExpr);
-                    break;
-                case "lessthanorequal":
-                    var lteValue = values.First();
-                    var lteExpr = Expression.Lambda<Func<Performer, bool>>(
-                        Expression.GreaterThanOrEqual(Expression.Constant(lteValue), convertedProperty),
-                        param);
-                    pageSpec.FilterExpressions.Add(lteExpr);
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// Apply numeric comparison filter for non-nullable int properties
-        /// </summary>
-        private void ApplyNumericFilter(PagingSpec<Performer> pageSpec, JsonElement element, string operation, Expression<Func<Performer, int>> propertySelector)
-        {
-            var values = ParseIntArray(element);
-            if (values.Count == 0)
-            {
-                return;
-            }
-
-            // For comparison operators, use the first value
-            // TODO: UI currently allows multiple values even for comparison ops - consider fixing UI
-            var param = propertySelector.Parameters[0];
-            var property = propertySelector.Body;
-
-            switch (operation)
-            {
-                case "equal":
-                    var equalExpr = Expression.Lambda<Func<Performer, bool>>(
-                        Expression.Call(
-                            typeof(Enumerable),
-                            "Contains",
-                            new[] { typeof(int) },
-                            Expression.Constant(values),
-                            property),
-                        param);
-                    pageSpec.FilterExpressions.Add(equalExpr);
-                    break;
-                case "notequal":
-                    var notEqualCall = Expression.Call(
-                        typeof(Enumerable),
-                        "Contains",
-                        new[] { typeof(int) },
-                        Expression.Constant(values),
-                        property);
-                    var notEqualExpr = Expression.Lambda<Func<Performer, bool>>(Expression.Not(notEqualCall), param);
-                    pageSpec.FilterExpressions.Add(notEqualExpr);
-                    break;
-                case "greaterthan":
-                    var gtValue = values.First();
-                    var gtExpr = Expression.Lambda<Func<Performer, bool>>(
-                        Expression.LessThan(Expression.Constant(gtValue), property),
-                        param);
-                    pageSpec.FilterExpressions.Add(gtExpr);
-                    break;
-                case "lessthan":
-                    var ltValue = values.First();
-                    var ltExpr = Expression.Lambda<Func<Performer, bool>>(
-                        Expression.GreaterThan(Expression.Constant(ltValue), property),
-                        param);
-                    pageSpec.FilterExpressions.Add(ltExpr);
-                    break;
-                case "greaterthanorequal":
-                    var gteValue = values.First();
-                    var gteExpr = Expression.Lambda<Func<Performer, bool>>(
-                        Expression.LessThanOrEqual(Expression.Constant(gteValue), property),
-                        param);
-                    pageSpec.FilterExpressions.Add(gteExpr);
-                    break;
-                case "lessthanorequal":
-                    var lteValue = values.First();
-                    var lteExpr = Expression.Lambda<Func<Performer, bool>>(
-                        Expression.GreaterThanOrEqual(Expression.Constant(lteValue), property),
-                        param);
-                    pageSpec.FilterExpressions.Add(lteExpr);
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// Apply enum-based filter for nullable enum properties
-        /// </summary>
-        private void ApplyEnumFilterNullable<TEnum>(PagingSpec<Performer> pageSpec, JsonElement element, string operation, Expression<Func<Performer, TEnum?>> propertySelector)
-            where TEnum : struct, Enum
-        {
-            if (element.ValueKind != JsonValueKind.Array)
-            {
-                return;
-            }
-
-            var enumValues = new List<int>();
-            foreach (var item in element.EnumerateArray())
-            {
-                if (item.ValueKind == JsonValueKind.String && Enum.TryParse(typeof(TEnum), item.GetString(), true, out var enumValue))
-                {
-                    enumValues.Add((int)enumValue);
-                }
-            }
-
-            if (enumValues.Count == 0)
-            {
-                return;
-            }
-
-            var param = propertySelector.Parameters[0];
-            var property = propertySelector.Body;
-            var convertedProperty = Expression.Convert(Expression.Convert(property, typeof(TEnum)), typeof(int));
-
-            switch (operation)
-            {
-                case "equal":
-                    var equalExpr = Expression.Lambda<Func<Performer, bool>>(
-                        Expression.Call(
-                            typeof(Enumerable),
-                            "Contains",
-                            new[] { typeof(int) },
-                            Expression.Constant(enumValues),
-                            convertedProperty),
-                        param);
-                    pageSpec.FilterExpressions.Add(equalExpr);
-                    break;
-                case "notequal":
-                    var notEqualCall = Expression.Call(
-                        typeof(Enumerable),
-                        "Contains",
-                        new[] { typeof(int) },
-                        Expression.Constant(enumValues),
-                        convertedProperty);
-                    var notEqualExpr = Expression.Lambda<Func<Performer, bool>>(Expression.Not(notEqualCall), param);
-                    pageSpec.FilterExpressions.Add(notEqualExpr);
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// Apply enum-based filter for non-nullable enum properties
-        /// </summary>
-        private void ApplyEnumFilter<TEnum>(PagingSpec<Performer> pageSpec, JsonElement element, string operation, Expression<Func<Performer, TEnum>> propertySelector)
-            where TEnum : struct, Enum
-        {
-            if (element.ValueKind != JsonValueKind.Array)
-            {
-                return;
-            }
-
-            var enumValues = new List<int>();
-            foreach (var item in element.EnumerateArray())
-            {
-                if (item.ValueKind == JsonValueKind.String && Enum.TryParse(typeof(TEnum), item.GetString(), true, out var enumValue))
-                {
-                    enumValues.Add((int)enumValue);
-                }
-            }
-
-            if (enumValues.Count == 0)
-            {
-                return;
-            }
-
-            var param = propertySelector.Parameters[0];
-            var property = propertySelector.Body;
-            var convertedProperty = Expression.Convert(property, typeof(int));
-
-            switch (operation)
-            {
-                case "equal":
-                    var equalExpr = Expression.Lambda<Func<Performer, bool>>(
-                        Expression.Call(
-                            typeof(Enumerable),
-                            "Contains",
-                            new[] { typeof(int) },
-                            Expression.Constant(enumValues),
-                            convertedProperty),
-                        param);
-                    pageSpec.FilterExpressions.Add(equalExpr);
-                    break;
-                case "notequal":
-                    var notEqualCall = Expression.Call(
-                        typeof(Enumerable),
-                        "Contains",
-                        new[] { typeof(int) },
-                        Expression.Constant(enumValues),
-                        convertedProperty);
-                    var notEqualExpr = Expression.Lambda<Func<Performer, bool>>(Expression.Not(notEqualCall), param);
-                    pageSpec.FilterExpressions.Add(notEqualExpr);
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// Apply string comparison filter for string properties
-        /// </summary>
-        private void ApplyCountryCodeFilter(PagingSpec<Performer> pageSpec, JsonElement element, string operation, Expression<Func<Performer, string>> propertySelector)
-        {
-            string stringValue = null;
-
-            if (element.ValueKind == JsonValueKind.String)
-            {
-                stringValue = element.GetString();
-            }
-            else if (element.ValueKind == JsonValueKind.Array)
-            {
-                foreach (var item in element.EnumerateArray())
-                {
-                    if (item.ValueKind == JsonValueKind.String)
-                    {
-                        stringValue = item.GetString();
-                        break;
-                    }
-                }
-            }
-
-            if (string.IsNullOrWhiteSpace(stringValue))
-            {
-                return;
-            }
-
-            var param = propertySelector.Parameters[0];
-            var property = propertySelector.Body;
-
-            switch (operation)
-            {
-                case "equal":
-                    var equalExpr = Expression.Lambda<Func<Performer, bool>>(
-                        Expression.Equal(
-                            property,
-                            Expression.Constant(stringValue.ToUpperInvariant())),
-                        param);
-                    pageSpec.FilterExpressions.Add(equalExpr);
-                    break;
-                case "notequal":
-                    var notEqualExpr = Expression.Lambda<Func<Performer, bool>>(
-                        Expression.NotEqual(
-                            property,
-                            Expression.Constant(stringValue.ToUpperInvariant())),
-                        param);
-                    pageSpec.FilterExpressions.Add(notEqualExpr);
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// Apply boolean filter - handles both array (custom filters) and direct boolean values (standard filters)
-        /// </summary>
-        private void ApplyBooleanFilter(PagingSpec<Performer> pageSpec, JsonElement element, string operation, Expression<Func<Performer, bool>> propertySelector)
-        {
-            bool boolValue;
-
-            // Handle direct boolean assignment (standard filters)
-            if (element.ValueKind == JsonValueKind.True || element.ValueKind == JsonValueKind.False)
-            {
-                boolValue = element.GetBoolean();
-            }
-
-            // Handle array format (custom filters)
-            else if (element.ValueKind == JsonValueKind.Array)
-            {
-                boolValue = false;
-                foreach (var item in element.EnumerateArray())
-                {
-                    if (item.ValueKind == JsonValueKind.True)
-                    {
-                        boolValue = true;
-                        break;
-                    }
-                }
-            }
-            else
-            {
-                return;
-            }
-
-            var param = propertySelector.Parameters[0];
-            var property = propertySelector.Body;
-
-            switch (operation)
-            {
-                case "equal":
-                    var equalExpr = Expression.Lambda<Func<Performer, bool>>(
-                        Expression.Equal(property, Expression.Constant(boolValue)), param);
-                    pageSpec.FilterExpressions.Add(equalExpr);
-                    break;
-                case "notequal":
-                    var notEqualExpr = Expression.Lambda<Func<Performer, bool>>(
-                        Expression.NotEqual(property, Expression.Constant(boolValue)), param);
-                    pageSpec.FilterExpressions.Add(notEqualExpr);
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// Apply tag filter
-        /// </summary>
-        private void ApplyTagFilter(PagingSpec<Performer> pageSpec, object filterValue, string operation)
-        {
-            var tagIds = new List<int>();
-            if (filterValue is IEnumerable<object> tagValues)
-            {
-                tagIds = tagValues.Select(v => Convert.ToInt32(v)).ToList();
-            }
-            else if (filterValue is IEnumerable<int> tagIntValues)
-            {
-                tagIds = tagIntValues.ToList();
-            }
-            else if (filterValue != null)
-            {
-                var valueString = filterValue.ToString();
-                if (!string.IsNullOrWhiteSpace(valueString))
-                {
-                    tagIds = valueString
-                        .Trim('[', ']')
-                        .Split(',')
-                        .Select(s => int.TryParse(s.Trim(), out var id) ? id : (int?)null)
-                        .Where(id => id.HasValue)
-                        .Select(id => id.Value)
-                        .ToList();
-                }
-            }
-
-            if (tagIds.Count == 0)
-            {
-                return;
-            }
-
-            switch (operation)
-            {
-                case "contains":
-                    pageSpec.FilterExpressions.Add(p => p.Tags != null && tagIds.Any(tagId => p.Tags.Contains(tagId)));
-                    break;
-                case "doesnotcontain":
-                    pageSpec.FilterExpressions.Add(p => p.Tags == null || tagIds.All(tagId => !p.Tags.Contains(tagId)));
-                    break;
-                case "eq":
-                case "==":
-                    pageSpec.FilterExpressions.Add(p => p.Tags != null && tagIds.All(tagId => p.Tags.Contains(tagId)));
-                    break;
-                case "notequal":
-                case "ne":
-                    pageSpec.FilterExpressions.Add(p => p.Tags == null || tagIds.All(tagId => !p.Tags.Contains(tagId)));
-                    break;
-            }
-        }
-
-        private void ApplyPerformerFiltersToPagingSpec(List<PerformerFilterResource> filters, PagingSpec<Performer> pageSpec)
-        {
-            if (filters == null || !filters.Any())
-            {
-                return;
-            }
-
-            foreach (var filter in filters)
-            {
-                if (filter == null)
-                {
-                    _logger.Warn("Null filter object encountered in Filters list.");
-                    continue;
-                }
-
-                var key = filter.Key.ToLowerInvariant();
-                var op = filter.Type?.ToLowerInvariant() ?? "equal";
-
-                if (!(filter.Value is JsonElement jsonElement))
-                {
-                    continue;
-                }
-
-                switch (key)
-                {
-                    case "age":
-                        ApplyNumericFilterNullable(pageSpec, jsonElement, op, p => p.Age);
-                        break;
-                    case "careerend":
-                        ApplyNumericFilterNullable(pageSpec, jsonElement, op, p => p.CareerEnd);
-                        break;
-                    case "careerstart":
-                        ApplyNumericFilterNullable(pageSpec, jsonElement, op, p => p.CareerStart);
-                        break;
-                    case "country":
-                        ApplyCountryCodeFilter(pageSpec, jsonElement, op, p => p.Country);
-                        break;
-                    case "ethnicity":
-                        ApplyEnumFilterNullable<Ethnicity>(pageSpec, jsonElement, op, p => p.Ethnicity);
-                        break;
-                    case "gender":
-                        ApplyEnumFilter<Gender>(pageSpec, jsonElement, op, p => p.Gender);
-                        break;
-                    case "haircolor":
-                        ApplyEnumFilterNullable<HairColor>(pageSpec, jsonElement, op, p => p.HairColor);
-                        break;
-                    case "status":
-                        ApplyEnumFilter<PerformerStatus>(pageSpec, jsonElement, op, p => p.Status);
-                        break;
-                    case "moviesmonitored":
-                        ApplyBooleanFilter(pageSpec, jsonElement, op, p => p.MoviesMonitored);
-                        break;
-                    case "monitored":
-                        ApplyBooleanFilter(pageSpec, jsonElement, op, p => p.Monitored);
-                        break;
-                    case "qualityprofileid":
-                        var qualityProfileIds = ParseIntArray(jsonElement);
-                        if (qualityProfileIds.Count > 0)
-                        {
-                            switch (op)
-                            {
-                                case "equal":
-                                    pageSpec.FilterExpressions.Add(p => qualityProfileIds.Contains(p.QualityProfileId));
-                                    break;
-                                case "notequal":
-                                    pageSpec.FilterExpressions.Add(p => !qualityProfileIds.Contains(p.QualityProfileId));
-                                    break;
-                            }
-                        }
-
-                        break;
-                    case "moviecount":
-                        ApplyNumericFilter(pageSpec, jsonElement, op, p => p.MovieCount);
-                        break;
-                    case "scenecount":
-                        ApplyNumericFilter(pageSpec, jsonElement, op, p => p.SceneCount);
-                        break;
-                    case "totalscenecount":
-                        ApplyNumericFilter(pageSpec, jsonElement, op, p => p.TotalSceneCount);
-                        break;
-                    case "totalmoviecount":
-                        ApplyNumericFilter(pageSpec, jsonElement, op, p => p.TotalMovieCount);
-                        break;
-                    case "tags":
-                        ApplyTagFilter(pageSpec, filter.Value, op);
-                        break;
-                }
-            }
+                var performerResource = resource.ToResource();
+                _coverMapper.ConvertToLocalPerformerUrls(performerResource.Id, performerResource.Images, coverFileInfos);
+                return performerResource;
+            });
         }
 
         private ActionResult<PagingResource<PerformerResource>> GetPagedPerformersWithTags(PerformerPagingRequestResource request, PagingSpec<Performer> pageSpec)
         {
             var allPerformers = _performerService.GetAllPerformers();
-            ApplyPerformerFiltersToPagingSpec(request.Filters, pageSpec);
+            Paging.ApplyPerformerFiltersToPagingSpec(request.Filters, pageSpec);
             var filteredPerformers = allPerformers.AsQueryable();
             foreach (var expr in pageSpec.FilterExpressions)
             {
@@ -1067,8 +529,8 @@ namespace Whisparr.Api.V3.Performers
             var pageSize = pageSpec.PageSize > 0 && pageSpec.PageSize < 1000 ? pageSpec.PageSize : 10;
             var sortDir = pageSpec.SortDirection;
             filteredPerformers = sortDir == SortDirection.Descending
-                ? filteredPerformers.OrderByDescending(p => GetSortValue(p, sortKey))
-                : filteredPerformers.OrderBy(p => GetSortValue(p, sortKey));
+                ? filteredPerformers.OrderByDescending(p => Sorting.GetSortValue(p, sortKey))
+                : filteredPerformers.OrderBy(p => Sorting.GetSortValue(p, sortKey));
 
             var offset = ((pageSpec.Page > 0 ? pageSpec.Page : 1) - 1) * pageSize;
             var totalCount = filteredPerformers.Count();
@@ -1089,21 +551,6 @@ namespace Whisparr.Api.V3.Performers
                 TotalRecords = totalCount
             };
             return Ok(result);
-        }
-
-        private ActionResult<PagingResource<PerformerResource>> GetPagedPerformersStandard(PerformerPagingRequestResource request, PagingSpec<Performer> pageSpec)
-        {
-            ApplyPerformerFiltersToPagingSpec(request.Filters, pageSpec);
-
-            // Get file info once for bulk operation
-            var coverFileInfos = _coverMapper.GetPerformerCoverFileInfos();
-
-            return pageSpec.ApplyToPage(_performerService.Paged, resource =>
-            {
-                var performerResource = resource.ToResource();
-                _coverMapper.ConvertToLocalPerformerUrls(performerResource.Id, performerResource.Images, coverFileInfos);
-                return performerResource;
-            });
         }
     }
 }

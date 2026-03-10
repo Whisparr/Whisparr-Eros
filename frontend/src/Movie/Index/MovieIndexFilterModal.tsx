@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { createSelector } from 'reselect';
 import AppState from 'App/State/AppState';
 import FilterModal from 'Components/Filter/FilterModal';
-import { setMovieFilter } from 'Store/Actions/movieIndexActions';
+import { setMovieFilter, setMoviePage } from 'Store/Actions/movieIndexActions';
 
 function createMovieSelector() {
   return createSelector(
@@ -39,6 +39,7 @@ export default function MovieIndexFilterModal(
   const dispatchSetFilter = useCallback(
     (payload: unknown) => {
       dispatch(setMovieFilter(payload));
+      dispatch(setMoviePage(1));
     },
     [dispatch]
   );

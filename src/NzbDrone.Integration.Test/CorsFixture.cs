@@ -8,18 +8,18 @@ namespace NzbDrone.Integration.Test
     [TestFixture]
     public class CorsFixture : IntegrationTest
     {
-        private RestRequest BuildGet(string route = "movie")
+        private static RestRequest BuildGet(string route = "movie")
         {
-            var request = new RestRequest(route, Method.GET);
+            var request = new RestRequest(route, Method.Get);
             request.AddHeader("Origin", "http://a.different.domain");
             request.AddHeader(AccessControlHeaders.RequestMethod, "POST");
 
             return request;
         }
 
-        private RestRequest BuildOptions(string route = "movie")
+        private static RestRequest BuildOptions(string route = "movie")
         {
-            var request = new RestRequest(route, Method.OPTIONS);
+            var request = new RestRequest(route, Method.Options);
             request.AddHeader("Origin", "http://a.different.domain");
             request.AddHeader(AccessControlHeaders.RequestMethod, "POST");
 

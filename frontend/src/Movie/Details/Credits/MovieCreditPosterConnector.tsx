@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import AppState from 'App/State/AppState';
-import { togglePerformerMonitored } from 'Store/Actions/performerActions';
+import { useTogglePerformerMonitored } from 'Performer/usePerformer';
 import MovieCredit from 'typings/MovieCredit';
 
 interface Props {
@@ -16,26 +16,19 @@ const selectSafeForWork = (state: AppState) => state.settings.safeForWorkMode;
 function MovieCreditPosterConnector(props: Props) {
   const { credit } = props;
   const safeForWorkMode = useSelector(selectSafeForWork);
-  const dispatch = useDispatch();
-
-  const performerId = credit.performerId;
+  const togglePerformerMonitored = useTogglePerformerMonitored();
 
   const onTogglePerformerMonitored = useCallback(
     (args: { monitored: boolean; moviesMonitored: boolean }) => {
-      if (performerId === 0) return;
-      const monitored = args.monitored;
-      const moviesMonitored = args.moviesMonitored;
-      dispatch(
-        togglePerformerMonitored({
-          performerId,
-          monitored,
-          moviesMonitored,
-        })
-      );
-      props.credit.monitored = monitored;
-      props.credit.moviesMonitored = moviesMonitored;
+      if (!credit.performerId || !credit.foreignId) return;
+      togglePerformerMonitored.mutate({
+        performerId: credit.performerId,
+        foreignId: credit.foreignId,
+        monitored: args.monitored,
+        moviesMonitored: args.moviesMonitored,
+      });
     },
-    [performerId, dispatch, props.credit]
+    [credit.performerId, credit.foreignId, togglePerformerMonitored]
   );
 
   const ItemComponent = props.component;

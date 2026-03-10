@@ -39,8 +39,7 @@ namespace NzbDrone.Integration.Test.ApiTests
             config.RenameMovies = true;
             config.StandardMovieFormat = "";
 
-            var errors = NamingConfig.InvalidPut(config);
-            errors.Should().NotBeNull();
+            NamingConfig.InvalidPut(config);
         }
 
         [Test]
@@ -50,8 +49,7 @@ namespace NzbDrone.Integration.Test.ApiTests
             config.RenameMovies = true;
             config.StandardMovieFormat = "{quality}";
 
-            var errors = NamingConfig.InvalidPut(config);
-            errors.Should().NotBeNull();
+            NamingConfig.InvalidPut(config);
         }
 
         [Test]
@@ -61,8 +59,7 @@ namespace NzbDrone.Integration.Test.ApiTests
             config.RenameMovies = false;
             config.StandardMovieFormat = "";
 
-            var errors = NamingConfig.InvalidPut(config);
-            errors.Should().NotBeNull();
+            NamingConfig.InvalidPut(config);
         }
 
         [Test]
@@ -72,8 +69,7 @@ namespace NzbDrone.Integration.Test.ApiTests
             config.RenameMovies = true;
             config.StandardMovieFormat = "";
 
-            var errors = NamingConfig.InvalidPut(config);
-            errors.Should().NotBeNull();
+            NamingConfig.InvalidPut(config);
         }
 
         [Test]
@@ -83,8 +79,7 @@ namespace NzbDrone.Integration.Test.ApiTests
             config.RenameMovies = true;
             config.MovieFolderFormat = "This and That";
 
-            var errors = NamingConfig.InvalidPut(config);
-            errors.Should().NotBeNull();
+            NamingConfig.InvalidPut(config);
         }
     }
 }

@@ -63,7 +63,7 @@ namespace NzbDrone.Integration.Test
 
         protected IEnumerable<SignalRMessage> SignalRMessages => _signalRReceived;
 
-        public IntegrationTestBase()
+        protected IntegrationTestBase()
         {
             new StartupContext();
 
@@ -98,9 +98,8 @@ namespace NzbDrone.Integration.Test
         protected virtual void InitRestClients()
         {
             RestClient = new RestClient(RootUrl + "api/v3/");
-            RestClient.AddDefaultHeader("Authentication", ApiKey);
+            RestClient.AddDefaultHeader("Authorization", ApiKey);
             RestClient.AddDefaultHeader("X-Api-Key", ApiKey);
-            RestClient.Timeout = 15000;
 
             AutoTagging = new ClientBase<AutoTaggingResource>(RestClient, ApiKey);
             Blocklist = new ClientBase<BlocklistResource>(RestClient, ApiKey);
@@ -157,6 +156,7 @@ namespace NzbDrone.Integration.Test
                 }
                 catch
                 {
+                    // Swallow errors
                 }
             }
         }
@@ -212,6 +212,8 @@ namespace NzbDrone.Integration.Test
                 retryCount++;
                 Thread.Sleep(200);
             }
+
+            cts.Dispose();
         }
 
         public static void WaitForCompletion(Func<bool> predicate, int timeout = 10000, int interval = 500)
@@ -242,7 +244,7 @@ namespace NzbDrone.Integration.Test
             if (result == null)
             {
                 var lookup = Movies.Lookup("tmdb:" + tmdbid);
-                var movie = lookup.First();
+                var movie = lookup[0];
                 movie.QualityProfileId = 1;
                 movie.Path = Path.Combine(MovieRootFolder, movie.Title);
                 movie.Monitored = true;
@@ -293,9 +295,6 @@ namespace NzbDrone.Integration.Test
 
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-                var sourcePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "ApiTests", "Files", "H264_sample.mp4");
-
-                // File.Copy(sourcePath, path);
                 File.WriteAllText(path, "Fake Movie");
 
                 Commands.PostAndWait(new RefreshMovieCommand(new List<int> { movie.Id }));

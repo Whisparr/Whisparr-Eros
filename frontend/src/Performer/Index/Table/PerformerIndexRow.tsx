@@ -1,11 +1,11 @@
 import React, { useCallback, useState } from 'react';
 import { useSelect } from 'App/SelectContext';
 import { SafeForWorkModeContext } from 'App/State/SafeForWorkContext';
+import CheckInput from 'Components/Form/CheckInput';
 import Icon from 'Components/Icon';
 import IconButton from 'Components/Link/IconButton';
 import MovieTagList from 'Components/MovieTagList';
 import TableRowCell from 'Components/Table/Cells/TableRowCell';
-import VirtualTableSelectCell from 'Components/Table/Cells/VirtualTableSelectCell';
 import Column from 'Components/Table/Column';
 import Tooltip from 'Components/Tooltip/Tooltip';
 import { useShowMovieMonitorToggleButton } from 'Helpers/Hooks/useShowMovieMonitorToggleButton';
@@ -15,6 +15,7 @@ import EditPerformerModal from 'Performer/Edit/EditPerformerModal';
 import Performer from 'Performer/Performer';
 import PerformerNameLink from 'Performer/PerformerNameLink';
 import QualityProfileName from 'Settings/Profiles/Quality/QualityProfileName';
+import { CheckInputChanged } from 'typings/inputs';
 import { SelectStateInputProps } from 'typings/props';
 import formatBytes from 'Utilities/Number/formatBytes';
 import countryCode from 'Utilities/String/countryCode';
@@ -86,17 +87,25 @@ function PerformerIndexRow(props: PerformerIndexRowProps) {
     [selectDispatch]
   );
 
+  const onCheckInputChange = useCallback(
+    ({ value, shiftKey }: CheckInputChanged) => {
+      onSelectedChange({ id: performerId, value, shiftKey });
+    },
+    [performerId, onSelectedChange]
+  );
+
   const cells: React.ReactNode[] = [];
   if (isSelectMode) {
     cells.push(
-      <td key="select">
-        <VirtualTableSelectCell
-          id={performerId}
-          isSelected={selectState.selectedState[performerId]}
+      <TableRowCell key="select" className={styles.select}>
+        <CheckInput
+          className={styles.checkInput}
+          name={performerId.toString()}
+          value={!!selectState.selectedState[performerId]}
           isDisabled={false}
-          onSelectedChange={onSelectedChange}
+          onChange={onCheckInputChange}
         />
-      </td>
+      </TableRowCell>
     );
   }
 

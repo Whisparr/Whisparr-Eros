@@ -95,7 +95,7 @@ namespace NzbDrone.Integration.Test.ApiTests
         [Test]
         public void get_downloadclient_by_unknown_id_should_return_404()
         {
-            var result = DownloadClients.InvalidGet(1000000);
+            DownloadClients.InvalidGet(1000000);
         }
 
         [Test]

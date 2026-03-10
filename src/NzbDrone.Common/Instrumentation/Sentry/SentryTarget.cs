@@ -90,7 +90,7 @@ namespace NzbDrone.Common.Instrumentation.Sentry
         {
             { LogLevel.Debug, BreadcrumbLevel.Debug },
             { LogLevel.Error, BreadcrumbLevel.Error },
-            { LogLevel.Fatal, BreadcrumbLevel.Critical },
+            { LogLevel.Fatal, BreadcrumbLevel.Fatal },
             { LogLevel.Info, BreadcrumbLevel.Info },
             { LogLevel.Trace, BreadcrumbLevel.Debug },
             { LogLevel.Warn, BreadcrumbLevel.Warning },

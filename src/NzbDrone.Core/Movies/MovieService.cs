@@ -768,25 +768,34 @@ namespace NzbDrone.Core.Movies
             // Try fuzzy release token matching if we've made it this far
             // Use Levenshtein Distance to find the closest match above 80%
             var fuzzyMatchMoviesWithScores = new List<(Movie movie, int score)>();
-            foreach (var movie in movies)
+            var fuzzyTitleMatchingThreshold = _configService.WhisparrFuzzyTitleMatchingThreshold;
+            if (fuzzyTitleMatchingThreshold >= 70)
             {
-                var fuzzyStudioTitle = movie.MovieMetadata.Value.StudioTitle;
-                var fuzzyReleaseDate = movie.MovieMetadata.Value.ReleaseDate;
-                if (fuzzyStudioTitle.IsNullOrWhiteSpace() || fuzzyReleaseDate.IsNullOrWhiteSpace())
-                {
-                    // We don't want to match unless studio was properly matched up, false positives
-                    // Passion-HD trips this a lot
-                    _logger.Trace("{0}: Skipping fuzzy match for movie {1} due to missing studio or release date", methodName, movie.ToString());
-                    continue;
-                }
+                _logger.Trace("Fuzzy match running with a score of {1}", fuzzyTitleMatchingThreshold);
 
-                var fuzzyMatch = FuzzyMatchReleaseTokens(releaseTokens, movie);
-
-                // TODO: Add configuration setting
-                if (fuzzyMatch.score >= 80)
+                foreach (var movie in movies)
                 {
-                    fuzzyMatchMoviesWithScores.Add(fuzzyMatch);
+                    var fuzzyStudioTitle = movie.MovieMetadata.Value.StudioTitle;
+                    var fuzzyReleaseDate = movie.MovieMetadata.Value.ReleaseDate;
+                    if (fuzzyStudioTitle.IsNullOrWhiteSpace() || fuzzyReleaseDate.IsNullOrWhiteSpace())
+                    {
+                        // We don't want to match unless studio was properly matched up, false positives
+                        // Passion-HD trips this a lot
+                        _logger.Trace("{0}: Skipping fuzzy match for movie {1} due to missing studio or release date", methodName, movie.ToString());
+                        continue;
+                    }
+
+                    var fuzzyMatch = FuzzyMatchReleaseTokens(releaseTokens, movie);
+
+                    if (fuzzyMatch.score >= fuzzyTitleMatchingThreshold)
+                    {
+                        fuzzyMatchMoviesWithScores.Add(fuzzyMatch);
+                    }
                 }
+            }
+            else
+            {
+                _logger.Trace("Fuzzy match disabled with a threshold of {1}", fuzzyTitleMatchingThreshold);
             }
 
             if (fuzzyMatchMoviesWithScores.Any())
@@ -835,7 +844,8 @@ namespace NzbDrone.Core.Movies
                 }
 
                 // WhisparrAutoMatchOnDate enabled and only one match, return it
-                if (_configService.WhisparrAutoMatchOnDate && movies.Count == 1)
+                // Only applies when the date query itself found the match (verifyDate=false means we didn't fall back to studio-only)
+                if (_configService.WhisparrAutoMatchOnDate && movies.Count == 1 && !verifyDate)
                 {
                     _logger.Debug("{0}: WhisparrAutoMatchOnDate enabled, returning single movie match by studio and date.", methodName);
                     return movies.First();
