@@ -271,21 +271,7 @@ export const defaultState = {
     {
       name: 'genres',
       label: () => translate('Genres'),
-      type: filterBuilderTypes.ARRAY,
-      optionsSelector: function(items) {
-        const genreList = items.reduce((acc, movie) => {
-          movie.genres.forEach((genre) => {
-            acc.push({
-              id: genre,
-              name: genre
-            });
-          });
-
-          return acc;
-        }, []);
-
-        return genreList.sort(sortByProp('name'));
-      }
+      type: filterBuilderTypes.STRING
     },
     {
       name: 'tags',

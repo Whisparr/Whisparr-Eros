@@ -11,7 +11,7 @@ namespace NzbDrone.Core.Datastore.PagedFilters
             PagingSpec<T> pageSpec,
             JsonElement element,
             string operation,
-            Expression<Func<T, string>> propertySelector)
+            Expression<Func<T, List<string>>> propertySelector)
         {
             // Parse array of strings or a single string
             var values = new List<string>();
@@ -47,10 +47,11 @@ namespace NzbDrone.Core.Datastore.PagedFilters
             var param = propertySelector.Parameters[0];
             var property = propertySelector.Body;
 
-            // property != null
-            var notNull = Expression.NotEqual(property, Expression.Constant(null, typeof(string)));
+            // property IS NOT NULL
+            var notNull = Expression.NotEqual(property, Expression.Constant(null, property.Type));
 
-            var containsMethod = typeof(string).GetMethod("Contains", new[] { typeof(string) });
+            // List<string>.Contains(string) — WhereBuilderSqlite translates this to a LIKE '%"value"%' clause
+            var containsMethod = typeof(List<string>).GetMethod("Contains", new[] { typeof(string) });
 
             // Build OR chain: contains ANY
             Expression BuildOr()

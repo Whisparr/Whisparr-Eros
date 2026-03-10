@@ -33,6 +33,10 @@ namespace Whisparr.Api.V3.Movies.Helpers
                         DateFilter.Apply(pageSpec, jsonElement, op, p => p.Added);
                         break;
 
+                    case "genres":
+                        StringArrayFilter.Apply(pageSpec, jsonElement, op, p => p.MovieMetadata.Value.Genres);
+                        break;
+
                     case "itemtype":
                         EnumFilterLazy.Apply(pageSpec, jsonElement, op, p => p.MovieMetadata.Value.ItemType);
 

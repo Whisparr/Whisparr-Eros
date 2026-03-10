@@ -228,5 +228,25 @@ namespace NzbDrone.Core.Test.Datastore
 
             _subject.ToString().Should().Be($"NOT (\"MovieMetadata\".\"CleanTitle\" IN @Clause1_P1)");
         }
+
+        [Test]
+        public void where_json_string_list_column_contains_value()
+        {
+            var genre = "Red Hair";
+            _subject = WhereMeta(x => x.Genres.Contains(genre));
+
+            _subject.ToString().Should().Be($"(\"MovieMetadata\".\"Genres\" LIKE '%\"' || @Clause1_P1 || '\"%')");
+            _subject.Parameters.Get<string>("Clause1_P1").Should().Be(genre);
+        }
+
+        [Test]
+        public void where_json_string_list_column_not_contains_value()
+        {
+            var genre = "Red Hair";
+            _subject = WhereMeta(x => !x.Genres.Contains(genre));
+
+            _subject.ToString().Should().Be($"NOT (\"MovieMetadata\".\"Genres\" LIKE '%\"' || @Clause1_P1 || '\"%')");
+            _subject.Parameters.Get<string>("Clause1_P1").Should().Be(genre);
+        }
     }
 }
