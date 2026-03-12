@@ -67,7 +67,7 @@ namespace NzbDrone.Core.Movies.Performers
 
         public List<Performer> AddPerformers(List<Performer> performers)
         {
-            if (performers.Count == 0)
+            if (!performers.Any())
             {
                 return performers;
             }

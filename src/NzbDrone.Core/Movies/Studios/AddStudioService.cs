@@ -69,7 +69,7 @@ namespace NzbDrone.Core.Movies.Studios
         {
             var added = DateTime.UtcNow;
             var studiosToAdd = new List<Studio>();
-            var existingStudioForeignIds = _studioService.AllStudioForeignIds();
+            var existingStudioForeignIds = new HashSet<string>(_studioService.AllStudioForeignIds());
 
             foreach (var m in newStudios)
             {
@@ -77,7 +77,7 @@ namespace NzbDrone.Core.Movies.Studios
 
                 try
                 {
-                    if (existingStudioForeignIds.Any(f => f == m.ForeignId))
+                    if (existingStudioForeignIds.Contains(m.ForeignId))
                     {
                         _logger.Debug("Foreign ID {0} was not added due to validation failure: Studio already exists in database", m.ForeignId);
                         continue;
@@ -93,18 +93,6 @@ namespace NzbDrone.Core.Movies.Studios
                     studio = SetPropertiesAndValidate(studio);
 
                     studio.Added = added;
-
-                    if (existingStudioForeignIds.Any(f => f == studio.ForeignId))
-                    {
-                        _logger.Debug("Foreign ID {0} was not added due to validation failure: Studio already exists in database", m.ForeignId);
-                        continue;
-                    }
-
-                    if (studiosToAdd.Any(f => f.ForeignId == studio.ForeignId))
-                    {
-                        _logger.Debug("Foreign ID {0} was not added due to validation failure: Studio already exists on list", m.ForeignId);
-                        continue;
-                    }
 
                     studiosToAdd.Add(studio);
                 }
