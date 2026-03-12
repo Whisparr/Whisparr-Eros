@@ -67,6 +67,11 @@ namespace NzbDrone.Core.Movies.Performers
 
         public List<Performer> AddPerformers(List<Performer> performers)
         {
+            if (performers.Count == 0)
+            {
+                return performers;
+            }
+
             var allPerformers = _performerRepo.All();
 
             performers = performers.Where(p => p.ForeignId.IsNotNullOrWhiteSpace()).ToList();

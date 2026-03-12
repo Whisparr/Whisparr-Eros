@@ -68,6 +68,18 @@ namespace NzbDrone.Core.Movies.Performers
             {
                 try
                 {
+                    if (existingPerformerForeignIds.Any(f => f == m.ForeignId))
+                    {
+                        _logger.Debug("Foreign ID {0} was not added due to validation failure: Performer already exists in database", m.ForeignId);
+                        continue;
+                    }
+
+                    if (performersToAdd.Any(f => f.ForeignId == m.ForeignId))
+                    {
+                        _logger.Debug("Foreign ID {0} was not added due to validation failure: Performer already exists on list", m.ForeignId);
+                        continue;
+                    }
+
                     var performer = AddSkyhookData(m);
                     performer = SetPropertiesAndValidate(performer);
 

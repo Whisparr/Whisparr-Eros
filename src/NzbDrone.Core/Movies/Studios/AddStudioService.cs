@@ -77,6 +77,18 @@ namespace NzbDrone.Core.Movies.Studios
 
                 try
                 {
+                    if (existingStudioForeignIds.Any(f => f == m.ForeignId))
+                    {
+                        _logger.Debug("Foreign ID {0} was not added due to validation failure: Studio already exists in database", m.ForeignId);
+                        continue;
+                    }
+
+                    if (studiosToAdd.Any(f => f.ForeignId == m.ForeignId))
+                    {
+                        _logger.Debug("Foreign ID {0} was not added due to validation failure: Studio already exists on list", m.ForeignId);
+                        continue;
+                    }
+
                     var studio = AddSkyhookData(m);
                     studio = SetPropertiesAndValidate(studio);
 
