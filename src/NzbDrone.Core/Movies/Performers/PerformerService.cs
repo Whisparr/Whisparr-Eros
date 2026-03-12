@@ -72,12 +72,12 @@ namespace NzbDrone.Core.Movies.Performers
                 return performers;
             }
 
-            var allPerformers = _performerRepo.All();
+            var allPerformerForeignIds = new HashSet<string>(_performerRepo.AllPerformerForeignIds());
 
             performers = performers.Where(p => p.ForeignId.IsNotNullOrWhiteSpace()).ToList();
 
-            var existing = allPerformers.Where(x => performers.Any(a => a.ForeignId == x.ForeignId));
-            var performersToAdd = performers.Where(x => !allPerformers.Any(a => a.ForeignId == x.ForeignId)).ToList();
+            var existing = performers.Where(p => allPerformerForeignIds.Contains(p.ForeignId)).ToList();
+            var performersToAdd = performers.Where(p => !allPerformerForeignIds.Contains(p.ForeignId)).ToList();
 
             _performerRepo.InsertMany(performersToAdd);
 
