@@ -69,7 +69,7 @@ namespace NzbDrone.Core.Movies.Studios
         {
             var added = DateTime.UtcNow;
             var studiosToAdd = new List<Studio>();
-            var existingStudioForeignIds = _studioService.AllStudioForeignIds();
+            var existingStudioForeignIds = new HashSet<string>(_studioService.AllStudioForeignIds());
 
             foreach (var m in newStudios)
             {
@@ -77,22 +77,22 @@ namespace NzbDrone.Core.Movies.Studios
 
                 try
                 {
-                    var studio = AddSkyhookData(m);
-                    studio = SetPropertiesAndValidate(studio);
-
-                    studio.Added = added;
-
-                    if (existingStudioForeignIds.Any(f => f == studio.ForeignId))
+                    if (existingStudioForeignIds.Contains(m.ForeignId))
                     {
                         _logger.Debug("Foreign ID {0} was not added due to validation failure: Studio already exists in database", m.ForeignId);
                         continue;
                     }
 
-                    if (studiosToAdd.Any(f => f.ForeignId == studio.ForeignId))
+                    if (studiosToAdd.Any(f => f.ForeignId == m.ForeignId))
                     {
                         _logger.Debug("Foreign ID {0} was not added due to validation failure: Studio already exists on list", m.ForeignId);
                         continue;
                     }
+
+                    var studio = AddSkyhookData(m);
+                    studio = SetPropertiesAndValidate(studio);
+
+                    studio.Added = added;
 
                     studiosToAdd.Add(studio);
                 }
