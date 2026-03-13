@@ -57,13 +57,13 @@ namespace NzbDrone.Core.Movies.Performers
             _cacheName = "Whisparr.Api.V3.Performers.PerformerResource_performerResources";
         }
 
-        public Performer AddPerformer(Performer newPerformer)
+        public Performer AddPerformer(Performer performer)
         {
-            var performer = _performerRepo.Insert(newPerformer);
+            var newPerformer = _performerRepo.Insert(performer);
 
-            _eventAggregator.PublishEvent(new PerformerAddedEvent(GetById(performer.Id)));
+            _eventAggregator.PublishEvent(new PerformerAddedEvent(newPerformer));
 
-            return performer;
+            return newPerformer;
         }
 
         public List<Performer> AddPerformers(List<Performer> performers)
