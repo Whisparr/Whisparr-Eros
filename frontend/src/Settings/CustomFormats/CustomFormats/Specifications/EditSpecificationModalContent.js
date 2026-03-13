@@ -41,8 +41,7 @@ function EditSpecificationModalContent(props) {
 
       <ModalBody>
         <Form {...otherProps}>
-          {fields &&
-            fields.some(
+          {fields?.some(
               (x) =>
                 x.label ===
                 translate('CustomFormatsSpecificationRegularExpression')
@@ -63,7 +62,7 @@ function EditSpecificationModalContent(props) {
                 <div>
                   <InlineMarkdown
                     data={translate('RegularExpressionsCanBeTested', {
-                      url: 'http://regexstorm.net/tester',
+                      url: 'https://regex101.com/',
                     })}
                   />
                 </div>
@@ -81,8 +80,7 @@ function EditSpecificationModalContent(props) {
             />
           </FormGroup>
 
-          {fields &&
-            fields.map((field) => {
+          {fields?.map((field) => {
               return (
                 <ProviderFieldFormGroup
                   key={field.name}
