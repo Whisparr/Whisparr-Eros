@@ -13,7 +13,7 @@
     <PackageReference Include="FluentValidation" Version="12.1.1" />
     <PackageReference Include="Ical.Net" Version="5.2.1" />
     <PackageReference Include="NLog" Version="6.1.1" />
-    <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="10.1.4" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="10.1.5" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NzbDrone.Core\Whisparr.Core.csproj" />
