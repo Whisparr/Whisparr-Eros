@@ -15,6 +15,7 @@ import useMeasure from 'Helpers/Hooks/useMeasure';
 import { align, icons } from 'Helpers/Props';
 import { useMovieStats } from 'Movie/Index/useMovieStats';
 import NoMovie from 'Movie/NoMovie';
+import { useSceneStats } from 'Scene/Index/useSceneStats';
 import {
   searchMissing,
   setCalendarDaysCount,
@@ -95,14 +96,16 @@ function CalendarPage() {
   );
   const customFilters = useSelector(createCustomFiltersSelector('calendar'));
   const { data: movieStats } = useMovieStats();
+  const { data: sceneStats } = useSceneStats();
   const hasMovies = movieStats === undefined || movieStats.totalCount > 0;
+  const hasScenes = sceneStats === undefined || sceneStats.totalCount > 0;
 
   const [pageContentRef, { width }] = useMeasure();
   const [isCalendarLinkModalOpen, setIsCalendarLinkModalOpen] = useState(false);
   const [isOptionsModalOpen, setIsOptionsModalOpen] = useState(false);
 
   const isMeasured = width > 0;
-  const PageComponent = hasMovies ? Calendar : NoMovie;
+  const PageComponent = hasMovies || hasScenes ? Calendar : NoMovie;
 
   const handleGetCalendarLinkPress = useCallback(() => {
     setIsCalendarLinkModalOpen(true);
@@ -189,7 +192,7 @@ function CalendarPage() {
 
           <FilterMenu
             alignMenu={align.RIGHT}
-            isDisabled={!hasMovies}
+            isDisabled={!hasMovies && !hasScenes}
             selectedFilterKey={selectedFilterKey}
             filters={filters}
             customFilters={customFilters}
@@ -205,7 +208,7 @@ function CalendarPage() {
         innerClassName={styles.calendarInnerPageBody}
       >
         {isMeasured ? <PageComponent totalItems={0} /> : <div />}
-        {hasMovies && <Legend />}
+        {(hasMovies || hasScenes) && <Legend />}
       </PageContentBody>
 
       <CalendarLinkModal
