@@ -32,7 +32,7 @@
 }
 
 .addErrorAlert {
-  composes: alert from '~Components/Alert.css';
+  composes: alert from 'Components/Alert.css';
 
   margin: 20px 0;
 }

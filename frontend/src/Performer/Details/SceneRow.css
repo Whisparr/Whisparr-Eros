@@ -25,7 +25,7 @@
 .subtitles,
 .releaseGroup,
 .customFormatScore {
-  composes: cell from '~Components/Table/Cells/TableRowCell.css';
+  composes: cell from 'Components/Table/Cells/TableRowCell.css';
 }
 
 .externalLink {

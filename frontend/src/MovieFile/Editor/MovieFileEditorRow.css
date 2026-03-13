@@ -1,5 +1,5 @@
 .relativePath {
-  composes: cell from '~Components/Table/Cells/TableRowCell.css';
+  composes: cell from 'Components/Table/Cells/TableRowCell.css';
 
   word-break: break-all;
 }
@@ -7,7 +7,7 @@
 .quality,
 .formats,
 .language {
-  composes: cell from '~Components/Table/Cells/TableRowCell.css';
+  composes: cell from 'Components/Table/Cells/TableRowCell.css';
 }
 
 .language {
@@ -16,14 +16,14 @@
 
 .rejected,
 .download {
-  composes: cell from '~Components/Table/Cells/TableRowCell.css';
+  composes: cell from 'Components/Table/Cells/TableRowCell.css';
 
   width: 50px;
 }
 
 .age,
 .size {
-  composes: cell from '~Components/Table/Cells/TableRowCell.css';
+  composes: cell from 'Components/Table/Cells/TableRowCell.css';
 
   white-space: nowrap;
 }
@@ -32,7 +32,7 @@
 .audio,
 .video,
 .actions {
-  composes: cell from '~Components/Table/Cells/TableRowCell.css';
+  composes: cell from 'Components/Table/Cells/TableRowCell.css';
 
   width: 100px;
 }
@@ -40,26 +40,26 @@
 .audioLanguages,
 .videoDynamicRangeType,
 .subtitles {
-  composes: cell from '~Components/Table/Cells/TableRowCell.css';
+  composes: cell from 'Components/Table/Cells/TableRowCell.css';
 
   width: 165px;
 }
 
 .releaseGroup,
 .dateAdded {
-  composes: cell from '~Components/Table/Cells/TableRowCell.css';
+  composes: cell from 'Components/Table/Cells/TableRowCell.css';
 
   width: 120px;
 }
 
 .customFormatScore {
-  composes: cell from '~Components/Table/Cells/TableRowCell.css';
+  composes: cell from 'Components/Table/Cells/TableRowCell.css';
 
   width: 55px;
 }
 
 .indexerFlags {
-  composes: cell from '~Components/Table/Cells/TableRowCell.css';
+  composes: cell from 'Components/Table/Cells/TableRowCell.css';
 
   width: 50px;
 }

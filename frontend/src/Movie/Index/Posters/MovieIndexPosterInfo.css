@@ -14,9 +14,9 @@
 }
 
 .tags {
-  composes: tags from '~./MovieIndexPoster.css';
+  composes: tags from './MovieIndexPoster.css';
 }
 
 .tagsList {
-  composes: tagsList from '~./MovieIndexPoster.css';
+  composes: tagsList from './MovieIndexPoster.css';
 }

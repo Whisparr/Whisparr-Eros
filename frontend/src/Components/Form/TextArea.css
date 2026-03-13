@@ -1,5 +1,5 @@
 .input {
-  composes: input from '~Components/Form/Input.css';
+  composes: input from 'Components/Form/Input.css';
 
   flex-grow: 1;
   min-height: 200px;
@@ -11,9 +11,9 @@
 }
 
 .hasError {
-  composes: hasError from '~Components/Form/Input.css';
+  composes: hasError from 'Components/Form/Input.css';
 }
 
 .hasWarning {
-  composes: hasWarning from '~Components/Form/Input.css';
+  composes: hasWarning from 'Components/Form/Input.css';
 }

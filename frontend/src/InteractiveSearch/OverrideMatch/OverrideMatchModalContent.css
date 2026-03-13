@@ -1,5 +1,5 @@
 .label {
-  composes: label from '~Components/Label.css';
+  composes: label from 'Components/Label.css';
 
   cursor: pointer;
 }
@@ -11,7 +11,7 @@
 }
 
 .footer {
-  composes: modalFooter from '~Components/Modal/ModalFooter.css';
+  composes: modalFooter from 'Components/Modal/ModalFooter.css';
 
   display: flex;
   justify-content: space-between;

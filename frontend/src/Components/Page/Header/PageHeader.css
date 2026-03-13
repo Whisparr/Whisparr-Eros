@@ -51,7 +51,7 @@
 }
 
 .translate {
-  composes: link from '~Components/Link/Link.css';
+  composes: link from 'Components/Link/Link.css';
 
   display: flex;
   align-items: center;
@@ -67,7 +67,7 @@
 }
 
 .donate {
-  composes: link from '~Components/Link/Link.css';
+  composes: link from 'Components/Link/Link.css';
 
   display: flex;
   align-items: center;

@@ -4,7 +4,7 @@
 }
 
 .loading {
-  composes: loading from '~Components/Loading/LoadingIndicator.css';
+  composes: loading from 'Components/Loading/LoadingIndicator.css';
 
   margin-top: 2px;
   margin-left: 10px;
@@ -20,7 +20,7 @@
 }
 
 .actions {
-  composes: cell from '~Components/Table/Cells/TableRowCell.css';
+  composes: cell from 'Components/Table/Cells/TableRowCell.css';
 
   min-width: 90px;
 }

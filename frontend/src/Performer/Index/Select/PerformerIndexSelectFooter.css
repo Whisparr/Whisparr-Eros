@@ -1,6 +1,6 @@
 .footer {
   /* existing styles */
-  composes: contentFooter from '~Components/Page/PageContentFooter.css';
+  composes: contentFooter from 'Components/Page/PageContentFooter.css';
 
   align-items: center;
 }
