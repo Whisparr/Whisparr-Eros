@@ -131,7 +131,9 @@ function MovieStatusLabel({
   }
 
   return (
-    <span className={styles[statusClass as keyof typeof styles]}>
+    <span
+      className={(styles as unknown as Record<string, string>)[statusClass]}
+    >
       {translate(firstCharToUpper(movieStatus))}
     </span>
   );

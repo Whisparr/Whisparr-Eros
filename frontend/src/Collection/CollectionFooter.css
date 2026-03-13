@@ -20,14 +20,14 @@
 }
 
 .addSelectedButton {
-  composes: button from '~Components/Link/SpinnerButton.css';
+  composes: button from 'Components/Link/SpinnerButton.css';
 
   margin-right: 10px;
   height: 35px;
 }
 
 .excludeSelectedButton {
-  composes: button from '~Components/Link/SpinnerButton.css';
+  composes: button from 'Components/Link/SpinnerButton.css';
 
   margin-left: 25px;
   height: 35px;

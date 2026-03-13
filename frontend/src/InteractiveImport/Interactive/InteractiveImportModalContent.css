@@ -9,7 +9,7 @@
 }
 
 .footer {
-  composes: modalFooter from '~Components/Modal/ModalFooter.css';
+  composes: modalFooter from 'Components/Modal/ModalFooter.css';
 
   justify-content: space-between;
   padding: 15px;
@@ -32,14 +32,14 @@
 }
 
 .deleteButton {
-  composes: button from '~Components/Link/Button.css';
+  composes: button from 'Components/Link/Button.css';
 
   margin-right: 10px;
 }
 
 .importMode,
 .bulkSelect {
-  composes: select from '~Components/Form/SelectInput.css';
+  composes: select from 'Components/Form/SelectInput.css';
 
   margin-right: 10px;
   max-width: 100%;

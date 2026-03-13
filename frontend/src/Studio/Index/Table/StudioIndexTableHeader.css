@@ -1,11 +1,11 @@
 .status {
-  composes: headerCell from '~Components/Table/VirtualTableHeaderCell.css';
+  composes: headerCell from 'Components/Table/VirtualTableHeaderCell.css';
 
   flex: 0 0 30px;
 }
 
 .sortTitle {
-  composes: headerCell from '~Components/Table/VirtualTableHeaderCell.css';
+  composes: headerCell from 'Components/Table/VirtualTableHeaderCell.css';
 
   flex: 4 0 110px;
 }
@@ -14,26 +14,26 @@
 .totalSceneCount,
 .totalMovieCount,
 .qualityProfileId {
-  composes: headerCell from '~Components/Table/VirtualTableHeaderCell.css';
+  composes: headerCell from 'Components/Table/VirtualTableHeaderCell.css';
 
   flex: 1 0 125px;
 }
 
 .rootFolderPath {
-  composes: headerCell from '~Components/Table/VirtualTableHeaderCell.css';
+  composes: headerCell from 'Components/Table/VirtualTableHeaderCell.css';
 
   flex: 1 0 150px;
 }
 
 .aliases,
 .tags {
-  composes: headerCell from '~Components/Table/VirtualTableHeaderCell.css';
+  composes: headerCell from 'Components/Table/VirtualTableHeaderCell.css';
 
   flex: 1 0 60px;
 }
 
 .actions {
-  composes: headerCell from '~Components/Table/VirtualTableHeaderCell.css';
+  composes: headerCell from 'Components/Table/VirtualTableHeaderCell.css';
 
   flex: 0 1 90px;
 }

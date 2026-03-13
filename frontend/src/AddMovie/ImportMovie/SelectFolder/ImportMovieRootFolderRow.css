@@ -5,7 +5,7 @@
 }
 
 .link {
-  composes: link from '~Components/Link/Link.css';
+  composes: link from 'Components/Link/Link.css';
 }
 
 .importFormat {
@@ -20,13 +20,13 @@
 
 .freeSpace,
 .importFiles {
-  composes: cell from '~Components/Table/Cells/TableRowCell.css';
+  composes: cell from 'Components/Table/Cells/TableRowCell.css';
 
   width: 150px;
 }
 
 .actions {
-  composes: cell from '~Components/Table/Cells/TableRowCell.css';
+  composes: cell from 'Components/Table/Cells/TableRowCell.css';
 
   width: 45px;
 }

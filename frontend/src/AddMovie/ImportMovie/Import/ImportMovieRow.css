@@ -1,5 +1,5 @@
 .selectCell {
-  composes: cell from '~Components/Table/Cells/VirtualTableSelectCell.css';
+  composes: cell from 'Components/Table/Cells/VirtualTableSelectCell.css';
 
   display: flex;
   align-items: center;
@@ -8,11 +8,11 @@
 }
 
 .selectInput {
-  composes: input from '~Components/Form/CheckInput.css';
+  composes: input from 'Components/Form/CheckInput.css';
 }
 
 .folder {
-  composes: cell from '~Components/Table/Cells/VirtualTableRowCell.css';
+  composes: cell from 'Components/Table/Cells/VirtualTableRowCell.css';
 
   flex: 0 1 250px;
   overflow: visible !important;
@@ -24,7 +24,7 @@
 }
 
 .monitor {
-  composes: cell from '~Components/Table/Cells/VirtualTableRowCell.css';
+  composes: cell from 'Components/Table/Cells/VirtualTableRowCell.css';
 
   flex: 0 1 150px;
   min-width: 100px;
@@ -32,7 +32,7 @@
 }
 
 .qualityProfile {
-  composes: cell from '~Components/Table/Cells/VirtualTableRowCell.css';
+  composes: cell from 'Components/Table/Cells/VirtualTableRowCell.css';
 
   flex: 0 1 170px;
   min-width: 100px;
@@ -40,7 +40,7 @@
 }
 
 .movie {
-  composes: cell from '~Components/Table/Cells/VirtualTableRowCell.css';
+  composes: cell from 'Components/Table/Cells/VirtualTableRowCell.css';
 
   flex: 1 0 200px;
   overflow: visible !important;

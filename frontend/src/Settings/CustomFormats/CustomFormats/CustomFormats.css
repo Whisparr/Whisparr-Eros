@@ -4,7 +4,7 @@
 }
 
 .addCustomFormat {
-  composes: customFormat from '~./CustomFormat.css';
+  composes: customFormat from './CustomFormat.css';
 
   background-color: var(--cardAlternateBackgroundColor);
   color: var(--gray);

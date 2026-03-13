@@ -4,7 +4,7 @@
 }
 
 .addIndexer {
-  composes: indexer from '~./Indexer.css';
+  composes: indexer from './Indexer.css';
 
   background-color: var(--cardAlternateBackgroundColor);
   color: var(--gray);

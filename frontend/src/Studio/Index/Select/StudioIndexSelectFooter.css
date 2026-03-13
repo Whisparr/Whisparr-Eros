@@ -1,5 +1,5 @@
 .footer {
-  composes: contentFooter from '~Components/Page/PageContentFooter.css';
+  composes: contentFooter from 'Components/Page/PageContentFooter.css';
   /* Floating, pinned footer styles */
   position: fixed;
   right: 0;

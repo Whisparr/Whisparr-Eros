@@ -3,7 +3,7 @@
 }
 
 .inputFolder {
-  composes: input from '~Components/Form/Input.css';
+  composes: input from 'Components/Form/Input.css';
 
   max-width: 100px;
 }
@@ -14,7 +14,7 @@
 }
 
 .inputUnit {
-  composes: inputUnit from '~Components/Form/FormInputGroup.css';
+  composes: inputUnit from 'Components/Form/FormInputGroup.css';
 
   right: 40px;
   font-family: $monoSpaceFontFamily;

@@ -1,5 +1,5 @@
 .input {
-  composes: input from '~Components/Form/AutoSuggestInput.css';
+  composes: input from 'Components/Form/AutoSuggestInput.css';
 
   padding: 0;
   min-height: 35px;
@@ -14,11 +14,11 @@
 }
 
 .hasError {
-  composes: hasError from '~Components/Form/Input.css';
+  composes: hasError from 'Components/Form/Input.css';
 }
 
 .hasWarning {
-  composes: hasWarning from '~Components/Form/Input.css';
+  composes: hasWarning from 'Components/Form/Input.css';
 }
 
 .internalInput {
