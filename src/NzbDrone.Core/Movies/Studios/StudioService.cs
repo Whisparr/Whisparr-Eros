@@ -54,13 +54,13 @@ namespace NzbDrone.Core.Movies.Studios
             _cacheName = "Whisparr.Api.V3.Studios.StudioResource_studioResources";
         }
 
-        public Studio AddStudio(Studio newStudio)
+        public Studio AddStudio(Studio studio)
         {
-            var studio = _studioRepo.Insert(newStudio);
+            var newStudio = _studioRepo.Insert(studio);
 
-            _eventAggregator.PublishEvent(new StudioAddedEvent(GetById(studio.Id)));
+            _eventAggregator.PublishEvent(new StudioAddedEvent(newStudio));
 
-            return studio;
+            return newStudio;
         }
 
         public List<Studio> AddStudios(List<Studio> studios)
