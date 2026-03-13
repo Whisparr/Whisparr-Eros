@@ -11,72 +11,55 @@ const columns = [
   {
     name: 'trigger',
     label: () => translate('Trigger'),
-    isVisible: true
+    isVisible: true,
   },
   {
     name: 'commandName',
     label: () => translate('Name'),
-    isVisible: true
+    isVisible: true,
   },
   {
     name: 'queued',
     label: () => translate('Queued'),
-    isVisible: true
+    isVisible: true,
   },
   {
     name: 'started',
     label: () => translate('Started'),
-    isVisible: true
+    isVisible: true,
   },
   {
     name: 'ended',
     label: () => translate('Ended'),
-    isVisible: true
+    isVisible: true,
   },
   {
     name: 'duration',
     label: () => translate('Duration'),
-    isVisible: true
+    isVisible: true,
   },
   {
     name: 'actions',
-    isVisible: true
-  }
+    isVisible: true,
+  },
 ];
 
 function QueuedTasks(props) {
-  const {
-    isFetching,
-    isPopulated,
-    items
-  } = props;
+  const { isFetching, isPopulated, items } = props;
 
   return (
     <FieldSet legend={translate('Queue')}>
-      {
-        isFetching && !isPopulated &&
-          <LoadingIndicator />
-      }
+      {isFetching && !isPopulated && <LoadingIndicator />}
 
-      {
-        isPopulated &&
-          <Table
-            columns={columns}
-          >
-            <TableBody>
-              {
-                items.map((item) => {
-                  return (
-                    <QueuedTaskRowConnector
-                      key={item.id}
-                      {...item}
-                    />
-                  );
-                })
-              }
-            </TableBody>
-          </Table>
-      }
+      {isPopulated && (
+        <Table columns={columns}>
+          <TableBody>
+            {items.map((item) => {
+              return <QueuedTaskRowConnector key={item.id} {...item} />;
+            })}
+          </TableBody>
+        </Table>
+      )}
     </FieldSet>
   );
 }
@@ -84,7 +67,7 @@ function QueuedTasks(props) {
 QueuedTasks.propTypes = {
   isFetching: PropTypes.bool.isRequired,
   isPopulated: PropTypes.bool.isRequired,
-  items: PropTypes.array.isRequired
+  items: PropTypes.array.isRequired,
 };
 
 export default QueuedTasks;

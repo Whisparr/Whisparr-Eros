@@ -16,14 +16,11 @@ import translate from 'Utilities/String/translate';
 import styles from './EditPerformerModalContent.css';
 
 class EditPerformerModalContent extends Component {
-
   //
   // Listeners
 
   onSavePress = () => {
-    const {
-      onSavePress
-    } = this.props;
+    const { onSavePress } = this.props;
 
     onSavePress(false);
   };
@@ -52,7 +49,7 @@ class EditPerformerModalContent extends Component {
       // Id,
       rootFolderPath,
       tags,
-      searchOnAdd
+      searchOnAdd,
     } = item;
 
     return (
@@ -63,22 +60,19 @@ class EditPerformerModalContent extends Component {
 
         <ModalBody>
           <div className={styles.container}>
-            {
-              !isSmallScreen &&
-                <div className={styles.poster}>
-                  <MovieHeadshot
-                    safeForWorkMode={safeForWorkMode}
-                    className={styles.poster}
-                    images={images}
-                    size={250}
-                  />
-                </div>
-            }
+            {!isSmallScreen && (
+              <div className={styles.poster}>
+                <MovieHeadshot
+                  safeForWorkMode={safeForWorkMode}
+                  className={styles.poster}
+                  images={images}
+                  size={250}
+                />
+              </div>
+            )}
 
             <div className={styles.info}>
-              <Form
-                {...otherProps}
-              >
+              <Form {...otherProps}>
                 <FormGroup>
                   <FormLabel>{translate('MonitoredScene')}</FormLabel>
 
@@ -157,16 +151,9 @@ class EditPerformerModalContent extends Component {
         </ModalBody>
 
         <ModalFooter>
-          <Button
-            onPress={onModalClose}
-          >
-            {translate('Cancel')}
-          </Button>
+          <Button onPress={onModalClose}>{translate('Cancel')}</Button>
 
-          <SpinnerButton
-            isSpinning={isSaving}
-            onPress={this.onSavePress}
-          >
+          <SpinnerButton isSpinning={isSaving} onPress={this.onSavePress}>
             {translate('Save')}
           </SpinnerButton>
         </ModalFooter>
@@ -187,7 +174,7 @@ EditPerformerModalContent.propTypes = {
   safeForWorkMode: PropTypes.bool.isRequired,
   onInputChange: PropTypes.func.isRequired,
   onSavePress: PropTypes.func.isRequired,
-  onModalClose: PropTypes.func.isRequired
+  onModalClose: PropTypes.func.isRequired,
 };
 
 export default EditPerformerModalContent;

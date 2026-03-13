@@ -5,10 +5,7 @@ import AddDownloadClientModalContentConnector from './AddDownloadClientModalCont
 
 function AddDownloadClientModal({ isOpen, onModalClose, ...otherProps }) {
   return (
-    <Modal
-      isOpen={isOpen}
-      onModalClose={onModalClose}
-    >
+    <Modal isOpen={isOpen} onModalClose={onModalClose}>
       <AddDownloadClientModalContentConnector
         {...otherProps}
         onModalClose={onModalClose}
@@ -19,7 +16,7 @@ function AddDownloadClientModal({ isOpen, onModalClose, ...otherProps }) {
 
 AddDownloadClientModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
-  onModalClose: PropTypes.func.isRequired
+  onModalClose: PropTypes.func.isRequired,
 };
 
 export default AddDownloadClientModal;

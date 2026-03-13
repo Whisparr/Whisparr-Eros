@@ -29,7 +29,6 @@ function getViewComponent(view) {
 }
 
 class Collection extends Component {
-
   //
   // Lifecycle
 
@@ -48,7 +47,7 @@ class Collection extends Component {
       allSelected: false,
       allUnselected: false,
       lastToggled: null,
-      selectedState: {}
+      selectedState: {},
     };
   }
 
@@ -58,15 +57,12 @@ class Collection extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    const {
-      items,
-      sortKey,
-      sortDirection
-    } = this.props;
+    const { items, sortKey, sortDirection } = this.props;
 
-    if (sortKey !== prevProps.sortKey ||
-        sortDirection !== prevProps.sortDirection ||
-        hasDifferentItemsOrOrder(prevProps.items, items)
+    if (
+      sortKey !== prevProps.sortKey ||
+      sortDirection !== prevProps.sortDirection ||
+      hasDifferentItemsOrOrder(prevProps.items, items)
     ) {
       this.setJumpBarItems();
       this.setSelectedState();
@@ -88,13 +84,9 @@ class Collection extends Component {
   };
 
   setSelectedState() {
-    const {
-      items
-    } = this.props;
+    const { items } = this.props;
 
-    const {
-      selectedState
-    } = this.state;
+    const { selectedState } = this.state;
 
     const newSelectedState = {};
 
@@ -119,15 +111,15 @@ class Collection extends Component {
       isAllSelected = true;
     }
 
-    this.setState({ selectedState: newSelectedState, allSelected: isAllSelected, allUnselected: isAllUnselected });
+    this.setState({
+      selectedState: newSelectedState,
+      allSelected: isAllSelected,
+      allUnselected: isAllUnselected,
+    });
   }
 
   setJumpBarItems() {
-    const {
-      items,
-      sortKey,
-      sortDirection
-    } = this.props;
+    const { items, sortKey, sortDirection } = this.props;
 
     // Reset if not sorting by sortTitle
     if (sortKey !== 'sortTitle') {
@@ -135,21 +127,25 @@ class Collection extends Component {
       return;
     }
 
-    const characters = _.reduce(items, (acc, item) => {
-      let char = item.sortTitle.charAt(0);
+    const characters = _.reduce(
+      items,
+      (acc, item) => {
+        let char = item.sortTitle.charAt(0);
 
-      if (!isNaN(char)) {
-        char = '#';
-      }
+        if (!isNaN(char)) {
+          char = '#';
+        }
 
-      if (char in acc) {
-        acc[char] = acc[char] + 1;
-      } else {
-        acc[char] = 1;
-      }
+        if (char in acc) {
+          acc[char] = acc[char] + 1;
+        } else {
+          acc[char] = 1;
+        }
 
-      return acc;
-    }, {});
+        return acc;
+      },
+      {}
+    );
 
     const order = Object.keys(characters).sort();
 
@@ -160,7 +156,7 @@ class Collection extends Component {
 
     const jumpBarItems = {
       characters,
-      order
+      order,
     };
 
     this.setState({ jumpBarItems });
@@ -202,7 +198,7 @@ class Collection extends Component {
   onUpdateSelectedPress = (changes) => {
     this.props.onUpdateSelectedPress({
       collectionIds: this.getSelectedIds(),
-      ...changes
+      ...changes,
     });
   };
 
@@ -238,13 +234,18 @@ class Collection extends Component {
       isOverviewOptionsModalOpen,
       selectedState,
       allSelected,
-      allUnselected
+      allUnselected,
     } = this.state;
 
     const selectedMovieIds = this.getSelectedIds();
 
     const ViewComponent = getViewComponent(view);
-    const isLoaded = !!(!error && isPopulated && items.length && this.scrollerRef.current);
+    const isLoaded = !!(
+      !error &&
+      isPopulated &&
+      items.length &&
+      this.scrollerRef.current
+    );
     const hasNoCollection = !totalItems;
 
     return (
@@ -259,7 +260,9 @@ class Collection extends Component {
               onPress={this.onRefreshMovieCollectionsPress}
             />
             <PageToolbarButton
-              label={allSelected ? translate('UnselectAll') : translate('SelectAll')}
+              label={
+                allSelected ? translate('UnselectAll') : translate('SelectAll')
+              }
               iconName={icons.CHECK_SQUARE}
               isDisabled={hasNoCollection}
               onPress={this.onSelectAllPress}
@@ -270,20 +273,17 @@ class Collection extends Component {
             alignContent={align.RIGHT}
             collapseButtons={false}
           >
-            {
-              view === 'overview' ?
-                <PageToolbarButton
-                  label={translate('Options')}
-                  iconName={icons.OVERVIEW}
-                  onPress={this.onOverviewOptionsPress}
-                /> :
-                null
-            }
+            {view === 'overview' ? (
+              <PageToolbarButton
+                label={translate('Options')}
+                iconName={icons.OVERVIEW}
+                onPress={this.onOverviewOptionsPress}
+              />
+            ) : null}
 
-            {
-              (view === 'posters' || view === 'overview') &&
-                <PageToolbarSeparator />
-            }
+            {(view === 'posters' || view === 'overview') && (
+              <PageToolbarSeparator />
+            )}
 
             <MovieCollectionSortMenu
               sortKey={sortKey}
@@ -309,63 +309,55 @@ class Collection extends Component {
             innerClassName={styles[`${view}InnerContentBody`]}
             onScroll={onScroll}
           >
-            {
-              isFetching && !isPopulated &&
-                <LoadingIndicator />
-            }
+            {isFetching && !isPopulated && <LoadingIndicator />}
 
-            {
-              !isFetching && !!error &&
-                <Alert kind={kinds.DANGER}>
-                  {translate('UnableToLoadCollections')}
-                </Alert>
-            }
+            {!isFetching && !!error && (
+              <Alert kind={kinds.DANGER}>
+                {translate('UnableToLoadCollections')}
+              </Alert>
+            )}
 
-            {
-              isLoaded &&
-                <div className={styles.contentBodyContainer}>
-                  <ViewComponent
-                    scroller={this.scrollerRef.current}
-                    items={items}
-                    filters={filters}
-                    sortKey={sortKey}
-                    sortDirection={sortDirection}
-                    jumpToCharacter={jumpToCharacter}
-                    allSelected={allSelected}
-                    allUnselected={allUnselected}
-                    onSelectedChange={this.onSelectedChange}
-                    onSelectAllChange={this.onSelectAllChange}
-                    selectedState={selectedState}
-                    scrollTop={initialScrollTop}
-                    {...otherProps}
-                  />
-                </div>
-            }
+            {isLoaded && (
+              <div className={styles.contentBodyContainer}>
+                <ViewComponent
+                  scroller={this.scrollerRef.current}
+                  items={items}
+                  filters={filters}
+                  sortKey={sortKey}
+                  sortDirection={sortDirection}
+                  jumpToCharacter={jumpToCharacter}
+                  allSelected={allSelected}
+                  allUnselected={allUnselected}
+                  onSelectedChange={this.onSelectedChange}
+                  onSelectAllChange={this.onSelectAllChange}
+                  selectedState={selectedState}
+                  scrollTop={initialScrollTop}
+                  {...otherProps}
+                />
+              </div>
+            )}
 
-            {
-              !error && isPopulated && !items.length &&
-                <NoMovieCollections totalItems={totalItems} />
-            }
+            {!error && isPopulated && !items.length && (
+              <NoMovieCollections totalItems={totalItems} />
+            )}
           </PageContentBody>
 
-          {
-            isLoaded && !!jumpBarItems.order.length &&
-              <PageJumpBar
-                items={jumpBarItems}
-                onItemPress={this.onJumpBarItemPress}
-              />
-          }
+          {isLoaded && !!jumpBarItems.order.length && (
+            <PageJumpBar
+              items={jumpBarItems}
+              onItemPress={this.onJumpBarItemPress}
+            />
+          )}
         </div>
 
-        {
-          isLoaded &&
-            <CollectionFooter
-              selectedIds={selectedMovieIds}
-              isSaving={isSaving}
-              isAdding={isAdding}
-              onUpdateSelectedPress={this.onUpdateSelectedPress}
-            />
-        }
+        {isLoaded && (
+          <CollectionFooter
+            selectedIds={selectedMovieIds}
+            isSaving={isSaving}
+            isAdding={isAdding}
+            onUpdateSelectedPress={this.onUpdateSelectedPress}
+          />
+        )}
 
         <CollectionOverviewOptionsModal
           isOpen={isOverviewOptionsModalOpen}
@@ -385,7 +377,8 @@ Collection.propTypes = {
   error: PropTypes.object,
   totalItems: PropTypes.number.isRequired,
   items: PropTypes.arrayOf(PropTypes.object).isRequired,
-  selectedFilterKey: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  selectedFilterKey: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+    .isRequired,
   filters: PropTypes.arrayOf(PropTypes.object).isRequired,
   customFilters: PropTypes.arrayOf(PropTypes.object).isRequired,
   sortKey: PropTypes.string,
@@ -397,7 +390,7 @@ Collection.propTypes = {
   onFilterSelect: PropTypes.func.isRequired,
   onScroll: PropTypes.func.isRequired,
   onUpdateSelectedPress: PropTypes.func.isRequired,
-  onRefreshMovieCollectionsPress: PropTypes.func.isRequired
+  onRefreshMovieCollectionsPress: PropTypes.func.isRequired,
 };
 
 export default Collection;

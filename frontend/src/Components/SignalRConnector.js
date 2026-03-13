@@ -6,8 +6,17 @@ import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
 import { queryClient } from 'App/queryClient';
 import { setAppValue, setVersion } from 'Store/Actions/appActions';
-import { removeItem, update, updateItem, updateItemsBatch } from 'Store/Actions/baseActions';
-import { fetchCommands, finishCommand, updateCommand } from 'Store/Actions/commandActions';
+import {
+  removeItem,
+  update,
+  updateItem,
+  updateItemsBatch,
+} from 'Store/Actions/baseActions';
+import {
+  fetchCommands,
+  finishCommand,
+  updateCommand,
+} from 'Store/Actions/commandActions';
 import { fetchQueue, fetchQueueDetails } from 'Store/Actions/queueActions';
 import { fetchRootFolders } from 'Store/Actions/rootFolderActions';
 import { fetchQualityDefinitions } from 'Store/Actions/settingsActions';
@@ -32,7 +41,7 @@ function createMapStateToProps() {
       return {
         isReconnecting,
         isDisconnected,
-        isQueuePopulated
+        isQueuePopulated,
       };
     }
   );
@@ -54,35 +63,46 @@ const mapDispatchToProps = {
   dispatchFetchQueueDetails: fetchQueueDetails,
   dispatchFetchRootFolders: fetchRootFolders,
   dispatchFetchTags: fetchTags,
-  dispatchFetchTagDetails: fetchTagDetails
+  dispatchFetchTagDetails: fetchTagDetails,
 };
 
 function Logger(minimumLogLevel) {
   this.minimumLogLevel = minimumLogLevel;
 }
 
-Logger.prototype.cleanse = function(message) {
-  const apikey = new RegExp(`access_token=${encodeURIComponent(window.Whisparr.apiKey)}`, 'g');
+Logger.prototype.cleanse = function (message) {
+  const apikey = new RegExp(
+    `access_token=${encodeURIComponent(window.Whisparr.apiKey)}`,
+    'g'
+  );
   return message.replace(apikey, 'access_token=(removed)');
 };
 
-Logger.prototype.log = function(logLevel, message) {
+Logger.prototype.log = function (logLevel, message) {
   // see https://github.com/aspnet/AspNetCore/blob/21c9e2cc954c10719878839cd3f766aca5f57b34/src/SignalR/clients/ts/signalr/src/Utils.ts#L147
   if (logLevel >= this.minimumLogLevel) {
     switch (logLevel) {
       case signalR.LogLevel.Critical:
       case signalR.LogLevel.Error:
-        console.error(`[signalR] ${signalR.LogLevel[logLevel]}: ${this.cleanse(message)}`);
+        console.error(
+          `[signalR] ${signalR.LogLevel[logLevel]}: ${this.cleanse(message)}`
+        );
         break;
       case signalR.LogLevel.Warning:
-        console.warn(`[signalR] ${signalR.LogLevel[logLevel]}: ${this.cleanse(message)}`);
+        console.warn(
+          `[signalR] ${signalR.LogLevel[logLevel]}: ${this.cleanse(message)}`
+        );
         break;
       case signalR.LogLevel.Information:
-        console.info(`[signalR] ${signalR.LogLevel[logLevel]}: ${this.cleanse(message)}`);
+        console.info(
+          `[signalR] ${signalR.LogLevel[logLevel]}: ${this.cleanse(message)}`
+        );
         break;
       default:
         // console.debug only goes to attached debuggers in Node, so we use console.log for Trace and Debug
-        console.log(`[signalR] ${signalR.LogLevel[logLevel]}: ${this.cleanse(message)}`);
+        console.log(
+          `[signalR] ${signalR.LogLevel[logLevel]}: ${this.cleanse(message)}`
+        );
         break;
     }
   }
@@ -95,7 +115,7 @@ function updateMovieDetailsQueryCache(updatedMovie) {
   // Don't trigger a re-fetch, as this method can be called rapid-fire
   queryClient.invalidateQueries({
     queryKey: [queryKey],
-    refetchType: 'none'
+    refetchType: 'none',
   });
 }
 
@@ -109,7 +129,7 @@ function updateMovieInPerformerWorksQueryCache(updatedMovie) {
     if (
       Array.isArray(queryKey) &&
       typeof queryKey[0] === 'string' &&
-      (/performer\/[^/]+\/works$/).test(queryKey[0])
+      /performer\/[^/]+\/works$/.test(queryKey[0])
     ) {
       queryClient.setQueryData(queryKey, (oldData) => {
         if (!Array.isArray(oldData)) {
@@ -186,7 +206,7 @@ function removeMovieQueryCache(updatedMovie) {
   }
 
   queryClient.removeQueries({
-    queryKey: [`/movie/${updatedMovie.titleSlug}`]
+    queryKey: [`/movie/${updatedMovie.titleSlug}`],
   });
 }
 
@@ -196,11 +216,11 @@ function removePerformerQueryCache(updatedPerformer) {
   }
 
   queryClient.removeQueries({
-    queryKey: [`/performer/${updatedPerformer.foreignId}`]
+    queryKey: [`/performer/${updatedPerformer.foreignId}`],
   });
 
   queryClient.removeQueries({
-    queryKey: [`/performer/${updatedPerformer.foreignId}/works`]
+    queryKey: [`/performer/${updatedPerformer.foreignId}/works`],
   });
 }
 
@@ -210,17 +230,17 @@ function removeStudioQueryCache(updatedStudio) {
   }
 
   queryClient.removeQueries({
-    queryKey: [`/studio/${updatedStudio.foreignId}`]
+    queryKey: [`/studio/${updatedStudio.foreignId}`],
   });
 
   queryClient.removeQueries({
-    queryKey: [`/studio/${updatedStudio.foreignId}/works`]
+    queryKey: [`/studio/${updatedStudio.foreignId}/works`],
   });
 }
 
 function invalidateMoviePagedQueryCache() {
   queryClient.invalidateQueries({
-    queryKey: ['/movie/paged']
+    queryKey: ['/movie/paged'],
   });
 }
 
@@ -232,7 +252,7 @@ function invalidatePerformerPagedQueryCache() {
         typeof query.queryKey[0] === 'string' &&
         query.queryKey[0].startsWith('/performer/paged')
       );
-    }
+    },
   });
 }
 
@@ -244,12 +264,11 @@ function invalidateStudioPagedQueryCache() {
         typeof query.queryKey[0] === 'string' &&
         query.queryKey[0].startsWith('/studio/paged')
       );
-    }
+    },
   });
 }
 
 class SignalRConnector extends Component {
-
   //
   // Lifecycle
 
@@ -266,14 +285,16 @@ class SignalRConnector extends Component {
 
     this.connection = new signalR.HubConnectionBuilder()
       .configureLogging(new Logger(signalR.LogLevel.Information))
-      .withUrl(`${url}?access_token=${encodeURIComponent(window.Whisparr.apiKey)}`)
+      .withUrl(
+        `${url}?access_token=${encodeURIComponent(window.Whisparr.apiKey)}`
+      )
       .withAutomaticReconnect({
         nextRetryDelayInMilliseconds: (retryContext) => {
           if (retryContext.elapsedMilliseconds > 180000) {
             this.props.dispatchSetAppValue({ isDisconnected: true });
           }
           return Math.min(retryContext.previousRetryCount, 10) * 1000;
-        }
+        },
       })
       .build();
 
@@ -294,10 +315,7 @@ class SignalRConnector extends Component {
   //
   // Control
   handleMessage = (message) => {
-    const {
-      name,
-      body
-    } = message;
+    const { name, body } = message;
 
     const handler = this[getHandlerName(name)];
 
@@ -314,7 +332,7 @@ class SignalRConnector extends Component {
       this.props.dispatchUpdateItem({
         section: 'calendar',
         updateOnly: true,
-        ...body.resource
+        ...body.resource,
       });
     }
   };
@@ -514,7 +532,7 @@ class SignalRConnector extends Component {
       this.props.dispatchUpdateItem({
         section: 'wanted.cutoffUnmet',
         updateOnly: true,
-        ...body.resource
+        ...body.resource,
       });
     }
   };
@@ -524,7 +542,7 @@ class SignalRConnector extends Component {
       this.props.dispatchUpdateItem({
         section: 'wanted.missing',
         updateOnly: true,
-        ...body.resource
+        ...body.resource,
       });
     }
   };
@@ -556,7 +574,7 @@ class SignalRConnector extends Component {
       isConnected: false,
       isReconnecting: false,
       isDisconnected: false,
-      isRestarting: false
+      isRestarting: false,
     });
   };
 
@@ -567,7 +585,7 @@ class SignalRConnector extends Component {
       isConnected: true,
       isReconnecting: false,
       isDisconnected: false,
-      isRestarting: false
+      isRestarting: false,
     });
   };
 
@@ -576,17 +594,13 @@ class SignalRConnector extends Component {
   };
 
   onReconnected = () => {
-
-    const {
-      dispatchFetchCommands,
-      dispatchSetAppValue
-    } = this.props;
+    const { dispatchFetchCommands, dispatchSetAppValue } = this.props;
 
     dispatchSetAppValue({
       isConnected: true,
       isReconnecting: false,
       isDisconnected: false,
-      isRestarting: false
+      isRestarting: false,
     });
 
     // Repopulate the page (if a repopulator is set) to ensure things
@@ -634,7 +648,10 @@ SignalRConnector.propTypes = {
   dispatchFetchQueueDetails: PropTypes.func.isRequired,
   dispatchFetchRootFolders: PropTypes.func.isRequired,
   dispatchFetchTags: PropTypes.func.isRequired,
-  dispatchFetchTagDetails: PropTypes.func.isRequired
+  dispatchFetchTagDetails: PropTypes.func.isRequired,
 };
 
-export default connect(createMapStateToProps, mapDispatchToProps)(SignalRConnector);
+export default connect(
+  createMapStateToProps,
+  mapDispatchToProps
+)(SignalRConnector);

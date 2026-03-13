@@ -10,14 +10,11 @@ import AddSpecificationPresetMenuItem from './AddSpecificationPresetMenuItem';
 import styles from './AddSpecificationItem.css';
 
 class AddSpecificationItem extends Component {
-
   //
   // Listeners
 
   onSpecificationSelect = () => {
-    const {
-      implementation
-    } = this.props;
+    const { implementation } = this.props;
 
     this.props.onSpecificationSelect({ implementation });
   };
@@ -31,66 +28,53 @@ class AddSpecificationItem extends Component {
       implementationName,
       infoLink,
       presets,
-      onSpecificationSelect
+      onSpecificationSelect,
     } = this.props;
 
     const hasPresets = !!presets && !!presets.length;
 
     return (
-      <div
-        className={styles.specification}
-      >
+      <div className={styles.specification}>
         <Link
           className={styles.underlay}
           onPress={this.onSpecificationSelect}
         />
 
         <div className={styles.overlay}>
-          <div className={styles.name}>
-            {implementationName}
-          </div>
+          <div className={styles.name}>{implementationName}</div>
 
           <div className={styles.actions}>
-            {
-              hasPresets &&
-                <span>
+            {hasPresets && (
+              <span>
+                <Button size={sizes.SMALL} onPress={this.onSpecificationSelect}>
+                  {translate('Custom')}
+                </Button>
+
+                <Menu className={styles.presetsMenu}>
                   <Button
+                    className={styles.presetsMenuButton}
                     size={sizes.SMALL}
-                    onPress={this.onSpecificationSelect}
                   >
-                    {translate('Custom')}
+                    {translate('Presets')}
                   </Button>
 
-                  <Menu className={styles.presetsMenu}>
-                    <Button
-                      className={styles.presetsMenuButton}
-                      size={sizes.SMALL}
-                    >
-                      {translate('Presets')}
-                    </Button>
+                  <MenuContent>
+                    {presets.map((preset, index) => {
+                      return (
+                        <AddSpecificationPresetMenuItem
+                          key={index}
+                          name={preset.name}
+                          implementation={implementation}
+                          onPress={onSpecificationSelect}
+                        />
+                      );
+                    })}
+                  </MenuContent>
+                </Menu>
+              </span>
+            )}
 
-                    <MenuContent>
-                      {
-                        presets.map((preset, index) => {
-                          return (
-                            <AddSpecificationPresetMenuItem
-                              key={index}
-                              name={preset.name}
-                              implementation={implementation}
-                              onPress={onSpecificationSelect}
-                            />
-                          );
-                        })
-                      }
-                    </MenuContent>
-                  </Menu>
-                </span>
-            }
-
-            <Button
-              to={infoLink}
-              size={sizes.SMALL}
-            >
+            <Button to={infoLink} size={sizes.SMALL}>
               {translate('MoreInfo')}
             </Button>
           </div>
@@ -105,7 +89,7 @@ AddSpecificationItem.propTypes = {
   implementationName: PropTypes.string.isRequired,
   infoLink: PropTypes.string.isRequired,
   presets: PropTypes.arrayOf(PropTypes.object),
-  onSpecificationSelect: PropTypes.func.isRequired
+  onSpecificationSelect: PropTypes.func.isRequired,
 };
 
 export default AddSpecificationItem;

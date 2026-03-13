@@ -13,7 +13,6 @@ import RemotePathMapping from './RemotePathMapping';
 import styles from './RemotePathMappings.css';
 
 class RemotePathMappings extends Component {
-
   //
   // Lifecycle
 
@@ -21,7 +20,7 @@ class RemotePathMappings extends Component {
     super(props, context);
 
     this.state = {
-      isAddRemotePathMappingModalOpen: false
+      isAddRemotePathMappingModalOpen: false,
     };
   }
 
@@ -40,11 +39,8 @@ class RemotePathMappings extends Component {
   // Render
 
   render() {
-    const {
-      items,
-      onConfirmDeleteRemotePathMapping,
-      ...otherProps
-    } = this.props;
+    const { items, onConfirmDeleteRemotePathMapping, ...otherProps } =
+      this.props;
 
     return (
       <FieldSet legend={translate('RemotePathMappings')}>
@@ -52,37 +48,35 @@ class RemotePathMappings extends Component {
           errorMessage={translate('RemotePathMappingsLoadError')}
           {...otherProps}
         >
-
           <Alert kind={kinds.INFO}>
-            <InlineMarkdown data={translate('RemotePathMappingsInfo', { wikiLink: 'https://wiki.servarr.com/whisparr/settings#remote-path-mappings' })} />
+            <InlineMarkdown
+              data={translate('RemotePathMappingsInfo', {
+                wikiLink:
+                  'https://wiki.servarr.com/whisparr/settings#remote-path-mappings',
+              })}
+            />
           </Alert>
 
           <div className={styles.remotePathMappingsHeader}>
-            <div className={styles.host}>
-              {translate('Host')}
-            </div>
-            <div className={styles.path}>
-              {translate('RemotePath')}
-            </div>
-            <div className={styles.path}>
-              {translate('LocalPath')}
-            </div>
+            <div className={styles.host}>{translate('Host')}</div>
+            <div className={styles.path}>{translate('RemotePath')}</div>
+            <div className={styles.path}>{translate('LocalPath')}</div>
           </div>
 
           <div>
-            {
-              items.map((item, index) => {
-                return (
-                  <RemotePathMapping
-                    key={item.id}
-                    {...item}
-                    {...otherProps}
-                    index={index}
-                    onConfirmDeleteRemotePathMapping={onConfirmDeleteRemotePathMapping}
-                  />
-                );
-              })
-            }
+            {items.map((item, index) => {
+              return (
+                <RemotePathMapping
+                  key={item.id}
+                  {...item}
+                  {...otherProps}
+                  index={index}
+                  onConfirmDeleteRemotePathMapping={
+                    onConfirmDeleteRemotePathMapping
+                  }
+                />
+              );
+            })}
           </div>
 
           <div className={styles.addRemotePathMapping}>
@@ -108,7 +102,7 @@ RemotePathMappings.propTypes = {
   isFetching: PropTypes.bool.isRequired,
   error: PropTypes.object,
   items: PropTypes.arrayOf(PropTypes.object).isRequired,
-  onConfirmDeleteRemotePathMapping: PropTypes.func.isRequired
+  onConfirmDeleteRemotePathMapping: PropTypes.func.isRequired,
 };
 
 export default RemotePathMappings;

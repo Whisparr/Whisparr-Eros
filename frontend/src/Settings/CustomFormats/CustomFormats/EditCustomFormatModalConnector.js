@@ -10,11 +10,10 @@ function mapStateToProps() {
 }
 
 const mapDispatchToProps = {
-  clearPendingChanges
+  clearPendingChanges,
 };
 
 class EditCustomFormatModalConnector extends Component {
-
   //
   // Listeners
 
@@ -28,10 +27,7 @@ class EditCustomFormatModalConnector extends Component {
 
   render() {
     return (
-      <EditCustomFormatModal
-        {...this.props}
-        onModalClose={this.onModalClose}
-      />
+      <EditCustomFormatModal {...this.props} onModalClose={this.onModalClose} />
     );
   }
 }
@@ -39,7 +35,10 @@ class EditCustomFormatModalConnector extends Component {
 EditCustomFormatModalConnector.propTypes = {
   ...EditCustomFormatModalContentConnector.propTypes,
   onModalClose: PropTypes.func.isRequired,
-  clearPendingChanges: PropTypes.func.isRequired
+  clearPendingChanges: PropTypes.func.isRequired,
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(EditCustomFormatModalConnector);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(EditCustomFormatModalConnector);

@@ -19,7 +19,7 @@ export const defaultState = {
   error: null,
   directories: [],
   files: [],
-  parent: null
+  parent: null,
 };
 
 //
@@ -40,14 +40,13 @@ export const clearPaths = createAction(CLEAR_PATHS);
 // Action Handlers
 
 export const actionHandlers = handleThunks({
-
-  [FETCH_PATHS]: function(getState, payload, dispatch) {
+  [FETCH_PATHS]: function (getState, payload, dispatch) {
     dispatch(set({ section, isFetching: true }));
 
     const {
       path,
       allowFoldersWithoutTrailingSlashes = false,
-      includeFiles = false
+      includeFiles = false,
     } = payload;
 
     const promise = createAjaxRequest({
@@ -55,58 +54,63 @@ export const actionHandlers = handleThunks({
       data: {
         path,
         allowFoldersWithoutTrailingSlashes,
-        includeFiles
-      }
+        includeFiles,
+      },
     }).request;
 
     promise.done((data) => {
       dispatch(updatePaths({ path, ...data }));
 
-      dispatch(set({
-        section,
-        isFetching: false,
-        isPopulated: true,
-        error: null
-      }));
+      dispatch(
+        set({
+          section,
+          isFetching: false,
+          isPopulated: true,
+          error: null,
+        })
+      );
     });
 
     promise.fail((xhr) => {
-      dispatch(set({
-        section,
-        isFetching: false,
-        isPopulated: false,
-        error: xhr
-      }));
+      dispatch(
+        set({
+          section,
+          isFetching: false,
+          isPopulated: false,
+          error: xhr,
+        })
+      );
     });
-  }
-
+  },
 });
 
 //
 // Reducers
 
-export const reducers = createHandleActions({
+export const reducers = createHandleActions(
+  {
+    [UPDATE_PATHS]: (state, { payload }) => {
+      const newState = Object.assign({}, state);
 
-  [UPDATE_PATHS]: (state, { payload }) => {
-    const newState = Object.assign({}, state);
+      newState.currentPath = payload.path;
+      newState.directories = payload.directories;
+      newState.files = payload.files;
+      newState.parent = payload.parent;
 
-    newState.currentPath = payload.path;
-    newState.directories = payload.directories;
-    newState.files = payload.files;
-    newState.parent = payload.parent;
+      return newState;
+    },
 
-    return newState;
+    [CLEAR_PATHS]: (state, { payload }) => {
+      const newState = Object.assign({}, state);
+
+      newState.path = '';
+      newState.directories = [];
+      newState.files = [];
+      newState.parent = '';
+
+      return newState;
+    },
   },
-
-  [CLEAR_PATHS]: (state, { payload }) => {
-    const newState = Object.assign({}, state);
-
-    newState.path = '';
-    newState.directories = [];
-    newState.files = [];
-    newState.parent = '';
-
-    return newState;
-  }
-
-}, defaultState, section);
+  defaultState,
+  section
+);

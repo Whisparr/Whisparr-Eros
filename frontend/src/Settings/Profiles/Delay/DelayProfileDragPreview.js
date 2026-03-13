@@ -13,22 +13,16 @@ function collectDragLayer(monitor) {
   return {
     item: monitor.getItem(),
     itemType: monitor.getItemType(),
-    currentOffset: monitor.getSourceClientOffset()
+    currentOffset: monitor.getSourceClientOffset(),
   };
 }
 
 class DelayProfileDragPreview extends Component {
-
   //
   // Render
 
   render() {
-    const {
-      width,
-      item,
-      itemType,
-      currentOffset
-    } = this.props;
+    const { width, item, itemType, currentOffset } = this.props;
 
     if (!currentOffset || itemType !== DELAY_PROFILE) {
       return null;
@@ -46,19 +40,13 @@ class DelayProfileDragPreview extends Component {
       position: 'absolute',
       WebkitTransform: transform,
       msTransform: transform,
-      transform
+      transform,
     };
 
     return (
       <DragPreviewLayer>
-        <div
-          className={styles.dragPreview}
-          style={style}
-        >
-          <DelayProfile
-            isDragging={false}
-            {...item}
-          />
+        <div className={styles.dragPreview} style={style}>
+          <DelayProfile isDragging={false} {...item} />
         </div>
       </DragPreviewLayer>
     );
@@ -71,8 +59,8 @@ DelayProfileDragPreview.propTypes = {
   itemType: PropTypes.string,
   currentOffset: PropTypes.shape({
     x: PropTypes.number.isRequired,
-    y: PropTypes.number.isRequired
-  })
+    y: PropTypes.number.isRequired,
+  }),
 };
 
 export default DragLayer(collectDragLayer)(DelayProfileDragPreview);

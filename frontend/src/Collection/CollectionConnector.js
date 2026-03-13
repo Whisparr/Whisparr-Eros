@@ -9,9 +9,12 @@ import {
   fetchMovieCollections,
   saveMovieCollections,
   setMovieCollectionsFilter,
-  setMovieCollectionsSort
+  setMovieCollectionsSort,
 } from 'Store/Actions/movieCollectionActions';
-import { clearQueueDetails, fetchQueueDetails } from 'Store/Actions/queueActions';
+import {
+  clearQueueDetails,
+  fetchQueueDetails,
+} from 'Store/Actions/queueActions';
 import scrollPositions from 'Store/scrollPositions';
 import createCollectionClientSideCollectionItemsSelector from 'Store/Selectors/createCollectionClientSideCollectionItemsSelector';
 import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
@@ -23,15 +26,11 @@ function createMapStateToProps() {
     createCollectionClientSideCollectionItemsSelector('movieCollections'),
     createCommandExecutingSelector(commandNames.REFRESH_COLLECTIONS),
     createDimensionsSelector(),
-    (
-      collections,
-      isRefreshingCollections,
-      dimensionsState
-    ) => {
+    (collections, isRefreshingCollections, dimensionsState) => {
       return {
         ...collections,
         isRefreshingCollections,
-        isSmallScreen: dimensionsState.isSmallScreen
+        isSmallScreen: dimensionsState.isSmallScreen,
       };
     }
   );
@@ -58,15 +57,16 @@ function createMapDispatchToProps(dispatch, props) {
       dispatch(setMovieCollectionsFilter({ selectedFilterKey }));
     },
     onRefreshMovieCollectionsPress() {
-      dispatch(executeCommand({
-        name: commandNames.REFRESH_COLLECTIONS
-      }));
-    }
+      dispatch(
+        executeCommand({
+          name: commandNames.REFRESH_COLLECTIONS,
+        })
+      );
+    },
   };
 }
 
 class CollectionConnector extends Component {
-
   //
   // Lifecycle
 
@@ -118,7 +118,7 @@ CollectionConnector.propTypes = {
   onUpdateSelectedPress: PropTypes.func.isRequired,
   dispatchFetchMovieCollections: PropTypes.func.isRequired,
   dispatchFetchQueueDetails: PropTypes.func.isRequired,
-  dispatchClearQueueDetails: PropTypes.func.isRequired
+  dispatchClearQueueDetails: PropTypes.func.isRequired,
 };
 
 export default withScrollPosition(

@@ -36,26 +36,26 @@ export const defaultState = {
   recentFolders: [],
   importMode: 'chooseImportMode',
   sortPredicates: {
-    relativePath: function(item, direction) {
+    relativePath: function (item, direction) {
       const relativePath = item.relativePath;
 
       return naturalExpansion(relativePath.toLowerCase());
     },
 
-    movie: function(item, direction) {
+    movie: function (item, direction) {
       const movie = item.movie;
 
       return movie ? movie.sortTitle : '';
     },
 
-    quality: function(item, direction) {
+    quality: function (item, direction) {
       return item.qualityWeight || 0;
     },
 
-    customFormats: function(item, direction) {
+    customFormats: function (item, direction) {
       return item.customFormatScore;
-    }
-  }
+    },
+  },
 };
 
 export const persistState = [
@@ -63,45 +63,69 @@ export const persistState = [
   'interactiveImport.sortDirection',
   'interactiveImport.favoriteFolders',
   'interactiveImport.recentFolders',
-  'interactiveImport.importMode'
+  'interactiveImport.importMode',
 ];
 
 //
 // Actions Types
 
-export const FETCH_INTERACTIVE_IMPORT_ITEMS = 'interactiveImport/fetchInteractiveImportItems';
-export const REPROCESS_INTERACTIVE_IMPORT_ITEMS = 'interactiveImport/reprocessInteractiveImportItems';
-export const SET_INTERACTIVE_IMPORT_SORT = 'interactiveImport/setInteractiveImportSort';
-export const UPDATE_INTERACTIVE_IMPORT_ITEM = 'interactiveImport/updateInteractiveImportItem';
-export const UPDATE_INTERACTIVE_IMPORT_ITEMS = 'interactiveImport/updateInteractiveImportItems';
-export const CLEAR_INTERACTIVE_IMPORT = 'interactiveImport/clearInteractiveImport';
+export const FETCH_INTERACTIVE_IMPORT_ITEMS =
+  'interactiveImport/fetchInteractiveImportItems';
+export const REPROCESS_INTERACTIVE_IMPORT_ITEMS =
+  'interactiveImport/reprocessInteractiveImportItems';
+export const SET_INTERACTIVE_IMPORT_SORT =
+  'interactiveImport/setInteractiveImportSort';
+export const UPDATE_INTERACTIVE_IMPORT_ITEM =
+  'interactiveImport/updateInteractiveImportItem';
+export const UPDATE_INTERACTIVE_IMPORT_ITEMS =
+  'interactiveImport/updateInteractiveImportItems';
+export const CLEAR_INTERACTIVE_IMPORT =
+  'interactiveImport/clearInteractiveImport';
 export const ADD_RECENT_FOLDER = 'interactiveImport/addRecentFolder';
 export const REMOVE_RECENT_FOLDER = 'interactiveImport/removeRecentFolder';
 export const ADD_FAVORITE_FOLDER = 'interactiveImport/addFavoriteFolder';
 export const REMOVE_FAVORITE_FOLDER = 'interactiveImport/removeFavoriteFolder';
-export const SET_INTERACTIVE_IMPORT_MODE = 'interactiveImport/setInteractiveImportMode';
+export const SET_INTERACTIVE_IMPORT_MODE =
+  'interactiveImport/setInteractiveImportMode';
 
 //
 // Action Creators
 
-export const fetchInteractiveImportItems = createThunk(FETCH_INTERACTIVE_IMPORT_ITEMS);
-export const reprocessInteractiveImportItems = createThunk(REPROCESS_INTERACTIVE_IMPORT_ITEMS);
-export const setInteractiveImportSort = createAction(SET_INTERACTIVE_IMPORT_SORT);
-export const updateInteractiveImportItem = createAction(UPDATE_INTERACTIVE_IMPORT_ITEM);
-export const updateInteractiveImportItems = createAction(UPDATE_INTERACTIVE_IMPORT_ITEMS);
+export const fetchInteractiveImportItems = createThunk(
+  FETCH_INTERACTIVE_IMPORT_ITEMS
+);
+export const reprocessInteractiveImportItems = createThunk(
+  REPROCESS_INTERACTIVE_IMPORT_ITEMS
+);
+export const setInteractiveImportSort = createAction(
+  SET_INTERACTIVE_IMPORT_SORT
+);
+export const updateInteractiveImportItem = createAction(
+  UPDATE_INTERACTIVE_IMPORT_ITEM
+);
+export const updateInteractiveImportItems = createAction(
+  UPDATE_INTERACTIVE_IMPORT_ITEMS
+);
 export const clearInteractiveImport = createAction(CLEAR_INTERACTIVE_IMPORT);
 export const addRecentFolder = createAction(ADD_RECENT_FOLDER);
 export const removeRecentFolder = createAction(REMOVE_RECENT_FOLDER);
 export const addFavoriteFolder = createAction(ADD_FAVORITE_FOLDER);
 export const removeFavoriteFolder = createAction(REMOVE_FAVORITE_FOLDER);
-export const setInteractiveImportMode = createAction(SET_INTERACTIVE_IMPORT_MODE);
+export const setInteractiveImportMode = createAction(
+  SET_INTERACTIVE_IMPORT_MODE
+);
 
 //
 // Action Handlers
 export const actionHandlers = handleThunks({
-  [FETCH_INTERACTIVE_IMPORT_ITEMS]: function(getState, payload, dispatch) {
+  [FETCH_INTERACTIVE_IMPORT_ITEMS]: function (getState, payload, dispatch) {
     if (!payload.downloadId && !payload.folder) {
-      dispatch(set({ section, error: { message: '`downloadId` or `folder` is required.' } }));
+      dispatch(
+        set({
+          section,
+          error: { message: '`downloadId` or `folder` is required.' },
+        })
+      );
       return;
     }
 
@@ -109,52 +133,62 @@ export const actionHandlers = handleThunks({
 
     const promise = createAjaxRequest({
       url: '/manualimport',
-      data: payload
+      data: payload,
     }).request;
 
     promise.done((data) => {
-      dispatch(batchActions([
-        update({ section, data }),
+      dispatch(
+        batchActions([
+          update({ section, data }),
 
-        set({
-          section,
-          isFetching: false,
-          isPopulated: true,
-          error: null,
-          originalItems: data
-        })
-      ]));
+          set({
+            section,
+            isFetching: false,
+            isPopulated: true,
+            error: null,
+            originalItems: data,
+          }),
+        ])
+      );
     });
 
     promise.fail((xhr) => {
-      dispatch(set({
-        section,
-        isFetching: false,
-        isPopulated: false,
-        error: xhr
-      }));
+      dispatch(
+        set({
+          section,
+          isFetching: false,
+          isPopulated: false,
+          error: xhr,
+        })
+      );
     });
   },
 
-  [REPROCESS_INTERACTIVE_IMPORT_ITEMS]: function(getState, payload, dispatch) {
+  [REPROCESS_INTERACTIVE_IMPORT_ITEMS]: function (getState, payload, dispatch) {
     if (abortCurrentRequest) {
       abortCurrentRequest();
     }
 
-    dispatch(batchActions([
-      ...currentIds.map((id) => updateItem({
-        section,
-        id,
-        isReprocessing: false,
-        updateOnly: true
-      })),
-      ...payload.ids.map((id) => updateItem({
-        section,
-        id,
-        isReprocessing: true,
-        updateOnly: true
-      }))
-    ]));
+    dispatch(
+      batchActions([
+        ...currentIds.map((id) =>
+          updateItem({
+            section,
+            id,
+            isReprocessing: false,
+            updateOnly: true,
+          })
+        ),
+        ...payload.ids.map((id) =>
+          updateItem({
+            section,
+            id,
+            isReprocessing: true,
+            updateOnly: true,
+          })
+        ),
+      ])
+    );
 
     const items = getState()[section].items;
 
@@ -169,7 +203,7 @@ export const actionHandlers = handleThunks({
         languages: item.languages,
         releaseGroup: item.releaseGroup,
         indexerFlags: item.indexerFlags,
-        downloadId: item.downloadId
+        downloadId: item.downloadId,
       };
     });
 
@@ -177,21 +211,25 @@ export const actionHandlers = handleThunks({
       method: 'POST',
       url: '/manualimport',
       contentType: 'application/json',
-      data: JSON.stringify(requestPayload)
+      data: JSON.stringify(requestPayload),
     });
 
     abortCurrentRequest = abortRequest;
     currentIds = payload.ids;
 
     request.done((data) => {
-      dispatch(batchActions(
-        data.map((item) => updateItem({
-          section,
-          ...item,
-          isReprocessing: false,
-          updateOnly: true
-        }))
-      ));
+      dispatch(
+        batchActions(
+          data.map((item) =>
+            updateItem({
+              section,
+              ...item,
+              isReprocessing: false,
+              updateOnly: true,
+            })
+          )
+        )
+      );
     });
 
     request.fail((xhr) => {
@@ -199,116 +237,130 @@ export const actionHandlers = handleThunks({
         return;
       }
 
-      dispatch(batchActions(
-        payload.ids.map((id) => updateItem({
-          section,
-          id,
-          isReprocessing: false,
-          updateOnly: true
-        }))
-      ));
+      dispatch(
+        batchActions(
+          payload.ids.map((id) =>
+            updateItem({
+              section,
+              id,
+              isReprocessing: false,
+              updateOnly: true,
+            })
+          )
+        )
+      );
     });
-  }
+  },
 });
 
 //
 // Reducers
 
-export const reducers = createHandleActions({
-
-  [UPDATE_INTERACTIVE_IMPORT_ITEM]: (state, { payload }) => {
-    const id = payload.id;
-    const newState = Object.assign({}, state);
-    const items = newState.items;
-    const index = items.findIndex((item) => item.id === id);
-    const item = Object.assign({}, items[index], payload);
-
-    newState.items = [...items];
-    newState.items.splice(index, 1, item);
-
-    return newState;
-  },
-
-  [UPDATE_INTERACTIVE_IMPORT_ITEMS]: (state, { payload }) => {
-    const { ids, ...otherPayload } = payload;
-    const newState = Object.assign({}, state);
-    const items = [...newState.items];
-
-    ids.forEach((id) => {
+export const reducers = createHandleActions(
+  {
+    [UPDATE_INTERACTIVE_IMPORT_ITEM]: (state, { payload }) => {
+      const id = payload.id;
+      const newState = Object.assign({}, state);
+      const items = newState.items;
       const index = items.findIndex((item) => item.id === id);
-      const item = Object.assign({}, items[index], otherPayload);
+      const item = Object.assign({}, items[index], payload);
 
-      items.splice(index, 1, item);
-    });
+      newState.items = [...items];
+      newState.items.splice(index, 1, item);
 
-    newState.items = items;
+      return newState;
+    },
 
-    return newState;
-  },
+    [UPDATE_INTERACTIVE_IMPORT_ITEMS]: (state, { payload }) => {
+      const { ids, ...otherPayload } = payload;
+      const newState = Object.assign({}, state);
+      const items = [...newState.items];
 
-  [ADD_RECENT_FOLDER]: function(state, { payload }) {
-    const folder = payload.folder;
-    const recentFolder = { folder, lastUsed: moment().toISOString() };
-    const recentFolders = [...state.recentFolders];
-    const index = recentFolders.findIndex((r) => r.folder === folder);
+      ids.forEach((id) => {
+        const index = items.findIndex((item) => item.id === id);
+        const item = Object.assign({}, items[index], otherPayload);
 
-    if (index > -1) {
-      recentFolders.splice(index, 1);
-    }
+        items.splice(index, 1, item);
+      });
 
-    recentFolders.push(recentFolder);
+      newState.items = items;
 
-    const sliceIndex = Math.max(recentFolders.length - MAXIMUM_RECENT_FOLDERS, 0);
+      return newState;
+    },
 
-    return Object.assign({}, state, { recentFolders: recentFolders.slice(sliceIndex) });
-  },
+    [ADD_RECENT_FOLDER]: function (state, { payload }) {
+      const folder = payload.folder;
+      const recentFolder = { folder, lastUsed: moment().toISOString() };
+      const recentFolders = [...state.recentFolders];
+      const index = recentFolders.findIndex((r) => r.folder === folder);
 
-  [REMOVE_RECENT_FOLDER]: function(state, { payload }) {
-    const folder = payload.folder;
-    const recentFolders = [...state.recentFolders];
-    const index = recentFolders.findIndex((r) => r.folder === folder);
-
-    recentFolders.splice(index, 1);
-
-    return Object.assign({}, state, { recentFolders });
-  },
-
-  [ADD_FAVORITE_FOLDER]: function(state, { payload }) {
-    const folder = payload.folder;
-    const favoriteFolder = { folder };
-    const favoriteFolders = [...state.favoriteFolders, favoriteFolder].sort(sortByProp('folder'));
-
-    return Object.assign({}, state, { favoriteFolders });
-  },
-
-  [REMOVE_FAVORITE_FOLDER]: function(state, { payload }) {
-    const folder = payload.folder;
-    const favoriteFolders = state.favoriteFolders.reduce((acc, item) => {
-      if (item.folder !== folder) {
-        acc.push(item);
+      if (index > -1) {
+        recentFolders.splice(index, 1);
       }
 
-      return acc;
-    }, []);
+      recentFolders.push(recentFolder);
 
-    return Object.assign({}, state, { favoriteFolders });
+      const sliceIndex = Math.max(
+        recentFolders.length - MAXIMUM_RECENT_FOLDERS,
+        0
+      );
+
+      return Object.assign({}, state, {
+        recentFolders: recentFolders.slice(sliceIndex),
+      });
+    },
+
+    [REMOVE_RECENT_FOLDER]: function (state, { payload }) {
+      const folder = payload.folder;
+      const recentFolders = [...state.recentFolders];
+      const index = recentFolders.findIndex((r) => r.folder === folder);
+
+      recentFolders.splice(index, 1);
+
+      return Object.assign({}, state, { recentFolders });
+    },
+
+    [ADD_FAVORITE_FOLDER]: function (state, { payload }) {
+      const folder = payload.folder;
+      const favoriteFolder = { folder };
+      const favoriteFolders = [...state.favoriteFolders, favoriteFolder].sort(
+        sortByProp('folder')
+      );
+
+      return Object.assign({}, state, { favoriteFolders });
+    },
+
+    [REMOVE_FAVORITE_FOLDER]: function (state, { payload }) {
+      const folder = payload.folder;
+      const favoriteFolders = state.favoriteFolders.reduce((acc, item) => {
+        if (item.folder !== folder) {
+          acc.push(item);
+        }
+
+        return acc;
+      }, []);
+
+      return Object.assign({}, state, { favoriteFolders });
+    },
+
+    [CLEAR_INTERACTIVE_IMPORT]: function (state) {
+      const newState = {
+        ...defaultState,
+        favoriteFolders: state.favoriteFolders,
+        recentFolders: state.recentFolders,
+        importMode: state.importMode,
+      };
+
+      return newState;
+    },
+
+    [SET_INTERACTIVE_IMPORT_SORT]:
+      createSetClientSideCollectionSortReducer(section),
+
+    [SET_INTERACTIVE_IMPORT_MODE]: function (state, { payload }) {
+      return Object.assign({}, state, { importMode: payload.importMode });
+    },
   },
-
-  [CLEAR_INTERACTIVE_IMPORT]: function(state) {
-    const newState = {
-      ...defaultState,
-      favoriteFolders: state.favoriteFolders,
-      recentFolders: state.recentFolders,
-      importMode: state.importMode
-    };
-
-    return newState;
-  },
-
-  [SET_INTERACTIVE_IMPORT_SORT]: createSetClientSideCollectionSortReducer(section),
-
-  [SET_INTERACTIVE_IMPORT_MODE]: function(state, { payload }) {
-    return Object.assign({}, state, { importMode: payload.importMode });
-  }
-
-}, defaultState, section);
+  defaultState,
+  section
+);

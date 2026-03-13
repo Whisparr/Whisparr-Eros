@@ -1,6 +1,9 @@
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
-import { setMovieCollectionsOption, setMovieCollectionsOverviewOption } from 'Store/Actions/movieCollectionActions';
+import {
+  setMovieCollectionsOption,
+  setMovieCollectionsOverviewOption,
+} from 'Store/Actions/movieCollectionActions';
 import CollectionOverviewOptionsModalContent from './CollectionOverviewOptionsModalContent';
 
 function createMapStateToProps() {
@@ -9,7 +12,7 @@ function createMapStateToProps() {
     (movieCollections) => {
       return {
         ...movieCollections.options,
-        ...movieCollections.overviewOptions
+        ...movieCollections.overviewOptions,
       };
     }
   );
@@ -22,8 +25,11 @@ function createMapDispatchToProps(dispatch, props) {
     },
     onChangeOption(payload) {
       dispatch(setMovieCollectionsOption(payload));
-    }
+    },
   };
 }
 
-export default connect(createMapStateToProps, createMapDispatchToProps)(CollectionOverviewOptionsModalContent);
+export default connect(
+  createMapStateToProps,
+  createMapDispatchToProps
+)(CollectionOverviewOptionsModalContent);

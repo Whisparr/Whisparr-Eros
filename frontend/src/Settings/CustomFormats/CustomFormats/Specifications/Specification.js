@@ -10,7 +10,6 @@ import EditSpecificationModalConnector from './EditSpecificationModal';
 import styles from './Specification.css';
 
 class Specification extends Component {
-
   //
   // Lifecycle
 
@@ -19,7 +18,7 @@ class Specification extends Component {
 
     this.state = {
       isEditSpecificationModalOpen: false,
-      isDeleteSpecificationModalOpen: false
+      isDeleteSpecificationModalOpen: false,
     };
   }
 
@@ -37,7 +36,7 @@ class Specification extends Component {
   onDeleteSpecificationPress = () => {
     this.setState({
       isEditSpecificationModalOpen: false,
-      isDeleteSpecificationModalOpen: true
+      isDeleteSpecificationModalOpen: true,
     });
   };
 
@@ -57,13 +56,7 @@ class Specification extends Component {
   // Lifecycle
 
   render() {
-    const {
-      id,
-      implementationName,
-      name,
-      required,
-      negate
-    } = this.props;
+    const { id, implementationName, name, required, negate } = this.props;
 
     return (
       <Card
@@ -72,9 +65,7 @@ class Specification extends Component {
         onPress={this.onEditSpecificationPress}
       >
         <div className={styles.nameContainer}>
-          <div className={styles.name}>
-            {name}
-          </div>
+          <div className={styles.name}>{name}</div>
 
           <IconButton
             className={styles.cloneButton}
@@ -85,23 +76,13 @@ class Specification extends Component {
         </div>
 
         <div className={styles.labels}>
-          <Label kind={kinds.DEFAULT}>
-            {implementationName}
-          </Label>
+          <Label kind={kinds.DEFAULT}>{implementationName}</Label>
 
-          {
-            negate &&
-              <Label kind={kinds.DANGER}>
-                {translate('Negated')}
-              </Label>
-          }
+          {negate && <Label kind={kinds.DANGER}>{translate('Negated')}</Label>}
 
-          {
-            required &&
-              <Label kind={kinds.SUCCESS}>
-                {translate('Required')}
-              </Label>
-          }
+          {required && (
+            <Label kind={kinds.SUCCESS}>{translate('Required')}</Label>
+          )}
         </div>
 
         <EditSpecificationModalConnector
@@ -134,7 +115,7 @@ Specification.propTypes = {
   required: PropTypes.bool.isRequired,
   fields: PropTypes.arrayOf(PropTypes.object).isRequired,
   onConfirmDeleteSpecification: PropTypes.func.isRequired,
-  onCloneSpecificationPress: PropTypes.func.isRequired
+  onCloneSpecificationPress: PropTypes.func.isRequired,
 };
 
 export default Specification;

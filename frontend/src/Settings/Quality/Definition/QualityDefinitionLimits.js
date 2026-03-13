@@ -4,10 +4,7 @@ import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
 
 function QualityDefinitionLimits(props) {
-  const {
-    bytes,
-    message
-  } = props;
+  const { bytes, message } = props;
 
   if (!bytes) {
     return <div>{message}</div>;
@@ -19,22 +16,16 @@ function QualityDefinitionLimits(props) {
 
   return (
     <div>
-      <div>
-        {translate('MinutesSixty', { sixty })}
-      </div>
-      <div>
-        {translate('MinutesNinety', { ninety })}
-      </div>
-      <div>
-        {translate('MinutesHundredTwenty', { hundredTwenty })}
-      </div>
+      <div>{translate('MinutesSixty', { sixty })}</div>
+      <div>{translate('MinutesNinety', { ninety })}</div>
+      <div>{translate('MinutesHundredTwenty', { hundredTwenty })}</div>
     </div>
   );
 }
 
 QualityDefinitionLimits.propTypes = {
   bytes: PropTypes.number,
-  message: PropTypes.string.isRequired
+  message: PropTypes.string.isRequired,
 };
 
 export default QualityDefinitionLimits;

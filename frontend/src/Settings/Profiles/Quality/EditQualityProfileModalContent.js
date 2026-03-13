@@ -34,7 +34,6 @@ function getCustomFormatRender(formatItems, otherProps) {
 }
 
 class EditQualityProfileModalContent extends Component {
-
   //
   // Lifecycle
 
@@ -44,26 +43,20 @@ class EditQualityProfileModalContent extends Component {
     this.state = {
       headerHeight: 0,
       bodyHeight: 0,
-      footerHeight: 0
+      footerHeight: 0,
     };
   }
 
   componentDidUpdate(prevProps, prevState) {
-    const {
-      headerHeight,
-      bodyHeight,
-      footerHeight
-    } = this.state;
+    const { headerHeight, bodyHeight, footerHeight } = this.state;
 
     if (
       headerHeight > 0 &&
       bodyHeight > 0 &&
       footerHeight > 0 &&
-      (
-        headerHeight !== prevState.headerHeight ||
+      (headerHeight !== prevState.headerHeight ||
         bodyHeight !== prevState.bodyHeight ||
-        footerHeight !== prevState.footerHeight
-      )
+        footerHeight !== prevState.footerHeight)
     ) {
       const padding = MODAL_BODY_PADDING * 2;
 
@@ -83,7 +76,6 @@ class EditQualityProfileModalContent extends Component {
   };
 
   onBodyMeasure = ({ height }) => {
-
     if (height > this.state.bodyHeight) {
       this.setState({ bodyHeight: height });
     }
@@ -130,7 +122,7 @@ class EditQualityProfileModalContent extends Component {
       cutoffFormatScore,
       language,
       items,
-      formatItems
+      formatItems,
     } = item;
 
     const languageId = language ? language.value.id : 0;
@@ -143,184 +135,176 @@ class EditQualityProfileModalContent extends Component {
           onMeasure={this.onHeaderMeasure}
         >
           <ModalHeader>
-            {id ? translate('EditQualityProfile') : translate('AddQualityProfile')}
+            {id
+              ? translate('EditQualityProfile')
+              : translate('AddQualityProfile')}
           </ModalHeader>
         </Measure>
 
         <ModalBody>
-          <Measure
-            whitelist={['height']}
-            onMeasure={this.onBodyMeasure}
-          >
+          <Measure whitelist={['height']} onMeasure={this.onBodyMeasure}>
             <div>
-              {
-                isFetching &&
-                  <LoadingIndicator />
-              }
+              {isFetching && <LoadingIndicator />}
 
-              {
-                !isFetching && !!error &&
-                  <Alert kind={kinds.DANGER}>
-                    {translate('AddQualityProfileError')}
-                  </Alert>
-              }
+              {!isFetching && !!error && (
+                <Alert kind={kinds.DANGER}>
+                  {translate('AddQualityProfileError')}
+                </Alert>
+              )}
 
-              {
-                !isFetching && !error &&
-                  <Form
-                    {...otherProps}
-                  >
-                    <div className={styles.formGroupsContainer}>
-                      <div className={styles.formGroupWrapper}>
-                        <FormGroup size={sizes.EXTRA_SMALL}>
-                          <FormLabel size={sizes.SMALL}>
-                            {translate('Name')}
-                          </FormLabel>
+              {!isFetching && !error && (
+                <Form {...otherProps}>
+                  <div className={styles.formGroupsContainer}>
+                    <div className={styles.formGroupWrapper}>
+                      <FormGroup size={sizes.EXTRA_SMALL}>
+                        <FormLabel size={sizes.SMALL}>
+                          {translate('Name')}
+                        </FormLabel>
 
-                          <FormInputGroup
-                            type={inputTypes.TEXT}
-                            name="name"
-                            {...name}
-                            onChange={onInputChange}
-                          />
-                        </FormGroup>
-
-                        <FormGroup size={sizes.EXTRA_SMALL}>
-                          <FormLabel size={sizes.SMALL}>
-                            {translate('FallbackQualityProfile')}
-                          </FormLabel>
-
-                          <FormInputGroup
-                            type={inputTypes.CHECK}
-                            name="fallback"
-                            {...fallback}
-                            helpText={translate('FallbackQualityProfileHelpText')}
-                            onChange={onInputChange}
-                          />
-                        </FormGroup>
-
-                        <FormGroup size={sizes.EXTRA_SMALL}>
-                          <FormLabel size={sizes.SMALL}>
-                            {translate('UpgradesAllowed')}
-                          </FormLabel>
-
-                          <FormInputGroup
-                            type={inputTypes.CHECK}
-                            name="upgradeAllowed"
-                            {...upgradeAllowed}
-                            helpText={translate('UpgradesAllowedHelpText')}
-                            onChange={onInputChange}
-                          />
-                        </FormGroup>
-
-                        {
-                          upgradeAllowed.value &&
-                            <FormGroup size={sizes.EXTRA_SMALL}>
-                              <FormLabel size={sizes.SMALL}>
-                                {translate('UpgradeUntil')}
-                              </FormLabel>
-
-                              <FormInputGroup
-                                type={inputTypes.SELECT}
-                                name="cutoff"
-                                {...cutoff}
-                                values={qualities}
-                                helpText={translate('UpgradeUntilMovieHelpText')}
-                                onChange={onCutoffChange}
-                              />
-                            </FormGroup>
-                        }
-
-                        {
-                          formatItems.value.length > 0 &&
-                            <FormGroup size={sizes.EXTRA_SMALL}>
-                              <FormLabel size={sizes.SMALL}>
-                                {translate('MinimumCustomFormatScore')}
-                              </FormLabel>
-
-                              <FormInputGroup
-                                type={inputTypes.NUMBER}
-                                name="minFormatScore"
-                                {...minFormatScore}
-                                helpText={translate('MinimumCustomFormatScoreHelpText')}
-                                onChange={onInputChange}
-                              />
-                            </FormGroup>
-                        }
-
-                        {
-                          upgradeAllowed.value && formatItems.value.length > 0 &&
-                            <FormGroup size={sizes.EXTRA_SMALL}>
-                              <FormLabel size={sizes.SMALL}>
-                                {translate('UpgradeUntilCustomFormatScore')}
-                              </FormLabel>
-
-                              <FormInputGroup
-                                type={inputTypes.NUMBER}
-                                name="cutoffFormatScore"
-                                {...cutoffFormatScore}
-                                helpText={translate('UpgradeUntilCustomFormatScoreMovieHelpText')}
-                                onChange={onInputChange}
-                              />
-                            </FormGroup>
-                        }
-
-                        {
-                          upgradeAllowed.value && formatItems.value.length > 0 ?
-                            <FormGroup size={sizes.EXTRA_SMALL}>
-                              <FormLabel size={sizes.SMALL}>
-                                {translate('MinimumCustomFormatScoreIncrement')}
-                              </FormLabel>
-
-                              <FormInputGroup
-                                type={inputTypes.NUMBER}
-                                name="minUpgradeFormatScore"
-                                min={1}
-                                {...minUpgradeFormatScore}
-                                helpText={translate('MinimumCustomFormatScoreIncrementHelpText')}
-                                onChange={onInputChange}
-                              />
-                            </FormGroup> :
-                            null
-                        }
-
-                        <FormGroup size={sizes.EXTRA_SMALL}>
-                          <FormLabel size={sizes.SMALL}>
-                            {translate('Language')}
-                          </FormLabel>
-
-                          <FormInputGroup
-                            type={inputTypes.LANGUAGE_SELECT}
-                            name="language"
-                            values={languages}
-                            value={languageId}
-                            helpText={translate('LanguageHelpText')}
-                            onChange={onLanguageChange}
-                          />
-                        </FormGroup>
-
-                        <div className={styles.formatItemLarge}>
-                          {getCustomFormatRender(formatItems, otherProps)}
-                        </div>
-                      </div>
-
-                      <div className={styles.formGroupWrapper}>
-                        <QualityProfileItems
-                          editGroups={editGroups}
-                          qualityProfileItems={items.value}
-                          errors={items.errors}
-                          warnings={items.warnings}
-                          {...otherProps}
+                        <FormInputGroup
+                          type={inputTypes.TEXT}
+                          name="name"
+                          {...name}
+                          onChange={onInputChange}
                         />
-                      </div>
+                      </FormGroup>
 
-                      <div className={styles.formatItemSmall}>
+                      <FormGroup size={sizes.EXTRA_SMALL}>
+                        <FormLabel size={sizes.SMALL}>
+                          {translate('FallbackQualityProfile')}
+                        </FormLabel>
+
+                        <FormInputGroup
+                          type={inputTypes.CHECK}
+                          name="fallback"
+                          {...fallback}
+                          helpText={translate('FallbackQualityProfileHelpText')}
+                          onChange={onInputChange}
+                        />
+                      </FormGroup>
+
+                      <FormGroup size={sizes.EXTRA_SMALL}>
+                        <FormLabel size={sizes.SMALL}>
+                          {translate('UpgradesAllowed')}
+                        </FormLabel>
+
+                        <FormInputGroup
+                          type={inputTypes.CHECK}
+                          name="upgradeAllowed"
+                          {...upgradeAllowed}
+                          helpText={translate('UpgradesAllowedHelpText')}
+                          onChange={onInputChange}
+                        />
+                      </FormGroup>
+
+                      {upgradeAllowed.value && (
+                        <FormGroup size={sizes.EXTRA_SMALL}>
+                          <FormLabel size={sizes.SMALL}>
+                            {translate('UpgradeUntil')}
+                          </FormLabel>
+
+                          <FormInputGroup
+                            type={inputTypes.SELECT}
+                            name="cutoff"
+                            {...cutoff}
+                            values={qualities}
+                            helpText={translate('UpgradeUntilMovieHelpText')}
+                            onChange={onCutoffChange}
+                          />
+                        </FormGroup>
+                      )}
+
+                      {formatItems.value.length > 0 && (
+                        <FormGroup size={sizes.EXTRA_SMALL}>
+                          <FormLabel size={sizes.SMALL}>
+                            {translate('MinimumCustomFormatScore')}
+                          </FormLabel>
+
+                          <FormInputGroup
+                            type={inputTypes.NUMBER}
+                            name="minFormatScore"
+                            {...minFormatScore}
+                            helpText={translate(
+                              'MinimumCustomFormatScoreHelpText'
+                            )}
+                            onChange={onInputChange}
+                          />
+                        </FormGroup>
+                      )}
+
+                      {upgradeAllowed.value && formatItems.value.length > 0 && (
+                        <FormGroup size={sizes.EXTRA_SMALL}>
+                          <FormLabel size={sizes.SMALL}>
+                            {translate('UpgradeUntilCustomFormatScore')}
+                          </FormLabel>
+
+                          <FormInputGroup
+                            type={inputTypes.NUMBER}
+                            name="cutoffFormatScore"
+                            {...cutoffFormatScore}
+                            helpText={translate(
+                              'UpgradeUntilCustomFormatScoreMovieHelpText'
+                            )}
+                            onChange={onInputChange}
+                          />
+                        </FormGroup>
+                      )}
+
+                      {upgradeAllowed.value && formatItems.value.length > 0 ? (
+                        <FormGroup size={sizes.EXTRA_SMALL}>
+                          <FormLabel size={sizes.SMALL}>
+                            {translate('MinimumCustomFormatScoreIncrement')}
+                          </FormLabel>
+
+                          <FormInputGroup
+                            type={inputTypes.NUMBER}
+                            name="minUpgradeFormatScore"
+                            min={1}
+                            {...minUpgradeFormatScore}
+                            helpText={translate(
+                              'MinimumCustomFormatScoreIncrementHelpText'
+                            )}
+                            onChange={onInputChange}
+                          />
+                        </FormGroup>
+                      ) : null}
+
+                      <FormGroup size={sizes.EXTRA_SMALL}>
+                        <FormLabel size={sizes.SMALL}>
+                          {translate('Language')}
+                        </FormLabel>
+
+                        <FormInputGroup
+                          type={inputTypes.LANGUAGE_SELECT}
+                          name="language"
+                          values={languages}
+                          value={languageId}
+                          helpText={translate('LanguageHelpText')}
+                          onChange={onLanguageChange}
+                        />
+                      </FormGroup>
+
+                      <div className={styles.formatItemLarge}>
                         {getCustomFormatRender(formatItems, otherProps)}
                       </div>
                     </div>
-                  </Form>
 
-              }
+                    <div className={styles.formGroupWrapper}>
+                      <QualityProfileItems
+                        editGroups={editGroups}
+                        qualityProfileItems={items.value}
+                        errors={items.errors}
+                        warnings={items.warnings}
+                        {...otherProps}
+                      />
+                    </div>
+
+                    <div className={styles.formatItemSmall}>
+                      {getCustomFormatRender(formatItems, otherProps)}
+                    </div>
+                  </div>
+                </Form>
+              )}
             </div>
           </Measure>
         </ModalBody>
@@ -331,32 +315,26 @@ class EditQualityProfileModalContent extends Component {
           onMeasure={this.onFooterMeasure}
         >
           <ModalFooter>
-            {
-              id ?
-                <div
-                  className={styles.deleteButtonContainer}
-                  title={
-                    isInUse ?
-                      translate('QualityProfileInUseMovieListCollection') :
-                      undefined
-                  }
+            {id ? (
+              <div
+                className={styles.deleteButtonContainer}
+                title={
+                  isInUse
+                    ? translate('QualityProfileInUseMovieListCollection')
+                    : undefined
+                }
+              >
+                <Button
+                  kind={kinds.DANGER}
+                  isDisabled={isInUse}
+                  onPress={onDeleteQualityProfilePress}
                 >
-                  <Button
-                    kind={kinds.DANGER}
-                    isDisabled={isInUse}
-                    onPress={onDeleteQualityProfilePress}
-                  >
-                    {translate('Delete')}
-                  </Button>
-                </div> :
-                null
-            }
+                  {translate('Delete')}
+                </Button>
+              </div>
+            ) : null}
 
-            <Button
-              onPress={onModalClose}
-            >
-              {translate('Cancel')}
-            </Button>
+            <Button onPress={onModalClose}>{translate('Cancel')}</Button>
 
             <SpinnerErrorButton
               isSpinning={isSaving}
@@ -389,7 +367,7 @@ EditQualityProfileModalContent.propTypes = {
   onSavePress: PropTypes.func.isRequired,
   onContentHeightChange: PropTypes.func.isRequired,
   onModalClose: PropTypes.func.isRequired,
-  onDeleteQualityProfilePress: PropTypes.func
+  onDeleteQualityProfilePress: PropTypes.func,
 };
 
 export default EditQualityProfileModalContent;

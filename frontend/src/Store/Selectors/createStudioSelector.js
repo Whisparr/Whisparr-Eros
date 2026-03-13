@@ -5,7 +5,7 @@ export function createStudioSelectorForHook(studioId) {
     (state) => state.studios.itemMap,
     (state) => state.studios.items,
     (itemMap, allStudios) => {
-      return studioId ? allStudios[itemMap[studioId]]: undefined;
+      return studioId ? allStudios[itemMap[studioId]] : undefined;
     }
   );
 }

@@ -18,12 +18,12 @@ MovieHeadshot.propTypes = {
   coverType: PropTypes.string,
   placeholder: PropTypes.string,
   overflow: PropTypes.bool,
-  size: PropTypes.number.isRequired
+  size: PropTypes.number.isRequired,
 };
 
 MovieHeadshot.defaultProps = {
   ...MovieImage.defaultProps,
-  size: 250
+  size: 250,
 };
 
 export default MovieHeadshot;

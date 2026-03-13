@@ -5,7 +5,6 @@ import FilterBuilderModalContentConnector from './Builder/FilterBuilderModalCont
 import CustomFiltersModalContentConnector from './CustomFilters/CustomFiltersModalContentConnector';
 
 class FilterModal extends Component {
-
   //
   // Lifecycle
 
@@ -14,7 +13,7 @@ class FilterModal extends Component {
 
     this.state = {
       filterBuilder: !props.customFilters.length,
-      id: null
+      id: null,
     };
   }
 
@@ -23,14 +22,14 @@ class FilterModal extends Component {
 
   onAddCustomFilter = () => {
     this.setState({
-      filterBuilder: true
+      filterBuilder: true,
     });
   };
 
   onEditCustomFilter = (id) => {
     this.setState({
       filterBuilder: true,
-      id
+      id,
     });
   };
 
@@ -38,7 +37,7 @@ class FilterModal extends Component {
     if (this.state.filterBuilder) {
       this.setState({
         filterBuilder: false,
-        id: null
+        id: null,
       });
     } else {
       this.onModalClose();
@@ -46,48 +45,42 @@ class FilterModal extends Component {
   };
 
   onModalClose = () => {
-    this.setState({
-      filterBuilder: false,
-      id: null
-    }, () => {
-      this.props.onModalClose();
-    });
+    this.setState(
+      {
+        filterBuilder: false,
+        id: null,
+      },
+      () => {
+        this.props.onModalClose();
+      }
+    );
   };
 
   //
   // Render
 
   render() {
-    const {
-      isOpen,
-      ...otherProps
-    } = this.props;
+    const { isOpen, ...otherProps } = this.props;
 
-    const {
-      filterBuilder,
-      id
-    } = this.state;
+    const { filterBuilder, id } = this.state;
 
     return (
-      <Modal
-        isOpen={isOpen}
-        onModalClose={this.onModalClose}
-      >
-        {
-          filterBuilder ?
-            <FilterBuilderModalContentConnector
-              {...otherProps}
-              id={id}
-              onCancelPress={this.onCancelPress}
-              onModalClose={this.onModalClose}
-            /> :
-            <CustomFiltersModalContentConnector
-              {...otherProps}
-              onAddCustomFilter={this.onAddCustomFilter}
-              onEditCustomFilter={this.onEditCustomFilter}
-              onModalClose={this.onModalClose}
-            />
-        }
+      <Modal isOpen={isOpen} onModalClose={this.onModalClose}>
+        {filterBuilder ? (
+          <FilterBuilderModalContentConnector
+            {...otherProps}
+            id={id}
+            onCancelPress={this.onCancelPress}
+            onModalClose={this.onModalClose}
+          />
+        ) : (
+          <CustomFiltersModalContentConnector
+            {...otherProps}
+            onAddCustomFilter={this.onAddCustomFilter}
+            onEditCustomFilter={this.onEditCustomFilter}
+            onModalClose={this.onModalClose}
+          />
+        )}
       </Modal>
     );
   }
@@ -96,7 +89,7 @@ class FilterModal extends Component {
 FilterModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   customFilters: PropTypes.arrayOf(PropTypes.object).isRequired,
-  onModalClose: PropTypes.func.isRequired
+  onModalClose: PropTypes.func.isRequired,
 };
 
 export default FilterModal;

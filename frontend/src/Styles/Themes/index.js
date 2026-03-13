@@ -7,5 +7,5 @@ const auto = defaultDark ? dark : light;
 export default {
   auto,
   light,
-  dark
+  dark,
 };

@@ -21,7 +21,7 @@ export const defaultState = {
   isDeleting: false,
   deleteError: null,
   items: [],
-  pendingChanges: {}
+  pendingChanges: {},
 };
 
 //
@@ -46,8 +46,7 @@ export const actionHandlers = handleThunks({
 
   [SAVE_CUSTOM_FILTER]: createSaveProviderHandler(section, '/customFilter'),
 
-  [DELETE_CUSTOM_FILTER]: createRemoveItemHandler(section, '/customFilter')
-
+  [DELETE_CUSTOM_FILTER]: createRemoveItemHandler(section, '/customFilter'),
 });
 
 //

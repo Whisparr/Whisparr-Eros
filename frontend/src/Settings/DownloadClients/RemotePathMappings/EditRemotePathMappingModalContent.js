@@ -33,91 +33,79 @@ function EditRemotePathMappingModalContent(props) {
     ...otherProps
   } = props;
 
-  const {
-    host,
-    remotePath,
-    localPath
-  } = item;
+  const { host, remotePath, localPath } = item;
 
   return (
     <ModalContent onModalClose={onModalClose}>
       <ModalHeader>
-        {id ? translate('EditRemotePathMapping') : translate('AddRemotePathMapping')}
+        {id
+          ? translate('EditRemotePathMapping')
+          : translate('AddRemotePathMapping')}
       </ModalHeader>
 
       <ModalBody className={styles.body}>
-        {
-          isFetching &&
-            <LoadingIndicator />
-        }
+        {isFetching && <LoadingIndicator />}
 
-        {
-          !isFetching && !!error &&
-            <Alert kind={kinds.DANGER}>
-              {translate('AddRemotePathMappingError')}
-            </Alert>
-        }
+        {!isFetching && !!error && (
+          <Alert kind={kinds.DANGER}>
+            {translate('AddRemotePathMappingError')}
+          </Alert>
+        )}
 
-        {
-          !isFetching && !error &&
-            <Form {...otherProps}>
-              <FormGroup>
-                <FormLabel>{translate('Host')}</FormLabel>
+        {!isFetching && !error && (
+          <Form {...otherProps}>
+            <FormGroup>
+              <FormLabel>{translate('Host')}</FormLabel>
 
-                <FormInputGroup
-                  type={inputTypes.SELECT}
-                  name="host"
-                  helpText={translate('RemotePathMappingHostHelpText')}
-                  {...host}
-                  values={downloadClientHosts}
-                  onChange={onInputChange}
-                />
-              </FormGroup>
+              <FormInputGroup
+                type={inputTypes.SELECT}
+                name="host"
+                helpText={translate('RemotePathMappingHostHelpText')}
+                {...host}
+                values={downloadClientHosts}
+                onChange={onInputChange}
+              />
+            </FormGroup>
 
-              <FormGroup>
-                <FormLabel>{translate('RemotePath')}</FormLabel>
+            <FormGroup>
+              <FormLabel>{translate('RemotePath')}</FormLabel>
 
-                <FormInputGroup
-                  type={inputTypes.TEXT}
-                  name="remotePath"
-                  helpText={translate('RemotePathMappingRemotePathHelpText')}
-                  {...remotePath}
-                  onChange={onInputChange}
-                />
-              </FormGroup>
+              <FormInputGroup
+                type={inputTypes.TEXT}
+                name="remotePath"
+                helpText={translate('RemotePathMappingRemotePathHelpText')}
+                {...remotePath}
+                onChange={onInputChange}
+              />
+            </FormGroup>
 
-              <FormGroup>
-                <FormLabel>{translate('LocalPath')}</FormLabel>
+            <FormGroup>
+              <FormLabel>{translate('LocalPath')}</FormLabel>
 
-                <FormInputGroup
-                  type={inputTypes.PATH}
-                  name="localPath"
-                  helpText={translate('RemotePathMappingLocalPathHelpText')}
-                  {...localPath}
-                  onChange={onInputChange}
-                />
-              </FormGroup>
-            </Form>
-        }
+              <FormInputGroup
+                type={inputTypes.PATH}
+                name="localPath"
+                helpText={translate('RemotePathMappingLocalPathHelpText')}
+                {...localPath}
+                onChange={onInputChange}
+              />
+            </FormGroup>
+          </Form>
+        )}
       </ModalBody>
 
       <ModalFooter>
-        {
-          id &&
-            <Button
-              className={styles.deleteButton}
-              kind={kinds.DANGER}
-              onPress={onDeleteRemotePathMappingPress}
-            >
-              {translate('Delete')}
-            </Button>
-        }
+        {id && (
+          <Button
+            className={styles.deleteButton}
+            kind={kinds.DANGER}
+            onPress={onDeleteRemotePathMappingPress}
+          >
+            {translate('Delete')}
+          </Button>
+        )}
 
-        <Button
-          onPress={onModalClose}
-        >
-          {translate('Cancel')}
-        </Button>
+        <Button onPress={onModalClose}>{translate('Cancel')}</Button>
 
         <SpinnerErrorButton
           isSpinning={isSaving}
@@ -134,7 +122,7 @@ function EditRemotePathMappingModalContent(props) {
 const remotePathMappingShape = {
   host: PropTypes.shape(stringSettingShape).isRequired,
   remotePath: PropTypes.shape(stringSettingShape).isRequired,
-  localPath: PropTypes.shape(stringSettingShape).isRequired
+  localPath: PropTypes.shape(stringSettingShape).isRequired,
 };
 
 EditRemotePathMappingModalContent.propTypes = {
@@ -148,7 +136,7 @@ EditRemotePathMappingModalContent.propTypes = {
   onInputChange: PropTypes.func.isRequired,
   onSavePress: PropTypes.func.isRequired,
   onModalClose: PropTypes.func.isRequired,
-  onDeleteRemotePathMappingPress: PropTypes.func
+  onDeleteRemotePathMappingPress: PropTypes.func,
 };
 
 export default EditRemotePathMappingModalContent;

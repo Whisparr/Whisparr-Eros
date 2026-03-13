@@ -3,20 +3,15 @@ import React from 'react';
 
 function withCurrentPage(WrappedComponent) {
   function CurrentPage(props) {
-    const {
-      history
-    } = props;
+    const { history } = props;
 
     return (
-      <WrappedComponent
-        {...props}
-        useCurrentPage={history.action === 'POP'}
-      />
+      <WrappedComponent {...props} useCurrentPage={history.action === 'POP'} />
     );
   }
 
   CurrentPage.propTypes = {
-    history: PropTypes.object.isRequired
+    history: PropTypes.object.isRequired,
   };
 
   return CurrentPage;

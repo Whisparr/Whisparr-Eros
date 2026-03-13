@@ -5,5 +5,5 @@ export const INTERACTIVE_IMPORT = 'interactiveImport.scenes';
 export default {
   CALENDAR,
   SCENES,
-  INTERACTIVE_IMPORT
+  INTERACTIVE_IMPORT,
 };

@@ -29,44 +29,49 @@ function EditSpecificationModalContent(props) {
     ...otherProps
   } = props;
 
-  const {
-    id,
-    implementationName,
-    name,
-    negate,
-    required,
-    fields
-  } = item;
+  const { id, implementationName, name, negate, required, fields } = item;
 
   return (
     <ModalContent onModalClose={onCancelPress}>
       <ModalHeader>
-        {id ? translate('EditConditionImplementation', { implementationName }) : translate('AddConditionImplementation', { implementationName })}
+        {id
+          ? translate('EditConditionImplementation', { implementationName })
+          : translate('AddConditionImplementation', { implementationName })}
       </ModalHeader>
 
       <ModalBody>
-        <Form
-          {...otherProps}
-        >
-          {
-            fields && fields.some((x) => x.label === translate('CustomFormatsSpecificationRegularExpression')) &&
+        <Form {...otherProps}>
+          {fields &&
+            fields.some(
+              (x) =>
+                x.label ===
+                translate('CustomFormatsSpecificationRegularExpression')
+            ) && (
               <Alert kind={kinds.INFO}>
                 <div>
-                  <InlineMarkdown data={translate('ConditionUsingRegularExpressions')} />
+                  <InlineMarkdown
+                    data={translate('ConditionUsingRegularExpressions')}
+                  />
                 </div>
                 <div>
-                  <InlineMarkdown data={translate('RegularExpressionsTutorialLink', { url: 'https://www.regular-expressions.info/tutorial.html' })} />
+                  <InlineMarkdown
+                    data={translate('RegularExpressionsTutorialLink', {
+                      url: 'https://www.regular-expressions.info/tutorial.html',
+                    })}
+                  />
                 </div>
                 <div>
-                  <InlineMarkdown data={translate('RegularExpressionsCanBeTested', { url: 'http://regexstorm.net/tester' })} />
+                  <InlineMarkdown
+                    data={translate('RegularExpressionsCanBeTested', {
+                      url: 'http://regexstorm.net/tester',
+                    })}
+                  />
                 </div>
               </Alert>
-          }
+            )}
 
           <FormGroup>
-            <FormLabel>
-              {translate('Name')}
-            </FormLabel>
+            <FormLabel>{translate('Name')}</FormLabel>
 
             <FormInputGroup
               type={inputTypes.TEXT}
@@ -76,8 +81,8 @@ function EditSpecificationModalContent(props) {
             />
           </FormGroup>
 
-          {
-            fields && fields.map((field) => {
+          {fields &&
+            fields.map((field) => {
               return (
                 <ProviderFieldFormGroup
                   key={field.name}
@@ -88,13 +93,10 @@ function EditSpecificationModalContent(props) {
                   onChange={onFieldChange}
                 />
               );
-            })
-          }
+            })}
 
           <FormGroup>
-            <FormLabel>
-              {translate('Negate')}
-            </FormLabel>
+            <FormLabel>{translate('Negate')}</FormLabel>
 
             <FormInputGroup
               type={inputTypes.CHECK}
@@ -106,9 +108,7 @@ function EditSpecificationModalContent(props) {
           </FormGroup>
 
           <FormGroup>
-            <FormLabel>
-              {translate('Required')}
-            </FormLabel>
+            <FormLabel>{translate('Required')}</FormLabel>
 
             <FormInputGroup
               type={inputTypes.CHECK}
@@ -121,27 +121,19 @@ function EditSpecificationModalContent(props) {
         </Form>
       </ModalBody>
       <ModalFooter>
-        {
-          id &&
-            <Button
-              className={styles.deleteButton}
-              kind={kinds.DANGER}
-              onPress={onDeleteSpecificationPress}
-            >
-              {translate('Delete')}
-            </Button>
-        }
+        {id && (
+          <Button
+            className={styles.deleteButton}
+            kind={kinds.DANGER}
+            onPress={onDeleteSpecificationPress}
+          >
+            {translate('Delete')}
+          </Button>
+        )}
 
-        <Button
-          onPress={onCancelPress}
-        >
-          {translate('Cancel')}
-        </Button>
+        <Button onPress={onCancelPress}>{translate('Cancel')}</Button>
 
-        <SpinnerErrorButton
-          isSpinning={false}
-          onPress={onSavePress}
-        >
+        <SpinnerErrorButton isSpinning={false} onPress={onSavePress}>
           {translate('Save')}
         </SpinnerErrorButton>
       </ModalFooter>
@@ -156,7 +148,7 @@ EditSpecificationModalContent.propTypes = {
   onFieldChange: PropTypes.func.isRequired,
   onCancelPress: PropTypes.func.isRequired,
   onSavePress: PropTypes.func.isRequired,
-  onDeleteSpecificationPress: PropTypes.func
+  onDeleteSpecificationPress: PropTypes.func,
 };
 
 export default EditSpecificationModalContent;

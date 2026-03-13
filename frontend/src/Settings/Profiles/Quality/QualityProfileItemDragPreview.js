@@ -9,28 +9,25 @@ import styles from './QualityProfileItemDragPreview.css';
 
 const formGroupExtraSmallWidth = parseInt(dimensions.formGroupExtraSmallWidth);
 const formLabelSmallWidth = parseInt(dimensions.formLabelSmallWidth);
-const formLabelRightMarginWidth = parseInt(dimensions.formLabelRightMarginWidth);
+const formLabelRightMarginWidth = parseInt(
+  dimensions.formLabelRightMarginWidth
+);
 const dragHandleWidth = parseInt(dimensions.dragHandleWidth);
 
 function collectDragLayer(monitor) {
   return {
     item: monitor.getItem(),
     itemType: monitor.getItemType(),
-    currentOffset: monitor.getSourceClientOffset()
+    currentOffset: monitor.getSourceClientOffset(),
   };
 }
 
 class QualityProfileItemDragPreview extends Component {
-
   //
   // Render
 
   render() {
-    const {
-      item,
-      itemType,
-      currentOffset
-    } = this.props;
+    const { item, itemType, currentOffset } = this.props;
 
     if (!currentOffset || itemType !== QUALITY_PROFILE_ITEM) {
       return null;
@@ -40,32 +37,27 @@ class QualityProfileItemDragPreview extends Component {
     // list item and the preview is wider than the drag handle.
 
     const { x, y } = currentOffset;
-    const handleOffset = formGroupExtraSmallWidth - formLabelSmallWidth - formLabelRightMarginWidth - dragHandleWidth;
+    const handleOffset =
+      formGroupExtraSmallWidth -
+      formLabelSmallWidth -
+      formLabelRightMarginWidth -
+      dragHandleWidth;
     const transform = `translate3d(${x - handleOffset}px, ${y}px, 0)`;
 
     const style = {
       position: 'absolute',
       WebkitTransform: transform,
       msTransform: transform,
-      transform
+      transform,
     };
 
-    const {
-      editGroups,
-      groupId,
-      qualityId,
-      name,
-      allowed
-    } = item;
+    const { editGroups, groupId, qualityId, name, allowed } = item;
 
     // TODO: Show a different preview for groups
 
     return (
       <DragPreviewLayer>
-        <div
-          className={styles.dragPreview}
-          style={style}
-        >
+        <div className={styles.dragPreview} style={style}>
           <QualityProfileItem
             editGroups={editGroups}
             isPreview={true}
@@ -85,8 +77,8 @@ QualityProfileItemDragPreview.propTypes = {
   itemType: PropTypes.string,
   currentOffset: PropTypes.shape({
     x: PropTypes.number.isRequired,
-    y: PropTypes.number.isRequired
-  })
+    y: PropTypes.number.isRequired,
+  }),
 };
 
 export default DragLayer(collectDragLayer)(QualityProfileItemDragPreview);

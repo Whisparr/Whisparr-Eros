@@ -20,7 +20,6 @@ export const fetchIndexerFlags = createThunk(FETCH_INDEXER_FLAGS);
 // Details
 
 export default {
-
   //
   // State
 
@@ -28,21 +27,18 @@ export default {
     isFetching: false,
     isPopulated: false,
     error: null,
-    items: []
+    items: [],
   },
 
   //
   // Action Handlers
 
   actionHandlers: {
-    [FETCH_INDEXER_FLAGS]: createFetchHandler(section, '/indexerFlag')
+    [FETCH_INDEXER_FLAGS]: createFetchHandler(section, '/indexerFlag'),
   },
 
   //
   // Reducers
 
-  reducers: {
-
-  }
-
+  reducers: {},
 };

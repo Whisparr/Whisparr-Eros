@@ -49,5 +49,5 @@ module.exports = {
   // Movie
   movieIndexColumnPadding: '10px',
   movieIndexColumnPaddingSmallScreen: '5px',
-  movieIndexOverviewInfoRowHeight: '21px'
+  movieIndexOverviewInfoRowHeight: '21px',
 };

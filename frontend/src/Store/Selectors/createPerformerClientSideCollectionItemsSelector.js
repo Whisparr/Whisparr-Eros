@@ -1,4 +1,8 @@
-import { createSelector, createSelectorCreator, defaultMemoize } from 'reselect';
+import {
+  createSelector,
+  createSelectorCreator,
+  defaultMemoize,
+} from 'reselect';
 import hasDifferentItemsOrOrder from 'Utilities/Object/hasDifferentItemsOrOrder';
 import createClientSideCollectionSelector from './createClientSideCollectionSelector';
 
@@ -10,13 +14,13 @@ function createUnoptimizedSelector(uiSection) {
         return {
           id: s.id,
           foreignId: s.foreignId,
-          sortTitle: s.fullName
+          sortTitle: s.fullName,
         };
       });
 
       return {
         ...performers,
-        items
+        items,
       };
     }
   );

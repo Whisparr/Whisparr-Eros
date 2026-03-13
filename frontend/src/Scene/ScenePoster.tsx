@@ -4,8 +4,10 @@ import AppState from 'App/State/AppState';
 import posterPlaceholder from 'Components/posterPlaceholder';
 import MovieImage, { MovieImageProps } from '../Movie/MovieImage';
 
-interface ScenePosterProps
-  extends Omit<MovieImageProps, 'coverType' | 'placeholder'> {
+interface ScenePosterProps extends Omit<
+  MovieImageProps,
+  'coverType' | 'placeholder'
+> {
   size?: 180;
   safeForWorkMode: boolean;
 }

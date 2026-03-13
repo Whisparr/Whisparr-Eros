@@ -20,7 +20,10 @@ function addContentType(ajaxOptions) {
   if (
     ajaxOptions.contentType == null &&
     ajaxOptions.dataType === 'json' &&
-    (ajaxOptions.method === 'PUT' || ajaxOptions.method === 'POST' || ajaxOptions.method === 'DELETE')) {
+    (ajaxOptions.method === 'PUT' ||
+      ajaxOptions.method === 'POST' ||
+      ajaxOptions.method === 'DELETE')
+  ) {
     ajaxOptions.contentType = 'application/json';
   }
 }
@@ -47,17 +50,19 @@ export default function createAjaxRequest(originalAjaxOptions) {
 
   const request = $.ajax({
     xhr: () => requestXHR,
-    ...ajaxOptions
-  }).then(null, (xhr, textStatus, errorThrown) => {
-    xhr.aborted = aborted;
+    ...ajaxOptions,
+  })
+    .then(null, (xhr, textStatus, errorThrown) => {
+      xhr.aborted = aborted;
 
-    return $.Deferred().reject(xhr, textStatus, errorThrown).promise();
-  }).always(() => {
-    complete = true;
-  });
+      return $.Deferred().reject(xhr, textStatus, errorThrown).promise();
+    })
+    .always(() => {
+      complete = true;
+    });
 
   return {
     request,
-    abortRequest
+    abortRequest,
   };
 }

@@ -5,10 +5,7 @@ import AddNotificationModalContentConnector from './AddNotificationModalContentC
 
 function AddNotificationModal({ isOpen, onModalClose, ...otherProps }) {
   return (
-    <Modal
-      isOpen={isOpen}
-      onModalClose={onModalClose}
-    >
+    <Modal isOpen={isOpen} onModalClose={onModalClose}>
       <AddNotificationModalContentConnector
         {...otherProps}
         onModalClose={onModalClose}
@@ -19,7 +16,7 @@ function AddNotificationModal({ isOpen, onModalClose, ...otherProps }) {
 
 AddNotificationModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
-  onModalClose: PropTypes.func.isRequired
+  onModalClose: PropTypes.func.isRequired,
 };
 
 export default AddNotificationModal;

@@ -26,7 +26,6 @@ function getIconName(level) {
 }
 
 class LogsTableRow extends Component {
-
   //
   // Lifecycle
 
@@ -34,7 +33,7 @@ class LogsTableRow extends Component {
     super(props, context);
 
     this.state = {
-      isDetailsModalOpen: false
+      isDetailsModalOpen: false,
     };
   }
 
@@ -56,83 +55,47 @@ class LogsTableRow extends Component {
   // Render
 
   render() {
-    const {
-      level,
-      time,
-      logger,
-      message,
-      exception,
-      columns
-    } = this.props;
+    const { level, time, logger, message, exception, columns } = this.props;
 
     return (
-      <TableRowButton
-        overlayContent={true}
-        onPress={this.onPress}
-      >
-        {
-          columns.map((column) => {
-            const {
-              name,
-              isVisible
-            } = column;
+      <TableRowButton overlayContent={true} onPress={this.onPress}>
+        {columns.map((column) => {
+          const { name, isVisible } = column;
 
-            if (!isVisible) {
-              return null;
-            }
-
-            if (name === 'level') {
-              return (
-                <TableRowCell
-                  key={name}
-                  className={styles.level}
-                >
-                  <Icon
-                    className={styles[level]}
-                    name={getIconName(level)}
-                    title={level}
-                  />
-                </TableRowCell>
-              );
-            }
-
-            if (name === 'time') {
-              return (
-                <RelativeDateCell
-                  key={name}
-                  date={time}
-                />
-              );
-            }
-
-            if (name === 'logger') {
-              return (
-                <TableRowCell key={name}>
-                  {logger}
-                </TableRowCell>
-              );
-            }
-
-            if (name === 'message') {
-              return (
-                <TableRowCell key={name}>
-                  {message}
-                </TableRowCell>
-              );
-            }
-
-            if (name === 'actions') {
-              return (
-                <TableRowCell
-                  key={name}
-                  className={styles.actions}
-                />
-              );
-            }
-
+          if (!isVisible) {
             return null;
-          })
-        }
+          }
+
+          if (name === 'level') {
+            return (
+              <TableRowCell key={name} className={styles.level}>
+                <Icon
+                  className={styles[level]}
+                  name={getIconName(level)}
+                  title={level}
+                />
+              </TableRowCell>
+            );
+          }
+
+          if (name === 'time') {
+            return <RelativeDateCell key={name} date={time} />;
+          }
+
+          if (name === 'logger') {
+            return <TableRowCell key={name}>{logger}</TableRowCell>;
+          }
+
+          if (name === 'message') {
+            return <TableRowCell key={name}>{message}</TableRowCell>;
+          }
+
+          if (name === 'actions') {
+            return <TableRowCell key={name} className={styles.actions} />;
+          }
+
+          return null;
+        })}
 
         <LogsTableDetailsModal
           isOpen={this.state.isDetailsModalOpen}
@@ -143,7 +106,6 @@ class LogsTableRow extends Component {
       </TableRowButton>
     );
   }
-
 }
 
 LogsTableRow.propTypes = {
@@ -152,7 +114,7 @@ LogsTableRow.propTypes = {
   logger: PropTypes.string.isRequired,
   message: PropTypes.string.isRequired,
   exception: PropTypes.string,
-  columns: PropTypes.arrayOf(PropTypes.object).isRequired
+  columns: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
 
 export default LogsTableRow;

@@ -13,7 +13,6 @@ import ReleaseProfiles from './Release/ReleaseProfiles';
 // quality profiles and reordering delay profiles to work.
 
 class Profiles extends Component {
-
   //
   // Render
 

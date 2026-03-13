@@ -34,7 +34,7 @@ export interface EnhancedSelectInputValue<V> {
 
 export interface EnhancedSelectInputProps<
   V,
-  T extends EnhancedSelectInputValue<V>
+  T extends EnhancedSelectInputValue<V>,
 > {
   className?: string;
   disabledClassName?: string;

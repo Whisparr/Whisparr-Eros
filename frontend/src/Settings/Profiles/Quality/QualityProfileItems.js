@@ -13,7 +13,6 @@ import QualityProfileItemDragSource from './QualityProfileItemDragSource';
 import styles from './QualityProfileItems.css';
 
 class QualityProfileItems extends Component {
-
   //
   // Lifecycle
 
@@ -22,7 +21,7 @@ class QualityProfileItems extends Component {
 
     this.state = {
       qualitiesHeight: 0,
-      qualitiesHeightEditGroups: 0
+      qualitiesHeightEditGroups: 0,
     };
   }
 
@@ -32,7 +31,7 @@ class QualityProfileItems extends Component {
   onMeasure = ({ height }) => {
     if (this.props.editGroups) {
       this.setState({
-        qualitiesHeightEditGroups: height
+        qualitiesHeightEditGroups: height,
       });
     } else {
       this.setState({ qualitiesHeight: height });
@@ -47,7 +46,6 @@ class QualityProfileItems extends Component {
   // Render
 
   render() {
-
     const {
       editGroups,
       dropQualityIndex,
@@ -57,10 +55,7 @@ class QualityProfileItems extends Component {
       warnings,
       ...otherProps
     } = this.props;
-    const {
-      qualitiesHeight,
-      qualitiesHeightEditGroups
-    } = this.state;
+    const { qualitiesHeight, qualitiesHeightEditGroups } = this.state;
 
     const isDragging = dropQualityIndex !== null;
     const isDraggingUp = isDragging && dropPosition === 'above';
@@ -69,40 +64,32 @@ class QualityProfileItems extends Component {
 
     return (
       <FormGroup size={sizes.EXTRA_SMALL}>
-        <FormLabel size={sizes.SMALL}>
-          {translate('Qualities')}
-        </FormLabel>
+        <FormLabel size={sizes.SMALL}>{translate('Qualities')}</FormLabel>
 
         <div>
-          <FormInputHelpText
-            text={translate('QualitiesHelpText')}
-          />
+          <FormInputHelpText text={translate('QualitiesHelpText')} />
 
-          {
-            errors.map((error, index) => {
-              return (
-                <FormInputHelpText
-                  key={index}
-                  text={error.message}
-                  isError={true}
-                  isCheckInput={false}
-                />
-              );
-            })
-          }
+          {errors.map((error, index) => {
+            return (
+              <FormInputHelpText
+                key={index}
+                text={error.message}
+                isError={true}
+                isCheckInput={false}
+              />
+            );
+          })}
 
-          {
-            warnings.map((warning, index) => {
-              return (
-                <FormInputHelpText
-                  key={index}
-                  text={warning.message}
-                  isWarning={true}
-                  isCheckInput={false}
-                />
-              );
-            })
-          }
+          {warnings.map((warning, index) => {
+            return (
+              <FormInputHelpText
+                key={index}
+                text={warning.message}
+                isWarning={true}
+                isCheckInput={false}
+              />
+            );
+          })}
 
           <Button
             className={styles.editGroupsButton}
@@ -115,9 +102,9 @@ class QualityProfileItems extends Component {
                 name={editGroups ? icons.REORDER : icons.GROUP}
               />
 
-              {
-                editGroups ? translate('DoneEditingGroups') : translate('EditGroups')
-              }
+              {editGroups
+                ? translate('DoneEditingGroups')
+                : translate('EditGroups')}
             </div>
           </Button>
 
@@ -130,8 +117,8 @@ class QualityProfileItems extends Component {
               className={styles.qualities}
               style={{ minHeight: `${minHeight}px` }}
             >
-              {
-                qualityProfileItems.map(({ id, name, allowed, quality, items }, index) => {
+              {qualityProfileItems
+                .map(({ id, name, allowed, quality, items }, index) => {
                   const identifier = quality ? quality.id : id;
 
                   return (
@@ -151,8 +138,8 @@ class QualityProfileItems extends Component {
                       {...otherProps}
                     />
                   );
-                }).reverse()
-              }
+                })
+                .reverse()}
 
               <QualityProfileItemDragPreview />
             </div>
@@ -171,12 +158,12 @@ QualityProfileItems.propTypes = {
   qualityProfileItems: PropTypes.arrayOf(PropTypes.object).isRequired,
   errors: PropTypes.arrayOf(PropTypes.object),
   warnings: PropTypes.arrayOf(PropTypes.object),
-  onToggleEditGroupsMode: PropTypes.func.isRequired
+  onToggleEditGroupsMode: PropTypes.func.isRequired,
 };
 
 QualityProfileItems.defaultProps = {
   errors: [],
-  warnings: []
+  warnings: [],
 };
 
 export default QualityProfileItems;

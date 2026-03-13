@@ -2,7 +2,11 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
-import { cloneCustomFormat, deleteCustomFormat, fetchCustomFormats } from 'Store/Actions/settingsActions';
+import {
+  cloneCustomFormat,
+  deleteCustomFormat,
+  fetchCustomFormats,
+} from 'Store/Actions/settingsActions';
 import createSortedSectionSelector from 'Store/Selectors/createSortedSectionSelector';
 import sortByProp from 'Utilities/Array/sortByProp';
 import CustomFormats from './CustomFormats';
@@ -17,11 +21,10 @@ function createMapStateToProps() {
 const mapDispatchToProps = {
   dispatchFetchCustomFormats: fetchCustomFormats,
   dispatchDeleteCustomFormat: deleteCustomFormat,
-  dispatchCloneCustomFormat: cloneCustomFormat
+  dispatchCloneCustomFormat: cloneCustomFormat,
 };
 
 class CustomFormatsConnector extends Component {
-
   //
   // Lifecycle
 
@@ -57,7 +60,10 @@ class CustomFormatsConnector extends Component {
 CustomFormatsConnector.propTypes = {
   dispatchFetchCustomFormats: PropTypes.func.isRequired,
   dispatchDeleteCustomFormat: PropTypes.func.isRequired,
-  dispatchCloneCustomFormat: PropTypes.func.isRequired
+  dispatchCloneCustomFormat: PropTypes.func.isRequired,
 };
 
-export default connect(createMapStateToProps, mapDispatchToProps)(CustomFormatsConnector);
+export default connect(
+  createMapStateToProps,
+  mapDispatchToProps
+)(CustomFormatsConnector);

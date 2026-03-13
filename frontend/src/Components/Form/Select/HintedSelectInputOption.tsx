@@ -5,8 +5,10 @@ import EnhancedSelectInputOption, {
 } from './EnhancedSelectInputOption';
 import styles from './HintedSelectInputOption.css';
 
-interface HintedSelectInputOptionProps
-  extends Omit<EnhancedSelectInputOptionProps, 'isSelected'> {
+interface HintedSelectInputOptionProps extends Omit<
+  EnhancedSelectInputOptionProps,
+  'isSelected'
+> {
   value: string;
   hint?: React.ReactNode;
   dividerAfter?: boolean;

@@ -8,26 +8,14 @@ import { inputTypes, sizes } from 'Helpers/Props';
 import titleCase from 'Utilities/String/titleCase';
 import translate from 'Utilities/String/translate';
 
-const branchValues = [
-  'master',
-  'develop',
-  'nightly'
-];
+const branchValues = ['master', 'develop', 'nightly'];
 
 function UpdateSettings(props) {
-  const {
-    advancedSettings,
-    settings,
-    packageUpdateMechanism,
-    onInputChange
-  } = props;
+  const { advancedSettings, settings, packageUpdateMechanism, onInputChange } =
+    props;
 
-  const {
-    branch,
-    updateAutomatically,
-    updateMechanism,
-    updateScriptPath
-  } = settings;
+  const { branch, updateAutomatically, updateMechanism, updateScriptPath } =
+    settings;
 
   if (!advancedSettings) {
     return null;
@@ -40,7 +28,7 @@ function UpdateSettings(props) {
   if (usingExternalUpdateMechanism) {
     updateOptions.push({
       key: packageUpdateMechanism,
-      value: titleCase(packageUpdateMechanism)
+      value: titleCase(packageUpdateMechanism),
     });
   } else {
     updateOptions.push({ key: 'builtIn', value: translate('BuiltIn') });
@@ -50,16 +38,17 @@ function UpdateSettings(props) {
 
   return (
     <FieldSet legend={translate('Updates')}>
-      <FormGroup
-        advancedSettings={advancedSettings}
-        isAdvanced={true}
-      >
+      <FormGroup advancedSettings={advancedSettings} isAdvanced={true}>
         <FormLabel>{translate('Branch')}</FormLabel>
 
         <FormInputGroup
           type={inputTypes.AUTO_COMPLETE}
           name="branch"
-          helpText={usingExternalUpdateMechanism ? translate('BranchUpdateMechanism') : translate('BranchUpdate')}
+          helpText={
+            usingExternalUpdateMechanism
+              ? translate('BranchUpdateMechanism')
+              : translate('BranchUpdate')
+          }
           helpLink="https://wiki.servarr.com/whisparr/settings#updates"
           {...branch}
           values={branchValues}
@@ -80,16 +69,17 @@ function UpdateSettings(props) {
             type={inputTypes.CHECK}
             name="updateAutomatically"
             helpText={translate('UpdateAutomaticallyHelpText')}
-            helpTextWarning={updateMechanism.value === 'docker' ? translate('AutomaticUpdatesDisabledDocker') : undefined}
+            helpTextWarning={
+              updateMechanism.value === 'docker'
+                ? translate('AutomaticUpdatesDisabledDocker')
+                : undefined
+            }
             onChange={onInputChange}
             {...updateAutomatically}
           />
         </FormGroup>
 
-        <FormGroup
-          advancedSettings={advancedSettings}
-          isAdvanced={true}
-        >
+        <FormGroup advancedSettings={advancedSettings} isAdvanced={true}>
           <FormLabel>{translate('Mechanism')}</FormLabel>
 
           <FormInputGroup
@@ -103,23 +93,19 @@ function UpdateSettings(props) {
           />
         </FormGroup>
 
-        {
-          updateMechanism.value === 'script' &&
-            <FormGroup
-              advancedSettings={advancedSettings}
-              isAdvanced={true}
-            >
-              <FormLabel>{translate('ScriptPath')}</FormLabel>
+        {updateMechanism.value === 'script' && (
+          <FormGroup advancedSettings={advancedSettings} isAdvanced={true}>
+            <FormLabel>{translate('ScriptPath')}</FormLabel>
 
-              <FormInputGroup
-                type={inputTypes.TEXT}
-                name="updateScriptPath"
-                helpText={translate('UpdateScriptPathHelpText')}
-                onChange={onInputChange}
-                {...updateScriptPath}
-              />
-            </FormGroup>
-        }
+            <FormInputGroup
+              type={inputTypes.TEXT}
+              name="updateScriptPath"
+              helpText={translate('UpdateScriptPathHelpText')}
+              onChange={onInputChange}
+              {...updateScriptPath}
+            />
+          </FormGroup>
+        )}
       </div>
     </FieldSet>
   );
@@ -130,7 +116,7 @@ UpdateSettings.propTypes = {
   settings: PropTypes.object.isRequired,
   isWindows: PropTypes.bool.isRequired,
   packageUpdateMechanism: PropTypes.string.isRequired,
-  onInputChange: PropTypes.func.isRequired
+  onInputChange: PropTypes.func.isRequired,
 };
 
 export default UpdateSettings;

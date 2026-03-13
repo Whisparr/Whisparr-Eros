@@ -15,7 +15,8 @@ const section = 'settings.metadata';
 
 export const FETCH_METADATA = 'settings/metadata/fetchMetadata';
 export const SET_METADATA_VALUE = 'settings/metadata/setMetadataValue';
-export const SET_METADATA_FIELD_VALUE = 'settings/metadata/setMetadataFieldValue';
+export const SET_METADATA_FIELD_VALUE =
+  'settings/metadata/setMetadataFieldValue';
 export const SAVE_METADATA = 'settings/metadata/saveMetadata';
 
 //
@@ -27,22 +28,24 @@ export const saveMetadata = createThunk(SAVE_METADATA);
 export const setMetadataValue = createAction(SET_METADATA_VALUE, (payload) => {
   return {
     section,
-    ...payload
+    ...payload,
   };
 });
 
-export const setMetadataFieldValue = createAction(SET_METADATA_FIELD_VALUE, (payload) => {
-  return {
-    section,
-    ...payload
-  };
-});
+export const setMetadataFieldValue = createAction(
+  SET_METADATA_FIELD_VALUE,
+  (payload) => {
+    return {
+      section,
+      ...payload,
+    };
+  }
+);
 
 //
 // Details
 
 export default {
-
   //
   // State
 
@@ -53,7 +56,7 @@ export default {
     isSaving: false,
     saveError: null,
     items: [],
-    pendingChanges: {}
+    pendingChanges: {},
   },
 
   //
@@ -61,7 +64,7 @@ export default {
 
   actionHandlers: {
     [FETCH_METADATA]: createFetchHandler(section, '/metadata'),
-    [SAVE_METADATA]: createSaveProviderHandler(section, '/metadata')
+    [SAVE_METADATA]: createSaveProviderHandler(section, '/metadata'),
   },
 
   //
@@ -69,7 +72,6 @@ export default {
 
   reducers: {
     [SET_METADATA_VALUE]: createSetSettingValueReducer(section),
-    [SET_METADATA_FIELD_VALUE]: createSetProviderFieldValueReducer(section)
-  }
-
+    [SET_METADATA_FIELD_VALUE]: createSetProviderFieldValueReducer(section),
+  },
 };

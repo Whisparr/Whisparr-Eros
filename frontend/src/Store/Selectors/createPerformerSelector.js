@@ -5,7 +5,7 @@ export function createPerformerSelectorForHook(performerId) {
     (state) => state.performers.itemMap,
     (state) => state.performers.items,
     (itemMap, allPerformers) => {
-      return performerId ? allPerformers[itemMap[performerId]]: undefined;
+      return performerId ? allPerformers[itemMap[performerId]] : undefined;
     }
   );
 }

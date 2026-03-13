@@ -1,7 +1,13 @@
 import _ from 'lodash';
 import { createAction } from 'redux-actions';
 import { batchActions } from 'redux-batched-actions';
-import { filterBuilderTypes, filterBuilderValueTypes, filterTypePredicates, filterTypes, sortDirections } from 'Helpers/Props';
+import {
+  filterBuilderTypes,
+  filterBuilderValueTypes,
+  filterTypePredicates,
+  filterTypes,
+  sortDirections,
+} from 'Helpers/Props';
 import { createThunk, handleThunks } from 'Store/thunks';
 import sortByProp from 'Utilities/Array/sortByProp';
 import createAjaxRequest from 'Utilities/createAjaxRequest';
@@ -44,7 +50,7 @@ export const defaultState = {
     size: 'medium',
     showDetails: true,
     showOverview: true,
-    showPosters: true
+    showPosters: true,
   },
 
   defaults: {
@@ -52,11 +58,11 @@ export const defaultState = {
     monitor: 'movieOnly',
     qualityProfileId: 0,
     searchForMovie: false,
-    tags: []
+    tags: [],
   },
 
   deleteOptions: {
-    addImportExclusion: false
+    addImportExclusion: false,
   },
 
   selectedFilterKey: 'all',
@@ -65,7 +71,7 @@ export const defaultState = {
     {
       key: 'all',
       label: () => translate('All'),
-      filters: []
+      filters: [],
     },
     {
       key: 'missing',
@@ -74,9 +80,9 @@ export const defaultState = {
         {
           key: 'missingMovies',
           value: 0,
-          type: filterTypes.GREATER_THAN
-        }
-      ]
+          type: filterTypes.GREATER_THAN,
+        },
+      ],
     },
     {
       key: 'complete',
@@ -85,14 +91,14 @@ export const defaultState = {
         {
           key: 'missingMovies',
           value: 0,
-          type: filterTypes.EQUAL
-        }
-      ]
-    }
+          type: filterTypes.EQUAL,
+        },
+      ],
+    },
   ],
 
   filterPredicates: {
-    genres: function(item, filterValue, type) {
+    genres: function (item, filterValue, type) {
       const predicate = filterTypePredicates[type];
 
       const allGenres = item.movies.flatMap(({ genres }) => genres);
@@ -100,51 +106,53 @@ export const defaultState = {
 
       return predicate(genres, filterValue);
     },
-    totalMovies: function(item, filterValue, type) {
+    totalMovies: function (item, filterValue, type) {
       const predicate = filterTypePredicates[type];
       const { movies } = item;
 
       const totalMovies = movies.length;
       return predicate(totalMovies, filterValue);
-    }
+    },
   },
 
   filterBuilderProps: [
     {
       name: 'title',
       label: () => translate('Title'),
-      type: filterBuilderTypes.STRING
+      type: filterBuilderTypes.STRING,
     },
     {
       name: 'monitored',
       label: () => translate('Monitored'),
       type: filterBuilderTypes.EXACT,
-      valueType: filterBuilderValueTypes.BOOL
+      valueType: filterBuilderValueTypes.BOOL,
     },
     {
       name: 'qualityProfileId',
       label: () => translate('QualityProfile'),
       type: filterBuilderTypes.EXACT,
-      valueType: filterBuilderValueTypes.QUALITY_PROFILE
+      valueType: filterBuilderValueTypes.QUALITY_PROFILE,
     },
     {
       name: 'rootFolderPath',
       label: () => translate('RootFolder'),
-      type: filterBuilderTypes.STRING
+      type: filterBuilderTypes.STRING,
     },
     {
       name: 'genres',
       label: () => translate('Genres'),
       type: filterBuilderTypes.ARRAY,
-      optionsSelector: function(items) {
+      optionsSelector: function (items) {
         const genreList = items.reduce((acc, collection) => {
-          const collectionGenres = collection.movies.flatMap(({ genres }) => genres);
+          const collectionGenres = collection.movies.flatMap(
+            ({ genres }) => genres
+          );
           const genres = Array.from(new Set(collectionGenres));
 
           genres.forEach((genre) => {
             acc.push({
               id: genre,
-              name: genre
+              name: genre,
             });
           });
 
@@ -152,14 +160,14 @@ export const defaultState = {
         }, []);
 
         return genreList.sort(sortByProp('name'));
-      }
+      },
     },
     {
       name: 'totalMovies',
       label: () => translate('TotalMovies'),
-      type: filterBuilderTypes.NUMBER
-    }
-  ]
+      type: filterBuilderTypes.NUMBER,
+    },
+  ],
 };
 
 export const persistState = [
@@ -169,7 +177,7 @@ export const persistState = [
   'movieCollections.selectedFilterKey',
   'movieCollections.customFilters',
   'movieCollections.options',
-  'movieCollections.overviewOptions'
+  'movieCollections.overviewOptions',
 ];
 
 //
@@ -179,7 +187,8 @@ export const FETCH_MOVIE_COLLECTIONS = 'movieCollections/fetchMovieCollections';
 export const CLEAR_MOVIE_COLLECTIONS = 'movieCollections/clearMovieCollections';
 export const SAVE_MOVIE_COLLECTION = 'movieCollections/saveMovieCollection';
 export const SAVE_MOVIE_COLLECTIONS = 'movieCollections/saveMovieCollections';
-export const SET_MOVIE_COLLECTION_VALUE = 'movieCollections/setMovieCollectionValue';
+export const SET_MOVIE_COLLECTION_VALUE =
+  'movieCollections/setMovieCollectionValue';
 
 export const ADD_MOVIE = 'movieCollections/addMovie';
 
@@ -187,12 +196,17 @@ export const SAVE_COLLECTION_EDITOR = 'movieCollections/saveCollectionEditor';
 export const DELETE_COLLECTION = 'movieCollections/deleteCollection';
 export const SET_DELETE_OPTION = 'movieCollections/setDeleteOption';
 
-export const TOGGLE_COLLECTION_MONITORED = 'movieCollections/toggleCollectionMonitored';
+export const TOGGLE_COLLECTION_MONITORED =
+  'movieCollections/toggleCollectionMonitored';
 
-export const SET_MOVIE_COLLECTIONS_SORT = 'movieCollections/setMovieCollectionsSort';
-export const SET_MOVIE_COLLECTIONS_FILTER = 'movieCollections/setMovieCollectionsFilter';
-export const SET_MOVIE_COLLECTIONS_OPTION = 'movieCollections/setMovieCollectionsOption';
-export const SET_MOVIE_COLLECTIONS_OVERVIEW_OPTION = 'movieCollections/setMovieCollectionsOverviewOption';
+export const SET_MOVIE_COLLECTIONS_SORT =
+  'movieCollections/setMovieCollectionsSort';
+export const SET_MOVIE_COLLECTIONS_FILTER =
+  'movieCollections/setMovieCollectionsFilter';
+export const SET_MOVIE_COLLECTIONS_OPTION =
+  'movieCollections/setMovieCollectionsOption';
+export const SET_MOVIE_COLLECTIONS_OVERVIEW_OPTION =
+  'movieCollections/setMovieCollectionsOverviewOption';
 
 //
 // Action Creators
@@ -209,66 +223,80 @@ export const deleteCollection = createThunk(DELETE_COLLECTION, (payload) => {
     ...payload,
     queryParams: {
       deleteFiles: payload.deleteFiles,
-      addImportExclusion: payload.addImportExclusion
-    }
+      addImportExclusion: payload.addImportExclusion,
+    },
   };
 });
 
 export const setDeleteOption = createAction(SET_DELETE_OPTION);
 
-export const toggleCollectionMonitored = createThunk(TOGGLE_COLLECTION_MONITORED);
+export const toggleCollectionMonitored = createThunk(
+  TOGGLE_COLLECTION_MONITORED
+);
 
 export const setMovieCollectionsSort = createAction(SET_MOVIE_COLLECTIONS_SORT);
-export const setMovieCollectionsFilter = createAction(SET_MOVIE_COLLECTIONS_FILTER);
-export const setMovieCollectionsOption = createAction(SET_MOVIE_COLLECTIONS_OPTION);
-export const setMovieCollectionsOverviewOption = createAction(SET_MOVIE_COLLECTIONS_OVERVIEW_OPTION);
+export const setMovieCollectionsFilter = createAction(
+  SET_MOVIE_COLLECTIONS_FILTER
+);
+export const setMovieCollectionsOption = createAction(
+  SET_MOVIE_COLLECTIONS_OPTION
+);
+export const setMovieCollectionsOverviewOption = createAction(
+  SET_MOVIE_COLLECTIONS_OVERVIEW_OPTION
+);
 
-export const setMovieCollectionValue = createAction(SET_MOVIE_COLLECTION_VALUE, (payload) => {
-  return {
-    section,
-    ...payload
-  };
-});
+export const setMovieCollectionValue = createAction(
+  SET_MOVIE_COLLECTION_VALUE,
+  (payload) => {
+    return {
+      section,
+      ...payload,
+    };
+  }
+);
 
 //
 // Action Handlers
 
 export const actionHandlers = handleThunks({
-
   [SAVE_MOVIE_COLLECTION]: createSaveProviderHandler(section, '/collection'),
   [DELETE_COLLECTION]: createRemoveItemHandler(section, '/collection'),
-  [FETCH_MOVIE_COLLECTIONS]: function(getState, payload, dispatch) {
+  [FETCH_MOVIE_COLLECTIONS]: function (getState, payload, dispatch) {
     dispatch(set({ section, isFetching: true }));
 
     const promise = createAjaxRequest({
       url: '/collection',
-      data: payload
+      data: payload,
     }).request;
 
     promise.done((data) => {
-      dispatch(batchActions([
-        update({ section, data }),
+      dispatch(
+        batchActions([
+          update({ section, data }),
 
-        set({
-          section,
-          isFetching: false,
-          isPopulated: true,
-          error: null
-        })
-      ]));
+          set({
+            section,
+            isFetching: false,
+            isPopulated: true,
+            error: null,
+          }),
+        ])
+      );
     });
 
     promise.fail((xhr) => {
-      dispatch(set({
-        section,
-        isFetching: false,
-        isPopulated: false,
-        error: xhr
-      }));
+      dispatch(
+        set({
+          section,
+          isFetching: false,
+          isPopulated: false,
+          error: xhr,
+        })
+      );
     });
   },
 
-  [ADD_MOVIE]: function(getState, payload, dispatch) {
+  [ADD_MOVIE]: function (getState, payload, dispatch) {
     dispatch(set({ section, isAdding: true }));
 
     const { foreignId, title } = payload;
@@ -280,97 +308,111 @@ export const actionHandlers = handleThunks({
       url: '/movie',
       method: 'POST',
       contentType: 'application/json',
-      data: JSON.stringify(newMovie)
+      data: JSON.stringify(newMovie),
     }).request;
 
     promise.done((data) => {
       // handle old movies that have not been refreshed.
       if (data.collection === undefined) {
-        dispatch(set({
-          section,
-          isAdding: false,
-          isAdded: false
-        }));
+        dispatch(
+          set({
+            section,
+            isAdding: false,
+            isAdded: false,
+          })
+        );
         return;
       }
 
-      const collectionToUpdate = getState().movieCollections.items.find((collection) => collection.tmdbId === data.collection.tmdbId);
-      const collectionData = { ...collectionToUpdate, missingMovies: Math.max(0, collectionToUpdate.missingMovies - 1 ) };
+      const collectionToUpdate = getState().movieCollections.items.find(
+        (collection) => collection.tmdbId === data.collection.tmdbId
+      );
+      const collectionData = {
+        ...collectionToUpdate,
+        missingMovies: Math.max(0, collectionToUpdate.missingMovies - 1),
+      };
 
-      dispatch(batchActions([
-        updateItem({ section: 'movies', ...data }),
+      dispatch(
+        batchActions([
+          updateItem({ section: 'movies', ...data }),
 
-        set({
-          section,
-          isAdding: false,
-          isAdded: true,
-          addError: null
-        }),
+          set({
+            section,
+            isAdding: false,
+            isAdded: true,
+            addError: null,
+          }),
 
-        updateItem({ section, ...collectionData })
-      ]));
+          updateItem({ section, ...collectionData }),
+        ])
+      );
     });
 
     promise.fail((xhr) => {
-      dispatch(set({
-        section,
-        isAdding: false,
-        isAdded: false,
-        addError: xhr
-      }));
+      dispatch(
+        set({
+          section,
+          isAdding: false,
+          isAdded: false,
+          addError: xhr,
+        })
+      );
     });
   },
 
   [TOGGLE_COLLECTION_MONITORED]: (getState, payload, dispatch) => {
-    const {
-      collectionId: id,
-      monitored
-    } = payload;
+    const { collectionId: id, monitored } = payload;
 
     const collection = _.find(getState().movieCollections.items, { id });
 
-    dispatch(updateItem({
-      id,
-      section,
-      isSaving: true
-    }));
+    dispatch(
+      updateItem({
+        id,
+        section,
+        isSaving: true,
+      })
+    );
 
     const promise = createAjaxRequest({
       url: `/collection/${id}`,
       method: 'PUT',
       data: JSON.stringify({
         ...collection,
-        monitored
+        monitored,
       }),
-      dataType: 'json'
+      dataType: 'json',
     }).request;
 
     promise.done((data) => {
-      dispatch(updateItem({
-        id,
-        section,
-        isSaving: false,
-        monitored
-      }));
+      dispatch(
+        updateItem({
+          id,
+          section,
+          isSaving: false,
+          monitored,
+        })
+      );
     });
 
     promise.fail((xhr) => {
-      dispatch(updateItem({
-        id,
-        section,
-        isSaving: false
-      }));
+      dispatch(
+        updateItem({
+          id,
+          section,
+          isSaving: false,
+        })
+      );
     });
   },
 
-  [SAVE_MOVIE_COLLECTIONS]: function(getState, payload, dispatch) {
+  [SAVE_MOVIE_COLLECTIONS]: function (getState, payload, dispatch) {
     const {
       collectionIds,
       monitored,
       monitor,
       qualityProfileId,
       rootFolderPath,
-      searchOnAdd
+      searchOnAdd,
     } = payload;
 
     const response = {};
@@ -394,121 +436,137 @@ export const actionHandlers = handleThunks({
     response.rootFolderPath = rootFolderPath;
     response.collectionIds = collectionIds;
 
-    dispatch(set({
-      section,
-      isSaving: true
-    }));
+    dispatch(
+      set({
+        section,
+        isSaving: true,
+      })
+    );
 
     const promise = createAjaxRequest({
       url: '/collection',
       method: 'PUT',
       data: JSON.stringify(response),
-      dataType: 'json'
+      dataType: 'json',
     }).request;
 
     promise.done((data) => {
       dispatch(fetchMovieCollections());
 
-      dispatch(set({
-        section,
-        isSaving: false,
-        saveError: null
-      }));
+      dispatch(
+        set({
+          section,
+          isSaving: false,
+          saveError: null,
+        })
+      );
     });
 
     promise.fail((xhr) => {
-      dispatch(set({
-        section,
-        isSaving: false,
-        saveError: xhr
-      }));
+      dispatch(
+        set({
+          section,
+          isSaving: false,
+          saveError: xhr,
+        })
+      );
     });
   },
 
-  [SAVE_COLLECTION_EDITOR]: function(getState, payload, dispatch) {
-    dispatch(set({
-      section,
-      isSaving: true
-    }));
+  [SAVE_COLLECTION_EDITOR]: function (getState, payload, dispatch) {
+    dispatch(
+      set({
+        section,
+        isSaving: true,
+      })
+    );
 
     const promise = createAjaxRequest({
       url: '/collection/editor',
       method: 'PUT',
       data: JSON.stringify(payload),
-      dataType: 'json'
+      dataType: 'json',
     }).request;
 
     promise.done((data) => {
-      dispatch(batchActions([
-        ...data.map((collection) => {
-          return updateItem({
-            id: collection.id,
-            section: 'collections',
-            ...collection
-          });
-        }),
+      dispatch(
+        batchActions([
+          ...data.map((collection) => {
+            return updateItem({
+              id: collection.id,
+              section: 'collections',
+              ...collection,
+            });
+          }),
 
-        set({
-          section,
-          isSaving: false,
-          saveError: null
-        })
-      ]));
+          set({
+            section,
+            isSaving: false,
+            saveError: null,
+          }),
+        ])
+      );
     });
 
     promise.fail((xhr) => {
-      dispatch(set({
-        section,
-        isSaving: false,
-        saveError: xhr
-      }));
+      dispatch(
+        set({
+          section,
+          isSaving: false,
+          saveError: xhr,
+        })
+      );
     });
-  }
+  },
 });
 
 //
 // Reducers
 
-export const reducers = createHandleActions({
+export const reducers = createHandleActions(
+  {
+    [SET_MOVIE_COLLECTIONS_SORT]:
+      createSetClientSideCollectionSortReducer(section),
+    [SET_MOVIE_COLLECTIONS_FILTER]:
+      createSetClientSideCollectionFilterReducer(section),
+    [SET_MOVIE_COLLECTION_VALUE]: createSetSettingValueReducer(section),
 
-  [SET_MOVIE_COLLECTIONS_SORT]: createSetClientSideCollectionSortReducer(section),
-  [SET_MOVIE_COLLECTIONS_FILTER]: createSetClientSideCollectionFilterReducer(section),
-  [SET_MOVIE_COLLECTION_VALUE]: createSetSettingValueReducer(section),
+    [SET_MOVIE_COLLECTIONS_OPTION]: function (state, { payload }) {
+      const movieCollectionsOptions = state.options;
 
-  [SET_MOVIE_COLLECTIONS_OPTION]: function(state, { payload }) {
-    const movieCollectionsOptions = state.options;
+      return {
+        ...state,
+        options: {
+          ...movieCollectionsOptions,
+          ...payload,
+        },
+      };
+    },
 
-    return {
-      ...state,
-      options: {
-        ...movieCollectionsOptions,
-        ...payload
-      }
-    };
+    [SET_MOVIE_COLLECTIONS_OVERVIEW_OPTION]: function (state, { payload }) {
+      const overviewOptions = state.overviewOptions;
+
+      return {
+        ...state,
+        overviewOptions: {
+          ...overviewOptions,
+          ...payload,
+        },
+      };
+    },
+
+    [CLEAR_MOVIE_COLLECTIONS]: (state) => {
+      return Object.assign({}, state, defaultState);
+    },
+    [SET_DELETE_OPTION]: (state, { payload }) => {
+      return {
+        ...state,
+        deleteOptions: {
+          ...payload,
+        },
+      };
+    },
   },
-
-  [SET_MOVIE_COLLECTIONS_OVERVIEW_OPTION]: function(state, { payload }) {
-    const overviewOptions = state.overviewOptions;
-
-    return {
-      ...state,
-      overviewOptions: {
-        ...overviewOptions,
-        ...payload
-      }
-    };
-  },
-
-  [CLEAR_MOVIE_COLLECTIONS]: (state) => {
-    return Object.assign({}, state, defaultState);
-  },
-  [SET_DELETE_OPTION]: (state, { payload }) => {
-    return {
-      ...state,
-      deleteOptions: {
-        ...payload
-      }
-    };
-  }
-
-}, defaultState, section);
+  defaultState,
+  section
+);

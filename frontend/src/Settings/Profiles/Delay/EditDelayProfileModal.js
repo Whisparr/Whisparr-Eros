@@ -6,11 +6,7 @@ import EditDelayProfileModalContentConnector from './EditDelayProfileModalConten
 
 function EditDelayProfileModal({ isOpen, onModalClose, ...otherProps }) {
   return (
-    <Modal
-      size={sizes.MEDIUM}
-      isOpen={isOpen}
-      onModalClose={onModalClose}
-    >
+    <Modal size={sizes.MEDIUM} isOpen={isOpen} onModalClose={onModalClose}>
       <EditDelayProfileModalContentConnector
         {...otherProps}
         onModalClose={onModalClose}
@@ -21,7 +17,7 @@ function EditDelayProfileModal({ isOpen, onModalClose, ...otherProps }) {
 
 EditDelayProfileModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
-  onModalClose: PropTypes.func.isRequired
+  onModalClose: PropTypes.func.isRequired,
 };
 
 export default EditDelayProfileModal;

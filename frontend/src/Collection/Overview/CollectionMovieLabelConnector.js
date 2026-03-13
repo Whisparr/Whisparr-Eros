@@ -15,25 +15,24 @@ function createMapStateToProps() {
       return {
         isSmallScreen: dimensions.isSmallScreen,
         isExistingMovie: !!existingMovie,
-        ...existingMovie
+        ...existingMovie,
       };
     }
   );
 }
 
 const mapDispatchToProps = {
-  toggleMovieMonitored
+  toggleMovieMonitored,
 };
 
 class CollectionMovieLabelConnector extends Component {
-
   //
   // Listeners
 
   onMonitorTogglePress = (monitored) => {
     this.props.toggleMovieMonitored({
       movieId: this.props.id,
-      monitored
+      monitored,
     });
   };
 
@@ -53,7 +52,10 @@ class CollectionMovieLabelConnector extends Component {
 CollectionMovieLabelConnector.propTypes = {
   id: PropTypes.number,
   monitored: PropTypes.bool,
-  toggleMovieMonitored: PropTypes.func.isRequired
+  toggleMovieMonitored: PropTypes.func.isRequired,
 };
 
-export default connect(createMapStateToProps, mapDispatchToProps)(CollectionMovieLabelConnector);
+export default connect(
+  createMapStateToProps,
+  mapDispatchToProps
+)(CollectionMovieLabelConnector);

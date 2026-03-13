@@ -5,7 +5,7 @@ export default function areAllSelected(selectedState) {
   if (keys.length === 0) {
     return {
       allSelected: false,
-      allUnselected: true
+      allUnselected: true,
     };
   }
 
@@ -22,7 +22,6 @@ export default function areAllSelected(selectedState) {
 
   return {
     allSelected,
-    allUnselected
+    allUnselected,
   };
 }
-

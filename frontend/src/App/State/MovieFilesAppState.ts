@@ -5,7 +5,8 @@ import AppSectionState, {
 import { MovieFile } from 'MovieFile/MovieFile';
 
 interface MovieFilesAppState
-  extends AppSectionState<MovieFile>,
+  extends
+    AppSectionState<MovieFile>,
     AppSectionDeleteState,
     TableAppSectionState {}
 

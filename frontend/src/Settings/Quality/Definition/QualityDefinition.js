@@ -19,7 +19,7 @@ const MIN_DISTANCE = 1;
 const slider = {
   min: MIN,
   max: roundNumber(Math.pow(MAX, 1 / 1.1)),
-  step: 0.1
+  step: 0.1,
 };
 
 function getValue(inputValue) {
@@ -41,7 +41,6 @@ function getSliderValue(value, defaultValue) {
 }
 
 class QualityDefinition extends Component {
-
   //
   // Lifecycle
 
@@ -51,7 +50,7 @@ class QualityDefinition extends Component {
     this.state = {
       sliderMinSize: getSliderValue(props.minSize, slider.min),
       sliderMaxSize: getSliderValue(props.maxSize, slider.max),
-      sliderPreferredSize: getSliderValue(props.preferredSize, (slider.max - 3))
+      sliderPreferredSize: getSliderValue(props.preferredSize, slider.max - 3),
     };
   }
 
@@ -59,21 +58,11 @@ class QualityDefinition extends Component {
   // Control
 
   trackRenderer(props, state) {
-    return (
-      <div
-        {...props}
-        className={styles.track}
-      />
-    );
+    return <div {...props} className={styles.track} />;
   }
 
   thumbRenderer(props, state) {
-    return (
-      <div
-        {...props}
-        className={styles.thumb}
-      />
-    );
+    return <div {...props} className={styles.thumb} />;
   }
 
   //
@@ -83,27 +72,29 @@ class QualityDefinition extends Component {
     this.setState({
       sliderMinSize,
       sliderMaxSize,
-      sliderPreferredSize
+      sliderPreferredSize,
     });
 
     this.props.onSizeChange({
       minSize: roundNumber(Math.pow(sliderMinSize, 1.1)),
-      preferredSize: sliderPreferredSize === (slider.max - 3) ? null : roundNumber(Math.pow(sliderPreferredSize, 1.1)),
-      maxSize: sliderMaxSize === slider.max ? null : roundNumber(Math.pow(sliderMaxSize, 1.1))
+      preferredSize:
+        sliderPreferredSize === slider.max - 3
+          ? null
+          : roundNumber(Math.pow(sliderPreferredSize, 1.1)),
+      maxSize:
+        sliderMaxSize === slider.max
+          ? null
+          : roundNumber(Math.pow(sliderMaxSize, 1.1)),
     });
   };
 
   onAfterSliderChange = () => {
-    const {
-      minSize,
-      maxSize,
-      preferredSize
-    } = this.props;
+    const { minSize, maxSize, preferredSize } = this.props;
 
     this.setState({
       sliderMinSize: getSliderValue(minSize, slider.min),
       sliderMaxSize: getSliderValue(maxSize, slider.max),
-      sliderPreferredSize: getSliderValue(preferredSize, (slider.max - 3)) // fix
+      sliderPreferredSize: getSliderValue(preferredSize, slider.max - 3), // fix
     });
   };
 
@@ -111,27 +102,27 @@ class QualityDefinition extends Component {
     const minSize = getValue(value);
 
     this.setState({
-      sliderMinSize: getSliderValue(minSize, slider.min)
+      sliderMinSize: getSliderValue(minSize, slider.min),
     });
 
     this.props.onSizeChange({
       minSize,
       maxSize: this.props.maxSize,
-      preferredSize: this.props.preferredSize
+      preferredSize: this.props.preferredSize,
     });
   };
 
   onPreferredSizeChange = ({ value }) => {
-    const preferredSize = value === (MAX - 3) ? null : getValue(value);
+    const preferredSize = value === MAX - 3 ? null : getValue(value);
 
     this.setState({
-      sliderPreferredSize: getSliderValue(preferredSize, slider.preferred)
+      sliderPreferredSize: getSliderValue(preferredSize, slider.preferred),
     });
 
     this.props.onSizeChange({
       minSize: this.props.minSize,
       maxSize: this.props.maxSize,
-      preferredSize
+      preferredSize,
     });
   };
 
@@ -139,13 +130,13 @@ class QualityDefinition extends Component {
     const maxSize = value === MAX ? null : getValue(value);
 
     this.setState({
-      sliderMaxSize: getSliderValue(maxSize, slider.max)
+      sliderMaxSize: getSliderValue(maxSize, slider.max),
     });
 
     this.props.onSizeChange({
       minSize: this.props.minSize,
       maxSize,
-      preferredSize: this.props.preferredSize
+      preferredSize: this.props.preferredSize,
     });
   };
 
@@ -161,29 +152,27 @@ class QualityDefinition extends Component {
       maxSize,
       preferredSize,
       advancedSettings,
-      onTitleChange
+      onTitleChange,
     } = this.props;
 
-    const {
-      sliderMinSize,
-      sliderMaxSize,
-      sliderPreferredSize
-    } = this.state;
+    const { sliderMinSize, sliderMaxSize, sliderPreferredSize } = this.state;
 
     const minBytes = minSize * 1024 * 1024;
     const minSixty = `${formatBytes(minBytes * 60)}/${translate('HourShorthand')}`;
 
     const preferredBytes = preferredSize * 1024 * 1024;
-    const preferredSixty = preferredBytes ? `${formatBytes(preferredBytes * 60)}/${translate('HourShorthand')}` : translate('Unlimited');
+    const preferredSixty = preferredBytes
+      ? `${formatBytes(preferredBytes * 60)}/${translate('HourShorthand')}`
+      : translate('Unlimited');
 
     const maxBytes = maxSize && maxSize * 1024 * 1024;
-    const maxSixty = maxBytes ? `${formatBytes(maxBytes * 60)}/${translate('HourShorthand')}` : translate('Unlimited');
+    const maxSixty = maxBytes
+      ? `${formatBytes(maxBytes * 60)}/${translate('HourShorthand')}`
+      : translate('Unlimited');
 
     return (
       <div className={styles.qualityDefinition}>
-        <div className={styles.quality}>
-          {quality.name}
-        </div>
+        <div className={styles.quality}>{quality.name}</div>
 
         <div className={styles.title}>
           <TextInput
@@ -214,9 +203,7 @@ class QualityDefinition extends Component {
           <div className={styles.sizes}>
             <div>
               <Popover
-                anchor={
-                  <Label kind={kinds.INFO}>{minSixty}</Label>
-                }
+                anchor={<Label kind={kinds.INFO}>{minSixty}</Label>}
                 title={translate('MinimumLimits')}
                 body={
                   <QualityDefinitionLimits
@@ -230,9 +217,7 @@ class QualityDefinition extends Component {
 
             <div>
               <Popover
-                anchor={
-                  <Label kind={kinds.SUCCESS}>{preferredSixty}</Label>
-                }
+                anchor={<Label kind={kinds.SUCCESS}>{preferredSixty}</Label>}
                 title={translate('PreferredSize')}
                 body={
                   <QualityDefinitionLimits
@@ -246,9 +231,7 @@ class QualityDefinition extends Component {
 
             <div>
               <Popover
-                anchor={
-                  <Label kind={kinds.WARNING}>{maxSixty}</Label>
-                }
+                anchor={<Label kind={kinds.WARNING}>{maxSixty}</Label>}
                 title={translate('MaximumLimits')}
                 body={
                   <QualityDefinitionLimits
@@ -262,55 +245,58 @@ class QualityDefinition extends Component {
           </div>
         </div>
 
-        {
-          advancedSettings &&
-            <div className={styles.megabytesPerMinute}>
-              <div>
-                {translate('Min')}
+        {advancedSettings && (
+          <div className={styles.megabytesPerMinute}>
+            <div>
+              {translate('Min')}
 
-                <NumberInput
-                  className={styles.sizeInput}
-                  name={`${id}.min`}
-                  value={minSize || MIN}
-                  min={MIN}
-                  max={preferredSize ? preferredSize - MIN_DISTANCE : MAX - MIN_DISTANCE}
-                  step={0.1}
-                  isFloat={true}
-                  onChange={this.onMinSizeChange}
-                />
-              </div>
-
-              <div>
-                {translate('Preferred')}
-
-                <NumberInput
-                  className={styles.sizeInput}
-                  name={`${id}.min`}
-                  value={preferredSize || MAX - MIN_DISTANCE}
-                  min={MIN}
-                  max={maxSize ? maxSize - MIN_DISTANCE : MAX - MIN_DISTANCE}
-                  step={0.1}
-                  isFloat={true}
-                  onChange={this.onPreferredSizeChange}
-                />
-              </div>
-
-              <div>
-                {translate('Max')}
-
-                <NumberInput
-                  className={styles.sizeInput}
-                  name={`${id}.max`}
-                  value={maxSize || MAX}
-                  min={minSize + MIN_DISTANCE}
-                  max={MAX}
-                  step={0.1}
-                  isFloat={true}
-                  onChange={this.onMaxSizeChange}
-                />
-              </div>
+              <NumberInput
+                className={styles.sizeInput}
+                name={`${id}.min`}
+                value={minSize || MIN}
+                min={MIN}
+                max={
+                  preferredSize
+                    ? preferredSize - MIN_DISTANCE
+                    : MAX - MIN_DISTANCE
+                }
+                step={0.1}
+                isFloat={true}
+                onChange={this.onMinSizeChange}
+              />
             </div>
-        }
+
+            <div>
+              {translate('Preferred')}
+
+              <NumberInput
+                className={styles.sizeInput}
+                name={`${id}.min`}
+                value={preferredSize || MAX - MIN_DISTANCE}
+                min={MIN}
+                max={maxSize ? maxSize - MIN_DISTANCE : MAX - MIN_DISTANCE}
+                step={0.1}
+                isFloat={true}
+                onChange={this.onPreferredSizeChange}
+              />
+            </div>
+
+            <div>
+              {translate('Max')}
+
+              <NumberInput
+                className={styles.sizeInput}
+                name={`${id}.max`}
+                value={maxSize || MAX}
+                min={minSize + MIN_DISTANCE}
+                max={MAX}
+                step={0.1}
+                isFloat={true}
+                onChange={this.onMaxSizeChange}
+              />
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -325,7 +311,7 @@ QualityDefinition.propTypes = {
   preferredSize: PropTypes.number,
   advancedSettings: PropTypes.bool.isRequired,
   onTitleChange: PropTypes.func.isRequired,
-  onSizeChange: PropTypes.func.isRequired
+  onSizeChange: PropTypes.func.isRequired,
 };
 
 export default QualityDefinition;

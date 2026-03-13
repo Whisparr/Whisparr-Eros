@@ -49,8 +49,9 @@ export function useToggleStudioMonitored() {
     },
     onSuccess: (data) => {
       if (data?.foreignId) {
-        queryClient.setQueryData([`/studio/${data.foreignId}`], (old: Studio) =>
-          old ? { ...old, ...data } : data
+        queryClient.setQueryData(
+          [`/studio/${data.foreignId}`],
+          (old: Studio) => (old ? { ...old, ...data } : data)
         );
       }
     },

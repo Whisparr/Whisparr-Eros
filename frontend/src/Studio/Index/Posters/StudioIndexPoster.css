@@ -87,7 +87,7 @@ $hoverScale: 1.05;
 .qualityProfile,
 .sizeOnDisk,
 .totalMovieCount,
-.totalSceneCount{
+.totalSceneCount {
   text-align: center;
 }
 

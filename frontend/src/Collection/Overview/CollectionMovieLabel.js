@@ -20,39 +20,37 @@ class CollectionMovieLabel extends Component {
       isAvailable,
       hasFile,
       onMonitorTogglePress,
-      isSaving
+      isSaving,
     } = this.props;
 
     return (
       <div className={styles.movie}>
         <div className={styles.movieTitle}>
-          {
-            id &&
-              <MonitorToggleButton
-                monitored={monitored}
-                isSaving={isSaving}
-                onPress={onMonitorTogglePress}
-              />
-          }
+          {id && (
+            <MonitorToggleButton
+              monitored={monitored}
+              isSaving={isSaving}
+              onPress={onMonitorTogglePress}
+            />
+          )}
 
           <span>
             {title} {year > 0 ? `(${year})` : ''}
           </span>
         </div>
 
-        {
-          id &&
-            <div
-              className={classNames(
-                styles.movieStatus,
-                styles[getProgressBarKind(status, monitored, hasFile, isAvailable)]
-              )}
-            >
-              {
-                hasFile ? translate('Downloaded') : translate('Missing')
-              }
-            </div>
-        }
+        {id && (
+          <div
+            className={classNames(
+              styles.movieStatus,
+              styles[
+                getProgressBarKind(status, monitored, hasFile, isAvailable)
+              ]
+            )}
+          >
+            {hasFile ? translate('Downloaded') : translate('Missing')}
+          </div>
+        )}
       </div>
     );
   }
@@ -69,12 +67,12 @@ CollectionMovieLabel.propTypes = {
   isSaving: PropTypes.bool.isRequired,
   movieFile: PropTypes.object,
   movieFileId: PropTypes.number,
-  onMonitorTogglePress: PropTypes.func.isRequired
+  onMonitorTogglePress: PropTypes.func.isRequired,
 };
 
 CollectionMovieLabel.defaultProps = {
   isSaving: false,
-  statistics: {}
+  statistics: {},
 };
 
 export default CollectionMovieLabel;

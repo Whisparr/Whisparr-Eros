@@ -5,11 +5,10 @@ import EnhancedSelectInput, {
   EnhancedSelectInputValue,
 } from './EnhancedSelectInput';
 
-export interface AvailabilitySelectInputProps
-  extends Omit<
-    EnhancedSelectInputProps<string, EnhancedSelectInputValue<string>>,
-    'values'
-  > {
+export interface AvailabilitySelectInputProps extends Omit<
+  EnhancedSelectInputProps<string, EnhancedSelectInputValue<string>>,
+  'values'
+> {
   includeNoChange?: boolean;
   includeNoChangeDisabled?: boolean;
   includeMixed?: boolean;

@@ -2,7 +2,11 @@ import _ from 'lodash';
 import moment from 'moment';
 import { createAction } from 'redux-actions';
 import { batchActions } from 'redux-batched-actions';
-import { filterTypePredicates, filterTypes, sortDirections } from 'Helpers/Props';
+import {
+  filterTypePredicates,
+  filterTypes,
+  sortDirections,
+} from 'Helpers/Props';
 import { createThunk, handleThunks } from 'Store/thunks';
 // import { batchActions } from 'redux-batched-actions';
 import createAjaxRequest from 'Utilities/createAjaxRequest';
@@ -24,7 +28,7 @@ export const filters = [
   {
     key: 'all',
     label: () => translate('All'),
-    filters: []
+    filters: [],
   },
   {
     key: 'monitored',
@@ -33,9 +37,9 @@ export const filters = [
       {
         key: 'monitored',
         value: true,
-        type: filterTypes.EQUAL
-      }
-    ]
+        type: filterTypes.EQUAL,
+      },
+    ],
   },
   {
     key: 'unmonitored',
@@ -44,9 +48,9 @@ export const filters = [
       {
         key: 'monitored',
         value: false,
-        type: filterTypes.EQUAL
-      }
-    ]
+        type: filterTypes.EQUAL,
+      },
+    ],
   },
   {
     key: 'missing',
@@ -55,14 +59,14 @@ export const filters = [
       {
         key: 'monitored',
         value: true,
-        type: filterTypes.EQUAL
+        type: filterTypes.EQUAL,
       },
       {
         key: 'sizeOnDisk',
         value: 0,
-        type: filterTypes.EQUAL
-      }
-    ]
+        type: filterTypes.EQUAL,
+      },
+    ],
   },
   {
     key: 'wanted',
@@ -71,19 +75,19 @@ export const filters = [
       {
         key: 'monitored',
         value: true,
-        type: filterTypes.EQUAL
+        type: filterTypes.EQUAL,
       },
       {
         key: 'sizeOnDisk',
         value: 0,
-        type: filterTypes.GREATER_THAN
+        type: filterTypes.GREATER_THAN,
       },
       {
         key: 'isAvailable',
         value: true,
-        type: filterTypes.EQUAL
-      }
-    ]
+        type: filterTypes.EQUAL,
+      },
+    ],
   },
 
   /* removing, duplicated by Wanted > Cutoff Unmet page
@@ -115,36 +119,42 @@ export const filters = [
       {
         key: 'status',
         value: 'deleted',
-        type: filterTypes.EQUAL
-      }
-    ]
-  }
+        type: filterTypes.EQUAL,
+      },
+    ],
+  },
 ];
 
 export const filterPredicates = {
-  added: function(item, filterValue, type) {
+  added: function (item, filterValue, type) {
     return dateFilterPredicate(item.added, filterValue, type);
   },
 
-  collection: function(item, filterValue, type) {
+  collection: function (item, filterValue, type) {
     const predicate = filterTypePredicates[type];
     const { collection } = item;
 
-    return predicate(collection && collection.title ? collection.title : '', filterValue);
+    return predicate(
+      collection && collection.title ? collection.title : '',
+      filterValue
+    );
   },
 
-  originalLanguage: function(item, filterValue, type) {
+  originalLanguage: function (item, filterValue, type) {
     const predicate = filterTypePredicates[type];
     const { originalLanguage } = item;
 
-    return predicate(originalLanguage ? originalLanguage.name : '', filterValue);
+    return predicate(
+      originalLanguage ? originalLanguage.name : '',
+      filterValue
+    );
   },
 
-  releaseDate: function(item, filterValue, type) {
+  releaseDate: function (item, filterValue, type) {
     return dateFilterPredicate(item.releaseDate, filterValue, type);
   },
 
-  releaseGroups: function(item, filterValue, type) {
+  releaseGroups: function (item, filterValue, type) {
     const predicate = filterTypePredicates[type];
     const { statistics = {} } = item;
     const { releaseGroups = [] } = statistics;
@@ -152,15 +162,16 @@ export const filterPredicates = {
     return predicate(releaseGroups, filterValue);
   },
 
-  sizeOnDisk: function(item, filterValue, type) {
+  sizeOnDisk: function (item, filterValue, type) {
     const predicate = filterTypePredicates[type];
     const { statistics = {} } = item;
-    const sizeOnDisk = statistics && statistics.sizeOnDisk ? statistics.sizeOnDisk : 0;
+    const sizeOnDisk =
+      statistics && statistics.sizeOnDisk ? statistics.sizeOnDisk : 0;
 
     return predicate(sizeOnDisk, filterValue);
   },
 
-  tmdbRating: function(item, filterValue, type) {
+  tmdbRating: function (item, filterValue, type) {
     const predicate = filterTypePredicates[type];
 
     const rating = item.ratings.tmdb ? item.ratings.tmdb.value : 0;
@@ -168,7 +179,7 @@ export const filterPredicates = {
     return predicate(rating * 10, filterValue);
   },
 
-  tmdbVotes: function(item, filterValue, type) {
+  tmdbVotes: function (item, filterValue, type) {
     const predicate = filterTypePredicates[type];
 
     const rating = item.ratings.tmdb ? item.ratings.tmdb.votes : 0;
@@ -176,15 +187,15 @@ export const filterPredicates = {
     return predicate(rating, filterValue);
   },
 
-  qualityCutoffNotMet: function(item) {
+  qualityCutoffNotMet: function (item) {
     const { movieFile = {} } = item;
 
     return movieFile.qualityCutoffNotMet;
-  }
+  },
 };
 
 export const sortPredicates = {
-  status: function(item) {
+  status: function (item) {
     let result = 0;
 
     if (item.monitored) {
@@ -202,7 +213,7 @@ export const sortPredicates = {
     return result;
   },
 
-  movieStatus: function(item) {
+  movieStatus: function (item) {
     let result = 0;
     let qualityName = '';
 
@@ -229,11 +240,11 @@ export const sortPredicates = {
     return padNumber(result.toString(), 2) + qualityName;
   },
 
-  year: function(item) {
+  year: function (item) {
     return item.year || undefined;
   },
 
-  releaseDate: function(item, direction) {
+  releaseDate: function (item, direction) {
     if (item.releaseDate) {
       return moment(item.releaseDate).unix();
     }
@@ -245,11 +256,11 @@ export const sortPredicates = {
     return Number.MAX_VALUE;
   },
 
-  sizeOnDisk: function(item) {
+  sizeOnDisk: function (item) {
     const { statistics = {} } = item;
 
     return statistics.sizeOnDisk || 0;
-  }
+  },
 };
 
 //
@@ -268,13 +279,11 @@ export const defaultState = {
   sortDirection: sortDirections.ASCENDING,
   pendingChanges: {},
   deleteOptions: {
-    addImportExclusion: false
-  }
+    addImportExclusion: false,
+  },
 };
 
-export const persistState = [
-  'movies.deleteOptions'
-];
+export const persistState = ['movies.deleteOptions'];
 
 //
 // Actions Types
@@ -298,12 +307,12 @@ export const searchMovies = createThunk(SEARCH_MOVIES);
 
 export const saveMovie = createThunk(SAVE_MOVIE, (payload) => {
   const newPayload = {
-    ...payload
+    ...payload,
   };
 
   if (payload.moveFiles) {
     newPayload.queryParams = {
-      moveFiles: true
+      moveFiles: true,
     };
   }
 
@@ -317,8 +326,8 @@ export const deleteMovie = createThunk(DELETE_MOVIE, (payload) => {
     ...payload,
     queryParams: {
       deleteFiles: payload.deleteFiles,
-      addImportExclusion: payload.addImportExclusion
-    }
+      addImportExclusion: payload.addImportExclusion,
+    },
   };
 });
 
@@ -329,22 +338,25 @@ export const bulkDeleteMovie = createThunk(BULK_DELETE_MOVIE);
 export const setMovieValue = createAction(SET_MOVIE_VALUE, (payload) => {
   return {
     section,
-    ...payload
+    ...payload,
   };
 });
 
-export const bulkMonitorMovie = createThunk(BULK_MONITOR_MOVIE, ({ ids, monitored }) => {
-  return {
-    ids,
-    monitored,
-    url: `/movie/bulk/monitor?monitored=${monitored}`,
-    method: 'PATCH',
-    contentType: 'application/json',
-    dataType: 'json',
-    data: JSON.stringify(ids),
-    queryParams: { monitored }
-  };
-});
+export const bulkMonitorMovie = createThunk(
+  BULK_MONITOR_MOVIE,
+  ({ ids, monitored }) => {
+    return {
+      ids,
+      monitored,
+      url: `/movie/bulk/monitor?monitored=${monitored}`,
+      method: 'PATCH',
+      contentType: 'application/json',
+      dataType: 'json',
+      data: JSON.stringify(ids),
+      queryParams: { monitored },
+    };
+  }
+);
 
 export const setDeleteOption = createAction(SET_DELETE_OPTION);
 
@@ -363,7 +375,6 @@ function getSaveAjaxOptions({ ajaxOptions, payload }) {
 // Action Handlers
 
 export const actionHandlers = handleThunks({
-
   [SEARCH_MOVIES]: (getState, payload, dispatch) => {
     if (getState().movies.isFetching) {
       return;
@@ -374,30 +385,36 @@ export const actionHandlers = handleThunks({
     const { request, abortRequest } = createAjaxRequest({
       url: '/movie/search',
       data: { query: payload },
-      traditional: true
+      traditional: true,
     });
 
     request
       .done((data) => {
         // data is already a list of MovieResource objects
-        dispatch(batchActions([
-          update({ section, data }),
-          set({ section, isFetching: false, isPopulated: true, error: null })
-        ]));
+        dispatch(
+          batchActions([
+            update({ section, data }),
+            set({ section, isFetching: false, isPopulated: true, error: null }),
+          ])
+        );
       })
       .fail((xhr) => {
-        dispatch(set({
-          section,
-          isFetching: false,
-          isPopulated: false,
-          error: xhr.aborted ? null : xhr
-        }));
+        dispatch(
+          set({
+            section,
+            isFetching: false,
+            isPopulated: false,
+            error: xhr.aborted ? null : xhr,
+          })
+        );
       });
 
     return abortRequest;
   },
 
-  [SAVE_MOVIE]: createSaveProviderHandler(section, '/movie', { getAjaxOptions: getSaveAjaxOptions }),
+  [SAVE_MOVIE]: createSaveProviderHandler(section, '/movie', {
+    getAjaxOptions: getSaveAjaxOptions,
+  }),
   [DELETE_MOVIE]: (getState, payload, dispatch) => {
     createRemoveItemHandler(section, '/movie')(getState, payload, dispatch);
 
@@ -405,64 +422,77 @@ export const actionHandlers = handleThunks({
       return;
     }
 
-    const collectionToUpdate = getState().movieCollections.items.find((collection) => collection.tmdbId === payload.collectionTmdbId);
+    const collectionToUpdate = getState().movieCollections.items.find(
+      (collection) => collection.tmdbId === payload.collectionTmdbId
+    );
 
     if (!collectionToUpdate) {
       return;
     }
 
     // Skip updating if the last movie in the collection is being deleted
-    if (collectionToUpdate.movies.length - collectionToUpdate.missingMovies === 1) {
+    if (
+      collectionToUpdate.movies.length - collectionToUpdate.missingMovies ===
+      1
+    ) {
       return;
     }
 
-    const collectionData = { ...collectionToUpdate, missingMovies: collectionToUpdate.missingMovies + 1 };
+    const collectionData = {
+      ...collectionToUpdate,
+      missingMovies: collectionToUpdate.missingMovies + 1,
+    };
 
-    dispatch(updateItem({
-      section: 'movieCollections',
-      ...collectionData
-    }));
+    dispatch(
+      updateItem({
+        section: 'movieCollections',
+        ...collectionData,
+      })
+    );
   },
 
   [TOGGLE_MOVIE_MONITORED]: (getState, payload, dispatch) => {
-    const {
-      movieId: id,
-      monitored
-    } = payload;
+    const { movieId: id, monitored } = payload;
 
     const movie = _.find(getState().movies.items, { id });
 
-    dispatch(updateItem({
-      id,
-      section,
-      isSaving: true
-    }));
+    dispatch(
+      updateItem({
+        id,
+        section,
+        isSaving: true,
+      })
+    );
 
     const promise = createAjaxRequest({
       url: `/movie/${id}`,
       method: 'PUT',
       data: JSON.stringify({
         ...movie,
-        monitored
+        monitored,
       }),
-      dataType: 'json'
+      dataType: 'json',
     }).request;
 
     promise.done((data) => {
-      dispatch(updateItem({
-        id,
-        section,
-        isSaving: false,
-        monitored
-      }));
+      dispatch(
+        updateItem({
+          id,
+          section,
+          isSaving: false,
+          monitored,
+        })
+      );
     });
 
     promise.fail((xhr) => {
-      dispatch(updateItem({
-        id,
-        section,
-        isSaving: false
-      }));
+      dispatch(
+        updateItem({
+          id,
+          section,
+          isSaving: false,
+        })
+      );
     });
   },
 
@@ -488,106 +518,120 @@ export const actionHandlers = handleThunks({
     });
   },
 
-  [SAVE_MOVIE_EDITOR]: function(getState, payload, dispatch) {
-    dispatch(set({
-      section,
-      isSaving: true
-    }));
+  [SAVE_MOVIE_EDITOR]: function (getState, payload, dispatch) {
+    dispatch(
+      set({
+        section,
+        isSaving: true,
+      })
+    );
 
     const promise = createAjaxRequest({
       url: '/movie/editor',
       method: 'PUT',
       data: JSON.stringify(payload),
-      dataType: 'json'
+      dataType: 'json',
     }).request;
 
     promise.done((data) => {
-      dispatch(batchActions([
-        ...data.map((movie) => {
-          return updateItem({
-            id: movie.id,
-            section: 'movies',
-            ...movie
-          });
-        }),
+      dispatch(
+        batchActions([
+          ...data.map((movie) => {
+            return updateItem({
+              id: movie.id,
+              section: 'movies',
+              ...movie,
+            });
+          }),
 
-        set({
-          section,
-          isSaving: false,
-          saveError: null
-        })
-      ]));
+          set({
+            section,
+            isSaving: false,
+            saveError: null,
+          }),
+        ])
+      );
     });
 
     promise.fail((xhr) => {
-      dispatch(set({
-        section,
-        isSaving: false,
-        saveError: xhr
-      }));
+      dispatch(
+        set({
+          section,
+          isSaving: false,
+          saveError: xhr,
+        })
+      );
     });
   },
 
-  [BULK_DELETE_MOVIE]: function(getState, payload, dispatch) {
-    dispatch(set({
-      section,
-      isDeleting: true
-    }));
+  [BULK_DELETE_MOVIE]: function (getState, payload, dispatch) {
+    dispatch(
+      set({
+        section,
+        isDeleting: true,
+      })
+    );
 
     const promise = createAjaxRequest({
       url: '/movie/editor',
       method: 'DELETE',
       data: JSON.stringify(payload),
-      dataType: 'json'
+      dataType: 'json',
     }).request;
 
     promise.done(() => {
       // SignaR will take care of removing the movie from the collection
 
-      dispatch(set({
-        section,
-        isDeleting: false,
-        deleteError: null
-      }));
+      dispatch(
+        set({
+          section,
+          isDeleting: false,
+          deleteError: null,
+        })
+      );
     });
 
     promise.fail((xhr) => {
-      dispatch(set({
-        section,
-        isDeleting: false,
-        deleteError: xhr
-      }));
+      dispatch(
+        set({
+          section,
+          isDeleting: false,
+          deleteError: xhr,
+        })
+      );
     });
-  }
+  },
 });
 
 //
 // Reducers
 
-export const reducers = createHandleActions({
-
-  [SET_MOVIE_VALUE]: createSetSettingValueReducer(section),
-  [SET_DELETE_OPTION]: (state, { payload }) => {
-    return {
-      ...state,
-      deleteOptions: {
-        ...payload
-      }
-    };
+export const reducers = createHandleActions(
+  {
+    [SET_MOVIE_VALUE]: createSetSettingValueReducer(section),
+    [SET_DELETE_OPTION]: (state, { payload }) => {
+      return {
+        ...state,
+        deleteOptions: {
+          ...payload,
+        },
+      };
+    },
+    // Batch update handler: efficiently updates multiple items in one state edit
+    UPDATE_ITEMS_BATCH: (state, { payload }) => {
+      // payload: array of updated movie objects, each with an id
+      const updatedMap = {};
+      payload.forEach((item) => {
+        updatedMap[item.id] = item;
+      });
+      return {
+        ...state,
+        items: state.items.map((item) =>
+          updatedMap[item.id] ? { ...item, ...updatedMap[item.id] } : item
+        ),
+      };
+    },
   },
-  // Batch update handler: efficiently updates multiple items in one state edit
-  UPDATE_ITEMS_BATCH: (state, { payload }) => {
-    // payload: array of updated movie objects, each with an id
-    const updatedMap = {};
-    payload.forEach((item) => {
-      updatedMap[item.id] = item;
-    });
-    return {
-      ...state,
-      items: state.items.map((item) =>
-        (updatedMap[item.id] ? { ...item, ...updatedMap[item.id] } : item)
-      )
-    };
-  }
-
-}, defaultState, section);
+  defaultState,
+  section
+);

@@ -140,11 +140,11 @@
   }
 }
 
-.metadata{
+.metadata {
   padding: 10px;
 }
 
-.metadataLabel{
+.metadataLabel {
   composes: label from 'Components/Label.css';
 
   margin: 5px 10px 5px 0;
@@ -249,7 +249,7 @@
   }
 
   .title {
-    display:flex;
+    display: flex;
     align-items: center;
     font-size: 30px;
     line-height: 30px;
@@ -274,7 +274,7 @@
     margin-right: 9px;
   }
 
-  .scenesFieldSet{
+  .scenesFieldSet {
     flex-direction: column;
   }
 }

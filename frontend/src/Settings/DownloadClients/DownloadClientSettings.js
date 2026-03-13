@@ -13,7 +13,6 @@ import DownloadClientOptionsConnector from './Options/DownloadClientOptionsConne
 import RemotePathMappingsConnector from './RemotePathMappings/RemotePathMappingsConnector';
 
 class DownloadClientSettings extends Component {
-
   //
   // Lifecycle
 
@@ -25,7 +24,7 @@ class DownloadClientSettings extends Component {
     this.state = {
       isSaving: false,
       hasPendingChanges: false,
-      isManageDownloadClientsOpen: false
+      isManageDownloadClientsOpen: false,
     };
   }
 
@@ -58,16 +57,10 @@ class DownloadClientSettings extends Component {
   // Render
 
   render() {
-    const {
-      isTestingAll,
-      dispatchTestAllDownloadClients
-    } = this.props;
+    const { isTestingAll, dispatchTestAllDownloadClients } = this.props;
 
-    const {
-      isSaving,
-      hasPendingChanges,
-      isManageDownloadClientsOpen
-    } = this.state;
+    const { isSaving, hasPendingChanges, isManageDownloadClientsOpen } =
+      this.state;
 
     return (
       <PageContent title={translate('DownloadClientSettings')}>
@@ -117,7 +110,7 @@ class DownloadClientSettings extends Component {
 
 DownloadClientSettings.propTypes = {
   isTestingAll: PropTypes.bool.isRequired,
-  dispatchTestAllDownloadClients: PropTypes.func.isRequired
+  dispatchTestAllDownloadClients: PropTypes.func.isRequired,
 };
 
 export default DownloadClientSettings;

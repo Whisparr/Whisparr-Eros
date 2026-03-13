@@ -37,15 +37,13 @@
   border: none;
 }
 
-.fallback
-{
-  position: absolute;   /* Stays in place even when scrolling */
-  right: 0;          /* Distance from right */
-  bottom: 0;         /* Distance from bottom */
+.fallback {
+  position: absolute; /* Stays in place even when scrolling */
+  right: 0; /* Distance from right */
+  bottom: 0; /* Distance from bottom */
 }
 
-.fallback span
-{
+.fallback span {
   border-color: transparent;
   background-color: transparent;
   font-size: 14px;

@@ -22,7 +22,6 @@ import TableOptionsColumnDragSource from './TableOptionsColumnDragSource';
 import styles from './TableOptionsModal.css';
 
 class TableOptionsModal extends Component {
-
   //
   // Lifecycle
 
@@ -34,7 +33,7 @@ class TableOptionsModal extends Component {
       pageSize: props.pageSize,
       pageSizeError: null,
       dragIndex: null,
-      dropIndex: null
+      dropIndex: null,
     };
   }
 
@@ -54,14 +53,16 @@ class TableOptionsModal extends Component {
     if (value < 5) {
       pageSizeError = translate('TablePageSizeMinimum', { minimumValue: '5' });
     } else if (value > maxPageSize) {
-      pageSizeError = translate('TablePageSizeMaximum', { maximumValue: `${maxPageSize}` });
+      pageSizeError = translate('TablePageSizeMaximum', {
+        maximumValue: `${maxPageSize}`,
+      });
     } else {
       this.props.onTableOptionChange({ pageSize: value });
     }
 
     this.setState({
       pageSize: value,
-      pageSizeError
+      pageSizeError,
     });
   };
 
@@ -75,19 +76,19 @@ class TableOptionsModal extends Component {
   };
 
   onColumnDragMove = (dragIndex, dropIndex) => {
-    if (this.state.dragIndex !== dragIndex || this.state.dropIndex !== dropIndex) {
+    if (
+      this.state.dragIndex !== dragIndex ||
+      this.state.dropIndex !== dropIndex
+    ) {
       this.setState({
         dragIndex,
-        dropIndex
+        dropIndex,
       });
     }
   };
 
   onColumnDragEnd = ({ id }, didDrop) => {
-    const {
-      dragIndex,
-      dropIndex
-    } = this.state;
+    const { dragIndex, dropIndex } = this.state;
 
     if (didDrop && dropIndex !== null) {
       const columns = _.cloneDeep(this.props.columns);
@@ -99,7 +100,7 @@ class TableOptionsModal extends Component {
 
     this.setState({
       dragIndex: null,
-      dropIndex: null
+      dropIndex: null,
     });
   };
 
@@ -113,16 +114,11 @@ class TableOptionsModal extends Component {
       canModifyColumns,
       optionsComponent: OptionsComponent,
       onTableOptionChange,
-      onModalClose
+      onModalClose,
     } = this.props;
 
-    const {
-      hasPageSize,
-      pageSize,
-      pageSizeError,
-      dragIndex,
-      dropIndex
-    } = this.state;
+    const { hasPageSize, pageSize, pageSizeError, dragIndex, dropIndex } =
+      this.state;
 
     const isDragging = dropIndex !== null;
     const isDraggingUp = isDragging && dropIndex < dragIndex;
@@ -130,115 +126,101 @@ class TableOptionsModal extends Component {
 
     return (
       <DndProvider options={HTML5toTouch}>
-        <Modal
-          isOpen={isOpen}
-          onModalClose={onModalClose}
-        >
-          {
-            isOpen ?
-              <ModalContent onModalClose={onModalClose}>
-                <ModalHeader>
-                  {translate('TableOptions')}
-                </ModalHeader>
+        <Modal isOpen={isOpen} onModalClose={onModalClose}>
+          {isOpen ? (
+            <ModalContent onModalClose={onModalClose}>
+              <ModalHeader>{translate('TableOptions')}</ModalHeader>
 
-                <ModalBody>
-                  <Form>
-                    {
-                      hasPageSize ?
-                        <FormGroup>
-                          <FormLabel>{translate('TablePageSize')}</FormLabel>
+              <ModalBody>
+                <Form>
+                  {hasPageSize ? (
+                    <FormGroup>
+                      <FormLabel>{translate('TablePageSize')}</FormLabel>
 
-                          <FormInputGroup
-                            type={inputTypes.NUMBER}
-                            name="pageSize"
-                            value={pageSize || 0}
-                            helpText={translate('TablePageSizeHelpText')}
-                            errors={pageSizeError ? [{ message: pageSizeError }] : undefined}
-                            onChange={this.onPageSizeChange}
-                          />
-                        </FormGroup> :
-                        null
-                    }
+                      <FormInputGroup
+                        type={inputTypes.NUMBER}
+                        name="pageSize"
+                        value={pageSize || 0}
+                        helpText={translate('TablePageSizeHelpText')}
+                        errors={
+                          pageSizeError
+                            ? [{ message: pageSizeError }]
+                            : undefined
+                        }
+                        onChange={this.onPageSizeChange}
+                      />
+                    </FormGroup>
+                  ) : null}
 
-                    {
-                      OptionsComponent ?
-                        <OptionsComponent
-                          onTableOptionChange={onTableOptionChange}
-                        /> : null
-                    }
+                  {OptionsComponent ? (
+                    <OptionsComponent
+                      onTableOptionChange={onTableOptionChange}
+                    />
+                  ) : null}
 
-                    {
-                      canModifyColumns ?
-                        <FormGroup>
-                          <FormLabel>{translate('TableColumns')}</FormLabel>
+                  {canModifyColumns ? (
+                    <FormGroup>
+                      <FormLabel>{translate('TableColumns')}</FormLabel>
 
-                          <div>
-                            <FormInputHelpText
-                              text={translate('TableColumnsHelpText')}
-                            />
+                      <div>
+                        <FormInputHelpText
+                          text={translate('TableColumnsHelpText')}
+                        />
 
-                            <div className={styles.columns}>
-                              {
-                                columns.map((column, index) => {
-                                  const {
-                                    name,
-                                    label,
-                                    columnLabel,
-                                    isVisible,
-                                    isModifiable
-                                  } = column;
+                        <div className={styles.columns}>
+                          {columns.map((column, index) => {
+                            const {
+                              name,
+                              label,
+                              columnLabel,
+                              isVisible,
+                              isModifiable,
+                            } = column;
 
-                                  if (isModifiable !== false) {
-                                    return (
-                                      <TableOptionsColumnDragSource
-                                        key={name}
-                                        name={name}
-                                        label={columnLabel || label}
-                                        isVisible={isVisible}
-                                        isModifiable={true}
-                                        index={index}
-                                        isDragging={isDragging}
-                                        isDraggingUp={isDraggingUp}
-                                        isDraggingDown={isDraggingDown}
-                                        onVisibleChange={this.onVisibleChange}
-                                        onColumnDragMove={this.onColumnDragMove}
-                                        onColumnDragEnd={this.onColumnDragEnd}
-                                      />
-                                    );
-                                  }
+                            if (isModifiable !== false) {
+                              return (
+                                <TableOptionsColumnDragSource
+                                  key={name}
+                                  name={name}
+                                  label={columnLabel || label}
+                                  isVisible={isVisible}
+                                  isModifiable={true}
+                                  index={index}
+                                  isDragging={isDragging}
+                                  isDraggingUp={isDraggingUp}
+                                  isDraggingDown={isDraggingDown}
+                                  onVisibleChange={this.onVisibleChange}
+                                  onColumnDragMove={this.onColumnDragMove}
+                                  onColumnDragEnd={this.onColumnDragEnd}
+                                />
+                              );
+                            }
 
-                                  return (
-                                    <TableOptionsColumn
-                                      key={name}
-                                      name={name}
-                                      label={columnLabel || label}
-                                      isVisible={isVisible}
-                                      index={index}
-                                      isModifiable={false}
-                                      onVisibleChange={this.onVisibleChange}
-                                    />
-                                  );
-                                })
-                              }
+                            return (
+                              <TableOptionsColumn
+                                key={name}
+                                name={name}
+                                label={columnLabel || label}
+                                isVisible={isVisible}
+                                index={index}
+                                isModifiable={false}
+                                onVisibleChange={this.onVisibleChange}
+                              />
+                            );
+                          })}
 
-                              <TableOptionsColumnDragPreview />
-                            </div>
-                          </div>
-                        </FormGroup> :
-                        null
-                    }
-                  </Form>
-                </ModalBody>
-                <ModalFooter>
-                  <Button
-                    onPress={onModalClose}
-                  >
-                    {translate('Close')}
-                  </Button>
-                </ModalFooter>
-              </ModalContent> :
-              null
-          }
+                          <TableOptionsColumnDragPreview />
+                        </div>
+                      </div>
+                    </FormGroup>
+                  ) : null}
+                </Form>
+              </ModalBody>
+              <ModalFooter>
+                <Button onPress={onModalClose}>{translate('Close')}</Button>
+              </ModalFooter>
+            </ModalContent>
+          ) : null}
         </Modal>
       </DndProvider>
     );
@@ -253,11 +235,11 @@ TableOptionsModal.propTypes = {
   canModifyColumns: PropTypes.bool.isRequired,
   optionsComponent: PropTypes.elementType,
   onTableOptionChange: PropTypes.func.isRequired,
-  onModalClose: PropTypes.func.isRequired
+  onModalClose: PropTypes.func.isRequired,
 };
 
 TableOptionsModal.defaultProps = {
-  canModifyColumns: true
+  canModifyColumns: true,
 };
 
 export default TableOptionsModal;

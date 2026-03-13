@@ -24,7 +24,6 @@ import Specification from './Specifications/Specification';
 import styles from './EditCustomFormatModalContent.css';
 
 class EditCustomFormatModalContent extends Component {
-
   //
   // Lifecycle
 
@@ -34,7 +33,7 @@ class EditCustomFormatModalContent extends Component {
     this.state = {
       isAddSpecificationModalOpen: false,
       isEditSpecificationModalOpen: false,
-      isImportCustomFormatModalOpen: false
+      isImportCustomFormatModalOpen: false,
     };
   }
 
@@ -48,7 +47,7 @@ class EditCustomFormatModalContent extends Component {
   onAddSpecificationModalClose = ({ specificationSelected = false } = {}) => {
     this.setState({
       isAddSpecificationModalOpen: false,
-      isEditSpecificationModalOpen: specificationSelected
+      isEditSpecificationModalOpen: specificationSelected,
     });
   };
 
@@ -88,133 +87,116 @@ class EditCustomFormatModalContent extends Component {
     const {
       isAddSpecificationModalOpen,
       isEditSpecificationModalOpen,
-      isImportCustomFormatModalOpen
+      isImportCustomFormatModalOpen,
     } = this.state;
 
-    const {
-      id,
-      name,
-      includeCustomFormatWhenRenaming
-    } = item;
+    const { id, name, includeCustomFormatWhenRenaming } = item;
 
     return (
       <ModalContent onModalClose={onModalClose}>
-
         <ModalHeader>
           {id ? translate('EditCustomFormat') : translate('AddCustomFormat')}
         </ModalHeader>
 
         <ModalBody>
           <div>
-            {
-              isFetching &&
-                <LoadingIndicator />
-            }
+            {isFetching && <LoadingIndicator />}
 
-            {
-              !isFetching && !!error &&
-                <Alert kind={kinds.DANGER}>
-                  {translate('AddCustomFormatError')}
-                </Alert>
-            }
+            {!isFetching && !!error && (
+              <Alert kind={kinds.DANGER}>
+                {translate('AddCustomFormatError')}
+              </Alert>
+            )}
 
-            {
-              !isFetching && !error && specificationsPopulated &&
-                <div>
-                  <Form
-                    {...otherProps}
-                  >
-                    <FormGroup>
-                      <FormLabel>
-                        {translate('Name')}
-                      </FormLabel>
+            {!isFetching && !error && specificationsPopulated && (
+              <div>
+                <Form {...otherProps}>
+                  <FormGroup>
+                    <FormLabel>{translate('Name')}</FormLabel>
 
-                      <FormInputGroup
-                        type={inputTypes.TEXT}
-                        name="name"
-                        {...name}
-                        onChange={onInputChange}
-                      />
-                    </FormGroup>
+                    <FormInputGroup
+                      type={inputTypes.TEXT}
+                      name="name"
+                      {...name}
+                      onChange={onInputChange}
+                    />
+                  </FormGroup>
 
-                    <FormGroup>
-                      <FormLabel>{translate('IncludeCustomFormatWhenRenaming')}</FormLabel>
+                  <FormGroup>
+                    <FormLabel>
+                      {translate('IncludeCustomFormatWhenRenaming')}
+                    </FormLabel>
 
-                      <FormInputGroup
-                        type={inputTypes.CHECK}
-                        name="includeCustomFormatWhenRenaming"
-                        helpText={translate('IncludeCustomFormatWhenRenamingHelpText')}
-                        {...includeCustomFormatWhenRenaming}
-                        onChange={onInputChange}
-                      />
-                    </FormGroup>
-                  </Form>
+                    <FormInputGroup
+                      type={inputTypes.CHECK}
+                      name="includeCustomFormatWhenRenaming"
+                      helpText={translate(
+                        'IncludeCustomFormatWhenRenamingHelpText'
+                      )}
+                      {...includeCustomFormatWhenRenaming}
+                      onChange={onInputChange}
+                    />
+                  </FormGroup>
+                </Form>
 
-                  <FieldSet legend={translate('Conditions')}>
-                    <Alert kind={kinds.INFO}>
-                      <div>
-                        {translate('CustomFormatsSettingsTriggerInfo')}
+                <FieldSet legend={translate('Conditions')}>
+                  <Alert kind={kinds.INFO}>
+                    <div>{translate('CustomFormatsSettingsTriggerInfo')}</div>
+                  </Alert>
+                  <div className={styles.customFormats}>
+                    {specifications.map((tag) => {
+                      return (
+                        <Specification
+                          key={tag.id}
+                          {...tag}
+                          onCloneSpecificationPress={onCloneSpecificationPress}
+                          onConfirmDeleteSpecification={
+                            onConfirmDeleteSpecification
+                          }
+                        />
+                      );
+                    })}
+
+                    <Card
+                      className={styles.addSpecification}
+                      onPress={this.onAddSpecificationPress}
+                    >
+                      <div className={styles.center}>
+                        <Icon name={icons.ADD} size={45} />
                       </div>
-                    </Alert>
-                    <div className={styles.customFormats}>
-                      {
-                        specifications.map((tag) => {
-                          return (
-                            <Specification
-                              key={tag.id}
-                              {...tag}
-                              onCloneSpecificationPress={onCloneSpecificationPress}
-                              onConfirmDeleteSpecification={onConfirmDeleteSpecification}
-                            />
-                          );
-                        })
-                      }
+                    </Card>
+                  </div>
+                </FieldSet>
 
-                      <Card
-                        className={styles.addSpecification}
-                        onPress={this.onAddSpecificationPress}
-                      >
-                        <div className={styles.center}>
-                          <Icon
-                            name={icons.ADD}
-                            size={45}
-                          />
-                        </div>
-                      </Card>
-                    </div>
-                  </FieldSet>
+                <AddSpecificationModal
+                  isOpen={isAddSpecificationModalOpen}
+                  onModalClose={this.onAddSpecificationModalClose}
+                />
 
-                  <AddSpecificationModal
-                    isOpen={isAddSpecificationModalOpen}
-                    onModalClose={this.onAddSpecificationModalClose}
-                  />
+                <EditSpecificationModalConnector
+                  isOpen={isEditSpecificationModalOpen}
+                  onModalClose={this.onEditSpecificationModalClose}
+                />
 
-                  <EditSpecificationModalConnector
-                    isOpen={isEditSpecificationModalOpen}
-                    onModalClose={this.onEditSpecificationModalClose}
-                  />
-
-                  <ImportCustomFormatModal
-                    isOpen={isImportCustomFormatModalOpen}
-                    onModalClose={this.onImportCustomFormatModalClose}
-                  />
-
-                </div>
-            }
+                <ImportCustomFormatModal
+                  isOpen={isImportCustomFormatModalOpen}
+                  onModalClose={this.onImportCustomFormatModalClose}
+                />
+              </div>
+            )}
           </div>
         </ModalBody>
         <ModalFooter>
           <div className={styles.rightButtons}>
-            {
-              id &&
-                <Button
-                  className={styles.deleteButton}
-                  kind={kinds.DANGER}
-                  onPress={onDeleteCustomFormatPress}
-                >
-                  {translate('Delete')}
-                </Button>
-            }
+            {id && (
+              <Button
+                className={styles.deleteButton}
+                kind={kinds.DANGER}
+                onPress={onDeleteCustomFormatPress}
+              >
+                {translate('Delete')}
+              </Button>
+            )}
 
             <Button
               className={styles.deleteButton}
@@ -224,11 +206,7 @@ class EditCustomFormatModalContent extends Component {
             </Button>
           </div>
 
-          <Button
-            onPress={onModalClose}
-          >
-            {translate('Cancel')}
-          </Button>
+          <Button onPress={onModalClose}>{translate('Cancel')}</Button>
 
           <SpinnerErrorButton
             isSpinning={isSaving}
@@ -257,7 +235,7 @@ EditCustomFormatModalContent.propTypes = {
   onModalClose: PropTypes.func.isRequired,
   onDeleteCustomFormatPress: PropTypes.func,
   onCloneSpecificationPress: PropTypes.func.isRequired,
-  onConfirmDeleteSpecification: PropTypes.func.isRequired
+  onConfirmDeleteSpecification: PropTypes.func.isRequired,
 };
 
 export default EditCustomFormatModalContent;

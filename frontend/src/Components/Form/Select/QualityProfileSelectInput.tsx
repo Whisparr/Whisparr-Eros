@@ -56,14 +56,13 @@ function createQualityProfilesSelector(
   );
 }
 
-export interface QualityProfileSelectInputProps
-  extends Omit<
-    EnhancedSelectInputProps<
-      number | string,
-      EnhancedSelectInputValue<number | string>
-    >,
-    'values'
-  > {
+export interface QualityProfileSelectInputProps extends Omit<
+  EnhancedSelectInputProps<
+    number | string,
+    EnhancedSelectInputValue<number | string>
+  >,
+  'values'
+> {
   name: string;
   includeNoChange?: boolean;
   includeNoChangeDisabled?: boolean;

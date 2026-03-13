@@ -7,10 +7,7 @@ import Metadata from './Metadata';
 import styles from './Metadatas.css';
 
 function Metadatas(props) {
-  const {
-    items,
-    ...otherProps
-  } = props;
+  const { items, ...otherProps } = props;
 
   return (
     <FieldSet legend={translate('Metadata')}>
@@ -19,16 +16,9 @@ function Metadatas(props) {
         {...otherProps}
       >
         <div className={styles.metadatas}>
-          {
-            items.map((item) => {
-              return (
-                <Metadata
-                  key={item.id}
-                  {...item}
-                />
-              );
-            })
-          }
+          {items.map((item) => {
+            return <Metadata key={item.id} {...item} />;
+          })}
         </div>
       </PageSectionContent>
     </FieldSet>
@@ -38,7 +28,7 @@ function Metadatas(props) {
 Metadatas.propTypes = {
   isFetching: PropTypes.bool.isRequired,
   error: PropTypes.object,
-  items: PropTypes.arrayOf(PropTypes.object).isRequired
+  items: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
 
 export default Metadatas;

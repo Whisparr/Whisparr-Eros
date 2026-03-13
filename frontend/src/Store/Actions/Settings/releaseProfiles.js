@@ -13,10 +13,14 @@ const section = 'settings.releaseProfiles';
 //
 // Actions Types
 
-export const FETCH_RELEASE_PROFILES = 'settings/releaseProfiles/fetchReleaseProfiles';
-export const SAVE_RELEASE_PROFILE = 'settings/releaseProfiles/saveReleaseProfile';
-export const DELETE_RELEASE_PROFILE = 'settings/releaseProfiles/deleteReleaseProfile';
-export const SET_RELEASE_PROFILE_VALUE = 'settings/releaseProfiles/setReleaseProfileValue';
+export const FETCH_RELEASE_PROFILES =
+  'settings/releaseProfiles/fetchReleaseProfiles';
+export const SAVE_RELEASE_PROFILE =
+  'settings/releaseProfiles/saveReleaseProfile';
+export const DELETE_RELEASE_PROFILE =
+  'settings/releaseProfiles/deleteReleaseProfile';
+export const SET_RELEASE_PROFILE_VALUE =
+  'settings/releaseProfiles/setReleaseProfileValue';
 
 //
 // Action Creators
@@ -25,18 +29,20 @@ export const fetchReleaseProfiles = createThunk(FETCH_RELEASE_PROFILES);
 export const saveReleaseProfile = createThunk(SAVE_RELEASE_PROFILE);
 export const deleteReleaseProfile = createThunk(DELETE_RELEASE_PROFILE);
 
-export const setReleaseProfileValue = createAction(SET_RELEASE_PROFILE_VALUE, (payload) => {
-  return {
-    section,
-    ...payload
-  };
-});
+export const setReleaseProfileValue = createAction(
+  SET_RELEASE_PROFILE_VALUE,
+  (payload) => {
+    return {
+      section,
+      ...payload,
+    };
+  }
+);
 
 //
 // Details
 
 export default {
-
   //
   // State
 
@@ -47,7 +53,7 @@ export default {
     isSaving: false,
     saveError: null,
     items: [],
-    pendingChanges: {}
+    pendingChanges: {},
   },
 
   //
@@ -56,16 +62,21 @@ export default {
   actionHandlers: {
     [FETCH_RELEASE_PROFILES]: createFetchHandler(section, '/releaseprofile'),
 
-    [SAVE_RELEASE_PROFILE]: createSaveProviderHandler(section, '/releaseprofile'),
+    [SAVE_RELEASE_PROFILE]: createSaveProviderHandler(
+      section,
+      '/releaseprofile'
+    ),
 
-    [DELETE_RELEASE_PROFILE]: createRemoveItemHandler(section, '/releaseprofile')
+    [DELETE_RELEASE_PROFILE]: createRemoveItemHandler(
+      section,
+      '/releaseprofile'
+    ),
   },
 
   //
   // Reducers
 
   reducers: {
-    [SET_RELEASE_PROFILE_VALUE]: createSetSettingValueReducer(section)
-  }
-
+    [SET_RELEASE_PROFILE_VALUE]: createSetSettingValueReducer(section),
+  },
 };

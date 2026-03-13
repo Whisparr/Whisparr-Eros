@@ -37,109 +37,84 @@ function EditNotificationModalContent(props) {
     ...otherProps
   } = props;
 
-  const {
-    id,
-    implementationName,
-    name,
-    tags,
-    fields,
-    message
-  } = item;
+  const { id, implementationName, name, tags, fields, message } = item;
 
   return (
     <ModalContent onModalClose={onModalClose}>
       <ModalHeader>
-        {id ? translate('EditConnectionImplementation', { implementationName }) : translate('AddConnectionImplementation', { implementationName })}
+        {id
+          ? translate('EditConnectionImplementation', { implementationName })
+          : translate('AddConnectionImplementation', { implementationName })}
       </ModalHeader>
 
       <ModalBody>
-        {
-          isFetching &&
-            <LoadingIndicator />
-        }
+        {isFetching && <LoadingIndicator />}
 
-        {
-          !isFetching && !!error &&
-            <Alert kind={kinds.DANGER}>
-              {translate('AddNotificationError')}
-            </Alert>
-        }
+        {!isFetching && !!error && (
+          <Alert kind={kinds.DANGER}>{translate('AddNotificationError')}</Alert>
+        )}
 
-        {
-          !isFetching && !error &&
-            <Form {...otherProps}>
-              {
-                !!message &&
-                  <Alert
-                    className={styles.message}
-                    kind={message.value.type}
-                  >
-                    {message.value.message}
-                  </Alert>
-              }
+        {!isFetching && !error && (
+          <Form {...otherProps}>
+            {!!message && (
+              <Alert className={styles.message} kind={message.value.type}>
+                {message.value.message}
+              </Alert>
+            )}
 
-              <FormGroup>
-                <FormLabel>{translate('Name')}</FormLabel>
+            <FormGroup>
+              <FormLabel>{translate('Name')}</FormLabel>
 
-                <FormInputGroup
-                  type={inputTypes.TEXT}
-                  name="name"
-                  {...name}
-                  onChange={onInputChange}
-                />
-              </FormGroup>
-
-              <NotificationEventItems
-                item={item}
-                onInputChange={onInputChange}
+              <FormInputGroup
+                type={inputTypes.TEXT}
+                name="name"
+                {...name}
+                onChange={onInputChange}
               />
+            </FormGroup>
 
-              <FormGroup>
-                <FormLabel>{translate('Tags')}</FormLabel>
+            <NotificationEventItems item={item} onInputChange={onInputChange} />
 
-                <FormInputGroup
-                  type={inputTypes.TAG}
-                  name="tags"
-                  helpText={translate('NotificationsTagsMovieHelpText')}
-                  {...tags}
-                  onChange={onInputChange}
+            <FormGroup>
+              <FormLabel>{translate('Tags')}</FormLabel>
+
+              <FormInputGroup
+                type={inputTypes.TAG}
+                name="tags"
+                helpText={translate('NotificationsTagsMovieHelpText')}
+                {...tags}
+                onChange={onInputChange}
+              />
+            </FormGroup>
+
+            {fields.map((field) => {
+              return (
+                <ProviderFieldFormGroup
+                  key={field.name}
+                  advancedSettings={advancedSettings}
+                  provider="notification"
+                  providerData={item}
+                  section="settings.notifications"
+                  {...field}
+                  onChange={onFieldChange}
                 />
-              </FormGroup>
-
-              {
-                fields.map((field) => {
-                  return (
-                    <ProviderFieldFormGroup
-                      key={field.name}
-                      advancedSettings={advancedSettings}
-                      provider="notification"
-                      providerData={item}
-                      section="settings.notifications"
-                      {...field}
-                      onChange={onFieldChange}
-                    />
-                  );
-                })
-              }
-
-            </Form>
-        }
+              );
+            })}
+          </Form>
+        )}
       </ModalBody>
       <ModalFooter>
-        {
-          id &&
-            <Button
-              className={styles.deleteButton}
-              kind={kinds.DANGER}
-              onPress={onDeleteNotificationPress}
-            >
-              {translate('Delete')}
-            </Button>
-        }
+        {id && (
+          <Button
+            className={styles.deleteButton}
+            kind={kinds.DANGER}
+            onPress={onDeleteNotificationPress}
+          >
+            {translate('Delete')}
+          </Button>
+        )}
 
-        <AdvancedSettingsButton
-          showLabel={false}
-        />
+        <AdvancedSettingsButton showLabel={false} />
 
         <SpinnerErrorButton
           isSpinning={isTesting}
@@ -149,11 +124,7 @@ function EditNotificationModalContent(props) {
           {translate('Test')}
         </SpinnerErrorButton>
 
-        <Button
-          onPress={onModalClose}
-        >
-          {translate('Cancel')}
-        </Button>
+        <Button onPress={onModalClose}>{translate('Cancel')}</Button>
 
         <SpinnerErrorButton
           isSpinning={isSaving}
@@ -180,7 +151,7 @@ EditNotificationModalContent.propTypes = {
   onModalClose: PropTypes.func.isRequired,
   onSavePress: PropTypes.func.isRequired,
   onTestPress: PropTypes.func.isRequired,
-  onDeleteNotificationPress: PropTypes.func
+  onDeleteNotificationPress: PropTypes.func,
 };
 
 export default EditNotificationModalContent;

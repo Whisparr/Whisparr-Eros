@@ -8,17 +8,9 @@ import { inputTypes } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 
 function BackupSettings(props) {
-  const {
-    advancedSettings,
-    settings,
-    onInputChange
-  } = props;
+  const { advancedSettings, settings, onInputChange } = props;
 
-  const {
-    backupFolder,
-    backupInterval,
-    backupRetention
-  } = settings;
+  const { backupFolder, backupInterval, backupRetention } = settings;
 
   if (!advancedSettings) {
     return null;
@@ -26,10 +18,7 @@ function BackupSettings(props) {
 
   return (
     <FieldSet legend={translate('Backups')}>
-      <FormGroup
-        advancedSettings={advancedSettings}
-        isAdvanced={true}
-      >
+      <FormGroup advancedSettings={advancedSettings} isAdvanced={true}>
         <FormLabel>{translate('Folder')}</FormLabel>
 
         <FormInputGroup
@@ -42,10 +31,7 @@ function BackupSettings(props) {
         />
       </FormGroup>
 
-      <FormGroup
-        advancedSettings={advancedSettings}
-        isAdvanced={true}
-      >
+      <FormGroup advancedSettings={advancedSettings} isAdvanced={true}>
         <FormLabel>{translate('Interval')}</FormLabel>
 
         <FormInputGroup
@@ -58,10 +44,7 @@ function BackupSettings(props) {
         />
       </FormGroup>
 
-      <FormGroup
-        advancedSettings={advancedSettings}
-        isAdvanced={true}
-      >
+      <FormGroup advancedSettings={advancedSettings} isAdvanced={true}>
         <FormLabel>{translate('Retention')}</FormLabel>
 
         <FormInputGroup
@@ -80,7 +63,7 @@ function BackupSettings(props) {
 BackupSettings.propTypes = {
   advancedSettings: PropTypes.bool.isRequired,
   settings: PropTypes.object.isRequired,
-  onInputChange: PropTypes.func.isRequired
+  onInputChange: PropTypes.func.isRequired,
 };
 
 export default BackupSettings;

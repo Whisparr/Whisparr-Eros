@@ -4,39 +4,40 @@ import createAjaxRequest from 'Utilities/createAjaxRequest';
 import { removeItem, set } from '../baseActions';
 
 function createRemoveItemHandler(section, url) {
-  return function(getState, payload, dispatch) {
-    const {
-      id,
-      queryParams
-    } = payload;
+  return function (getState, payload, dispatch) {
+    const { id, queryParams } = payload;
 
     dispatch(set({ section, isDeleting: true }));
 
     const ajaxOptions = {
       url: `${url}/${id}?${$.param(queryParams, true)}`,
-      method: 'DELETE'
+      method: 'DELETE',
     };
 
     const promise = createAjaxRequest(ajaxOptions).request;
 
     promise.done((data) => {
-      dispatch(batchActions([
-        set({
-          section,
-          isDeleting: false,
-          deleteError: null
-        }),
+      dispatch(
+        batchActions([
+          set({
+            section,
+            isDeleting: false,
+            deleteError: null,
+          }),
 
-        removeItem({ section, id })
-      ]));
+          removeItem({ section, id }),
+        ])
+      );
     });
 
     promise.fail((xhr) => {
-      dispatch(set({
-        section,
-        isDeleting: false,
-        deleteError: xhr
-      }));
+      dispatch(
+        set({
+          section,
+          isDeleting: false,
+          deleteError: xhr,
+        })
+      );
     });
 
     return promise;

@@ -2,7 +2,13 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
-import { cloneCustomFormatSpecification, deleteCustomFormatSpecification, fetchCustomFormatSpecifications, saveCustomFormat, setCustomFormatValue } from 'Store/Actions/settingsActions';
+import {
+  cloneCustomFormatSpecification,
+  deleteCustomFormatSpecification,
+  fetchCustomFormatSpecifications,
+  saveCustomFormat,
+  setCustomFormatValue,
+} from 'Store/Actions/settingsActions';
 import createProviderSettingsSelector from 'Store/Selectors/createProviderSettingsSelector';
 import EditCustomFormatModalContent from './EditCustomFormatModalContent';
 
@@ -16,7 +22,7 @@ function createMapStateToProps() {
         advancedSettings,
         ...customFormat,
         specificationsPopulated: specifications.isPopulated,
-        specifications: specifications.items
+        specifications: specifications.items,
       };
     }
   );
@@ -27,19 +33,15 @@ const mapDispatchToProps = {
   saveCustomFormat,
   fetchCustomFormatSpecifications,
   cloneCustomFormatSpecification,
-  deleteCustomFormatSpecification
+  deleteCustomFormatSpecification,
 };
 
 class EditCustomFormatModalContentConnector extends Component {
-
   //
   // Lifecycle
 
   componentDidMount() {
-    const {
-      id,
-      tagsFromId
-    } = this.props;
+    const { id, tagsFromId } = this.props;
     this.props.fetchCustomFormatSpecifications({ id: tagsFromId || id });
   }
 
@@ -96,7 +98,10 @@ EditCustomFormatModalContentConnector.propTypes = {
   fetchCustomFormatSpecifications: PropTypes.func.isRequired,
   cloneCustomFormatSpecification: PropTypes.func.isRequired,
   deleteCustomFormatSpecification: PropTypes.func.isRequired,
-  onModalClose: PropTypes.func.isRequired
+  onModalClose: PropTypes.func.isRequired,
 };
 
-export default connect(createMapStateToProps, mapDispatchToProps)(EditCustomFormatModalContentConnector);
+export default connect(
+  createMapStateToProps,
+  mapDispatchToProps
+)(EditCustomFormatModalContentConnector);

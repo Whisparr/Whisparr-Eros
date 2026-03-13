@@ -6,11 +6,7 @@ import EditRemotePathMappingModalContentConnector from './EditRemotePathMappingM
 
 function EditRemotePathMappingModal({ isOpen, onModalClose, ...otherProps }) {
   return (
-    <Modal
-      size={sizes.MEDIUM}
-      isOpen={isOpen}
-      onModalClose={onModalClose}
-    >
+    <Modal size={sizes.MEDIUM} isOpen={isOpen} onModalClose={onModalClose}>
       <EditRemotePathMappingModalContentConnector
         {...otherProps}
         onModalClose={onModalClose}
@@ -21,7 +17,7 @@ function EditRemotePathMappingModal({ isOpen, onModalClose, ...otherProps }) {
 
 EditRemotePathMappingModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
-  onModalClose: PropTypes.func.isRequired
+  onModalClose: PropTypes.func.isRequired,
 };
 
 export default EditRemotePathMappingModal;

@@ -6,16 +6,15 @@ import SafeForWorkButton from './SafeForWorkButton';
 
 function mapStateToProps(state) {
   return {
-    safeForWorkMode: state.settings.safeForWorkMode
+    safeForWorkMode: state.settings.safeForWorkMode,
   };
 }
 
 const mapDispatchToProps = {
-  toggleSafeForWorkMode
+  toggleSafeForWorkMode,
 };
 
 class SafeForWorkButtonConnector extends Component {
-
   //
   // Listeners
 
@@ -37,7 +36,10 @@ class SafeForWorkButtonConnector extends Component {
 }
 
 SafeForWorkButtonConnector.propTypes = {
-  toggleSafeForWorkMode: PropTypes.func.isRequired
+  toggleSafeForWorkMode: PropTypes.func.isRequired,
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(SafeForWorkButtonConnector);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(SafeForWorkButtonConnector);

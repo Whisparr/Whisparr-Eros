@@ -1,4 +1,8 @@
-import { createSelector, createSelectorCreator, defaultMemoize } from 'reselect';
+import {
+  createSelector,
+  createSelectorCreator,
+  defaultMemoize,
+} from 'reselect';
 import hasDifferentItemsOrOrder from 'Utilities/Object/hasDifferentItemsOrOrder';
 import createClientSideCollectionSelector from './createClientSideCollectionSelector';
 
@@ -7,25 +11,25 @@ function createUnoptimizedSelector(uiSection, mediaType) {
     createClientSideCollectionSelector('movies', uiSection),
     (state) => state.movies,
     (movies, allMovies) => {
-      const totalItems = allMovies.items.filter((movie) => movie.itemType === mediaType).length;
-      const items = movies.items.filter((movie) => movie.itemType === mediaType).map((s) => {
-        const {
-          id,
-          sortTitle,
-          collectionId
-        } = s;
+      const totalItems = allMovies.items.filter(
+        (movie) => movie.itemType === mediaType
+      ).length;
+      const items = movies.items
+        .filter((movie) => movie.itemType === mediaType)
+        .map((s) => {
+          const { id, sortTitle, collectionId } = s;
 
-        return {
-          id,
-          sortTitle,
-          collectionId
-        };
-      });
+          return {
+            id,
+            sortTitle,
+            collectionId,
+          };
+        });
 
       return {
         ...movies,
         totalItems,
-        items
+        items,
       };
     }
   );

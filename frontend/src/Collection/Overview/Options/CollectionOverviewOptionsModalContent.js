@@ -18,24 +18,23 @@ const posterSizeOptions = [
     key: 'small',
     get value() {
       return translate('Small');
-    }
+    },
   },
   {
     key: 'medium',
     get value() {
       return translate('Medium');
-    }
+    },
   },
   {
     key: 'large',
     get value() {
       return translate('Large');
-    }
-  }
+    },
+  },
 ];
 
 class CollectionOverviewOptionsModalContent extends Component {
-
   //
   // Lifecycle
 
@@ -47,7 +46,7 @@ class CollectionOverviewOptionsModalContent extends Component {
       size: props.size,
       showDetails: props.showDetails,
       showOverview: props.showOverview,
-      showPosters: props.showPosters
+      showPosters: props.showPosters,
     };
   }
 
@@ -57,7 +56,7 @@ class CollectionOverviewOptionsModalContent extends Component {
       size,
       showDetails,
       showOverview,
-      showPosters
+      showPosters,
     } = this.props;
 
     const state = {};
@@ -91,44 +90,46 @@ class CollectionOverviewOptionsModalContent extends Component {
   // Listeners
 
   onChangeOverviewOption = ({ name, value }) => {
-    this.setState({
-      [name]: value
-    }, () => {
-      this.props.onChangeOverviewOption({ [name]: value });
-    });
+    this.setState(
+      {
+        [name]: value,
+      },
+      () => {
+        this.props.onChangeOverviewOption({ [name]: value });
+      }
+    );
   };
 
   onChangeOption = ({ name, value }) => {
-    this.setState({
-      [name]: value
-    }, () => {
-      this.props.onChangeOption({
-        [name]: value
-      });
-    });
+    this.setState(
+      {
+        [name]: value,
+      },
+      () => {
+        this.props.onChangeOption({
+          [name]: value,
+        });
+      }
+    );
   };
 
   //
   // Render
 
   render() {
-    const {
-      onModalClose
-    } = this.props;
+    const { onModalClose } = this.props;
 
     const {
       size,
       detailedProgressBar,
       showDetails,
       showPosters,
-      showOverview
+      showOverview,
     } = this.state;
 
     return (
       <ModalContent onModalClose={onModalClose}>
-        <ModalHeader>
-          {translate('CollectionOptions')}
-        </ModalHeader>
+        <ModalHeader>{translate('CollectionOptions')}</ModalHeader>
 
         <ModalBody>
           <Form>
@@ -195,11 +196,7 @@ class CollectionOverviewOptionsModalContent extends Component {
         </ModalBody>
 
         <ModalFooter>
-          <Button
-            onPress={onModalClose}
-          >
-            {translate('Close')}
-          </Button>
+          <Button onPress={onModalClose}>{translate('Close')}</Button>
         </ModalFooter>
       </ModalContent>
     );
@@ -214,7 +211,7 @@ CollectionOverviewOptionsModalContent.propTypes = {
   showPosters: PropTypes.bool.isRequired,
   onChangeOverviewOption: PropTypes.func.isRequired,
   onChangeOption: PropTypes.func.isRequired,
-  onModalClose: PropTypes.func.isRequired
+  onModalClose: PropTypes.func.isRequired,
 };
 
 export default CollectionOverviewOptionsModalContent;

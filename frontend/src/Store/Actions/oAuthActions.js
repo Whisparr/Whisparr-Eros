@@ -22,7 +22,7 @@ const callbackUrl = `${window.location.origin}${window.Whisparr.urlBase}/oauth.h
 export const defaultState = {
   authorizing: false,
   result: null,
-  error: null
+  error: null,
 };
 
 //
@@ -50,25 +50,24 @@ function showOAuthWindow(url, payload) {
 
   if (
     !newWindow ||
-     newWindow.closed ||
-     typeof newWindow.closed == 'undefined'
+    newWindow.closed ||
+    typeof newWindow.closed == 'undefined'
   ) {
-
     // A fake validation error to mimic a 400 response from the API.
     const error = {
       status: 400,
       responseJSON: [
         {
           propertyName: payload.name,
-          errorMessage: translate('OAuthPopupMessage')
-        }
-      ]
+          errorMessage: translate('OAuthPopupMessage'),
+        },
+      ],
     };
 
     return deferred.reject(error).promise();
   }
 
-  selfWindow.onCompleteOauth = function(query, onComplete) {
+  selfWindow.onCompleteOauth = function (query, onComplete) {
     delete selfWindow.onCompleteOauth;
 
     const queryParams = {};
@@ -95,9 +94,9 @@ function executeIntermediateRequest(payload, ajaxOptions) {
       action: 'continueOAuth',
       queryParams: {
         ...data,
-        callbackUrl
+        callbackUrl,
       },
-      ...payload
+      ...payload,
     });
   });
 }
@@ -106,23 +105,20 @@ function executeIntermediateRequest(payload, ajaxOptions) {
 // Action Handlers
 
 export const actionHandlers = handleThunks({
-
-  [START_OAUTH]: function(getState, payload, dispatch) {
-    const {
-      name,
-      section: actionSection,
-      ...otherPayload
-    } = payload;
+  [START_OAUTH]: function (getState, payload, dispatch) {
+    const { name, section: actionSection, ...otherPayload } = payload;
 
     const actionPayload = {
       action: 'startOAuth',
       queryParams: { callbackUrl },
-      ...otherPayload
+      ...otherPayload,
     };
 
-    dispatch(setOAuthValue({
-      authorizing: true
-    }));
+    dispatch(
+      setOAuthValue({
+        authorizing: true,
+      })
+    );
 
     let startResponse = {};
 
@@ -134,36 +130,42 @@ export const actionHandlers = handleThunks({
           return showOAuthWindow(response.oauthUrl, payload);
         }
 
-        return executeIntermediateRequest(otherPayload, response).then((intermediateResponse) => {
-          startResponse = intermediateResponse;
+        return executeIntermediateRequest(otherPayload, response).then(
+          (intermediateResponse) => {
+            startResponse = intermediateResponse;
 
-          return showOAuthWindow(intermediateResponse.oauthUrl, payload);
-        });
+            return showOAuthWindow(intermediateResponse.oauthUrl, payload);
+          }
+        );
       })
       .then((queryParams) => {
         return requestAction({
           action: 'getOAuthToken',
           queryParams: {
             ...startResponse,
-            ...queryParams
+            ...queryParams,
           },
-          ...otherPayload
+          ...otherPayload,
         });
       })
       .then((response) => {
-        dispatch(setOAuthValue({
-          authorizing: false,
-          result: response,
-          error: null
-        }));
+        dispatch(
+          setOAuthValue({
+            authorizing: false,
+            result: response,
+            error: null,
+          })
+        );
       });
 
     promise.done(() => {
       // Clear any previously set save error.
-      dispatch(set({
-        section: actionSection,
-        saveError: null
-      }));
+      dispatch(
+        set({
+          section: actionSection,
+          saveError: null,
+        })
+      );
     });
 
     promise.fail((xhr) => {
@@ -171,37 +173,42 @@ export const actionHandlers = handleThunks({
         setOAuthValue({
           authorizing: false,
           result: null,
-          error: xhr
-        })
+          error: xhr,
+        }),
       ];
 
       if (xhr.status === 400) {
         // Set a save error so the UI can display validation errors to the user.
-        actions.splice(0, 0, set({
-          section: actionSection,
-          saveError: xhr
-        }));
+        actions.splice(
+          0,
+          0,
+          set({
+            section: actionSection,
+            saveError: xhr,
+          })
+        );
       }
 
       dispatch(batchActions(actions));
     });
-  }
-
+  },
 });
 
 //
 // Reducers
 
-export const reducers = createHandleActions({
+export const reducers = createHandleActions(
+  {
+    [SET_OAUTH_VALUE]: function (state, { payload }) {
+      const newState = Object.assign(getSectionState(state, section), payload);
 
-  [SET_OAUTH_VALUE]: function(state, { payload }) {
-    const newState = Object.assign(getSectionState(state, section), payload);
+      return updateSectionState(state, section, newState);
+    },
 
-    return updateSectionState(state, section, newState);
+    [RESET_OAUTH]: function (state) {
+      return updateSectionState(state, section, defaultState);
+    },
   },
-
-  [RESET_OAUTH]: function(state) {
-    return updateSectionState(state, section, defaultState);
-  }
-
-}, defaultState, section);
+  defaultState,
+  section
+);

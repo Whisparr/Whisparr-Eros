@@ -17,113 +17,109 @@ function DownloadClientOptions(props) {
     error,
     settings,
     hasSettings,
-    onInputChange
+    onInputChange,
   } = props;
 
   return (
     <div>
-      {
-        isFetching &&
-          <LoadingIndicator />
-      }
+      {isFetching && <LoadingIndicator />}
 
-      {
-        !isFetching && error &&
-          <Alert kind={kinds.DANGER}>
-            {translate('DownloadClientOptionsLoadError')}
-          </Alert>
-      }
+      {!isFetching && error && (
+        <Alert kind={kinds.DANGER}>
+          {translate('DownloadClientOptionsLoadError')}
+        </Alert>
+      )}
 
-      {
-        hasSettings && !isFetching && !error && advancedSettings &&
-          <div>
-            <FieldSet legend={translate('CompletedDownloadHandling')}>
+      {hasSettings && !isFetching && !error && advancedSettings && (
+        <div>
+          <FieldSet legend={translate('CompletedDownloadHandling')}>
+            <Form>
+              <FormGroup
+                advancedSettings={advancedSettings}
+                isAdvanced={true}
+                size={sizes.MEDIUM}
+              >
+                <FormLabel>{translate('Enable')}</FormLabel>
 
-              <Form>
+                <FormInputGroup
+                  type={inputTypes.CHECK}
+                  name="enableCompletedDownloadHandling"
+                  helpText={translate(
+                    'EnableCompletedDownloadHandlingHelpText'
+                  )}
+                  onChange={onInputChange}
+                  {...settings.enableCompletedDownloadHandling}
+                />
+              </FormGroup>
+
+              <FormGroup
+                advancedSettings={advancedSettings}
+                isAdvanced={true}
+                size={sizes.MEDIUM}
+              >
+                <FormLabel>
+                  {translate('CheckForFinishedDownloadsInterval')}
+                </FormLabel>
+
+                <FormInputGroup
+                  type={inputTypes.NUMBER}
+                  name="checkForFinishedDownloadInterval"
+                  min={1}
+                  max={120}
+                  unit="minutes"
+                  helpText={translate('RefreshMonitoredIntervalHelpText')}
+                  onChange={onInputChange}
+                  {...settings.checkForFinishedDownloadInterval}
+                />
+              </FormGroup>
+            </Form>
+          </FieldSet>
+
+          <FieldSet legend={translate('FailedDownloadHandling')}>
+            <Form>
+              <FormGroup
+                advancedSettings={advancedSettings}
+                isAdvanced={true}
+                size={sizes.MEDIUM}
+              >
+                <FormLabel>{translate('AutoRedownloadFailed')}</FormLabel>
+
+                <FormInputGroup
+                  type={inputTypes.CHECK}
+                  name="autoRedownloadFailed"
+                  helpText={translate('AutoRedownloadFailedHelpText')}
+                  onChange={onInputChange}
+                  {...settings.autoRedownloadFailed}
+                />
+              </FormGroup>
+
+              {settings.autoRedownloadFailed.value ? (
                 <FormGroup
                   advancedSettings={advancedSettings}
                   isAdvanced={true}
                   size={sizes.MEDIUM}
                 >
-                  <FormLabel>{translate('Enable')}</FormLabel>
+                  <FormLabel>
+                    {translate('AutoRedownloadFailedFromInteractiveSearch')}
+                  </FormLabel>
 
                   <FormInputGroup
                     type={inputTypes.CHECK}
-                    name="enableCompletedDownloadHandling"
-                    helpText={translate('EnableCompletedDownloadHandlingHelpText')}
+                    name="autoRedownloadFailedFromInteractiveSearch"
+                    helpText={translate(
+                      'AutoRedownloadFailedFromInteractiveSearchHelpText'
+                    )}
                     onChange={onInputChange}
-                    {...settings.enableCompletedDownloadHandling}
+                    {...settings.autoRedownloadFailedFromInteractiveSearch}
                   />
                 </FormGroup>
+              ) : null}
+            </Form>
 
-                <FormGroup
-                  advancedSettings={advancedSettings}
-                  isAdvanced={true}
-                  size={sizes.MEDIUM}
-                >
-                  <FormLabel>{translate('CheckForFinishedDownloadsInterval')}</FormLabel>
-
-                  <FormInputGroup
-                    type={inputTypes.NUMBER}
-                    name="checkForFinishedDownloadInterval"
-                    min={1}
-                    max={120}
-                    unit="minutes"
-                    helpText={translate('RefreshMonitoredIntervalHelpText')}
-                    onChange={onInputChange}
-                    {...settings.checkForFinishedDownloadInterval}
-                  />
-                </FormGroup>
-              </Form>
-            </FieldSet>
-
-            <FieldSet
-              legend={translate('FailedDownloadHandling')}
-            >
-              <Form>
-                <FormGroup
-                  advancedSettings={advancedSettings}
-                  isAdvanced={true}
-                  size={sizes.MEDIUM}
-                >
-                  <FormLabel>{translate('AutoRedownloadFailed')}</FormLabel>
-
-                  <FormInputGroup
-                    type={inputTypes.CHECK}
-                    name="autoRedownloadFailed"
-                    helpText={translate('AutoRedownloadFailedHelpText')}
-                    onChange={onInputChange}
-                    {...settings.autoRedownloadFailed}
-                  />
-                </FormGroup>
-
-                {
-                  settings.autoRedownloadFailed.value ?
-                    <FormGroup
-                      advancedSettings={advancedSettings}
-                      isAdvanced={true}
-                      size={sizes.MEDIUM}
-                    >
-                      <FormLabel>{translate('AutoRedownloadFailedFromInteractiveSearch')}</FormLabel>
-
-                      <FormInputGroup
-                        type={inputTypes.CHECK}
-                        name="autoRedownloadFailedFromInteractiveSearch"
-                        helpText={translate('AutoRedownloadFailedFromInteractiveSearchHelpText')}
-                        onChange={onInputChange}
-                        {...settings.autoRedownloadFailedFromInteractiveSearch}
-                      />
-                    </FormGroup> :
-                    null
-                }
-              </Form>
-
-              <Alert kind={kinds.INFO}>
-                {translate('RemoveDownloadsAlert')}
-              </Alert>
-            </FieldSet>
-          </div>
-      }
+            <Alert kind={kinds.INFO}>{translate('RemoveDownloadsAlert')}</Alert>
+          </FieldSet>
+        </div>
+      )}
     </div>
   );
 }
@@ -134,7 +130,7 @@ DownloadClientOptions.propTypes = {
   error: PropTypes.object,
   settings: PropTypes.object.isRequired,
   hasSettings: PropTypes.bool.isRequired,
-  onInputChange: PropTypes.func.isRequired
+  onInputChange: PropTypes.func.isRequired,
 };
 
 export default DownloadClientOptions;

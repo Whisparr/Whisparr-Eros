@@ -16,7 +16,7 @@ function createMapStateToProps() {
         shortDateFormat: uiSettings.shortDateFormat,
         longDateFormat: uiSettings.longDateFormat,
         timeFormat: uiSettings.timeFormat,
-        isSmallScreen: dimensions.isSmallScreen
+        isSmallScreen: dimensions.isSmallScreen,
       };
     }
   );

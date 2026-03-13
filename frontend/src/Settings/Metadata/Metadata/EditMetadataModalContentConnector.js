@@ -3,7 +3,11 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
-import { saveMetadata, setMetadataFieldValue, setMetadataValue } from 'Store/Actions/settingsActions';
+import {
+  saveMetadata,
+  setMetadataFieldValue,
+  setMetadataValue,
+} from 'Store/Actions/settingsActions';
 import selectSettings from 'Store/Selectors/selectSettings';
 import EditMetadataModalContent from './EditMetadataModalContent';
 
@@ -13,14 +17,13 @@ function createMapStateToProps() {
     (state, { id }) => id,
     (state) => state.settings.metadata,
     (advancedSettings, id, metadata) => {
-      const {
-        isSaving,
-        saveError,
-        pendingChanges,
-        items
-      } = metadata;
+      const { isSaving, saveError, pendingChanges, items } = metadata;
 
-      const settings = selectSettings(_.find(items, { id }), pendingChanges, saveError);
+      const settings = selectSettings(
+        _.find(items, { id }),
+        pendingChanges,
+        saveError
+      );
 
       return {
         advancedSettings,
@@ -28,7 +31,7 @@ function createMapStateToProps() {
         isSaving,
         saveError,
         item: settings.settings,
-        ...settings
+        ...settings,
       };
     }
   );
@@ -37,11 +40,10 @@ function createMapStateToProps() {
 const mapDispatchToProps = {
   setMetadataValue,
   setMetadataFieldValue,
-  saveMetadata
+  saveMetadata,
 };
 
 class EditMetadataModalContentConnector extends Component {
-
   //
   // Lifecycle
 
@@ -89,7 +91,10 @@ EditMetadataModalContentConnector.propTypes = {
   setMetadataValue: PropTypes.func.isRequired,
   setMetadataFieldValue: PropTypes.func.isRequired,
   saveMetadata: PropTypes.func.isRequired,
-  onModalClose: PropTypes.func.isRequired
+  onModalClose: PropTypes.func.isRequired,
 };
 
-export default connect(createMapStateToProps, mapDispatchToProps)(EditMetadataModalContentConnector);
+export default connect(
+  createMapStateToProps,
+  mapDispatchToProps
+)(EditMetadataModalContentConnector);

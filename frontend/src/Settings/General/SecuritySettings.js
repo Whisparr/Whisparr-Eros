@@ -17,14 +17,14 @@ export const authenticationMethodOptions = [
     get value() {
       return translate('None');
     },
-    isDisabled: true
+    isDisabled: true,
   },
   {
     key: 'external',
     get value() {
       return translate('External');
     },
-    isHidden: true
+    isHidden: true,
   },
   {
     key: 'basic',
@@ -32,14 +32,14 @@ export const authenticationMethodOptions = [
       return translate('AuthBasic');
     },
     isDisabled: true,
-    isHidden: true
+    isHidden: true,
   },
   {
     key: 'forms',
     get value() {
       return translate('AuthForm');
-    }
-  }
+    },
+  },
 ];
 
 export const authenticationRequiredOptions = [
@@ -47,14 +47,14 @@ export const authenticationRequiredOptions = [
     key: 'enabled',
     get value() {
       return translate('Enabled');
-    }
+    },
   },
   {
     key: 'disabledForLocalAddresses',
     get value() {
       return translate('DisabledForLocalAddresses');
-    }
-  }
+    },
+  },
 ];
 
 const certificateValidationOptions = [
@@ -62,24 +62,23 @@ const certificateValidationOptions = [
     key: 'enabled',
     get value() {
       return translate('Enabled');
-    }
+    },
   },
   {
     key: 'disabledForLocalAddresses',
     get value() {
       return translate('DisabledForLocalAddresses');
-    }
+    },
   },
   {
     key: 'disabled',
     get value() {
       return translate('Disabled');
-    }
-  }
+    },
+  },
 ];
 
 class SecuritySettings extends Component {
-
   //
   // Lifecycle
 
@@ -87,7 +86,7 @@ class SecuritySettings extends Component {
     super(props, context);
 
     this.state = {
-      isConfirmApiKeyResetModalOpen: false
+      isConfirmApiKeyResetModalOpen: false,
     };
   }
 
@@ -115,11 +114,7 @@ class SecuritySettings extends Component {
   // Render
 
   render() {
-    const {
-      settings,
-      isResettingApiKey,
-      onInputChange
-    } = this.props;
+    const { settings, isResettingApiKey, onInputChange } = this.props;
 
     const {
       authenticationMethod,
@@ -128,10 +123,11 @@ class SecuritySettings extends Component {
       password,
       passwordConfirmation,
       apiKey,
-      certificateValidation
+      certificateValidation,
     } = settings;
 
-    const authenticationEnabled = authenticationMethod && authenticationMethod.value !== 'none';
+    const authenticationEnabled =
+      authenticationMethod && authenticationMethod.value !== 'none';
 
     return (
       <FieldSet legend={translate('Security')}>
@@ -149,67 +145,59 @@ class SecuritySettings extends Component {
           />
         </FormGroup>
 
-        {
-          authenticationEnabled ?
-            <FormGroup>
-              <FormLabel>{translate('AuthenticationRequired')}</FormLabel>
+        {authenticationEnabled ? (
+          <FormGroup>
+            <FormLabel>{translate('AuthenticationRequired')}</FormLabel>
 
-              <FormInputGroup
-                type={inputTypes.SELECT}
-                name="authenticationRequired"
-                values={authenticationRequiredOptions}
-                helpText={translate('AuthenticationRequiredHelpText')}
-                onChange={onInputChange}
-                {...authenticationRequired}
-              />
-            </FormGroup> :
-            null
-        }
+            <FormInputGroup
+              type={inputTypes.SELECT}
+              name="authenticationRequired"
+              values={authenticationRequiredOptions}
+              helpText={translate('AuthenticationRequiredHelpText')}
+              onChange={onInputChange}
+              {...authenticationRequired}
+            />
+          </FormGroup>
+        ) : null}
 
-        {
-          authenticationEnabled ?
-            <FormGroup>
-              <FormLabel>{translate('Username')}</FormLabel>
+        {authenticationEnabled ? (
+          <FormGroup>
+            <FormLabel>{translate('Username')}</FormLabel>
 
-              <FormInputGroup
-                type={inputTypes.TEXT}
-                name="username"
-                onChange={onInputChange}
-                {...username}
-              />
-            </FormGroup> :
-            null
-        }
+            <FormInputGroup
+              type={inputTypes.TEXT}
+              name="username"
+              onChange={onInputChange}
+              {...username}
+            />
+          </FormGroup>
+        ) : null}
 
-        {
-          authenticationEnabled ?
-            <FormGroup>
-              <FormLabel>{translate('Password')}</FormLabel>
+        {authenticationEnabled ? (
+          <FormGroup>
+            <FormLabel>{translate('Password')}</FormLabel>
 
-              <FormInputGroup
-                type={inputTypes.PASSWORD}
-                name="password"
-                onChange={onInputChange}
-                {...password}
-              />
-            </FormGroup> :
-            null
-        }
+            <FormInputGroup
+              type={inputTypes.PASSWORD}
+              name="password"
+              onChange={onInputChange}
+              {...password}
+            />
+          </FormGroup>
+        ) : null}
 
-        {
-          authenticationEnabled ?
-            <FormGroup>
-              <FormLabel>{translate('PasswordConfirmation')}</FormLabel>
+        {authenticationEnabled ? (
+          <FormGroup>
+            <FormLabel>{translate('PasswordConfirmation')}</FormLabel>
 
-              <FormInputGroup
-                type={inputTypes.PASSWORD}
-                name="passwordConfirmation"
-                onChange={onInputChange}
-                {...passwordConfirmation}
-              />
-            </FormGroup> :
-            null
-        }
+            <FormInputGroup
+              type={inputTypes.PASSWORD}
+              name="passwordConfirmation"
+              onChange={onInputChange}
+              {...passwordConfirmation}
+            />
+          </FormGroup>
+        ) : null}
 
         <FormGroup>
           <FormLabel>{translate('ApiKey')}</FormLabel>
@@ -231,24 +219,19 @@ class SecuritySettings extends Component {
                 kind={kinds.DANGER}
                 onPress={this.onResetApiKeyPress}
               >
-                <Icon
-                  name={icons.REFRESH}
-                  isSpinning={isResettingApiKey}
-                />
+                <Icon name={icons.REFRESH} isSpinning={isResettingApiKey} />
               </FormInputButton>,
 
               <FormInputButton
                 key="apidocumentation"
                 kind={kinds.PRIMARY}
                 to="/docs"
-                target='_blank'
+                target="_blank"
                 title={translate('ApiDocumentation')}
                 noRouter={true}
               >
-                <Icon
-                  name={icons.DOCUMENTATION}
-                />
-              </FormInputButton>
+                <Icon name={icons.DOCUMENTATION} />
+              </FormInputButton>,
             ]}
             onChange={onInputChange}
             onFocus={this.onApikeyFocus}
@@ -287,7 +270,7 @@ SecuritySettings.propTypes = {
   settings: PropTypes.object.isRequired,
   isResettingApiKey: PropTypes.bool.isRequired,
   onInputChange: PropTypes.func.isRequired,
-  onConfirmResetApiKey: PropTypes.func.isRequired
+  onConfirmResetApiKey: PropTypes.func.isRequired,
 };
 
 export default SecuritySettings;

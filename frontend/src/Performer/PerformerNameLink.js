@@ -3,20 +3,13 @@ import React, { PureComponent } from 'react';
 import Link from 'Components/Link/Link';
 
 class PerformerNameLink extends PureComponent {
-
   render() {
-    const {
-      foreignId,
-      title
-    } = this.props;
+    const { foreignId, title } = this.props;
 
     const link = `/performer/${foreignId}`;
 
     return (
-      <Link
-        to={link}
-        title={title}
-      >
+      <Link to={link} title={title}>
         {title}
       </Link>
     );
@@ -25,7 +18,7 @@ class PerformerNameLink extends PureComponent {
 
 PerformerNameLink.propTypes = {
   foreignId: PropTypes.string.isRequired,
-  title: PropTypes.string.isRequired
+  title: PropTypes.string.isRequired,
 };
 
 export default PerformerNameLink;

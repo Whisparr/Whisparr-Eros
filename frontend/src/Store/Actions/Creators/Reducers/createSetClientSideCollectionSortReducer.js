@@ -11,9 +11,10 @@ function createSetClientSideCollectionSortReducer(section) {
 
     if (!sortDirection) {
       if (payload.sortKey === newState.sortKey) {
-        sortDirection = newState.sortDirection === sortDirections.ASCENDING ?
-          sortDirections.DESCENDING :
-          sortDirections.ASCENDING;
+        sortDirection =
+          newState.sortDirection === sortDirections.ASCENDING
+            ? sortDirections.DESCENDING
+            : sortDirections.ASCENDING;
       } else {
         sortDirection = newState.sortDirection;
       }

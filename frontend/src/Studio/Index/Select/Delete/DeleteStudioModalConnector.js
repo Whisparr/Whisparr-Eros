@@ -5,11 +5,10 @@ import { clearPendingChanges } from 'Store/Actions/baseActions';
 import DeleteStudioModal from './DeleteStudioModal';
 
 const mapDispatchToProps = {
-  clearPendingChanges
+  clearPendingChanges,
 };
 
 class DeleteStudioModalConnector extends Component {
-
   //
   // Listeners
 
@@ -23,10 +22,7 @@ class DeleteStudioModalConnector extends Component {
 
   render() {
     return (
-      <DeleteStudioModal
-        {...this.props}
-        onModalClose={this.onModalClose}
-      />
+      <DeleteStudioModal {...this.props} onModalClose={this.onModalClose} />
     );
   }
 }
@@ -34,7 +30,10 @@ class DeleteStudioModalConnector extends Component {
 DeleteStudioModalConnector.propTypes = {
   ...DeleteStudioModal.propTypes,
   onModalClose: PropTypes.func.isRequired,
-  clearPendingChanges: PropTypes.func.isRequired
+  clearPendingChanges: PropTypes.func.isRequired,
 };
 
-export default connect(undefined, mapDispatchToProps)(DeleteStudioModalConnector);
+export default connect(
+  undefined,
+  mapDispatchToProps
+)(DeleteStudioModalConnector);

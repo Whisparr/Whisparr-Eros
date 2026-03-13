@@ -6,7 +6,6 @@ import translate from 'Utilities/String/translate';
 import MetadatasConnector from './Metadata/MetadatasConnector';
 
 class MetadataSettings extends Component {
-
   //
   // Lifecycle
 
@@ -17,7 +16,7 @@ class MetadataSettings extends Component {
 
     this.state = {
       isSaving: false,
-      hasPendingChanges: false
+      hasPendingChanges: false,
     };
   }
 
@@ -42,10 +41,7 @@ class MetadataSettings extends Component {
   // Render
 
   render() {
-    const {
-      isSaving,
-      hasPendingChanges
-    } = this.state;
+    const { isSaving, hasPendingChanges } = this.state;
 
     return (
       <PageContent title={translate('MetadataSettings')}>

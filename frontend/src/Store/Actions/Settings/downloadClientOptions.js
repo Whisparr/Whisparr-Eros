@@ -13,26 +13,33 @@ const section = 'settings.downloadClientOptions';
 // Actions Types
 
 export const FETCH_DOWNLOAD_CLIENT_OPTIONS = 'FETCH_DOWNLOAD_CLIENT_OPTIONS';
-export const SET_DOWNLOAD_CLIENT_OPTIONS_VALUE = 'SET_DOWNLOAD_CLIENT_OPTIONS_VALUE';
+export const SET_DOWNLOAD_CLIENT_OPTIONS_VALUE =
+  'SET_DOWNLOAD_CLIENT_OPTIONS_VALUE';
 export const SAVE_DOWNLOAD_CLIENT_OPTIONS = 'SAVE_DOWNLOAD_CLIENT_OPTIONS';
 
 //
 // Action Creators
 
-export const fetchDownloadClientOptions = createThunk(FETCH_DOWNLOAD_CLIENT_OPTIONS);
-export const saveDownloadClientOptions = createThunk(SAVE_DOWNLOAD_CLIENT_OPTIONS);
-export const setDownloadClientOptionsValue = createAction(SET_DOWNLOAD_CLIENT_OPTIONS_VALUE, (payload) => {
-  return {
-    section,
-    ...payload
-  };
-});
+export const fetchDownloadClientOptions = createThunk(
+  FETCH_DOWNLOAD_CLIENT_OPTIONS
+);
+export const saveDownloadClientOptions = createThunk(
+  SAVE_DOWNLOAD_CLIENT_OPTIONS
+);
+export const setDownloadClientOptionsValue = createAction(
+  SET_DOWNLOAD_CLIENT_OPTIONS_VALUE,
+  (payload) => {
+    return {
+      section,
+      ...payload,
+    };
+  }
+);
 
 //
 // Details
 
 export default {
-
   //
   // State
 
@@ -43,22 +50,27 @@ export default {
     pendingChanges: {},
     isSaving: false,
     saveError: null,
-    item: {}
+    item: {},
   },
 
   //
   // Action Handlers
 
   actionHandlers: {
-    [FETCH_DOWNLOAD_CLIENT_OPTIONS]: createFetchHandler(section, '/config/downloadclient'),
-    [SAVE_DOWNLOAD_CLIENT_OPTIONS]: createSaveHandler(section, '/config/downloadclient')
+    [FETCH_DOWNLOAD_CLIENT_OPTIONS]: createFetchHandler(
+      section,
+      '/config/downloadclient'
+    ),
+    [SAVE_DOWNLOAD_CLIENT_OPTIONS]: createSaveHandler(
+      section,
+      '/config/downloadclient'
+    ),
   },
 
   //
   // Reducers
 
   reducers: {
-    [SET_DOWNLOAD_CLIENT_OPTIONS_VALUE]: createSetSettingValueReducer(section)
-  }
-
+    [SET_DOWNLOAD_CLIENT_OPTIONS_VALUE]: createSetSettingValueReducer(section),
+  },
 };

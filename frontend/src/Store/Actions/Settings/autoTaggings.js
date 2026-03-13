@@ -20,7 +20,8 @@ const section = 'settings.autoTaggings';
 export const FETCH_AUTO_TAGGINGS = 'settings/autoTaggings/fetchAutoTaggings';
 export const SAVE_AUTO_TAGGING = 'settings/autoTaggings/saveAutoTagging';
 export const DELETE_AUTO_TAGGING = 'settings/autoTaggings/deleteAutoTagging';
-export const SET_AUTO_TAGGING_VALUE = 'settings/autoTaggings/setAutoTaggingValue';
+export const SET_AUTO_TAGGING_VALUE =
+  'settings/autoTaggings/setAutoTaggingValue';
 export const CLONE_AUTO_TAGGING = 'settings/autoTaggings/cloneAutoTagging';
 
 //
@@ -30,12 +31,15 @@ export const fetchAutoTaggings = createThunk(FETCH_AUTO_TAGGINGS);
 export const saveAutoTagging = createThunk(SAVE_AUTO_TAGGING);
 export const deleteAutoTagging = createThunk(DELETE_AUTO_TAGGING);
 
-export const setAutoTaggingValue = createAction(SET_AUTO_TAGGING_VALUE, (payload) => {
-  return {
-    section,
-    ...payload
-  };
-});
+export const setAutoTaggingValue = createAction(
+  SET_AUTO_TAGGING_VALUE,
+  (payload) => {
+    return {
+      section,
+      ...payload,
+    };
+  }
+);
 
 export const cloneAutoTagging = createAction(CLONE_AUTO_TAGGING);
 
@@ -43,7 +47,6 @@ export const cloneAutoTagging = createAction(CLONE_AUTO_TAGGING);
 // Details
 
 export default {
-
   //
   // State
 
@@ -54,7 +57,7 @@ export default {
     isPopulated: false,
     schema: {
       removeTagsAutomatically: false,
-      tags: []
+      tags: [],
     },
     error: null,
     isDeleting: false,
@@ -62,7 +65,7 @@ export default {
     isSaving: false,
     saveError: null,
     items: [],
-    pendingChanges: {}
+    pendingChanges: {},
   },
 
   //
@@ -77,14 +80,21 @@ export default {
       // move the format tags in as a pending change
       const state = getState();
       const pendingChanges = state.settings.autoTaggings.pendingChanges;
-      pendingChanges.specifications = state.settings.autoTaggingSpecifications.items;
-      dispatch(set({
-        section,
-        pendingChanges
-      }));
+      pendingChanges.specifications =
+        state.settings.autoTaggingSpecifications.items;
+      dispatch(
+        set({
+          section,
+          pendingChanges,
+        })
+      );
 
-      createSaveProviderHandler(section, '/autoTagging')(getState, payload, dispatch);
-    }
+      createSaveProviderHandler(section, '/autoTagging')(
+        getState,
+        payload,
+        dispatch
+      );
+    },
   },
 
   //
@@ -93,18 +103,19 @@ export default {
   reducers: {
     [SET_AUTO_TAGGING_VALUE]: createSetSettingValueReducer(section),
 
-    [CLONE_AUTO_TAGGING]: function(state, { payload }) {
+    [CLONE_AUTO_TAGGING]: function (state, { payload }) {
       const id = payload.id;
       const newState = getSectionState(state, section);
       const item = newState.items.find((i) => i.id === id);
       const pendingChanges = { ...item, id: 0 };
       delete pendingChanges.id;
 
-      pendingChanges.name = translate('DefaultNameCopiedProfile', { name: pendingChanges.name });
+      pendingChanges.name = translate('DefaultNameCopiedProfile', {
+        name: pendingChanges.name,
+      });
       newState.pendingChanges = pendingChanges;
 
       return updateSectionState(state, section, newState);
-    }
-  }
-
+    },
+  },
 };

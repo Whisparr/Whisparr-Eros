@@ -40,98 +40,98 @@ export const defaultState = {
       name: 'relativePath',
       label: () => translate('RelativePath'),
       isVisible: true,
-      isSortable: true
+      isSortable: true,
     },
     {
       name: 'videoCodec',
       label: () => translate('VideoCodec'),
-      isVisible: true
+      isVisible: true,
     },
     {
       name: 'videoDynamicRangeType',
       label: () => translate('VideoDynamicRange'),
-      isVisible: false
+      isVisible: false,
     },
     {
       name: 'audioInfo',
       label: () => translate('AudioInfo'),
-      isVisible: true
+      isVisible: true,
     },
     {
       name: 'audioLanguages',
       label: () => translate('AudioLanguages'),
-      isVisible: false
+      isVisible: false,
     },
     {
       name: 'subtitleLanguages',
       label: () => translate('SubtitleLanguages'),
-      isVisible: false
+      isVisible: false,
     },
     {
       name: 'size',
       label: () => translate('Size'),
       isVisible: true,
-      isSortable: true
+      isSortable: true,
     },
     {
       name: 'languages',
       label: () => translate('Languages'),
-      isVisible: true
+      isVisible: true,
     },
     {
       name: 'quality',
       label: () => translate('Quality'),
-      isVisible: true
+      isVisible: true,
     },
     {
       name: 'releaseGroup',
       label: () => translate('ReleaseGroup'),
-      isVisible: true
+      isVisible: true,
     },
     {
       name: 'customFormats',
       label: () => translate('Formats'),
-      isVisible: true
+      isVisible: true,
     },
     {
       name: 'customFormatScore',
       columnLabel: () => translate('CustomFormatScore'),
       label: React.createElement(Icon, {
         name: icons.SCORE,
-        title: () => translate('CustomFormatScore')
+        title: () => translate('CustomFormatScore'),
       }),
       isVisible: true,
-      isSortable: true
+      isSortable: true,
     },
     {
       name: 'indexerFlags',
       columnLabel: () => translate('IndexerFlags'),
       label: React.createElement(Icon, {
         name: icons.FLAG,
-        title: () => translate('IndexerFlags')
+        title: () => translate('IndexerFlags'),
       }),
-      isVisible: false
+      isVisible: false,
     },
     {
       name: 'dateAdded',
       label: () => translate('Added'),
       isVisible: false,
-      isSortable: true
+      isSortable: true,
     },
     {
       name: 'actions',
       columnLabel: () => translate('Actions'),
       label: React.createElement(IconButton, { name: icons.ADVANCED_SETTINGS }),
       isVisible: true,
-      isModifiable: false
-    }
-  ]
+      isModifiable: false,
+    },
+  ],
 };
 
 export const persistState = [
   'movieFiles.columns',
   'movieFiles.sortDirection',
-  'movieFiles.sortKey'
+  'movieFiles.sortKey',
 ];
 
 //
@@ -142,7 +142,8 @@ export const DELETE_MOVIE_FILES = 'movieFiles/deleteMovieFiles';
 export const UPDATE_MOVIE_FILES = 'movieFiles/updateMovieFiles';
 export const CLEAR_MOVIE_FILES = 'movieFiles/clearMovieFiles';
 export const SET_MOVIE_FILES_SORT = 'movieFiles/setMovieFilesSort';
-export const SET_MOVIE_FILES_TABLE_OPTION = 'movieFiles/setMovieFilesTableOption';
+export const SET_MOVIE_FILES_TABLE_OPTION =
+  'movieFiles/setMovieFilesTableOption';
 
 //
 // Action Creators
@@ -152,7 +153,9 @@ export const deleteMovieFiles = createThunk(DELETE_MOVIE_FILES);
 export const updateMovieFiles = createThunk(UPDATE_MOVIE_FILES);
 export const clearMovieFiles = createAction(CLEAR_MOVIE_FILES);
 export const setMovieFilesSort = createAction(SET_MOVIE_FILES_SORT);
-export const setMovieFilesTableOption = createAction(SET_MOVIE_FILES_TABLE_OPTION);
+export const setMovieFilesTableOption = createAction(
+  SET_MOVIE_FILES_TABLE_OPTION
+);
 
 //
 // Helpers
@@ -163,11 +166,8 @@ const deleteMovieFileHelper = createRemoveItemHandler(section, '/movieFile');
 // Action Handlers
 
 export const actionHandlers = handleThunks({
-  [DELETE_MOVIE_FILE]: function(getState, payload, dispatch) {
-    const {
-      id: movieFileId,
-      movieEntity = movieEntities.MOVIES
-    } = payload;
+  [DELETE_MOVIE_FILE]: function (getState, payload, dispatch) {
+    const { id: movieFileId, movieEntity = movieEntities.MOVIES } = payload;
 
     const movieSection = _.last(movieEntity.split('.'));
     const deletePromise = deleteMovieFileHelper(getState, payload, dispatch);
@@ -176,23 +176,23 @@ export const actionHandlers = handleThunks({
       const movies = getState().movies.items;
       const moviesWithRemovedFiles = _.filter(movies, { movieFileId });
 
-      dispatch(batchActions([
-        ...moviesWithRemovedFiles.map((movie) => {
-          return updateItem({
-            section: movieSection,
-            ...movie,
-            movieFileId: 0,
-            hasFile: false
-          });
-        })
-      ]));
+      dispatch(
+        batchActions([
+          ...moviesWithRemovedFiles.map((movie) => {
+            return updateItem({
+              section: movieSection,
+              ...movie,
+              movieFileId: 0,
+              hasFile: false,
+            });
+          }),
+        ])
+      );
     });
   },
 
-  [DELETE_MOVIE_FILES]: function(getState, payload, dispatch) {
-    const {
-      movieFileIds
-    } = payload;
+  [DELETE_MOVIE_FILES]: function (getState, payload, dispatch) {
+    const { movieFileIds } = payload;
 
     dispatch(set({ section, isDeleting: true }));
 
@@ -200,7 +200,7 @@ export const actionHandlers = handleThunks({
       url: '/movieFile/bulk',
       method: 'DELETE',
       dataType: 'json',
-      data: JSON.stringify({ movieFileIds })
+      data: JSON.stringify({ movieFileIds }),
     }).request;
 
     promise.done(() => {
@@ -211,38 +211,42 @@ export const actionHandlers = handleThunks({
         return acc;
       }, []);
 
-      dispatch(batchActions([
-        ...movieFileIds.map((id) => {
-          return removeItem({ section, id });
-        }),
+      dispatch(
+        batchActions([
+          ...movieFileIds.map((id) => {
+            return removeItem({ section, id });
+          }),
 
-        ...moviesWithRemovedFiles.map((movie) => {
-          return updateItem({
-            section: 'movies',
-            ...movie,
-            movieFileId: 0,
-            hasFile: false
-          });
-        }),
+          ...moviesWithRemovedFiles.map((movie) => {
+            return updateItem({
+              section: 'movies',
+              ...movie,
+              movieFileId: 0,
+              hasFile: false,
+            });
+          }),
 
-        set({
-          section,
-          isDeleting: false,
-          deleteError: null
-        })
-      ]));
+          set({
+            section,
+            isDeleting: false,
+            deleteError: null,
+          }),
+        ])
+      );
     });
 
     promise.fail((xhr) => {
-      dispatch(set({
-        section,
-        isDeleting: false,
-        deleteError: xhr
-      }));
+      dispatch(
+        set({
+          section,
+          isDeleting: false,
+          deleteError: xhr,
+        })
+      );
     });
   },
 
-  [UPDATE_MOVIE_FILES]: function(getState, payload, dispatch) {
+  [UPDATE_MOVIE_FILES]: function (getState, payload, dispatch) {
     const { files } = payload;
 
     dispatch(set({ section, isSaving: true }));
@@ -253,70 +257,76 @@ export const actionHandlers = handleThunks({
       url: '/movieFile/bulk',
       method: 'PUT',
       dataType: 'json',
-      data: JSON.stringify(requestData)
+      data: JSON.stringify(requestData),
     }).request;
 
     promise.done((data) => {
-      dispatch(batchActions([
-        ...files.map((file) => {
-          const id = file.id;
-          const props = {};
-          const movieFile = data.find((f) => f.id === id);
+      dispatch(
+        batchActions([
+          ...files.map((file) => {
+            const id = file.id;
+            const props = {};
+            const movieFile = data.find((f) => f.id === id);
 
-          props.qualityCutoffNotMet = movieFile.qualityCutoffNotMet;
-          props.customFormats = movieFile.customFormats;
-          props.customFormatScore = movieFile.customFormatScore;
-          props.languages = movieFile.languages;
-          props.quality = movieFile.quality;
-          props.edition = movieFile.edition;
-          props.releaseGroup = movieFile.releaseGroup;
-          props.indexerFlags = movieFile.indexerFlags;
+            props.qualityCutoffNotMet = movieFile.qualityCutoffNotMet;
+            props.customFormats = movieFile.customFormats;
+            props.customFormatScore = movieFile.customFormatScore;
+            props.languages = movieFile.languages;
+            props.quality = movieFile.quality;
+            props.edition = movieFile.edition;
+            props.releaseGroup = movieFile.releaseGroup;
+            props.indexerFlags = movieFile.indexerFlags;
 
-          return updateItem({
+            return updateItem({
+              section,
+              id,
+              ...props,
+            });
+          }),
+
+          set({
             section,
-            id,
-            ...props
-          });
-        }),
-
-        set({
-          section,
-          isSaving: false,
-          saveError: null
-        })
-      ]));
+            isSaving: false,
+            saveError: null,
+          }),
+        ])
+      );
     });
 
     promise.fail((xhr) => {
-      dispatch(set({
-        section,
-        isSaving: false,
-        saveError: xhr
-      }));
+      dispatch(
+        set({
+          section,
+          isSaving: false,
+          saveError: xhr,
+        })
+      );
     });
-  }
+  },
 });
 
 //
 // Reducers
 
-export const reducers = createHandleActions({
+export const reducers = createHandleActions(
+  {
+    [SET_MOVIE_FILES_TABLE_OPTION]: createSetTableOptionReducer(section),
 
-  [SET_MOVIE_FILES_TABLE_OPTION]: createSetTableOptionReducer(section),
+    [CLEAR_MOVIE_FILES]: (state) => {
+      return Object.assign({}, state, {
+        isFetching: false,
+        isPopulated: false,
+        error: null,
+        isDeleting: false,
+        deleteError: null,
+        isSaving: false,
+        saveError: null,
+        items: [],
+      });
+    },
 
-  [CLEAR_MOVIE_FILES]: (state) => {
-    return Object.assign({}, state, {
-      isFetching: false,
-      isPopulated: false,
-      error: null,
-      isDeleting: false,
-      deleteError: null,
-      isSaving: false,
-      saveError: null,
-      items: []
-    });
+    [SET_MOVIE_FILES_SORT]: createSetClientSideCollectionSortReducer(section),
   },
-
-  [SET_MOVIE_FILES_SORT]: createSetClientSideCollectionSortReducer(section)
-
-}, defaultState, section);
+  defaultState,
+  section
+);

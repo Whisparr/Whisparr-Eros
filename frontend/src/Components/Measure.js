@@ -4,7 +4,6 @@ import React, { Component } from 'react';
 import ReactMeasure from 'react-measure';
 
 class Measure extends Component {
-
   //
   // Lifecycle
 
@@ -15,24 +14,24 @@ class Measure extends Component {
   //
   // Listeners
 
-  onMeasure = _.debounce((payload) => {
-    this.props.onMeasure(payload);
-  }, 250, { leading: true, trailing: false });
+  onMeasure = _.debounce(
+    (payload) => {
+      this.props.onMeasure(payload);
+    },
+    250,
+    { leading: true, trailing: false }
+  );
 
   //
   // Render
 
   render() {
-    return (
-      <ReactMeasure
-        {...this.props}
-      />
-    );
+    return <ReactMeasure {...this.props} />;
   }
 }
 
 Measure.propTypes = {
-  onMeasure: PropTypes.func.isRequired
+  onMeasure: PropTypes.func.isRequired,
 };
 
 export default Measure;

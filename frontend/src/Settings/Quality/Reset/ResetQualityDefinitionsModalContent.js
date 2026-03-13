@@ -13,7 +13,6 @@ import translate from 'Utilities/String/translate';
 import styles from './ResetQualityDefinitionsModalContent.css';
 
 class ResetQualityDefinitionsModalContent extends Component {
-
   //
   // Lifecycle
 
@@ -21,7 +20,7 @@ class ResetQualityDefinitionsModalContent extends Component {
     super(props, context);
 
     this.state = {
-      resetDefinitionTitles: false
+      resetDefinitionTitles: false,
     };
   }
 
@@ -43,20 +42,13 @@ class ResetQualityDefinitionsModalContent extends Component {
   // Render
 
   render() {
-    const {
-      onModalClose,
-      isResettingQualityDefinitions
-    } = this.props;
+    const { onModalClose, isResettingQualityDefinitions } = this.props;
 
     const resetDefinitionTitles = this.state.resetDefinitionTitles;
 
     return (
-      <ModalContent
-        onModalClose={onModalClose}
-      >
-        <ModalHeader>
-          {translate('ResetQualityDefinitions')}
-        </ModalHeader>
+      <ModalContent onModalClose={onModalClose}>
+        <ModalHeader>{translate('ResetQualityDefinitions')}</ModalHeader>
 
         <ModalBody>
           <div className={styles.messageContainer}>
@@ -64,9 +56,7 @@ class ResetQualityDefinitionsModalContent extends Component {
           </div>
 
           <FormGroup>
-            <FormLabel>
-              {translate('ResetTitles')}
-            </FormLabel>
+            <FormLabel>{translate('ResetTitles')}</FormLabel>
 
             <FormInputGroup
               type={inputTypes.CHECK}
@@ -76,13 +66,10 @@ class ResetQualityDefinitionsModalContent extends Component {
               onChange={this.onResetDefinitionTitlesChange}
             />
           </FormGroup>
-
         </ModalBody>
 
         <ModalFooter>
-          <Button onPress={onModalClose}>
-            {translate('Cancel')}
-          </Button>
+          <Button onPress={onModalClose}>{translate('Cancel')}</Button>
 
           <Button
             kind={kinds.DANGER}
@@ -100,7 +87,7 @@ class ResetQualityDefinitionsModalContent extends Component {
 ResetQualityDefinitionsModalContent.propTypes = {
   onResetQualityDefinitions: PropTypes.func.isRequired,
   isResettingQualityDefinitions: PropTypes.bool.isRequired,
-  onModalClose: PropTypes.func.isRequired
+  onModalClose: PropTypes.func.isRequired,
 };
 
 export default ResetQualityDefinitionsModalContent;

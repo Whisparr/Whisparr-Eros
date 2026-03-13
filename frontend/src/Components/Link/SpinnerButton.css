@@ -21,7 +21,9 @@
 .label {
   position: relative;
   left: 0;
-  transition: left $defaultSpeed, opacity $defaultSpeed;
+  transition:
+    left $defaultSpeed,
+    opacity $defaultSpeed;
 }
 
 .isSpinning {

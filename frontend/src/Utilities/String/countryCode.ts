@@ -1,4 +1,3 @@
-/* eslint-disable global-require */
 import countries from 'i18n-iso-countries';
 
 export default function countryCode(countryCode: string) {

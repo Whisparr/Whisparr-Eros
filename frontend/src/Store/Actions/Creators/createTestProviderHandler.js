@@ -8,7 +8,7 @@ const abortCurrentRequests = {};
 let lastTestData = null;
 
 export function createCancelTestProviderHandler(section) {
-  return function(getState, payload, dispatch) {
+  return function (getState, payload, dispatch) {
     if (abortCurrentRequests[section]) {
       abortCurrentRequests[section]();
       abortCurrentRequests[section] = null;
@@ -17,13 +17,10 @@ export function createCancelTestProviderHandler(section) {
 }
 
 function createTestProviderHandler(section, url) {
-  return function(getState, payload, dispatch) {
+  return function (getState, payload, dispatch) {
     dispatch(set({ section, isTesting: true }));
 
-    const {
-      queryParams = {},
-      ...otherPayload
-    } = payload;
+    const { queryParams = {}, ...otherPayload } = payload;
 
     const testData = getProviderState({ ...otherPayload }, getState, section);
     const params = { ...queryParams };
@@ -42,7 +39,7 @@ function createTestProviderHandler(section, url) {
       method: 'POST',
       contentType: 'application/json',
       dataType: 'json',
-      data: JSON.stringify(testData)
+      data: JSON.stringify(testData),
     };
 
     const { request, abortRequest } = createAjaxRequest(ajaxOptions);
@@ -52,19 +49,23 @@ function createTestProviderHandler(section, url) {
     request.done((data) => {
       lastTestData = null;
 
-      dispatch(set({
-        section,
-        isTesting: false,
-        saveError: null
-      }));
+      dispatch(
+        set({
+          section,
+          isTesting: false,
+          saveError: null,
+        })
+      );
     });
 
     request.fail((xhr) => {
-      dispatch(set({
-        section,
-        isTesting: false,
-        saveError: xhr.aborted ? null : xhr
-      }));
+      dispatch(
+        set({
+          section,
+          isTesting: false,
+          saveError: xhr.aborted ? null : xhr,
+        })
+      );
     });
   };
 }

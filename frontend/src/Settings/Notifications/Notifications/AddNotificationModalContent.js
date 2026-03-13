@@ -13,7 +13,6 @@ import AddNotificationItem from './AddNotificationItem';
 import styles from './AddNotificationModalContent.css';
 
 class AddNotificationModalContent extends Component {
-
   //
   // Render
 
@@ -24,54 +23,41 @@ class AddNotificationModalContent extends Component {
       schemaError,
       schema,
       onNotificationSelect,
-      onModalClose
+      onModalClose,
     } = this.props;
 
     return (
       <ModalContent onModalClose={onModalClose}>
-        <ModalHeader>
-          {translate('AddConnection')}
-        </ModalHeader>
+        <ModalHeader>{translate('AddConnection')}</ModalHeader>
 
         <ModalBody>
-          {
-            isSchemaFetching &&
-              <LoadingIndicator />
-          }
+          {isSchemaFetching && <LoadingIndicator />}
 
-          {
-            !isSchemaFetching && !!schemaError &&
-              <Alert kind={kinds.DANGER}>
-                {translate('AddNotificationError')}
-              </Alert>
-          }
+          {!isSchemaFetching && !!schemaError && (
+            <Alert kind={kinds.DANGER}>
+              {translate('AddNotificationError')}
+            </Alert>
+          )}
 
-          {
-            isSchemaPopulated && !schemaError &&
-              <div>
-                <div className={styles.notifications}>
-                  {
-                    schema.map((notification) => {
-                      return (
-                        <AddNotificationItem
-                          key={notification.implementation}
-                          implementation={notification.implementation}
-                          {...notification}
-                          onNotificationSelect={onNotificationSelect}
-                        />
-                      );
-                    })
-                  }
-                </div>
+          {isSchemaPopulated && !schemaError && (
+            <div>
+              <div className={styles.notifications}>
+                {schema.map((notification) => {
+                  return (
+                    <AddNotificationItem
+                      key={notification.implementation}
+                      implementation={notification.implementation}
+                      {...notification}
+                      onNotificationSelect={onNotificationSelect}
+                    />
+                  );
+                })}
               </div>
-          }
+            </div>
+          )}
         </ModalBody>
         <ModalFooter>
-          <Button
-            onPress={onModalClose}
-          >
-            {translate('Close')}
-          </Button>
+          <Button onPress={onModalClose}>{translate('Close')}</Button>
         </ModalFooter>
       </ModalContent>
     );
@@ -84,7 +70,7 @@ AddNotificationModalContent.propTypes = {
   schemaError: PropTypes.object,
   schema: PropTypes.arrayOf(PropTypes.object).isRequired,
   onNotificationSelect: PropTypes.func.isRequired,
-  onModalClose: PropTypes.func.isRequired
+  onModalClose: PropTypes.func.isRequired,
 };
 
 export default AddNotificationModalContent;

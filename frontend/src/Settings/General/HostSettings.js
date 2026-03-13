@@ -8,13 +8,7 @@ import { inputTypes, sizes } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 
 function HostSettings(props) {
-  const {
-    advancedSettings,
-    settings,
-    isWindows,
-    mode,
-    onInputChange
-  } = props;
+  const { advancedSettings, settings, isWindows, mode, onInputChange } = props;
 
   const {
     bindAddress,
@@ -26,15 +20,12 @@ function HostSettings(props) {
     sslPort,
     sslCertPath,
     sslCertPassword,
-    launchBrowser
+    launchBrowser,
   } = settings;
 
   return (
     <FieldSet legend={translate('Host')}>
-      <FormGroup
-        advancedSettings={advancedSettings}
-        isAdvanced={true}
-      >
+      <FormGroup advancedSettings={advancedSettings} isAdvanced={true}>
         <FormLabel>{translate('BindAddress')}</FormLabel>
 
         <FormInputGroup
@@ -75,10 +66,7 @@ function HostSettings(props) {
         />
       </FormGroup>
 
-      <FormGroup
-        advancedSettings={advancedSettings}
-        isAdvanced={true}
-      >
+      <FormGroup advancedSettings={advancedSettings} isAdvanced={true}>
         <FormLabel>{translate('InstanceName')}</FormLabel>
 
         <FormInputGroup
@@ -91,10 +79,7 @@ function HostSettings(props) {
         />
       </FormGroup>
 
-      <FormGroup
-        advancedSettings={advancedSettings}
-        isAdvanced={true}
-      >
+      <FormGroup advancedSettings={advancedSettings} isAdvanced={true}>
         <FormLabel>{translate('ApplicationURL')}</FormLabel>
 
         <FormInputGroup
@@ -122,83 +107,65 @@ function HostSettings(props) {
         />
       </FormGroup>
 
-      {
-        enableSsl.value ?
-          <FormGroup
-            advancedSettings={advancedSettings}
-            isAdvanced={true}
-          >
-            <FormLabel>{translate('SslPort')}</FormLabel>
+      {enableSsl.value ? (
+        <FormGroup advancedSettings={advancedSettings} isAdvanced={true}>
+          <FormLabel>{translate('SslPort')}</FormLabel>
 
-            <FormInputGroup
-              type={inputTypes.NUMBER}
-              name="sslPort"
-              min={1}
-              max={65535}
-              helpTextWarning={translate('RestartRequiredHelpTextWarning')}
-              onChange={onInputChange}
-              {...sslPort}
-            />
-          </FormGroup> :
-          null
-      }
+          <FormInputGroup
+            type={inputTypes.NUMBER}
+            name="sslPort"
+            min={1}
+            max={65535}
+            helpTextWarning={translate('RestartRequiredHelpTextWarning')}
+            onChange={onInputChange}
+            {...sslPort}
+          />
+        </FormGroup>
+      ) : null}
 
-      {
-        enableSsl.value ?
-          <FormGroup
-            advancedSettings={advancedSettings}
-            isAdvanced={true}
-          >
-            <FormLabel>{translate('SslCertPath')}</FormLabel>
+      {enableSsl.value ? (
+        <FormGroup advancedSettings={advancedSettings} isAdvanced={true}>
+          <FormLabel>{translate('SslCertPath')}</FormLabel>
 
-            <FormInputGroup
-              type={inputTypes.TEXT}
-              name="sslCertPath"
-              helpText={translate('SslCertPathHelpText')}
-              helpTextWarning={translate('RestartRequiredHelpTextWarning')}
-              onChange={onInputChange}
-              {...sslCertPath}
-            />
-          </FormGroup> :
-          null
-      }
+          <FormInputGroup
+            type={inputTypes.TEXT}
+            name="sslCertPath"
+            helpText={translate('SslCertPathHelpText')}
+            helpTextWarning={translate('RestartRequiredHelpTextWarning')}
+            onChange={onInputChange}
+            {...sslCertPath}
+          />
+        </FormGroup>
+      ) : null}
 
-      {
-        enableSsl.value ?
-          <FormGroup
-            advancedSettings={advancedSettings}
-            isAdvanced={true}
-          >
-            <FormLabel>{translate('SslCertPassword')}</FormLabel>
+      {enableSsl.value ? (
+        <FormGroup advancedSettings={advancedSettings} isAdvanced={true}>
+          <FormLabel>{translate('SslCertPassword')}</FormLabel>
 
-            <FormInputGroup
-              type={inputTypes.PASSWORD}
-              name="sslCertPassword"
-              helpText={translate('SslCertPasswordHelpText')}
-              helpTextWarning={translate('RestartRequiredHelpTextWarning')}
-              onChange={onInputChange}
-              {...sslCertPassword}
-            />
-          </FormGroup> :
-          null
-      }
+          <FormInputGroup
+            type={inputTypes.PASSWORD}
+            name="sslCertPassword"
+            helpText={translate('SslCertPasswordHelpText')}
+            helpTextWarning={translate('RestartRequiredHelpTextWarning')}
+            onChange={onInputChange}
+            {...sslCertPassword}
+          />
+        </FormGroup>
+      ) : null}
 
-      {
-        isWindows && mode !== 'service' ?
-          <FormGroup size={sizes.MEDIUM}>
-            <FormLabel>{translate('OpenBrowserOnStart')}</FormLabel>
+      {isWindows && mode !== 'service' ? (
+        <FormGroup size={sizes.MEDIUM}>
+          <FormLabel>{translate('OpenBrowserOnStart')}</FormLabel>
 
-            <FormInputGroup
-              type={inputTypes.CHECK}
-              name="launchBrowser"
-              helpText={translate('OpenBrowserOnStartHelpText')}
-              onChange={onInputChange}
-              {...launchBrowser}
-            />
-          </FormGroup> :
-          null
-      }
-
+          <FormInputGroup
+            type={inputTypes.CHECK}
+            name="launchBrowser"
+            helpText={translate('OpenBrowserOnStartHelpText')}
+            onChange={onInputChange}
+            {...launchBrowser}
+          />
+        </FormGroup>
+      ) : null}
     </FieldSet>
   );
 }
@@ -208,7 +175,7 @@ HostSettings.propTypes = {
   settings: PropTypes.object.isRequired,
   isWindows: PropTypes.bool.isRequired,
   mode: PropTypes.string.isRequired,
-  onInputChange: PropTypes.func.isRequired
+  onInputChange: PropTypes.func.isRequired,
 };
 
 export default HostSettings;

@@ -35,13 +35,11 @@ export const defaultState = {
     moviesMonitored: false,
     qualityProfileId: 0,
     searchForMovie: false,
-    tags: []
-  }
+    tags: [],
+  },
 };
 
-export const persistState = [
-  'addPerformer.performerDefaults'
-];
+export const persistState = ['addPerformer.performerDefaults'];
 
 //
 // Actions Types
@@ -51,7 +49,8 @@ export const ADD_PERFORMER = 'addPerformer/addPerformer';
 export const SET_ADD_PERFORMER_VALUE = 'addPerformer/setAddPerformerValue';
 export const CLEAR_ADD_PERFORMER = 'addPerformer/clearAddPerformer';
 export const SET_ADD_PERFORMER_DEFAULT = 'addPerformer/setAddPerformerDefault';
-export const SET_PERFORMERS_WITH_STATUS = 'addPerformer/setPerformersWithStatus';
+export const SET_PERFORMERS_WITH_STATUS =
+  'addPerformer/setPerformersWithStatus';
 
 //
 // Action Creators
@@ -62,18 +61,20 @@ export const clearAddPerformer = createAction(CLEAR_ADD_PERFORMER);
 export const setAddPerformerDefault = createAction(SET_ADD_PERFORMER_DEFAULT);
 export const setPerformersWithStatus = createAction(SET_PERFORMERS_WITH_STATUS);
 
-export const setAddPerformerValue = createAction(SET_ADD_PERFORMER_VALUE, (payload) => {
-  return {
-    section,
-    ...payload
-  };
-});
+export const setAddPerformerValue = createAction(
+  SET_ADD_PERFORMER_VALUE,
+  (payload) => {
+    return {
+      section,
+      ...payload,
+    };
+  }
+);
 //
 // Action Handlers
 
 export const actionHandlers = handleThunks({
-
-  [LOOKUP_PERFORMER]: function(getState, payload, dispatch) {
+  [LOOKUP_PERFORMER]: function (getState, payload, dispatch) {
     dispatch(set({ section, isFetching: true }));
 
     if (abortCurrentRequest) {
@@ -83,44 +84,55 @@ export const actionHandlers = handleThunks({
     const { request, abortRequest } = createAjaxRequest({
       url: '/lookup/performer',
       data: {
-        term: payload.term
-      }
+        term: payload.term,
+      },
     });
 
     abortCurrentRequest = abortRequest;
 
     request.done((data) => {
-      data = data.map((movie) => ({ ...movie, internalId: movie.id, id: movie.foreignId }));
+      data = data.map((movie) => ({
+        ...movie,
+        internalId: movie.id,
+        id: movie.foreignId,
+      }));
 
-      dispatch(batchActions([
-        update({ section, data }),
+      dispatch(
+        batchActions([
+          update({ section, data }),
 
-        set({
-          section,
-          isFetching: false,
-          isPopulated: true,
-          error: null
-        })
-      ]));
+          set({
+            section,
+            isFetching: false,
+            isPopulated: true,
+            error: null,
+          }),
+        ])
+      );
     });
 
     request.fail((xhr) => {
-      dispatch(set({
-        section,
-        isFetching: false,
-        isPopulated: false,
-        error: xhr.aborted ? null : xhr
-      }));
+      dispatch(
+        set({
+          section,
+          isFetching: false,
+          isPopulated: false,
+          error: xhr.aborted ? null : xhr,
+        })
+      );
     });
   },
 
-  [ADD_PERFORMER]: function(getState, payload, dispatch) {
+  [ADD_PERFORMER]: function (getState, payload, dispatch) {
     dispatch(set({ section, isAdding: true }));
 
     const foreignId = payload.foreignId;
     const items = getState().addPerformer.items;
     const itemToAdd = _.find(items, { foreignId });
-    const newPerformer = getNewPerformer(_.cloneDeep(itemToAdd.performer), payload);
+    const newPerformer = getNewPerformer(
+      _.cloneDeep(itemToAdd.performer),
+      payload
+    );
     newPerformer.id = 0;
 
     const promise = createAjaxRequest({
@@ -128,7 +140,7 @@ export const actionHandlers = handleThunks({
       method: 'POST',
       dataType: 'json',
       contentType: 'application/json',
-      data: JSON.stringify(newPerformer)
+      data: JSON.stringify(newPerformer),
     }).request;
 
     promise.done((data) => {
@@ -145,56 +157,60 @@ export const actionHandlers = handleThunks({
           section,
           isAdding: false,
           isAdded: true,
-          addError: null
-        })
+          addError: null,
+        }),
       ];
 
       dispatch(batchActions(actions));
     });
 
     promise.fail((xhr) => {
-      dispatch(set({
-        section,
-        isAdding: false,
-        isAdded: false,
-        addError: xhr
-      }));
+      dispatch(
+        set({
+          section,
+          isAdding: false,
+          isAdded: false,
+          addError: xhr,
+        })
+      );
     });
-  }
+  },
 });
 
 //
 // Reducers
 
-export const reducers = createHandleActions({
+export const reducers = createHandleActions(
+  {
+    [SET_ADD_PERFORMER_VALUE]: createSetSettingValueReducer(section),
 
-  [SET_ADD_PERFORMER_VALUE]: createSetSettingValueReducer(section),
+    [SET_ADD_PERFORMER_DEFAULT]: function (state, { payload }) {
+      const newState = getSectionState(state, section);
 
-  [SET_ADD_PERFORMER_DEFAULT]: function(state, { payload }) {
-    const newState = getSectionState(state, section);
+      newState.performerDefaults = {
+        ...newState.performerDefaults,
+        ...payload,
+      };
 
-    newState.performerDefaults = {
-      ...newState.performerDefaults,
-      ...payload
-    };
+      return updateSectionState(state, section, newState);
+    },
+    [SET_PERFORMERS_WITH_STATUS]: function (state, { payload }) {
+      const newState = getSectionState(state, section);
+      newState.performersWithStatus = payload;
+      return updateSectionState(state, section, newState);
+    },
+    [CLEAR_ADD_PERFORMER]: function (state) {
+      const {
+        movieDefaults,
+        performerDefaults,
+        studioDefaults,
+        view,
+        ...otherDefaultState
+      } = defaultState;
 
-    return updateSectionState(state, section, newState);
+      return Object.assign({}, state, otherDefaultState);
+    },
   },
-  [SET_PERFORMERS_WITH_STATUS]: function(state, { payload }) {
-    const newState = getSectionState(state, section);
-    newState.performersWithStatus = payload;
-    return updateSectionState(state, section, newState);
-  },
-  [CLEAR_ADD_PERFORMER]: function(state) {
-    const {
-      movieDefaults,
-      performerDefaults,
-      studioDefaults,
-      view,
-      ...otherDefaultState
-    } = defaultState;
-
-    return Object.assign({}, state, otherDefaultState);
-  }
-
-}, defaultState, section);
+  defaultState,
+  section
+);

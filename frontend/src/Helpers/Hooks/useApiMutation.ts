@@ -13,8 +13,10 @@ import fetchJson, {
 import getQueryPath from 'Utilities/Fetch/getQueryPath';
 import getQueryString, { QueryParams } from 'Utilities/Fetch/getQueryString';
 
-interface MutationOptions<T, TData>
-  extends Omit<FetchJsonOptions<TData>, 'method'> {
+interface MutationOptions<T, TData> extends Omit<
+  FetchJsonOptions<TData>,
+  'method'
+> {
   method: 'POST' | 'PUT' | 'DELETE';
   mutationOptions?: Omit<UseMutationOptions<T, ApiError, TData>, 'mutationFn'>;
   queryParams?: QueryParams;

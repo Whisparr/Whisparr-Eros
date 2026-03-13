@@ -5,10 +5,7 @@ import AddSpecificationModalContentConnector from './AddSpecificationModalConten
 
 function AddSpecificationModal({ isOpen, onModalClose, ...otherProps }) {
   return (
-    <Modal
-      isOpen={isOpen}
-      onModalClose={onModalClose}
-    >
+    <Modal isOpen={isOpen} onModalClose={onModalClose}>
       <AddSpecificationModalContentConnector
         {...otherProps}
         onModalClose={onModalClose}
@@ -19,7 +16,7 @@ function AddSpecificationModal({ isOpen, onModalClose, ...otherProps }) {
 
 AddSpecificationModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
-  onModalClose: PropTypes.func.isRequired
+  onModalClose: PropTypes.func.isRequired,
 };
 
 export default AddSpecificationModal;

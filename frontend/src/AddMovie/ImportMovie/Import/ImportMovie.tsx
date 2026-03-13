@@ -173,7 +173,7 @@ function ImportMovie() {
     importState.items.forEach((item) => {
       queueLookup({ id: item.id, term: item.term, itemType: item.itemType });
     });
-  }, [importState.items, queueLookup]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [importState.items, queueLookup]);
 
   const onSelectAllChange = useCallback(({ value }: { value: boolean }) => {
     setSelectionState(

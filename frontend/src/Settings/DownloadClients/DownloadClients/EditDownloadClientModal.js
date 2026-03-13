@@ -6,11 +6,7 @@ import EditDownloadClientModalContentConnector from './EditDownloadClientModalCo
 
 function EditDownloadClientModal({ isOpen, onModalClose, ...otherProps }) {
   return (
-    <Modal
-      size={sizes.MEDIUM}
-      isOpen={isOpen}
-      onModalClose={onModalClose}
-    >
+    <Modal size={sizes.MEDIUM} isOpen={isOpen} onModalClose={onModalClose}>
       <EditDownloadClientModalContentConnector
         {...otherProps}
         onModalClose={onModalClose}
@@ -21,7 +17,7 @@ function EditDownloadClientModal({ isOpen, onModalClose, ...otherProps }) {
 
 EditDownloadClientModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
-  onModalClose: PropTypes.func.isRequired
+  onModalClose: PropTypes.func.isRequired,
 };
 
 export default EditDownloadClientModal;

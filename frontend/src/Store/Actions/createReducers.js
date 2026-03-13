@@ -15,9 +15,11 @@ actions.forEach((action) => {
 
 export { defaultState };
 
-export default function(history) {
-  return enableBatching(combineReducers({
-    ...reducers,
-    router: connectRouter(history)
-  }));
+export default function (history) {
+  return enableBatching(
+    combineReducers({
+      ...reducers,
+      router: connectRouter(history),
+    })
+  );
 }

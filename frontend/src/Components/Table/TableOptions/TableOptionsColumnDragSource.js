@@ -14,7 +14,7 @@ const columnDragSource = {
 
   endDrag(props, monitor, component) {
     props.onColumnDragEnd(monitor.getItem(), monitor.didDrop());
-  }
+  },
 };
 
 const columnDropTarget = {
@@ -47,25 +47,24 @@ const columnDropTarget = {
     }
 
     props.onColumnDragMove(dragIndex, hoverIndex);
-  }
+  },
 };
 
 function collectDragSource(connect, monitor) {
   return {
     connectDragSource: connect.dragSource(),
-    isDragging: monitor.isDragging()
+    isDragging: monitor.isDragging(),
   };
 }
 
 function collectDropTarget(connect, monitor) {
   return {
     connectDropTarget: connect.dropTarget(),
-    isOver: monitor.isOver()
+    isOver: monitor.isOver(),
   };
 }
 
 class TableOptionsColumnDragSource extends Component {
-
   //
   // Render
 
@@ -82,7 +81,7 @@ class TableOptionsColumnDragSource extends Component {
       isOver,
       connectDragSource,
       connectDropTarget,
-      onVisibleChange
+      onVisibleChange,
     } = this.props;
 
     const isBefore = !isDragging && isDraggingUp && isOver;
@@ -100,15 +99,14 @@ class TableOptionsColumnDragSource extends Component {
           isAfter && styles.isDraggingDown
         )}
       >
-        {
-          isBefore &&
-            <div
-              className={classNames(
-                styles.columnPlaceholder,
-                styles.columnPlaceholderBefore
-              )}
-            />
-        }
+        {isBefore && (
+          <div
+            className={classNames(
+              styles.columnPlaceholder,
+              styles.columnPlaceholderBefore
+            )}
+          />
+        )}
 
         <TableOptionsColumn
           name={name}
@@ -122,15 +120,14 @@ class TableOptionsColumnDragSource extends Component {
           onVisibleChange={onVisibleChange}
         />
 
-        {
-          isAfter &&
-            <div
-              className={classNames(
-                styles.columnPlaceholder,
-                styles.columnPlaceholderAfter
-              )}
-            />
-        }
+        {isAfter && (
+          <div
+            className={classNames(
+              styles.columnPlaceholder,
+              styles.columnPlaceholderAfter
+            )}
+          />
+        )}
       </div>
     );
   }
@@ -150,15 +147,17 @@ TableOptionsColumnDragSource.propTypes = {
   connectDropTarget: PropTypes.func,
   onVisibleChange: PropTypes.func.isRequired,
   onColumnDragMove: PropTypes.func.isRequired,
-  onColumnDragEnd: PropTypes.func.isRequired
+  onColumnDragEnd: PropTypes.func.isRequired,
 };
 
 export default DropTarget(
   TABLE_COLUMN,
   columnDropTarget,
   collectDropTarget
-)(DragSource(
-  TABLE_COLUMN,
-  columnDragSource,
-  collectDragSource
-)(TableOptionsColumnDragSource));
+)(
+  DragSource(
+    TABLE_COLUMN,
+    columnDragSource,
+    collectDragSource
+  )(TableOptionsColumnDragSource)
+);

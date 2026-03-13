@@ -11,7 +11,6 @@ import ExportCustomFormatModal from './ExportCustomFormatModal';
 import styles from './CustomFormat.css';
 
 class CustomFormat extends Component {
-
   //
   // Lifecycle
 
@@ -21,7 +20,7 @@ class CustomFormat extends Component {
     this.state = {
       isEditCustomFormatModalOpen: false,
       isExportCustomFormatModalOpen: false,
-      isDeleteCustomFormatModalOpen: false
+      isDeleteCustomFormatModalOpen: false,
     };
   }
 
@@ -47,7 +46,7 @@ class CustomFormat extends Component {
   onDeleteCustomFormatPress = () => {
     this.setState({
       isEditCustomFormatModalOpen: false,
-      isDeleteCustomFormatModalOpen: true
+      isDeleteCustomFormatModalOpen: true,
     });
   };
 
@@ -60,10 +59,7 @@ class CustomFormat extends Component {
   };
 
   onCloneCustomFormatPress = () => {
-    const {
-      id,
-      onCloneCustomFormatPress
-    } = this.props;
+    const { id, onCloneCustomFormatPress } = this.props;
 
     onCloneCustomFormatPress(id);
   };
@@ -72,12 +68,7 @@ class CustomFormat extends Component {
   // Render
 
   render() {
-    const {
-      id,
-      name,
-      specifications,
-      isDeleting
-    } = this.props;
+    const { id, name, specifications, isDeleting } = this.props;
 
     return (
       <Card
@@ -86,9 +77,7 @@ class CustomFormat extends Component {
         onPress={this.onEditCustomFormatPress}
       >
         <div className={styles.nameContainer}>
-          <div className={styles.name}>
-            {name}
-          </div>
+          <div className={styles.name}>{name}</div>
 
           <div className={styles.buttons}>
             <IconButton
@@ -108,31 +97,25 @@ class CustomFormat extends Component {
         </div>
 
         <div>
-          {
-            specifications.map((item, index) => {
-              if (!item) {
-                return null;
-              }
+          {specifications.map((item, index) => {
+            if (!item) {
+              return null;
+            }
 
-              let kind = kinds.DEFAULT;
-              if (item.required) {
-                kind = kinds.SUCCESS;
-              }
-              if (item.negate) {
-                kind = kinds.DANGER;
-              }
+            let kind = kinds.DEFAULT;
+            if (item.required) {
+              kind = kinds.SUCCESS;
+            }
+            if (item.negate) {
+              kind = kinds.DANGER;
+            }
 
-              return (
-                <Label
-                  className={styles.label}
-                  key={index}
-                  kind={kind}
-                >
-                  {item.name}
-                </Label>
-              );
-            })
-          }
+            return (
+              <Label className={styles.label} key={index} kind={kind}>
+                {item.name}
+              </Label>
+            );
+          })}
         </div>
 
         <EditCustomFormatModalConnector
@@ -169,7 +152,7 @@ CustomFormat.propTypes = {
   specifications: PropTypes.arrayOf(PropTypes.object).isRequired,
   isDeleting: PropTypes.bool.isRequired,
   onConfirmDeleteCustomFormat: PropTypes.func.isRequired,
-  onCloneCustomFormatPress: PropTypes.func.isRequired
+  onCloneCustomFormatPress: PropTypes.func.isRequired,
 };
 
 export default CustomFormat;

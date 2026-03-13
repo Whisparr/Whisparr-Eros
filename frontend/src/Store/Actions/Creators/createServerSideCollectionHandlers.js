@@ -5,45 +5,81 @@ import createSetServerSideCollectionFilterHandler from './createSetServerSideCol
 import createSetServerSideCollectionPageHandler from './createSetServerSideCollectionPageHandler';
 import createSetServerSideCollectionSortHandler from './createSetServerSideCollectionSortHandler';
 
-function createServerSideCollectionHandlers(section, url, fetchThunk, handlers, fetchDataAugmenter) {
+function createServerSideCollectionHandlers(
+  section,
+  url,
+  fetchThunk,
+  handlers,
+  fetchDataAugmenter
+) {
   const actionHandlers = {};
   const fetchHandlerType = handlers[serverSideCollectionHandlers.FETCH];
-  const fetchHandler = createFetchServerSideCollectionHandler(section, url, fetchDataAugmenter);
+  const fetchHandler = createFetchServerSideCollectionHandler(
+    section,
+    url,
+    fetchDataAugmenter
+  );
   actionHandlers[fetchHandlerType] = fetchHandler;
 
   if (handlers.hasOwnProperty(serverSideCollectionHandlers.FIRST_PAGE)) {
     const handlerType = handlers[serverSideCollectionHandlers.FIRST_PAGE];
-    actionHandlers[handlerType] = createSetServerSideCollectionPageHandler(section, pages.FIRST, fetchThunk);
+    actionHandlers[handlerType] = createSetServerSideCollectionPageHandler(
+      section,
+      pages.FIRST,
+      fetchThunk
+    );
   }
 
   if (handlers.hasOwnProperty(serverSideCollectionHandlers.PREVIOUS_PAGE)) {
     const handlerType = handlers[serverSideCollectionHandlers.PREVIOUS_PAGE];
-    actionHandlers[handlerType] = createSetServerSideCollectionPageHandler(section, pages.PREVIOUS, fetchThunk);
+    actionHandlers[handlerType] = createSetServerSideCollectionPageHandler(
+      section,
+      pages.PREVIOUS,
+      fetchThunk
+    );
   }
 
   if (handlers.hasOwnProperty(serverSideCollectionHandlers.NEXT_PAGE)) {
     const handlerType = handlers[serverSideCollectionHandlers.NEXT_PAGE];
-    actionHandlers[handlerType] = createSetServerSideCollectionPageHandler(section, pages.NEXT, fetchThunk);
+    actionHandlers[handlerType] = createSetServerSideCollectionPageHandler(
+      section,
+      pages.NEXT,
+      fetchThunk
+    );
   }
 
   if (handlers.hasOwnProperty(serverSideCollectionHandlers.LAST_PAGE)) {
     const handlerType = handlers[serverSideCollectionHandlers.LAST_PAGE];
-    actionHandlers[handlerType] = createSetServerSideCollectionPageHandler(section, pages.LAST, fetchThunk);
+    actionHandlers[handlerType] = createSetServerSideCollectionPageHandler(
+      section,
+      pages.LAST,
+      fetchThunk
+    );
   }
 
   if (handlers.hasOwnProperty(serverSideCollectionHandlers.EXACT_PAGE)) {
     const handlerType = handlers[serverSideCollectionHandlers.EXACT_PAGE];
-    actionHandlers[handlerType] = createSetServerSideCollectionPageHandler(section, pages.EXACT, fetchThunk);
+    actionHandlers[handlerType] = createSetServerSideCollectionPageHandler(
+      section,
+      pages.EXACT,
+      fetchThunk
+    );
   }
 
   if (handlers.hasOwnProperty(serverSideCollectionHandlers.SORT)) {
     const handlerType = handlers[serverSideCollectionHandlers.SORT];
-    actionHandlers[handlerType] = createSetServerSideCollectionSortHandler(section, fetchThunk);
+    actionHandlers[handlerType] = createSetServerSideCollectionSortHandler(
+      section,
+      fetchThunk
+    );
   }
 
   if (handlers.hasOwnProperty(serverSideCollectionHandlers.FILTER)) {
     const handlerType = handlers[serverSideCollectionHandlers.FILTER];
-    actionHandlers[handlerType] = createSetServerSideCollectionFilterHandler(section, fetchThunk);
+    actionHandlers[handlerType] = createSetServerSideCollectionFilterHandler(
+      section,
+      fetchThunk
+    );
   }
 
   return actionHandlers;

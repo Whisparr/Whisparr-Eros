@@ -10,14 +10,8 @@ import styles from './QualityProfileItemDragSource.css';
 
 const qualityProfileItemDragSource = {
   beginDrag(props) {
-    const {
-      editGroups,
-      qualityIndex,
-      groupId,
-      qualityId,
-      name,
-      allowed
-    } = props;
+    const { editGroups, qualityIndex, groupId, qualityId, name, allowed } =
+      props;
 
     return {
       editGroups,
@@ -26,28 +20,27 @@ const qualityProfileItemDragSource = {
       qualityId,
       isGroup: !qualityId,
       name,
-      allowed
+      allowed,
     };
   },
 
   endDrag(props, monitor, component) {
     props.onQualityProfileItemDragEnd(monitor.didDrop());
-  }
+  },
 };
 
 const qualityProfileItemDropTarget = {
   hover(props, monitor, component) {
-    const {
-      qualityIndex: dragQualityIndex,
-      isGroup: isDragGroup
-    } = monitor.getItem();
+    const { qualityIndex: dragQualityIndex, isGroup: isDragGroup } =
+      monitor.getItem();
 
     const dropQualityIndex = props.qualityIndex;
     const isDropGroupItem = !!(props.qualityId && props.groupId);
 
     // Use childNodeIndex to select the correct node to get the middle of so
     // we don't bounce between above and below causing rapid setState calls.
-    const childNodeIndex = component.props.isOverCurrent && component.props.isDraggingUp ? 1 :0;
+    const childNodeIndex =
+      component.props.isOverCurrent && component.props.isDraggingUp ? 1 : 0;
     const componentDOMNode = findDOMNode(component).children[childNodeIndex];
     const hoverBoundingRect = componentDOMNode.getBoundingClientRect();
     const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
@@ -83,15 +76,15 @@ const qualityProfileItemDropTarget = {
     props.onQualityProfileItemDragMove({
       dragQualityIndex,
       dropQualityIndex,
-      dropPosition
+      dropPosition,
     });
-  }
+  },
 };
 
 function collectDragSource(connect, monitor) {
   return {
     connectDragSource: connect.dragSource(),
-    isDragging: monitor.isDragging()
+    isDragging: monitor.isDragging(),
   };
 }
 
@@ -99,12 +92,11 @@ function collectDropTarget(connect, monitor) {
   return {
     connectDropTarget: connect.dropTarget(),
     isOver: monitor.isOver(),
-    isOverCurrent: monitor.isOver({ shallow: true })
+    isOverCurrent: monitor.isOver({ shallow: true }),
   };
 }
 
 class QualityProfileItemDragSource extends Component {
-
   //
   // Render
 
@@ -129,7 +121,7 @@ class QualityProfileItemDragSource extends Component {
       onItemGroupAllowedChange,
       onItemGroupNameChange,
       onQualityProfileItemDragMove,
-      onQualityProfileItemDragEnd
+      onQualityProfileItemDragEnd,
     } = this.props;
 
     const isBefore = !isDragging && isDraggingUp && isOverCurrent;
@@ -143,64 +135,64 @@ class QualityProfileItemDragSource extends Component {
           isAfter && styles.isDraggingDown
         )}
       >
-        {
-          isBefore &&
-            <div
-              className={classNames(
-                styles.qualityProfileItemPlaceholder,
-                styles.qualityProfileItemPlaceholderBefore
-              )}
-            />
-        }
+        {isBefore && (
+          <div
+            className={classNames(
+              styles.qualityProfileItemPlaceholder,
+              styles.qualityProfileItemPlaceholderBefore
+            )}
+          />
+        )}
 
-        {
-          !!groupId && qualityId == null &&
-            <QualityProfileItemGroup
-              editGroups={editGroups}
-              groupId={groupId}
-              name={name}
-              allowed={allowed}
-              items={items}
-              qualityIndex={qualityIndex}
-              isDragging={isDragging}
-              isDraggingUp={isDraggingUp}
-              isDraggingDown={isDraggingDown}
-              connectDragSource={connectDragSource}
-              onDeleteGroupPress={onDeleteGroupPress}
-              onQualityProfileItemAllowedChange={onQualityProfileItemAllowedChange}
-              onItemGroupAllowedChange={onItemGroupAllowedChange}
-              onItemGroupNameChange={onItemGroupNameChange}
-              onQualityProfileItemDragMove={onQualityProfileItemDragMove}
-              onQualityProfileItemDragEnd={onQualityProfileItemDragEnd}
-            />
-        }
+        {!!groupId && qualityId == null && (
+          <QualityProfileItemGroup
+            editGroups={editGroups}
+            groupId={groupId}
+            name={name}
+            allowed={allowed}
+            items={items}
+            qualityIndex={qualityIndex}
+            isDragging={isDragging}
+            isDraggingUp={isDraggingUp}
+            isDraggingDown={isDraggingDown}
+            connectDragSource={connectDragSource}
+            onDeleteGroupPress={onDeleteGroupPress}
+            onQualityProfileItemAllowedChange={
+              onQualityProfileItemAllowedChange
+            }
+            onItemGroupAllowedChange={onItemGroupAllowedChange}
+            onItemGroupNameChange={onItemGroupNameChange}
+            onQualityProfileItemDragMove={onQualityProfileItemDragMove}
+            onQualityProfileItemDragEnd={onQualityProfileItemDragEnd}
+          />
+        )}
 
-        {
-          qualityId != null &&
-            <QualityProfileItem
-              editGroups={editGroups}
-              groupId={groupId}
-              qualityId={qualityId}
-              name={name}
-              allowed={allowed}
-              qualityIndex={qualityIndex}
-              isDragging={isDragging}
-              isOverCurrent={isOverCurrent}
-              connectDragSource={connectDragSource}
-              onCreateGroupPress={onCreateGroupPress}
-              onQualityProfileItemAllowedChange={onQualityProfileItemAllowedChange}
-            />
-        }
+        {qualityId != null && (
+          <QualityProfileItem
+            editGroups={editGroups}
+            groupId={groupId}
+            qualityId={qualityId}
+            name={name}
+            allowed={allowed}
+            qualityIndex={qualityIndex}
+            isDragging={isDragging}
+            isOverCurrent={isOverCurrent}
+            connectDragSource={connectDragSource}
+            onCreateGroupPress={onCreateGroupPress}
+            onQualityProfileItemAllowedChange={
+              onQualityProfileItemAllowedChange
+            }
+          />
+        )}
 
-        {
-          isAfter &&
-            <div
-              className={classNames(
-                styles.qualityProfileItemPlaceholder,
-                styles.qualityProfileItemPlaceholderAfter
-              )}
-            />
-        }
+        {isAfter && (
+          <div
+            className={classNames(
+              styles.qualityProfileItemPlaceholder,
+              styles.qualityProfileItemPlaceholderAfter
+            )}
+          />
+        )}
       </div>
     );
   }
@@ -227,15 +219,17 @@ QualityProfileItemDragSource.propTypes = {
   onItemGroupAllowedChange: PropTypes.func,
   onItemGroupNameChange: PropTypes.func,
   onQualityProfileItemDragMove: PropTypes.func.isRequired,
-  onQualityProfileItemDragEnd: PropTypes.func.isRequired
+  onQualityProfileItemDragEnd: PropTypes.func.isRequired,
 };
 
 export default DropTarget(
   QUALITY_PROFILE_ITEM,
   qualityProfileItemDropTarget,
   collectDropTarget
-)(DragSource(
-  QUALITY_PROFILE_ITEM,
-  qualityProfileItemDragSource,
-  collectDragSource
-)(QualityProfileItemDragSource));
+)(
+  DragSource(
+    QUALITY_PROFILE_ITEM,
+    qualityProfileItemDragSource,
+    collectDragSource
+  )(QualityProfileItemDragSource)
+);

@@ -13,48 +13,32 @@ import translate from 'Utilities/String/translate';
 import styles from './ExportCustomFormatModalContent.css';
 
 class ExportCustomFormatModalContent extends Component {
-
   //
   // Render
 
   render() {
-    const {
-      isFetching,
-      error,
-      json,
-      specificationsPopulated,
-      onModalClose
-    } = this.props;
+    const { isFetching, error, json, specificationsPopulated, onModalClose } =
+      this.props;
 
     return (
       <ModalContent onModalClose={onModalClose}>
-
-        <ModalHeader>
-          {translate('ExportCustomFormat')}
-        </ModalHeader>
+        <ModalHeader>{translate('ExportCustomFormat')}</ModalHeader>
 
         <ModalBody>
           <div>
-            {
-              isFetching &&
-                <LoadingIndicator />
-            }
+            {isFetching && <LoadingIndicator />}
 
-            {
-              !isFetching && !!error &&
-                <Alert kind={kinds.DANGER}>
-                  {translate('CustomFormatsLoadError')}
-                </Alert>
-            }
+            {!isFetching && !!error && (
+              <Alert kind={kinds.DANGER}>
+                {translate('CustomFormatsLoadError')}
+              </Alert>
+            )}
 
-            {
-              !isFetching && !error && specificationsPopulated &&
-                <div>
-                  <pre>
-                    {json}
-                  </pre>
-                </div>
-            }
+            {!isFetching && !error && specificationsPopulated && (
+              <div>
+                <pre>{json}</pre>
+              </div>
+            )}
           </div>
         </ModalBody>
         <ModalFooter>
@@ -64,11 +48,7 @@ class ExportCustomFormatModalContent extends Component {
             title={translate('CopyToClipboard')}
             kind={kinds.DEFAULT}
           />
-          <Button
-            onPress={onModalClose}
-          >
-            {translate('Close')}
-          </Button>
+          <Button onPress={onModalClose}>{translate('Close')}</Button>
         </ModalFooter>
       </ModalContent>
     );
@@ -80,7 +60,7 @@ ExportCustomFormatModalContent.propTypes = {
   error: PropTypes.object,
   json: PropTypes.string.isRequired,
   specificationsPopulated: PropTypes.bool.isRequired,
-  onModalClose: PropTypes.func.isRequired
+  onModalClose: PropTypes.func.isRequired,
 };
 
 export default ExportCustomFormatModalContent;

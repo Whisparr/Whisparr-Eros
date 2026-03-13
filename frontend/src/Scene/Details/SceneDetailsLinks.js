@@ -7,9 +7,7 @@ import translate from 'Utilities/String/translate';
 import styles from './SceneDetailsLinks.css';
 
 function SceneDetailsLinks(props) {
-  const {
-    foreignId
-  } = props;
+  const { foreignId } = props;
 
   return (
     <div className={styles.links}>
@@ -30,7 +28,7 @@ function SceneDetailsLinks(props) {
 }
 
 SceneDetailsLinks.propTypes = {
-  foreignId: PropTypes.string.isRequired
+  foreignId: PropTypes.string.isRequired,
 };
 
 export default SceneDetailsLinks;
