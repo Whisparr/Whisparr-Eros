@@ -296,7 +296,7 @@ namespace NzbDrone.Core.Movies.Studios
             }
             else
             {
-                var allStudios = _studioService.GetAllStudios().OrderBy(c => c.LastInfoSync).ToList();
+                var studioIdChunks = _studioService.AllStudioIdsByLastInfoSync().Chunk(1000);
 
                 var updatedStudios = new HashSet<string>();
 
@@ -305,24 +305,25 @@ namespace NzbDrone.Core.Movies.Studios
                     updatedStudios = _movieInfo.GetChangedStudios(message.LastStartTime.Value);
                 }
 
-                foreach (var studio in allStudios)
+                foreach (var chunk in studioIdChunks)
                 {
-                    var studioLocal = studio;
-
-                    try
+                    foreach (var studio in _studioService.GetStudios(chunk))
                     {
-                        if ((updatedStudios.Count == 0 && studio.LastInfoSync < DateTime.UtcNow.AddDays(-14)) ||
-                            updatedStudios.Contains(studio.ForeignId) ||
-                            message.Trigger == CommandTrigger.Manual)
+                        try
                         {
-                            studioLocal = RefreshStudioInfo(studioLocal.Id);
-                        }
+                            if ((updatedStudios.Count == 0 && studio.LastInfoSync < DateTime.UtcNow.AddDays(-14)) ||
+                                updatedStudios.Contains(studio.ForeignId) ||
+                                message.Trigger == CommandTrigger.Manual)
+                            {
+                                RefreshStudioInfo(studio.Id);
+                            }
 
-                        SyncStudioItems(studio);
-                    }
-                    catch (MovieNotFoundException)
-                    {
-                        _logger.Error("Studio '{0}' (StashDb {1}) was not found, it may have been removed from The Movie Database.", studio.Title, studio.ForeignId);
+                            SyncStudioItems(studio);
+                        }
+                        catch (MovieNotFoundException)
+                        {
+                            _logger.Error("Studio '{0}' (StashDb {1}) was not found, it may have been removed from The Movie Database.", studio.Title, studio.ForeignId);
+                        }
                     }
                 }
             }

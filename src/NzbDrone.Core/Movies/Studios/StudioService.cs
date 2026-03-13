@@ -20,6 +20,7 @@ namespace NzbDrone.Core.Movies.Studios
         List<Studio> SearchStudios(string query);
         List<Studio> GetAllStudios();
         List<string> AllStudioForeignIds();
+        List<int> AllStudioIdsByLastInfoSync();
         Studio Update(Studio performer);
         List<Studio> Update(List<Studio> studios);
         Studio FindByTitle(string title);
@@ -158,6 +159,11 @@ namespace NzbDrone.Core.Movies.Studios
         public List<string> AllStudioForeignIds()
         {
             return _studioRepo.AllStudioForeignIds();
+        }
+
+        public List<int> AllStudioIdsByLastInfoSync()
+        {
+            return _studioRepo.AllStudioIdsByLastInfoSync();
         }
 
         public PagingSpec<Studio> Paged(PagingSpec<Studio> pagingSpec)

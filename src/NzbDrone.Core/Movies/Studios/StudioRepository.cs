@@ -15,6 +15,7 @@ namespace NzbDrone.Core.Movies.Studios
         List<Studio> SearchStudios(string cleanTitle, string foreignId);
         List<Studio> FindAllByTitle(string title);
         List<string> AllStudioForeignIds();
+        List<int> AllStudioIdsByLastInfoSync();
     }
 
     public class StudioRepository : BasicRepository<Studio>, IStudioRepository
@@ -54,6 +55,14 @@ namespace NzbDrone.Core.Movies.Studios
             using (var conn = _database.OpenConnection())
             {
                 return conn.Query<string>("SELECT \"ForeignId\" FROM \"Studios\"").ToList();
+            }
+        }
+
+        public List<int> AllStudioIdsByLastInfoSync()
+        {
+            using (var conn = _database.OpenConnection())
+            {
+                return conn.Query<int>("SELECT \"Id\" FROM \"Studios\" ORDER BY \"LastInfoSync\" ASC").ToList();
             }
         }
 
