@@ -218,6 +218,12 @@ function removeStudioQueryCache(updatedStudio) {
   });
 }
 
+function invalidateMoviePagedQueryCache() {
+  queryClient.invalidateQueries({
+    queryKey: ['/movie/paged']
+  });
+}
+
 function invalidatePerformerPagedQueryCache() {
   queryClient.invalidateQueries({
     predicate: (query) => {
@@ -393,6 +399,8 @@ class SignalRConnector extends Component {
       } else if (body.action === 'deleted') {
         body.resources.forEach(removeMovieQueryCache);
       }
+
+      invalidateMoviePagedQueryCache();
       return;
     }
 
@@ -405,6 +413,7 @@ class SignalRConnector extends Component {
     } else if (action === 'deleted') {
       removeMovieQueryCache(body.resource);
     }
+    invalidateMoviePagedQueryCache();
   };
 
   handleCollection = (body) => {

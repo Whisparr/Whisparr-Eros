@@ -44,7 +44,8 @@ namespace Whisparr.Api.V3.Movies
                                 IHandle<MoviesDeletedEvent>,
                                 IHandle<MovieRenamedEvent>,
                                 IHandle<MoviesBulkEditedEvent>,
-                                IHandle<MediaCoversUpdatedEvent>
+                                IHandle<MediaCoversUpdatedEvent>,
+                                IHandle<MoviesImportedEvent>
     {
         private readonly IMovieService _moviesService;
         private readonly IAddMovieService _addMovieService;
@@ -952,6 +953,26 @@ namespace Whisparr.Api.V3.Movies
             {
                 BroadcastResourceChange(ModelAction.Updated, message.MovieFile.MovieId);
             }
+        }
+
+        /// <summary>SignalR handler for MovieImportedEvent</summary>
+        /// <remarks>Only fires if movies not in library were imported.
+        /// Otherwise MovieUpdatedEvent handles existing movie updates</remarks>
+        [NonAction]
+        public void Handle(MoviesImportedEvent message)
+        {
+            var movies = message?.Movies;
+            if (movies == null || !movies.Any())
+            {
+                return;
+            }
+
+            foreach (var movie in movies)
+            {
+                _movieResourcesCache.Remove(movie.Id.ToString());
+            }
+
+            BroadcastResourceChangeBatch(ModelAction.Updated, movies.Select(MapToResource));
         }
 
         [NonAction]

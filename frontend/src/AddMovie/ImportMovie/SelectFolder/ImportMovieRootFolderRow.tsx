@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import IconButton from 'Components/Link/IconButton';
 import Link from 'Components/Link/Link';
@@ -7,9 +7,12 @@ import TableRowCell from 'Components/Table/Cells/TableRowCell';
 import TableRow from 'Components/Table/TableRow';
 import { icons } from 'Helpers/Props';
 import { refreshRootFolder } from 'Store/Actions/rootFolderActions';
+import createSettingsSectionSelector from 'Store/Selectors/createSettingsSectionSelector';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
 import styles from './ImportMovieRootFolderRow.css';
+
+const namingSelector = createSettingsSectionSelector('naming');
 
 interface ImportFile {
   name: string;
@@ -30,6 +33,7 @@ function ImportMovieRootFolderRow({
 }: Readonly<ImportMovieRootFolderRowProps>) {
   const dispatch = useDispatch();
   const location = useLocation();
+  const { settings } = useSelector(namingSelector);
 
   const isMovies = location.pathname === '/add/import/movies';
   const linkTo = isMovies
@@ -37,16 +41,25 @@ function ImportMovieRootFolderRow({
     : `/add/import/scenes/${id}`;
   const importFilesCount = importFiles.length || '-';
 
-  const onRefreshPress = useCallback(() => {
+  const handleRefreshPress = useCallback(() => {
     dispatch(refreshRootFolder({ id }));
   }, [dispatch, id]);
+
+  const sep = path.includes('\\') ? '\\' : '/';
+  const importFormatValue = settings.sceneImportFolderFormat?.value;
+  const importPath = importFormatValue ? sep + importFormatValue : undefined;
 
   return (
     <TableRow>
       <TableRowCell>
-        <Link className={styles.link} to={linkTo}>
-          {path}
-        </Link>
+        <div className={styles.pathCell}>
+          <Link className={styles.link} to={linkTo}>
+            {path}
+          </Link>
+          {importPath ? (
+            <span className={styles.importFormat}>{importPath}</span>
+          ) : null}
+        </div>
       </TableRowCell>
 
       <TableRowCell className={styles.freeSpace}>
@@ -61,7 +74,7 @@ function ImportMovieRootFolderRow({
         <IconButton
           title={translate('ScanImportFolder')}
           name={icons.REFRESH}
-          onPress={onRefreshPress}
+          onPress={handleRefreshPress}
         />
       </TableRowCell>
     </TableRow>

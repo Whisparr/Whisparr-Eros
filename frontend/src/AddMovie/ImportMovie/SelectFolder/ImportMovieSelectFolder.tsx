@@ -15,7 +15,9 @@ import { icons, kinds, sizes } from 'Helpers/Props';
 import {
   addRootFolder,
   fetchRootFolders,
+  refreshRootFolder,
 } from 'Store/Actions/rootFolderActions';
+import { fetchNamingSettings } from 'Store/Actions/Settings/naming';
 import createRootFoldersSelector from 'Store/Selectors/createRootFoldersSelector';
 import translate from 'Utilities/String/translate';
 import ImportMovieRootFolderRow from './ImportMovieRootFolderRow';
@@ -71,22 +73,17 @@ function ImportMovieSelectFolder() {
 
   useEffect(() => {
     dispatch(fetchRootFolders());
+    dispatch(fetchNamingSettings());
   }, [dispatch]);
 
-  // After a save completes without error, navigate to the new folder's import page
+  // Refresh all root folders on initial load so importFiles counts are current
+  const didInitialRefreshRef = useRef(false);
   useEffect(() => {
-    if (prevIsSavingRef.current && !isSaving && !saveError) {
-      const prevIds = new Set(prevItemsRef.current.map((rf) => rf.id));
-      const newFolders = items.filter((rf) => !prevIds.has(rf.id));
-      if (newFolders.length === 1) {
-        history.push(
-          `${globalThis.Whisparr.urlBase}/add/import/movies/${newFolders[0].id}`
-        );
-      }
+    if (isPopulated && !didInitialRefreshRef.current) {
+      didInitialRefreshRef.current = true;
+      items.forEach((rf) => dispatch(refreshRootFolder({ id: rf.id })));
     }
-    prevIsSavingRef.current = isSaving;
-    prevItemsRef.current = items;
-  }, [history, isSaving, items, saveError]);
+  }, [isPopulated, items, dispatch]);
 
   const onAddNewRootFolderPress = useCallback(() => {
     setIsAddNewRootFolderModalOpen(true);
@@ -103,6 +100,21 @@ function ImportMovieSelectFolder() {
   const onAddRootFolderModalClose = useCallback(() => {
     setIsAddNewRootFolderModalOpen(false);
   }, []);
+
+  // After a save completes without error, navigate to the new folder's import page
+  useEffect(() => {
+    if (prevIsSavingRef.current && !isSaving && !saveError) {
+      const prevIds = new Set(prevItemsRef.current.map((rf) => rf.id));
+      const newFolders = items.filter((rf) => !prevIds.has(rf.id));
+      if (newFolders.length === 1) {
+        history.push(
+          `${globalThis.Whisparr.urlBase}/add/import/movies/${newFolders[0].id}`
+        );
+      }
+    }
+    prevIsSavingRef.current = isSaving;
+    prevItemsRef.current = items;
+  }, [history, isSaving, items, saveError]);
 
   const saveErrorBody = Array.isArray(saveError?.statusBody)
     ? saveError.statusBody
@@ -134,13 +146,12 @@ function ImportMovieSelectFolder() {
                 <li className={styles.tip}>{translate('ImportStep2')}</li>
                 <li className={styles.tip}>{translate('ImportStep3')}</li>
                 <li className={styles.tip}>{translate('ImportStep4')}</li>
-                <li className={styles.tip}>{translate('ImportStep5')}</li>
               </ul>
             </div>
 
             {hasRootFolders ? (
               <div className={styles.recentFolders}>
-                <FieldSet legend={translate('RecentFolders')}>
+                <FieldSet legend={translate('RootFolders')}>
                   <Table columns={rootFolderColumns}>
                     <TableBody>
                       {items.map((rootFolder) => (
@@ -156,7 +167,21 @@ function ImportMovieSelectFolder() {
                   </Table>
                 </FieldSet>
               </div>
-            ) : null}
+            ) : (
+              <div className={styles.startImport}>
+                <Button
+                  kind={kinds.PRIMARY}
+                  size={sizes.LARGE}
+                  onPress={onAddNewRootFolderPress}
+                >
+                  <Icon
+                    className={styles.importButtonIcon}
+                    name={icons.DRIVE}
+                  />
+                  {translate('AddRootFolder')}
+                </Button>
+              </div>
+            )}
 
             {!isSaving && saveError ? (
               <Alert className={styles.addErrorAlert} kind={kinds.DANGER}>
@@ -173,19 +198,6 @@ function ImportMovieSelectFolder() {
                 </ul>
               </Alert>
             ) : null}
-
-            <div className={hasRootFolders ? undefined : styles.startImport}>
-              <Button
-                kind={kinds.PRIMARY}
-                size={sizes.LARGE}
-                onPress={onAddNewRootFolderPress}
-              >
-                <Icon className={styles.importButtonIcon} name={icons.DRIVE} />
-                {hasRootFolders
-                  ? translate('ChooseAnotherFolder')
-                  : translate('StartImport')}
-              </Button>
-            </div>
 
             <FileBrowserModal
               isOpen={isAddNewRootFolderModalOpen}
