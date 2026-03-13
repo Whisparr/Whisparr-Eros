@@ -4,7 +4,9 @@ interface CssExports {
   'actions': string;
   'freeSpace': string;
   'importFiles': string;
+  'importFormat': string;
   'link': string;
+  'pathCell': string;
 }
 export const cssExports: CssExports;
 export default cssExports;

@@ -1,21 +1,19 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import Alert from 'Components/Alert';
 import FieldSet from 'Components/FieldSet';
-import FileBrowserModal from 'Components/FileBrowser/FileBrowserModal';
-import Icon from 'Components/Icon';
-import Button from 'Components/Link/Button';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import PageContent from 'Components/Page/PageContent';
 import PageContentBody from 'Components/Page/PageContentBody';
 import Table from 'Components/Table/Table';
 import TableBody from 'Components/Table/TableBody';
-import { icons, kinds, sizes } from 'Helpers/Props';
+import { kinds } from 'Helpers/Props';
 import {
-  addRootFolder,
   fetchRootFolders,
+  refreshRootFolder,
 } from 'Store/Actions/rootFolderActions';
+import { fetchNamingSettings } from 'Store/Actions/Settings/naming';
 import createRootFoldersSelector from 'Store/Selectors/createRootFoldersSelector';
 import translate from 'Utilities/String/translate';
 import ImportMovieRootFolderRow from './ImportMovieRootFolderRow';
@@ -58,9 +56,6 @@ function ImportMovieSelectFolder() {
   const { isFetching, isPopulated, isSaving, error, saveError, items } =
     rootFoldersState;
 
-  const [isAddNewRootFolderModalOpen, setIsAddNewRootFolderModalOpen] =
-    useState(false);
-
   // Track items length to detect when a new root folder has been added
   const prevItemsRef = useRef<RootFolder[]>([]);
   const prevIsSavingRef = useRef(false);
@@ -71,7 +66,17 @@ function ImportMovieSelectFolder() {
 
   useEffect(() => {
     dispatch(fetchRootFolders());
+    dispatch(fetchNamingSettings());
   }, [dispatch]);
+
+  // Refresh all root folders on initial load so importFiles counts are current
+  const didInitialRefreshRef = useRef(false);
+  useEffect(() => {
+    if (isPopulated && !didInitialRefreshRef.current) {
+      didInitialRefreshRef.current = true;
+      items.forEach((rf) => dispatch(refreshRootFolder({ id: rf.id })));
+    }
+  }, [isPopulated, items, dispatch]);
 
   // After a save completes without error, navigate to the new folder's import page
   useEffect(() => {
@@ -87,22 +92,6 @@ function ImportMovieSelectFolder() {
     prevIsSavingRef.current = isSaving;
     prevItemsRef.current = items;
   }, [history, isSaving, items, saveError]);
-
-  const onAddNewRootFolderPress = useCallback(() => {
-    setIsAddNewRootFolderModalOpen(true);
-  }, []);
-
-  const onNewRootFolderSelect = useCallback(
-    ({ value }: { value: string }) => {
-      dispatch(addRootFolder({ path: value }));
-      setIsAddNewRootFolderModalOpen(false);
-    },
-    [dispatch]
-  );
-
-  const onAddRootFolderModalClose = useCallback(() => {
-    setIsAddNewRootFolderModalOpen(false);
-  }, []);
 
   const saveErrorBody = Array.isArray(saveError?.statusBody)
     ? saveError.statusBody
@@ -134,13 +123,12 @@ function ImportMovieSelectFolder() {
                 <li className={styles.tip}>{translate('ImportStep2')}</li>
                 <li className={styles.tip}>{translate('ImportStep3')}</li>
                 <li className={styles.tip}>{translate('ImportStep4')}</li>
-                <li className={styles.tip}>{translate('ImportStep5')}</li>
               </ul>
             </div>
 
             {hasRootFolders ? (
               <div className={styles.recentFolders}>
-                <FieldSet legend={translate('RecentFolders')}>
+                <FieldSet legend={translate('RootFolders')}>
                   <Table columns={rootFolderColumns}>
                     <TableBody>
                       {items.map((rootFolder) => (
@@ -173,27 +161,6 @@ function ImportMovieSelectFolder() {
                 </ul>
               </Alert>
             ) : null}
-
-            <div className={hasRootFolders ? undefined : styles.startImport}>
-              <Button
-                kind={kinds.PRIMARY}
-                size={sizes.LARGE}
-                onPress={onAddNewRootFolderPress}
-              >
-                <Icon className={styles.importButtonIcon} name={icons.DRIVE} />
-                {hasRootFolders
-                  ? translate('ChooseAnotherFolder')
-                  : translate('StartImport')}
-              </Button>
-            </div>
-
-            <FileBrowserModal
-              isOpen={isAddNewRootFolderModalOpen}
-              name="rootFolderPath"
-              value=""
-              onChange={onNewRootFolderSelect}
-              onModalClose={onAddRootFolderModalClose}
-            />
           </div>
         )}
       </PageContentBody>
