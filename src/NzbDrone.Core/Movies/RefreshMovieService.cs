@@ -407,44 +407,40 @@ namespace NzbDrone.Core.Movies
                     updatedScenes = _movieInfo.GetChangedScenes(message.LastStartTime.Value);
                 }
 
-                var movieLists = _movieService.AllMovieIds().Chunk(1000);
-                foreach (var movieList in movieLists)
+                var allMovie = _movieService.GetAllMovies().OrderBy(m => m.MovieMetadata.Value.LastInfoSync).ToList();
+
+                foreach (var movie in allMovie)
                 {
-                    var allMovie = _movieService.GetMovies(movieList).ToList();
-
-                    foreach (var movie in allMovie)
+                    var movieLocal = movie;
+                    var isScene = movie.MovieMetadata.Value.ItemType == ItemType.Scene;
+                    var inChangedList = isScene ? updatedScenes.Contains(movie.ForeignId) : updatedMovies.Contains(movie.ForeignId);
+                    var noChangedList = isScene ? updatedScenes.Count == 0 : updatedMovies.Count == 0;
+                    if ((
+                        noChangedList
+                        && _checkIfMovieShouldBeRefreshed.ShouldRefresh(movie.MovieMetadata))
+                        || inChangedList
+                        || message.Trigger == CommandTrigger.Manual)
                     {
-                        var movieLocal = movie;
-                        var isScene = movie.MovieMetadata.Value.ItemType == ItemType.Scene;
-                        var inChangedList = isScene ? updatedScenes.Contains(movie.ForeignId) : updatedMovies.Contains(movie.ForeignId);
-                        var noChangedList = isScene ? updatedScenes.Count == 0 : updatedMovies.Count == 0;
-                        if ((
-                            noChangedList
-                            && _checkIfMovieShouldBeRefreshed.ShouldRefresh(movie.MovieMetadata))
-                            || inChangedList
-                            || message.Trigger == CommandTrigger.Manual)
+                        try
                         {
-                            try
-                            {
-                                movieLocal = RefreshMovieInfo(movieLocal.Id);
-                            }
-                            catch (MovieNotFoundException)
-                            {
-                                _logger.Error("Item '{0}' (ForeignId {1}) was not found, it may have been removed from the metadata source.", movieLocal.Title, movieLocal.ForeignId);
-                                continue;
-                            }
-                            catch (Exception e)
-                            {
-                                _logger.Error(e, "Couldn't refresh info for {0}", movieLocal);
-                            }
+                            movieLocal = RefreshMovieInfo(movieLocal.Id);
+                        }
+                        catch (MovieNotFoundException)
+                        {
+                            _logger.Error("Item '{0}' (ForeignId {1}) was not found, it may have been removed from the metadata source.", movieLocal.Title, movieLocal.ForeignId);
+                            continue;
+                        }
+                        catch (Exception e)
+                        {
+                            _logger.Error(e, "Couldn't refresh info for {0}", movieLocal);
+                        }
 
-                            UpdateTags(movie, false);
-                            RescanMovie(movieLocal, false, trigger);
-                        }
-                        else
-                        {
-                            _logger.Debug("Skipping refresh of movie: {0}", movieLocal.Title);
-                        }
+                        UpdateTags(movie, false);
+                        RescanMovie(movieLocal, false, trigger);
+                    }
+                    else
+                    {
+                        _logger.Debug("Skipping refresh of movie: {0}", movieLocal.Title);
                     }
                 }
             }
