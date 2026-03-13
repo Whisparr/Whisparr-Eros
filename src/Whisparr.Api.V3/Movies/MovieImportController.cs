@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
@@ -10,8 +11,10 @@ using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Exceptions;
 using NzbDrone.Core.MediaFiles;
 using NzbDrone.Core.MediaFiles.MovieImport.Aggregation;
+using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.MetadataSource;
 using NzbDrone.Core.Movies;
+using NzbDrone.Core.Movies.Commands;
 using NzbDrone.Core.Movies.Credits;
 using NzbDrone.Core.Organizer;
 using NzbDrone.Core.Parser;
@@ -26,6 +29,7 @@ namespace Whisparr.Api.V3.Movies
     public class MovieImportController : RestController<MovieResource>
     {
         private readonly IAddMovieService _addMovieService;
+        private readonly IMovieService _movieService;
         private readonly IProvideMovieInfo _movieInfo;
         private readonly IRootFolderService _rootFolderService;
         private readonly IDiskProvider _diskProvider;
@@ -33,9 +37,11 @@ namespace Whisparr.Api.V3.Movies
         private readonly IBuildFileNames _fileNameBuilder;
         private readonly INamingConfigService _namingConfigService;
         private readonly IAggregationService _aggregationService;
+        private readonly IManageCommandQueue _commandQueueManager;
         private readonly Logger _logger;
 
         public MovieImportController(IAddMovieService addMovieService,
+                                    IMovieService movieService,
                                     IProvideMovieInfo movieInfo,
                                     IRootFolderService rootFolderService,
                                     IDiskProvider diskProvider,
@@ -43,9 +49,11 @@ namespace Whisparr.Api.V3.Movies
                                     IBuildFileNames fileNameBuilder,
                                     INamingConfigService namingConfigService,
                                     IAggregationService aggregationService,
+                                    IManageCommandQueue commandQueueManager,
                                     Logger logger)
         {
             _addMovieService = addMovieService;
+            _movieService = movieService;
             _movieInfo = movieInfo;
             _rootFolderService = rootFolderService;
             _diskProvider = diskProvider;
@@ -53,6 +61,7 @@ namespace Whisparr.Api.V3.Movies
             _fileNameBuilder = fileNameBuilder;
             _namingConfigService = namingConfigService;
             _aggregationService = aggregationService;
+            _commandQueueManager = commandQueueManager;
             _logger = logger;
         }
 
@@ -171,7 +180,28 @@ namespace Whisparr.Api.V3.Movies
                 newMovies.Add(newMovie);
             }
 
-            return _addMovieService.AddMovies(newMovies).ToResource(0);
+            var addedMovies = _addMovieService.AddMovies(newMovies);
+
+            // For movies that already existed in the DB, AddMovies skips scan and events silently.
+            // Push a RefreshMovieCommand so the disk scan picks up the imported file and
+            // triggers MovieFileImportedEvent -> SignalR broadcast.
+            var addedForeignIds = addedMovies.Select(m => m.ForeignId).ToHashSet();
+            var skippedForeignIds = newMovies
+                .Select(m => m.ForeignId)
+                .Where(fid => !addedForeignIds.Contains(fid))
+                .ToList();
+
+            if (skippedForeignIds.Any())
+            {
+                var existingMovies = _movieService.FindByForeignIds(skippedForeignIds);
+                if (existingMovies.Any())
+                {
+                    _commandQueueManager.PushMany(
+                        existingMovies.Select(m => new RefreshMovieCommand([m.Id], true)).ToList());
+                }
+            }
+
+            return addedMovies.ToResource(0);
         }
 
         private Movie AddSkyhookData(Movie newMovie)
