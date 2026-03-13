@@ -69,13 +69,13 @@ namespace NzbDrone.Core.Movies.Performers
             {
                 performerInfo = _movieInfo.GetPerformerInfo(performer.ForeignId);
             }
-            catch (MovieNotFoundException)
+            catch (MovieNotFoundException ex)
             {
                 if (performer.Status != PerformerStatus.Deleted)
                 {
                     performer.Status = PerformerStatus.Deleted;
                     _performerService.Update(performer);
-                    _logger.Debug("Performer not found on StashDB for {0}", performer);
+                    _logger.Debug(ex, "Performer not found on StashDB for {0}", performer);
                     _eventAggregator.PublishEvent(new PerformerUpdatedEvent(performer));
                 }
 
@@ -338,8 +338,7 @@ namespace NzbDrone.Core.Movies.Performers
             }
             else
             {
-                var allPerformers = _performerService.GetAllPerformers().OrderBy(c => c.LastInfoSync).ToList();
-
+                var performerIdChunks = _performerService.AllPerformerIdsByLastInfoSync().Chunk(1000);
                 var updatePerformers = new HashSet<string>();
 
                 if (message.LastStartTime.HasValue && message.LastStartTime.Value.AddDays(14) > DateTime.UtcNow)
@@ -347,24 +346,25 @@ namespace NzbDrone.Core.Movies.Performers
                     updatePerformers = _movieInfo.GetChangedPerformers(message.LastStartTime.Value);
                 }
 
-                foreach (var performer in allPerformers)
+                foreach (var chunk in performerIdChunks)
                 {
-                    var performerLocal = performer;
-
-                    try
+                    foreach (var performer in _performerService.GetPerformers(chunk))
                     {
-                        if ((updatePerformers.Count == 0 && performer.LastInfoSync < DateTime.UtcNow.AddDays(-14)) ||
-                            updatePerformers.Contains(performer.ForeignId) ||
-                            message.Trigger == CommandTrigger.Manual)
+                        try
                         {
-                            performerLocal = RefreshPerformerInfo(performerLocal.Id);
-                        }
+                            if ((updatePerformers.Count == 0 && performer.LastInfoSync < DateTime.UtcNow.AddDays(-14)) ||
+                                updatePerformers.Contains(performer.ForeignId) ||
+                                message.Trigger == CommandTrigger.Manual)
+                            {
+                                RefreshPerformerInfo(performer.Id);
+                            }
 
-                        SyncPerformerItems(performer);
-                    }
-                    catch (MovieNotFoundException)
-                    {
-                        _logger.Error("Performer '{0}' (StashDb {1}) was not found, it may have been removed from The Movie Database.", performer.Name, performer.ForeignId);
+                            SyncPerformerItems(performer);
+                        }
+                        catch (MovieNotFoundException ex)
+                        {
+                            _logger.Error(ex, "Performer '{0}' (StashDb {1}) was not found, it may have been removed from The Movie Database.", performer.Name, performer.ForeignId);
+                        }
                     }
                 }
             }
