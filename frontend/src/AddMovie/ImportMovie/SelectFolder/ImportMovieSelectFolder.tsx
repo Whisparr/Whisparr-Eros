@@ -1,15 +1,19 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import Alert from 'Components/Alert';
 import FieldSet from 'Components/FieldSet';
+import FileBrowserModal from 'Components/FileBrowser/FileBrowserModal';
+import Icon from 'Components/Icon';
+import Button from 'Components/Link/Button';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import PageContent from 'Components/Page/PageContent';
 import PageContentBody from 'Components/Page/PageContentBody';
 import Table from 'Components/Table/Table';
 import TableBody from 'Components/Table/TableBody';
-import { kinds } from 'Helpers/Props';
+import { icons, kinds, sizes } from 'Helpers/Props';
 import {
+  addRootFolder,
   fetchRootFolders,
   refreshRootFolder,
 } from 'Store/Actions/rootFolderActions';
@@ -56,6 +60,9 @@ function ImportMovieSelectFolder() {
   const { isFetching, isPopulated, isSaving, error, saveError, items } =
     rootFoldersState;
 
+  const [isAddNewRootFolderModalOpen, setIsAddNewRootFolderModalOpen] =
+    useState(false);
+
   // Track items length to detect when a new root folder has been added
   const prevItemsRef = useRef<RootFolder[]>([]);
   const prevIsSavingRef = useRef(false);
@@ -77,6 +84,22 @@ function ImportMovieSelectFolder() {
       items.forEach((rf) => dispatch(refreshRootFolder({ id: rf.id })));
     }
   }, [isPopulated, items, dispatch]);
+
+  const onAddNewRootFolderPress = useCallback(() => {
+    setIsAddNewRootFolderModalOpen(true);
+  }, []);
+
+  const onNewRootFolderSelect = useCallback(
+    ({ value }: { value: string }) => {
+      dispatch(addRootFolder({ path: value }));
+      setIsAddNewRootFolderModalOpen(false);
+    },
+    [dispatch]
+  );
+
+  const onAddRootFolderModalClose = useCallback(() => {
+    setIsAddNewRootFolderModalOpen(false);
+  }, []);
 
   // After a save completes without error, navigate to the new folder's import page
   useEffect(() => {
@@ -144,7 +167,21 @@ function ImportMovieSelectFolder() {
                   </Table>
                 </FieldSet>
               </div>
-            ) : null}
+            ) : (
+              <div className={styles.startImport}>
+                <Button
+                  kind={kinds.PRIMARY}
+                  size={sizes.LARGE}
+                  onPress={onAddNewRootFolderPress}
+                >
+                  <Icon
+                    className={styles.importButtonIcon}
+                    name={icons.DRIVE}
+                  />
+                  {translate('AddRootFolder')}
+                </Button>
+              </div>
+            )}
 
             {!isSaving && saveError ? (
               <Alert className={styles.addErrorAlert} kind={kinds.DANGER}>
@@ -161,6 +198,14 @@ function ImportMovieSelectFolder() {
                 </ul>
               </Alert>
             ) : null}
+
+            <FileBrowserModal
+              isOpen={isAddNewRootFolderModalOpen}
+              name="rootFolderPath"
+              value=""
+              onChange={onNewRootFolderSelect}
+              onModalClose={onAddRootFolderModalClose}
+            />
           </div>
         )}
       </PageContentBody>
