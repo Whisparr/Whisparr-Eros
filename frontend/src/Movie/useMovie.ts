@@ -94,4 +94,15 @@ export function useSearchMovie(query: string, limit: number = 10) {
   });
 }
 
+export function useSearchMovieUncached(query: string, limit: number = 10) {
+  return useApiQuery<Movie[]>({
+    path: `/movie/search`,
+    queryParams: { query, limit },
+    queryOptions: {
+      enabled: !!query && query.length > 2,
+      placeholderData: undefined,
+    },
+  });
+}
+
 export default useMovie;

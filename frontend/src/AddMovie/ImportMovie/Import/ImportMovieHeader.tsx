@@ -25,11 +25,11 @@ function ImportMovieHeader({
       />
 
       <VirtualTableHeaderCell className={styles.folder} name="folder">
-        {translate('Folder')}
+        {translate('RelativePath')}
       </VirtualTableHeaderCell>
 
       <VirtualTableHeaderCell className={styles.movie} name="movie">
-        {translate('Movie')}
+        {translate('Item')}
       </VirtualTableHeaderCell>
 
       <VirtualTableHeaderCell className={styles.monitor} name="monitor">

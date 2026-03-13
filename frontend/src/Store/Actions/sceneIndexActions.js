@@ -186,6 +186,11 @@ export const defaultState = {
       type: filterBuilderTypes.STRING
     },
     {
+      name: 'genres',
+      label: () => translate('Genres'),
+      type: filterBuilderTypes.STRING
+    },
+    {
       name: 'status',
       label: () => translate('ReleaseStatus'),
       type: filterBuilderTypes.EXACT,

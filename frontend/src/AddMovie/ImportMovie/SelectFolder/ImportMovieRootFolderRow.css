@@ -1,7 +1,21 @@
+.pathCell {
+  display: flex;
+  align-items: baseline;
+  white-space: nowrap;
+}
+
 .link {
   composes: link from '~Components/Link/Link.css';
+}
 
-  display: block;
+.importFormat {
+  margin-left: 6px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background-color: var(--inputBackgroundColor);
+  color: var(--gray);
+  font-size: 0.9em;
+  font-family: monospace;
 }
 
 .freeSpace,

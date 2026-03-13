@@ -290,13 +290,37 @@ namespace NzbDrone.Core.Datastore
         {
             var list = expression.Object;
 
-            if (list != null && (list.Type == typeof(string)))
+            if (list != null && list.Type == typeof(string))
             {
                 ParseStringContains(expression);
                 return;
             }
 
+            // List<string> DB column stores JSON (e.g. Genres: ["Foo","Bar"]) — use ILIKE for membership test.
+            // Only applies when the object is a DB column (not resolvable as a concrete value).
+            // A resolvable List<string> is a captured filter variable and should fall through to ParseEnumerableContains.
+            if (list != null && list.Type == typeof(List<string>) && !TryGetRightValue(list, out _))
+            {
+                ParseJsonStringListContains(expression);
+                return;
+            }
+
             ParseEnumerableContains(expression);
+        }
+
+        // Generates: ("column" ILIKE '%"' || @param || '"%')
+        // Matches a quoted JSON array element, e.g. ["Foo","Bar"] contains "Foo"
+        private void ParseJsonStringListContains(MethodCallExpression body)
+        {
+            _sb.Append('(');
+
+            Visit(body.Object);
+
+            _sb.Append(" ILIKE '%\"' || ");
+
+            Visit(body.Arguments[0]);
+
+            _sb.Append(" || '\"%')");
         }
 
         private void ParseEnumerableContains(MethodCallExpression body)

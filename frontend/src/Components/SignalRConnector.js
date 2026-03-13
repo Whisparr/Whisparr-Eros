@@ -218,6 +218,12 @@ function removeStudioQueryCache(updatedStudio) {
   });
 }
 
+function invalidateMoviePagedQueryCache() {
+  queryClient.invalidateQueries({
+    queryKey: ['/movie/paged']
+  });
+}
+
 function invalidatePerformerPagedQueryCache() {
   queryClient.invalidateQueries({
     predicate: (query) => {
@@ -333,17 +339,8 @@ class SignalRConnector extends Component {
   };
 
   handleMoviefile = (body) => {
-    const section = 'movieFiles';
-
-    if (body.action === 'updated') {
-      this.props.dispatchUpdateItem({ section, ...body.resource });
-
-      // Repopulate the page to handle recently imported file
-      repopulatePage('movieFileUpdated');
-    } else if (body.action === 'deleted') {
-      this.props.dispatchRemoveItem({ section, id: body.resource.id });
-
-      repopulatePage('movieFileDeleted');
+    if (body.action === 'updated' || body.action === 'deleted') {
+      queryClient.invalidateQueries({ queryKey: ['/moviefile'] });
     }
   };
 
@@ -402,6 +399,8 @@ class SignalRConnector extends Component {
       } else if (body.action === 'deleted') {
         body.resources.forEach(removeMovieQueryCache);
       }
+
+      invalidateMoviePagedQueryCache();
       return;
     }
 
@@ -414,6 +413,7 @@ class SignalRConnector extends Component {
     } else if (action === 'deleted') {
       removeMovieQueryCache(body.resource);
     }
+    invalidateMoviePagedQueryCache();
   };
 
   handleCollection = (body) => {

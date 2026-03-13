@@ -32,7 +32,7 @@ function MovieFileEditorTableContent({
   onDeletePress,
   isLoading,
   error,
-}: MovieFileEditorTableContentProps) {
+}: Readonly<MovieFileEditorTableContentProps>) {
   if (isLoading) {
     return <div className={styles.blankpad}>{translate('Loading')}</div>;
   }
@@ -62,6 +62,7 @@ function MovieFileEditorTableContent({
               return (
                 <MovieFileEditorRow
                   key={item.id}
+                  movieFile={item}
                   columns={columns}
                   id={item.id}
                   quality={item.quality}

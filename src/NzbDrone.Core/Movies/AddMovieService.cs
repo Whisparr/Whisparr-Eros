@@ -143,7 +143,7 @@ namespace NzbDrone.Core.Movies
                         throw;
                     }
 
-                    _logger.Warn("Foreign ID {0} was not added due to validation failures. {1}", m.ForeignId, ex.Message);
+                    _logger.Warn(ex, "Foreign ID {0} was not added due to validation failures. {1}", m.ForeignId, ex.Message);
                 }
                 catch (HttpException ex)
                 {

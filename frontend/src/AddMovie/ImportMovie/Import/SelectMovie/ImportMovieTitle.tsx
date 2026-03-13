@@ -35,8 +35,6 @@ function ImportMovieTitle({
 
   return (
     <div className={styles.titleContainer}>
-      {!!itemType && <Label kind={kinds.SUCCESS}>{itemType}</Label>}
-
       {!!studioTitle && <Label>{studioTitle}</Label>}
 
       {!!releaseDate && itemType === 'scene' && (

@@ -111,30 +111,35 @@ function AppUpdatedModalContent(props: AppUpdatedModalContentProps) {
           />
         </div>
 
-        {isPopulated && !error && !!update ? (
+        {isPopulated && !error ? (
           <div>
             {(() => {
-              if (typeof update.changes === 'string' && update.changes) {
-                return <MarkdownRenderer>{update.changes}</MarkdownRenderer>;
-              }
-              if (update.changes && typeof update.changes === 'object') {
+              if (!update?.changes) {
+                const branch = update?.branch ?? items[0]?.branch;
                 return (
-                  <div>
-                    <div className={styles.changes}>
-                      {translate('WhatsNew')}
-                    </div>
-                    <UpdateChanges
-                      title={translate('New')}
-                      changes={update.changes.new}
-                    />
-                    <UpdateChanges
-                      title={translate('Fixed')}
-                      changes={update.changes.fixed}
-                    />
-                  </div>
+                  <InlineMarkdown
+                    data={translate('MaintenanceReleaseWithLink', {
+                      url: `https://github.com/Whisparr/Whisparr-Eros/commits/${branch}`,
+                    })}
+                  />
                 );
               }
-              return null;
+              if (typeof update.changes === 'string') {
+                return <MarkdownRenderer>{update.changes}</MarkdownRenderer>;
+              }
+              return (
+                <div>
+                  <div className={styles.changes}>{translate('WhatsNew')}</div>
+                  <UpdateChanges
+                    title={translate('New')}
+                    changes={update.changes.new}
+                  />
+                  <UpdateChanges
+                    title={translate('Fixed')}
+                    changes={update.changes.fixed}
+                  />
+                </div>
+              );
             })()}
           </div>
         ) : null}
