@@ -46,6 +46,7 @@ namespace NzbDrone.Core.Movies
         Movie FindByPath(string path);
         Dictionary<int, string> AllMoviePaths();
         List<int> AllMovieIds();
+        List<int> AllMovieIdsOrderByLastInfoSync();
         List<int> AllMovieTmdbIds();
         List<string> AllMovieTpdbIds();
         List<string> AllMovieStashIds();
@@ -320,6 +321,13 @@ namespace NzbDrone.Core.Movies
         public List<int> AllMovieIds()
         {
             return _movieRepository.AllMovieIds();
+        }
+
+        /// <summary> Get a list of all movie IDs in the repository. Order by yLastInfoSyn</summary>
+        /// <returns>A list of all movie IDs.</returns>
+        public List<int> AllMovieIdsOrderByLastInfoSync()
+        {
+            return _movieRepository.AllMovieIdsOrderByLastInfoSync();
         }
 
         /// <summary> Get a list of all TMDB IDs for movies in the repository. </summary>
