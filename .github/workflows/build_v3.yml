@@ -121,7 +121,7 @@ jobs:
         run: yarn lint
 
       - name: Stylelint
-        run: yarn stylelint -f github
+        run: yarn stylelint-linux
 
       - name: Build
         run: yarn build --env production
