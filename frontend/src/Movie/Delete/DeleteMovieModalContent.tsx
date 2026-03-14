@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import AppState from 'App/State/AppState';
 import FormGroup from 'Components/Form/FormGroup';
 import FormInputGroup from 'Components/Form/FormInputGroup';
@@ -28,9 +28,9 @@ export interface DeleteMovieModalContentProps {
 function DeleteMovieModalContent({
   movie,
   onModalClose,
-}: DeleteMovieModalContentProps) {
+}: Readonly<DeleteMovieModalContentProps>) {
   const dispatch = useDispatch();
-  const history = useHistory();
+  const navigate = useNavigate();
   const { addImportExclusion } = useSelector(
     (state: AppState) => state.movies.deleteOptions
   );
@@ -55,8 +55,8 @@ function DeleteMovieModalContent({
         addImportExclusion,
       })
     );
-    history.push(movie.itemType === 'movie' ? '/movies' : '/scenes');
-  }, [movie, addImportExclusion, deleteFiles, history, dispatch]);
+    navigate(movie.itemType === 'movie' ? '/movies' : '/scenes');
+  }, [movie, addImportExclusion, deleteFiles, navigate, dispatch]);
 
   const handleDeleteOptionChange = useCallback(
     ({ name, value }: CheckInputChanged) => {

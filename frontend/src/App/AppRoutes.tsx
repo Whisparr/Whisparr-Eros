@@ -1,5 +1,5 @@
 import React from 'react';
-import { Redirect, Route } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import Blocklist from 'Activity/Blocklist/Blocklist';
 import History from 'Activity/History/History';
 import Queue from 'Activity/Queue/Queue';
@@ -9,7 +9,6 @@ import ImportMovies from 'AddMovie/ImportMovie/ImportMovies';
 import CalendarPage from 'Calendar/CalendarPage';
 import CollectionConnector from 'Collection/CollectionConnector';
 import NotFound from 'Components/NotFound';
-import Switch from 'Components/Router/Switch';
 import MovieDetails from 'Movie/Details/MovieDetails';
 import MovieIndex from 'Movie/Index/MovieIndex';
 import AddNewPerformer from 'Performer/AddPerformer/AddNewPerformer';
@@ -39,147 +38,131 @@ import Status from 'System/Status/Status';
 import Tasks from 'System/Tasks/Tasks';
 import Updates from 'System/Updates/Updates';
 import UnmappedFilesTableConnector from 'UnmappedFiles/UnmappedFilesTableConnector';
-import getPathWithUrlBase from 'Utilities/getPathWithUrlBase';
 import CutoffUnmet from 'Wanted/CutoffUnmet/CutoffUnmet';
 import Missing from 'Wanted/Missing/Missing';
 
-function RedirectWithUrlBase() {
-  return <Redirect to={getPathWithUrlBase('/')} />;
-}
-
 function AppRoutes() {
   return (
-    <Switch>
+    <Routes>
       {/*
         Movies
       */}
 
-      <Route exact={true} path="/" component={SceneIndex} />
+      <Route path="/" element={<SceneIndex />} />
 
-      {window.Whisparr.urlBase && (
-        <Route
-          exact={true}
-          path="/"
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          addUrlBase={false}
-          render={RedirectWithUrlBase}
-        />
-      )}
+      <Route path="/movies" element={<MovieIndex />} />
 
-      <Route path="/movies" component={MovieIndex} />
+      <Route path="/collections" element={<CollectionConnector />} />
 
-      <Route path="/collections" component={CollectionConnector} />
+      <Route path="/scenes" element={<SceneIndex />} />
 
-      <Route path="/scenes" component={SceneIndex} />
+      <Route path="/performers" element={<PerformerIndex />} />
 
-      <Route path="/performers" component={PerformerIndex} />
+      <Route path="/studios" element={<StudioIndex />} />
 
-      <Route path="/studios" component={StudioIndex} />
+      <Route path="/add/new/movie" element={<AddNewMovie />} />
 
-      <Route path="/add/new/movie" component={AddNewMovie} />
+      <Route path="/add/new/scene" element={<AddNewScene />} />
 
-      <Route path="/add/new/scene" component={AddNewScene} />
+      <Route path="/add/new/studio" element={<AddNewStudio />} />
 
-      <Route path="/add/new/studio" component={AddNewStudio} />
+      <Route path="/add/new/performer" element={<AddNewPerformer />} />
 
-      <Route path="/add/new/performer" component={AddNewPerformer} />
+      <Route path="/add/import/*" element={<ImportMovies />} />
 
-      <Route path="/add/import" component={ImportMovies} />
-
-      <Route path="/movie/:id" component={MovieDetails} />
+      <Route path="/movie/:id" element={<MovieDetails />} />
 
       <Route
         path="/performer/:performerForeignId"
-        component={PerformerDetails}
+        element={<PerformerDetails />}
       />
 
-      <Route path="/studio/:studioForeignId" component={StudioDetails} />
+      <Route path="/studio/:studioForeignId" element={<StudioDetails />} />
 
-      <Route path="/unmapped" component={UnmappedFilesTableConnector} />
+      <Route path="/unmapped" element={<UnmappedFilesTableConnector />} />
 
       {/*
         Calendar
       */}
 
-      <Route path="/calendar" component={CalendarPage} />
+      <Route path="/calendar" element={<CalendarPage />} />
 
       {/*
         Activity
       */}
 
-      <Route path="/activity/history" component={History} />
+      <Route path="/activity/history" element={<History />} />
 
-      <Route path="/activity/queue" component={Queue} />
+      <Route path="/activity/queue" element={<Queue />} />
 
-      <Route path="/activity/blocklist" component={Blocklist} />
+      <Route path="/activity/blocklist" element={<Blocklist />} />
 
       {/*
         Wanted
       */}
 
-      <Route path="/wanted/missing" component={Missing} />
+      <Route path="/wanted/missing" element={<Missing />} />
 
-      <Route path="/wanted/cutoffunmet" component={CutoffUnmet} />
+      <Route path="/wanted/cutoffunmet" element={<CutoffUnmet />} />
 
       {/*
         Settings
       */}
 
-      <Route exact={true} path="/settings" component={Settings} />
+      <Route path="/settings" element={<Settings />} />
 
-      <Route path="/settings/mediamanagement" component={MediaManagement} />
+      <Route path="/settings/mediamanagement" element={<MediaManagement />} />
 
-      <Route path="/settings/profiles" component={Profiles} />
+      <Route path="/settings/profiles" element={<Profiles />} />
 
-      <Route path="/settings/quality" component={QualityConnector} />
+      <Route path="/settings/quality" element={<QualityConnector />} />
 
       <Route
         path="/settings/customformats"
-        component={CustomFormatSettingsPage}
+        element={<CustomFormatSettingsPage />}
       />
 
-      <Route path="/settings/indexers" component={IndexerSettings} />
+      <Route path="/settings/indexers" element={<IndexerSettings />} />
 
       <Route
         path="/settings/downloadclients"
-        component={DownloadClientSettingsConnector}
+        element={<DownloadClientSettingsConnector />}
       />
 
-      <Route path="/settings/importlists" component={ImportListSettings} />
+      <Route path="/settings/importlists" element={<ImportListSettings />} />
 
-      <Route path="/settings/connect" component={NotificationSettings} />
+      <Route path="/settings/connect" element={<NotificationSettings />} />
 
-      <Route path="/settings/metadata" component={MetadataSettings} />
+      <Route path="/settings/metadata" element={<MetadataSettings />} />
 
-      <Route path="/settings/tags" component={TagSettings} />
+      <Route path="/settings/tags" element={<TagSettings />} />
 
-      <Route path="/settings/general" component={GeneralSettingsConnector} />
+      <Route path="/settings/general" element={<GeneralSettingsConnector />} />
 
-      <Route path="/settings/ui" component={UISettingsConnector} />
+      <Route path="/settings/ui" element={<UISettingsConnector />} />
 
       {/*
         System
       */}
 
-      <Route path="/system/status" component={Status} />
+      <Route path="/system/status" element={<Status />} />
 
-      <Route path="/system/tasks" component={Tasks} />
+      <Route path="/system/tasks" element={<Tasks />} />
 
-      <Route path="/system/backup" component={BackupsConnector} />
+      <Route path="/system/backup" element={<BackupsConnector />} />
 
-      <Route path="/system/updates" component={Updates} />
+      <Route path="/system/updates" element={<Updates />} />
 
-      <Route path="/system/events" component={LogsTableConnector} />
+      <Route path="/system/events" element={<LogsTableConnector />} />
 
-      <Route path="/system/logs/files" component={Logs} />
+      <Route path="/system/logs/files/*" element={<Logs />} />
 
       {/*
         Not Found
       */}
 
-      <Route path="*" component={NotFound} />
-    </Switch>
+      <Route path="*" element={<NotFound />} />
+    </Routes>
   );
 }
 

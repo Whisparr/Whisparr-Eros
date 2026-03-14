@@ -1,16 +1,15 @@
 import React from 'react';
-import { Route } from 'react-router-dom';
-import Switch from 'Components/Router/Switch';
+import { Route, Routes } from 'react-router-dom';
 import AppLogFiles from './App/AppLogFiles';
 import UpdateLogFiles from './Update/UpdateLogFiles';
 
 function Logs() {
   return (
-    <Switch>
-      <Route exact={true} path="/system/logs/files" component={AppLogFiles} />
+    <Routes>
+      <Route index={true} element={<AppLogFiles />} />
 
-      <Route path="/system/logs/files/update" component={UpdateLogFiles} />
-    </Switch>
+      <Route path="update" element={<UpdateLogFiles />} />
+    </Routes>
   );
 }
 

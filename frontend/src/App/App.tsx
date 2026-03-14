@@ -1,8 +1,8 @@
 import { QueryClientProvider } from '@tanstack/react-query';
-import { ConnectedRouter, ConnectedRouterProps } from 'connected-react-router';
 import React from 'react';
 import DocumentTitle from 'react-document-title';
 import { Provider } from 'react-redux';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { Store } from 'redux';
 import Page from 'Components/Page/Page';
 import ApplyTheme from './ApplyTheme';
@@ -11,20 +11,29 @@ import { queryClient } from './queryClient';
 
 interface AppProps {
   store: Store;
-  history: ConnectedRouterProps['history'];
 }
 
-function App({ store, history }: AppProps) {
+function AppContent() {
   return (
-    <DocumentTitle title={window.Whisparr.instanceName}>
+    <>
+      <ApplyTheme />
+      <Page>
+        <AppRoutes />
+      </Page>
+    </>
+  );
+}
+
+function App({ store }: Readonly<AppProps>) {
+  const router = createBrowserRouter([{ path: '*', element: <AppContent /> }], {
+    basename: globalThis.Whisparr.urlBase || '/',
+  });
+
+  return (
+    <DocumentTitle title={globalThis.Whisparr.instanceName}>
       <QueryClientProvider client={queryClient}>
         <Provider store={store}>
-          <ConnectedRouter history={history}>
-            <ApplyTheme />
-            <Page>
-              <AppRoutes />
-            </Page>
-          </ConnectedRouter>
+          <RouterProvider router={router} />
         </Provider>
       </QueryClientProvider>
     </DocumentTitle>

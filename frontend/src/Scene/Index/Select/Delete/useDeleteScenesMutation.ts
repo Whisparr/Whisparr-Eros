@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { queryClient } from 'App/queryClient';
 
 interface DeleteMovieOptions {
@@ -13,7 +13,7 @@ interface DeleteScenesPayload {
 }
 
 export function useDeleteScenesMutation() {
-  const history = useHistory();
+  const navigate = useNavigate();
 
   // TODO: Move to useApiMutation
   const mutation = useMutation<void, Error, DeleteScenesPayload>({
@@ -30,7 +30,7 @@ export function useDeleteScenesMutation() {
           {
             method: 'DELETE',
             headers: {
-              'X-Api-Key': window.Whisparr.apiKey,
+              'X-Api-Key': globalThis.Whisparr.apiKey,
             },
           }
         );
@@ -47,7 +47,7 @@ export function useDeleteScenesMutation() {
       });
 
       // Navigate back to scenes list
-      history.push('/scenes');
+      navigate('/scenes');
     },
   });
 

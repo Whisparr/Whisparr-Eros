@@ -52,11 +52,11 @@ function getFanartUrl(images: Image[]): string | undefined {
 }
 
 function StudioDetails() {
-  const { studioForeignId } = useParams<{ studioForeignId: string }>();
+  const { studioForeignId } = useParams() as { studioForeignId: string };
   const dispatch = useDispatch();
 
   const { data: allWorks = [], isFetching: isWorksFetching } =
-    useStudioDetailsWorks(studioForeignId);
+    useStudioDetailsWorks(studioForeignId as string);
 
   const listRef = useRef<List>(null);
   const cacheRef = useRef(

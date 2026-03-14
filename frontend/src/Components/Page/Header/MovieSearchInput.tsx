@@ -10,7 +10,7 @@ import React, {
   useState,
 } from 'react';
 import Autosuggest from 'react-autosuggest';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useDebounce } from 'use-debounce';
 import Icon from 'Components/Icon';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
@@ -35,6 +35,7 @@ interface AddNewMovieSuggestion {
   title: string;
 }
 
+// prettier-ignore
 export interface SuggestedMovie extends Pick<
   Movie,
   | 'title'
@@ -84,7 +85,7 @@ function moviesToSuggestions(movies: Movie[]): MovieSuggestion[] {
 }
 
 function MovieSearchInput() {
-  const history = useHistory();
+  const navigate = useNavigate();
   const [value, setValue] = useState('');
   const [debouncedValue] = useDebounce(value, 250);
 
@@ -203,11 +204,7 @@ function MovieSearchInput() {
       const { highlightedSectionIndex, highlightedSuggestionIndex } =
         autosuggestRef.current.state;
       if (!suggestions.length || highlightedSectionIndex) {
-        history.push(
-          `${window.Whisparr.urlBase}/add/new/movie?term=${encodeURIComponent(
-            value
-          )}`
-        );
+        navigate(`/add/new/movie?term=${encodeURIComponent(value)}`);
         inputRef.current?.blur();
         return;
       }
@@ -215,12 +212,10 @@ function MovieSearchInput() {
         highlightedSuggestionIndex == null
           ? suggestions[0]
           : suggestions[highlightedSuggestionIndex];
-      history.push(
-        `${window.Whisparr.urlBase}/movie/${selectedSuggestion.item.titleSlug}`
-      );
+      navigate(`/movie/${selectedSuggestion.item.titleSlug}`);
       inputRef.current?.blur();
     },
-    [value, suggestions, history]
+    [value, suggestions, navigate]
   );
 
   const handleSuggestionSelected = useCallback(
@@ -230,26 +225,16 @@ function MovieSearchInput() {
     ) => {
       if ('type' in suggestion) {
         if (suggestion.type === ADD_NEW_MOVIE) {
-          history.push(
-            `${window.Whisparr.urlBase}/add/new/movie?term=${encodeURIComponent(
-              value
-            )}`
-          );
+          navigate(`/add/new/movie?term=${encodeURIComponent(value)}`);
         } else if (suggestion.type === ADD_NEW_SCENE) {
-          history.push(
-            `${window.Whisparr.urlBase}/add/new/scene?term=${encodeURIComponent(
-              value
-            )}`
-          );
+          navigate(`/add/new/scene?term=${encodeURIComponent(value)}`);
         }
       } else {
         setValue('');
-        history.push(
-          `${window.Whisparr.urlBase}/movie/${suggestion.item.titleSlug}`
-        );
+        navigate(`/movie/${suggestion.item.titleSlug}`);
       }
     },
-    [value, history]
+    [value, navigate]
   );
 
   const inputProps = {

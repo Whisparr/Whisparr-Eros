@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import AppState from 'App/State/AppState';
 import { deleteStudio, setDeleteOption } from 'Store/Actions/studioActions';
 import Studio from 'Studio/Studio';
@@ -15,7 +15,7 @@ export default function useDeleteStudioModal(
   studio: Studio
 ): UseDeleteStudioModalResult {
   const dispatch = useDispatch();
-  const history = useHistory();
+  const navigate = useNavigate();
   const deleteOptions = useSelector(
     (state: AppState) => state.studios.deleteOptions
   );
@@ -40,9 +40,9 @@ export default function useDeleteStudioModal(
           addImportExclusion,
         })
       );
-      history.push('/studios');
+      navigate('/studios');
     },
-    [dispatch, studio.id, history]
+    [dispatch, studio.id, navigate]
   );
 
   return {

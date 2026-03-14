@@ -54,7 +54,7 @@ function getFanartUrl(
 }
 
 function PerformerDetails() {
-  const { performerForeignId } = useParams<{ performerForeignId: string }>();
+  const { performerForeignId } = useParams() as { performerForeignId: string };
 
   const { shortDateFormat } = useSelector(createUISettingsSelector());
 
@@ -66,7 +66,7 @@ function PerformerDetails() {
     onSearchPress,
     onMonitorTogglePress,
     onYearRefreshPress,
-  } = usePerformerDetails(performerForeignId);
+  } = usePerformerDetails(performerForeignId as string);
 
   const showMovieMonitorToggle = useShowMovieMonitorToggleButton(
     performer?.tmdbId,

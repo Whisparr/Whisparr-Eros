@@ -288,10 +288,7 @@ function PageSidebar({ isSidebarVisible, isSmallScreen }: PageSidebarProps) {
     }, [] as SidebarItem[]);
   }
 
-  const urlBase = window.Whisparr?.urlBase;
-  const pathname = urlBase
-    ? location.pathname.substr(urlBase.length) || '/'
-    : location.pathname;
+  const pathname = location.pathname;
 
   const activeParent = useMemo(() => {
     const uuidRegex =

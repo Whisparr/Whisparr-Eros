@@ -2,12 +2,8 @@ import { createStore } from 'redux';
 import createReducers, { defaultState } from 'Store/Actions/createReducers';
 import middlewares from 'Store/Middleware/middlewares';
 
-function createAppStore(history) {
-  const appStore = createStore(
-    createReducers(history),
-    defaultState,
-    middlewares(history)
-  );
+function createAppStore() {
+  const appStore = createStore(createReducers(), defaultState, middlewares());
 
   return appStore;
 }

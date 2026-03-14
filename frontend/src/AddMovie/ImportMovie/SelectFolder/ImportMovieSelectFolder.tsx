@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Alert from 'Components/Alert';
 import FieldSet from 'Components/FieldSet';
 import FileBrowserModal from 'Components/FileBrowser/FileBrowserModal';
@@ -43,7 +43,7 @@ interface RootFolder {
 
 function ImportMovieSelectFolder() {
   const dispatch = useDispatch();
-  const history = useHistory();
+  const navigate = useNavigate();
   const location = useLocation();
 
   const rootFoldersState = useSelector(
@@ -107,14 +107,12 @@ function ImportMovieSelectFolder() {
       const prevIds = new Set(prevItemsRef.current.map((rf) => rf.id));
       const newFolders = items.filter((rf) => !prevIds.has(rf.id));
       if (newFolders.length === 1) {
-        history.push(
-          `${globalThis.Whisparr.urlBase}/add/import/movies/${newFolders[0].id}`
-        );
+        navigate(`/add/import/movies/${newFolders[0].id}`);
       }
     }
     prevIsSavingRef.current = isSaving;
     prevItemsRef.current = items;
-  }, [history, isSaving, items, saveError]);
+  }, [navigate, isSaving, items, saveError]);
 
   const saveErrorBody = Array.isArray(saveError?.statusBody)
     ? saveError.statusBody

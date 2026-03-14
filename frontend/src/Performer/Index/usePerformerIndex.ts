@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import AppState from 'App/State/AppState';
 import { SafeForWorkModeContext } from 'App/State/SafeForWorkContext';
 import {
@@ -15,7 +15,7 @@ import { usePerformerIndexQuery } from './usePerformerIndexQuery';
 
 export function usePerformerIndex() {
   const dispatch = useDispatch();
-  const history = useHistory();
+  const navigate = useNavigate();
   const safeForWorkMode = React.useContext(SafeForWorkModeContext);
 
   const page = useSelector((state: AppState) => state.performers.page);
@@ -116,8 +116,8 @@ export function usePerformerIndex() {
   );
 
   const handleAddPerformerPress = useCallback(
-    () => history.push('/add/new/performer'),
-    [history]
+    () => navigate('/add/new/performer'),
+    [navigate]
   );
 
   const handleSelectModePress = useCallback(
