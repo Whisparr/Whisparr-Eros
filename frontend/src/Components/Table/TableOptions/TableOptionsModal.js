@@ -1,8 +1,16 @@
 import _ from 'lodash';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { DndProvider } from 'react-dnd-multi-backend';
-import HTML5toTouch from 'react-dnd-multi-backend/dist/esm/HTML5toTouch';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import { DndProvider, HTML5DragTransition, TouchTransition } from 'react-dnd-multi-backend';
+import { TouchBackend } from 'react-dnd-touch-backend';
+
+const HTML5toTouch = {
+  backends: [
+    { id: 'html5', backend: HTML5Backend, transition: HTML5DragTransition },
+    { id: 'touch', backend: TouchBackend, options: { enableMouseEvents: true }, preview: true, transition: TouchTransition },
+  ],
+};
 import Form from 'Components/Form/Form';
 import FormGroup from 'Components/Form/FormGroup';
 import FormInputGroup from 'Components/Form/FormInputGroup';

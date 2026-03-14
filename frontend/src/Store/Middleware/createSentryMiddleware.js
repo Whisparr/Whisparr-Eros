@@ -1,5 +1,5 @@
 import * as sentry from '@sentry/browser';
-import * as Integrations from '@sentry/integrations';
+import { dedupeIntegration, rewriteFramesIntegration } from '@sentry/browser';
 import _ from 'lodash';
 import parseUrl from 'Utilities/String/parseUrl';
 
@@ -101,16 +101,14 @@ export default function createSentryMiddleware() {
     sendDefaultPii: true,
     beforeSend: cleanseData,
     integrations: [
-      new Integrations.RewriteFrames({ iteratee: stripUrlBase }),
-      new Integrations.Dedupe(),
+      rewriteFramesIntegration({ iteratee: stripUrlBase }),
+      dedupeIntegration(),
     ],
   });
 
-  sentry.configureScope((scope) => {
-    scope.setUser({ username: userHash });
-    scope.setTag('version', version);
-    scope.setTag('production', isProduction);
-  });
+  sentry.setUser({ username: userHash });
+  sentry.setTag('version', version);
+  sentry.setTag('production', isProduction);
 
   return createMiddleware();
 }

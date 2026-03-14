@@ -93,24 +93,23 @@ function AutoSuggestInput<T = any>(props: AutoSuggestInputProps<T>) {
 
   const handleComputeMaxHeight = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (data: any) => {
-      const { top, bottom, width } = data.offsets.reference;
+    ({ state }: { state: any }) => {
+      const { y: top, height, width } = state.rects.reference;
+      const bottom = top + height;
 
       if (enforceMaxHeight) {
-        data.styles.maxHeight = maxHeight;
+        state.styles.popper.maxHeight = `${maxHeight}px`;
       } else {
         const windowHeight = window.innerHeight;
 
-        if (/^botton/.test(data.placement)) {
-          data.styles.maxHeight = windowHeight - bottom;
+        if (/^bottom/.test(state.placement)) {
+          state.styles.popper.maxHeight = `${windowHeight - bottom}px`;
         } else {
-          data.styles.maxHeight = top;
+          state.styles.popper.maxHeight = `${top}px`;
         }
       }
 
-      data.styles.width = width;
-
-      return data;
+      state.styles.popper.width = `${width}px`;
     },
     [enforceMaxHeight, maxHeight]
   );
@@ -142,19 +141,21 @@ function AutoSuggestInput<T = any>(props: AutoSuggestInputProps<T>) {
         <Portal>
           <Popper
             placement="bottom-start"
-            modifiers={{
-              computeMaxHeight: {
-                order: 851,
+            modifiers={[
+              {
+                name: 'computeMaxHeight',
                 enabled: true,
+                phase: 'beforeWrite' as const,
+                requires: ['computeStyles'],
                 fn: handleComputeMaxHeight,
               },
-              flip: {
-                padding: minHeight,
-              },
-            }}
+              { name: 'flip', options: { padding: minHeight } },
+            ]}
           >
-            {({ ref: popperRef, style, scheduleUpdate }) => {
-              updater.current = scheduleUpdate;
+            {({ ref: popperRef, style, update }) => {
+              updater.current = () => {
+                update();
+              };
 
               return (
                 <div

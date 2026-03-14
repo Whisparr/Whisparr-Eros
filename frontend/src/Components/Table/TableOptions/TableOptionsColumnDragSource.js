@@ -1,146 +1,119 @@
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
-import { DragSource, DropTarget } from 'react-dnd';
+import React, { useRef } from 'react';
+import { useDrag, useDrop } from 'react-dnd';
 import { TABLE_COLUMN } from 'Helpers/dragTypes';
 import TableOptionsColumn from './TableOptionsColumn';
 import styles from './TableOptionsColumnDragSource.css';
 
-const columnDragSource = {
-  beginDrag(column) {
-    return column;
-  },
+function TableOptionsColumnDragSource({
+  name,
+  label,
+  isVisible,
+  isModifiable,
+  index,
+  isDraggingUp,
+  isDraggingDown,
+  onVisibleChange,
+  onColumnDragMove,
+  onColumnDragEnd,
+}) {
+  const ref = useRef(null);
 
-  endDrag(props, monitor, component) {
-    props.onColumnDragEnd(monitor.getItem(), monitor.didDrop());
-  },
-};
+  const [{ isDragging }, drag] = useDrag({
+    type: TABLE_COLUMN,
+    item: () => ({ name, label, isVisible, isModifiable, index }),
+    end: (item, monitor) => {
+      onColumnDragEnd(item, monitor.didDrop());
+    },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  });
 
-const columnDropTarget = {
-  hover(props, monitor, component) {
-    const dragIndex = monitor.getItem().index;
-    const hoverIndex = props.index;
+  const [{ isOver }, drop] = useDrop({
+    accept: TABLE_COLUMN,
+    hover: (item, monitor) => {
+      const dragIndex = item.index;
+      const hoverIndex = index;
 
-    const hoverBoundingRect = component.getNode().getBoundingClientRect();
-    const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
-    const clientOffset = monitor.getClientOffset();
-    const hoverClientY = clientOffset.y - hoverBoundingRect.top;
+      if (!ref.current) {
+        return;
+      }
 
-    if (dragIndex === hoverIndex) {
-      return;
-    }
+      const hoverBoundingRect = ref.current.getBoundingClientRect();
+      const hoverMiddleY =
+        (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+      const clientOffset = monitor.getClientOffset();
+      const hoverClientY = clientOffset.y - hoverBoundingRect.top;
 
-    // When moving up, only trigger if drag position is above 50% and
-    // when moving down, only trigger if drag position is below 50%.
-    // If we're moving down the hoverIndex needs to be increased
-    // by one so it's ordered properly. Otherwise the hoverIndex will work.
+      if (dragIndex === hoverIndex) {
+        return;
+      }
 
-    // Dragging downwards
-    if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
-      return;
-    }
+      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
+        return;
+      }
 
-    // Dragging upwards
-    if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
-      return;
-    }
+      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
+        return;
+      }
 
-    props.onColumnDragMove(dragIndex, hoverIndex);
-  },
-};
+      onColumnDragMove(dragIndex, hoverIndex);
+    },
+    collect: (monitor) => ({
+      isOver: monitor.isOver(),
+    }),
+  });
 
-function collectDragSource(connect, monitor) {
-  return {
-    connectDragSource: connect.dragSource(),
-    isDragging: monitor.isDragging(),
+  const connectRef = (node) => {
+    ref.current = node;
+    drop(node);
   };
-}
 
-function collectDropTarget(connect, monitor) {
-  return {
-    connectDropTarget: connect.dropTarget(),
-    isOver: monitor.isOver(),
-  };
-}
+  const isBefore = !isDragging && isDraggingUp && isOver;
+  const isAfter = !isDragging && isDraggingDown && isOver;
 
-class TableOptionsColumnDragSource extends Component {
-
-  constructor(props) {
-    super(props);
-    this.ref = React.createRef();
-  }
-
-  getNode() {
-    return this.ref.current;
-  }
-
-  //
-  // Render
-
-  render() {
-    const {
-      name,
-      label,
-      isVisible,
-      isModifiable,
-      index,
-      isDragging,
-      isDraggingUp,
-      isDraggingDown,
-      isOver,
-      connectDragSource,
-      connectDropTarget,
-      onVisibleChange,
-    } = this.props;
-
-    const isBefore = !isDragging && isDraggingUp && isOver;
-    const isAfter = !isDragging && isDraggingDown && isOver;
-
-    // if (isDragging && !isOver) {
-    //   return null;
-    // }
-
-    return connectDropTarget(
-      <div
-        ref={this.ref}
-        className={classNames(
-          styles.columnDragSource,
-          isBefore && styles.isDraggingUp,
-          isAfter && styles.isDraggingDown
-        )}
-      >
-        {isBefore && (
-          <div
-            className={classNames(
-              styles.columnPlaceholder,
-              styles.columnPlaceholderBefore
-            )}
-          />
-        )}
-
-        <TableOptionsColumn
-          name={name}
-          label={typeof label === 'function' ? label() : label}
-          isVisible={isVisible}
-          isModifiable={isModifiable}
-          index={index}
-          isDragging={isDragging}
-          isOver={isOver}
-          connectDragSource={connectDragSource}
-          onVisibleChange={onVisibleChange}
+  return (
+    <div
+      ref={connectRef}
+      className={classNames(
+        styles.columnDragSource,
+        isBefore && styles.isDraggingUp,
+        isAfter && styles.isDraggingDown
+      )}
+    >
+      {isBefore && (
+        <div
+          className={classNames(
+            styles.columnPlaceholder,
+            styles.columnPlaceholderBefore
+          )}
         />
+      )}
 
-        {isAfter && (
-          <div
-            className={classNames(
-              styles.columnPlaceholder,
-              styles.columnPlaceholderAfter
-            )}
-          />
-        )}
-      </div>
-    );
-  }
+      <TableOptionsColumn
+        name={name}
+        label={typeof label === 'function' ? label() : label}
+        isVisible={isVisible}
+        isModifiable={isModifiable}
+        index={index}
+        isDragging={isDragging}
+        isOver={isOver}
+        connectDragSource={drag}
+        onVisibleChange={onVisibleChange}
+      />
+
+      {isAfter && (
+        <div
+          className={classNames(
+            styles.columnPlaceholder,
+            styles.columnPlaceholderAfter
+          )}
+        />
+      )}
+    </div>
+  );
 }
 
 TableOptionsColumnDragSource.propTypes = {
@@ -149,25 +122,11 @@ TableOptionsColumnDragSource.propTypes = {
   isVisible: PropTypes.bool.isRequired,
   isModifiable: PropTypes.bool.isRequired,
   index: PropTypes.number.isRequired,
-  isDragging: PropTypes.bool,
   isDraggingUp: PropTypes.bool,
   isDraggingDown: PropTypes.bool,
-  isOver: PropTypes.bool,
-  connectDragSource: PropTypes.func,
-  connectDropTarget: PropTypes.func,
   onVisibleChange: PropTypes.func.isRequired,
   onColumnDragMove: PropTypes.func.isRequired,
   onColumnDragEnd: PropTypes.func.isRequired,
 };
 
-export default DropTarget(
-  TABLE_COLUMN,
-  columnDropTarget,
-  collectDropTarget
-)(
-  DragSource(
-    TABLE_COLUMN,
-    columnDragSource,
-    collectDragSource
-  )(TableOptionsColumnDragSource)
-);
+export default TableOptionsColumnDragSource;

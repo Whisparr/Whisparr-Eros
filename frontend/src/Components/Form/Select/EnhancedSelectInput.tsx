@@ -191,12 +191,10 @@ function EnhancedSelectInput<V, T extends EnhancedSelectInputValue<V>>(
   }, [value, values, isMultiSelect]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleComputeMaxHeight = useCallback((data: any) => {
+  const handleComputeMaxHeight = useCallback(({ state }: { state: any }) => {
     const windowHeight = window.innerHeight;
 
-    data.styles.maxHeight = windowHeight - MINIMUM_DISTANCE_FROM_EDGE;
-
-    return data;
+    state.styles.popper.maxHeight = `${windowHeight - MINIMUM_DISTANCE_FROM_EDGE}px`;
   }, []);
 
   const handleWindowClick = useCallback(
@@ -493,20 +491,21 @@ function EnhancedSelectInput<V, T extends EnhancedSelectInputValue<V>>(
         <Portal>
           <Popper
             placement="bottom-start"
-            modifiers={{
-              computeMaxHeight: {
-                order: 851,
+            modifiers={[
+              {
+                name: 'computeMaxHeight',
                 enabled: true,
+                phase: 'beforeWrite' as const,
+                requires: ['computeStyles'],
                 fn: handleComputeMaxHeight,
               },
-              preventOverflow: {
-                enabled: true,
-                boundariesElement: 'viewport',
-              },
-            }}
+              { name: 'preventOverflow' },
+            ]}
           >
-            {({ ref, style, scheduleUpdate }) => {
-              updater.current = scheduleUpdate;
+            {({ ref, style, update }) => {
+              updater.current = () => {
+                update();
+              };
 
               return (
                 <div
