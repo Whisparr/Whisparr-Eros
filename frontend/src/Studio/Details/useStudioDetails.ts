@@ -122,7 +122,7 @@ export const useStudioDetails = (foreignId: string): UseStudioDetailsReturn => {
   const [isManualRefresh, setIsManualRefresh] = useState(false);
   const [isEditMovieModalOpen, setIsEditMovieModalOpen] = useState(false);
   const [isDeleteMovieModalOpen, setIsDeleteMovieModalOpen] = useState(false);
-  const prevStudioRef = useRef<Studio | undefined>();
+  const prevStudioRef = useRef<Studio | undefined>(undefined);
 
   // Redux selectors for expanded state
   const expandedState = useSelector((state: AppState) => {

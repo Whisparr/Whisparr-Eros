@@ -23,7 +23,7 @@ interface SceneIndexPostersProps {
   items: Movie[];
   sortKey: string;
   sortDirection?: SortDirection;
-  scrollerRef: RefObject<HTMLElement>;
+  scrollerRef: RefObject<HTMLElement | null>;
   isSelectMode: boolean;
   isSmallScreen: boolean;
 }

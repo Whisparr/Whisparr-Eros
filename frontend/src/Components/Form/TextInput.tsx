@@ -58,11 +58,13 @@ function TextInput({
   onCopy,
   onChange,
   onSelectionChange,
-}: TextInputProps | FileInputProps): JSX.Element {
+}: TextInputProps | FileInputProps): React.JSX.Element {
   const inputRef = useRef<HTMLInputElement>(null);
-  const selectionTimeout = useRef<ReturnType<typeof setTimeout>>();
-  const selectionStart = useRef<number | null>();
-  const selectionEnd = useRef<number | null>();
+  const selectionTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined
+  );
+  const selectionStart = useRef<number | null>(null);
+  const selectionEnd = useRef<number | null>(null);
   const isMouseTarget = useRef(false);
 
   const selectionChanged = useCallback(() => {

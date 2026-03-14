@@ -62,7 +62,9 @@ function SpinnerErrorButton({
   ...otherProps
 }: SpinnerErrorButtonProps) {
   const wasSpinning = usePrevious(isSpinning);
-  const updateTimeout = useRef<ReturnType<typeof setTimeout>>();
+  const updateTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined
+  );
 
   const [result, setResult] = useState({
     wasSuccessful: false,

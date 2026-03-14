@@ -125,9 +125,10 @@ function Menu({
   }, []);
 
   const childrenArray = React.Children.toArray(children);
-  const button = React.cloneElement(childrenArray[0] as ReactElement, {
-    onPress: handleMenuButtonPress,
-  });
+  const button = React.cloneElement(
+    childrenArray[0] as ReactElement<{ onPress: () => void }>,
+    { onPress: handleMenuButtonPress }
+  );
 
   useEffect(() => {
     if (enforceMaxHeight) {
@@ -187,14 +188,17 @@ function Menu({
           {({ ref, style, scheduleUpdate }) => {
             updater.current = scheduleUpdate;
 
-            return React.cloneElement(childrenArray[1] as ReactElement, {
-              forwardedRef: ref,
-              style: {
-                ...style,
-                maxHeight,
-              },
-              isOpen: isMenuOpen,
-            });
+            return React.cloneElement(
+              childrenArray[1] as ReactElement<Record<string, unknown>>,
+              {
+                forwardedRef: ref,
+                style: {
+                  ...style,
+                  maxHeight,
+                },
+                isOpen: isMenuOpen,
+              }
+            );
           }}
         </Popper>
       </Portal>

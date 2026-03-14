@@ -2,7 +2,6 @@ import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { DragSource, DropTarget } from 'react-dnd';
-import { findDOMNode } from 'react-dom';
 import { TABLE_COLUMN } from 'Helpers/dragTypes';
 import TableOptionsColumn from './TableOptionsColumn';
 import styles from './TableOptionsColumnDragSource.css';
@@ -22,7 +21,7 @@ const columnDropTarget = {
     const dragIndex = monitor.getItem().index;
     const hoverIndex = props.index;
 
-    const hoverBoundingRect = findDOMNode(component).getBoundingClientRect();
+    const hoverBoundingRect = component.getNode().getBoundingClientRect();
     const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
     const clientOffset = monitor.getClientOffset();
     const hoverClientY = clientOffset.y - hoverBoundingRect.top;
@@ -65,6 +64,16 @@ function collectDropTarget(connect, monitor) {
 }
 
 class TableOptionsColumnDragSource extends Component {
+
+  constructor(props) {
+    super(props);
+    this.ref = React.createRef();
+  }
+
+  getNode() {
+    return this.ref.current;
+  }
+
   //
   // Render
 
@@ -93,6 +102,7 @@ class TableOptionsColumnDragSource extends Component {
 
     return connectDropTarget(
       <div
+        ref={this.ref}
         className={classNames(
           styles.columnDragSource,
           isBefore && styles.isDraggingUp,

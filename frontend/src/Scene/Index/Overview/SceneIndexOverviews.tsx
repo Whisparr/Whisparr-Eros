@@ -16,7 +16,7 @@ interface SceneIndexOverviewsProps {
   items: Movie[];
   sortKey: string;
   sortDirection?: string;
-  scrollerRef: RefObject<HTMLElement>;
+  scrollerRef: RefObject<HTMLElement | null>;
   isSelectMode: boolean;
   isSmallScreen: boolean;
 }

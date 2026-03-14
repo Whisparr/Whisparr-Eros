@@ -42,7 +42,7 @@ function PageToolbarSection({
         return;
       }
 
-      if (Object.keys(child.props).length === 0) {
+      if (Object.keys(child.props as object).length === 0) {
         separatorCount++;
       } else {
         buttonCount++;
@@ -81,7 +81,7 @@ function PageToolbarSection({
       const overflowItems: PageToolbarButtonProps[] = [];
 
       const buttonsWithoutSeparators = validChildren.filter(
-        (child) => Object.keys(child.props).length > 0
+        (child) => Object.keys(child.props as object).length > 0
       );
 
       return {
@@ -92,15 +92,15 @@ function PageToolbarSection({
     }
 
     validChildren.forEach((child) => {
-      const isSeparator = Object.keys(child.props).length === 0;
+      const isSeparator = Object.keys(child.props as object).length === 0;
 
       if (actualButtons < maxButtons) {
         if (!isSeparator) {
-          buttons.push(child);
+          buttons.push(child as ReactElement<PageToolbarButtonProps>);
           actualButtons++;
         }
       } else if (!isSeparator) {
-        overflowItems.push(child.props);
+        overflowItems.push(child.props as PageToolbarButtonProps);
       }
     });
 

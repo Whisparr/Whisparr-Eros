@@ -17,7 +17,9 @@ interface MessageProps {
 
 function Message({ id, hideAfter, name, message, type }: MessageProps) {
   const dispatch = useDispatch();
-  const dismissTimeout = useRef<ReturnType<typeof setTimeout>>();
+  const dismissTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined
+  );
 
   const icon: IconName = useMemo(() => {
     switch (name) {

@@ -53,7 +53,7 @@ function SelectModeReinitializer({
   return null;
 }
 
-function PerformerIndex(_: Readonly<PerformerIndexProps>): JSX.Element {
+function PerformerIndex(_: Readonly<PerformerIndexProps>): React.JSX.Element {
   const {
     items,
     totalItems,

@@ -2,7 +2,6 @@ import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { DragSource, DropTarget } from 'react-dnd';
-import { findDOMNode } from 'react-dom';
 import { QUALITY_PROFILE_ITEM } from 'Helpers/dragTypes';
 import QualityProfileItem from './QualityProfileItem';
 import QualityProfileItemGroup from './QualityProfileItemGroup';
@@ -39,9 +38,8 @@ const qualityProfileItemDropTarget = {
 
     // Use childNodeIndex to select the correct node to get the middle of so
     // we don't bounce between above and below causing rapid setState calls.
-    const childNodeIndex =
-      component.props.isOverCurrent && component.props.isDraggingUp ? 1 : 0;
-    const componentDOMNode = findDOMNode(component).children[childNodeIndex];
+    const childNodeIndex = component.props.isOverCurrent && component.props.isDraggingUp ? 1 :0;
+    const componentDOMNode = component.getNode().children[childNodeIndex];
     const hoverBoundingRect = componentDOMNode.getBoundingClientRect();
     const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
     const clientOffset = monitor.getClientOffset();
@@ -97,6 +95,16 @@ function collectDropTarget(connect, monitor) {
 }
 
 class QualityProfileItemDragSource extends Component {
+
+  constructor(props) {
+    super(props);
+    this.ref = React.createRef();
+  }
+
+  getNode() {
+    return this.ref.current;
+  }
+
   //
   // Render
 
@@ -129,6 +137,7 @@ class QualityProfileItemDragSource extends Component {
 
     return connectDropTarget(
       <div
+        ref={this.ref}
         className={classNames(
           styles.qualityProfileItemDragSource,
           isBefore && styles.isDraggingUp,
