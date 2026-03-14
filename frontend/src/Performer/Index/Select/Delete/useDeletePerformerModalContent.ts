@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import AppState from 'App/State/AppState';
 import {
   deletePerformer,
@@ -12,7 +12,7 @@ export function useDeletePerformerModalContent(
   onModalClose: (deleted: boolean) => void
 ) {
   const dispatch = useDispatch();
-  const history = useHistory();
+  const navigate = useNavigate();
   const deleteOptions = useSelector(
     (state: AppState) => state.performers.deleteOptions
   );
@@ -30,9 +30,9 @@ export function useDeletePerformerModalContent(
         dispatch(deletePerformer({ id, deleteFiles, addImportExclusion }));
       });
       if (onModalClose) onModalClose(true);
-      history.push('/performers');
+      navigate('/performers');
     },
-    [dispatch, performerIds, onModalClose, history]
+    [dispatch, performerIds, onModalClose, navigate]
   );
 
   return {

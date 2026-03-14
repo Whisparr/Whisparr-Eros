@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import AppState from 'App/State/AppState';
 import Performer from 'Performer/Performer';
 import {
@@ -19,7 +19,7 @@ export function useDeletePerformerModalContent({
   onModalClose,
 }: DeletePerformerModalContentProps) {
   const dispatch = useDispatch();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const deleteOptions = useSelector(
     (state: AppState) => state.performers.deleteOptions
@@ -42,9 +42,9 @@ export function useDeletePerformerModalContent({
         })
       );
       if (onModalClose) onModalClose(true);
-      history.push('/performers');
+      navigate('/performers');
     },
-    [dispatch, performer.id, onModalClose, history]
+    [dispatch, performer.id, onModalClose, navigate]
   );
 
   return {

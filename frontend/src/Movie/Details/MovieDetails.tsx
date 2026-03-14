@@ -90,7 +90,7 @@ function getFanartUrl(images: MovieImageType[]) {
 
 function MovieDetails(props: Readonly<Partial<Props>>) {
   // Get id from route params and fetch movie data
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams();
   const dispatch = useDispatch();
   const safeForWorkMode = useContext(SafeForWorkModeContext);
 

@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Icon from 'Components/Icon';
 import Label from 'Components/Label';
 import Link from 'Components/Link/Link';
@@ -24,21 +24,21 @@ function AddNewStudioSearchResult({
   studio,
   isExistingStudio,
   colorImpairedMode: _colorImpairedMode,
-}: AddNewStudioSearchResultProps) {
+}: Readonly<AddNewStudioSearchResultProps>) {
   const { foreignId, tmdbId, tpdbId, website, title, network, images } = studio;
 
   const [isNewAddStudioModalOpen, setIsNewAddStudioModalOpen] = useState(false);
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const { isSmallScreen, safeForWorkMode } = useAddNewStudioSearchResult();
 
   const onPress = useCallback(() => {
     if (isExistingStudio) {
-      history.push(`/studio/${foreignId}`);
+      navigate(`/studio/${foreignId}`);
     } else {
       setIsNewAddStudioModalOpen(true);
     }
-  }, [isExistingStudio, foreignId, history]);
+  }, [isExistingStudio, foreignId, navigate]);
 
   const onAddStudioModalClose = useCallback(() => {
     setIsNewAddStudioModalOpen(false);
