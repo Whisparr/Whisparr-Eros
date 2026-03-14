@@ -13,19 +13,14 @@ function createMapStateToProps() {
     (state) => state.system.backups,
     createCommandExecutingSelector(commandNames.BACKUP),
     (backups, backupExecuting) => {
-      const {
-        isFetching,
-        isPopulated,
-        error,
-        items
-      } = backups;
+      const { isFetching, isPopulated, error, items } = backups;
 
       return {
         isFetching,
         isPopulated,
         error,
         items,
-        backupExecuting
+        backupExecuting,
       };
     }
   );
@@ -42,15 +37,16 @@ function createMapDispatchToProps(dispatch, props) {
     },
 
     onBackupPress() {
-      dispatch(executeCommand({
-        name: commandNames.BACKUP
-      }));
-    }
+      dispatch(
+        executeCommand({
+          name: commandNames.BACKUP,
+        })
+      );
+    },
   };
 }
 
 class BackupsConnector extends Component {
-
   //
   // Lifecycle
 
@@ -68,17 +64,16 @@ class BackupsConnector extends Component {
   // Render
 
   render() {
-    return (
-      <Backups
-        {...this.props}
-      />
-    );
+    return <Backups {...this.props} />;
   }
 }
 
 BackupsConnector.propTypes = {
   backupExecuting: PropTypes.bool.isRequired,
-  dispatchFetchBackups: PropTypes.func.isRequired
+  dispatchFetchBackups: PropTypes.func.isRequired,
 };
 
-export default connect(createMapStateToProps, createMapDispatchToProps)(BackupsConnector);
+export default connect(
+  createMapStateToProps,
+  createMapDispatchToProps
+)(BackupsConnector);

@@ -21,7 +21,13 @@
   }
 
   &:global(.colorImpaired) {
-    background: repeating-linear-gradient(90deg, color(var(--dangerColor) shade(5%)), color(var(--dangerColor) shade(5%)) 5px, color(var(--dangerColor) shade(15%)) 5px, color(var(--dangerColor) shade(15%)) 10px);
+    background: repeating-linear-gradient(
+      90deg,
+      color(var(--dangerColor) shade(5%)),
+      color(var(--dangerColor) shade(5%)) 5px,
+      color(var(--dangerColor) shade(15%)) 5px,
+      color(var(--dangerColor) shade(15%)) 10px
+    );
   }
 }
 
@@ -92,7 +98,13 @@
   }
 
   &:global(.colorImpaired) {
-    background: repeating-linear-gradient(45deg, var(--warningColor), var(--warningColor) 5px, color(var(--warningColor) tint(15%)) 5px, color(var(--warningColor) tint(15%)) 10px);
+    background: repeating-linear-gradient(
+      45deg,
+      var(--warningColor),
+      var(--warningColor) 5px,
+      color(var(--warningColor) tint(15%)) 5px,
+      color(var(--warningColor) tint(15%)) 10px
+    );
   }
 }
 

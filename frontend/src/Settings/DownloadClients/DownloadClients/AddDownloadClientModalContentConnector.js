@@ -3,19 +3,18 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
-import { fetchDownloadClientSchema, selectDownloadClientSchema } from 'Store/Actions/settingsActions';
+import {
+  fetchDownloadClientSchema,
+  selectDownloadClientSchema,
+} from 'Store/Actions/settingsActions';
 import AddDownloadClientModalContent from './AddDownloadClientModalContent';
 
 function createMapStateToProps() {
   return createSelector(
     (state) => state.settings.downloadClients,
     (downloadClients) => {
-      const {
-        isSchemaFetching,
-        isSchemaPopulated,
-        schemaError,
-        schema
-      } = downloadClients;
+      const { isSchemaFetching, isSchemaPopulated, schemaError, schema } =
+        downloadClients;
 
       const usenetDownloadClients = _.filter(schema, { protocol: 'usenet' });
       const torrentDownloadClients = _.filter(schema, { protocol: 'torrent' });
@@ -25,7 +24,7 @@ function createMapStateToProps() {
         isSchemaPopulated,
         schemaError,
         usenetDownloadClients,
-        torrentDownloadClients
+        torrentDownloadClients,
       };
     }
   );
@@ -33,11 +32,10 @@ function createMapStateToProps() {
 
 const mapDispatchToProps = {
   fetchDownloadClientSchema,
-  selectDownloadClientSchema
+  selectDownloadClientSchema,
 };
 
 class AddDownloadClientModalContentConnector extends Component {
-
   //
   // Lifecycle
 
@@ -69,7 +67,10 @@ class AddDownloadClientModalContentConnector extends Component {
 AddDownloadClientModalContentConnector.propTypes = {
   fetchDownloadClientSchema: PropTypes.func.isRequired,
   selectDownloadClientSchema: PropTypes.func.isRequired,
-  onModalClose: PropTypes.func.isRequired
+  onModalClose: PropTypes.func.isRequired,
 };
 
-export default connect(createMapStateToProps, mapDispatchToProps)(AddDownloadClientModalContentConnector);
+export default connect(
+  createMapStateToProps,
+  mapDispatchToProps
+)(AddDownloadClientModalContentConnector);

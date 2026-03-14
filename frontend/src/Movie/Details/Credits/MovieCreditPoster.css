@@ -58,7 +58,8 @@ $hoverScale: 1.05;
   z-index: 3;
 }
 
-.action, .movieAction {
+.action,
+.movieAction {
   composes: toggleButton from 'Components/MonitorToggleButton.css';
 
   width: 25px;

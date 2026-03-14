@@ -4,7 +4,16 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
 import { clearPendingChanges } from 'Store/Actions/baseActions';
-import { clearCustomFormatSpecificationPending, deleteAllCustomFormatSpecification, fetchCustomFormatSpecificationSchema, saveCustomFormatSpecification, selectCustomFormatSpecificationSchema, setCustomFormatSpecificationFieldValue, setCustomFormatSpecificationValue, setCustomFormatValue } from 'Store/Actions/settingsActions';
+import {
+  clearCustomFormatSpecificationPending,
+  deleteAllCustomFormatSpecification,
+  fetchCustomFormatSpecificationSchema,
+  saveCustomFormatSpecification,
+  selectCustomFormatSpecificationSchema,
+  setCustomFormatSpecificationFieldValue,
+  setCustomFormatSpecificationValue,
+  setCustomFormatValue,
+} from 'Store/Actions/settingsActions';
 import createProviderSettingsSelector from 'Store/Selectors/createProviderSettingsSelector';
 import translate from 'Utilities/String/translate';
 import ImportCustomFormatModalContent from './ImportCustomFormatModalContent';
@@ -19,7 +28,7 @@ function createMapStateToProps() {
         advancedSettings,
         ...customFormat,
         specificationsPopulated: specifications.isPopulated,
-        specificationSchema: specifications.schema
+        specificationSchema: specifications.schema,
       };
     }
   );
@@ -34,11 +43,10 @@ const mapDispatchToProps = {
   setCustomFormatSpecificationFieldValue,
   setCustomFormatSpecificationValue,
   setCustomFormatValue,
-  fetchCustomFormatSpecificationSchema
+  fetchCustomFormatSpecificationSchema,
 };
 
 class ImportCustomFormatModalContentConnector extends Component {
-
   //
   // Lifecycle
 
@@ -56,7 +64,6 @@ class ImportCustomFormatModalContentConnector extends Component {
   };
 
   onImportPress = (payload) => {
-
     this.clearPending();
 
     try {
@@ -66,7 +73,7 @@ class ImportCustomFormatModalContentConnector extends Component {
       this.clearPending();
       return {
         message: err.message,
-        detailedMessage: err.stack
+        detailedMessage: err.stack,
       };
     }
 
@@ -86,15 +93,21 @@ class ImportCustomFormatModalContentConnector extends Component {
   };
 
   parseSpecification = (spec) => {
-    const selectedImplementation = _.find(this.props.specificationSchema, { implementation: spec.implementation });
+    const selectedImplementation = _.find(this.props.specificationSchema, {
+      implementation: spec.implementation,
+    });
 
     if (!selectedImplementation) {
-      throw new Error(translate('CustomFormatUnknownCondition', {
-        implementation: spec.implementation
-      }));
+      throw new Error(
+        translate('CustomFormatUnknownCondition', {
+          implementation: spec.implementation,
+        })
+      );
     }
 
-    this.props.selectCustomFormatSpecificationSchema({ implementation: spec.implementation });
+    this.props.selectCustomFormatSpecificationSchema({
+      implementation: spec.implementation,
+    });
 
     for (const [key, value] of Object.entries(spec)) {
       if (key === 'fields') {
@@ -111,10 +124,12 @@ class ImportCustomFormatModalContentConnector extends Component {
     for (const [key, value] of Object.entries(fields)) {
       const field = _.find(schema.fields, { name: key });
       if (!field) {
-        throw new Error(translate('CustomFormatUnknownConditionOption', {
-          key,
-          implementation: schema.implementationName
-        }));
+        throw new Error(
+          translate('CustomFormatUnknownConditionOption', {
+            key,
+            implementation: schema.implementationName,
+          })
+        );
       }
 
       this.props.setCustomFormatSpecificationFieldValue({ name: key, value });
@@ -145,7 +160,10 @@ ImportCustomFormatModalContentConnector.propTypes = {
   setCustomFormatSpecificationValue: PropTypes.func.isRequired,
   setCustomFormatSpecificationFieldValue: PropTypes.func.isRequired,
   setCustomFormatValue: PropTypes.func.isRequired,
-  onModalClose: PropTypes.func.isRequired
+  onModalClose: PropTypes.func.isRequired,
 };
 
-export default connect(createMapStateToProps, mapDispatchToProps)(ImportCustomFormatModalContentConnector);
+export default connect(
+  createMapStateToProps,
+  mapDispatchToProps
+)(ImportCustomFormatModalContentConnector);

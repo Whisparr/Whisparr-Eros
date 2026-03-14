@@ -10,7 +10,6 @@ import translate from 'Utilities/String/translate';
 import styles from './CollectionMovie.css';
 
 class CollectionMovie extends Component {
-
   //
   // Lifecycle
 
@@ -20,7 +19,7 @@ class CollectionMovie extends Component {
     this.state = {
       hasPosterError: false,
       isEditMovieModalOpen: false,
-      isNewAddMovieModalOpen: false
+      isNewAddMovieModalOpen: false,
     };
   }
 
@@ -79,53 +78,42 @@ class CollectionMovie extends Component {
       posterHeight,
       detailedProgressBar,
       onMonitorTogglePress,
-      collectionId
+      collectionId,
     } = this.props;
 
-    const {
-      hasPosterError,
-      isEditMovieModalOpen,
-      isNewAddMovieModalOpen
-    } = this.state;
+    const { hasPosterError, isEditMovieModalOpen, isNewAddMovieModalOpen } =
+      this.state;
 
     // Currently only TMDB collections so this can change when required.
-    const linkProps = id ? { to: `/movie/${tmdbId}` } : { onPress: this.onAddMoviePress };
+    const linkProps = id
+      ? { to: `/movie/${tmdbId}` }
+      : { onPress: this.onAddMoviePress };
 
     const elementStyle = {
       width: `${posterWidth}px`,
       height: `${posterHeight}px`,
-      borderRadius: '5px'
+      borderRadius: '5px',
     };
 
     return (
       <div className={styles.content}>
         <div className={styles.posterContainer}>
-          {
-            isExistingMovie &&
-              <div className={styles.editorSelect}>
-                <MonitorToggleButton
-                  className={styles.monitorToggleButton}
-                  monitored={monitored}
-                  size={20}
-                  onPress={onMonitorTogglePress}
-                />
-              </div>
-          }
+          {isExistingMovie && (
+            <div className={styles.editorSelect}>
+              <MonitorToggleButton
+                className={styles.monitorToggleButton}
+                monitored={monitored}
+                size={20}
+                onPress={onMonitorTogglePress}
+              />
+            </div>
+          )}
 
-          {
-            isExcluded ?
-              <div
-                className={styles.excluded}
-                title={translate('Excluded')}
-              /> :
-              null
-          }
+          {isExcluded ? (
+            <div className={styles.excluded} title={translate('Excluded')} />
+          ) : null}
 
-          <Link
-            className={styles.link}
-            style={elementStyle}
-            {...linkProps}
-          >
+          <Link className={styles.link} style={elementStyle} {...linkProps}>
             <MoviePoster
               className={styles.poster}
               style={elementStyle}
@@ -137,33 +125,28 @@ class CollectionMovie extends Component {
               onLoad={this.onPosterLoad}
             />
 
-            {
-              hasPosterError &&
-                <div className={styles.overlayTitle}>
-                  {title}
-                </div>
-            }
+            {hasPosterError && (
+              <div className={styles.overlayTitle}>{title}</div>
+            )}
 
             <div className={styles.overlayHover}>
               <div className={styles.overlayHoverTitle}>
                 {title} {year > 0 ? `(${year})` : ''}
               </div>
 
-              {
-                id ?
-                  <MovieIndexProgressBar
-                    movieId={id}
-                    movieFile={movieFile}
-                    monitored={monitored}
-                    hasFile={hasFile}
-                    status={status}
-                    bottomRadius={true}
-                    width={posterWidth}
-                    detailedProgressBar={detailedProgressBar}
-                    isAvailable={isAvailable}
-                  /> :
-                  null
-              }
+              {id ? (
+                <MovieIndexProgressBar
+                  movieId={id}
+                  movieFile={movieFile}
+                  monitored={monitored}
+                  hasFile={hasFile}
+                  status={status}
+                  bottomRadius={true}
+                  width={posterWidth}
+                  detailedProgressBar={detailedProgressBar}
+                  isAvailable={isAvailable}
+                />
+              ) : null}
             </div>
           </Link>
         </div>
@@ -212,7 +195,7 @@ CollectionMovie.propTypes = {
   isExcluded: PropTypes.bool,
   tmdbId: PropTypes.number.isRequired,
   foreignId: PropTypes.string.isRequired,
-  onMonitorTogglePress: PropTypes.func.isRequired
+  onMonitorTogglePress: PropTypes.func.isRequired,
 };
 
 export default CollectionMovie;

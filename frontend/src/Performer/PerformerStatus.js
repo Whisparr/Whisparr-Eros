@@ -2,18 +2,17 @@ import { icons } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 
 export function getPerformerStatusDetails(status) {
-
   let statusDetails = {
     icon: icons.MOVIE_CONTINUING,
     title: translate('Active'),
-    message: translate('ActivePerformerDescription')
+    message: translate('ActivePerformerDescription'),
   };
 
   if (status === 'inactive') {
     statusDetails = {
       icon: icons.SERIES_ENDED,
       title: translate('Inactive'),
-      message: translate('InactivePerformerDescription')
+      message: translate('InactivePerformerDescription'),
     };
   }
 
@@ -21,7 +20,7 @@ export function getPerformerStatusDetails(status) {
     statusDetails = {
       icon: icons.SERIES_ENDED,
       title: translate('Unknown'),
-      message: translate('UnknownPerformerDescription')
+      message: translate('UnknownPerformerDescription'),
     };
   }
 

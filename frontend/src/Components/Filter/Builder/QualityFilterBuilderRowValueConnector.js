@@ -15,7 +15,7 @@ function createMapStateToProps() {
         isSchemaFetching: isFetching,
         isSchemaPopulated: isPopulated,
         schemaError: error,
-        schema
+        schema,
       } = qualityProfiles;
 
       const tagList = getQualities(schema.items);
@@ -24,18 +24,17 @@ function createMapStateToProps() {
         isFetching,
         isPopulated,
         error,
-        tagList
+        tagList,
       };
     }
   );
 }
 
 const mapDispatchToProps = {
-  dispatchFetchQualityProfileSchema: fetchQualityProfileSchema
+  dispatchFetchQualityProfileSchema: fetchQualityProfileSchema,
 };
 
 class QualityFilterBuilderRowValueConnector extends Component {
-
   //
   // Lifecycle
 
@@ -49,18 +48,9 @@ class QualityFilterBuilderRowValueConnector extends Component {
   // Render
 
   render() {
-    const {
-      isFetching,
-      isPopulated,
-      error,
-      ...otherProps
-    } = this.props;
+    const { isFetching, isPopulated, error, ...otherProps } = this.props;
 
-    return (
-      <FilterBuilderRowValue
-        {...otherProps}
-      />
-    );
+    return <FilterBuilderRowValue {...otherProps} />;
   }
 }
 
@@ -69,7 +59,10 @@ QualityFilterBuilderRowValueConnector.propTypes = {
   isFetching: PropTypes.bool.isRequired,
   isPopulated: PropTypes.bool.isRequired,
   error: PropTypes.object,
-  dispatchFetchQualityProfileSchema: PropTypes.func.isRequired
+  dispatchFetchQualityProfileSchema: PropTypes.func.isRequired,
 };
 
-export default connect(createMapStateToProps, mapDispatchToProps)(QualityFilterBuilderRowValueConnector);
+export default connect(
+  createMapStateToProps,
+  mapDispatchToProps
+)(QualityFilterBuilderRowValueConnector);

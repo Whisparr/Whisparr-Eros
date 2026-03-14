@@ -2,7 +2,10 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
-import { savePerformer, setPerformerValue } from 'Store/Actions/performerActions';
+import {
+  savePerformer,
+  setPerformerValue,
+} from 'Store/Actions/performerActions';
 import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import createPerformerSelector from 'Store/Selectors/createPerformerSelector';
 import selectSettings from 'Store/Selectors/selectSettings';
@@ -31,12 +34,14 @@ function createMapStateToProps() {
     createIsPathChangingSelector(),
     createDimensionsSelector(),
     (state) => state.settings.safeForWorkMode,
-    (performersState, performer, isPathChanging, dimensions, safeForWorkMode) => {
-      const {
-        isSaving,
-        saveError,
-        pendingChanges
-      } = performersState;
+    (
+      performersState,
+      performer,
+      isPathChanging,
+      dimensions,
+      safeForWorkMode
+    ) => {
+      const { isSaving, saveError, pendingChanges } = performersState;
 
       const movieSettings = {
         monitored: performer.monitored,
@@ -45,7 +50,7 @@ function createMapStateToProps() {
         minimumAvailability: performer.minimumAvailability,
         rootFolderPath: performer.rootFolderPath,
         tags: performer.tags,
-        searchOnAdd: performer.searchOnAdd
+        searchOnAdd: performer.searchOnAdd,
       };
 
       const settings = selectSettings(movieSettings, pendingChanges, saveError);
@@ -61,7 +66,7 @@ function createMapStateToProps() {
         item: settings.settings,
         isSmallScreen: dimensions.isSmallScreen,
         safeForWorkMode,
-        ...settings
+        ...settings,
       };
     }
   );
@@ -69,11 +74,10 @@ function createMapStateToProps() {
 
 const mapDispatchToProps = {
   dispatchSetPerformerValue: setPerformerValue,
-  dispatchSavePerformer: savePerformer
+  dispatchSavePerformer: savePerformer,
 };
 
 class EditPerformerModalContentConnector extends Component {
-
   //
   // Lifecycle
 
@@ -92,7 +96,7 @@ class EditPerformerModalContentConnector extends Component {
 
   onSavePress = () => {
     this.props.dispatchSavePerformer({
-      id: this.props.performerId
+      id: this.props.performerId,
     });
   };
 
@@ -116,7 +120,10 @@ EditPerformerModalContentConnector.propTypes = {
   saveError: PropTypes.object,
   dispatchSetPerformerValue: PropTypes.func.isRequired,
   dispatchSavePerformer: PropTypes.func.isRequired,
-  onModalClose: PropTypes.func.isRequired
+  onModalClose: PropTypes.func.isRequired,
 };
 
-export default connect(createMapStateToProps, mapDispatchToProps)(EditPerformerModalContentConnector);
+export default connect(
+  createMapStateToProps,
+  mapDispatchToProps
+)(EditPerformerModalContentConnector);

@@ -13,27 +13,27 @@ function checkActivationWarning() {
 }
 
 function attachAsyncActions(promise) {
-  promise.filter = function() {
+  promise.filter = function () {
     const args = arguments;
     const res = this.then((d) => d.filter(...args));
     attachAsyncActions(res);
     return res;
   };
 
-  promise.map = function() {
+  promise.map = function () {
     const args = arguments;
     const res = this.then((d) => d.map(...args));
     attachAsyncActions(res);
     return res;
   };
 
-  promise.all = function() {
+  promise.all = function () {
     const res = this.then((d) => Promise.all(d));
     attachAsyncActions(res);
     return res;
   };
 
-  promise.forEach = function(action) {
+  promise.forEach = function (action) {
     const res = this.then((d) => Promise.all(d.map(action)));
     attachAsyncActions(res);
     return res;
@@ -59,7 +59,10 @@ class ResourceApi {
   }
 
   update(resource) {
-    return this.api.fetch(`${this.url}/${resource.id}`, { method: 'PUT', data: resource });
+    return this.api.fetch(`${this.url}/${resource.id}`, {
+      method: 'PUT',
+      data: resource,
+    });
   }
 
   delete(resource) {
@@ -95,7 +98,7 @@ class ConsoleApi {
 
     const req = {
       url,
-      method: options.method || 'GET'
+      method: options.method || 'GET',
     };
 
     if (options.data) {

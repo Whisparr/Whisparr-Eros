@@ -2,25 +2,24 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
-import { fetchCustomFormatSpecificationSchema, selectCustomFormatSpecificationSchema } from 'Store/Actions/settingsActions';
+import {
+  fetchCustomFormatSpecificationSchema,
+  selectCustomFormatSpecificationSchema,
+} from 'Store/Actions/settingsActions';
 import AddSpecificationModalContent from './AddSpecificationModalContent';
 
 function createMapStateToProps() {
   return createSelector(
     (state) => state.settings.customFormatSpecifications,
     (specifications) => {
-      const {
-        isSchemaFetching,
-        isSchemaPopulated,
-        schemaError,
-        schema
-      } = specifications;
+      const { isSchemaFetching, isSchemaPopulated, schemaError, schema } =
+        specifications;
 
       return {
         isSchemaFetching,
         isSchemaPopulated,
         schemaError,
-        schema
+        schema,
       };
     }
   );
@@ -28,11 +27,10 @@ function createMapStateToProps() {
 
 const mapDispatchToProps = {
   fetchCustomFormatSpecificationSchema,
-  selectCustomFormatSpecificationSchema
+  selectCustomFormatSpecificationSchema,
 };
 
 class AddSpecificationModalContentConnector extends Component {
-
   //
   // Lifecycle
 
@@ -44,7 +42,10 @@ class AddSpecificationModalContentConnector extends Component {
   // Listeners
 
   onSpecificationSelect = ({ implementation, name }) => {
-    this.props.selectCustomFormatSpecificationSchema({ implementation, presetName: name });
+    this.props.selectCustomFormatSpecificationSchema({
+      implementation,
+      presetName: name,
+    });
     this.props.onModalClose({ specificationSelected: true });
   };
 
@@ -64,7 +65,10 @@ class AddSpecificationModalContentConnector extends Component {
 AddSpecificationModalContentConnector.propTypes = {
   fetchCustomFormatSpecificationSchema: PropTypes.func.isRequired,
   selectCustomFormatSpecificationSchema: PropTypes.func.isRequired,
-  onModalClose: PropTypes.func.isRequired
+  onModalClose: PropTypes.func.isRequired,
 };
 
-export default connect(createMapStateToProps, mapDispatchToProps)(AddSpecificationModalContentConnector);
+export default connect(
+  createMapStateToProps,
+  mapDispatchToProps
+)(AddSpecificationModalContentConnector);

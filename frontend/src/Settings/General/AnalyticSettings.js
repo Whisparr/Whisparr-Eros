@@ -8,14 +8,9 @@ import { inputTypes, sizes } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 
 function AnalyticSettings(props) {
-  const {
-    settings,
-    onInputChange
-  } = props;
+  const { settings, onInputChange } = props;
 
-  const {
-    analyticsEnabled
-  } = settings;
+  const { analyticsEnabled } = settings;
 
   return (
     <FieldSet legend={translate('Analytics')}>
@@ -37,7 +32,7 @@ function AnalyticSettings(props) {
 
 AnalyticSettings.propTypes = {
   settings: PropTypes.object.isRequired,
-  onInputChange: PropTypes.func.isRequired
+  onInputChange: PropTypes.func.isRequired,
 };
 
 export default AnalyticSettings;

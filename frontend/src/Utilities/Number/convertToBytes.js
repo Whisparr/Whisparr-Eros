@@ -1,4 +1,3 @@
-
 function convertToBytes(input, power, binaryPrefix) {
   const size = Number(input);
 

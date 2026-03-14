@@ -14,7 +14,7 @@ const delayProfileDragSource = {
 
   endDrag(props, monitor, component) {
     props.onDelayProfileDragEnd(monitor.getItem(), monitor.didDrop());
-  }
+  },
 };
 
 const delayProfileDropTarget = {
@@ -41,25 +41,24 @@ const delayProfileDropTarget = {
     } else if (dragIndex > hoverIndex && hoverClientY < hoverMiddleY) {
       props.onDelayProfileDragMove(dragIndex, hoverIndex);
     }
-  }
+  },
 };
 
 function collectDragSource(connect, monitor) {
   return {
     connectDragSource: connect.dragSource(),
-    isDragging: monitor.isDragging()
+    isDragging: monitor.isDragging(),
   };
 }
 
 function collectDropTarget(connect, monitor) {
   return {
     connectDropTarget: connect.dropTarget(),
-    isOver: monitor.isOver()
+    isOver: monitor.isOver(),
   };
 }
 
 class DelayProfileDragSource extends Component {
-
   //
   // Render
 
@@ -91,15 +90,14 @@ class DelayProfileDragSource extends Component {
           isAfter && styles.isDraggingDown
         )}
       >
-        {
-          isBefore &&
-            <div
-              className={classNames(
-                styles.delayProfilePlaceholder,
-                styles.delayProfilePlaceholderBefore
-              )}
-            />
-        }
+        {isBefore && (
+          <div
+            className={classNames(
+              styles.delayProfilePlaceholder,
+              styles.delayProfilePlaceholderBefore
+            )}
+          />
+        )}
 
         <DelayProfile
           id={id}
@@ -110,15 +108,14 @@ class DelayProfileDragSource extends Component {
           connectDragSource={connectDragSource}
         />
 
-        {
-          isAfter &&
-            <div
-              className={classNames(
-                styles.delayProfilePlaceholder,
-                styles.delayProfilePlaceholderAfter
-              )}
-            />
-        }
+        {isAfter && (
+          <div
+            className={classNames(
+              styles.delayProfilePlaceholder,
+              styles.delayProfilePlaceholderAfter
+            )}
+          />
+        )}
       </div>
     );
   }
@@ -134,15 +131,17 @@ DelayProfileDragSource.propTypes = {
   connectDragSource: PropTypes.func,
   connectDropTarget: PropTypes.func,
   onDelayProfileDragMove: PropTypes.func.isRequired,
-  onDelayProfileDragEnd: PropTypes.func.isRequired
+  onDelayProfileDragEnd: PropTypes.func.isRequired,
 };
 
 export default DropTarget(
   DELAY_PROFILE,
   delayProfileDropTarget,
   collectDropTarget
-)(DragSource(
-  DELAY_PROFILE,
-  delayProfileDragSource,
-  collectDragSource
-)(DelayProfileDragSource));
+)(
+  DragSource(
+    DELAY_PROFILE,
+    delayProfileDragSource,
+    collectDragSource
+  )(DelayProfileDragSource)
+);

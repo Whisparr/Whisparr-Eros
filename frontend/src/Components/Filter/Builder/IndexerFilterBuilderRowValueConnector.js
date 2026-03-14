@@ -10,17 +10,12 @@ function createMapStateToProps() {
   return createSelector(
     (state) => state.settings.indexers,
     (qualityProfiles) => {
-      const {
-        isFetching,
-        isPopulated,
-        error,
-        items
-      } = qualityProfiles;
+      const { isFetching, isPopulated, error, items } = qualityProfiles;
 
       const tagList = items.map((item) => {
         return {
           id: item.id,
-          name: item.name
+          name: item.name,
         };
       });
 
@@ -28,18 +23,17 @@ function createMapStateToProps() {
         isFetching,
         isPopulated,
         error,
-        tagList
+        tagList,
       };
     }
   );
 }
 
 const mapDispatchToProps = {
-  dispatchFetchIndexers: fetchIndexers
+  dispatchFetchIndexers: fetchIndexers,
 };
 
 class IndexerFilterBuilderRowValueConnector extends Component {
-
   //
   // Lifecycle
 
@@ -53,18 +47,9 @@ class IndexerFilterBuilderRowValueConnector extends Component {
   // Render
 
   render() {
-    const {
-      isFetching,
-      isPopulated,
-      error,
-      ...otherProps
-    } = this.props;
+    const { isFetching, isPopulated, error, ...otherProps } = this.props;
 
-    return (
-      <FilterBuilderRowValue
-        {...otherProps}
-      />
-    );
+    return <FilterBuilderRowValue {...otherProps} />;
   }
 }
 
@@ -73,7 +58,10 @@ IndexerFilterBuilderRowValueConnector.propTypes = {
   isFetching: PropTypes.bool.isRequired,
   isPopulated: PropTypes.bool.isRequired,
   error: PropTypes.object,
-  dispatchFetchIndexers: PropTypes.func.isRequired
+  dispatchFetchIndexers: PropTypes.func.isRequired,
 };
 
-export default connect(createMapStateToProps, mapDispatchToProps)(IndexerFilterBuilderRowValueConnector);
+export default connect(
+  createMapStateToProps,
+  mapDispatchToProps
+)(IndexerFilterBuilderRowValueConnector);

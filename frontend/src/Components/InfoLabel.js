@@ -26,12 +26,8 @@ function InfoLabel(props) {
       )}
       {...otherProps}
     >
-      <div className={styles.name}>
-        {name}
-      </div>
-      <div>
-        {children}
-      </div>
+      <div className={styles.name}>{name}</div>
+      <div>{children}</div>
     </span>
   );
 }
@@ -43,14 +39,14 @@ InfoLabel.propTypes = {
   kind: PropTypes.oneOf(kinds.all).isRequired,
   size: PropTypes.oneOf(sizes.all).isRequired,
   outline: PropTypes.bool.isRequired,
-  children: PropTypes.node.isRequired
+  children: PropTypes.node.isRequired,
 };
 
 InfoLabel.defaultProps = {
   className: styles.label,
   kind: kinds.DEFAULT,
   size: sizes.SMALL,
-  outline: false
+  outline: false,
 };
 
 export default InfoLabel;

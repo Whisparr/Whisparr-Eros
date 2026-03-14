@@ -6,7 +6,7 @@ import parseUrl from 'Utilities/String/parseUrl';
 const IgnoreErrors = [
   // Innocuous browser errors
   /ResizeObserver loop limit exceeded/,
-  /ResizeObserver loop completed with undelivered notifications/
+  /ResizeObserver loop completed with undelivered notifications/,
 ];
 
 function cleanseUrl(url) {
@@ -38,11 +38,7 @@ function cleanseData(event, hint) {
     });
   }
 
-  if (
-    error &&
-    error.message &&
-    shouldIgnoreException(error.message)
-  ) {
+  if (error && error.message && shouldIgnoreException(error.message)) {
     return null;
   }
 
@@ -68,7 +64,7 @@ function createMiddleware() {
       // Adds a breadcrumb for reporting later (if necessary).
       sentry.addBreadcrumb({
         category: 'redux',
-        message: action.type
+        message: action.type,
       });
 
       return next(action);
@@ -79,29 +75,24 @@ function createMiddleware() {
       sentry.captureException(err, {
         extra: {
           action: identity(action),
-          state: identity(store.getState())
-        }
+          state: identity(store.getState()),
+        },
       });
     }
   };
 }
 
 export default function createSentryMiddleware() {
-  const {
-    analytics,
-    branch,
-    version,
-    release,
-    userHash,
-    isProduction
-  } = window.Whisparr;
+  const { analytics, branch, version, release, userHash, isProduction } =
+    window.Whisparr;
 
   if (!analytics) {
     return;
   }
 
-  const dsn = isProduction ? 'https://7794f2858478485ea337fb5535624fbd@sentry.servarr.com/12' :
-    'https://da610619280249f891ec3ee306906793@sentry.servarr.com/13';
+  const dsn = isProduction
+    ? 'https://7794f2858478485ea337fb5535624fbd@sentry.servarr.com/12'
+    : 'https://da610619280249f891ec3ee306906793@sentry.servarr.com/13';
 
   sentry.init({
     dsn,
@@ -111,8 +102,8 @@ export default function createSentryMiddleware() {
     beforeSend: cleanseData,
     integrations: [
       new Integrations.RewriteFrames({ iteratee: stripUrlBase }),
-      new Integrations.Dedupe()
-    ]
+      new Integrations.Dedupe(),
+    ],
   });
 
   sentry.configureScope((scope) => {

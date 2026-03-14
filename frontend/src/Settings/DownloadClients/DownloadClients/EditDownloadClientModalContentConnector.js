@@ -6,7 +6,7 @@ import {
   saveDownloadClient,
   setDownloadClientFieldValue,
   setDownloadClientValue,
-  testDownloadClient
+  testDownloadClient,
 } from 'Store/Actions/settingsActions';
 import createProviderSettingsSelector from 'Store/Selectors/createProviderSettingsSelector';
 import EditDownloadClientModalContent from './EditDownloadClientModalContent';
@@ -18,7 +18,7 @@ function createMapStateToProps() {
     (advancedSettings, downloadClient) => {
       return {
         advancedSettings,
-        ...downloadClient
+        ...downloadClient,
       };
     }
   );
@@ -28,11 +28,10 @@ const mapDispatchToProps = {
   setDownloadClientValue,
   setDownloadClientFieldValue,
   saveDownloadClient,
-  testDownloadClient
+  testDownloadClient,
 };
 
 class EditDownloadClientModalContentConnector extends Component {
-
   //
   // Lifecycle
 
@@ -87,7 +86,10 @@ EditDownloadClientModalContentConnector.propTypes = {
   setDownloadClientFieldValue: PropTypes.func.isRequired,
   saveDownloadClient: PropTypes.func.isRequired,
   testDownloadClient: PropTypes.func.isRequired,
-  onModalClose: PropTypes.func.isRequired
+  onModalClose: PropTypes.func.isRequired,
 };
 
-export default connect(createMapStateToProps, mapDispatchToProps)(EditDownloadClientModalContentConnector);
+export default connect(
+  createMapStateToProps,
+  mapDispatchToProps
+)(EditDownloadClientModalContentConnector);

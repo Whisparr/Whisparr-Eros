@@ -18,11 +18,14 @@ const section = 'settings.delayProfiles';
 // Actions Types
 
 export const FETCH_DELAY_PROFILES = 'settings/delayProfiles/fetchDelayProfiles';
-export const FETCH_DELAY_PROFILE_SCHEMA = 'settings/delayProfiles/fetchDelayProfileSchema';
+export const FETCH_DELAY_PROFILE_SCHEMA =
+  'settings/delayProfiles/fetchDelayProfileSchema';
 export const SAVE_DELAY_PROFILE = 'settings/delayProfiles/saveDelayProfile';
 export const DELETE_DELAY_PROFILE = 'settings/delayProfiles/deleteDelayProfile';
-export const REORDER_DELAY_PROFILE = 'settings/delayProfiles/reorderDelayProfile';
-export const SET_DELAY_PROFILE_VALUE = 'settings/delayProfiles/setDelayProfileValue';
+export const REORDER_DELAY_PROFILE =
+  'settings/delayProfiles/reorderDelayProfile';
+export const SET_DELAY_PROFILE_VALUE =
+  'settings/delayProfiles/setDelayProfileValue';
 
 //
 // Action Creators
@@ -33,18 +36,20 @@ export const saveDelayProfile = createThunk(SAVE_DELAY_PROFILE);
 export const deleteDelayProfile = createThunk(DELETE_DELAY_PROFILE);
 export const reorderDelayProfile = createThunk(REORDER_DELAY_PROFILE);
 
-export const setDelayProfileValue = createAction(SET_DELAY_PROFILE_VALUE, (payload) => {
-  return {
-    section,
-    ...payload
-  };
-});
+export const setDelayProfileValue = createAction(
+  SET_DELAY_PROFILE_VALUE,
+  (payload) => {
+    return {
+      section,
+      ...payload,
+    };
+  }
+);
 
 //
 // Details
 
 export default {
-
   //
   // State
 
@@ -55,7 +60,7 @@ export default {
     items: [],
     isSaving: false,
     saveError: null,
-    pendingChanges: {}
+    pendingChanges: {},
   },
 
   //
@@ -63,7 +68,10 @@ export default {
 
   actionHandlers: {
     [FETCH_DELAY_PROFILES]: createFetchHandler(section, '/delayprofile'),
-    [FETCH_DELAY_PROFILE_SCHEMA]: createFetchSchemaHandler(section, '/delayprofile/schema'),
+    [FETCH_DELAY_PROFILE_SCHEMA]: createFetchSchemaHandler(
+      section,
+      '/delayprofile/schema'
+    ),
 
     [SAVE_DELAY_PROFILE]: createSaveProviderHandler(section, '/delayprofile'),
     [DELETE_DELAY_PROFILE]: createRemoveItemHandler(section, '/delayprofile'),
@@ -79,25 +87,25 @@ export default {
         return;
       }
 
-      const after = moveIndex > 0 ? _.find(delayProfiles, { order: moveIndex }) : null;
+      const after =
+        moveIndex > 0 ? _.find(delayProfiles, { order: moveIndex }) : null;
       const afterQueryParam = after ? `after=${after.id}` : '';
 
       const promise = createAjaxRequest({
         method: 'PUT',
-        url: `/delayprofile/reorder/${id}?${afterQueryParam}`
+        url: `/delayprofile/reorder/${id}?${afterQueryParam}`,
       }).request;
 
       promise.done((data) => {
         dispatch(update({ section, data }));
       });
-    }
+    },
   },
 
   //
   // Reducers
 
   reducers: {
-    [SET_DELAY_PROFILE_VALUE]: createSetSettingValueReducer(section)
-  }
-
+    [SET_DELAY_PROFILE_VALUE]: createSetSettingValueReducer(section),
+  },
 };

@@ -3,7 +3,9 @@ function firstCharToUpper(input) {
     return '';
   }
 
-  return [].map.call(input, (char, i) => (i ? char : char.toUpperCase())).join('');
+  return [].map
+    .call(input, (char, i) => (i ? char : char.toUpperCase()))
+    .join('');
 }
 
 export default firstCharToUpper;

@@ -18,7 +18,7 @@
   flex: 4 0 110px;
 }
 
-.sortTitle>a {
+.sortTitle > a {
   flex: 4 0 110px;
   overflow: hidden;
   width: max-content;
@@ -31,10 +31,10 @@
   flex: 2 0 90px;
 }
 
-.studioTitle>a:link,
-.studioTitle>a:visited,
-.studioTitle>a:hover,
-.studioTitle>a:active {
+.studioTitle > a:link,
+.studioTitle > a:visited,
+.studioTitle > a:hover,
+.studioTitle > a:active {
   color: var(--defaultColor);
 }
 

@@ -3,7 +3,12 @@ export const SET_PERFORMER_REFRESHING = 'performers/setPerformerRefreshing';
 import _ from 'lodash';
 import { createAction } from 'redux-actions';
 import { batchActions } from 'redux-batched-actions';
-import { filterBuilderTypes, filterBuilderValueTypes, filterTypes, sortDirections } from 'Helpers/Props';
+import {
+  filterBuilderTypes,
+  filterBuilderValueTypes,
+  filterTypes,
+  sortDirections,
+} from 'Helpers/Props';
 import { createThunk, handleThunks } from 'Store/thunks';
 import sortByProp from 'Utilities/Array/sortByProp';
 import createAjaxRequest from 'Utilities/createAjaxRequest';
@@ -27,7 +32,7 @@ export const setPerformerRefreshing = createAction(
   SET_PERFORMER_REFRESHING,
   (payload) => ({
     section,
-    ...payload
+    ...payload,
   })
 );
 
@@ -59,15 +64,15 @@ export const defaultState = {
     detailedProgressBar: false,
     size: 'large',
     showName: true,
-    pageSize: 25
+    pageSize: 25,
   },
 
   tableOptions: {
-    pageSize: 25
+    pageSize: 25,
   },
 
   deleteOptions: {
-    addImportExclusion: false
+    addImportExclusion: false,
   },
 
   defaults: {
@@ -75,7 +80,7 @@ export const defaultState = {
     monitored: true,
     qualityProfileId: 0,
     searchForMovie: true,
-    tags: []
+    tags: [],
   },
 
   columns: [
@@ -84,133 +89,128 @@ export const defaultState = {
       columnLabel: () => translate('Status'),
       isSortable: false,
       isVisible: true,
-      isModifiable: false
+      isModifiable: false,
     },
     {
       name: 'fullName',
       label: () => translate('PerformerName'),
       isSortable: true,
       isVisible: true,
-      isModifiable: true
+      isModifiable: true,
     },
     {
       name: 'gender',
       label: () => translate('Gender'),
       isSortable: true,
       isVisible: true,
-      isModifiable: true
-
+      isModifiable: true,
     },
     {
       name: 'age',
       label: () => translate('Age'),
       isSortable: true,
       isVisible: false,
-      isModifiable: true
-
+      isModifiable: true,
     },
     {
       name: 'country',
       label: () => translate('Country'),
       isSortable: true,
       isVisible: false,
-      isModifiable: true
-
+      isModifiable: true,
     },
     {
       name: 'careerStart',
       label: () => translate('CareerStart'),
       isSortable: true,
       isVisible: false,
-      isModifiable: true
-
+      isModifiable: true,
     },
     {
       name: 'careerEnd',
       label: () => translate('CareerEnd'),
       isSortable: true,
       isVisible: false,
-      isModifiable: true
+      isModifiable: true,
     },
     {
       name: 'hairColor',
       label: () => translate('HairColor'),
       isSortable: true,
       isVisible: false,
-      isModifiable: true
+      isModifiable: true,
     },
     {
       name: 'ethnicity',
       label: () => translate('Ethnicity'),
       isSortable: true,
       isVisible: false,
-      isModifiable: true
+      isModifiable: true,
     },
     {
       name: 'qualityProfileId',
       label: () => translate('QualityProfile'),
       isSortable: true,
       isVisible: true,
-      isModifiable: true
+      isModifiable: true,
     },
     {
       name: 'rootFolderPath',
       label: () => translate('RootFolder'),
       isSortable: true,
       isVisible: false,
-      isModifiable: true
+      isModifiable: true,
     },
     {
       name: 'tags',
       label: () => translate('Tags'),
       isSortable: false,
       isVisible: false,
-      isModifiable: true
-
+      isModifiable: true,
     },
     {
       name: 'totalMovieCount',
       label: () => translate('Movies'),
       isSortable: true,
       isVisible: true,
-      isModifiable: true
+      isModifiable: true,
     },
     {
       name: 'totalSceneCount',
       label: () => translate('Scenes'),
       isSortable: true,
       isVisible: true,
-      isModifiable: true
+      isModifiable: true,
     },
     {
       name: 'sizeOnDisk',
       label: () => translate('SizeOnDisk'),
       isSortable: true,
       isVisible: true,
-      isModifiable: true
+      isModifiable: true,
     },
     {
       name: 'actions',
       columnLabel: () => translate('Actions'),
       isVisible: true,
       isSortable: false,
-      isModifiable: false
-    }
+      isModifiable: false,
+    },
   ],
 
   sortPredicates: {
-    gender: function(item) {
+    gender: function (item) {
       const gender = item.gender;
 
       return gender ? gender.toLowerCase() : '';
-    }
+    },
   },
 
   filters: [
     {
       key: 'all',
       label: () => translate('All'),
-      filters: []
+      filters: [],
     },
     {
       key: 'monitoredscenesonly',
@@ -219,9 +219,9 @@ export const defaultState = {
         {
           key: 'monitored',
           value: true,
-          type: filterTypes.EQUAL
-        }
-      ]
+          type: filterTypes.EQUAL,
+        },
+      ],
     },
     {
       key: 'monitoredmoviessonly',
@@ -230,9 +230,9 @@ export const defaultState = {
         {
           key: 'moviesMonitored',
           value: true,
-          type: filterTypes.EQUAL
-        }
-      ]
+          type: filterTypes.EQUAL,
+        },
+      ],
     },
     {
       key: 'unmonitored',
@@ -241,10 +241,10 @@ export const defaultState = {
         {
           key: 'monitored',
           value: false,
-          type: filterTypes.EQUAL
-        }
-      ]
-    }
+          type: filterTypes.EQUAL,
+        },
+      ],
+    },
   ],
 
   filterBuilderProps: [
@@ -252,126 +252,126 @@ export const defaultState = {
       name: 'monitored',
       label: () => translate('MonitoredScene'),
       type: filterBuilderTypes.EXACT,
-      valueType: filterBuilderValueTypes.BOOL
+      valueType: filterBuilderValueTypes.BOOL,
     },
     {
       name: 'moviesMonitored',
       label: () => translate('MonitoredMovie'),
       type: filterBuilderTypes.EXACT,
-      valueType: filterBuilderValueTypes.BOOL
+      valueType: filterBuilderValueTypes.BOOL,
     },
     {
       name: 'sceneCount',
       label: () => translate('SceneCount'),
       type: filterBuilderTypes.NUMBER,
-      valueType: filterBuilderValueTypes.DEFAULT
+      valueType: filterBuilderValueTypes.DEFAULT,
     },
     {
       name: 'totalMovieCount',
       label: () => translate('TotalMovieCount'),
       type: filterBuilderTypes.NUMBER,
-      valueType: filterBuilderValueTypes.DEFAULT
+      valueType: filterBuilderValueTypes.DEFAULT,
     },
     {
       name: 'movieCount',
       label: () => translate('MovieCount'),
       type: filterBuilderTypes.NUMBER,
-      valueType: filterBuilderValueTypes.DEFAULT
+      valueType: filterBuilderValueTypes.DEFAULT,
     },
     {
       name: 'totalSceneCount',
       label: () => translate('TotalSceneCount'),
       type: filterBuilderTypes.NUMBER,
-      valueType: filterBuilderValueTypes.DEFAULT
+      valueType: filterBuilderValueTypes.DEFAULT,
     },
     {
       name: 'sizeOnDisk',
       label: () => translate('SizeOnDisk'),
       type: filterBuilderTypes.NUMBER,
-      valueType: filterBuilderValueTypes.DEFAULT
+      valueType: filterBuilderValueTypes.DEFAULT,
     },
     {
       name: 'age',
       label: () => translate('Age'),
       type: filterBuilderTypes.NUMBER,
-      valueType: filterBuilderValueTypes.DEFAULT
+      valueType: filterBuilderValueTypes.DEFAULT,
     },
     {
       name: 'country',
       label: () => translate('Country'),
       type: filterBuilderTypes.STRING,
-      valueType: filterBuilderValueTypes.DEFAULT
+      valueType: filterBuilderValueTypes.DEFAULT,
     },
     {
       name: 'careerStart',
       label: () => translate('CareerStart'),
       type: filterBuilderTypes.NUMBER,
-      valueType: filterBuilderValueTypes.DEFAULT
+      valueType: filterBuilderValueTypes.DEFAULT,
     },
     {
       name: 'careerEnd',
       label: () => translate('CareerEnd'),
       type: filterBuilderTypes.NUMBER,
-      valueType: filterBuilderValueTypes.DEFAULT
+      valueType: filterBuilderValueTypes.DEFAULT,
     },
     {
       name: 'status',
       label: () => translate('Status'),
       type: filterBuilderTypes.EXACT,
-      optionsSelector: function(items) {
+      optionsSelector: function (items) {
         const tagList = ['active', 'inactive', 'unknown', 'deleted'];
 
         const tags = tagList.map((tag) => {
           return {
             id: tag,
-            name: camelCaseToString(tag)
+            name: camelCaseToString(tag),
           };
         });
 
         return tags.sort(sortByProp('name'));
-      }
+      },
     },
     {
       name: 'rootFolderPath',
       label: () => translate('RootFolder'),
       type: filterBuilderTypes.EXACT,
-      valueType: filterBuilderValueTypes.FOLDER
+      valueType: filterBuilderValueTypes.FOLDER,
     },
     {
       name: 'qualityProfileId',
       label: () => translate('QualityProfile'),
       type: filterBuilderTypes.EXACT,
-      valueType: filterBuilderValueTypes.QUALITY_PROFILE
+      valueType: filterBuilderValueTypes.QUALITY_PROFILE,
     },
     {
       name: 'gender',
       label: () => translate('Gender'),
       type: filterBuilderTypes.EXACT,
-      optionsSelector: function(items) {
+      optionsSelector: function (items) {
         const tagList = [
           'male',
           'female',
           'transMale',
           'transFemale',
           'nonBinary',
-          'intersex'
+          'intersex',
         ];
 
         const tags = tagList.map((tag) => {
           return {
             id: tag,
-            name: camelCaseToString(tag)
+            name: camelCaseToString(tag),
           };
         });
 
         return tags.sort(sortByProp('name'));
-      }
+      },
     },
     {
       name: 'hairColor',
       label: () => translate('HairColor'),
       type: filterBuilderTypes.EXACT,
-      optionsSelector: function(items) {
+      optionsSelector: function (items) {
         const tagList = [
           'blonde',
           'black',
@@ -380,24 +380,24 @@ export const defaultState = {
           'grey',
           'various',
           'bald',
-          'other'
+          'other',
         ];
 
         const tags = tagList.map((tag) => {
           return {
             id: tag,
-            name: camelCaseToString(tag)
+            name: camelCaseToString(tag),
           };
         });
 
         return tags.sort(sortByProp('name'));
-      }
+      },
     },
     {
       name: 'ethnicity',
       label: () => translate('Ethnicity'),
       type: filterBuilderTypes.EXACT,
-      optionsSelector: function(items) {
+      optionsSelector: function (items) {
         const tagList = [
           'caucasian',
           'black',
@@ -405,26 +405,26 @@ export const defaultState = {
           'latin',
           'indian',
           'middleEastern',
-          'other'
+          'other',
         ];
 
         const tags = tagList.map((tag) => {
           return {
             id: tag,
-            name: camelCaseToString(tag)
+            name: camelCaseToString(tag),
           };
         });
 
         return tags.sort(sortByProp('name'));
-      }
+      },
     },
     {
       name: 'tags',
       label: () => translate('Tags'),
       type: filterBuilderTypes.ARRAY,
-      valueType: filterBuilderValueTypes.TAG
-    }
-  ]
+      valueType: filterBuilderValueTypes.TAG,
+    },
+  ],
 };
 
 export const filters = defaultState.filters;
@@ -437,7 +437,7 @@ export const persistState = [
   'performers.selectedFilterKey',
   'performers.customFilters',
   'performers.posterOptions',
-  'performers.tableOptions'
+  'performers.tableOptions',
 ];
 
 //
@@ -454,11 +454,13 @@ export const SET_DELETE_OPTION = 'performers/setDeleteOption';
 export const TOGGLE_PERFORMER_MONITORED = 'performers/togglePerformerMonitored';
 
 export const SET_PERFORMER_SORT = 'performers/setPerformerSort';
-export const SET_PERFORMER_SORT_DIRECTION = 'performers/setPerformerSortDirection';
+export const SET_PERFORMER_SORT_DIRECTION =
+  'performers/setPerformerSortDirection';
 export const SET_PERFORMER_FILTER = 'performers/setPerformerFilter';
 export const SET_PERFORMER_VIEW = 'performers/setPerformerView';
 export const SET_PERFORMER_TABLE_OPTION = 'performers/setPerformerTableOption';
-export const SET_PERFORMER_POSTER_OPTION = 'performers/setPerformerPosterOption';
+export const SET_PERFORMER_POSTER_OPTION =
+  'performers/setPerformerPosterOption';
 export const SET_PERFORMER_PAGE = 'performers/setPerformerPage';
 
 //
@@ -473,8 +475,8 @@ export const deletePerformer = createThunk(DELETE_PERFORMER, (payload) => {
     ...payload,
     queryParams: {
       deleteFiles: payload.deleteFiles,
-      addImportExclusion: payload.addImportExclusion
-    }
+      addImportExclusion: payload.addImportExclusion,
+    },
   };
 });
 
@@ -483,22 +485,29 @@ export const setDeleteOption = createAction(SET_DELETE_OPTION);
 export const togglePerformerMonitored = createThunk(TOGGLE_PERFORMER_MONITORED);
 
 export const setPerformerSort = createAction(SET_PERFORMER_SORT);
-export const setPerformerSortDirection = createAction(SET_PERFORMER_SORT_DIRECTION);
+export const setPerformerSortDirection = createAction(
+  SET_PERFORMER_SORT_DIRECTION
+);
 export const setPerformerFilter = createAction(SET_PERFORMER_FILTER);
 export const setPerformerView = createAction(SET_PERFORMER_VIEW);
 export const setPerformerTableOption = createAction(SET_PERFORMER_TABLE_OPTION);
-export const setPerformerPosterOption = createAction(SET_PERFORMER_POSTER_OPTION);
+export const setPerformerPosterOption = createAction(
+  SET_PERFORMER_POSTER_OPTION
+);
 
-export const setPerformerValue = createAction(SET_PERFORMER_VALUE, (payload) => {
-  return {
-    section,
-    ...payload
-  };
-});
+export const setPerformerValue = createAction(
+  SET_PERFORMER_VALUE,
+  (payload) => {
+    return {
+      section,
+      ...payload,
+    };
+  }
+);
 
 export const setPerformerPage = (page) => ({
   type: SET_PERFORMER_PAGE,
-  payload: { page }
+  payload: { page },
 });
 
 //
@@ -510,19 +519,17 @@ export const actionHandlers = handleThunks({
   [DELETE_PERFORMER]: createRemoveItemHandler(section, '/performer'),
 
   [TOGGLE_PERFORMER_MONITORED]: (getState, payload, dispatch) => {
-    const {
-      performerId: id,
-      monitored,
-      moviesMonitored
-    } = payload;
+    const { performerId: id, monitored, moviesMonitored } = payload;
 
     const performer = _.find(getState().performers.items, { id });
 
-    dispatch(updateItem({
-      id,
-      section,
-      isSaving: true
-    }));
+    dispatch(
+      updateItem({
+        id,
+        section,
+        isSaving: true,
+      })
+    );
 
     const promise = createAjaxRequest({
       url: `/performer/${id}`,
@@ -530,126 +537,140 @@ export const actionHandlers = handleThunks({
       data: JSON.stringify({
         ...performer,
         monitored,
-        moviesMonitored
+        moviesMonitored,
       }),
-      dataType: 'json'
+      dataType: 'json',
     }).request;
 
     promise.done((data) => {
-      dispatch(updateItem({
-        id,
-        section,
-        isSaving: false,
-        monitored,
-        moviesMonitored,
-        saveError: null
-      }));
+      dispatch(
+        updateItem({
+          id,
+          section,
+          isSaving: false,
+          monitored,
+          moviesMonitored,
+          saveError: null,
+        })
+      );
     });
 
     promise.fail((xhr) => {
-      dispatch(updateItem({
-        id,
-        section,
-        isSaving: false,
-        saveError: xhr
-      }));
+      dispatch(
+        updateItem({
+          id,
+          section,
+          isSaving: false,
+          saveError: xhr,
+        })
+      );
     });
   },
 
-  [SAVE_PERFORMER_EDITOR]: function(getState, payload, dispatch) {
-    dispatch(set({
-      section,
-      isSaving: true
-    }));
+  [SAVE_PERFORMER_EDITOR]: function (getState, payload, dispatch) {
+    dispatch(
+      set({
+        section,
+        isSaving: true,
+      })
+    );
 
     const promise = createAjaxRequest({
       url: '/performer/editor',
       method: 'PUT',
       data: JSON.stringify(payload),
-      dataType: 'json'
+      dataType: 'json',
     }).request;
 
     promise.done((data) => {
-      dispatch(batchActions([
-        ...data.map((performer) => {
-          return updateItem({
-            id: performer.id,
-            section: 'performers',
-            ...performer
-          });
-        }),
+      dispatch(
+        batchActions([
+          ...data.map((performer) => {
+            return updateItem({
+              id: performer.id,
+              section: 'performers',
+              ...performer,
+            });
+          }),
 
-        set({
-          section,
-          isSaving: false,
-          saveError: null
-        })
-      ]));
+          set({
+            section,
+            isSaving: false,
+            saveError: null,
+          }),
+        ])
+      );
     });
 
     promise.fail((xhr) => {
-      dispatch(set({
-        section,
-        isSaving: false,
-        saveError: xhr
-      }));
+      dispatch(
+        set({
+          section,
+          isSaving: false,
+          saveError: xhr,
+        })
+      );
     });
-  }
+  },
 });
 
 //
 // Reducers
 
-export const reducers = createHandleActions({
-  [SET_PERFORMER_PAGE]: (state, { payload }) => ({
-    ...state,
-    page: payload.page
-  }),
-  // Set per-performer refreshing state
-  [SET_PERFORMER_REFRESHING]: function(state, { payload }) {
-    const { id, isRefreshing } = payload;
-    return {
+export const reducers = createHandleActions(
+  {
+    [SET_PERFORMER_PAGE]: (state, { payload }) => ({
       ...state,
-      refreshingPerformers: {
-        ...state.refreshingPerformers,
-        [id]: isRefreshing
-      }
-    };
-  },
+      page: payload.page,
+    }),
+    // Set per-performer refreshing state
+    [SET_PERFORMER_REFRESHING]: function (state, { payload }) {
+      const { id, isRefreshing } = payload;
+      return {
+        ...state,
+        refreshingPerformers: {
+          ...state.refreshingPerformers,
+          [id]: isRefreshing,
+        },
+      };
+    },
 
-  [SET_PERFORMER_SORT_DIRECTION]: createSetClientSideCollectionSortReducer(section),
-  [SET_PERFORMER_SORT]: createSetClientSideCollectionSortReducer(section),
-  [SET_PERFORMER_FILTER]: createSetClientSideCollectionFilterReducer(section),
-  [SET_PERFORMER_VIEW]: function(state, { payload }) {
-    return Object.assign({}, state, { view: payload.view });
-  },
+    [SET_PERFORMER_SORT_DIRECTION]:
+      createSetClientSideCollectionSortReducer(section),
+    [SET_PERFORMER_SORT]: createSetClientSideCollectionSortReducer(section),
+    [SET_PERFORMER_FILTER]: createSetClientSideCollectionFilterReducer(section),
+    [SET_PERFORMER_VIEW]: function (state, { payload }) {
+      return Object.assign({}, state, { view: payload.view });
+    },
 
-  [SET_PERFORMER_TABLE_OPTION]: createSetTableOptionReducer(section),
-  [SET_PERFORMER_VALUE]: createSetSettingValueReducer(section),
-  [SET_DELETE_OPTION]: (state, { payload }) => {
-    return {
+    [SET_PERFORMER_TABLE_OPTION]: createSetTableOptionReducer(section),
+    [SET_PERFORMER_VALUE]: createSetSettingValueReducer(section),
+    [SET_DELETE_OPTION]: (state, { payload }) => {
+      return {
+        ...state,
+        deleteOptions: {
+          ...payload,
+        },
+      };
+    },
+
+    [SET_PERFORMER_POSTER_OPTION]: function (state, { payload }) {
+      const posterOptions = state.posterOptions;
+
+      return {
+        ...state,
+        posterOptions: {
+          ...posterOptions,
+          ...payload,
+        },
+      };
+    },
+
+    [SET_PERFORMER_PAGE]: (state, { payload }) => ({
       ...state,
-      deleteOptions: {
-        ...payload
-      }
-    };
+      page: payload.page,
+    }),
   },
-
-  [SET_PERFORMER_POSTER_OPTION]: function(state, { payload }) {
-    const posterOptions = state.posterOptions;
-
-    return {
-      ...state,
-      posterOptions: {
-        ...posterOptions,
-        ...payload
-      }
-    };
-  },
-
-  [SET_PERFORMER_PAGE]: (state, { payload }) => ({
-    ...state,
-    page: payload.page
-  })
-
-}, defaultState, section);
+  defaultState,
+  section
+);

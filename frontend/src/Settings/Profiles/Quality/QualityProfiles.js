@@ -11,7 +11,6 @@ import QualityProfile from './QualityProfile';
 import styles from './QualityProfiles.css';
 
 class QualityProfiles extends Component {
-
   //
   // Lifecycle
 
@@ -19,7 +18,7 @@ class QualityProfiles extends Component {
     super(props, context);
 
     this.state = {
-      isQualityProfileModalOpen: false
+      isQualityProfileModalOpen: false,
     };
   }
 
@@ -58,29 +57,24 @@ class QualityProfiles extends Component {
           {...otherProps}
         >
           <div className={styles.qualityProfiles}>
-            {
-              items.map((item) => {
-                return (
-                  <QualityProfile
-                    key={item.id}
-                    {...item}
-                    isDeleting={isDeleting}
-                    onConfirmDeleteQualityProfile={onConfirmDeleteQualityProfile}
-                    onCloneQualityProfilePress={this.onCloneQualityProfilePress}
-                  />
-                );
-              })
-            }
+            {items.map((item) => {
+              return (
+                <QualityProfile
+                  key={item.id}
+                  {...item}
+                  isDeleting={isDeleting}
+                  onConfirmDeleteQualityProfile={onConfirmDeleteQualityProfile}
+                  onCloneQualityProfilePress={this.onCloneQualityProfilePress}
+                />
+              );
+            })}
 
             <Card
               className={styles.addQualityProfile}
               onPress={this.onEditQualityProfilePress}
             >
               <div className={styles.center}>
-                <Icon
-                  name={icons.ADD}
-                  size={45}
-                />
+                <Icon name={icons.ADD} size={45} />
               </div>
             </Card>
           </div>
@@ -101,7 +95,7 @@ QualityProfiles.propTypes = {
   isDeleting: PropTypes.bool.isRequired,
   items: PropTypes.arrayOf(PropTypes.object).isRequired,
   onConfirmDeleteQualityProfile: PropTypes.func.isRequired,
-  onCloneQualityProfilePress: PropTypes.func.isRequired
+  onCloneQualityProfilePress: PropTypes.func.isRequired,
 };
 
 export default QualityProfiles;

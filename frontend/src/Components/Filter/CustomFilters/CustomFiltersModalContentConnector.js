@@ -10,14 +10,17 @@ function createMapStateToProps() {
     (isDeleting, deleteError) => {
       return {
         isDeleting,
-        deleteError
+        deleteError,
       };
     }
   );
 }
 
 const mapDispatchToProps = {
-  dispatchDeleteCustomFilter: deleteCustomFilter
+  dispatchDeleteCustomFilter: deleteCustomFilter,
 };
 
-export default connect(createMapStateToProps, mapDispatchToProps)(CustomFiltersModalContent);
+export default connect(
+  createMapStateToProps,
+  mapDispatchToProps
+)(CustomFiltersModalContent);

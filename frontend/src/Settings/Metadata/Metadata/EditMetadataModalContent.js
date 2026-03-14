@@ -27,11 +27,7 @@ function EditMetadataModalContent(props) {
     ...otherProps
   } = props;
 
-  const {
-    name,
-    enable,
-    fields
-  } = item;
+  const { name, enable, fields } = item;
 
   return (
     <ModalContent onModalClose={onModalClose}>
@@ -53,30 +49,23 @@ function EditMetadataModalContent(props) {
             />
           </FormGroup>
 
-          {
-            fields.map((field) => {
-              return (
-                <ProviderFieldFormGroup
-                  key={field.name}
-                  advancedSettings={advancedSettings}
-                  provider="metadata"
-                  {...field}
-                  isDisabled={!enable.value}
-                  onChange={onFieldChange}
-                />
-              );
-            })
-          }
-
+          {fields.map((field) => {
+            return (
+              <ProviderFieldFormGroup
+                key={field.name}
+                advancedSettings={advancedSettings}
+                provider="metadata"
+                {...field}
+                isDisabled={!enable.value}
+                onChange={onFieldChange}
+              />
+            );
+          })}
         </Form>
       </ModalBody>
 
       <ModalFooter>
-        <Button
-          onPress={onModalClose}
-        >
-          {translate('Cancel')}
-        </Button>
+        <Button onPress={onModalClose}>{translate('Cancel')}</Button>
 
         <SpinnerErrorButton
           isSpinning={isSaving}
@@ -99,7 +88,7 @@ EditMetadataModalContent.propTypes = {
   onFieldChange: PropTypes.func.isRequired,
   onModalClose: PropTypes.func.isRequired,
   onSavePress: PropTypes.func.isRequired,
-  onDeleteMetadataPress: PropTypes.func
+  onDeleteMetadataPress: PropTypes.func,
 };
 
 export default EditMetadataModalContent;

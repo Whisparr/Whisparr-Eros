@@ -10,12 +10,11 @@ function createMapDispatchToProps(dispatch, props) {
   return {
     dispatchClearPendingChanges() {
       dispatch(clearPendingChanges({ section }));
-    }
+    },
   };
 }
 
 class EditSpecificationModalConnector extends Component {
-
   //
   // Listeners
 
@@ -28,10 +27,7 @@ class EditSpecificationModalConnector extends Component {
   // Render
 
   render() {
-    const {
-      dispatchClearPendingChanges,
-      ...otherProps
-    } = this.props;
+    const { dispatchClearPendingChanges, ...otherProps } = this.props;
 
     return (
       <EditSpecificationModal
@@ -44,7 +40,10 @@ class EditSpecificationModalConnector extends Component {
 
 EditSpecificationModalConnector.propTypes = {
   onModalClose: PropTypes.func.isRequired,
-  dispatchClearPendingChanges: PropTypes.func.isRequired
+  dispatchClearPendingChanges: PropTypes.func.isRequired,
 };
 
-export default connect(null, createMapDispatchToProps)(EditSpecificationModalConnector);
+export default connect(
+  null,
+  createMapDispatchToProps
+)(EditSpecificationModalConnector);

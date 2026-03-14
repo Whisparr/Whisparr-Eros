@@ -1,6 +1,6 @@
 const sectionTypes = {
   COLLECTION: 'collection',
-  MODEL: 'model'
+  MODEL: 'model',
 };
 
 export default sectionTypes;

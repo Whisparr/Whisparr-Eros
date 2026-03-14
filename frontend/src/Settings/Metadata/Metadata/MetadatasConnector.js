@@ -15,11 +15,10 @@ function createMapStateToProps() {
 }
 
 const mapDispatchToProps = {
-  fetchMetadata
+  fetchMetadata,
 };
 
 class MetadatasConnector extends Component {
-
   //
   // Lifecycle
 
@@ -41,7 +40,10 @@ class MetadatasConnector extends Component {
 }
 
 MetadatasConnector.propTypes = {
-  fetchMetadata: PropTypes.func.isRequired
+  fetchMetadata: PropTypes.func.isRequired,
 };
 
-export default connect(createMapStateToProps, mapDispatchToProps)(MetadatasConnector);
+export default connect(
+  createMapStateToProps,
+  mapDispatchToProps
+)(MetadatasConnector);

@@ -14,7 +14,7 @@ function getDimensions(width, height) {
     isExtraSmallScreen: width <= 480,
     isSmallScreen: width <= 768,
     isMediumScreen: width <= 992,
-    isLargeScreen: width <= 1200
+    isLargeScreen: width <= 1200,
   };
 
   return dimensions;
@@ -34,7 +34,7 @@ let pingTimeout = null;
 export const defaultState = {
   dimensions: getDimensions(window.innerWidth, window.innerHeight),
   messages: {
-    items: []
+    items: [],
   },
   version: window.Whisparr.version,
   isUpdated: false,
@@ -42,12 +42,13 @@ export const defaultState = {
   isReconnecting: false,
   isDisconnected: false,
   isRestarting: false,
-  isSidebarVisible: !getDimensions(window.innerWidth, window.innerHeight).isSmallScreen,
+  isSidebarVisible: !getDimensions(window.innerWidth, window.innerHeight)
+    .isSmallScreen,
   translations: {
     isFetching: true,
     isPopulated: false,
-    error: null
-  }
+    error: null,
+  },
 };
 
 //
@@ -97,7 +98,7 @@ function pingServerAfterTimeout(getState, dispatch) {
     const ajaxOptions = {
       url: '/system/status',
       method: 'GET',
-      contentType: 'application/json'
+      contentType: 'application/json',
     };
 
     const { request, abortRequest } = createAjaxRequest(ajaxOptions);
@@ -108,9 +109,11 @@ function pingServerAfterTimeout(getState, dispatch) {
       abortPingServer = null;
       pingTimeout = null;
 
-      dispatch(setAppValue({
-        isRestarting: false
-      }));
+      dispatch(
+        setAppValue({
+          isRestarting: false,
+        })
+      );
     });
 
     request.fail((xhr) => {
@@ -119,9 +122,11 @@ function pingServerAfterTimeout(getState, dispatch) {
 
       // Unauthorized, but back online
       if (xhr.status === 401) {
-        dispatch(setAppValue({
-          isRestarting: false
-        }));
+        dispatch(
+          setAppValue({
+            isRestarting: false,
+          })
+        );
       } else {
         pingServerAfterTimeout(getState, dispatch);
       }
@@ -133,94 +138,97 @@ function pingServerAfterTimeout(getState, dispatch) {
 // Action Handlers
 
 export const actionHandlers = handleThunks({
-  [PING_SERVER]: function(getState, payload, dispatch) {
+  [PING_SERVER]: function (getState, payload, dispatch) {
     pingServerAfterTimeout(getState, dispatch);
   },
-  [FETCH_TRANSLATIONS]: async function(getState, payload, dispatch) {
+  [FETCH_TRANSLATIONS]: async function (getState, payload, dispatch) {
     const isFetchingComplete = await fetchAppTranslations();
 
-    dispatch(setAppValue({
-      translations: {
-        isFetching: false,
-        isPopulated: isFetchingComplete,
-        error: isFetchingComplete ? null : 'Failed to load translations from API'
-      }
-    }));
-  }
+    dispatch(
+      setAppValue({
+        translations: {
+          isFetching: false,
+          isPopulated: isFetchingComplete,
+          error: isFetchingComplete
+            ? null
+            : 'Failed to load translations from API',
+        },
+      })
+    );
+  },
 });
 
 //
 // Reducers
 
-export const reducers = createHandleActions({
+export const reducers = createHandleActions(
+  {
+    [SAVE_DIMENSIONS]: function (state, { payload }) {
+      const { width, height } = payload;
 
-  [SAVE_DIMENSIONS]: function(state, { payload }) {
-    const {
-      width,
-      height
-    } = payload;
+      const dimensions = getDimensions(width, height);
 
-    const dimensions = getDimensions(width, height);
+      return Object.assign({}, state, { dimensions });
+    },
 
-    return Object.assign({}, state, { dimensions });
-  },
+    [SHOW_MESSAGE]: function (state, { payload }) {
+      const newState = getSectionState(state, messagesSection);
+      const items = newState.items;
+      const index = _.findIndex(items, { id: payload.id });
 
-  [SHOW_MESSAGE]: function(state, { payload }) {
-    const newState = getSectionState(state, messagesSection);
-    const items = newState.items;
-    const index = _.findIndex(items, { id: payload.id });
+      newState.items = [...items];
 
-    newState.items = [...items];
+      if (index >= 0) {
+        const item = items[index];
 
-    if (index >= 0) {
-      const item = items[index];
-
-      newState.items.splice(index, 1, { ...item, ...payload });
-    } else {
-      newState.items.push({ ...payload });
-    }
-
-    return updateSectionState(state, messagesSection, newState);
-  },
-
-  [HIDE_MESSAGE]: function(state, { payload }) {
-    const newState = getSectionState(state, messagesSection);
-
-    newState.items = [...newState.items];
-    _.remove(newState.items, { id: payload.id });
-
-    return updateSectionState(state, messagesSection, newState);
-  },
-
-  [SET_APP_VALUE]: function(state, { payload }) {
-    const newState = Object.assign(getSectionState(state, section), payload);
-
-    return updateSectionState(state, section, newState);
-  },
-
-  [SET_VERSION]: function(state, { payload }) {
-    const version = payload.version;
-
-    const newState = {
-      version
-    };
-
-    if (state.version !== version) {
-      if (!state.prevVersion) {
-        newState.prevVersion = state.version;
+        newState.items.splice(index, 1, { ...item, ...payload });
+      } else {
+        newState.items.push({ ...payload });
       }
-      newState.isUpdated = true;
-    }
 
-    return Object.assign({}, state, newState);
+      return updateSectionState(state, messagesSection, newState);
+    },
+
+    [HIDE_MESSAGE]: function (state, { payload }) {
+      const newState = getSectionState(state, messagesSection);
+
+      newState.items = [...newState.items];
+      _.remove(newState.items, { id: payload.id });
+
+      return updateSectionState(state, messagesSection, newState);
+    },
+
+    [SET_APP_VALUE]: function (state, { payload }) {
+      const newState = Object.assign(getSectionState(state, section), payload);
+
+      return updateSectionState(state, section, newState);
+    },
+
+    [SET_VERSION]: function (state, { payload }) {
+      const version = payload.version;
+
+      const newState = {
+        version,
+      };
+
+      if (state.version !== version) {
+        if (!state.prevVersion) {
+          newState.prevVersion = state.version;
+        }
+        newState.isUpdated = true;
+      }
+
+      return Object.assign({}, state, newState);
+    },
+
+    [SET_IS_SIDEBAR_VISIBLE]: function (state, { payload }) {
+      const newState = {
+        isSidebarVisible: payload.isSidebarVisible,
+      };
+
+      return Object.assign({}, state, newState);
+    },
   },
-
-  [SET_IS_SIDEBAR_VISIBLE]: function(state, { payload }) {
-    const newState = {
-      isSidebarVisible: payload.isSidebarVisible
-    };
-
-    return Object.assign({}, state, newState);
-  }
-
-}, defaultState, section);
+  defaultState,
+  section
+);

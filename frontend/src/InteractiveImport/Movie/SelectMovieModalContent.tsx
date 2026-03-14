@@ -88,7 +88,7 @@ function SelectMovieModalContent(props: SelectMovieModalContentProps) {
   const { data } = useSearchMovie(debouncedQuery, 25);
 
   // Force results to clear if the filter is cleared/reset
-  const items = debouncedQuery.length > 2 ? data ?? [] : [];
+  const items = debouncedQuery.length > 2 ? (data ?? []) : [];
 
   const onFilterChange = useCallback(
     ({ value }: InputChanged<string>) => {

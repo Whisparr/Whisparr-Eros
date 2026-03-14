@@ -18,16 +18,13 @@ function MoveSceneModal(props) {
     isOpen,
     onModalClose,
     onSavePress,
-    onMoveScenePress
+    onMoveScenePress,
   } = props;
 
-  if (
-    isOpen &&
-    !originalPath &&
-    !destinationPath &&
-    !destinationRootFolder
-  ) {
-    console.error('orginalPath and destinationPath OR destinationRootFolder must be provided');
+  if (isOpen && !originalPath && !destinationPath && !destinationRootFolder) {
+    console.error(
+      'orginalPath and destinationPath OR destinationRootFolder must be provided'
+    );
   }
 
   return (
@@ -37,41 +34,29 @@ function MoveSceneModal(props) {
       closeOnBackgroundClick={false}
       onModalClose={onModalClose}
     >
-      <ModalContent
-        showCloseButton={true}
-        onModalClose={onModalClose}
-      >
-        <ModalHeader>
-          {translate('MoveFiles')}
-        </ModalHeader>
+      <ModalContent showCloseButton={true} onModalClose={onModalClose}>
+        <ModalHeader>{translate('MoveFiles')}</ModalHeader>
 
         <ModalBody>
-          {
-            destinationRootFolder ?
-              translate('MoveSceneFoldersToRootFolder', { destinationRootFolder }) :
-              translate('MoveSceneFoldersToNewPath', { originalPath, destinationPath })
-          }
-          {
-            destinationRootFolder ?
-              <div>
-                {translate('MoveSceneFoldersRenameFolderWarning')}
-              </div> :
-              null
-          }
+          {destinationRootFolder
+            ? translate('MoveSceneFoldersToRootFolder', {
+                destinationRootFolder,
+              })
+            : translate('MoveSceneFoldersToNewPath', {
+                originalPath,
+                destinationPath,
+              })}
+          {destinationRootFolder ? (
+            <div>{translate('MoveSceneFoldersRenameFolderWarning')}</div>
+          ) : null}
         </ModalBody>
 
         <ModalFooter>
-          <Button
-            className={styles.doNotMoveButton}
-            onPress={onSavePress}
-          >
+          <Button className={styles.doNotMoveButton} onPress={onSavePress}>
             {translate('MoveSceneFoldersDontMoveFiles')}
           </Button>
 
-          <Button
-            kind={kinds.DANGER}
-            onPress={onMoveScenePress}
-          >
+          <Button kind={kinds.DANGER} onPress={onMoveScenePress}>
             {translate('MoveSceneFoldersMoveFiles')}
           </Button>
         </ModalFooter>
@@ -87,7 +72,7 @@ MoveSceneModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onModalClose: PropTypes.func.isRequired,
   onSavePress: PropTypes.func.isRequired,
-  onMoveScenePress: PropTypes.func.isRequired
+  onMoveScenePress: PropTypes.func.isRequired,
 };
 
 export default MoveSceneModal;

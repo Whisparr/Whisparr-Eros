@@ -5,9 +5,13 @@ import createBulkRemoveItemHandler from 'Store/Actions/Creators/createBulkRemove
 import createFetchHandler from 'Store/Actions/Creators/createFetchHandler';
 import createFetchSchemaHandler from 'Store/Actions/Creators/createFetchSchemaHandler';
 import createRemoveItemHandler from 'Store/Actions/Creators/createRemoveItemHandler';
-import createSaveProviderHandler, { createCancelSaveProviderHandler } from 'Store/Actions/Creators/createSaveProviderHandler';
+import createSaveProviderHandler, {
+  createCancelSaveProviderHandler,
+} from 'Store/Actions/Creators/createSaveProviderHandler';
 import createTestAllProvidersHandler from 'Store/Actions/Creators/createTestAllProvidersHandler';
-import createTestProviderHandler, { createCancelTestProviderHandler } from 'Store/Actions/Creators/createTestProviderHandler';
+import createTestProviderHandler, {
+  createCancelTestProviderHandler,
+} from 'Store/Actions/Creators/createTestProviderHandler';
 import createSetClientSideCollectionSortReducer from 'Store/Actions/Creators/Reducers/createSetClientSideCollectionSortReducer';
 import createSetProviderFieldValueReducer from 'Store/Actions/Creators/Reducers/createSetProviderFieldValueReducer';
 import createSetSettingValueReducer from 'Store/Actions/Creators/Reducers/createSetSettingValueReducer';
@@ -39,7 +43,8 @@ export const CANCEL_TEST_INDEXER = 'settings/indexers/cancelTestIndexer';
 export const TEST_ALL_INDEXERS = 'settings/indexers/testAllIndexers';
 export const BULK_EDIT_INDEXERS = 'settings/indexers/bulkEditIndexers';
 export const BULK_DELETE_INDEXERS = 'settings/indexers/bulkDeleteIndexers';
-export const SET_MANAGE_INDEXERS_SORT = 'settings/indexers/setManageIndexersSort';
+export const SET_MANAGE_INDEXERS_SORT =
+  'settings/indexers/setManageIndexersSort';
 
 //
 // Action Creators
@@ -62,22 +67,24 @@ export const setManageIndexersSort = createAction(SET_MANAGE_INDEXERS_SORT);
 export const setIndexerValue = createAction(SET_INDEXER_VALUE, (payload) => {
   return {
     section,
-    ...payload
+    ...payload,
   };
 });
 
-export const setIndexerFieldValue = createAction(SET_INDEXER_FIELD_VALUE, (payload) => {
-  return {
-    section,
-    ...payload
-  };
-});
+export const setIndexerFieldValue = createAction(
+  SET_INDEXER_FIELD_VALUE,
+  (payload) => {
+    return {
+      section,
+      ...payload,
+    };
+  }
+);
 
 //
 // Details
 
 export default {
-
   //
   // State
 
@@ -103,8 +110,8 @@ export default {
     sortPredicates: {
       name: ({ name }) => {
         return name.toLocaleLowerCase();
-      }
-    }
+      },
+    },
   },
 
   //
@@ -112,7 +119,10 @@ export default {
 
   actionHandlers: {
     [FETCH_INDEXERS]: createFetchHandler(section, '/indexer'),
-    [FETCH_INDEXER_SCHEMA]: createFetchSchemaHandler(section, '/indexer/schema'),
+    [FETCH_INDEXER_SCHEMA]: createFetchSchemaHandler(
+      section,
+      '/indexer/schema'
+    ),
 
     [SAVE_INDEXER]: createSaveProviderHandler(section, '/indexer'),
     [CANCEL_SAVE_INDEXER]: createCancelSaveProviderHandler(section),
@@ -121,8 +131,11 @@ export default {
     [CANCEL_TEST_INDEXER]: createCancelTestProviderHandler(section),
     [TEST_ALL_INDEXERS]: createTestAllProvidersHandler(section, '/indexer'),
 
-    [BULK_DELETE_INDEXERS]: createBulkRemoveItemHandler(section, '/indexer/bulk'),
-    [BULK_EDIT_INDEXERS]: createBulkEditItemHandler(section, '/indexer/bulk')
+    [BULK_DELETE_INDEXERS]: createBulkRemoveItemHandler(
+      section,
+      '/indexer/bulk'
+    ),
+    [BULK_EDIT_INDEXERS]: createBulkEditItemHandler(section, '/indexer/bulk'),
   },
 
   //
@@ -144,7 +157,7 @@ export default {
       });
     },
 
-    [CLONE_INDEXER]: function(state, { payload }) {
+    [CLONE_INDEXER]: function (state, { payload }) {
       const id = payload.id;
       const newState = getSectionState(state, section);
       const item = newState.items.find((i) => i.id === id);
@@ -168,14 +181,13 @@ export default {
 
       // Set the name in pendingChanges
       newState.pendingChanges = {
-        name: translate('DefaultNameCopiedProfile', { name: item.name })
+        name: translate('DefaultNameCopiedProfile', { name: item.name }),
       };
 
       return updateSectionState(state, section, newState);
     },
 
-    [SET_MANAGE_INDEXERS_SORT]: createSetClientSideCollectionSortReducer(section)
-
-  }
-
+    [SET_MANAGE_INDEXERS_SORT]:
+      createSetClientSideCollectionSortReducer(section),
+  },
 };

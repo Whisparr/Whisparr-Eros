@@ -11,7 +11,6 @@ import QualityDefinitionsConnector from './Definition/QualityDefinitionsConnecto
 import ResetQualityDefinitionsModal from './Reset/ResetQualityDefinitionsModal';
 
 class Quality extends Component {
-
   //
   // Lifecycle
 
@@ -23,7 +22,7 @@ class Quality extends Component {
     this.state = {
       isSaving: false,
       hasPendingChanges: false,
-      isConfirmQualityDefinitionResetModalOpen: false
+      isConfirmQualityDefinitionResetModalOpen: false,
     };
   }
 
@@ -56,11 +55,8 @@ class Quality extends Component {
   // Render
 
   render() {
-    const {
-      isSaving,
-      isResettingQualityDefinitions,
-      hasPendingChanges
-    } = this.state;
+    const { isSaving, isResettingQualityDefinitions, hasPendingChanges } =
+      this.state;
 
     return (
       <PageContent title={translate('QualitySettings')}>
@@ -99,7 +95,7 @@ class Quality extends Component {
 }
 
 Quality.propTypes = {
-  isResettingQualityDefinitions: PropTypes.bool.isRequired
+  isResettingQualityDefinitions: PropTypes.bool.isRequired,
 };
 
 export default Quality;

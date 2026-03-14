@@ -19,7 +19,7 @@
   font-size: 24px;
 }
 
-.yearNumber{
+.yearNumber {
   margin-right: 10px;
   margin-left: 5px;
 }
@@ -50,7 +50,7 @@
   margin-left: auto;
 }
 
-.monitorToggleButton{
+.monitorToggleButton {
   justify-content: flex-start;
 }
 

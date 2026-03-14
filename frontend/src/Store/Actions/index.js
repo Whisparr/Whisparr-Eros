@@ -71,5 +71,5 @@ export default [
   studioScenes,
   system,
   tags,
-  wanted
+  wanted,
 ];

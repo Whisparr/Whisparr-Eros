@@ -15,7 +15,7 @@ export const defaultState = {
   isFetching: false,
   isPopulated: false,
   error: null,
-  items: []
+  items: [],
 };
 
 //
@@ -34,18 +34,18 @@ export const clearOrganizePreview = createAction(CLEAR_ORGANIZE_PREVIEW);
 // Action Handlers
 
 export const actionHandlers = handleThunks({
-
-  [FETCH_ORGANIZE_PREVIEW]: createFetchHandler('organizePreview', '/rename')
-
+  [FETCH_ORGANIZE_PREVIEW]: createFetchHandler('organizePreview', '/rename'),
 });
 
 //
 // Reducers
 
-export const reducers = createHandleActions({
-
-  [CLEAR_ORGANIZE_PREVIEW]: (state) => {
-    return Object.assign({}, state, defaultState);
-  }
-
-}, defaultState, section);
+export const reducers = createHandleActions(
+  {
+    [CLEAR_ORGANIZE_PREVIEW]: (state) => {
+      return Object.assign({}, state, defaultState);
+    },
+  },
+  defaultState,
+  section
+);

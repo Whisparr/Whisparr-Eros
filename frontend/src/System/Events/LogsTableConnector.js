@@ -16,7 +16,7 @@ function createMapStateToProps() {
     (logs, clearLogExecuting) => {
       return {
         clearLogExecuting,
-        ...logs
+        ...logs,
       };
     }
   );
@@ -24,20 +24,15 @@ function createMapStateToProps() {
 
 const mapDispatchToProps = {
   executeCommand,
-  ...systemActions
+  ...systemActions,
 };
 
 class LogsTableConnector extends Component {
-
   //
   // Lifecycle
 
   componentDidMount() {
-    const {
-      useCurrentPage,
-      fetchLogs,
-      gotoLogsFirstPage
-    } = this.props;
+    const { useCurrentPage, fetchLogs, gotoLogsFirstPage } = this.props;
 
     if (useCurrentPage) {
       fetchLogs();
@@ -98,7 +93,7 @@ class LogsTableConnector extends Component {
   onClearLogsPress = () => {
     this.props.executeCommand({
       name: commandNames.CLEAR_LOGS,
-      commandFinished: this.onCommandFinished
+      commandFinished: this.onCommandFinished,
     });
   };
 
@@ -140,7 +135,7 @@ LogsTableConnector.propTypes = {
   setLogsSort: PropTypes.func.isRequired,
   setLogsFilter: PropTypes.func.isRequired,
   setLogsTableOption: PropTypes.func.isRequired,
-  executeCommand: PropTypes.func.isRequired
+  executeCommand: PropTypes.func.isRequired,
 };
 
 export default withCurrentPage(

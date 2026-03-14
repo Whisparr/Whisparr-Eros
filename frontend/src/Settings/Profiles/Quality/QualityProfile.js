@@ -11,7 +11,6 @@ import EditQualityProfileModalConnector from './EditQualityProfileModalConnector
 import styles from './QualityProfile.css';
 
 class QualityProfile extends Component {
-
   //
   // Lifecycle
 
@@ -20,7 +19,7 @@ class QualityProfile extends Component {
 
     this.state = {
       isEditQualityProfileModalOpen: false,
-      isDeleteQualityProfileModalOpen: false
+      isDeleteQualityProfileModalOpen: false,
     };
   }
 
@@ -38,7 +37,7 @@ class QualityProfile extends Component {
   onDeleteQualityProfilePress = () => {
     this.setState({
       isEditQualityProfileModalOpen: false,
-      isDeleteQualityProfileModalOpen: true
+      isDeleteQualityProfileModalOpen: true,
     });
   };
 
@@ -51,10 +50,7 @@ class QualityProfile extends Component {
   };
 
   onCloneQualityProfilePress = () => {
-    const {
-      id,
-      onCloneQualityProfilePress
-    } = this.props;
+    const { id, onCloneQualityProfilePress } = this.props;
 
     onCloneQualityProfilePress(id);
   };
@@ -63,15 +59,8 @@ class QualityProfile extends Component {
   // Render
 
   render() {
-    const {
-      id,
-      name,
-      upgradeAllowed,
-      fallback,
-      cutoff,
-      items,
-      isDeleting
-    } = this.props;
+    const { id, name, upgradeAllowed, fallback, cutoff, items, isDeleting } =
+      this.props;
 
     return (
       <Card
@@ -80,9 +69,7 @@ class QualityProfile extends Component {
         onPress={this.onEditQualityProfilePress}
       >
         <div className={styles.nameContainer}>
-          <div className={styles.name}>
-            {name}
-          </div>
+          <div className={styles.name}>{name}</div>
 
           <IconButton
             className={styles.cloneButton}
@@ -93,70 +80,68 @@ class QualityProfile extends Component {
         </div>
 
         <div className={styles.qualities}>
-          {
-            items.map((item) => {
-              if (!item.allowed) {
-                return null;
-              }
+          {items.map((item) => {
+            if (!item.allowed) {
+              return null;
+            }
 
-              if (item.quality) {
-                const isCutoff = upgradeAllowed && item.quality.id === cutoff;
-
-                return (
-                  <Label
-                    key={item.quality.id}
-                    kind={isCutoff ? kinds.INFO : kinds.DEFAULT}
-                    title={isCutoff ? translate('UpgradeUntilThisQualityIsMetOrExceeded') : null}
-                  >
-                    {item.quality.name}
-                  </Label>
-                );
-              }
-
-              const isCutoff = upgradeAllowed && item.id === cutoff;
+            if (item.quality) {
+              const isCutoff = upgradeAllowed && item.quality.id === cutoff;
 
               return (
-                <Tooltip
-                  key={item.id}
-                  className={styles.tooltipLabel}
-                  anchor={
-                    <Label
-                      kind={isCutoff ? kinds.INFO : kinds.DEFAULT}
-                      title={isCutoff ? translate('Cutoff') : null}
-                    >
-                      {item.name}
-                    </Label>
+                <Label
+                  key={item.quality.id}
+                  kind={isCutoff ? kinds.INFO : kinds.DEFAULT}
+                  title={
+                    isCutoff
+                      ? translate('UpgradeUntilThisQualityIsMetOrExceeded')
+                      : null
                   }
-                  tooltip={
-                    <div>
-                      {
-                        item.items.map((groupItem) => {
-                          return (
-                            <Label
-                              key={groupItem.quality.id}
-                              kind={isCutoff ? kinds.INFO : kinds.DEFAULT}
-                              title={isCutoff ? translate('Cutoff') : null}
-                            >
-                              {groupItem.quality.name}
-                            </Label>
-                          );
-                        })
-                      }
-                    </div>
-                  }
-                  kind={kinds.INVERSE}
-                  position={tooltipPositions.TOP}
-                />
+                >
+                  {item.quality.name}
+                </Label>
               );
-            })
-          }
+            }
+
+            const isCutoff = upgradeAllowed && item.id === cutoff;
+
+            return (
+              <Tooltip
+                key={item.id}
+                className={styles.tooltipLabel}
+                anchor={
+                  <Label
+                    kind={isCutoff ? kinds.INFO : kinds.DEFAULT}
+                    title={isCutoff ? translate('Cutoff') : null}
+                  >
+                    {item.name}
+                  </Label>
+                }
+                tooltip={
+                  <div>
+                    {item.items.map((groupItem) => {
+                      return (
+                        <Label
+                          key={groupItem.quality.id}
+                          kind={isCutoff ? kinds.INFO : kinds.DEFAULT}
+                          title={isCutoff ? translate('Cutoff') : null}
+                        >
+                          {groupItem.quality.name}
+                        </Label>
+                      );
+                    })}
+                  </div>
+                }
+                kind={kinds.INVERSE}
+                position={tooltipPositions.TOP}
+              />
+            );
+          })}
         </div>
 
         {fallback && (
           <div className={styles.fallback}>
-            <Label>
-              {translate('Fallback')}
-            </Label>
+            <Label>{translate('Fallback')}</Label>
           </div>
         )}
 
@@ -191,7 +176,7 @@ QualityProfile.propTypes = {
   items: PropTypes.arrayOf(PropTypes.object).isRequired,
   isDeleting: PropTypes.bool.isRequired,
   onConfirmDeleteQualityProfile: PropTypes.func.isRequired,
-  onCloneQualityProfilePress: PropTypes.func.isRequired
+  onCloneQualityProfilePress: PropTypes.func.isRequired,
 };
 
 export default QualityProfile;

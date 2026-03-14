@@ -9,11 +9,10 @@ function mapStateToProps() {
 }
 
 const mapDispatchToProps = {
-  clearPendingChanges
+  clearPendingChanges,
 };
 
 class EditQualityProfileModalConnector extends Component {
-
   //
   // Listeners
 
@@ -37,7 +36,10 @@ class EditQualityProfileModalConnector extends Component {
 
 EditQualityProfileModalConnector.propTypes = {
   onModalClose: PropTypes.func.isRequired,
-  clearPendingChanges: PropTypes.func.isRequired
+  clearPendingChanges: PropTypes.func.isRequired,
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(EditQualityProfileModalConnector);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(EditQualityProfileModalConnector);

@@ -23,8 +23,8 @@ export const defaultState = {
     isFetching: false,
     isPopulated: false,
     error: null,
-    items: []
-  }
+    items: [],
+  },
 };
 
 //
@@ -49,12 +49,12 @@ export const fetchTagDetails = createThunk(FETCH_TAG_DETAILS);
 export const actionHandlers = handleThunks({
   [FETCH_TAGS]: createFetchHandler(section, '/tag'),
 
-  [ADD_TAG]: function(getState, payload, dispatch) {
+  [ADD_TAG]: function (getState, payload, dispatch) {
     const promise = createAjaxRequest({
       url: '/tag',
       method: 'POST',
       data: JSON.stringify(payload.tag),
-      dataType: 'json'
+      dataType: 'json',
     }).request;
 
     promise.done((data) => {
@@ -67,8 +67,7 @@ export const actionHandlers = handleThunks({
   },
 
   [DELETE_TAG]: createRemoveItemHandler(section, '/tag'),
-  [FETCH_TAG_DETAILS]: createFetchHandler('tags.details', '/tag/detail')
-
+  [FETCH_TAG_DETAILS]: createFetchHandler('tags.details', '/tag/detail'),
 });
 
 //

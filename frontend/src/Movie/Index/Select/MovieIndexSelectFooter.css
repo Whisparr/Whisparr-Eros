@@ -17,7 +17,7 @@
   padding: 16px 32px;
   border-top: 1px solid #222;
   background: #18191c;
-  box-shadow: 0 -2px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.15);
 
   .buttons {
     display: flex;

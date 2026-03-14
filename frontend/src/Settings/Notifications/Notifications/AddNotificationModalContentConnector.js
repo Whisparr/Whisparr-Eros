@@ -2,25 +2,24 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
-import { fetchNotificationSchema, selectNotificationSchema } from 'Store/Actions/settingsActions';
+import {
+  fetchNotificationSchema,
+  selectNotificationSchema,
+} from 'Store/Actions/settingsActions';
 import AddNotificationModalContent from './AddNotificationModalContent';
 
 function createMapStateToProps() {
   return createSelector(
     (state) => state.settings.notifications,
     (notifications) => {
-      const {
-        isSchemaFetching,
-        isSchemaPopulated,
-        schemaError,
-        schema
-      } = notifications;
+      const { isSchemaFetching, isSchemaPopulated, schemaError, schema } =
+        notifications;
 
       return {
         isSchemaFetching,
         isSchemaPopulated,
         schemaError,
-        schema
+        schema,
       };
     }
   );
@@ -28,11 +27,10 @@ function createMapStateToProps() {
 
 const mapDispatchToProps = {
   fetchNotificationSchema,
-  selectNotificationSchema
+  selectNotificationSchema,
 };
 
 class AddNotificationModalContentConnector extends Component {
-
   //
   // Lifecycle
 
@@ -64,7 +62,10 @@ class AddNotificationModalContentConnector extends Component {
 AddNotificationModalContentConnector.propTypes = {
   fetchNotificationSchema: PropTypes.func.isRequired,
   selectNotificationSchema: PropTypes.func.isRequired,
-  onModalClose: PropTypes.func.isRequired
+  onModalClose: PropTypes.func.isRequired,
 };
 
-export default connect(createMapStateToProps, mapDispatchToProps)(AddNotificationModalContentConnector);
+export default connect(
+  createMapStateToProps,
+  mapDispatchToProps
+)(AddNotificationModalContentConnector);

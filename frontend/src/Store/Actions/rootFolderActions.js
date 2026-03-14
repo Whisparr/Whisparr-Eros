@@ -21,7 +21,7 @@ export const defaultState = {
   isRefreshing: false,
   isSaving: false,
   saveError: null,
-  items: []
+  items: [],
 };
 
 //
@@ -44,7 +44,6 @@ export const refreshRootFolder = createThunk(REFRESH_ROOT_FOLDER);
 // Action Handlers
 
 export const actionHandlers = handleThunks({
-
   [FETCH_ROOT_FOLDERS]: createFetchHandler('rootFolders', '/rootFolder'),
 
   [DELETE_ROOT_FOLDER]: createRemoveItemHandler(
@@ -53,83 +52,94 @@ export const actionHandlers = handleThunks({
     (state) => state.rootFolders
   ),
 
-  [REFRESH_ROOT_FOLDER]: function(getState, payload, dispatch) {
+  [REFRESH_ROOT_FOLDER]: function (getState, payload, dispatch) {
     const id = payload.id;
 
-    dispatch(set({
-      section,
-      isRefreshing: true
-    }));
+    dispatch(
+      set({
+        section,
+        isRefreshing: true,
+      })
+    );
 
     const promise = createAjaxRequest({
       url: `/rootFolder/refresh/${id}`,
       method: 'POST',
-      dataType: 'json'
+      dataType: 'json',
     }).request;
 
     promise.done((data) => {
-      dispatch(batchActions([
-        updateItem({
-          section,
-          ...data
-        }),
+      dispatch(
+        batchActions([
+          updateItem({
+            section,
+            ...data,
+          }),
 
-        set({
-          section,
-          isRefreshing: false,
-          saveError: null
-        })
-      ]));
+          set({
+            section,
+            isRefreshing: false,
+            saveError: null,
+          }),
+        ])
+      );
     });
 
     promise.fail((xhr) => {
-      dispatch(set({
-        section,
-        isRefreshing: false,
-        saveError: xhr
-      }));
+      dispatch(
+        set({
+          section,
+          isRefreshing: false,
+          saveError: xhr,
+        })
+      );
     });
   },
 
-  [ADD_ROOT_FOLDER]: function(getState, payload, dispatch) {
+  [ADD_ROOT_FOLDER]: function (getState, payload, dispatch) {
     const path = payload.path;
 
-    dispatch(set({
-      section,
-      isSaving: true
-    }));
+    dispatch(
+      set({
+        section,
+        isSaving: true,
+      })
+    );
 
     const promise = createAjaxRequest({
       url: '/rootFolder',
       method: 'POST',
       data: JSON.stringify({ path }),
-      dataType: 'json'
+      dataType: 'json',
     }).request;
 
     promise.done((data) => {
-      dispatch(batchActions([
-        updateItem({
-          section,
-          ...data
-        }),
+      dispatch(
+        batchActions([
+          updateItem({
+            section,
+            ...data,
+          }),
 
-        set({
-          section,
-          isSaving: false,
-          saveError: null
-        })
-      ]));
+          set({
+            section,
+            isSaving: false,
+            saveError: null,
+          }),
+        ])
+      );
     });
 
     promise.fail((xhr) => {
-      dispatch(set({
-        section,
-        isSaving: false,
-        saveError: xhr
-      }));
+      dispatch(
+        set({
+          section,
+          isSaving: false,
+          saveError: xhr,
+        })
+      );
     });
-  }
-
+  },
 });
 
 //

@@ -2,14 +2,17 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
-import { saveRemotePathMapping, setRemotePathMappingValue } from 'Store/Actions/settingsActions';
+import {
+  saveRemotePathMapping,
+  setRemotePathMappingValue,
+} from 'Store/Actions/settingsActions';
 import selectSettings from 'Store/Selectors/selectSettings';
 import EditRemotePathMappingModalContent from './EditRemotePathMappingModalContent';
 
 const newRemotePathMapping = {
   host: '',
   remotePath: '',
-  localPath: ''
+  localPath: '',
 };
 
 const selectDownloadClientHosts = createSelector(
@@ -22,7 +25,7 @@ const selectDownloadClientHosts = createSelector(
       });
 
       if (host) {
-        const group = acc[host.value] = acc[host.value] || [];
+        const group = (acc[host.value] = acc[host.value] || []);
         group.push(name);
       }
 
@@ -33,7 +36,7 @@ const selectDownloadClientHosts = createSelector(
       return {
         key: host,
         value: host,
-        hint: `${hosts[host].join(', ')}`
+        hint: `${hosts[host].join(', ')}`,
       };
     });
   }
@@ -45,16 +48,12 @@ function createRemotePathMappingSelector() {
     (state) => state.settings.remotePathMappings,
     selectDownloadClientHosts,
     (id, remotePathMappings, downloadClientHosts) => {
-      const {
-        isFetching,
-        error,
-        isSaving,
-        saveError,
-        pendingChanges,
-        items
-      } = remotePathMappings;
+      const { isFetching, error, isSaving, saveError, pendingChanges, items } =
+        remotePathMappings;
 
-      const mapping = id ? items.find((i) => i.id === id) : newRemotePathMapping;
+      const mapping = id
+        ? items.find((i) => i.id === id)
+        : newRemotePathMapping;
       const settings = selectSettings(mapping, pendingChanges, saveError);
 
       return {
@@ -65,7 +64,7 @@ function createRemotePathMappingSelector() {
         saveError,
         item: settings.settings,
         ...settings,
-        downloadClientHosts
+        downloadClientHosts,
       };
     }
   );
@@ -76,7 +75,7 @@ function createMapStateToProps() {
     createRemotePathMappingSelector(),
     (remotePathMapping) => {
       return {
-        ...remotePathMapping
+        ...remotePathMapping,
       };
     }
   );
@@ -84,11 +83,10 @@ function createMapStateToProps() {
 
 const mapDispatchToProps = {
   dispatchSetRemotePathMappingValue: setRemotePathMappingValue,
-  dispatchSaveRemotePathMapping: saveRemotePathMapping
+  dispatchSaveRemotePathMapping: saveRemotePathMapping,
 };
 
 class EditRemotePathMappingModalContentConnector extends Component {
-
   //
   // Lifecycle
 
@@ -97,7 +95,7 @@ class EditRemotePathMappingModalContentConnector extends Component {
       Object.keys(newRemotePathMapping).forEach((name) => {
         this.props.dispatchSetRemotePathMappingValue({
           name,
-          value: newRemotePathMapping[name]
+          value: newRemotePathMapping[name],
         });
       });
     }
@@ -141,7 +139,10 @@ EditRemotePathMappingModalContentConnector.propTypes = {
   item: PropTypes.object.isRequired,
   dispatchSetRemotePathMappingValue: PropTypes.func.isRequired,
   dispatchSaveRemotePathMapping: PropTypes.func.isRequired,
-  onModalClose: PropTypes.func.isRequired
+  onModalClose: PropTypes.func.isRequired,
 };
 
-export default connect(createMapStateToProps, mapDispatchToProps)(EditRemotePathMappingModalContentConnector);
+export default connect(
+  createMapStateToProps,
+  mapDispatchToProps
+)(EditRemotePathMappingModalContentConnector);

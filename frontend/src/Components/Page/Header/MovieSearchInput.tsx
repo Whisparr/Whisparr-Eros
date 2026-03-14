@@ -35,22 +35,21 @@ interface AddNewMovieSuggestion {
   title: string;
 }
 
-export interface SuggestedMovie
-  extends Pick<
-    Movie,
-    | 'title'
-    | 'year'
-    | 'titleSlug'
-    | 'sortTitle'
-    | 'images'
-    | 'tmdbId'
-    | 'itemType'
-    | 'studioTitle'
-    | 'genres'
-    | 'performerNames'
-    | 'runtime'
-    | 'releaseDate'
-  > {
+export interface SuggestedMovie extends Pick<
+  Movie,
+  | 'title'
+  | 'year'
+  | 'titleSlug'
+  | 'sortTitle'
+  | 'images'
+  | 'tmdbId'
+  | 'itemType'
+  | 'studioTitle'
+  | 'genres'
+  | 'performerNames'
+  | 'runtime'
+  | 'releaseDate'
+> {
   firstCharacter: string;
   tags: number[];
 }

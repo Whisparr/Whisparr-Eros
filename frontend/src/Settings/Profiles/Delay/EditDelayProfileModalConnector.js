@@ -9,11 +9,10 @@ function mapStateToProps() {
 }
 
 const mapDispatchToProps = {
-  clearPendingChanges
+  clearPendingChanges,
 };
 
 class EditDelayProfileModalConnector extends Component {
-
   //
   // Listeners
 
@@ -27,17 +26,17 @@ class EditDelayProfileModalConnector extends Component {
 
   render() {
     return (
-      <EditDelayProfileModal
-        {...this.props}
-        onModalClose={this.onModalClose}
-      />
+      <EditDelayProfileModal {...this.props} onModalClose={this.onModalClose} />
     );
   }
 }
 
 EditDelayProfileModalConnector.propTypes = {
   onModalClose: PropTypes.func.isRequired,
-  clearPendingChanges: PropTypes.func.isRequired
+  clearPendingChanges: PropTypes.func.isRequired,
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(EditDelayProfileModalConnector);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(EditDelayProfileModalConnector);

@@ -29,7 +29,6 @@ function getDelay(enabled, delay) {
 }
 
 class DelayProfile extends Component {
-
   //
   // Lifecycle
 
@@ -38,7 +37,7 @@ class DelayProfile extends Component {
 
     this.state = {
       isEditDelayProfileModalOpen: false,
-      isDeleteDelayProfileModalOpen: false
+      isDeleteDelayProfileModalOpen: false,
     };
   }
 
@@ -56,7 +55,7 @@ class DelayProfile extends Component {
   onDeleteDelayProfilePress = () => {
     this.setState({
       isEditDelayProfileModalOpen: false,
-      isDeleteDelayProfileModalOpen: true
+      isDeleteDelayProfileModalOpen: true,
     });
   };
 
@@ -82,10 +81,12 @@ class DelayProfile extends Component {
       tags,
       tagList,
       isDragging,
-      connectDragSource
+      connectDragSource,
     } = this.props;
 
-    let preferred = titleCase(translate('PreferProtocol', { preferredProtocol }));
+    let preferred = titleCase(
+      translate('PreferProtocol', { preferredProtocol })
+    );
 
     if (!enableUsenet) {
       preferred = translate('OnlyTorrent');
@@ -101,13 +102,14 @@ class DelayProfile extends Component {
         )}
       >
         <div className={styles.column}>{preferred}</div>
-        <div className={styles.column}>{getDelay(enableUsenet, usenetDelay)}</div>
-        <div className={styles.column}>{getDelay(enableTorrent, torrentDelay)}</div>
+        <div className={styles.column}>
+          {getDelay(enableUsenet, usenetDelay)}
+        </div>
+        <div className={styles.column}>
+          {getDelay(enableTorrent, torrentDelay)}
+        </div>
 
-        <TagList
-          tags={tags}
-          tagList={tagList}
-        />
+        <TagList tags={tags} tagList={tagList} />
 
         <div className={styles.actions}>
           <Link
@@ -117,17 +119,12 @@ class DelayProfile extends Component {
             <Icon name={icons.EDIT} />
           </Link>
 
-          {
-            id !== 1 &&
-              connectDragSource(
-                <div className={styles.dragHandle}>
-                  <Icon
-                    className={styles.dragIcon}
-                    name={icons.REORDER}
-                  />
-                </div>
-              )
-          }
+          {id !== 1 &&
+            connectDragSource(
+              <div className={styles.dragHandle}>
+                <Icon className={styles.dragIcon} name={icons.REORDER} />
+              </div>
+            )}
         </div>
 
         <EditDelayProfileModalConnector
@@ -162,12 +159,12 @@ DelayProfile.propTypes = {
   tagList: PropTypes.arrayOf(PropTypes.object).isRequired,
   isDragging: PropTypes.bool.isRequired,
   connectDragSource: PropTypes.func,
-  onConfirmDeleteDelayProfile: PropTypes.func.isRequired
+  onConfirmDeleteDelayProfile: PropTypes.func.isRequired,
 };
 
 DelayProfile.defaultProps = {
   // The drag preview will not connect the drag handle.
-  connectDragSource: (node) => node
+  connectDragSource: (node) => node,
 };
 
 export default DelayProfile;

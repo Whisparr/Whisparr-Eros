@@ -8,14 +8,17 @@ function createMapStateToProps() {
     (state) => state.settings.downloadClients.isTestingAll,
     (isTestingAll) => {
       return {
-        isTestingAll
+        isTestingAll,
       };
     }
   );
 }
 
 const mapDispatchToProps = {
-  dispatchTestAllDownloadClients: testAllDownloadClients
+  dispatchTestAllDownloadClients: testAllDownloadClients,
 };
 
-export default connect(createMapStateToProps, mapDispatchToProps)(DownloadClientSettings);
+export default connect(
+  createMapStateToProps,
+  mapDispatchToProps
+)(DownloadClientSettings);

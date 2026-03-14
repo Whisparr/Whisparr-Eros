@@ -28,28 +28,28 @@ export const defaultState = {
     isFetching: false,
     isPopulated: false,
     error: null,
-    item: {}
+    item: {},
   },
 
   health: {
     isFetching: false,
     isPopulated: false,
     error: null,
-    items: []
+    items: [],
   },
 
   diskSpace: {
     isFetching: false,
     isPopulated: false,
     error: null,
-    items: []
+    items: [],
   },
 
   tasks: {
     isFetching: false,
     isPopulated: false,
     error: null,
-    items: []
+    items: [],
   },
 
   backups: {
@@ -60,14 +60,14 @@ export const defaultState = {
     restoreError: null,
     isDeleting: false,
     deleteError: null,
-    items: []
+    items: [],
   },
 
   updates: {
     isFetching: false,
     isPopulated: false,
     error: null,
-    items: []
+    items: [],
   },
 
   logs: {
@@ -85,34 +85,34 @@ export const defaultState = {
         columnLabel: () => translate('Level'),
         isSortable: false,
         isVisible: true,
-        isModifiable: false
+        isModifiable: false,
       },
       {
         name: 'time',
         label: () => translate('Time'),
         isSortable: true,
         isVisible: true,
-        isModifiable: false
+        isModifiable: false,
       },
       {
         name: 'logger',
         label: () => translate('Component'),
         isSortable: false,
         isVisible: true,
-        isModifiable: false
+        isModifiable: false,
       },
       {
         name: 'message',
         label: () => translate('Message'),
         isVisible: true,
-        isModifiable: false
+        isModifiable: false,
       },
       {
         name: 'actions',
         columnLabel: () => translate('Actions'),
         isVisible: true,
-        isModifiable: false
-      }
+        isModifiable: false,
+      },
     ],
 
     selectedFilterKey: 'all',
@@ -121,7 +121,7 @@ export const defaultState = {
       {
         key: 'all',
         label: () => translate('All'),
-        filters: []
+        filters: [],
       },
       {
         key: 'info',
@@ -130,9 +130,9 @@ export const defaultState = {
           {
             key: 'level',
             value: 'info',
-            type: filterTypes.EQUAL
-          }
-        ]
+            type: filterTypes.EQUAL,
+          },
+        ],
       },
       {
         key: 'warn',
@@ -141,9 +141,9 @@ export const defaultState = {
           {
             key: 'level',
             value: 'warn',
-            type: filterTypes.EQUAL
-          }
-        ]
+            type: filterTypes.EQUAL,
+          },
+        ],
       },
       {
         key: 'error',
@@ -152,33 +152,33 @@ export const defaultState = {
           {
             key: 'level',
             value: 'error',
-            type: filterTypes.EQUAL
-          }
-        ]
-      }
-    ]
+            type: filterTypes.EQUAL,
+          },
+        ],
+      },
+    ],
   },
 
   logFiles: {
     isFetching: false,
     isPopulated: false,
     error: null,
-    items: []
+    items: [],
   },
 
   updateLogFiles: {
     isFetching: false,
     isPopulated: false,
     error: null,
-    items: []
-  }
+    items: [],
+  },
 };
 
 export const persistState = [
   'system.logs.pageSize',
   'system.logs.sortKey',
   'system.logs.sortDirection',
-  'system.logs.selectedFilterKey'
+  'system.logs.selectedFilterKey',
 ];
 
 //
@@ -210,7 +210,8 @@ export const SET_LOGS_TABLE_OPTION = 'system/logs/setLogsTableOption';
 export const CLEAR_LOGS_TABLE = 'system/logs/clearLogsTable';
 
 export const FETCH_LOG_FILES = 'system/logFiles/fetchLogFiles';
-export const FETCH_UPDATE_LOG_FILES = 'system/updateLogFiles/fetchUpdateLogFiles';
+export const FETCH_UPDATE_LOG_FILES =
+  'system/updateLogFiles/fetchUpdateLogFiles';
 
 export const RESTART = 'system/restart';
 export const SHUTDOWN = 'system/shutdown';
@@ -261,16 +262,15 @@ export const actionHandlers = handleThunks({
 
   [FETCH_BACKUPS]: createFetchHandler(backupsSection, '/system/backup'),
 
-  [RESTORE_BACKUP]: function(getState, payload, dispatch) {
-    const {
-      id,
-      file
-    } = payload;
+  [RESTORE_BACKUP]: function (getState, payload, dispatch) {
+    const { id, file } = payload;
 
-    dispatch(set({
-      section: backupsSection,
-      isRestoring: true
-    }));
+    dispatch(
+      set({
+        section: backupsSection,
+        isRestoring: true,
+      })
+    );
 
     let ajaxOptions = null;
 
@@ -281,8 +281,8 @@ export const actionHandlers = handleThunks({
         contentType: 'application/json',
         dataType: 'json',
         data: JSON.stringify({
-          id
-        })
+          id,
+        }),
       };
     } else if (file) {
       const formData = new FormData();
@@ -293,32 +293,38 @@ export const actionHandlers = handleThunks({
         method: 'POST',
         processData: false,
         contentType: false,
-        data: formData
+        data: formData,
       };
     } else {
-      dispatch(set({
-        section: backupsSection,
-        isRestoring: false,
-        restoreError: 'Error restoring backup'
-      }));
+      dispatch(
+        set({
+          section: backupsSection,
+          isRestoring: false,
+          restoreError: 'Error restoring backup',
+        })
+      );
     }
 
     const promise = createAjaxRequest(ajaxOptions).request;
 
     promise.done((data) => {
-      dispatch(set({
-        section: backupsSection,
-        isRestoring: false,
-        restoreError: null
-      }));
+      dispatch(
+        set({
+          section: backupsSection,
+          isRestoring: false,
+          restoreError: null,
+        })
+      );
     });
 
     promise.fail((xhr) => {
-      dispatch(set({
-        section: backupsSection,
-        isRestoring: false,
-        restoreError: xhr
-      }));
+      dispatch(
+        set({
+          section: backupsSection,
+          isRestoring: false,
+          restoreError: xhr,
+        })
+      );
     });
   },
 
@@ -326,28 +332,26 @@ export const actionHandlers = handleThunks({
 
   [FETCH_UPDATES]: createFetchHandler('system.updates', '/update'),
   [FETCH_LOG_FILES]: createFetchHandler('system.logFiles', '/log/file'),
-  [FETCH_UPDATE_LOG_FILES]: createFetchHandler('system.updateLogFiles', '/log/file/update'),
-
-  ...createServerSideCollectionHandlers(
-    'system.logs',
-    '/log',
-    fetchLogs,
-    {
-      [serverSideCollectionHandlers.FETCH]: FETCH_LOGS,
-      [serverSideCollectionHandlers.FIRST_PAGE]: GOTO_FIRST_LOGS_PAGE,
-      [serverSideCollectionHandlers.PREVIOUS_PAGE]: GOTO_PREVIOUS_LOGS_PAGE,
-      [serverSideCollectionHandlers.NEXT_PAGE]: GOTO_NEXT_LOGS_PAGE,
-      [serverSideCollectionHandlers.LAST_PAGE]: GOTO_LAST_LOGS_PAGE,
-      [serverSideCollectionHandlers.EXACT_PAGE]: GOTO_LOGS_PAGE,
-      [serverSideCollectionHandlers.SORT]: SET_LOGS_SORT,
-      [serverSideCollectionHandlers.FILTER]: SET_LOGS_FILTER
-    }
+  [FETCH_UPDATE_LOG_FILES]: createFetchHandler(
+    'system.updateLogFiles',
+    '/log/file/update'
   ),
 
-  [RESTART]: function(getState, payload, dispatch) {
+  ...createServerSideCollectionHandlers('system.logs', '/log', fetchLogs, {
+    [serverSideCollectionHandlers.FETCH]: FETCH_LOGS,
+    [serverSideCollectionHandlers.FIRST_PAGE]: GOTO_FIRST_LOGS_PAGE,
+    [serverSideCollectionHandlers.PREVIOUS_PAGE]: GOTO_PREVIOUS_LOGS_PAGE,
+    [serverSideCollectionHandlers.NEXT_PAGE]: GOTO_NEXT_LOGS_PAGE,
+    [serverSideCollectionHandlers.LAST_PAGE]: GOTO_LAST_LOGS_PAGE,
+    [serverSideCollectionHandlers.EXACT_PAGE]: GOTO_LOGS_PAGE,
+    [serverSideCollectionHandlers.SORT]: SET_LOGS_SORT,
+    [serverSideCollectionHandlers.FILTER]: SET_LOGS_FILTER,
+  }),
+
+  [RESTART]: function (getState, payload, dispatch) {
     const promise = createAjaxRequest({
       url: '/system/restart',
-      method: 'POST'
+      method: 'POST',
     }).request;
 
     promise.done(() => {
@@ -356,39 +360,41 @@ export const actionHandlers = handleThunks({
     });
   },
 
-  [SHUTDOWN]: function() {
+  [SHUTDOWN]: function () {
     createAjaxRequest({
       url: '/system/shutdown',
-      method: 'POST'
+      method: 'POST',
     });
-  }
+  },
 });
 
 //
 // Reducers
 
-export const reducers = createHandleActions({
+export const reducers = createHandleActions(
+  {
+    [CLEAR_RESTORE_BACKUP]: function (state, { payload }) {
+      return {
+        ...state,
+        backups: {
+          ...state.backups,
+          isRestoring: false,
+          restoreError: null,
+        },
+      };
+    },
 
-  [CLEAR_RESTORE_BACKUP]: function(state, { payload }) {
-    return {
-      ...state,
-      backups: {
-        ...state.backups,
-        isRestoring: false,
-        restoreError: null
-      }
-    };
+    [SET_LOGS_TABLE_OPTION]: createSetTableOptionReducer('logs'),
+
+    [CLEAR_LOGS_TABLE]: createClearReducer(section, {
+      isFetching: false,
+      isPopulated: false,
+      error: null,
+      items: [],
+      totalPages: 0,
+      totalRecords: 0,
+    }),
   },
-
-  [SET_LOGS_TABLE_OPTION]: createSetTableOptionReducer('logs'),
-
-  [CLEAR_LOGS_TABLE]: createClearReducer(section, {
-    isFetching: false,
-    isPopulated: false,
-    error: null,
-    items: [],
-    totalPages: 0,
-    totalRecords: 0
-  })
-
-}, defaultState, section);
+  defaultState,
+  section
+);

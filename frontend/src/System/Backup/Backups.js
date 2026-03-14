@@ -17,31 +17,30 @@ import RestoreBackupModalConnector from './RestoreBackupModalConnector';
 const columns = [
   {
     name: 'type',
-    isVisible: true
+    isVisible: true,
   },
   {
     name: 'name',
     label: () => translate('Name'),
-    isVisible: true
+    isVisible: true,
   },
   {
     name: 'size',
     label: () => translate('Size'),
-    isVisible: true
+    isVisible: true,
   },
   {
     name: 'time',
     label: () => translate('Time'),
-    isVisible: true
+    isVisible: true,
   },
   {
     name: 'actions',
-    isVisible: true
-  }
+    isVisible: true,
+  },
 ];
 
 class Backups extends Component {
-
   //
   // Lifecycle
 
@@ -49,7 +48,7 @@ class Backups extends Component {
     super(props, context);
 
     this.state = {
-      isRestoreModalOpen: false
+      isRestoreModalOpen: false,
     };
   }
 
@@ -75,7 +74,7 @@ class Backups extends Component {
       items,
       backupExecuting,
       onBackupPress,
-      onDeleteBackupPress
+      onDeleteBackupPress,
     } = this.props;
 
     const hasBackups = isPopulated && !!items.length;
@@ -101,59 +100,40 @@ class Backups extends Component {
         </PageToolbar>
 
         <PageContentBody>
-          {
-            isFetching && !isPopulated &&
-              <LoadingIndicator />
-          }
+          {isFetching && !isPopulated && <LoadingIndicator />}
 
-          {
-            !isFetching && !!error &&
-              <Alert kind={kinds.DANGER}>
-                {translate('BackupsLoadError')}
-              </Alert>
-          }
+          {!isFetching && !!error && (
+            <Alert kind={kinds.DANGER}>{translate('BackupsLoadError')}</Alert>
+          )}
 
-          {
-            noBackups &&
-              <Alert kind={kinds.INFO}>
-                {translate('NoBackupsAreAvailable')}
-              </Alert>
-          }
+          {noBackups && (
+            <Alert kind={kinds.INFO}>
+              {translate('NoBackupsAreAvailable')}
+            </Alert>
+          )}
 
-          {
-            hasBackups &&
-              <Table
-                columns={columns}
-              >
-                <TableBody>
-                  {
-                    items.map((item) => {
-                      const {
-                        id,
-                        type,
-                        name,
-                        path,
-                        size,
-                        time
-                      } = item;
+          {hasBackups && (
+            <Table columns={columns}>
+              <TableBody>
+                {items.map((item) => {
+                  const { id, type, name, path, size, time } = item;
 
-                      return (
-                        <BackupRow
-                          key={id}
-                          id={id}
-                          type={type}
-                          name={name}
-                          path={path}
-                          size={size}
-                          time={time}
-                          onDeleteBackupPress={onDeleteBackupPress}
-                        />
-                      );
-                    })
-                  }
-                </TableBody>
-              </Table>
-          }
+                  return (
+                    <BackupRow
+                      key={id}
+                      id={id}
+                      type={type}
+                      name={name}
+                      path={path}
+                      size={size}
+                      time={time}
+                      onDeleteBackupPress={onDeleteBackupPress}
+                    />
+                  );
+                })}
+              </TableBody>
+            </Table>
+          )}
         </PageContentBody>
 
         <RestoreBackupModalConnector
@@ -163,7 +143,6 @@ class Backups extends Component {
       </PageContent>
     );
   }
-
 }
 
 Backups.propTypes = {
@@ -173,7 +152,7 @@ Backups.propTypes = {
   items: PropTypes.array.isRequired,
   backupExecuting: PropTypes.bool.isRequired,
   onBackupPress: PropTypes.func.isRequired,
-  onDeleteBackupPress: PropTypes.func.isRequired
+  onDeleteBackupPress: PropTypes.func.isRequired,
 };
 
 export default Backups;

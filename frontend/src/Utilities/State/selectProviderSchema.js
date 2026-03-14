@@ -15,18 +15,18 @@ function applySchemaDefaults(selectedSchema, schemaDefaults) {
 function selectProviderSchema(state, section, payload, schemaDefaults) {
   const newState = getSectionState(state, section);
 
-  const {
-    implementation,
-    presetName
-  } = payload;
+  const { implementation, presetName } = payload;
 
   const selectedImplementation = _.find(newState.schema, { implementation });
 
-  const selectedSchema = presetName ?
-    _.find(selectedImplementation.presets, { name: presetName }) :
-    selectedImplementation;
+  const selectedSchema = presetName
+    ? _.find(selectedImplementation.presets, { name: presetName })
+    : selectedImplementation;
 
-  newState.selectedSchema = applySchemaDefaults(_.cloneDeep(selectedSchema), schemaDefaults);
+  newState.selectedSchema = applySchemaDefaults(
+    _.cloneDeep(selectedSchema),
+    schemaDefaults
+  );
 
   return updateSectionState(state, section, newState);
 }

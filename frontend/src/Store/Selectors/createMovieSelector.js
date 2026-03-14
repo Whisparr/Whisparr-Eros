@@ -7,7 +7,6 @@ export function createMovieSelectorForHook(movieId) {
     (state) => state.movies.itemMap || {},
     (state) => state.movies.items || {},
     (itemMap, allMovies) => {
-
       return movieId ? allMovies[itemMap[movieId]] : undefined;
     }
   );
@@ -16,7 +15,8 @@ export function createMovieSelectorForHook(movieId) {
 export function createMovieByEntitySelector() {
   return createSelector(
     (state, { movieId }) => movieId,
-    (state, { movieEntity = movieEntities.MOVIES }) => _.get(state, movieEntity, { items: [] }),
+    (state, { movieEntity = movieEntities.MOVIES }) =>
+      _.get(state, movieEntity, { items: [] }),
     (movieId, movies) => {
       return _.find(movies.items, { id: movieId });
     }

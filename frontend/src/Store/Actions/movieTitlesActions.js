@@ -16,7 +16,7 @@ export const defaultState = {
   isFetching: false,
   isPopulated: false,
   error: null,
-  items: []
+  items: [],
 };
 
 //
@@ -33,42 +33,43 @@ export const fetchMovieTitles = createThunk(FETCH_MOVIE_TITLES);
 // Action Handlers
 
 export const actionHandlers = handleThunks({
-
-  [FETCH_MOVIE_TITLES]: function(getState, payload, dispatch) {
+  [FETCH_MOVIE_TITLES]: function (getState, payload, dispatch) {
     dispatch(set({ section, isFetching: true }));
 
     const promise = createAjaxRequest({
       url: '/alttitle',
-      data: payload
+      data: payload,
     }).request;
 
     promise.done((data) => {
-      dispatch(batchActions([
-        update({ section, data }),
+      dispatch(
+        batchActions([
+          update({ section, data }),
 
-        set({
-          section,
-          isFetching: false,
-          isPopulated: true,
-          error: null
-        })
-      ]));
+          set({
+            section,
+            isFetching: false,
+            isPopulated: true,
+            error: null,
+          }),
+        ])
+      );
     });
 
     promise.fail((xhr) => {
-      dispatch(set({
-        section,
-        isFetching: false,
-        isPopulated: false,
-        error: xhr
-      }));
+      dispatch(
+        set({
+          section,
+          isFetching: false,
+          isPopulated: false,
+          error: xhr,
+        })
+      );
     });
-  }
+  },
 });
 
 //
 // Reducers
 
-export const reducers = createHandleActions({
-
-}, defaultState, section);
+export const reducers = createHandleActions({}, defaultState, section);

@@ -10,7 +10,6 @@ import EditRemotePathMappingModalConnector from './EditRemotePathMappingModalCon
 import styles from './RemotePathMapping.css';
 
 class RemotePathMapping extends Component {
-
   //
   // Lifecycle
 
@@ -19,7 +18,7 @@ class RemotePathMapping extends Component {
 
     this.state = {
       isEditRemotePathMappingModalOpen: false,
-      isDeleteRemotePathMappingModalOpen: false
+      isDeleteRemotePathMappingModalOpen: false,
     };
   }
 
@@ -37,7 +36,7 @@ class RemotePathMapping extends Component {
   onDeleteRemotePathMappingPress = () => {
     this.setState({
       isEditRemotePathMappingModalOpen: false,
-      isDeleteRemotePathMappingModalOpen: true
+      isDeleteRemotePathMappingModalOpen: true,
     });
   };
 
@@ -53,27 +52,16 @@ class RemotePathMapping extends Component {
   // Render
 
   render() {
-    const {
-      id,
-      host,
-      remotePath,
-      localPath
-    } = this.props;
+    const { id, host, remotePath, localPath } = this.props;
 
     return (
-      <div
-        className={classNames(
-          styles.remotePathMapping
-        )}
-      >
+      <div className={classNames(styles.remotePathMapping)}>
         <div className={styles.host}>{host}</div>
         <div className={styles.path}>{remotePath}</div>
         <div className={styles.path}>{localPath}</div>
 
         <div className={styles.actions}>
-          <Link
-            onPress={this.onEditRemotePathMappingPress}
-          >
+          <Link onPress={this.onEditRemotePathMappingPress}>
             <Icon name={icons.EDIT} />
           </Link>
         </div>
@@ -104,12 +92,12 @@ RemotePathMapping.propTypes = {
   host: PropTypes.string.isRequired,
   remotePath: PropTypes.string.isRequired,
   localPath: PropTypes.string.isRequired,
-  onConfirmDeleteRemotePathMapping: PropTypes.func.isRequired
+  onConfirmDeleteRemotePathMapping: PropTypes.func.isRequired,
 };
 
 RemotePathMapping.defaultProps = {
   // The drag preview will not connect the drag handle.
-  connectDragSource: (node) => node
+  connectDragSource: (node) => node,
 };
 
 export default RemotePathMapping;

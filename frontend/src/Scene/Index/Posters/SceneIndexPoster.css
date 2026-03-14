@@ -120,6 +120,6 @@ $hoverScale: 1.05;
   font-size: $smallFontSize;
 }
 
-.poster{
+.poster {
   object-fit: cover;
 }

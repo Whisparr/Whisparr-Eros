@@ -9,9 +9,9 @@
 
 .poster {
   align-self: flex-start; /* avoid being stretched by the flex container */
-  flex: 0 1 170px;    /* allow shrinking but don't grow */
+  flex: 0 1 170px; /* allow shrinking but don't grow */
   margin-right: 20px;
-  min-width: 120px;   /* don't let it shrink too far */
+  min-width: 120px; /* don't let it shrink too far */
   width: 170px;
   height: auto;
   aspect-ratio: 170 / 250; /* preserve DVD-cover proportions */

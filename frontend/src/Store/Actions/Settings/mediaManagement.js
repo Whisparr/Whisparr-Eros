@@ -12,27 +12,36 @@ const section = 'settings.mediaManagement';
 //
 // Actions Types
 
-export const FETCH_MEDIA_MANAGEMENT_SETTINGS = 'settings/mediaManagement/fetchMediaManagementSettings';
-export const SAVE_MEDIA_MANAGEMENT_SETTINGS = 'settings/mediaManagement/saveMediaManagementSettings';
-export const SET_MEDIA_MANAGEMENT_SETTINGS_VALUE = 'settings/mediaManagement/setMediaManagementSettingsValue';
+export const FETCH_MEDIA_MANAGEMENT_SETTINGS =
+  'settings/mediaManagement/fetchMediaManagementSettings';
+export const SAVE_MEDIA_MANAGEMENT_SETTINGS =
+  'settings/mediaManagement/saveMediaManagementSettings';
+export const SET_MEDIA_MANAGEMENT_SETTINGS_VALUE =
+  'settings/mediaManagement/setMediaManagementSettingsValue';
 
 //
 // Action Creators
 
-export const fetchMediaManagementSettings = createThunk(FETCH_MEDIA_MANAGEMENT_SETTINGS);
-export const saveMediaManagementSettings = createThunk(SAVE_MEDIA_MANAGEMENT_SETTINGS);
-export const setMediaManagementSettingsValue = createAction(SET_MEDIA_MANAGEMENT_SETTINGS_VALUE, (payload) => {
-  return {
-    section,
-    ...payload
-  };
-});
+export const fetchMediaManagementSettings = createThunk(
+  FETCH_MEDIA_MANAGEMENT_SETTINGS
+);
+export const saveMediaManagementSettings = createThunk(
+  SAVE_MEDIA_MANAGEMENT_SETTINGS
+);
+export const setMediaManagementSettingsValue = createAction(
+  SET_MEDIA_MANAGEMENT_SETTINGS_VALUE,
+  (payload) => {
+    return {
+      section,
+      ...payload,
+    };
+  }
+);
 
 //
 // Details
 
 export default {
-
   //
   // State
 
@@ -43,22 +52,28 @@ export default {
     pendingChanges: {},
     isSaving: false,
     saveError: null,
-    item: {}
+    item: {},
   },
 
   //
   // Action Handlers
 
   actionHandlers: {
-    [FETCH_MEDIA_MANAGEMENT_SETTINGS]: createFetchHandler(section, '/config/mediamanagement'),
-    [SAVE_MEDIA_MANAGEMENT_SETTINGS]: createSaveHandler(section, '/config/mediamanagement')
+    [FETCH_MEDIA_MANAGEMENT_SETTINGS]: createFetchHandler(
+      section,
+      '/config/mediamanagement'
+    ),
+    [SAVE_MEDIA_MANAGEMENT_SETTINGS]: createSaveHandler(
+      section,
+      '/config/mediamanagement'
+    ),
   },
 
   //
   // Reducers
 
   reducers: {
-    [SET_MEDIA_MANAGEMENT_SETTINGS_VALUE]: createSetSettingValueReducer(section)
-  }
-
+    [SET_MEDIA_MANAGEMENT_SETTINGS_VALUE]:
+      createSetSettingValueReducer(section),
+  },
 };

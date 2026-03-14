@@ -11,7 +11,7 @@ function createMapStateToProps() {
     (deleteOptions, scene) => {
       return {
         ...scene,
-        deleteOptions
+        deleteOptions,
       };
     }
   );
@@ -22,7 +22,7 @@ function createMapDispatchToProps(dispatch, props) {
     onDeleteOptionChange(option) {
       dispatch(
         setDeleteOption({
-          [option.name]: option.value
+          [option.name]: option.value,
         })
       );
     },
@@ -33,13 +33,16 @@ function createMapDispatchToProps(dispatch, props) {
           id: props.sceneId,
           collectionTmdbId: this.collection?.tmdbId,
           deleteFiles,
-          addImportExclusion
+          addImportExclusion,
         })
       );
 
       props.onModalClose(true);
-    }
+    },
   };
 }
 
-export default connect(createMapStateToProps, createMapDispatchToProps)(DeleteSceneModalContent);
+export default connect(
+  createMapStateToProps,
+  createMapDispatchToProps
+)(DeleteSceneModalContent);

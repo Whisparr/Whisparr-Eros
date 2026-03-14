@@ -10,7 +10,6 @@ import EditNotificationModalConnector from './EditNotificationModalConnector';
 import styles from './Notification.css';
 
 class Notification extends Component {
-
   //
   // Lifecycle
 
@@ -19,7 +18,7 @@ class Notification extends Component {
 
     this.state = {
       isEditNotificationModalOpen: false,
-      isDeleteNotificationModalOpen: false
+      isDeleteNotificationModalOpen: false,
     };
   }
 
@@ -37,11 +36,11 @@ class Notification extends Component {
   onDeleteNotificationPress = () => {
     this.setState({
       isEditNotificationModalOpen: false,
-      isDeleteNotificationModalOpen: true
+      isDeleteNotificationModalOpen: true,
     });
   };
 
-  onDeleteNotificationModalClose= () => {
+  onDeleteNotificationModalClose = () => {
     this.setState({ isDeleteNotificationModalOpen: false });
   };
 
@@ -81,7 +80,7 @@ class Notification extends Component {
       supportsOnApplicationUpdate,
       supportsOnManualInteractionRequired,
       tags,
-      tagList
+      tagList,
     } = this.props;
 
     return (
@@ -90,121 +89,78 @@ class Notification extends Component {
         overlayContent={true}
         onPress={this.onEditNotificationPress}
       >
-        <div className={styles.name}>
-          {name}
-        </div>
+        <div className={styles.name}>{name}</div>
 
-        {
-          supportsOnGrab && onGrab ?
-            <Label kind={kinds.SUCCESS}>
-              {translate('OnGrab')}
-            </Label> :
-            null
-        }
+        {supportsOnGrab && onGrab ? (
+          <Label kind={kinds.SUCCESS}>{translate('OnGrab')}</Label>
+        ) : null}
 
-        {
-          supportsOnDownload && onDownload ?
-            <Label kind={kinds.SUCCESS}>
-              {translate('OnImport')}
-            </Label> :
-            null
-        }
+        {supportsOnDownload && onDownload ? (
+          <Label kind={kinds.SUCCESS}>{translate('OnImport')}</Label>
+        ) : null}
 
-        {
-          supportsOnUpgrade && onDownload && onUpgrade ?
-            <Label kind={kinds.SUCCESS}>
-              {translate('OnUpgrade')}
-            </Label> :
-            null
-        }
+        {supportsOnUpgrade && onDownload && onUpgrade ? (
+          <Label kind={kinds.SUCCESS}>{translate('OnUpgrade')}</Label>
+        ) : null}
 
-        {
-          supportsOnRename && onRename ?
-            <Label kind={kinds.SUCCESS}>
-              {translate('OnRename')}
-            </Label> :
-            null
-        }
+        {supportsOnRename && onRename ? (
+          <Label kind={kinds.SUCCESS}>{translate('OnRename')}</Label>
+        ) : null}
 
-        {
-          supportsOnMovieAdded && onMovieAdded ?
-            <Label kind={kinds.SUCCESS}>
-              {translate('OnMovieAdded')}
-            </Label> :
-            null
-        }
+        {supportsOnMovieAdded && onMovieAdded ? (
+          <Label kind={kinds.SUCCESS}>{translate('OnMovieAdded')}</Label>
+        ) : null}
 
-        {
-          supportsOnHealthIssue && onHealthIssue ?
-            <Label kind={kinds.SUCCESS}>
-              {translate('OnHealthIssue')}
-            </Label> :
-            null
-        }
+        {supportsOnHealthIssue && onHealthIssue ? (
+          <Label kind={kinds.SUCCESS}>{translate('OnHealthIssue')}</Label>
+        ) : null}
 
-        {
-          supportsOnHealthRestored && onHealthRestored ?
-            <Label kind={kinds.SUCCESS}>
-              {translate('OnHealthRestored')}
-            </Label> :
-            null
-        }
+        {supportsOnHealthRestored && onHealthRestored ? (
+          <Label kind={kinds.SUCCESS}>{translate('OnHealthRestored')}</Label>
+        ) : null}
 
-        {
-          supportsOnApplicationUpdate && onApplicationUpdate ?
-            <Label kind={kinds.SUCCESS}>
-              {translate('OnApplicationUpdate')}
-            </Label> :
-            null
-        }
+        {supportsOnApplicationUpdate && onApplicationUpdate ? (
+          <Label kind={kinds.SUCCESS}>{translate('OnApplicationUpdate')}</Label>
+        ) : null}
 
-        {
-          supportsOnMovieDelete && onMovieDelete ?
-            <Label kind={kinds.SUCCESS}>
-              {translate('OnMovieDelete')}
-            </Label> :
-            null
-        }
+        {supportsOnMovieDelete && onMovieDelete ? (
+          <Label kind={kinds.SUCCESS}>{translate('OnMovieDelete')}</Label>
+        ) : null}
 
-        {
-          supportsOnMovieFileDelete && onMovieFileDelete ?
-            <Label kind={kinds.SUCCESS}>
-              {translate('OnMovieFileDelete')}
-            </Label> :
-            null
-        }
+        {supportsOnMovieFileDelete && onMovieFileDelete ? (
+          <Label kind={kinds.SUCCESS}>{translate('OnMovieFileDelete')}</Label>
+        ) : null}
 
-        {
-          supportsOnMovieFileDeleteForUpgrade && onMovieFileDelete && onMovieFileDeleteForUpgrade ?
-            <Label kind={kinds.SUCCESS}>
-              {translate('OnMovieFileDeleteForUpgrade')}
-            </Label> :
-            null
-        }
+        {supportsOnMovieFileDeleteForUpgrade &&
+        onMovieFileDelete &&
+        onMovieFileDeleteForUpgrade ? (
+          <Label kind={kinds.SUCCESS}>
+            {translate('OnMovieFileDeleteForUpgrade')}
+          </Label>
+        ) : null}
 
-        {
-          supportsOnManualInteractionRequired && onManualInteractionRequired ?
-            <Label kind={kinds.SUCCESS}>
-              {translate('OnManualInteractionRequired')}
-            </Label> :
-            null
-        }
+        {supportsOnManualInteractionRequired && onManualInteractionRequired ? (
+          <Label kind={kinds.SUCCESS}>
+            {translate('OnManualInteractionRequired')}
+          </Label>
+        ) : null}
 
-        {
-          !onGrab && !onDownload && !onRename && !onHealthIssue && !onHealthRestored && !onApplicationUpdate && !onMovieAdded && !onMovieDelete && !onMovieFileDelete && !onManualInteractionRequired ?
-            <Label
-              kind={kinds.DISABLED}
-              outline={true}
-            >
-              {translate('Disabled')}
-            </Label> :
-            null
-        }
+        {!onGrab &&
+        !onDownload &&
+        !onRename &&
+        !onHealthIssue &&
+        !onHealthRestored &&
+        !onApplicationUpdate &&
+        !onMovieAdded &&
+        !onMovieDelete &&
+        !onMovieFileDelete &&
+        !onManualInteractionRequired ? (
+          <Label kind={kinds.DISABLED} outline={true}>
+            {translate('Disabled')}
+          </Label>
+        ) : null}
 
-        <TagList
-          tags={tags}
-          tagList={tagList}
-        />
+        <TagList tags={tags} tagList={tagList} />
 
         <EditNotificationModalConnector
           id={id}
@@ -256,7 +212,7 @@ Notification.propTypes = {
   supportsOnManualInteractionRequired: PropTypes.bool.isRequired,
   tags: PropTypes.arrayOf(PropTypes.number).isRequired,
   tagList: PropTypes.arrayOf(PropTypes.object).isRequired,
-  onConfirmDeleteNotification: PropTypes.func.isRequired
+  onConfirmDeleteNotification: PropTypes.func.isRequired,
 };
 
 export default Notification;

@@ -24,7 +24,9 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 
 const columnPadding = parseInt(dimensions.movieIndexColumnPadding);
-const columnPaddingSmallScreen = parseInt(dimensions.movieIndexColumnPaddingSmallScreen);
+const columnPaddingSmallScreen = parseInt(
+  dimensions.movieIndexColumnPaddingSmallScreen
+);
 const defaultFontSize = parseInt(fonts.defaultFontSize);
 const lineHeight = parseFloat(fonts.lineHeight);
 
@@ -39,7 +41,6 @@ function getContentHeight(rowHeight, isSmallScreen) {
 }
 
 class CollectionOverview extends Component {
-
   //
   // Lifecycle
 
@@ -48,7 +49,7 @@ class CollectionOverview extends Component {
 
     this.state = {
       isEditCollectionModalOpen: false,
-      isNewAddMovieModalOpen: false
+      isNewAddMovieModalOpen: false,
     };
   }
 
@@ -83,10 +84,7 @@ class CollectionOverview extends Component {
   };
 
   onChange = ({ value, shiftKey }) => {
-    const {
-      id,
-      onSelectedChange
-    } = this.props;
+    const { id, onSelectedChange } = this.props;
 
     onSelectedChange({ id, value, shiftKey });
   };
@@ -110,19 +108,13 @@ class CollectionOverview extends Component {
       rowHeight,
       isSmallScreen,
       isSelected,
-      onMonitorTogglePress
+      onMonitorTogglePress,
     } = this.props;
 
-    const {
-      showDetails,
-      showOverview,
-      showPosters,
-      detailedProgressBar
-    } = this.props.overviewOptions;
+    const { showDetails, showOverview, showPosters, detailedProgressBar } =
+      this.props.overviewOptions;
 
-    const {
-      isEditCollectionModalOpen
-    } = this.state;
+    const { isEditCollectionModalOpen } = this.state;
 
     const contentHeight = getContentHeight(rowHeight, isSmallScreen);
     const overviewHeight = contentHeight - titleRowHeight - posterHeight;
@@ -139,7 +131,6 @@ class CollectionOverview extends Component {
             />
           </div>
           <div className={styles.info} style={{ maxHeight: contentHeight }}>
-
             <div className={styles.titleRow}>
               <div className={styles.titleContainer}>
                 <div className={styles.toggleMonitoredContainer}>
@@ -150,9 +141,7 @@ class CollectionOverview extends Component {
                     onPress={onMonitorTogglePress}
                   />
                 </div>
-                <div className={styles.title}>
-                  {title}
-                </div>
+                <div className={styles.title}>{title}</div>
 
                 <IconButton
                   name={icons.EDIT}
@@ -161,153 +150,125 @@ class CollectionOverview extends Component {
                 />
               </div>
 
-              {
-                showPosters &&
-                  <div className={styles.navigationButtons}>
-                    <span ref={this.setSliderPrevRef}>
-                      <IconButton
-                        name={icons.ARROW_LEFT}
-                        title={translate('ScrollMovies')}
-                        size={20}
-                      />
-                    </span>
+              {showPosters && (
+                <div className={styles.navigationButtons}>
+                  <span ref={this.setSliderPrevRef}>
+                    <IconButton
+                      name={icons.ARROW_LEFT}
+                      title={translate('ScrollMovies')}
+                      size={20}
+                    />
+                  </span>
 
-                    <span ref={this.setSliderNextRef}>
-                      <IconButton
-                        name={icons.ARROW_RIGHT}
-                        title={translate('ScrollMovies')}
-                        size={20}
-                      />
-                    </span>
-                  </div>
-              }
-
+                  <span ref={this.setSliderNextRef}>
+                    <IconButton
+                      name={icons.ARROW_RIGHT}
+                      title={translate('ScrollMovies')}
+                      size={20}
+                    />
+                  </span>
+                </div>
+              )}
             </div>
 
-            {
-              showDetails &&
-                <div className={styles.defaults}>
-                  <Label
-                    className={styles.detailsLabel}
-                    size={sizes.MEDIUM}
-                  >
-                    <Icon
-                      name={icons.DRIVE}
-                      size={13}
-                    />
-                    <span className={styles.status}>
-                      {translate('CountMissingMoviesFromLibrary', { count: missingMovies })}
+            {showDetails && (
+              <div className={styles.defaults}>
+                <Label className={styles.detailsLabel} size={sizes.MEDIUM}>
+                  <Icon name={icons.DRIVE} size={13} />
+                  <span className={styles.status}>
+                    {translate('CountMissingMoviesFromLibrary', {
+                      count: missingMovies,
+                    })}
+                  </span>
+                </Label>
+
+                {!isSmallScreen && (
+                  <Label className={styles.detailsLabel} size={sizes.MEDIUM}>
+                    <Icon name={icons.PROFILE} size={13} />
+                    <span className={styles.qualityProfileName}>
+                      {
+                        <QualityProfileName
+                          qualityProfileId={qualityProfileId}
+                        />
+                      }
                     </span>
                   </Label>
+                )}
 
-                  {
-                    !isSmallScreen &&
-                      <Label
-                        className={styles.detailsLabel}
-                        size={sizes.MEDIUM}
-                      >
-                        <Icon
-                          name={icons.PROFILE}
-                          size={13}
-                        />
-                        <span className={styles.qualityProfileName}>
-                          {
-                            <QualityProfileName
-                              qualityProfileId={qualityProfileId}
-                            />
-                          }
-                        </span>
-                      </Label>
-                  }
+                {!isSmallScreen && (
+                  <Label className={styles.detailsLabel} size={sizes.MEDIUM}>
+                    <Icon name={icons.FOLDER} size={13} />
+                    <span className={styles.path}>{rootFolderPath}</span>
+                  </Label>
+                )}
 
-                  {
-                    !isSmallScreen &&
-                      <Label
-                        className={styles.detailsLabel}
-                        size={sizes.MEDIUM}
-                      >
-                        <Icon
-                          name={icons.FOLDER}
-                          size={13}
-                        />
-                        <span className={styles.path}>
-                          {rootFolderPath}
-                        </span>
-                      </Label>
-                  }
+                {!isSmallScreen && (
+                  <Label className={styles.detailsLabel} size={sizes.MEDIUM}>
+                    <Icon name={icons.GENRE} size={13} />
+                    <MovieGenres className={styles.genres} genres={genres} />
+                  </Label>
+                )}
+              </div>
+            )}
 
-                  {
-                    !isSmallScreen &&
-                      <Label
-                        className={styles.detailsLabel}
-                        size={sizes.MEDIUM}
-                      >
-                        <Icon
-                          name={icons.GENRE}
-                          size={13}
-                        />
-                        <MovieGenres className={styles.genres} genres={genres} />
-                      </Label>
-                  }
-
+            {showOverview && (
+              <div className={styles.details}>
+                <div className={styles.overview}>
+                  <TextTruncate
+                    line={Math.floor(
+                      overviewHeight / (defaultFontSize * lineHeight)
+                    )}
+                    text={overview}
+                  />
                 </div>
-            }
+              </div>
+            )}
 
-            {
-              showOverview &&
-                <div className={styles.details}>
-                  <div className={styles.overview}>
-                    <TextTruncate
-                      line={Math.floor(overviewHeight / (defaultFontSize * lineHeight))}
-                      text={overview}
-                    />
-                  </div>
-                </div>
-            }
-
-            {
-              showPosters ?
-                <div className={styles.sliderContainer}>
-                  <Swiper
-                    slidesPerView='auto'
-                    spaceBetween={10}
-                    slidesPerGroup={3}
-                    loop={false}
-                    loopFillGroupWithBlank={true}
-                    className="mySwiper"
-                    modules={[Navigation]}
-                    onInit={(swiper) => {
-                      swiper.params.navigation.prevEl = this._swiperPrevRef;
-                      swiper.params.navigation.nextEl = this._swiperNextRef;
-                      swiper.navigation.init();
-                      swiper.navigation.update();
-                    }}
-                  >
-                    {movies.map((movie) => (
-                      <SwiperSlide key={movie.tmdbId} style={{ width: posterWidth }}>
-                        <CollectionMovieConnector
-                          key={movie.tmdbId}
-                          posterWidth={posterWidth}
-                          posterHeight={posterHeight}
-                          detailedProgressBar={detailedProgressBar}
-                          collectionId={id}
-                          {...movie}
-                        />
-                      </SwiperSlide>
-                    ))}
-                  </Swiper>
-                </div> :
-                <div className={styles.labelsContainer}>
+            {showPosters ? (
+              <div className={styles.sliderContainer}>
+                <Swiper
+                  slidesPerView="auto"
+                  spaceBetween={10}
+                  slidesPerGroup={3}
+                  loop={false}
+                  loopFillGroupWithBlank={true}
+                  className="mySwiper"
+                  modules={[Navigation]}
+                  onInit={(swiper) => {
+                    swiper.params.navigation.prevEl = this._swiperPrevRef;
+                    swiper.params.navigation.nextEl = this._swiperNextRef;
+                    swiper.navigation.init();
+                    swiper.navigation.update();
+                  }}
+                >
                   {movies.map((movie) => (
-                    <CollectionMovieLabelConnector
+                    <SwiperSlide
                       key={movie.tmdbId}
-                      collectionId={id}
-                      {...movie}
-                    />
+                      style={{ width: posterWidth }}
+                    >
+                      <CollectionMovieConnector
+                        key={movie.tmdbId}
+                        posterWidth={posterWidth}
+                        posterHeight={posterHeight}
+                        detailedProgressBar={detailedProgressBar}
+                        collectionId={id}
+                        {...movie}
+                      />
+                    </SwiperSlide>
                   ))}
-                </div>
-            }
-
+                </Swiper>
+              </div>
+            ) : (
+              <div className={styles.labelsContainer}>
+                {movies.map((movie) => (
+                  <CollectionMovieLabelConnector
+                    key={movie.tmdbId}
+                    collectionId={id}
+                    {...movie}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -345,7 +306,7 @@ CollectionOverview.propTypes = {
   isSmallScreen: PropTypes.bool.isRequired,
   isSelected: PropTypes.bool,
   onMonitorTogglePress: PropTypes.func.isRequired,
-  onSelectedChange: PropTypes.func.isRequired
+  onSelectedChange: PropTypes.func.isRequired,
 };
 
 export default CollectionOverview;

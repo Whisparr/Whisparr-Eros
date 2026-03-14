@@ -20,7 +20,7 @@ export const defaultState = {
   secretToken: null,
   ray: null,
   stoken: null,
-  responseUrl: null
+  responseUrl: null,
 };
 
 //
@@ -43,77 +43,87 @@ export const resetCaptcha = createAction(RESET_CAPTCHA);
 // Action Handlers
 
 export const actionHandlers = handleThunks({
-
-  [REFRESH_CAPTCHA]: function(getState, payload, dispatch) {
+  [REFRESH_CAPTCHA]: function (getState, payload, dispatch) {
     const actionPayload = {
       action: 'checkCaptcha',
-      ...payload
+      ...payload,
     };
 
-    dispatch(setCaptchaValue({
-      refreshing: true
-    }));
+    dispatch(
+      setCaptchaValue({
+        refreshing: true,
+      })
+    );
 
     const promise = requestAction(actionPayload);
 
     promise.done((data) => {
       if (!data.captchaRequest) {
-        dispatch(setCaptchaValue({
-          refreshing: false
-        }));
+        dispatch(
+          setCaptchaValue({
+            refreshing: false,
+          })
+        );
       }
 
-      dispatch(setCaptchaValue({
-        refreshing: false,
-        ...data.captchaRequest
-      }));
+      dispatch(
+        setCaptchaValue({
+          refreshing: false,
+          ...data.captchaRequest,
+        })
+      );
     });
 
     promise.fail(() => {
-      dispatch(setCaptchaValue({
-        refreshing: false
-      }));
+      dispatch(
+        setCaptchaValue({
+          refreshing: false,
+        })
+      );
     });
   },
 
-  [GET_CAPTCHA_COOKIE]: function(getState, payload, dispatch) {
+  [GET_CAPTCHA_COOKIE]: function (getState, payload, dispatch) {
     const state = getState().captcha;
 
     const queryParams = {
       responseUrl: state.responseUrl,
       ray: state.ray,
-      captchaResponse: payload.captchaResponse
+      captchaResponse: payload.captchaResponse,
     };
 
     const actionPayload = {
       action: 'getCaptchaCookie',
       queryParams,
-      ...payload
+      ...payload,
     };
 
     const promise = requestAction(actionPayload);
 
     promise.done((data) => {
-      dispatch(setCaptchaValue({
-        token: data.captchaToken
-      }));
+      dispatch(
+        setCaptchaValue({
+          token: data.captchaToken,
+        })
+      );
     });
-  }
+  },
 });
 
 //
 // Reducers
 
-export const reducers = createHandleActions({
+export const reducers = createHandleActions(
+  {
+    [SET_CAPTCHA_VALUE]: function (state, { payload }) {
+      const newState = Object.assign(getSectionState(state, section), payload);
 
-  [SET_CAPTCHA_VALUE]: function(state, { payload }) {
-    const newState = Object.assign(getSectionState(state, section), payload);
+      return updateSectionState(state, section, newState);
+    },
 
-    return updateSectionState(state, section, newState);
+    [RESET_CAPTCHA]: function (state) {
+      return updateSectionState(state, section, defaultState);
+    },
   },
-
-  [RESET_CAPTCHA]: function(state) {
-    return updateSectionState(state, section, defaultState);
-  }
-
-}, defaultState);
+  defaultState
+);

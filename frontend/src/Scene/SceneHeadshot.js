@@ -14,11 +14,11 @@ function SceneHeadshot(props) {
 }
 
 SceneHeadshot.propTypes = {
-  size: PropTypes.number.isRequired
+  size: PropTypes.number.isRequired,
 };
 
 SceneHeadshot.defaultProps = {
-  size: 250
+  size: 250,
 };
 
 export default SceneHeadshot;

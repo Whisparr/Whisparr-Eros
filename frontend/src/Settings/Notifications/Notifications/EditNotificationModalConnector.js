@@ -2,7 +2,10 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { clearPendingChanges } from 'Store/Actions/baseActions';
-import { cancelSaveNotification, cancelTestNotification } from 'Store/Actions/settingsActions';
+import {
+  cancelSaveNotification,
+  cancelTestNotification,
+} from 'Store/Actions/settingsActions';
 import EditNotificationModal from './EditNotificationModal';
 
 function createMapDispatchToProps(dispatch, props) {
@@ -19,12 +22,11 @@ function createMapDispatchToProps(dispatch, props) {
 
     dispatchCancelSaveNotification() {
       dispatch(cancelSaveNotification({ section }));
-    }
+    },
   };
 }
 
 class EditNotificationModalConnector extends Component {
-
   //
   // Listeners
 
@@ -47,10 +49,7 @@ class EditNotificationModalConnector extends Component {
     } = this.props;
 
     return (
-      <EditNotificationModal
-        {...otherProps}
-        onModalClose={this.onModalClose}
-      />
+      <EditNotificationModal {...otherProps} onModalClose={this.onModalClose} />
     );
   }
 }
@@ -59,7 +58,10 @@ EditNotificationModalConnector.propTypes = {
   onModalClose: PropTypes.func.isRequired,
   dispatchClearPendingChanges: PropTypes.func.isRequired,
   dispatchCancelTestNotification: PropTypes.func.isRequired,
-  dispatchCancelSaveNotification: PropTypes.func.isRequired
+  dispatchCancelSaveNotification: PropTypes.func.isRequired,
 };
 
-export default connect(null, createMapDispatchToProps)(EditNotificationModalConnector);
+export default connect(
+  null,
+  createMapDispatchToProps
+)(EditNotificationModalConnector);

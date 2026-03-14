@@ -9,11 +9,10 @@ function mapStateToProps() {
 }
 
 const mapDispatchToProps = {
-  clearPendingChanges
+  clearPendingChanges,
 };
 
 class EditRemotePathMappingModalConnector extends Component {
-
   //
   // Listeners
 
@@ -37,7 +36,10 @@ class EditRemotePathMappingModalConnector extends Component {
 
 EditRemotePathMappingModalConnector.propTypes = {
   onModalClose: PropTypes.func.isRequired,
-  clearPendingChanges: PropTypes.func.isRequired
+  clearPendingChanges: PropTypes.func.isRequired,
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(EditRemotePathMappingModalConnector);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(EditRemotePathMappingModalConnector);

@@ -15,7 +15,6 @@ import EditDelayProfileModalConnector from './EditDelayProfileModalConnector';
 import styles from './DelayProfiles.css';
 
 class DelayProfiles extends Component {
-
   //
   // Lifecycle
 
@@ -24,7 +23,7 @@ class DelayProfiles extends Component {
 
     this.state = {
       isAddDelayProfileModalOpen: false,
-      width: 0
+      width: 0,
     };
   }
 
@@ -57,10 +56,7 @@ class DelayProfiles extends Component {
       ...otherProps
     } = this.props;
 
-    const {
-      isAddDelayProfileModalOpen,
-      width
-    } = this.state;
+    const { isAddDelayProfileModalOpen, width } = this.state;
 
     const isDragging = dropIndex !== null;
     const isDraggingUp = isDragging && dropIndex < dragIndex;
@@ -75,9 +71,7 @@ class DelayProfiles extends Component {
           >
             <Scroller
               className={styles.horizontalScroll}
-              scrollDirection={
-                scrollDirections.HORIZONTAL
-              }
+              scrollDirection={scrollDirections.HORIZONTAL}
               autoFocus={false}
             >
               <div>
@@ -91,47 +85,41 @@ class DelayProfiles extends Component {
                   <div className={styles.column}>
                     {translate('TorrentDelay')}
                   </div>
-                  <div className={styles.tags}>
-                    {translate('Tags')}
-                  </div>
+                  <div className={styles.tags}>{translate('Tags')}</div>
                 </div>
 
                 <div className={styles.delayProfiles}>
-                  {
-                    items.map((item, index) => {
-                      return (
-                        <DelayProfileDragSource
-                          key={item.id}
-                          tagList={tagList}
-                          {...item}
-                          {...otherProps}
-                          index={index}
-                          isDragging={isDragging}
-                          isDraggingUp={isDraggingUp}
-                          isDraggingDown={isDraggingDown}
-                          onConfirmDeleteDelayProfile={onConfirmDeleteDelayProfile}
-                        />
-                      );
-                    })
-                  }
+                  {items.map((item, index) => {
+                    return (
+                      <DelayProfileDragSource
+                        key={item.id}
+                        tagList={tagList}
+                        {...item}
+                        {...otherProps}
+                        index={index}
+                        isDragging={isDragging}
+                        isDraggingUp={isDraggingUp}
+                        isDraggingDown={isDraggingDown}
+                        onConfirmDeleteDelayProfile={
+                          onConfirmDeleteDelayProfile
+                        }
+                      />
+                    );
+                  })}
 
-                  <DelayProfileDragPreview
-                    width={width}
-                  />
+                  <DelayProfileDragPreview width={width} />
                 </div>
 
-                {
-                  defaultProfile ?
-                    <div>
-                      <DelayProfile
-                        tagList={tagList}
-                        isDragging={false}
-                        onConfirmDeleteDelayProfile={onConfirmDeleteDelayProfile}
-                        {...defaultProfile}
-                      />
-                    </div> :
-                    null
-                }
+                {defaultProfile ? (
+                  <div>
+                    <DelayProfile
+                      tagList={tagList}
+                      isDragging={false}
+                      onConfirmDeleteDelayProfile={onConfirmDeleteDelayProfile}
+                      {...defaultProfile}
+                    />
+                  </div>
+                ) : null}
               </div>
             </Scroller>
 
@@ -163,7 +151,7 @@ DelayProfiles.propTypes = {
   tagList: PropTypes.arrayOf(PropTypes.object).isRequired,
   dragIndex: PropTypes.number,
   dropIndex: PropTypes.number,
-  onConfirmDeleteDelayProfile: PropTypes.func.isRequired
+  onConfirmDeleteDelayProfile: PropTypes.func.isRequired,
 };
 
 export default DelayProfiles;

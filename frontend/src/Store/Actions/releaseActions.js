@@ -1,5 +1,11 @@
 import { createAction } from 'redux-actions';
-import { filterBuilderTypes, filterBuilderValueTypes, filterTypePredicates, filterTypes, sortDirections } from 'Helpers/Props';
+import {
+  filterBuilderTypes,
+  filterBuilderValueTypes,
+  filterTypePredicates,
+  filterTypes,
+  sortDirections,
+} from 'Helpers/Props';
 import { createThunk, handleThunks } from 'Store/thunks';
 import sortByProp from 'Utilities/Array/sortByProp';
 import createAjaxRequest from 'Utilities/createAjaxRequest';
@@ -27,18 +33,18 @@ export const defaultState = {
   sortKey: 'releaseWeight',
   sortDirection: sortDirections.ASCENDING,
   sortPredicates: {
-    age: function(item, direction) {
+    age: function (item, direction) {
       return item.ageMinutes;
     },
 
-    peers: function(item, direction) {
+    peers: function (item, direction) {
       const seeders = item.seeders || 0;
       const leechers = item.leechers || 0;
 
       return seeders * 1000000 + leechers;
     },
 
-    languages: function(item, direction) {
+    languages: function (item, direction) {
       if (item.languages.length > 1) {
         return 10000;
       }
@@ -46,7 +52,7 @@ export const defaultState = {
       return item.languages[0]?.id ?? 0;
     },
 
-    indexerFlags: function(item, direction) {
+    indexerFlags: function (item, direction) {
       const indexerFlags = item.indexerFlags;
       const releaseWeight = item.releaseWeight;
 
@@ -57,7 +63,7 @@ export const defaultState = {
       return releaseWeight;
     },
 
-    rejections: function(item, direction) {
+    rejections: function (item, direction) {
       const rejections = item.rejections;
       const releaseWeight = item.releaseWeight;
 
@@ -68,7 +74,7 @@ export const defaultState = {
       return releaseWeight;
     },
 
-    releaseWeight: function(item, direction) {
+    releaseWeight: function (item, direction) {
       const rejections = item.rejections;
       const releaseWeight = item.releaseWeight;
 
@@ -79,19 +85,19 @@ export const defaultState = {
 
       // Push rejected releases to the bottom
       return releaseWeight + 1000000;
-    }
+    },
   },
 
   filters: [
     {
       key: 'all',
       label: () => translate('All'),
-      filters: []
-    }
+      filters: [],
+    },
   ],
 
   filterPredicates: {
-    quality: function(item, value, type) {
+    quality: function (item, value, type) {
       const qualityId = item.quality.quality.id;
 
       if (type === filterTypes.EQUAL) {
@@ -106,7 +112,7 @@ export const defaultState = {
       return false;
     },
 
-    languages: function(item, filterValue, type) {
+    languages: function (item, filterValue, type) {
       const predicate = filterTypePredicates[type];
 
       const languages = item.languages.map((language) => language.name);
@@ -114,7 +120,7 @@ export const defaultState = {
       return predicate(languages, filterValue);
     },
 
-    peers: function(item, value, type) {
+    peers: function (item, value, type) {
       const predicate = filterTypePredicates[type];
       const seeders = item.seeders || 0;
       const leechers = item.leechers || 0;
@@ -122,7 +128,7 @@ export const defaultState = {
       return predicate(seeders + leechers, value);
     },
 
-    rejectionCount: function(item, value, type) {
+    rejectionCount: function (item, value, type) {
       const rejectionCount = item.rejections.length;
 
       switch (type) {
@@ -147,64 +153,64 @@ export const defaultState = {
         default:
           return false;
       }
-    }
+    },
   },
 
   filterBuilderProps: [
     {
       name: 'title',
       label: () => translate('Title'),
-      type: filterBuilderTypes.STRING
+      type: filterBuilderTypes.STRING,
     },
     {
       name: 'age',
       label: () => translate('Age'),
-      type: filterBuilderTypes.NUMBER
+      type: filterBuilderTypes.NUMBER,
     },
     {
       name: 'protocol',
       label: () => translate('Protocol'),
       type: filterBuilderTypes.EXACT,
-      valueType: filterBuilderValueTypes.PROTOCOL
+      valueType: filterBuilderValueTypes.PROTOCOL,
     },
     {
       name: 'indexerId',
       label: () => translate('Indexer'),
       type: filterBuilderTypes.EXACT,
-      valueType: filterBuilderValueTypes.INDEXER
+      valueType: filterBuilderValueTypes.INDEXER,
     },
     {
       name: 'size',
       label: () => translate('Size'),
       type: filterBuilderTypes.NUMBER,
-      valueType: filterBuilderValueTypes.BYTES
+      valueType: filterBuilderValueTypes.BYTES,
     },
     {
       name: 'seeders',
       label: () => translate('Seeders'),
-      type: filterBuilderTypes.NUMBER
+      type: filterBuilderTypes.NUMBER,
     },
     {
       name: 'peers',
       label: () => translate('Peers'),
-      type: filterBuilderTypes.NUMBER
+      type: filterBuilderTypes.NUMBER,
     },
     {
       name: 'quality',
       label: () => translate('Quality'),
       type: filterBuilderTypes.EXACT,
-      valueType: filterBuilderValueTypes.QUALITY
+      valueType: filterBuilderValueTypes.QUALITY,
     },
     {
       name: 'languages',
       label: () => translate('Languages'),
       type: filterBuilderTypes.ARRAY,
-      optionsSelector: function(items) {
+      optionsSelector: function (items) {
         const genreList = items.reduce((acc, release) => {
           release.languages.forEach((language) => {
             acc.push({
               id: language.name,
-              name: language.name
+              name: language.name,
             });
           });
 
@@ -212,32 +218,31 @@ export const defaultState = {
         }, []);
 
         return genreList.sort(sortByProp('name'));
-      }
+      },
     },
     {
       name: 'customFormatScore',
       label: () => translate('CustomFormatScore'),
-      type: filterBuilderTypes.NUMBER
+      type: filterBuilderTypes.NUMBER,
     },
     {
       name: 'rejectionCount',
       label: () => translate('RejectionCount'),
-      type: filterBuilderTypes.NUMBER
+      type: filterBuilderTypes.NUMBER,
     },
     {
       name: 'movieRequested',
       label: () => translate('MovieRequested'),
       type: filterBuilderTypes.EXACT,
-      valueType: filterBuilderValueTypes.BOOL
-    }
+      valueType: filterBuilderValueTypes.BOOL,
+    },
   ],
-  selectedFilterKey: 'all'
-
+  selectedFilterKey: 'all',
 };
 
 export const persistState = [
   'releases.customFilters',
-  'releases.selectedFilterKey'
+  'releases.selectedFilterKey',
 ];
 
 //
@@ -271,20 +276,19 @@ const fetchReleasesHelper = createFetchHandler(section, '/release');
 // Action Handlers
 
 export const actionHandlers = handleThunks({
-
-  [FETCH_RELEASES]: function(getState, payload, dispatch) {
+  [FETCH_RELEASES]: function (getState, payload, dispatch) {
     const abortRequest = fetchReleasesHelper(getState, payload, dispatch);
 
     abortCurrentRequest = abortRequest;
   },
 
-  [CANCEL_FETCH_RELEASES]: function(getState, payload, dispatch) {
+  [CANCEL_FETCH_RELEASES]: function (getState, payload, dispatch) {
     if (abortCurrentRequest) {
       abortCurrentRequest = abortCurrentRequest();
     }
   },
 
-  [GRAB_RELEASE]: function(getState, payload, dispatch) {
+  [GRAB_RELEASE]: function (getState, payload, dispatch) {
     const guid = payload.guid;
 
     dispatch(updateRelease({ guid, isGrabbing: true }));
@@ -294,63 +298,68 @@ export const actionHandlers = handleThunks({
       method: 'POST',
       dataType: 'json',
       contentType: 'application/json',
-      data: JSON.stringify(payload)
+      data: JSON.stringify(payload),
     }).request;
 
     promise.done((data) => {
-      dispatch(updateRelease({
-        guid,
-        isGrabbing: false,
-        isGrabbed: true,
-        grabError: null
-      }));
+      dispatch(
+        updateRelease({
+          guid,
+          isGrabbing: false,
+          isGrabbed: true,
+          grabError: null,
+        })
+      );
     });
 
     promise.fail((xhr) => {
-      const grabError = xhr.responseJSON && xhr.responseJSON.message || 'Failed to add to download queue';
+      const grabError =
+        (xhr.responseJSON && xhr.responseJSON.message) ||
+        'Failed to add to download queue';
 
-      dispatch(updateRelease({
-        guid,
-        isGrabbing: false,
-        isGrabbed: false,
-        grabError
-      }));
+      dispatch(
+        updateRelease({
+          guid,
+          isGrabbing: false,
+          isGrabbed: false,
+          grabError,
+        })
+      );
     });
-  }
+  },
 });
 
 //
 // Reducers
 
-export const reducers = createHandleActions({
+export const reducers = createHandleActions(
+  {
+    [CLEAR_RELEASES]: (state) => {
+      const { selectedFilterKey, ...otherDefaultState } = defaultState;
 
-  [CLEAR_RELEASES]: (state) => {
-    const {
-      selectedFilterKey,
-      ...otherDefaultState
-    } = defaultState;
+      return Object.assign({}, state, otherDefaultState);
+    },
 
-    return Object.assign({}, state, otherDefaultState);
+    [UPDATE_RELEASE]: (state, { payload }) => {
+      const guid = payload.guid;
+      const newState = Object.assign({}, state);
+      const items = newState.items;
+      const index = items.findIndex((item) => item.guid === guid);
+
+      // Don't try to update if there isn't a matching item (the user closed the modal)
+      if (index >= 0) {
+        const item = Object.assign({}, items[index], payload);
+
+        newState.items = [...items];
+        newState.items.splice(index, 1, item);
+      }
+
+      return newState;
+    },
+
+    [SET_RELEASES_FILTER]: createSetClientSideCollectionFilterReducer(section),
+    [SET_RELEASES_SORT]: createSetClientSideCollectionSortReducer(section),
   },
-
-  [UPDATE_RELEASE]: (state, { payload }) => {
-    const guid = payload.guid;
-    const newState = Object.assign({}, state);
-    const items = newState.items;
-    const index = items.findIndex((item) => item.guid === guid);
-
-    // Don't try to update if there isn't a matching item (the user closed the modal)
-    if (index >= 0) {
-      const item = Object.assign({}, items[index], payload);
-
-      newState.items = [...items];
-      newState.items.splice(index, 1, item);
-    }
-
-    return newState;
-  },
-
-  [SET_RELEASES_FILTER]: createSetClientSideCollectionFilterReducer(section),
-  [SET_RELEASES_SORT]: createSetClientSideCollectionSortReducer(section)
-
-}, defaultState, section);
+  defaultState,
+  section
+);

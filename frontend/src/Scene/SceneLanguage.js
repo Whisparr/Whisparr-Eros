@@ -6,11 +6,7 @@ import { kinds, tooltipPositions } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 
 function SceneLanguage(props) {
-  const {
-    className,
-    languages,
-    isCutoffNotMet
-  } = props;
+  const { className, languages, isCutoffNotMet } = props;
 
   if (!languages) {
     return null;
@@ -41,15 +37,9 @@ function SceneLanguage(props) {
       title={translate('Languages')}
       body={
         <ul>
-          {
-            languages.map((language) => {
-              return (
-                <li key={language.id}>
-                  {language.name}
-                </li>
-              );
-            })
-          }
+          {languages.map((language) => {
+            return <li key={language.id}>{language.name}</li>;
+          })}
         </ul>
       }
       position={tooltipPositions.LEFT}
@@ -60,11 +50,11 @@ function SceneLanguage(props) {
 SceneLanguage.propTypes = {
   className: PropTypes.string,
   languages: PropTypes.arrayOf(PropTypes.object),
-  isCutoffNotMet: PropTypes.bool
+  isCutoffNotMet: PropTypes.bool,
 };
 
 SceneLanguage.defaultProps = {
-  isCutoffNotMet: true
+  isCutoffNotMet: true,
 };
 
 export default SceneLanguage;

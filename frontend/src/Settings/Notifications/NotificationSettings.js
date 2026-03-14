@@ -8,9 +8,7 @@ import NotificationsConnector from './Notifications/NotificationsConnector';
 function NotificationSettings() {
   return (
     <PageContent title={translate('ConnectSettings')}>
-      <SettingsToolbar
-        showSave={false}
-      />
+      <SettingsToolbar showSave={false} />
 
       <PageContentBody>
         <NotificationsConnector />

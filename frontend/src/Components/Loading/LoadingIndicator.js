@@ -9,28 +9,16 @@ function LoadingIndicator({ className, rippleClassName, size }) {
   const height = sizeInPx;
 
   return (
-    <div
-      className={className}
-      style={{ height }}
-    >
+    <div className={className} style={{ height }}>
       <div
         className={classNames(styles.rippleContainer, 'followingBalls')}
         style={{ width, height }}
       >
-        <div
-          className={rippleClassName}
-          style={{ width, height }}
-        />
+        <div className={rippleClassName} style={{ width, height }} />
 
-        <div
-          className={rippleClassName}
-          style={{ width, height }}
-        />
+        <div className={rippleClassName} style={{ width, height }} />
 
-        <div
-          className={rippleClassName}
-          style={{ width, height }}
-        />
+        <div className={rippleClassName} style={{ width, height }} />
       </div>
     </div>
   );
@@ -39,13 +27,13 @@ function LoadingIndicator({ className, rippleClassName, size }) {
 LoadingIndicator.propTypes = {
   className: PropTypes.string,
   rippleClassName: PropTypes.string,
-  size: PropTypes.number
+  size: PropTypes.number,
 };
 
 LoadingIndicator.defaultProps = {
   className: styles.loading,
   rippleClassName: styles.ripple,
-  size: 50
+  size: 50,
 };
 
 export default LoadingIndicator;

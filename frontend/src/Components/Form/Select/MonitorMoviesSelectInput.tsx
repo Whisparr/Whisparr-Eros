@@ -6,11 +6,10 @@ import EnhancedSelectInput, {
   EnhancedSelectInputValue,
 } from './EnhancedSelectInput';
 
-export interface MonitorMoviesSelectInputProps
-  extends Omit<
-    EnhancedSelectInputProps<string, EnhancedSelectInputValue<string>>,
-    'values'
-  > {
+export interface MonitorMoviesSelectInputProps extends Omit<
+  EnhancedSelectInputProps<string, EnhancedSelectInputValue<string>>,
+  'values'
+> {
   includeNoChange?: boolean;
   includeMixed?: boolean;
 }

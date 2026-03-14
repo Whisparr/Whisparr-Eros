@@ -21,53 +21,87 @@ const section = 'settings.customFormatSpecifications';
 //
 // Actions Types
 
-export const FETCH_CUSTOM_FORMAT_SPECIFICATIONS = 'settings/customFormatSpecifications/fetchCustomFormatSpecifications';
-export const FETCH_CUSTOM_FORMAT_SPECIFICATION_SCHEMA = 'settings/customFormatSpecifications/fetchCustomFormatSpecificationSchema';
-export const SELECT_CUSTOM_FORMAT_SPECIFICATION_SCHEMA = 'settings/customFormatSpecifications/selectCustomFormatSpecificationSchema';
-export const SET_CUSTOM_FORMAT_SPECIFICATION_VALUE = 'settings/customFormatSpecifications/setCustomFormatSpecificationValue';
-export const SET_CUSTOM_FORMAT_SPECIFICATION_FIELD_VALUE = 'settings/customFormatSpecifications/setCustomFormatSpecificationFieldValue';
-export const SAVE_CUSTOM_FORMAT_SPECIFICATION = 'settings/customFormatSpecifications/saveCustomFormatSpecification';
-export const DELETE_CUSTOM_FORMAT_SPECIFICATION = 'settings/customFormatSpecifications/deleteCustomFormatSpecification';
-export const DELETE_ALL_CUSTOM_FORMAT_SPECIFICATION = 'settings/customFormatSpecifications/deleteAllCustomFormatSpecification';
-export const CLONE_CUSTOM_FORMAT_SPECIFICATION = 'settings/customFormatSpecifications/cloneCustomFormatSpecification';
-export const CLEAR_CUSTOM_FORMAT_SPECIFICATIONS = 'settings/customFormatSpecifications/clearCustomFormatSpecifications';
-export const CLEAR_CUSTOM_FORMAT_SPECIFICATION_PENDING = 'settings/customFormatSpecifications/clearCustomFormatSpecificationPending';
+export const FETCH_CUSTOM_FORMAT_SPECIFICATIONS =
+  'settings/customFormatSpecifications/fetchCustomFormatSpecifications';
+export const FETCH_CUSTOM_FORMAT_SPECIFICATION_SCHEMA =
+  'settings/customFormatSpecifications/fetchCustomFormatSpecificationSchema';
+export const SELECT_CUSTOM_FORMAT_SPECIFICATION_SCHEMA =
+  'settings/customFormatSpecifications/selectCustomFormatSpecificationSchema';
+export const SET_CUSTOM_FORMAT_SPECIFICATION_VALUE =
+  'settings/customFormatSpecifications/setCustomFormatSpecificationValue';
+export const SET_CUSTOM_FORMAT_SPECIFICATION_FIELD_VALUE =
+  'settings/customFormatSpecifications/setCustomFormatSpecificationFieldValue';
+export const SAVE_CUSTOM_FORMAT_SPECIFICATION =
+  'settings/customFormatSpecifications/saveCustomFormatSpecification';
+export const DELETE_CUSTOM_FORMAT_SPECIFICATION =
+  'settings/customFormatSpecifications/deleteCustomFormatSpecification';
+export const DELETE_ALL_CUSTOM_FORMAT_SPECIFICATION =
+  'settings/customFormatSpecifications/deleteAllCustomFormatSpecification';
+export const CLONE_CUSTOM_FORMAT_SPECIFICATION =
+  'settings/customFormatSpecifications/cloneCustomFormatSpecification';
+export const CLEAR_CUSTOM_FORMAT_SPECIFICATIONS =
+  'settings/customFormatSpecifications/clearCustomFormatSpecifications';
+export const CLEAR_CUSTOM_FORMAT_SPECIFICATION_PENDING =
+  'settings/customFormatSpecifications/clearCustomFormatSpecificationPending';
 //
 // Action Creators
 
-export const fetchCustomFormatSpecifications = createThunk(FETCH_CUSTOM_FORMAT_SPECIFICATIONS);
-export const fetchCustomFormatSpecificationSchema = createThunk(FETCH_CUSTOM_FORMAT_SPECIFICATION_SCHEMA);
-export const selectCustomFormatSpecificationSchema = createAction(SELECT_CUSTOM_FORMAT_SPECIFICATION_SCHEMA);
+export const fetchCustomFormatSpecifications = createThunk(
+  FETCH_CUSTOM_FORMAT_SPECIFICATIONS
+);
+export const fetchCustomFormatSpecificationSchema = createThunk(
+  FETCH_CUSTOM_FORMAT_SPECIFICATION_SCHEMA
+);
+export const selectCustomFormatSpecificationSchema = createAction(
+  SELECT_CUSTOM_FORMAT_SPECIFICATION_SCHEMA
+);
 
-export const saveCustomFormatSpecification = createThunk(SAVE_CUSTOM_FORMAT_SPECIFICATION);
-export const deleteCustomFormatSpecification = createThunk(DELETE_CUSTOM_FORMAT_SPECIFICATION);
-export const deleteAllCustomFormatSpecification = createThunk(DELETE_ALL_CUSTOM_FORMAT_SPECIFICATION);
+export const saveCustomFormatSpecification = createThunk(
+  SAVE_CUSTOM_FORMAT_SPECIFICATION
+);
+export const deleteCustomFormatSpecification = createThunk(
+  DELETE_CUSTOM_FORMAT_SPECIFICATION
+);
+export const deleteAllCustomFormatSpecification = createThunk(
+  DELETE_ALL_CUSTOM_FORMAT_SPECIFICATION
+);
 
-export const setCustomFormatSpecificationValue = createAction(SET_CUSTOM_FORMAT_SPECIFICATION_VALUE, (payload) => {
-  return {
-    section,
-    ...payload
-  };
-});
+export const setCustomFormatSpecificationValue = createAction(
+  SET_CUSTOM_FORMAT_SPECIFICATION_VALUE,
+  (payload) => {
+    return {
+      section,
+      ...payload,
+    };
+  }
+);
 
-export const setCustomFormatSpecificationFieldValue = createAction(SET_CUSTOM_FORMAT_SPECIFICATION_FIELD_VALUE, (payload) => {
-  return {
-    section,
-    ...payload
-  };
-});
+export const setCustomFormatSpecificationFieldValue = createAction(
+  SET_CUSTOM_FORMAT_SPECIFICATION_FIELD_VALUE,
+  (payload) => {
+    return {
+      section,
+      ...payload,
+    };
+  }
+);
 
-export const cloneCustomFormatSpecification = createAction(CLONE_CUSTOM_FORMAT_SPECIFICATION);
+export const cloneCustomFormatSpecification = createAction(
+  CLONE_CUSTOM_FORMAT_SPECIFICATION
+);
 
-export const clearCustomFormatSpecification = createAction(CLEAR_CUSTOM_FORMAT_SPECIFICATIONS);
+export const clearCustomFormatSpecification = createAction(
+  CLEAR_CUSTOM_FORMAT_SPECIFICATIONS
+);
 
-export const clearCustomFormatSpecificationPending = createThunk(CLEAR_CUSTOM_FORMAT_SPECIFICATION_PENDING);
+export const clearCustomFormatSpecificationPending = createThunk(
+  CLEAR_CUSTOM_FORMAT_SPECIFICATION_PENDING
+);
 
 //
 // Details
 
 export default {
-
   //
   // State
 
@@ -82,57 +116,72 @@ export default {
     isSaving: false,
     saveError: null,
     items: [],
-    pendingChanges: {}
+    pendingChanges: {},
   },
 
   //
   // Action Handlers
 
   actionHandlers: {
-    [FETCH_CUSTOM_FORMAT_SPECIFICATION_SCHEMA]: createFetchSchemaHandler(section, '/customformat/schema'),
+    [FETCH_CUSTOM_FORMAT_SPECIFICATION_SCHEMA]: createFetchSchemaHandler(
+      section,
+      '/customformat/schema'
+    ),
 
     [FETCH_CUSTOM_FORMAT_SPECIFICATIONS]: (getState, payload, dispatch) => {
       let tags = [];
       if (payload.id) {
-        const cfState = getSectionState(getState(), 'settings.customFormats', true);
+        const cfState = getSectionState(
+          getState(),
+          'settings.customFormats',
+          true
+        );
         const cf = cfState.items[cfState.itemMap[payload.id]];
         tags = cf.specifications.map((tag, i) => {
           return {
             id: i + 1,
-            ...tag
+            ...tag,
           };
         });
       }
 
-      dispatch(batchActions([
-        update({ section, data: tags }),
-        set({
-          section,
-          isPopulated: true
-        })
-      ]));
+      dispatch(
+        batchActions([
+          update({ section, data: tags }),
+          set({
+            section,
+            isPopulated: true,
+          }),
+        ])
+      );
     },
 
     [SAVE_CUSTOM_FORMAT_SPECIFICATION]: (getState, payload, dispatch) => {
-      const {
-        id,
-        ...otherPayload
-      } = payload;
+      const { id, ...otherPayload } = payload;
 
-      const saveData = getProviderState({ id, ...otherPayload }, getState, section, false);
+      const saveData = getProviderState(
+        { id, ...otherPayload },
+        getState,
+        section,
+        false
+      );
 
       // we have to set id since not actually posting to server yet
       if (!saveData.id) {
-        saveData.id = getNextId(getState().settings.customFormatSpecifications.items);
+        saveData.id = getNextId(
+          getState().settings.customFormatSpecifications.items
+        );
       }
 
-      dispatch(batchActions([
-        updateItem({ section, ...saveData }),
-        set({
-          section,
-          pendingChanges: {}
-        })
-      ]));
+      dispatch(
+        batchActions([
+          updateItem({ section, ...saveData }),
+          set({
+            section,
+            pendingChanges: {},
+          }),
+        ])
+      );
     },
 
     [DELETE_CUSTOM_FORMAT_SPECIFICATION]: (getState, payload, dispatch) => {
@@ -141,26 +190,36 @@ export default {
     },
 
     [DELETE_ALL_CUSTOM_FORMAT_SPECIFICATION]: (getState, payload, dispatch) => {
-      return dispatch(set({
-        section,
-        items: []
-      }));
+      return dispatch(
+        set({
+          section,
+          items: [],
+        })
+      );
     },
 
-    [CLEAR_CUSTOM_FORMAT_SPECIFICATION_PENDING]: (getState, payload, dispatch) => {
-      return dispatch(set({
-        section,
-        pendingChanges: {}
-      }));
-    }
+    [CLEAR_CUSTOM_FORMAT_SPECIFICATION_PENDING]: (
+      getState,
+      payload,
+      dispatch
+    ) => {
+      return dispatch(
+        set({
+          section,
+          pendingChanges: {},
+        })
+      );
+    },
   },
 
   //
   // Reducers
 
   reducers: {
-    [SET_CUSTOM_FORMAT_SPECIFICATION_VALUE]: createSetSettingValueReducer(section),
-    [SET_CUSTOM_FORMAT_SPECIFICATION_FIELD_VALUE]: createSetProviderFieldValueReducer(section),
+    [SET_CUSTOM_FORMAT_SPECIFICATION_VALUE]:
+      createSetSettingValueReducer(section),
+    [SET_CUSTOM_FORMAT_SPECIFICATION_FIELD_VALUE]:
+      createSetProviderFieldValueReducer(section),
 
     [SELECT_CUSTOM_FORMAT_SPECIFICATION_SCHEMA]: (state, { payload }) => {
       return selectProviderSchema(state, section, payload, (selectedSchema) => {
@@ -168,7 +227,7 @@ export default {
       });
     },
 
-    [CLONE_CUSTOM_FORMAT_SPECIFICATION]: function(state, { payload }) {
+    [CLONE_CUSTOM_FORMAT_SPECIFICATION]: function (state, { payload }) {
       const id = payload.id;
       const newState = getSectionState(state, section);
       const items = newState.items;
@@ -177,7 +236,7 @@ export default {
       const newItem = {
         ...item,
         id: newId,
-        name: translate('DefaultNameCopiedSpecification', { name: item.name })
+        name: translate('DefaultNameCopiedSpecification', { name: item.name }),
       };
       newState.items = [...items, newItem];
       newState.itemMap[newId] = newState.items.length - 1;
@@ -188,7 +247,7 @@ export default {
     [CLEAR_CUSTOM_FORMAT_SPECIFICATIONS]: createClearReducer(section, {
       isPopulated: false,
       error: null,
-      items: []
-    })
-  }
+      items: [],
+    }),
+  },
 };

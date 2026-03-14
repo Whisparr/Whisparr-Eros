@@ -3,29 +3,28 @@ import React, { Component } from 'react';
 
 const FPS = 20;
 const STEP = 1;
-const TIMEOUT = 1 / FPS * 1000;
+const TIMEOUT = (1 / FPS) * 1000;
 
 class Marquee extends Component {
-
   static propTypes = {
     text: PropTypes.string,
     title: PropTypes.string,
     hoverToStop: PropTypes.bool,
     loop: PropTypes.bool,
-    className: PropTypes.string
+    className: PropTypes.string,
   };
 
   static defaultProps = {
     text: '',
     title: '',
     hoverToStop: true,
-    loop: false
+    loop: false,
   };
 
   state = {
     animatedWidth: 0,
     overflowWidth: 0,
-    direction: 0
+    direction: 0,
   };
 
   componentDidMount() {
@@ -129,7 +128,7 @@ class Marquee extends Component {
     const style = {
       position: 'relative',
       right: this.state.animatedWidth,
-      whiteSpace: 'nowrap'
+      whiteSpace: 'nowrap',
     };
 
     if (this.state.overflowWidth < 0) {
@@ -146,7 +145,11 @@ class Marquee extends Component {
               this.text = el;
             }}
             style={style}
-            title={(this.props.title && (this.props.text !== this.props.title)) ? `Original Title: ${this.props.title}` : this.props.text}
+            title={
+              this.props.title && this.props.text !== this.props.title
+                ? `Original Title: ${this.props.title}`
+                : this.props.text
+            }
           >
             {this.props.text}
           </span>
@@ -169,7 +172,11 @@ class Marquee extends Component {
             this.text = el;
           }}
           style={style}
-          title={(this.props.title && (this.props.text !== this.props.title)) ? `Original Title: ${this.props.title}` : this.props.text}
+          title={
+            this.props.title && this.props.text !== this.props.title
+              ? `Original Title: ${this.props.title}`
+              : this.props.text
+          }
         >
           {this.props.text}
         </span>

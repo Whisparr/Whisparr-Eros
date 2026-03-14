@@ -5,7 +5,6 @@ import { sizes } from 'Helpers/Props';
 import ImportCustomFormatModalContentConnector from './ImportCustomFormatModalContentConnector';
 
 class ImportCustomFormatModal extends Component {
-
   //
   // Lifecycle
 
@@ -13,7 +12,7 @@ class ImportCustomFormatModal extends Component {
     super(props, context);
 
     this.state = {
-      height: 'auto'
+      height: 'auto',
     };
   }
 
@@ -30,11 +29,7 @@ class ImportCustomFormatModal extends Component {
   // Render
 
   render() {
-    const {
-      isOpen,
-      onModalClose,
-      ...otherProps
-    } = this.props;
+    const { isOpen, onModalClose, ...otherProps } = this.props;
 
     return (
       <Modal
@@ -55,7 +50,7 @@ class ImportCustomFormatModal extends Component {
 
 ImportCustomFormatModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
-  onModalClose: PropTypes.func.isRequired
+  onModalClose: PropTypes.func.isRequired,
 };
 
 export default ImportCustomFormatModal;
