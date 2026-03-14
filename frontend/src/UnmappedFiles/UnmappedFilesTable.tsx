@@ -98,7 +98,7 @@ class UnmappedFilesTable extends Component<
     }
   }
 
-  scrollerRef: RefObject<HTMLDivElement>;
+  scrollerRef: RefObject<HTMLDivElement | null>;
 
   onSortColumnPress = (column: string) => {
     this.setState((prevState) => {

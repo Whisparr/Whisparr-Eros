@@ -12,7 +12,9 @@ function DaysOfWeek() {
   const { calendarWeekColumnHeader, shortDateFormat, showRelativeDates } =
     useSelector(createUISettingsSelector());
 
-  const updateTimeout = useRef<ReturnType<typeof setTimeout>>();
+  const updateTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined
+  );
   const [todaysDate, setTodaysDate] = useState(
     moment().startOf('day').toISOString()
   );

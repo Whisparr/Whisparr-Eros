@@ -46,7 +46,7 @@ interface PerformerIndexPostersProps {
   sortDirection?: SortDirection;
   jumpToCharacter?: string;
   scrollTop?: number;
-  scrollerRef: RefObject<HTMLElement>;
+  scrollerRef: RefObject<HTMLElement | null>;
   isSelectMode: boolean;
   isSmallScreen: boolean;
   safeForWorkMode: boolean;
@@ -66,7 +66,7 @@ function Cell({
   rowIndex,
   style,
   data,
-}: GridChildComponentProps<CellItemData> & {}): JSX.Element | null {
+}: GridChildComponentProps<CellItemData> & {}): React.JSX.Element | null {
   const { layout, items, sortKey, isSelectMode } = data;
 
   const { columnCount, padding, posterWidth, posterHeight } = layout;

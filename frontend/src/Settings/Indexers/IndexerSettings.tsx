@@ -23,7 +23,7 @@ function IndexerSettings() {
     (state: AppState) => state.settings.indexers.isTestingAll
   );
 
-  const saveOptions = useRef<() => void>();
+  const saveOptions = useRef<(() => void) | undefined>(undefined);
 
   const [isSaving, setIsSaving] = useState(false);
   const [hasPendingChanges, setHasPendingChanges] = useState(false);

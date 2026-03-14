@@ -8,7 +8,9 @@ import React, {
 } from 'react';
 import { useHistory } from 'react-router';
 import PageToolbar from 'Components/Page/Toolbar/PageToolbar';
-import PageToolbarButton from 'Components/Page/Toolbar/PageToolbarButton';
+import PageToolbarButton, {
+  PageToolbarButtonProps,
+} from 'Components/Page/Toolbar/PageToolbarButton';
 import PageToolbarSection from 'Components/Page/Toolbar/PageToolbarSection';
 import useKeyboardShortcuts from 'Helpers/Hooks/useKeyboardShortcuts';
 import { icons } from 'Helpers/Props';
@@ -40,7 +42,7 @@ function SettingsToolbar({
     null
   );
   const hasConfirmed = useRef(false);
-  const unblocker = useRef<UnregisterCallback>();
+  const unblocker = useRef<UnregisterCallback | undefined>(undefined);
 
   const handleConfirmNavigation = useCallback(() => {
     if (!nextLocation) {
@@ -134,7 +136,7 @@ function SettingsToolbar({
           />
         ) : null}
 
-        {additionalButtons}
+        {additionalButtons as ReactElement<PageToolbarButtonProps> | null}
       </PageToolbarSection>
 
       <PendingChangesModal

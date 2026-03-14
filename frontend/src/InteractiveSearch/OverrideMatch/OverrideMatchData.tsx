@@ -4,7 +4,7 @@ import Link from 'Components/Link/Link';
 import styles from './OverrideMatchData.css';
 
 interface OverrideMatchDataProps {
-  value?: string | number | JSX.Element | JSX.Element[];
+  value?: string | number | React.JSX.Element | React.JSX.Element[];
   isDisabled?: boolean;
   isOptional?: boolean;
   onPress: () => void;

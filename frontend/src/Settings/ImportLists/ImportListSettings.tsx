@@ -24,7 +24,7 @@ function ImportListSettings() {
     (state: AppState) => state.settings.importLists.isTestingAll
   );
 
-  const saveOptions = useRef<() => void>();
+  const saveOptions = useRef<(() => void) | undefined>(undefined);
 
   const [isSaving, setIsSaving] = useState(false);
   const [hasPendingChanges, setHasPendingChanges] = useState(false);

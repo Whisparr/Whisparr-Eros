@@ -4,7 +4,7 @@ import { kinds } from 'Helpers/Props';
 import styles from 'Scene/NoScene.css';
 import translate from 'Utilities/String/translate';
 
-function NoPerformer(): JSX.Element {
+function NoPerformer(): React.JSX.Element {
   return (
     <div>
       <div className={styles.message}>

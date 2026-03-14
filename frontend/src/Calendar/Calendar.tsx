@@ -35,7 +35,9 @@ const UPDATE_DELAY = 3600000; // 1 hour
 function Calendar() {
   const dispatch = useDispatch();
   const requestCurrentPage = useCurrentPage();
-  const updateTimeout = useRef<ReturnType<typeof setTimeout>>();
+  const updateTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined
+  );
 
   const { isFetching, isPopulated, error, items, time, view } = useSelector(
     (state: AppState) => state.calendar
