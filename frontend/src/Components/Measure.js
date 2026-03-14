@@ -1,33 +1,19 @@
-import _ from 'lodash';
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
-import ReactMeasure from 'react-measure';
+import { Children, cloneElement, useEffect, useRef } from 'react';
+import useMeasure from 'Helpers/Hooks/useMeasure';
 
-class Measure extends Component {
-  //
-  // Lifecycle
+function Measure({ onMeasure, children }) {
+  const [ref, bounds] = useMeasure();
+  const onMeasureRef = useRef(onMeasure);
+  onMeasureRef.current = onMeasure;
 
-  componentWillUnmount() {
-    this.onMeasure.cancel();
-  }
+  useEffect(() => {
+    if (bounds.width !== 0 || bounds.height !== 0) {
+      onMeasureRef.current(bounds);
+    }
+  }, [bounds]);
 
-  //
-  // Listeners
-
-  onMeasure = _.debounce(
-    (payload) => {
-      this.props.onMeasure(payload);
-    },
-    250,
-    { leading: true, trailing: false }
-  );
-
-  //
-  // Render
-
-  render() {
-    return <ReactMeasure {...this.props} />;
-  }
+  return cloneElement(Children.only(children), { ref });
 }
 
 Measure.propTypes = {
