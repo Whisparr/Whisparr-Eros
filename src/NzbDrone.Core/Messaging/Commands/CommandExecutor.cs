@@ -49,9 +49,9 @@ namespace NzbDrone.Core.Messaging.Commands
                     }
                 }
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException ex)
             {
-                _logger.Trace("Stopped one command execution pipeline");
+                _logger.Trace(ex, "Stopped one command execution pipeline");
             }
             catch (Exception ex)
             {
@@ -134,7 +134,7 @@ namespace NzbDrone.Core.Messaging.Commands
             threadLimit = Math.Max(THREAD_LOWER_BOUND, threadLimit);
             threadLimit = Math.Min(THREAD_UPPER_BOUND, threadLimit);
 
-            _logger.Info("Starting {} threads for tasks.", threadLimit);
+            _logger.Info("Starting {ThreadLimit} threads for tasks.", threadLimit);
 
             for (var i = 0; i < threadLimit + 1; i++)
             {
