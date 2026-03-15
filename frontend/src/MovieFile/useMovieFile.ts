@@ -1,3 +1,5 @@
+import { useQueryClient } from '@tanstack/react-query';
+import useApiMutation from 'Helpers/Hooks/useApiMutation';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import { UnmappedFile } from '../UnmappedFiles/UnmappedFilesTable';
 import { MovieFile } from './MovieFile';
@@ -37,6 +39,19 @@ export function useMovieFilesByIds(movieFileIds: number[] | undefined) {
     path: `${PATH}/list`,
     queryOptions: { enabled: !!movieFileIds && movieFileIds.length > 0 },
     queryParams: { ids: idsParam },
+  });
+}
+
+export function useDeleteMovieFiles() {
+  const queryClient = useQueryClient();
+  return useApiMutation<void, { movieFileIds: number[] }>({
+    path: `${PATH}/bulk`,
+    method: 'DELETE',
+    mutationOptions: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: [PATH] });
+      },
+    },
   });
 }
 
