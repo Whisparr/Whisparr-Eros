@@ -280,7 +280,7 @@ function MovieFileEditorRow(props: MovieFileEditorRowProps) {
               />
               <IconButton
                 title={translate('DeleteFile')}
-                name={icons.REMOVE}
+                name={icons.DELETE}
                 onPress={handleDeletePress}
               />
             </TableRowCell>
