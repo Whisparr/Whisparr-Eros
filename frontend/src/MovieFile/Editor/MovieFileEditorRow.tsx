@@ -76,6 +76,10 @@ function MovieFileEditorRow(props: MovieFileEditorRowProps) {
   const [isFileEditModalOpen, setIsFileEditModalOpen] =
     useState<boolean>(false);
 
+  const handleDeletePress = useCallback(() => {
+    setIsConfirmDeleteModalOpen(true);
+  }, []);
+
   const handleConfirmDelete = useCallback(() => {
     setIsConfirmDeleteModalOpen(false);
     onDeletePress(id);
@@ -229,7 +233,6 @@ function MovieFileEditorRow(props: MovieFileEditorRowProps) {
         }
 
         if (name === 'indexerFlags') {
-          console.log('[MovieFileEditorRow] indexerFlags:', indexerFlags);
           return (
             <TableRowCell key={name} className={styles.indexerFlags}>
               {indexerFlags ? (
@@ -278,7 +281,7 @@ function MovieFileEditorRow(props: MovieFileEditorRowProps) {
               <IconButton
                 title={translate('DeleteFile')}
                 name={icons.REMOVE}
-                onPress={handleConfirmDelete}
+                onPress={handleDeletePress}
               />
             </TableRowCell>
           );
