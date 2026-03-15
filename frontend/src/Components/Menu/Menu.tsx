@@ -10,28 +10,22 @@ import { Manager, Popper, PopperProps, Reference } from 'react-popper';
 import Portal from 'Components/Portal';
 import styles from './Menu.css';
 
-const sharedPopperOptions = {
-  modifiers: {
-    preventOverflow: {
-      padding: 0,
-    },
-    flip: {
-      padding: 0,
-    },
-  },
-};
+const sharedModifiers = [
+  { name: 'preventOverflow', options: { padding: 0 } },
+  { name: 'flip', options: { padding: 0 } },
+] as const;
 
 const popperOptions: {
-  right: Partial<PopperProps>;
-  left: Partial<PopperProps>;
+  right: Partial<PopperProps<unknown>>;
+  left: Partial<PopperProps<unknown>>;
 } = {
   right: {
-    ...sharedPopperOptions,
+    modifiers: sharedModifiers,
     placement: 'bottom-end',
   },
 
   left: {
-    ...sharedPopperOptions,
+    modifiers: sharedModifiers,
     placement: 'bottom-start',
   },
 };
@@ -185,8 +179,10 @@ function Menu({
 
       <Portal>
         <Popper {...popperOptions[alignMenu]}>
-          {({ ref, style, scheduleUpdate }) => {
-            updater.current = scheduleUpdate;
+          {({ ref, style, update }) => {
+            updater.current = () => {
+              update();
+            };
 
             return React.cloneElement(
               childrenArray[1] as ReactElement<Record<string, unknown>>,

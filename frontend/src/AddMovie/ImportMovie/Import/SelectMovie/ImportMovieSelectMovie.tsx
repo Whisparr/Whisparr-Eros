@@ -170,14 +170,11 @@ function ImportMovieSelectMovie({
       </Reference>
 
       <Portal>
-        <Popper
-          placement="bottom"
-          modifiers={{
-            preventOverflow: { boundariesElement: 'viewport' },
-          }}
-        >
-          {({ ref, style, scheduleUpdate }) => {
-            scheduleUpdateRef.current = scheduleUpdate;
+        <Popper placement="bottom" modifiers={[{ name: 'preventOverflow' }]}>
+          {({ ref, style, update }) => {
+            scheduleUpdateRef.current = () => {
+              update();
+            };
 
             return (
               <div
