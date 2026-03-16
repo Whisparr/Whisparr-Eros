@@ -168,11 +168,7 @@ function StudioDetailsYear(props: StudioDetailsYearProps) {
           {!isSmallScreen && <span>&nbsp;</span>}
         </Link>
         {isSmallScreen ? (
-          <Menu
-            className={styles.actionsMenu}
-            alignMenu={align.RIGHT}
-            enforceMaxHeight={false}
-          >
+          <Menu className={styles.actionsMenu} alignMenu={align.RIGHT}>
             <MenuButton>
               <Icon name={icons.ACTIONS} size={22} />
             </MenuButton>
