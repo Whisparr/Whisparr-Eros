@@ -88,7 +88,7 @@ export function useStudioIndexQuery(
   if (
     selectedFilterKey !== undefined &&
     selectedFilterKey !== null &&
-    !Number.isNaN(selectedFilterKey)
+    !Number.isNaN(Number(selectedFilterKey))
   ) {
     // Numeric ID indicates a custom filter
     filterDef = customFilters.find(

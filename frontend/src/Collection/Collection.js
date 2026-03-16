@@ -132,7 +132,7 @@ class Collection extends Component {
       (acc, item) => {
         let char = item.sortTitle.charAt(0);
 
-        if (!Number.isNaN(char)) {
+        if (!Number.isNaN(Number(char))) {
           char = '#';
         }
 

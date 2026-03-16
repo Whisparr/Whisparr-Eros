@@ -205,11 +205,9 @@ function PerformerDetails() {
   const moviesError = performerDetailsError;
   const expandIcon = allExpandedYears ? icons.COLLAPSE : icons.EXPAND;
   const statusDetails = getPerformerStatusDetails(status);
-  const startYear = Number.isFinite(careerStart) ? careerStart : '';
-  const endYear =
-    typeof careerEnd === 'number' && Number.isFinite(careerEnd) && careerEnd > 0
-      ? careerEnd
-      : '';
+  const startYear =
+    careerStart && Number.isFinite(careerStart) ? careerStart : '';
+  const endYear = careerEnd && Number.isFinite(careerEnd) ? careerEnd : '';
   const runningYears = `${startYear}-${endYear}`;
   const fanartUrl = getFanartUrl(Array.isArray(images) ? images : []);
   const formatedAge = birthDate === '' ? age : `${birthDate} | ${age}`;
