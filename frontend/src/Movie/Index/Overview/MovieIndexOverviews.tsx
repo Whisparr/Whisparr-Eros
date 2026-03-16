@@ -5,12 +5,14 @@ import dimensions from 'Styles/Variables/dimensions';
 import MovieIndexOverview from './MovieIndexOverview';
 import selectOverviewOptions from './selectOverviewOptions';
 
-const columnPadding = parseInt(dimensions.movieIndexColumnPadding);
-const columnPaddingSmallScreen = parseInt(
+const columnPadding = Number.parseInt(dimensions.movieIndexColumnPadding);
+const columnPaddingSmallScreen = Number.parseInt(
   dimensions.movieIndexColumnPaddingSmallScreen
 );
-const progressBarHeight = parseInt(dimensions.progressBarSmallHeight);
-const detailedProgressBarHeight = parseInt(dimensions.progressBarMediumHeight);
+const progressBarHeight = Number.parseInt(dimensions.progressBarSmallHeight);
+const detailedProgressBarHeight = Number.parseInt(
+  dimensions.progressBarMediumHeight
+);
 
 interface MovieIndexOverviewsProps {
   items: Movie[];

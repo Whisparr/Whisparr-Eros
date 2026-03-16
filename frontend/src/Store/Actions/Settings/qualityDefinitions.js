@@ -70,7 +70,7 @@ export default {
       const upatedDefinitions = Object.keys(
         qualityDefinitions.pendingChanges
       ).map((key) => {
-        const id = parseInt(key);
+        const id = Number.parseInt(key);
         const pendingChanges = qualityDefinitions.pendingChanges[id] || {};
         const item = _.find(qualityDefinitions.items, { id });
 

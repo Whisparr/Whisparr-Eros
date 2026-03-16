@@ -1,7 +1,7 @@
 function formatNumber(input: string | number, minimumFractionDigits = 0) {
   const size = Number(input);
 
-  if (isNaN(size)) {
+  if (Number.isNaN(Number(size))) {
     return '';
   }
 

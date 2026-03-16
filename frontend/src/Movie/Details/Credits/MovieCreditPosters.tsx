@@ -10,8 +10,10 @@ import styles from './MovieCreditPosters.css';
 import 'swiper/css';
 import 'swiper/css/navigation';
 
-const columnPadding = parseFloat(dimensions.movieIndexColumnPadding as string);
-const columnPaddingSmallScreen = parseFloat(
+const columnPadding = Number.parseFloat(
+  dimensions.movieIndexColumnPadding as string
+);
+const columnPaddingSmallScreen = Number.parseFloat(
   dimensions.movieIndexColumnPaddingSmallScreen as string
 );
 

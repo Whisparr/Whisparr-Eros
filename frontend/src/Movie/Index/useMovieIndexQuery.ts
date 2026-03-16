@@ -31,7 +31,7 @@ export function useMovieIndexQuery(params: MovieIndexQueryParams) {
   if (
     selectedFilterKey !== undefined &&
     selectedFilterKey !== null &&
-    !isNaN(Number(selectedFilterKey))
+    !Number.isNaN(Number(selectedFilterKey))
   ) {
     // Numeric ID indicates a custom filter
     filterDef = customFilters.find(

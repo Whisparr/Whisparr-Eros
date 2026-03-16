@@ -26,12 +26,12 @@ import SceneIndexOverviewInfo from './SceneIndexOverviewInfo';
 import selectOverviewOptions from './selectOverviewOptions';
 import styles from './SceneIndexOverview.css';
 
-const columnPadding = parseInt(dimensions.movieIndexColumnPadding);
-const columnPaddingSmallScreen = parseInt(
+const columnPadding = Number.parseInt(dimensions.movieIndexColumnPadding);
+const columnPaddingSmallScreen = Number.parseInt(
   dimensions.movieIndexColumnPaddingSmallScreen
 );
-const defaultFontSize = parseInt(fonts.defaultFontSize);
-const lineHeight = parseFloat(fonts.lineHeight);
+const defaultFontSize = Number.parseInt(fonts.defaultFontSize);
+const lineHeight = Number.parseFloat(fonts.lineHeight);
 
 // Hardcoded height beased on line-height of 32 + bottom margin of 10.
 // Less side-effecty than using react-measure.

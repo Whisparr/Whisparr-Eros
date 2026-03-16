@@ -10,8 +10,8 @@ import CollectionOverviewConnector from './CollectionOverviewConnector';
 import styles from './CollectionOverviews.css';
 
 // Poster container dimensions
-const columnPadding = parseInt(dimensions.movieIndexColumnPadding);
-const columnPaddingSmallScreen = parseInt(
+const columnPadding = Number.parseInt(dimensions.movieIndexColumnPadding);
+const columnPaddingSmallScreen = Number.parseInt(
   dimensions.movieIndexColumnPaddingSmallScreen
 );
 
