@@ -1,5 +1,11 @@
 import _ from 'lodash';
-import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import {
@@ -57,6 +63,11 @@ function StudioDetails() {
 
   const { data: allWorks = [], isFetching: isWorksFetching } =
     useStudioDetailsWorks(studioForeignId as string);
+
+  const [scrollContainer, setScrollContainer] = useState<Element | null>(null);
+  const contentBodyRef = useCallback((el: HTMLDivElement | null) => {
+    setScrollContainer(el);
+  }, []);
 
   const listRef = useRef<List>(null);
   const cacheRef = useRef(
@@ -277,7 +288,10 @@ function StudioDetails() {
       </PageToolbar>
 
       {/* MAIN PAGE CONTENT */}
-      <PageContentBody innerClassName={styles.innerContentBody}>
+      <PageContentBody
+        ref={contentBodyRef}
+        innerClassName={styles.innerContentBody}
+      >
         <div className={styles.header}>
           <div
             className={styles.backdrop}
@@ -494,7 +508,7 @@ function StudioDetails() {
           {/* WORKS BY YEAR */}
           {isPopulated && (studio.hasMovies || studio.hasScenes) && (
             <FieldSet legend={translate('Works')}>
-              <WindowScroller>
+              <WindowScroller scrollElement={scrollContainer ?? undefined}>
                 {({
                   height,
                   isScrolling,
