@@ -71,15 +71,8 @@ function StudioDetailsYear(props: StudioDetailsYearProps) {
     onYearRefreshPress,
   } = props;
 
-  const {
-    items,
-    studioMonitored,
-    isSmallScreen,
-    isSearching,
-    columns,
-    sortKey,
-    sortDirection,
-  } = useStudioDetailsYearData(studioId, works);
+  const { items, isSmallScreen, isSearching, columns, sortKey, sortDirection } =
+    useStudioDetailsYearData(works);
 
   const totalMovieCount = works.length;
   const monitoredMovieCount = works.filter((m) => m.monitored).length;
@@ -189,9 +182,7 @@ function StudioDetailsYear(props: StudioDetailsYearProps) {
                 {translate('Refresh')}
               </MenuItem>
               <MenuItem
-                isDisabled={
-                  isSearching || monitoredMovieCount === 0 || !studioMonitored
-                }
+                isDisabled={isSearching || monitoredMovieCount === 0}
                 onPress={onSearchPress}
               >
                 <SpinnerIcon
@@ -218,15 +209,13 @@ function StudioDetailsYear(props: StudioDetailsYearProps) {
               className={styles.actionButton}
               name={icons.SEARCH}
               title={
-                monitoredMovieCount > 0 && studioMonitored
+                monitoredMovieCount > 0
                   ? translate('SearchForMonitoredMoviesYear')
                   : translate('NoMonitoredMoviesYear')
               }
               size={24}
               isSpinning={isSearching}
-              isDisabled={
-                isSearching || monitoredMovieCount === 0 || !studioMonitored
-              }
+              isDisabled={isSearching || monitoredMovieCount === 0}
               onPress={onSearchPress}
             />
           </div>

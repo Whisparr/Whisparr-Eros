@@ -14,12 +14,10 @@ import {
   setStudioScenesTableOption,
 } from 'Store/Actions/studioScenesActions';
 import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
-import Studio from 'Studio/Studio';
 import { TableOptionsChangePayload } from 'typings/Table';
 
 interface StudioDetailsYearState {
   items: Movie[];
-  studioMonitored: boolean;
   isSmallScreen: boolean;
   isSearching: boolean;
   columns: Column[];
@@ -102,12 +100,8 @@ function sort(items: Movie[], state: StudioScenesState) {
 }
 
 export function useStudioDetailsYearData(
-  studioId: number,
   items: Movie[]
 ): StudioDetailsYearState {
-  const studio = useSelector((state: AppState) =>
-    state.studios.items.find((s: Studio) => s.id === studioId)
-  );
   const studioScenes = useSelector(
     (state: AppState & { studioScenes: StudioScenesState }) =>
       state.studioScenes
@@ -118,7 +112,6 @@ export function useStudioDetailsYearData(
 
   return {
     items: sortedItems,
-    studioMonitored: studio?.monitored ?? false,
     isSmallScreen: dimensions.isSmallScreen,
     isSearching: false,
     columns: studioScenes.columns,
