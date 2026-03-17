@@ -88,6 +88,7 @@ function PageHeader({ isSmallScreen }: PageHeaderProps) {
           title={translate('Donate')}
         />
 
+        {/*
         <IconButton
           className={styles.translate}
           title={translate('SuggestTranslationChange')}
@@ -95,6 +96,7 @@ function PageHeader({ isSmallScreen }: PageHeaderProps) {
           to="https://translate.servarr.com/projects/whisparr/whisparr/"
           size={24}
         />
+        */}
 
         <PageHeaderActionsMenu
           onKeyboardShortcutsPress={handleOpenKeyboardShortcutsModal}
