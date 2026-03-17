@@ -52,66 +52,82 @@ namespace NzbDrone.Core.Datastore.PagedFilters
             var endsWithMethod = typeof(string).GetMethod("EndsWith", new[] { typeof(string) });
             var nullConst = Expression.Constant(null, typeof(string));
 
-            // Each value produces one filter expression added to FilterExpressions (ANDed together).
-            // For positive ops (contains/startswith/endswith) multiple values mean "path matches ALL".
-            // For negative ops (notcontains/notstartswith/notendswith) multiple values mean "path matches NONE".
+            // Positive ops (contains/startswith/endswith/equal): multiple values are OR'd into one
+            // expression so that any matching value satisfies the filter.
+            // Negative ops (notcontains/notstartswith/notendswith/notequal): each value adds a separate
+            // expression (ANDed) so that none of the values may match.
+            var perValueExpressions = new List<Expression>();
+
             foreach (var value in values)
             {
                 var valueConst = Expression.Constant(value);
                 var notNull = Expression.NotEqual(property, nullConst);
-                Expression final;
+                Expression perValue;
 
                 switch (operation)
                 {
                     case "contains":
                         var containsCall = Expression.Call(property, containsMethod, valueConst);
-                        final = Expression.AndAlso(notNull, containsCall);
+                        perValue = Expression.AndAlso(notNull, containsCall);
+                        perValueExpressions.Add(perValue);
                         break;
 
                     case "notcontains":
                         var notContainsCall = Expression.Call(property, containsMethod, valueConst);
-                        final = Expression.OrElse(
+                        perValue = Expression.OrElse(
                             Expression.Equal(property, nullConst),
                             Expression.Not(notContainsCall));
+                        pageSpec.FilterExpressions.Add(Expression.Lambda<Func<T, bool>>(perValue, param));
                         break;
 
                     case "equal":
-                        final = Expression.Equal(property, valueConst);
+                        perValue = Expression.Equal(property, valueConst);
+                        perValueExpressions.Add(perValue);
                         break;
 
                     case "notequal":
-                        final = Expression.NotEqual(property, valueConst);
+                        perValue = Expression.NotEqual(property, valueConst);
+                        pageSpec.FilterExpressions.Add(Expression.Lambda<Func<T, bool>>(perValue, param));
                         break;
 
                     case "startswith":
                         var startsWithCall = Expression.Call(property, startsWithMethod, valueConst);
-                        final = Expression.AndAlso(notNull, startsWithCall);
+                        perValue = Expression.AndAlso(notNull, startsWithCall);
+                        perValueExpressions.Add(perValue);
                         break;
 
                     case "notstartswith":
                         var notStartsWithCall = Expression.Call(property, startsWithMethod, valueConst);
-                        final = Expression.OrElse(
+                        perValue = Expression.OrElse(
                             Expression.Equal(property, nullConst),
                             Expression.Not(notStartsWithCall));
+                        pageSpec.FilterExpressions.Add(Expression.Lambda<Func<T, bool>>(perValue, param));
                         break;
 
                     case "endswith":
                         var endsWithCall = Expression.Call(property, endsWithMethod, valueConst);
-                        final = Expression.AndAlso(notNull, endsWithCall);
+                        perValue = Expression.AndAlso(notNull, endsWithCall);
+                        perValueExpressions.Add(perValue);
                         break;
 
                     case "notendswith":
                         var notEndsWithCall = Expression.Call(property, endsWithMethod, valueConst);
-                        final = Expression.OrElse(
+                        perValue = Expression.OrElse(
                             Expression.Equal(property, nullConst),
                             Expression.Not(notEndsWithCall));
+                        pageSpec.FilterExpressions.Add(Expression.Lambda<Func<T, bool>>(perValue, param));
                         break;
 
                     default:
                         return;
                 }
+            }
 
-                pageSpec.FilterExpressions.Add(Expression.Lambda<Func<T, bool>>(final, param));
+            // Combine positive-match expressions with OR so any term satisfies the filter.
+            if (perValueExpressions.Count > 0)
+            {
+                var combined = perValueExpressions.Aggregate(Expression.OrElse);
+                pageSpec.FilterExpressions.Add(Expression.Lambda<Func<T, bool>>(combined, param));
             }
         }
     }
