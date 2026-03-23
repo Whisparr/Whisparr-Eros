@@ -12,6 +12,7 @@
     <PackageReference Include="RestSharp" Version="114.0.0" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.0" />
     <ProjectReference Include="..\NzbDrone.Common\Whisparr.Common.csproj" />
     <ProjectReference Include="..\NzbDrone.Core\Whisparr.Core.csproj" />
   </ItemGroup>
