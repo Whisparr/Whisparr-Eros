@@ -60,7 +60,7 @@ class DeleteSceneModalContent extends Component {
 
     let deleteFilesLabel = hasFile
       ? translate('DeleteFileLabel', [1])
-      : translate('DeleteFilesLabel', [0]);
+      : translate('DeleteFiles', [0]);
     let deleteFilesHelpText = translate('DeleteFilesHelpText');
 
     if (!hasFile) {
