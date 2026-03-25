@@ -318,7 +318,7 @@ function MovieDetails(props: Readonly<Partial<Props>>) {
                       className={styles.title}
                       style={{ width: marqueeWidth }}
                     >
-                      <Marquee text={title} />
+                      <Marquee className="marquee" text={title} />
                     </div>
                   </div>
                 </div>
