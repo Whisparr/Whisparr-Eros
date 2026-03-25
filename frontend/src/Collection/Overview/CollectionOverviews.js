@@ -221,6 +221,7 @@ class CollectionOverviews extends Component {
 
     return (
       <Measure whitelist={['width']} onMeasure={this.onMeasure}>
+        <div>
         <WindowScroller scrollElement={isSmallScreen ? undefined : scroller}>
           {({ height, registerChild, onChildScroll, scrollTop }) => {
             if (!height) {
@@ -251,6 +252,7 @@ class CollectionOverviews extends Component {
             );
           }}
         </WindowScroller>
+        </div>
       </Measure>
     );
   }
