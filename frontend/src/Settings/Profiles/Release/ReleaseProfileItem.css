@@ -1,5 +1,5 @@
 .releaseProfile {
-  composes: card from '~Components/Card.css';
+  composes: card from 'Components/Card.css';
 
   width: 290px;
 }
@@ -19,7 +19,7 @@
 }
 
 .label {
-  composes: label from '~Components/Label.css';
+  composes: label from 'Components/Label.css';
 
   max-width: 100%;
 }

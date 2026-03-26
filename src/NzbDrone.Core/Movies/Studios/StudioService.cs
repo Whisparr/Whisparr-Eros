@@ -20,6 +20,7 @@ namespace NzbDrone.Core.Movies.Studios
         List<Studio> SearchStudios(string query);
         List<Studio> GetAllStudios();
         List<string> AllStudioForeignIds();
+        List<int> AllStudioIdsByLastInfoSync();
         Studio Update(Studio performer);
         List<Studio> Update(List<Studio> studios);
         Studio FindByTitle(string title);
@@ -53,13 +54,13 @@ namespace NzbDrone.Core.Movies.Studios
             _cacheName = "Whisparr.Api.V3.Studios.StudioResource_studioResources";
         }
 
-        public Studio AddStudio(Studio newStudio)
+        public Studio AddStudio(Studio studio)
         {
-            var studio = _studioRepo.Insert(newStudio);
+            var newStudio = _studioRepo.Insert(studio);
 
-            _eventAggregator.PublishEvent(new StudioAddedEvent(GetById(studio.Id)));
+            _eventAggregator.PublishEvent(new StudioAddedEvent(newStudio));
 
-            return studio;
+            return newStudio;
         }
 
         public List<Studio> AddStudios(List<Studio> studios)
@@ -158,6 +159,11 @@ namespace NzbDrone.Core.Movies.Studios
         public List<string> AllStudioForeignIds()
         {
             return _studioRepo.AllStudioForeignIds();
+        }
+
+        public List<int> AllStudioIdsByLastInfoSync()
+        {
+            return _studioRepo.AllStudioIdsByLastInfoSync();
         }
 
         public PagingSpec<Studio> Paged(PagingSpec<Studio> pagingSpec)

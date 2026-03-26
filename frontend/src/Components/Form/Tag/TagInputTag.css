@@ -22,13 +22,13 @@
 }
 
 .editButton {
-  composes: button from '~Components/Link/IconButton.css';
+  composes: button from 'Components/Link/IconButton.css';
 
   width: 9px;
 }
 
 .label {
-  composes: label from '~Components/Label.css';
+  composes: label from 'Components/Label.css';
 
   display: flex;
   max-width: 100%;

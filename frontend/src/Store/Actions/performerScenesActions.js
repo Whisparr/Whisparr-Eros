@@ -24,99 +24,107 @@ export const defaultState = {
       name: 'monitored',
       columnLabel: () => translate('Monitored'),
       isVisible: true,
-      isModifiable: false
+      isModifiable: false,
     },
     {
       name: 'title',
       label: () => translate('Title'),
       isVisible: true,
-      isSortable: true
+      isSortable: true,
     },
     {
       name: 'credits',
       label: 'Performers',
-      isVisible: true
+      isVisible: true,
     },
     {
       name: 'path',
       label: () => translate('Path'),
       isVisible: false,
-      isSortable: true
+      isSortable: true,
     },
     {
       name: 'releaseDate',
       label: () => translate('ReleaseDate'),
       isVisible: true,
-      isSortable: true
+      isSortable: true,
     },
     {
       name: 'runtime',
       label: () => translate('Runtime'),
       isVisible: false,
-      isSortable: true
+      isSortable: true,
     },
-    { name: 'studioTitle',
+    {
+      name: 'studioTitle',
       label: () => translate('Studio'),
       isVisible: true,
-      isSortable: true
+      isSortable: true,
     },
     {
       name: 'sizeOnDisk',
       label: () => translate('Size'),
       isVisible: false,
-      isSortable: true
+      isSortable: true,
     },
     {
       name: 'status',
       label: () => translate('Status'),
-      isVisible: true
+      isVisible: true,
     },
     {
       name: 'actions',
       columnLabel: () => translate('Actions'),
       isVisible: true,
-      isModifiable: false
-    }
+      isModifiable: false,
+    },
   ],
 
   sortPredicates: {
-    gender: function(item) {
+    gender: function (item) {
       const gender = item.gender;
       return gender ? gender.toLowerCase() : '';
     },
-    status: function(item) {
+    status: function (item) {
       console.log('Sorting status:', item.status);
       return item.status ? item.status.toLowerCase() : '';
-    }
-  }
+    },
+  },
 };
 
 export const persistState = [
   'performerScenes.sortKey',
   'performerScenes.sortDirection',
   'performerScenes.columns',
-  'performerScenes.tableOptions'
+  'performerScenes.tableOptions',
 ];
 
 //
 // Actions Types
 
-export const SET_PERFORMER_SCENES_SORT = 'performerScenes/setPerformerScenesSort';
-export const SET_PERFORMER_SCENES_TABLE_OPTION = 'performerScenes/setPerformerScenesTableOption';
+export const SET_PERFORMER_SCENES_SORT =
+  'performerScenes/setPerformerScenesSort';
+export const SET_PERFORMER_SCENES_TABLE_OPTION =
+  'performerScenes/setPerformerScenesTableOption';
 
 //
 // Action Creators
 
 export const setPerformerScenesSort = createAction(SET_PERFORMER_SCENES_SORT);
-export const setPerformerScenesTableOption = createAction(SET_PERFORMER_SCENES_TABLE_OPTION);
+export const setPerformerScenesTableOption = createAction(
+  SET_PERFORMER_SCENES_TABLE_OPTION
+);
 
 //
 // Reducers
 
-export const reducers = createHandleActions({
+export const reducers = createHandleActions(
+  {
+    [SET_PERFORMER_SCENES_SORT]:
+      createSetClientSideCollectionSortReducer(section),
 
-  [SET_PERFORMER_SCENES_SORT]: createSetClientSideCollectionSortReducer(section),
-
-  [SET_PERFORMER_SCENES_TABLE_OPTION]: createSetTableOptionReducer(section)
-
-}, defaultState, section);
+    [SET_PERFORMER_SCENES_TABLE_OPTION]: createSetTableOptionReducer(section),
+  },
+  defaultState,
+  section
+);

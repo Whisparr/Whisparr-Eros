@@ -3,7 +3,7 @@ import * as filterTypes from 'Helpers/Props/filterTypes';
 import isAfter from 'Utilities/Date/isAfter';
 import isBefore from 'Utilities/Date/isBefore';
 
-export default function(itemValue, filterValue, type) {
+export default function (itemValue, filterValue, type) {
   if (!itemValue) {
     return false;
   }
@@ -22,9 +22,9 @@ export default function(itemValue, filterValue, type) {
       );
 
     case filterTypes.NOT_IN_LAST:
-      return (
-        isBefore(itemValue, { [filterValue.time]: filterValue.value * -1 })
-      );
+      return isBefore(itemValue, {
+        [filterValue.time]: filterValue.value * -1,
+      });
 
     case filterTypes.IN_NEXT:
       return (
@@ -33,9 +33,7 @@ export default function(itemValue, filterValue, type) {
       );
 
     case filterTypes.NOT_IN_NEXT:
-      return (
-        isAfter(itemValue, { [filterValue.time]: filterValue.value })
-      );
+      return isAfter(itemValue, { [filterValue.time]: filterValue.value });
 
     default:
       return false;

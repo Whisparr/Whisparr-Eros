@@ -14,5 +14,5 @@ interface Window {
   Whisparr: WhisparrGlobal;
 }
 
-// eslint-disable-next-line no-var, init-declarations
+// eslint-disable-next-line no-var
 declare var Whisparr: WhisparrGlobal;

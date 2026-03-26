@@ -20,24 +20,16 @@ function NoScene(props) {
 
   return (
     <div>
-      <div className={styles.message}>
-        {translate('NoScenesExist')}
-      </div>
+      <div className={styles.message}>{translate('NoScenesExist')}</div>
 
       <div className={styles.buttonContainer}>
-        <Button
-          to="/add/import/scenes"
-          kind={kinds.PRIMARY}
-        >
+        <Button to="/add/import/scenes" kind={kinds.PRIMARY}>
           {translate('ImportExistingScenes')}
         </Button>
       </div>
 
       <div className={styles.buttonContainer}>
-        <Button
-          to="/add/new/scene"
-          kind={kinds.PRIMARY}
-        >
+        <Button to="/add/new/scene" kind={kinds.PRIMARY}>
           {translate('AddNewScene')}
         </Button>
       </div>
@@ -46,7 +38,7 @@ function NoScene(props) {
 }
 
 NoScene.propTypes = {
-  totalItems: PropTypes.number.isRequired
+  totalItems: PropTypes.number.isRequired,
 };
 
 export default NoScene;

@@ -79,7 +79,7 @@ $hoverScale: 1.05;
 }
 
 .detailsLabel {
-  composes: label from '~Components/Label.css';
+  composes: label from 'Components/Label.css';
 
   margin: 5px 10px 5px 0;
 }
@@ -99,7 +99,7 @@ $hoverScale: 1.05;
 }
 
 .monitorToggleButton {
-  composes: toggleButton from '~Components/MonitorToggleButton.css';
+  composes: toggleButton from 'Components/MonitorToggleButton.css';
 
   width: 25px;
 
@@ -126,7 +126,7 @@ $hoverScale: 1.05;
   }
 
   .monitorToggleButton {
-    composes: toggleButton from '~Components/MonitorToggleButton.css';
+    composes: toggleButton from 'Components/MonitorToggleButton.css';
 
     width: 20px;
 

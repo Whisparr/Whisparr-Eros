@@ -1,5 +1,5 @@
 .deleteButton {
-  composes: button from '~Components/Link/Button.css';
+  composes: button from 'Components/Link/Button.css';
 
   margin-right: auto;
 }
@@ -10,7 +10,7 @@
 }
 
 .addSpecification {
-  composes: autoTagging from '~./AutoTagging.css';
+  composes: autoTagging from './AutoTagging.css';
 
   background-color: var(--cardAlternateBackgroundColor);
   color: var(--gray);

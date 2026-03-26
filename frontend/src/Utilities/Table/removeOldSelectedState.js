@@ -2,7 +2,7 @@ import areAllSelected from './areAllSelected';
 
 export default function removeOldSelectedState(state, prevItems) {
   const selectedState = {
-    ...state.selectedState
+    ...state.selectedState,
   };
 
   prevItems.forEach((item) => {
@@ -11,6 +11,6 @@ export default function removeOldSelectedState(state, prevItems) {
 
   return {
     ...areAllSelected(selectedState),
-    selectedState
+    selectedState,
   };
 }

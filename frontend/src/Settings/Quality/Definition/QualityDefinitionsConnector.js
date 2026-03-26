@@ -3,7 +3,10 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
-import { fetchQualityDefinitions, saveQualityDefinitions } from 'Store/Actions/settingsActions';
+import {
+  fetchQualityDefinitions,
+  saveQualityDefinitions,
+} from 'Store/Actions/settingsActions';
 import QualityDefinitions from './QualityDefinitions';
 
 function createMapStateToProps() {
@@ -21,7 +24,7 @@ function createMapStateToProps() {
         ...qualityDefinitions,
         items,
         hasPendingChanges: !_.isEmpty(qualityDefinitions.pendingChanges),
-        advancedSettings
+        advancedSettings,
       };
     }
   );
@@ -29,11 +32,10 @@ function createMapStateToProps() {
 
 const mapDispatchToProps = {
   dispatchFetchQualityDefinitions: fetchQualityDefinitions,
-  dispatchSaveQualityDefinitions: saveQualityDefinitions
+  dispatchSaveQualityDefinitions: saveQualityDefinitions,
 };
 
 class QualityDefinitionsConnector extends Component {
-
   //
   // Lifecycle
 
@@ -41,7 +43,7 @@ class QualityDefinitionsConnector extends Component {
     const {
       dispatchFetchQualityDefinitions,
       dispatchSaveQualityDefinitions,
-      onChildMounted
+      onChildMounted,
     } = this.props;
 
     dispatchFetchQualityDefinitions();
@@ -49,11 +51,7 @@ class QualityDefinitionsConnector extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    const {
-      hasPendingChanges,
-      isSaving,
-      onChildStateChange
-    } = this.props;
+    const { hasPendingChanges, isSaving, onChildStateChange } = this.props;
 
     if (
       prevProps.isSaving !== isSaving ||
@@ -61,7 +59,7 @@ class QualityDefinitionsConnector extends Component {
     ) {
       onChildStateChange({
         isSaving,
-        hasPendingChanges
+        hasPendingChanges,
       });
     }
   }
@@ -70,11 +68,7 @@ class QualityDefinitionsConnector extends Component {
   // Render
 
   render() {
-    return (
-      <QualityDefinitions
-        {...this.props}
-      />
-    );
+    return <QualityDefinitions {...this.props} />;
   }
 }
 
@@ -84,7 +78,11 @@ QualityDefinitionsConnector.propTypes = {
   dispatchFetchQualityDefinitions: PropTypes.func.isRequired,
   dispatchSaveQualityDefinitions: PropTypes.func.isRequired,
   onChildMounted: PropTypes.func.isRequired,
-  onChildStateChange: PropTypes.func.isRequired
+  onChildStateChange: PropTypes.func.isRequired,
 };
 
-export default connect(createMapStateToProps, mapDispatchToProps, null)(QualityDefinitionsConnector);
+export default connect(
+  createMapStateToProps,
+  mapDispatchToProps,
+  null
+)(QualityDefinitionsConnector);

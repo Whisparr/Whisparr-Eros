@@ -35,31 +35,30 @@ function createMapStateToProps() {
     createProviderSettingsSelector('customFormats'),
     (state) => state.settings.customFormatSpecifications,
     (advancedSettings, customFormat, specifications) => {
-      const json = customFormat.item ? JSON.stringify(customFormat.item, replacer, 2) : '';
+      const json = customFormat.item
+        ? JSON.stringify(customFormat.item, replacer, 2)
+        : '';
       return {
         advancedSettings,
         ...customFormat,
         json,
         specificationsPopulated: specifications.isPopulated,
-        specifications: specifications.items
+        specifications: specifications.items,
       };
     }
   );
 }
 
 const mapDispatchToProps = {
-  fetchCustomFormatSpecifications
+  fetchCustomFormatSpecifications,
 };
 
 class ExportCustomFormatModalContentConnector extends Component {
-
   //
   // Lifecycle
 
   componentDidMount() {
-    const {
-      id
-    } = this.props;
+    const { id } = this.props;
     this.props.fetchCustomFormatSpecifications({ id });
   }
 
@@ -67,17 +66,16 @@ class ExportCustomFormatModalContentConnector extends Component {
   // Render
 
   render() {
-    return (
-      <ExportCustomFormatModalContent
-        {...this.props}
-      />
-    );
+    return <ExportCustomFormatModalContent {...this.props} />;
   }
 }
 
 ExportCustomFormatModalContentConnector.propTypes = {
   id: PropTypes.number,
-  fetchCustomFormatSpecifications: PropTypes.func.isRequired
+  fetchCustomFormatSpecifications: PropTypes.func.isRequired,
 };
 
-export default connect(createMapStateToProps, mapDispatchToProps)(ExportCustomFormatModalContentConnector);
+export default connect(
+  createMapStateToProps,
+  mapDispatchToProps
+)(ExportCustomFormatModalContentConnector);

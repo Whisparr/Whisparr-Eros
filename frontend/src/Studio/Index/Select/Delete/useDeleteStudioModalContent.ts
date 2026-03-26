@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import AppState from 'App/State/AppState';
 import { deleteStudio, setDeleteOption } from 'Store/Actions/studioActions';
 
@@ -9,7 +9,7 @@ export function useDeleteStudioModalContent(
   onModalClose: (deleted?: boolean) => void
 ) {
   const dispatch = useDispatch();
-  const history = useHistory();
+  const navigate = useNavigate();
   const deleteOptions = useSelector(
     (state: AppState) => state.studios.deleteOptions
   );
@@ -31,9 +31,9 @@ export function useDeleteStudioModalContent(
         onModalClose(true);
       }
 
-      history.push('/studios');
+      navigate('/studios');
     },
-    [dispatch, studioIds, onModalClose, history]
+    [dispatch, studioIds, onModalClose, navigate]
   );
 
   return {

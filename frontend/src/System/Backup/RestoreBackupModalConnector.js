@@ -8,7 +8,7 @@ function createMapDispatchToProps(dispatch, props) {
       dispatch(clearRestoreBackup());
 
       props.onModalClose();
-    }
+    },
   };
 }
 

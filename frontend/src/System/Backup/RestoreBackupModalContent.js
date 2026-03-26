@@ -24,14 +24,14 @@ function getStepIconProps(isExecuting, hasExecuted, error) {
   if (isExecuting) {
     return {
       name: icons.SPINNER,
-      isSpinning: true
+      isSpinning: true,
     };
   }
 
   if (hasExecuted) {
     return {
       name: icons.CHECK,
-      kind: kinds.SUCCESS
+      kind: kinds.SUCCESS,
     };
   }
 
@@ -39,17 +39,16 @@ function getStepIconProps(isExecuting, hasExecuted, error) {
     return {
       name: icons.FATAL,
       kinds: kinds.DANGER,
-      title: getErrorMessage(error)
+      title: getErrorMessage(error),
     };
   }
 
   return {
-    name: icons.PENDING
+    name: icons.PENDING,
   };
 }
 
 class RestoreBackupModalContent extends Component {
-
   //
   // Lifecycle
 
@@ -61,17 +60,13 @@ class RestoreBackupModalContent extends Component {
       path: '',
       isRestored: false,
       isRestarted: false,
-      isReloading: false
+      isReloading: false,
     };
   }
 
   componentDidUpdate(prevProps) {
-    const {
-      isRestoring,
-      restoreError,
-      isRestarting,
-      dispatchRestart
-    } = this.props;
+    const { isRestoring, restoreError, isRestarting, dispatchRestart } =
+      this.props;
 
     if (prevProps.isRestoring && !isRestoring && !restoreError) {
       this.setState({ isRestored: true }, () => {
@@ -80,12 +75,15 @@ class RestoreBackupModalContent extends Component {
     }
 
     if (prevProps.isRestarting && !isRestarting) {
-      this.setState({
-        isRestarted: true,
-        isReloading: true
-      }, () => {
-        location.reload();
-      });
+      this.setState(
+        {
+          isRestarted: true,
+          isReloading: true,
+        },
+        () => {
+          location.reload();
+        }
+      );
     }
   }
 
@@ -95,19 +93,16 @@ class RestoreBackupModalContent extends Component {
   onPathChange = ({ value, files }) => {
     this.setState({
       file: files[0],
-      path: value
+      path: value,
     });
   };
 
   onRestorePress = () => {
-    const {
-      id,
-      onRestorePress
-    } = this.props;
+    const { id, onRestorePress } = this.props;
 
     onRestorePress({
       id,
-      file: this.state.file
+      file: this.state.file,
     });
   };
 
@@ -115,51 +110,32 @@ class RestoreBackupModalContent extends Component {
   // Render
 
   render() {
-    const {
-      id,
-      name,
-      isRestoring,
-      restoreError,
-      isRestarting,
-      onModalClose
-    } = this.props;
+    const { id, name, isRestoring, restoreError, isRestarting, onModalClose } =
+      this.props;
 
-    const {
-      path,
-      isRestored,
-      isRestarted,
-      isReloading
-    } = this.state;
+    const { path, isRestored, isRestarted, isReloading } = this.state;
 
-    const isRestoreDisabled = (
-      (!id && !path) ||
-      isRestoring ||
-      isRestarting ||
-      isReloading
-    );
+    const isRestoreDisabled =
+      (!id && !path) || isRestoring || isRestarting || isReloading;
 
     return (
       <ModalContent onModalClose={onModalClose}>
-        <ModalHeader>
-          Restore Backup
-        </ModalHeader>
+        <ModalHeader>Restore Backup</ModalHeader>
 
         <ModalBody>
-          {
-            !!id && translate('WouldYouLikeToRestoreBackup', {
-              name
-            })
-          }
+          {!!id &&
+            translate('WouldYouLikeToRestoreBackup', {
+              name,
+            })}
 
-          {
-            !id &&
-              <TextInput
-                type="file"
-                name="path"
-                value={path}
-                onChange={this.onPathChange}
-              />
-          }
+          {!id && (
+            <TextInput
+              type="file"
+              name="path"
+              value={path}
+              onChange={this.onPathChange}
+            />
+          )}
 
           <div className={styles.steps}>
             <div className={styles.step}>
@@ -170,9 +146,7 @@ class RestoreBackupModalContent extends Component {
                 />
               </div>
 
-              <div>
-                {translate('Restore')}
-              </div>
+              <div>{translate('Restore')}</div>
             </div>
 
             <div className={styles.step}>
@@ -183,22 +157,15 @@ class RestoreBackupModalContent extends Component {
                 />
               </div>
 
-              <div>
-                {translate('Restart')}
-              </div>
+              <div>{translate('Restart')}</div>
             </div>
 
             <div className={styles.step}>
               <div className={styles.stepState}>
-                <Icon
-                  size={20}
-                  {...getStepIconProps(isReloading, false)}
-                />
+                <Icon size={20} {...getStepIconProps(isReloading, false)} />
               </div>
 
-              <div>
-                {translate('Reload')}
-              </div>
+              <div>{translate('Reload')}</div>
             </div>
           </div>
         </ModalBody>
@@ -208,9 +175,7 @@ class RestoreBackupModalContent extends Component {
             {translate('RestartReloadNote')}
           </div>
 
-          <Button onPress={onModalClose}>
-            {translate('Cancel')}
-          </Button>
+          <Button onPress={onModalClose}>{translate('Cancel')}</Button>
 
           <SpinnerButton
             kind={kinds.WARNING}
@@ -235,7 +200,7 @@ RestoreBackupModalContent.propTypes = {
   isRestarting: PropTypes.bool.isRequired,
   dispatchRestart: PropTypes.func.isRequired,
   onRestorePress: PropTypes.func.isRequired,
-  onModalClose: PropTypes.func.isRequired
+  onModalClose: PropTypes.func.isRequired,
 };
 
 export default RestoreBackupModalContent;

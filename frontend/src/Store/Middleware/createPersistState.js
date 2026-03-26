@@ -5,19 +5,23 @@ import migrate from 'Store/Migrators/migrate';
 
 const columnPaths = [];
 
-const paths = _.reduce([...actions], (acc, action) => {
-  if (action.persistState) {
-    action.persistState.forEach((path) => {
-      if (path.match(/\.columns$/)) {
-        columnPaths.push(path);
-      }
+const paths = _.reduce(
+  [...actions],
+  (acc, action) => {
+    if (action.persistState) {
+      action.persistState.forEach((path) => {
+        if (path.match(/\.columns$/)) {
+          columnPaths.push(path);
+        }
 
-      acc.push(path);
-    });
-  }
+        acc.push(path);
+      });
+    }
 
-  return acc;
-}, []);
+    return acc;
+  },
+  []
+);
 
 function mergeColumns(path, initialState, persistedState, computedState) {
   const initialColumns = _.get(initialState, path);
@@ -41,7 +45,11 @@ function mergeColumns(path, initialState, persistedState, computedState) {
       // We can't use a spread operator or Object.assign to clone the column
       // or any accessors are lost and can break translations.
       for (const prop of Object.keys(column)) {
-        Object.defineProperty(newColumn, prop, Object.getOwnPropertyDescriptor(column, prop));
+        Object.defineProperty(
+          newColumn,
+          prop,
+          Object.getOwnPropertyDescriptor(column, prop)
+        );
       }
 
       newColumn.isVisible = persistedColumn.isVisible;
@@ -52,7 +60,9 @@ function mergeColumns(path, initialState, persistedState, computedState) {
 
   // Add any columns added to the app in the initial position.
   initialColumns.forEach((initialColumn, index) => {
-    const persistedColumnIndex = persistedColumns.findIndex((i) => i.name === initialColumn.name);
+    const persistedColumnIndex = persistedColumns.findIndex(
+      (i) => i.name === initialColumn.name
+    );
     const column = Object.assign({}, initialColumn);
 
     if (persistedColumnIndex === -1) {
@@ -102,13 +112,17 @@ const config = {
   slicer,
   serialize,
   merge,
-  key: window.Whisparr.instanceName.toLowerCase().replace(/ /g, '_') || KEY
+  key: window.Whisparr.instanceName.toLowerCase().replace(/ /g, '_') || KEY,
 };
 
 export default function createPersistState() {
   // Migrate existing local storage value to new key if it does not already exist.
   // Leave old value as-is in case there are multiple instances using the same key.
-  if (config.key !== KEY && localStorage.getItem(KEY) && !localStorage.getItem(config.key)) {
+  if (
+    config.key !== KEY &&
+    localStorage.getItem(KEY) &&
+    !localStorage.getItem(config.key)
+  ) {
     localStorage.setItem(config.key, localStorage.getItem(KEY));
   }
 

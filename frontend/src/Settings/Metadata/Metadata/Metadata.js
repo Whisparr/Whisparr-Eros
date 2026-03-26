@@ -8,7 +8,6 @@ import EditMetadataModalConnector from './EditMetadataModalConnector';
 import styles from './Metadata.css';
 
 class Metadata extends Component {
-
   //
   // Lifecycle
 
@@ -16,7 +15,7 @@ class Metadata extends Component {
     super(props, context);
 
     this.state = {
-      isEditMetadataModalOpen: false
+      isEditMetadataModalOpen: false,
     };
   }
 
@@ -35,12 +34,7 @@ class Metadata extends Component {
   // Render
 
   render() {
-    const {
-      id,
-      name,
-      enable,
-      fields
-    } = this.props;
+    const { id, name, enable, fields } = this.props;
 
     const metadataFields = [];
     const imageFields = [];
@@ -59,76 +53,53 @@ class Metadata extends Component {
         overlayContent={true}
         onPress={this.onEditMetadataPress}
       >
-        <div className={styles.name}>
-          {name}
-        </div>
+        <div className={styles.name}>{name}</div>
 
         <div>
-          {
-            enable ?
-              <Label kind={kinds.SUCCESS}>
-                {translate('Enabled')}
-              </Label> :
-              <Label
-                kind={kinds.DISABLED}
-                outline={true}
-              >
-                {translate('Disabled')}
-              </Label>
-          }
+          {enable ? (
+            <Label kind={kinds.SUCCESS}>{translate('Enabled')}</Label>
+          ) : (
+            <Label kind={kinds.DISABLED} outline={true}>
+              {translate('Disabled')}
+            </Label>
+          )}
         </div>
 
-        {
-          enable && !!metadataFields.length &&
-            <div>
-              <div className={styles.section}>
-                {translate('Metadata')}
-              </div>
+        {enable && !!metadataFields.length && (
+          <div>
+            <div className={styles.section}>{translate('Metadata')}</div>
 
-              {
-                metadataFields.map((field) => {
-                  if (!field.value) {
-                    return null;
-                  }
-
-                  return (
-                    <Label
-                      key={field.label}
-                      kind={kinds.SUCCESS}
-                    >
-                      {field.label}
-                    </Label>
-                  );
-                })
+            {metadataFields.map((field) => {
+              if (!field.value) {
+                return null;
               }
-            </div>
-        }
 
-        {
-          enable && !!imageFields.length &&
-            <div>
-              <div className={styles.section}>
-                {translate('Images')}
-              </div>
+              return (
+                <Label key={field.label} kind={kinds.SUCCESS}>
+                  {field.label}
+                </Label>
+              );
+            })}
+          </div>
+        )}
 
-              {
-                imageFields.map((field) => {
-                  if (!field.value) {
-                    return null;
-                  }
+        {enable && !!imageFields.length && (
+          <div>
+            <div className={styles.section}>{translate('Images')}</div>
 
-                  return (
-                    <Label
-                      key={field.label}
-                      kind={kinds.SUCCESS}
-                    >
-                      {field.label}
-                    </Label>
-                  );
-                })
+            {imageFields.map((field) => {
+              if (!field.value) {
+                return null;
               }
-            </div>
-        }
+
+              return (
+                <Label key={field.label} kind={kinds.SUCCESS}>
+                  {field.label}
+                </Label>
+              );
+            })}
+          </div>
+        )}
 
         <EditMetadataModalConnector
           id={id}
@@ -144,7 +115,7 @@ Metadata.propTypes = {
   id: PropTypes.number.isRequired,
   name: PropTypes.string.isRequired,
   enable: PropTypes.bool.isRequired,
-  fields: PropTypes.arrayOf(PropTypes.object).isRequired
+  fields: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
 
 export default Metadata;

@@ -17,7 +17,6 @@
   &:focus {
     color: var(--themeLightPurple);
   }
-
 }
 
 .childLink {
@@ -35,11 +34,11 @@
 
 .isActiveParentLink {
   background-color: var(--sidebarActiveBackgroundColor);
-    color: var(--themeLightPurple);
-    }
+  color: var(--themeLightPurple);
+}
 
-    .sectionHeading {
-      color: var(--themeLightPurple);
+.sectionHeading {
+  color: var(--themeLightPurple);
 }
 
 .iconContainer {

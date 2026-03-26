@@ -27,11 +27,10 @@ const requiresRestartKeys = [
   'enableSsl',
   'sslPort',
   'sslCertPath',
-  'sslCertPassword'
+  'sslCertPassword',
 ];
 
 class GeneralSettings extends Component {
-
   //
   // Lifecycle
 
@@ -39,17 +38,12 @@ class GeneralSettings extends Component {
     super(props, context);
 
     this.state = {
-      isRestartRequiredModalOpen: false
+      isRestartRequiredModalOpen: false,
     };
   }
 
   componentDidUpdate(prevProps) {
-    const {
-      settings,
-      isSaving,
-      saveError,
-      isResettingApiKey
-    } = this.props;
+    const { settings, isSaving, saveError, isResettingApiKey } = this.props;
 
     if (!isResettingApiKey && prevProps.isResettingApiKey) {
       this.setState({ isRestartRequiredModalOpen: true });
@@ -114,81 +108,71 @@ class GeneralSettings extends Component {
 
     return (
       <PageContent title={translate('GeneralSettings')}>
-        <SettingsToolbar
-          {...otherProps}
-        />
+        <SettingsToolbar {...otherProps} />
 
         <PageContentBody>
-          {
-            isFetching && !isPopulated &&
-              <LoadingIndicator />
-          }
+          {isFetching && !isPopulated && <LoadingIndicator />}
 
-          {
-            !isFetching && error &&
-              <Alert kind={kinds.DANGER}>
-                {translate('GeneralSettingsLoadError')}
-              </Alert>
-          }
+          {!isFetching && error && (
+            <Alert kind={kinds.DANGER}>
+              {translate('GeneralSettingsLoadError')}
+            </Alert>
+          )}
 
-          {
-            hasSettings && isPopulated && !error &&
-              <Form
-                id="generalSettings"
-                {...otherProps}
-              >
-                <HostSettings
-                  advancedSettings={advancedSettings}
-                  settings={settings}
-                  isWindows={isWindows}
-                  mode={mode}
-                  onInputChange={onInputChange}
-                />
+          {hasSettings && isPopulated && !error && (
+            <Form id="generalSettings" {...otherProps}>
+              <HostSettings
+                advancedSettings={advancedSettings}
+                settings={settings}
+                isWindows={isWindows}
+                mode={mode}
+                onInputChange={onInputChange}
+              />
 
-                <SecuritySettings
-                  settings={settings}
-                  isResettingApiKey={isResettingApiKey}
-                  onInputChange={onInputChange}
-                  onConfirmResetApiKey={onConfirmResetApiKey}
-                />
+              <SecuritySettings
+                settings={settings}
+                isResettingApiKey={isResettingApiKey}
+                onInputChange={onInputChange}
+                onConfirmResetApiKey={onConfirmResetApiKey}
+              />
 
-                <ProxySettings
-                  settings={settings}
-                  onInputChange={onInputChange}
-                />
+              <ProxySettings
+                settings={settings}
+                onInputChange={onInputChange}
+              />
 
-                <LoggingSettings
-                  advancedSettings={advancedSettings}
-                  settings={settings}
-                  onInputChange={onInputChange}
-                />
+              <LoggingSettings
+                advancedSettings={advancedSettings}
+                settings={settings}
+                onInputChange={onInputChange}
+              />
 
-                <AnalyticSettings
-                  settings={settings}
-                  onInputChange={onInputChange}
-                />
+              <AnalyticSettings
+                settings={settings}
+                onInputChange={onInputChange}
+              />
 
-                <UpdateSettings
-                  advancedSettings={advancedSettings}
-                  settings={settings}
-                  isWindows={isWindows}
-                  packageUpdateMechanism={packageUpdateMechanism}
-                  onInputChange={onInputChange}
-                />
+              <UpdateSettings
+                advancedSettings={advancedSettings}
+                settings={settings}
+                isWindows={isWindows}
+                packageUpdateMechanism={packageUpdateMechanism}
+                onInputChange={onInputChange}
+              />
 
-                <BackupSettings
-                  advancedSettings={advancedSettings}
-                  settings={settings}
-                  onInputChange={onInputChange}
-                />
+              <BackupSettings
+                advancedSettings={advancedSettings}
+                settings={settings}
+                onInputChange={onInputChange}
+              />
 
-                <WhisparrSettings
-                  advancedSettings={advancedSettings}
-                  settings={settings}
-                  onInputChange={onInputChange}
-                />
-              </Form>
-          }
+              <WhisparrSettings
+                advancedSettings={advancedSettings}
+                settings={settings}
+                onInputChange={onInputChange}
+              />
+            </Form>
+          )}
         </PageContentBody>
 
         <ConfirmModal
@@ -204,7 +188,6 @@ class GeneralSettings extends Component {
       </PageContent>
     );
   }
-
 }
 
 GeneralSettings.propTypes = {
@@ -223,7 +206,7 @@ GeneralSettings.propTypes = {
   packageUpdateMechanism: PropTypes.string.isRequired,
   onInputChange: PropTypes.func.isRequired,
   onConfirmResetApiKey: PropTypes.func.isRequired,
-  onConfirmRestart: PropTypes.func.isRequired
+  onConfirmRestart: PropTypes.func.isRequired,
 };
 
 export default GeneralSettings;

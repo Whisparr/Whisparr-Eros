@@ -8,16 +8,13 @@ import translate from 'Utilities/String/translate';
 import CustomFormatsConnector from './CustomFormats/CustomFormatsConnector';
 
 class CustomFormatSettingsConnector extends Component {
-
   //
   // Render
 
   render() {
     return (
       <PageContent title={translate('CustomFormatsSettings')}>
-        <SettingsToolbarConnector
-          showSave={false}
-        />
+        <SettingsToolbarConnector showSave={false} />
 
         <PageContentBody>
           <DndProvider backend={HTML5Backend}>
@@ -30,4 +27,3 @@ class CustomFormatSettingsConnector extends Component {
 }
 
 export default CustomFormatSettingsConnector;
-

@@ -3,7 +3,6 @@ import React, { Component, Fragment } from 'react';
 import TableOptionsModal from './TableOptionsModal';
 
 class TableOptionsModalWrapper extends Component {
-
   //
   // Lifecycle
 
@@ -11,7 +10,7 @@ class TableOptionsModalWrapper extends Component {
     super(props, context);
 
     this.state = {
-      isTableOptionsModalOpen: false
+      isTableOptionsModalOpen: false,
     };
   }
 
@@ -30,17 +29,11 @@ class TableOptionsModalWrapper extends Component {
   // Render
 
   render() {
-    const {
-      columns,
-      children,
-      ...otherProps
-    } = this.props;
+    const { columns, children, ...otherProps } = this.props;
 
     return (
       <Fragment>
-        {
-          React.cloneElement(children, { onPress: this.onTableOptionsPress })
-        }
+        {React.cloneElement(children, { onPress: this.onTableOptionsPress })}
 
         <TableOptionsModal
           {...otherProps}
@@ -57,7 +50,7 @@ class TableOptionsModalWrapper extends Component {
 TableOptionsModalWrapper.propTypes = {
   columns: PropTypes.arrayOf(PropTypes.object).isRequired,
   children: PropTypes.node.isRequired,
-  onTableOptionChange: PropTypes.func.isRequired
+  onTableOptionChange: PropTypes.func.isRequired,
 };
 
 export default TableOptionsModalWrapper;

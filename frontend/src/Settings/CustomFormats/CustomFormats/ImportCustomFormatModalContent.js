@@ -17,7 +17,6 @@ import translate from 'Utilities/String/translate';
 import styles from './ImportCustomFormatModalContent.css';
 
 class ImportCustomFormatModalContent extends Component {
-
   //
   // Lifecycle
   constructor(props, context) {
@@ -28,7 +27,7 @@ class ImportCustomFormatModalContent extends Component {
     this.state = {
       json: '',
       isSpinning: false,
-      parseError: null
+      parseError: null,
     };
   }
 
@@ -55,7 +54,7 @@ class ImportCustomFormatModalContent extends Component {
     const parseError = this.props.onImportPress(this.state.json);
     this.setState({
       parseError,
-      isSpinning: false
+      isSpinning: false,
     });
 
     if (!parseError) {
@@ -67,68 +66,46 @@ class ImportCustomFormatModalContent extends Component {
   // Render
 
   render() {
-    const {
-      isFetching,
-      error,
-      specificationsPopulated,
-      onModalClose
-    } = this.props;
+    const { isFetching, error, specificationsPopulated, onModalClose } =
+      this.props;
 
-    const {
-      json,
-      isSpinning,
-      parseError
-    } = this.state;
+    const { json, isSpinning, parseError } = this.state;
 
     return (
       <ModalContent onModalClose={onModalClose}>
-
-        <ModalHeader>
-          {translate('ImportCustomFormat')}
-        </ModalHeader>
+        <ModalHeader>{translate('ImportCustomFormat')}</ModalHeader>
 
         <ModalBody>
           <div>
-            {
-              isFetching &&
-                <LoadingIndicator />
-            }
+            {isFetching && <LoadingIndicator />}
 
-            {
-              !isFetching && !!error &&
-                <Alert kind={kinds.DANGER}>
-                  {translate('CustomFormatsLoadError')}
-                </Alert>
-            }
+            {!isFetching && !!error && (
+              <Alert kind={kinds.DANGER}>
+                {translate('CustomFormatsLoadError')}
+              </Alert>
+            )}
 
-            {
-              !isFetching && !error && specificationsPopulated &&
-                <Form>
-                  <FormGroup size={sizes.MEDIUM}>
-                    <FormLabel>
-                      {translate('CustomFormatJson')}
-                    </FormLabel>
-                    <FormInputGroup
-                      key={0}
-                      inputClassName={styles.input}
-                      type={inputTypes.TEXT_AREA}
-                      name="customFormatJson"
-                      value={json}
-                      onChange={this.onChange}
-                      placeholder={'{\n  "name": "Custom Format"\n}'}
-                      errors={parseError ? [parseError] : []}
-                    />
-                  </FormGroup>
-                </Form>
-            }
+            {!isFetching && !error && specificationsPopulated && (
+              <Form>
+                <FormGroup size={sizes.MEDIUM}>
+                  <FormLabel>{translate('CustomFormatJson')}</FormLabel>
+                  <FormInputGroup
+                    key={0}
+                    inputClassName={styles.input}
+                    type={inputTypes.TEXT_AREA}
+                    name="customFormatJson"
+                    value={json}
+                    onChange={this.onChange}
+                    placeholder={'{\n  "name": "Custom Format"\n}'}
+                    errors={parseError ? [parseError] : []}
+                  />
+                </FormGroup>
+              </Form>
+            )}
           </div>
         </ModalBody>
         <ModalFooter>
-          <Button
-            onPress={onModalClose}
-          >
-            {translate('Cancel')}
-          </Button>
+          <Button onPress={onModalClose}>{translate('Cancel')}</Button>
           <SpinnerErrorButton
             onPress={this.onImportPress}
             isSpinning={isSpinning}
@@ -147,7 +124,7 @@ ImportCustomFormatModalContent.propTypes = {
   error: PropTypes.object,
   specificationsPopulated: PropTypes.bool.isRequired,
   onImportPress: PropTypes.func.isRequired,
-  onModalClose: PropTypes.func.isRequired
+  onModalClose: PropTypes.func.isRequired,
 };
 
 export default ImportCustomFormatModalContent;

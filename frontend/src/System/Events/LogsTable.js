@@ -76,48 +76,31 @@ function LogsTable(props) {
       </PageToolbar>
 
       <PageContentBody>
-        {
-          isFetching && !isPopulated &&
-            <LoadingIndicator />
-        }
+        {isFetching && !isPopulated && <LoadingIndicator />}
 
-        {
-          isPopulated && !error && !items.length &&
-            <Alert kind={kinds.INFO}>
-              {translate('NoEventsFound')}
-            </Alert>
-        }
+        {isPopulated && !error && !items.length && (
+          <Alert kind={kinds.INFO}>{translate('NoEventsFound')}</Alert>
+        )}
 
-        {
-          isPopulated && !error && !!items.length &&
-            <div>
-              <Table
-                columns={columns}
-                canModifyColumns={false}
-                {...otherProps}
-              >
-                <TableBody>
-                  {
-                    items.map((item) => {
-                      return (
-                        <LogsTableRow
-                          key={item.id}
-                          columns={columns}
-                          {...item}
-                        />
-                      );
-                    })
-                  }
-                </TableBody>
-              </Table>
+        {isPopulated && !error && !!items.length && (
+          <div>
+            <Table columns={columns} canModifyColumns={false} {...otherProps}>
+              <TableBody>
+                {items.map((item) => {
+                  return (
+                    <LogsTableRow key={item.id} columns={columns} {...item} />
+                  );
+                })}
+              </TableBody>
+            </Table>
 
-              <TablePager
-                totalRecords={totalRecords}
-                isFetching={isFetching}
-                {...otherProps}
-              />
-            </div>
-        }
+            <TablePager
+              totalRecords={totalRecords}
+              isFetching={isFetching}
+              {...otherProps}
+            />
+          </div>
+        )}
       </PageContentBody>
     </PageContent>
   );
@@ -135,7 +118,7 @@ LogsTable.propTypes = {
   clearLogExecuting: PropTypes.bool.isRequired,
   onFilterSelect: PropTypes.func.isRequired,
   onRefreshPress: PropTypes.func.isRequired,
-  onClearLogsPress: PropTypes.func.isRequired
+  onClearLogsPress: PropTypes.func.isRequired,
 };
 
 export default LogsTable;

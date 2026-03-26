@@ -103,7 +103,7 @@
 }
 
 .monitorToggleButton {
-  composes: toggleButton from '~Components/MonitorToggleButton.css';
+  composes: toggleButton from 'Components/MonitorToggleButton.css';
 
   width: 30px;
 
@@ -128,7 +128,7 @@
 }
 
 .movieNavigationButton {
-  composes: button from '~Components/Link/IconButton.css';
+  composes: button from 'Components/Link/IconButton.css';
 
   margin-left: 5px;
   width: 30px;
@@ -140,12 +140,12 @@
   }
 }
 
-.metadata{
+.metadata {
   padding: 10px;
 }
 
-.metadataLabel{
-  composes: label from '~Components/Label.css';
+.metadataLabel {
+  composes: label from 'Components/Label.css';
 
   margin: 5px 10px 5px 0;
   background-color: transparent;
@@ -182,7 +182,7 @@
 }
 
 .detailsLabel {
-  composes: label from '~Components/Label.css';
+  composes: label from 'Components/Label.css';
 
   margin: 5px 10px 5px 0;
 }
@@ -249,7 +249,7 @@
   }
 
   .title {
-    display:flex;
+    display: flex;
     align-items: center;
     font-size: 30px;
     line-height: 30px;
@@ -274,7 +274,7 @@
     margin-right: 9px;
   }
 
-  .scenesFieldSet{
+  .scenesFieldSet {
     flex-direction: column;
   }
 }

@@ -12,6 +12,7 @@
     <PackageReference Include="NLog" Version="6.1.1" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.0" />
     <ProjectReference Include="..\NzbDrone.Core\Whisparr.Core.csproj" />
     <ProjectReference Include="..\NzbDrone.SignalR\Whisparr.SignalR.csproj" />
   </ItemGroup>

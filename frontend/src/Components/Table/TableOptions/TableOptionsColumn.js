@@ -14,20 +14,15 @@ function TableOptionsColumn(props) {
     isModifiable,
     isDragging,
     connectDragSource,
-    onVisibleChange
+    onVisibleChange,
   } = props;
 
   return (
     <div className={isModifiable ? undefined : styles.notDragable}>
       <div
-        className={classNames(
-          styles.column,
-          isDragging && styles.isDragging
-        )}
+        className={classNames(styles.column, isDragging && styles.isDragging)}
       >
-        <label
-          className={styles.label}
-        >
+        <label className={styles.label}>
           <CheckInput
             containerClassName={styles.checkContainer}
             name={name}
@@ -38,17 +33,12 @@ function TableOptionsColumn(props) {
           {typeof label === 'function' ? label() : label}
         </label>
 
-        {
-          !!connectDragSource &&
-            connectDragSource(
-              <div className={styles.dragHandle}>
-                <Icon
-                  className={styles.dragIcon}
-                  name={icons.REORDER}
-                />
-              </div>
-            )
-        }
+        {!!connectDragSource &&
+          connectDragSource(
+            <div className={styles.dragHandle}>
+              <Icon className={styles.dragIcon} name={icons.REORDER} />
+            </div>
+          )}
       </div>
     </div>
   );
@@ -62,7 +52,7 @@ TableOptionsColumn.propTypes = {
   index: PropTypes.number.isRequired,
   isDragging: PropTypes.bool,
   connectDragSource: PropTypes.func,
-  onVisibleChange: PropTypes.func.isRequired
+  onVisibleChange: PropTypes.func.isRequired,
 };
 
 export default TableOptionsColumn;

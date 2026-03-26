@@ -14,7 +14,6 @@ import AddDownloadClientItem from './AddDownloadClientItem';
 import styles from './AddDownloadClientModalContent.css';
 
 class AddDownloadClientModalContent extends Component {
-
   //
   // Render
 
@@ -26,83 +25,63 @@ class AddDownloadClientModalContent extends Component {
       usenetDownloadClients,
       torrentDownloadClients,
       onDownloadClientSelect,
-      onModalClose
+      onModalClose,
     } = this.props;
 
     return (
       <ModalContent onModalClose={onModalClose}>
-        <ModalHeader>
-          {translate('AddDownloadClient')}
-        </ModalHeader>
+        <ModalHeader>{translate('AddDownloadClient')}</ModalHeader>
 
         <ModalBody>
-          {
-            isSchemaFetching &&
-              <LoadingIndicator />
-          }
+          {isSchemaFetching && <LoadingIndicator />}
 
-          {
-            !isSchemaFetching && !!schemaError &&
-              <Alert kind={kinds.DANGER}>
-                {translate('AddDownloadClientError')}
+          {!isSchemaFetching && !!schemaError && (
+            <Alert kind={kinds.DANGER}>
+              {translate('AddDownloadClientError')}
+            </Alert>
+          )}
+
+          {isSchemaPopulated && !schemaError && (
+            <div>
+              <Alert kind={kinds.INFO}>
+                <div>{translate('SupportedDownloadClients')}</div>
+                <div>{translate('SupportedDownloadClientsMoreInfo')}</div>
               </Alert>
-          }
 
-          {
-            isSchemaPopulated && !schemaError &&
-              <div>
+              <FieldSet legend={translate('Usenet')}>
+                <div className={styles.downloadClients}>
+                  {usenetDownloadClients.map((downloadClient) => {
+                    return (
+                      <AddDownloadClientItem
+                        key={downloadClient.implementation}
+                        implementation={downloadClient.implementation}
+                        {...downloadClient}
+                        onDownloadClientSelect={onDownloadClientSelect}
+                      />
+                    );
+                  })}
+                </div>
+              </FieldSet>
 
-                <Alert kind={kinds.INFO}>
-                  <div>
-                    {translate('SupportedDownloadClients')}
-                  </div>
-                  <div>
-                    {translate('SupportedDownloadClientsMoreInfo')}
-                  </div>
-                </Alert>
-
-                <FieldSet legend={translate('Usenet')}>
-                  <div className={styles.downloadClients}>
-                    {
-                      usenetDownloadClients.map((downloadClient) => {
-                        return (
-                          <AddDownloadClientItem
-                            key={downloadClient.implementation}
-                            implementation={downloadClient.implementation}
-                            {...downloadClient}
-                            onDownloadClientSelect={onDownloadClientSelect}
-                          />
-                        );
-                      })
-                    }
-                  </div>
-                </FieldSet>
-
-                <FieldSet legend={translate('Torrents')}>
-                  <div className={styles.downloadClients}>
-                    {
-                      torrentDownloadClients.map((downloadClient) => {
-                        return (
-                          <AddDownloadClientItem
-                            key={downloadClient.implementation}
-                            implementation={downloadClient.implementation}
-                            {...downloadClient}
-                            onDownloadClientSelect={onDownloadClientSelect}
-                          />
-                        );
-                      })
-                    }
-                  </div>
-                </FieldSet>
-              </div>
-          }
+              <FieldSet legend={translate('Torrents')}>
+                <div className={styles.downloadClients}>
+                  {torrentDownloadClients.map((downloadClient) => {
+                    return (
+                      <AddDownloadClientItem
+                        key={downloadClient.implementation}
+                        implementation={downloadClient.implementation}
+                        {...downloadClient}
+                        onDownloadClientSelect={onDownloadClientSelect}
+                      />
+                    );
+                  })}
+                </div>
+              </FieldSet>
+            </div>
+          )}
         </ModalBody>
         <ModalFooter>
-          <Button
-            onPress={onModalClose}
-          >
-            {translate('Close')}
-          </Button>
+          <Button onPress={onModalClose}>{translate('Close')}</Button>
         </ModalFooter>
       </ModalContent>
     );
@@ -116,7 +95,7 @@ AddDownloadClientModalContent.propTypes = {
   usenetDownloadClients: PropTypes.arrayOf(PropTypes.object).isRequired,
   torrentDownloadClients: PropTypes.arrayOf(PropTypes.object).isRequired,
   onDownloadClientSelect: PropTypes.func.isRequired,
-  onModalClose: PropTypes.func.isRequired
+  onModalClose: PropTypes.func.isRequired,
 };
 
 export default AddDownloadClientModalContent;

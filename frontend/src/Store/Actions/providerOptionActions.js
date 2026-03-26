@@ -21,7 +21,7 @@ export const defaultState = {
   items: [],
   isFetching: false,
   isPopulated: false,
-  error: false
+  error: false,
 };
 
 //
@@ -40,11 +40,13 @@ export const clearOptions = createAction(CLEAR_OPTIONS);
 // Action Handlers
 
 export const actionHandlers = handleThunks({
-
-  [FETCH_OPTIONS]: function(getState, payload, dispatch) {
+  [FETCH_OPTIONS]: function (getState, payload, dispatch) {
     const subsection = `${section}.${payload.section}`;
 
-    if (lastActions[payload.section] && _.isEqual(payload, lastActions[payload.section].payload)) {
+    if (
+      lastActions[payload.section] &&
+      _.isEqual(payload, lastActions[payload.section].payload)
+    ) {
       return;
     }
 
@@ -52,21 +54,25 @@ export const actionHandlers = handleThunks({
 
     lastActions[payload.section] = {
       actionId,
-      payload
+      payload,
     };
 
     // Subsection might not yet be defined
     if (getState()[section][payload.section]) {
-      dispatch(set({
-        section: subsection,
-        isFetching: true
-      }));
+      dispatch(
+        set({
+          section: subsection,
+          isFetching: true,
+        })
+      );
     } else {
-      dispatch(set({
-        section: subsection,
-        ...defaultState,
-        isFetching: true
-      }));
+      dispatch(
+        set({
+          section: subsection,
+          ...defaultState,
+          isFetching: true,
+        })
+      );
     }
 
     const promise = requestAction(payload);
@@ -77,13 +83,15 @@ export const actionHandlers = handleThunks({
           lastActions[payload.section] = null;
         }
 
-        dispatch(set({
-          section: subsection,
-          isFetching: false,
-          isPopulated: true,
-          error: null,
-          items: data.options || []
-        }));
+        dispatch(
+          set({
+            section: subsection,
+            isFetching: false,
+            isPopulated: true,
+            error: null,
+            items: data.options || [],
+          })
+        );
       }
     });
 
@@ -93,28 +101,32 @@ export const actionHandlers = handleThunks({
           lastActions[payload.section] = null;
         }
 
-        dispatch(set({
-          section: subsection,
-          isFetching: false,
-          isPopulated: false,
-          error: xhr
-        }));
+        dispatch(
+          set({
+            section: subsection,
+            isFetching: false,
+            isPopulated: false,
+            error: xhr,
+          })
+        );
       }
     });
-  }
+  },
 });
 
 //
 // Reducers
 
-export const reducers = createHandleActions({
+export const reducers = createHandleActions(
+  {
+    [CLEAR_OPTIONS]: function (state, { payload }) {
+      const subsection = `${section}.${payload.section}`;
 
-  [CLEAR_OPTIONS]: function(state, { payload }) {
-    const subsection = `${section}.${payload.section}`;
+      lastActions[payload.section] = null;
 
-    lastActions[payload.section] = null;
-
-    return updateSectionState(state, subsection, defaultState);
-  }
-
-}, {}, section);
+      return updateSectionState(state, subsection, defaultState);
+    },
+  },
+  {},
+  section
+);

@@ -70,7 +70,7 @@ function RootFolderRow(props: RootFolderRowProps) {
       </TableRowCell>
 
       <TableRowCell className={styles.freeSpace}>
-        {isUnavailable || isNaN(Number(freeSpace))
+        {isUnavailable || Number.isNaN(Number(freeSpace))
           ? '-'
           : formatBytes(freeSpace)}
       </TableRowCell>

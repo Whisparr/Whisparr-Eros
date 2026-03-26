@@ -1,5 +1,9 @@
 import { createAction } from 'redux-actions';
-import { filterBuilderTypes, filterBuilderValueTypes, sortDirections } from 'Helpers/Props';
+import {
+  filterBuilderTypes,
+  filterBuilderValueTypes,
+  sortDirections,
+} from 'Helpers/Props';
 import sortByProp from 'Utilities/Array/sortByProp';
 import translate from 'Utilities/String/translate';
 import createHandleActions from './Creators/createHandleActions';
@@ -35,7 +39,7 @@ export const defaultState = {
     showTmdbRating: false,
     showTags: false,
     showSearchAction: false,
-    pageSize: 25
+    pageSize: 25,
   },
 
   overviewOptions: {
@@ -49,12 +53,12 @@ export const defaultState = {
     showSizeOnDisk: false,
     showTags: false,
     showSearchAction: false,
-    pageSize: 20
+    pageSize: 20,
   },
 
   tableOptions: {
     showSearchAction: false,
-    pageSize: 20
+    pageSize: 20,
   },
 
   columns: [
@@ -64,100 +68,100 @@ export const defaultState = {
       isSortable: false,
       isVisible: true,
       isModifiable: false,
-      isHidden: true
+      isHidden: true,
     },
     {
       name: 'status',
       columnLabel: () => translate('ReleaseStatus'),
       isSortable: false,
       isVisible: true,
-      isModifiable: false
+      isModifiable: false,
     },
     {
       name: 'sortTitle',
       label: () => translate('MovieTitle'),
       isSortable: true,
       isVisible: true,
-      isModifiable: false
+      isModifiable: false,
     },
     {
       name: 'studioTitle',
       label: () => translate('Studio'),
       isSortable: true,
-      isVisible: true
+      isVisible: true,
     },
     {
       name: 'qualityProfileId',
       label: () => translate('QualityProfile'),
       isSortable: true,
-      isVisible: true
+      isVisible: true,
     },
     {
       name: 'added',
       label: () => translate('Added'),
       isSortable: true,
-      isVisible: false
+      isVisible: false,
     },
     {
       name: 'releaseDate',
       label: () => translate('ReleaseDate'),
       isSortable: true,
-      isVisible: false
+      isVisible: false,
     },
     {
       name: 'year',
       label: () => translate('Year'),
       isSortable: true,
-      isVisible: false
+      isVisible: false,
     },
     {
       name: 'runtime',
       label: () => translate('Runtime'),
       isSortable: true,
-      isVisible: false
+      isVisible: false,
     },
     {
       name: 'path',
       label: () => translate('Path'),
       isSortable: true,
-      isVisible: false
+      isVisible: false,
     },
     {
       name: 'sizeOnDisk',
       label: () => translate('SizeOnDisk'),
       isSortable: true,
-      isVisible: false
+      isVisible: false,
     },
     {
       name: 'genres',
       label: () => translate('Genres'),
       isSortable: false,
-      isVisible: false
+      isVisible: false,
     },
     {
       name: 'movieStatus',
       label: () => translate('Status'),
       isSortable: true,
-      isVisible: true
+      isVisible: true,
     },
     {
       name: 'releaseGroups',
       label: () => translate('ReleaseGroup'),
       isSortable: true,
-      isVisible: false
+      isVisible: false,
     },
     {
       name: 'tags',
       label: () => translate('Tags'),
       isSortable: true,
-      isVisible: false
+      isVisible: false,
     },
     {
       name: 'actions',
       columnLabel: () => translate('Actions'),
       isVisible: true,
-      isModifiable: false
-    }
+      isModifiable: false,
+    },
   ],
 
   selectedFilterKey: 'all',
@@ -169,24 +173,24 @@ export const defaultState = {
       name: 'monitored',
       label: () => translate('Monitored'),
       type: filterBuilderTypes.EXACT,
-      valueType: filterBuilderValueTypes.BOOL
+      valueType: filterBuilderValueTypes.BOOL,
     },
     {
       name: 'isAvailable',
       label: () => translate('ConsideredAvailable'),
       type: filterBuilderTypes.EXACT,
-      valueType: filterBuilderValueTypes.BOOL
+      valueType: filterBuilderValueTypes.BOOL,
     },
     {
       name: 'title',
       label: () => translate('Title'),
-      type: filterBuilderTypes.STRING
+      type: filterBuilderTypes.STRING,
     },
     {
       name: 'releaseGroups',
       label: () => translate('ReleaseGroups'),
       type: filterBuilderTypes.ARRAY,
-      optionsSelector: function(items) {
+      optionsSelector: function (items) {
         const groupList = items.reduce((acc, movie) => {
           const { statistics = {} } = movie;
           const { releaseGroups = [] } = statistics;
@@ -194,7 +198,7 @@ export const defaultState = {
           releaseGroups.forEach((releaseGroup) => {
             acc.push({
               id: releaseGroup,
-              name: releaseGroup
+              name: releaseGroup,
             });
           });
 
@@ -202,24 +206,24 @@ export const defaultState = {
         }, []);
 
         return groupList.sort(sortByProp('name'));
-      }
+      },
     },
     {
       name: 'status',
       label: () => translate('ReleaseStatus'),
       type: filterBuilderTypes.EXACT,
-      valueType: filterBuilderValueTypes.RELEASE_STATUS
+      valueType: filterBuilderValueTypes.RELEASE_STATUS,
     },
     {
       name: 'studio',
       label: () => translate('Studio'),
       type: filterBuilderTypes.EXACT,
-      optionsSelector: function(items) {
+      optionsSelector: function (items) {
         const tagList = items.reduce((acc, movie) => {
           if (movie.studioTitle) {
             acc.push({
               id: movie.studioTitle,
-              name: movie.studioTitle
+              name: movie.studioTitle,
             });
           }
 
@@ -227,59 +231,59 @@ export const defaultState = {
         }, []);
 
         return tagList.sort(sortByProp('name'));
-      }
+      },
     },
     {
       name: 'qualityProfileId',
       label: () => translate('QualityProfile'),
       type: filterBuilderTypes.EXACT,
-      valueType: filterBuilderValueTypes.QUALITY_PROFILE
+      valueType: filterBuilderValueTypes.QUALITY_PROFILE,
     },
     {
       name: 'added',
       label: () => translate('Added'),
       type: filterBuilderTypes.DATE,
-      valueType: filterBuilderValueTypes.DATE
+      valueType: filterBuilderValueTypes.DATE,
     },
     {
       name: 'year',
       label: () => translate('Year'),
-      type: filterBuilderTypes.NUMBER
+      type: filterBuilderTypes.NUMBER,
     },
     {
       name: 'releaseDate',
       label: () => translate('ReleaseDate'),
       type: filterBuilderTypes.DATE,
-      valueType: filterBuilderValueTypes.DATE
+      valueType: filterBuilderValueTypes.DATE,
     },
     {
       name: 'runtime',
       label: () => translate('Runtime'),
-      type: filterBuilderTypes.NUMBER
+      type: filterBuilderTypes.NUMBER,
     },
     {
       name: 'path',
       label: () => translate('Path'),
-      type: filterBuilderTypes.STRING
+      type: filterBuilderTypes.STRING,
     },
     {
       name: 'sizeOnDisk',
       label: () => translate('SizeOnDisk'),
       type: filterBuilderTypes.NUMBER,
-      valueType: filterBuilderValueTypes.BYTES
+      valueType: filterBuilderValueTypes.BYTES,
     },
     {
       name: 'genres',
       label: () => translate('Genres'),
-      type: filterBuilderTypes.STRING
+      type: filterBuilderTypes.STRING,
     },
     {
       name: 'tags',
       label: () => translate('Tags'),
       type: filterBuilderTypes.ARRAY,
-      valueType: filterBuilderValueTypes.TAG
-    }
-  ]
+      valueType: filterBuilderValueTypes.TAG,
+    },
+  ],
 };
 
 export const persistState = [
@@ -291,7 +295,7 @@ export const persistState = [
   'movieIndex.columns',
   'movieIndex.posterOptions',
   'movieIndex.overviewOptions',
-  'movieIndex.tableOptions'
+  'movieIndex.tableOptions',
 ];
 
 //
@@ -321,59 +325,68 @@ export const setMovieIndexMode = createAction(SET_MOVIE_INDEX_MODE);
 //
 // Reducers
 
-export const reducers = createHandleActions({
+export const reducers = createHandleActions(
+  {
+    [SET_MOVIE_PAGE]: function (state, { payload }) {
+      return Object.assign({}, state, { page: payload });
+    },
 
-  [SET_MOVIE_PAGE]: function(state, { payload }) {
-    return Object.assign({}, state, { page: payload });
-  },
-
-  [SET_MOVIE_SORT]: function(state, { payload }) {
-    const { sortKey } = payload;
-    const isSameKey = sortKey === state.sortKey;
-    let newDirection = sortDirections.ASCENDING;
-    if (isSameKey && state.sortDirection === sortDirections.ASCENDING) {
-      newDirection = sortDirections.DESCENDING;
-    }
-
-    return Object.assign({}, state, { sortKey, sortDirection: newDirection, page: 1 });
-  },
-
-  [SET_MOVIE_FILTER]: function(state, { payload }) {
-    return Object.assign({}, state, { selectedFilterKey: payload.selectedFilterKey, page: 1 });
-  },
-
-  [SET_MOVIE_VIEW]: function(state, { payload }) {
-    return Object.assign({}, state, { view: payload.view, page: 1 });
-  },
-
-  [SET_MOVIE_TABLE_OPTION]: createSetTableOptionReducer(section),
-
-  [SET_MOVIE_POSTER_OPTION]: function(state, { payload }) {
-    const posterOptions = state.posterOptions;
-
-    return {
-      ...state,
-      posterOptions: {
-        ...posterOptions,
-        ...payload
+    [SET_MOVIE_SORT]: function (state, { payload }) {
+      const { sortKey } = payload;
+      const isSameKey = sortKey === state.sortKey;
+      let newDirection = sortDirections.ASCENDING;
+      if (isSameKey && state.sortDirection === sortDirections.ASCENDING) {
+        newDirection = sortDirections.DESCENDING;
       }
-    };
+
+      return Object.assign({}, state, {
+        sortKey,
+        sortDirection: newDirection,
+        page: 1,
+      });
+    },
+
+    [SET_MOVIE_FILTER]: function (state, { payload }) {
+      return Object.assign({}, state, {
+        selectedFilterKey: payload.selectedFilterKey,
+        page: 1,
+      });
+    },
+
+    [SET_MOVIE_VIEW]: function (state, { payload }) {
+      return Object.assign({}, state, { view: payload.view, page: 1 });
+    },
+
+    [SET_MOVIE_TABLE_OPTION]: createSetTableOptionReducer(section),
+
+    [SET_MOVIE_POSTER_OPTION]: function (state, { payload }) {
+      const posterOptions = state.posterOptions;
+
+      return {
+        ...state,
+        posterOptions: {
+          ...posterOptions,
+          ...payload,
+        },
+      };
+    },
+
+    [SET_MOVIE_OVERVIEW_OPTION]: function (state, { payload }) {
+      const overviewOptions = state.overviewOptions;
+
+      return {
+        ...state,
+        overviewOptions: {
+          ...overviewOptions,
+          ...payload,
+        },
+      };
+    },
+
+    [SET_MOVIE_INDEX_MODE]: function (state, { payload }) {
+      return Object.assign({}, state, { indexMode: payload.indexMode });
+    },
   },
-
-  [SET_MOVIE_OVERVIEW_OPTION]: function(state, { payload }) {
-    const overviewOptions = state.overviewOptions;
-
-    return {
-      ...state,
-      overviewOptions: {
-        ...overviewOptions,
-        ...payload
-      }
-    };
-  },
-
-  [SET_MOVIE_INDEX_MODE]: function(state, { payload }) {
-    return Object.assign({}, state, { indexMode: payload.indexMode });
-  }
-
-}, defaultState, section);
+  defaultState,
+  section
+);

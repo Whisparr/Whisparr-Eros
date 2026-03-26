@@ -9,7 +9,7 @@ export const defaultState = {
   isFetching: false,
   isPopulated: false,
   error: null,
-  items: []
+  items: [],
 };
 
 export const SEARCH_MOVIES_MODAL = 'movieSearch/searchMovies';
@@ -26,20 +26,24 @@ export const actionHandlers = handleThunks({
     const { request, abortRequest } = createAjaxRequest({
       url: '/movie/search',
       data: { query: payload },
-      traditional: true
+      traditional: true,
     });
 
     request
       .done((data) => {
         dispatch(update({ section, data }));
-        dispatch(set({ section, isFetching: false, isPopulated: true, error: null }));
+        dispatch(
+          set({ section, isFetching: false, isPopulated: true, error: null })
+        );
       })
       .fail((xhr) => {
-        dispatch(set({ section, isFetching: false, isPopulated: false, error: xhr }));
+        dispatch(
+          set({ section, isFetching: false, isPopulated: false, error: xhr })
+        );
       });
 
     return abortRequest;
-  }
+  },
 });
 
 export const reducers = createHandleActions({}, defaultState, section);

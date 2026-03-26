@@ -5,7 +5,7 @@ const locationShape = PropTypes.shape({
   search: PropTypes.string.isRequired,
   state: PropTypes.object,
   action: PropTypes.string,
-  key: PropTypes.string
+  key: PropTypes.string,
 });
 
 export default locationShape;

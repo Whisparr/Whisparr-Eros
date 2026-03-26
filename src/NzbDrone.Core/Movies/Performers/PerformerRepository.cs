@@ -36,6 +36,14 @@ namespace NzbDrone.Core.Movies.Performers
             }
         }
 
+        public List<int> AllPerformerIdsByLastInfoSync()
+        {
+            using (var conn = _database.OpenConnection())
+            {
+                return conn.Query<int>("SELECT \"Id\" FROM \"Performers\" ORDER BY \"LastInfoSync\"").ToList();
+            }
+        }
+
         public override PagingSpec<Performer> GetPaged(PagingSpec<Performer> pagingSpec)
         {
             return base.GetPaged(pagingSpec);

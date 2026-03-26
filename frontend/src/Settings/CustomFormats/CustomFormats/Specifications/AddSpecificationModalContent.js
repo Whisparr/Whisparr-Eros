@@ -14,7 +14,6 @@ import AddSpecificationItem from './AddSpecificationItem';
 import styles from './AddSpecificationModalContent.css';
 
 class AddSpecificationModalContent extends Component {
-
   //
   // Render
 
@@ -25,65 +24,48 @@ class AddSpecificationModalContent extends Component {
       schemaError,
       schema,
       onSpecificationSelect,
-      onModalClose
+      onModalClose,
     } = this.props;
 
     return (
       <ModalContent onModalClose={onModalClose}>
-        <ModalHeader>
-          Add Condition
-        </ModalHeader>
+        <ModalHeader>Add Condition</ModalHeader>
 
         <ModalBody>
-          {
-            isSchemaFetching &&
-              <LoadingIndicator />
-          }
+          {isSchemaFetching && <LoadingIndicator />}
 
-          {
-            !isSchemaFetching && !!schemaError &&
-              <Alert kind={kinds.DANGER}>
-                {translate('AddConditionError')}
-              </Alert>
-          }
+          {!isSchemaFetching && !!schemaError && (
+            <Alert kind={kinds.DANGER}>{translate('AddConditionError')}</Alert>
+          )}
 
-          {
-            isSchemaPopulated && !schemaError &&
-              <div>
-
-                <Alert kind={kinds.INFO}>
-                  <div>
-                    {translate('SupportedCustomConditions')}
-                  </div>
-                  <div>
-                    {translate('VisitTheWikiForMoreDetails')}
-                    <Link to="https://wiki.servarr.com/whisparr/settings#custom-formats-2">{translate('Wiki')}</Link>
-                  </div>
-                </Alert>
-
-                <div className={styles.specifications}>
-                  {
-                    schema.map((specification) => {
-                      return (
-                        <AddSpecificationItem
-                          key={specification.implementation}
-                          {...specification}
-                          onSpecificationSelect={onSpecificationSelect}
-                        />
-                      );
-                    })
-                  }
+          {isSchemaPopulated && !schemaError && (
+            <div>
+              <Alert kind={kinds.INFO}>
+                <div>{translate('SupportedCustomConditions')}</div>
+                <div>
+                  {translate('VisitTheWikiForMoreDetails')}
+                  <Link to="https://wiki.servarr.com/whisparr/settings#custom-formats-2">
+                    {translate('Wiki')}
+                  </Link>
                 </div>
+              </Alert>
 
+              <div className={styles.specifications}>
+                {schema.map((specification) => {
+                  return (
+                    <AddSpecificationItem
+                      key={specification.implementation}
+                      {...specification}
+                      onSpecificationSelect={onSpecificationSelect}
+                    />
+                  );
+                })}
               </div>
-          }
+            </div>
+          )}
         </ModalBody>
         <ModalFooter>
-          <Button
-            onPress={onModalClose}
-          >
-            {translate('Close')}
-          </Button>
+          <Button onPress={onModalClose}>{translate('Close')}</Button>
         </ModalFooter>
       </ModalContent>
     );
@@ -96,7 +78,7 @@ AddSpecificationModalContent.propTypes = {
   schemaError: PropTypes.object,
   schema: PropTypes.arrayOf(PropTypes.object).isRequired,
   onSpecificationSelect: PropTypes.func.isRequired,
-  onModalClose: PropTypes.func.isRequired
+  onModalClose: PropTypes.func.isRequired,
 };
 
 export default AddSpecificationModalContent;

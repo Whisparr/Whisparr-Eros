@@ -8,11 +8,7 @@ import { inputTypes } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 
 function WhisparrSettings(props) {
-  const {
-    advancedSettings,
-    settings,
-    onInputChange
-  } = props;
+  const { advancedSettings, settings, onInputChange } = props;
 
   const {
     whisparrAlwaysExcludeCollectionsTag,
@@ -29,31 +25,27 @@ function WhisparrSettings(props) {
     whisparrFuzzyTitleMatchingThreshold,
     whisparrMovieMetadataSource,
     whisparrValidateRuntime,
-    whisparrValidateRuntimeLimit
+    whisparrValidateRuntimeLimit,
   } = settings;
 
   const movieMetadataTypes = [
     {
       key: 'none',
-      value: translate('None')
+      value: translate('None'),
     },
     {
       key: 'tmdb',
-      value: translate('TMDB')
+      value: translate('TMDB'),
     },
     {
       key: 'tpdb',
-      value: translate('TPDB')
-    }
+      value: translate('TPDB'),
+    },
   ];
 
   return (
     <FieldSet legend={translate('Whisparr')}>
-      <FormGroup
-        advancedSettings={advancedSettings}
-        isAdvanced={true}
-      >
-
+      <FormGroup advancedSettings={advancedSettings} isAdvanced={true}>
         <FormLabel>{translate('WhisparrCacheExclusionAPI')}</FormLabel>
 
         <FormInputGroup
@@ -65,11 +57,7 @@ function WhisparrSettings(props) {
         />
       </FormGroup>
 
-      <FormGroup
-        advancedSettings={advancedSettings}
-        isAdvanced={true}
-      >
-
+      <FormGroup advancedSettings={advancedSettings} isAdvanced={true}>
         <FormLabel>{translate('WhisparrCacheMovieAPI')}</FormLabel>
 
         <FormInputGroup
@@ -81,11 +69,7 @@ function WhisparrSettings(props) {
         />
       </FormGroup>
 
-      <FormGroup
-        advancedSettings={advancedSettings}
-        isAdvanced={true}
-      >
-
+      <FormGroup advancedSettings={advancedSettings} isAdvanced={true}>
         <FormLabel>{translate('WhisparrCachePerformerAPI')}</FormLabel>
 
         <FormInputGroup
@@ -97,11 +81,7 @@ function WhisparrSettings(props) {
         />
       </FormGroup>
 
-      <FormGroup
-        advancedSettings={advancedSettings}
-        isAdvanced={true}
-      >
-
+      <FormGroup advancedSettings={advancedSettings} isAdvanced={true}>
         <FormLabel>{translate('WhisparrCacheStudioAPI')}</FormLabel>
 
         <FormInputGroup
@@ -113,10 +93,7 @@ function WhisparrSettings(props) {
         />
       </FormGroup>
 
-      <FormGroup
-        advancedSettings={advancedSettings}
-        isAdvanced={true}
-      >
+      <FormGroup advancedSettings={advancedSettings} isAdvanced={true}>
         <FormLabel>{translate('WhisparrAutoMatchOnDate')}</FormLabel>
 
         <FormInputGroup
@@ -128,11 +105,10 @@ function WhisparrSettings(props) {
           {...whisparrAutoMatchOnDate}
         />
       </FormGroup>
-      <FormGroup
-        advancedSettings={advancedSettings}
-        isAdvanced={true}
-      >
-        <FormLabel>{translate('WhisparrFuzzyTitleMatchingThreshold')}</FormLabel>
+      <FormGroup advancedSettings={advancedSettings} isAdvanced={true}>
+        <FormLabel>
+          {translate('WhisparrFuzzyTitleMatchingThreshold')}
+        </FormLabel>
         <FormInputGroup
           type={inputTypes.NUMBER}
           min={0}
@@ -143,10 +119,7 @@ function WhisparrSettings(props) {
           {...whisparrFuzzyTitleMatchingThreshold}
         />
       </FormGroup>
-      <FormGroup
-        advancedSettings={advancedSettings}
-        isAdvanced={true}
-      >
+      <FormGroup advancedSettings={advancedSettings} isAdvanced={true}>
         <FormLabel>{translate('WhisparrCorruptFileDetection')}</FormLabel>
 
         <FormInputGroup
@@ -158,10 +131,7 @@ function WhisparrSettings(props) {
         />
       </FormGroup>
 
-      <FormGroup
-        advancedSettings={advancedSettings}
-        isAdvanced={true}
-      >
+      <FormGroup advancedSettings={advancedSettings} isAdvanced={true}>
         <FormLabel>{translate('WhisparrValidateRuntime')}</FormLabel>
 
         <FormInputGroup
@@ -173,10 +143,7 @@ function WhisparrSettings(props) {
         />
       </FormGroup>
 
-      <FormGroup
-        advancedSettings={advancedSettings}
-        isAdvanced={true}
-      >
+      <FormGroup advancedSettings={advancedSettings} isAdvanced={true}>
         <FormLabel>{translate('WhisparrValidateRuntimeLimit')}</FormLabel>
 
         <FormInputGroup
@@ -189,7 +156,6 @@ function WhisparrSettings(props) {
       </FormGroup>
 
       <FormGroup>
-
         <FormLabel>{translate('WhisparrMovieMetadataSource')}</FormLabel>
 
         <FormInputGroup
@@ -203,8 +169,9 @@ function WhisparrSettings(props) {
       </FormGroup>
 
       <FormGroup>
-
-        <FormLabel>{translate('WhisparrAlwaysExcludeCollectionsTag')}</FormLabel>
+        <FormLabel>
+          {translate('WhisparrAlwaysExcludeCollectionsTag')}
+        </FormLabel>
 
         <FormInputGroup
           type={inputTypes.TEXT}
@@ -216,7 +183,6 @@ function WhisparrSettings(props) {
       </FormGroup>
 
       <FormGroup>
-
         <FormLabel>{translate('WhisparrAlwaysExcludePerformersTag')}</FormLabel>
 
         <FormInputGroup
@@ -229,7 +195,6 @@ function WhisparrSettings(props) {
       </FormGroup>
 
       <FormGroup>
-
         <FormLabel>{translate('WhisparrAlwaysExcludeStudiosTag')}</FormLabel>
 
         <FormInputGroup
@@ -242,8 +207,9 @@ function WhisparrSettings(props) {
       </FormGroup>
 
       <FormGroup>
-
-        <FormLabel>{translate('WhisparrAlwaysExcludeStudiosAfterTag')}</FormLabel>
+        <FormLabel>
+          {translate('WhisparrAlwaysExcludeStudiosAfterTag')}
+        </FormLabel>
 
         <FormInputGroup
           type={inputTypes.TEXT}
@@ -255,7 +221,6 @@ function WhisparrSettings(props) {
       </FormGroup>
 
       <FormGroup>
-
         <FormLabel>{translate('WhisparrAlwaysExcludeTagsTag')}</FormLabel>
 
         <FormInputGroup
@@ -273,7 +238,7 @@ function WhisparrSettings(props) {
 WhisparrSettings.propTypes = {
   advancedSettings: PropTypes.bool.isRequired,
   settings: PropTypes.object.isRequired,
-  onInputChange: PropTypes.func.isRequired
+  onInputChange: PropTypes.func.isRequired,
 };
 
 export default WhisparrSettings;

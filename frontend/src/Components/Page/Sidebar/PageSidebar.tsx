@@ -6,7 +6,6 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import ReactDOM from 'react-dom';
 import { useDispatch } from 'react-redux';
 import { useLocation } from 'react-router';
 import QueueStatus from 'Activity/Queue/Status/QueueStatus';
@@ -25,8 +24,8 @@ import Messages from './Messages/Messages';
 import PageSidebarItem from './PageSidebarItem';
 import styles from './PageSidebar.css';
 
-const HEADER_HEIGHT = parseInt(dimensions.headerHeight);
-const SIDEBAR_WIDTH = parseInt(dimensions.sidebarWidth);
+const HEADER_HEIGHT = Number.parseInt(dimensions.headerHeight);
+const SIDEBAR_WIDTH = Number.parseInt(dimensions.sidebarWidth);
 
 interface SidebarItem {
   iconName?: IconName;
@@ -260,9 +259,9 @@ interface PageSidebarProps {
 function PageSidebar({ isSidebarVisible, isSmallScreen }: PageSidebarProps) {
   const dispatch = useDispatch();
   const location = useLocation();
-  const sidebarRef = useRef(null);
+  const sidebarRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number | null>(null);
-  const touchStartY = useRef<number | null>();
+  const touchStartY = useRef<number | null>(null);
   const wasSidebarVisible = usePrevious(isSidebarVisible);
 
   const [sidebarTransform, setSidebarTransform] = useState<{
@@ -289,10 +288,7 @@ function PageSidebar({ isSidebarVisible, isSmallScreen }: PageSidebarProps) {
     }, [] as SidebarItem[]);
   }
 
-  const urlBase = window.Whisparr?.urlBase;
-  const pathname = urlBase
-    ? location.pathname.substr(urlBase.length) || '/'
-    : location.pathname;
+  const pathname = location.pathname;
 
   const activeParent = useMemo(() => {
     const uuidRegex =
@@ -350,7 +346,7 @@ function PageSidebar({ isSidebarVisible, isSmallScreen }: PageSidebarProps) {
 
   const handleWindowClick = useCallback(
     (event: MouseEvent) => {
-      const sidebar = ReactDOM.findDOMNode(sidebarRef.current);
+      const sidebar = sidebarRef.current;
       const toggleButton = document.getElementById('sidebar-toggle-button');
       const target = event.target;
 

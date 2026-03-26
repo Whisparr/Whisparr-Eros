@@ -24,8 +24,8 @@ env:
   FRAMEWORK: net10.0
   RAW_BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
   WHISPARR_MAJOR_VERSION: 3
-  VERSION: 3.3.2
-  WHISPARR_ASSEMBLY_VERSION: 3.3.2.${{ github.run_number }}
+  VERSION: 3.3.3
+  WHISPARR_ASSEMBLY_VERSION: 3.3.3.${{ github.run_number }}
 
 jobs:
   prepare:
@@ -121,7 +121,7 @@ jobs:
         run: yarn lint
 
       - name: Stylelint
-        run: yarn stylelint -f github
+        run: yarn stylelint-linux
 
       - name: Build
         run: yarn build --env production

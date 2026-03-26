@@ -5,19 +5,10 @@ import { sizes } from 'Helpers/Props';
 import DeleteSceneModalContentConnector from './DeleteSceneModalContentConnector';
 
 function DeleteSceneModal(props) {
-  const {
-    isOpen,
-    onModalClose,
-    previousScene,
-    ...otherProps
-  } = props;
+  const { isOpen, onModalClose, previousScene, ...otherProps } = props;
 
   return (
-    <Modal
-      isOpen={isOpen}
-      size={sizes.MEDIUM}
-      onModalClose={onModalClose}
-    >
+    <Modal isOpen={isOpen} size={sizes.MEDIUM} onModalClose={onModalClose}>
       <DeleteSceneModalContentConnector
         {...otherProps}
         onModalClose={onModalClose}
@@ -31,7 +22,7 @@ DeleteSceneModal.propTypes = {
   ...DeleteSceneModalContentConnector.propTypes,
   isOpen: PropTypes.bool.isRequired,
   onModalClose: PropTypes.func.isRequired,
-  previousScene: PropTypes.string
+  previousScene: PropTypes.string,
 };
 
 export default DeleteSceneModal;

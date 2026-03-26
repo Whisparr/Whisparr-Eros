@@ -5,7 +5,7 @@ const cssVarsFiles = [
   './src/Styles/Variables/fonts',
   './src/Styles/Variables/animations',
   './src/Styles/Variables/zIndexes'
-].map(require.resolve);
+].map((f) => require.resolve(f));
 
 const mixinsFiles = [
   'frontend/src/Styles/Mixins/cover.css',

@@ -3,7 +3,7 @@ const pages = {
   PREVIOUS: 'previous',
   NEXT: 'next',
   LAST: 'last',
-  EXACT: 'exact'
+  EXACT: 'exact',
 };
 
 export default pages;

@@ -31,7 +31,7 @@ import StudioIndexTableOptions from './Table/StudioIndexTableOptions';
 import { useStudioIndex } from './useStudioIndex';
 import styles from './StudioIndex.css';
 
-function StudioIndex(): JSX.Element {
+function StudioIndex(): React.JSX.Element {
   const {
     items,
     totalItems,

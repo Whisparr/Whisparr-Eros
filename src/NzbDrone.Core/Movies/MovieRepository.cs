@@ -36,6 +36,7 @@ namespace NzbDrone.Core.Movies
         Movie FindByPath(string path);
         Dictionary<int, string> AllMoviePaths();
         List<int> AllMovieIds();
+        List<int> AllMovieIdsOrderByLastInfoSync();
         List<int> AllMovieTmdbIds();
         List<string> AllMovieTpdbIds();
         List<string> AllMovieStashIds();
@@ -428,6 +429,14 @@ namespace NzbDrone.Core.Movies
             using (var conn = _database.OpenConnection())
             {
                 return conn.Query<int>("SELECT \"Id\" FROM \"Movies\" ").ToList();
+            }
+        }
+
+        public List<int> AllMovieIdsOrderByLastInfoSync()
+        {
+            using (var conn = _database.OpenConnection())
+            {
+                return conn.Query<int>("SELECT \"Movies\".\"Id\" FROM \"Movies\" JOIN \"MovieMetadata\" ON \"Movies\".\"MovieMetadataId\" = \"MovieMetadata\".\"Id\" ORDER BY \"MovieMetadata\".\"LastInfoSync\" ASC").ToList();
             }
         }
 

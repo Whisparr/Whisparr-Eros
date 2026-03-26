@@ -9,24 +9,17 @@ import translate from 'Utilities/String/translate';
 import styles from './QualityProfileItem.css';
 
 class QualityProfileItem extends Component {
-
   //
   // Listeners
 
   onAllowedChange = ({ value }) => {
-    const {
-      qualityId,
-      onQualityProfileItemAllowedChange
-    } = this.props;
+    const { qualityId, onQualityProfileItemAllowedChange } = this.props;
 
     onQualityProfileItemAllowedChange(qualityId, value);
   };
 
   onCreateGroupPress = () => {
-    const {
-      qualityId,
-      onCreateGroupPress
-    } = this.props;
+    const { qualityId, onCreateGroupPress } = this.props;
 
     onCreateGroupPress(qualityId);
   };
@@ -43,7 +36,7 @@ class QualityProfileItem extends Component {
       allowed,
       isDragging,
       isOverCurrent,
-      connectDragSource
+      connectDragSource,
     } = this.props;
 
     return (
@@ -56,52 +49,47 @@ class QualityProfileItem extends Component {
           groupId && styles.isInGroup
         )}
       >
-        <label
-          className={styles.qualityNameContainer}
-        >
-          {
-            editGroups && !groupId && !isPreview &&
-              <IconButton
-                className={styles.createGroupButton}
-                name={icons.GROUP}
-                title={translate('Group')}
-                onPress={this.onCreateGroupPress}
-              />
-          }
-
-          {
-            !editGroups &&
-              <CheckInput
-                className={styles.checkInput}
-                containerClassName={styles.checkInputContainer}
-                name={name}
-                value={allowed}
-                isDisabled={!!groupId}
-                onChange={this.onAllowedChange}
-              />
-          }
-
-          <div className={classNames(
-            styles.qualityName,
-            groupId && styles.isInGroup,
-            !allowed && styles.notAllowed
+        <label className={styles.qualityNameContainer}>
+          {editGroups && !groupId && !isPreview && (
+            <IconButton
+              className={styles.createGroupButton}
+              name={icons.GROUP}
+              title={translate('Group')}
+              onPress={this.onCreateGroupPress}
+            />
           )}
+
+          {!editGroups && (
+            <CheckInput
+              className={styles.checkInput}
+              containerClassName={styles.checkInputContainer}
+              name={name}
+              value={allowed}
+              isDisabled={!!groupId}
+              onChange={this.onAllowedChange}
+            />
+          )}
+
+          <div
+            className={classNames(
+              styles.qualityName,
+              groupId && styles.isInGroup,
+              !allowed && styles.notAllowed
+            )}
           >
             {name}
           </div>
         </label>
 
-        {
-          connectDragSource(
-            <div className={styles.dragHandle}>
-              <Icon
-                className={styles.dragIcon}
-                title={translate('CreateGroup')}
-                name={icons.REORDER}
-              />
-            </div>
-          )
-        }
+        {connectDragSource(
+          <div className={styles.dragHandle}>
+            <Icon
+              className={styles.dragIcon}
+              title={translate('CreateGroup')}
+              name={icons.REORDER}
+            />
+          </div>
+        )}
       </div>
     );
   }
@@ -119,14 +107,14 @@ QualityProfileItem.propTypes = {
   isInGroup: PropTypes.bool,
   connectDragSource: PropTypes.func,
   onCreateGroupPress: PropTypes.func,
-  onQualityProfileItemAllowedChange: PropTypes.func
+  onQualityProfileItemAllowedChange: PropTypes.func,
 };
 
 QualityProfileItem.defaultProps = {
   isPreview: false,
   isOverCurrent: false,
   // The drag preview will not connect the drag handle.
-  connectDragSource: (node) => node
+  connectDragSource: (node) => node,
 };
 
 export default QualityProfileItem;

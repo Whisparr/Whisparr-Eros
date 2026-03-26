@@ -1,6 +1,9 @@
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
-import { deleteCustomFilter, saveCustomFilter } from 'Store/Actions/customFilterActions';
+import {
+  deleteCustomFilter,
+  saveCustomFilter,
+} from 'Store/Actions/customFilterActions';
 import FilterBuilderModalContent from './FilterBuilderModalContent';
 
 function createMapStateToProps() {
@@ -19,7 +22,7 @@ function createMapStateToProps() {
           filters: customFilter.filters,
           customFilters,
           isSaving,
-          saveError
+          saveError,
         };
       }
 
@@ -28,7 +31,7 @@ function createMapStateToProps() {
         filters: [],
         customFilters,
         isSaving,
-        saveError
+        saveError,
       };
     }
   );
@@ -36,7 +39,10 @@ function createMapStateToProps() {
 
 const mapDispatchToProps = {
   onSaveCustomFilterPress: saveCustomFilter,
-  dispatchDeleteCustomFilter: deleteCustomFilter
+  dispatchDeleteCustomFilter: deleteCustomFilter,
 };
 
-export default connect(createMapStateToProps, mapDispatchToProps)(FilterBuilderModalContent);
+export default connect(
+  createMapStateToProps,
+  mapDispatchToProps
+)(FilterBuilderModalContent);

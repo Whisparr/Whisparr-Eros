@@ -3,7 +3,11 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
-import { deleteDelayProfile, fetchDelayProfiles, reorderDelayProfile } from 'Store/Actions/settingsActions';
+import {
+  deleteDelayProfile,
+  fetchDelayProfiles,
+  reorderDelayProfile,
+} from 'Store/Actions/settingsActions';
 import createTagsSelector from 'Store/Selectors/createTagsSelector';
 import DelayProfiles from './DelayProfiles';
 
@@ -13,13 +17,15 @@ function createMapStateToProps() {
     createTagsSelector(),
     (delayProfiles, tagList) => {
       const defaultProfile = _.find(delayProfiles.items, { id: 1 });
-      const items = _.sortBy(_.reject(delayProfiles.items, { id: 1 }), ['order']);
+      const items = _.sortBy(_.reject(delayProfiles.items, { id: 1 }), [
+        'order',
+      ]);
 
       return {
         defaultProfile,
         ...delayProfiles,
         items,
-        tagList
+        tagList,
       };
     }
   );
@@ -28,11 +34,10 @@ function createMapStateToProps() {
 const mapDispatchToProps = {
   fetchDelayProfiles,
   deleteDelayProfile,
-  reorderDelayProfile
+  reorderDelayProfile,
 };
 
 class DelayProfilesConnector extends Component {
-
   //
   // Lifecycle
 
@@ -41,7 +46,7 @@ class DelayProfilesConnector extends Component {
 
     this.state = {
       dragIndex: null,
-      dropIndex: null
+      dropIndex: null,
     };
   }
 
@@ -57,18 +62,19 @@ class DelayProfilesConnector extends Component {
   };
 
   onDelayProfileDragMove = (dragIndex, dropIndex) => {
-    if (this.state.dragIndex !== dragIndex || this.state.dropIndex !== dropIndex) {
+    if (
+      this.state.dragIndex !== dragIndex ||
+      this.state.dropIndex !== dropIndex
+    ) {
       this.setState({
         dragIndex,
-        dropIndex
+        dropIndex,
       });
     }
   };
 
   onDelayProfileDragEnd = ({ id }, didDrop) => {
-    const {
-      dropIndex
-    } = this.state;
+    const { dropIndex } = this.state;
 
     if (didDrop && dropIndex !== null) {
       this.props.reorderDelayProfile({ id, moveIndex: dropIndex - 1 });
@@ -76,7 +82,7 @@ class DelayProfilesConnector extends Component {
 
     this.setState({
       dragIndex: null,
-      dropIndex: null
+      dropIndex: null,
     });
   };
 
@@ -99,7 +105,10 @@ class DelayProfilesConnector extends Component {
 DelayProfilesConnector.propTypes = {
   fetchDelayProfiles: PropTypes.func.isRequired,
   deleteDelayProfile: PropTypes.func.isRequired,
-  reorderDelayProfile: PropTypes.func.isRequired
+  reorderDelayProfile: PropTypes.func.isRequired,
 };
 
-export default connect(createMapStateToProps, mapDispatchToProps)(DelayProfilesConnector);
+export default connect(
+  createMapStateToProps,
+  mapDispatchToProps
+)(DelayProfilesConnector);

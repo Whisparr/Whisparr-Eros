@@ -98,7 +98,7 @@ class UnmappedFilesTable extends Component<
     }
   }
 
-  scrollerRef: RefObject<HTMLDivElement>;
+  scrollerRef: RefObject<HTMLDivElement | null>;
 
   onSortColumnPress = (column: string) => {
     this.setState((prevState) => {
@@ -165,11 +165,11 @@ class UnmappedFilesTable extends Component<
         valA =
           typeof a[sortKey] === 'number'
             ? (a[sortKey] as number)
-            : parseFloat(String(a[sortKey])) || 0;
+            : Number.parseFloat(String(a[sortKey])) || 0;
         valB =
           typeof b[sortKey] === 'number'
             ? (b[sortKey] as number)
-            : parseFloat(String(b[sortKey])) || 0;
+            : Number.parseFloat(String(b[sortKey])) || 0;
       } else {
         valA = a[sortKey]?.toString().toLowerCase?.() ?? '';
         valB = b[sortKey]?.toString().toLowerCase?.() ?? '';

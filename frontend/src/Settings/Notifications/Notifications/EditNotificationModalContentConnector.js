@@ -6,7 +6,7 @@ import {
   saveNotification,
   setNotificationFieldValues,
   setNotificationValue,
-  testNotification
+  testNotification,
 } from 'Store/Actions/settingsActions';
 import createProviderSettingsSelector from 'Store/Selectors/createProviderSettingsSelector';
 import EditNotificationModalContent from './EditNotificationModalContent';
@@ -18,7 +18,7 @@ function createMapStateToProps() {
     (advancedSettings, notification) => {
       return {
         advancedSettings,
-        ...notification
+        ...notification,
       };
     }
   );
@@ -28,11 +28,10 @@ const mapDispatchToProps = {
   setNotificationValue,
   setNotificationFieldValues,
   saveNotification,
-  testNotification
+  testNotification,
 };
 
 class EditNotificationModalContentConnector extends Component {
-
   //
   // Lifecycle
 
@@ -50,7 +49,9 @@ class EditNotificationModalContentConnector extends Component {
   };
 
   onFieldChange = ({ name, value, additionalProperties = {} }) => {
-    this.props.setNotificationFieldValues({ properties: { ...additionalProperties, [name]: value } });
+    this.props.setNotificationFieldValues({
+      properties: { ...additionalProperties, [name]: value },
+    });
   };
 
   onSavePress = () => {
@@ -87,7 +88,10 @@ EditNotificationModalContentConnector.propTypes = {
   setNotificationFieldValues: PropTypes.func.isRequired,
   saveNotification: PropTypes.func.isRequired,
   testNotification: PropTypes.func.isRequired,
-  onModalClose: PropTypes.func.isRequired
+  onModalClose: PropTypes.func.isRequired,
 };
 
-export default connect(createMapStateToProps, mapDispatchToProps)(EditNotificationModalContentConnector);
+export default connect(
+  createMapStateToProps,
+  mapDispatchToProps
+)(EditNotificationModalContentConnector);

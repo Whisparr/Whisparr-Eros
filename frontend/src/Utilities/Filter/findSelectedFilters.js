@@ -1,4 +1,8 @@
-export default function findSelectedFilters(selectedFilterKey, filters = [], customFilters = []) {
+export default function findSelectedFilters(
+  selectedFilterKey,
+  filters = [],
+  customFilters = []
+) {
   if (!selectedFilterKey) {
     return [];
   }

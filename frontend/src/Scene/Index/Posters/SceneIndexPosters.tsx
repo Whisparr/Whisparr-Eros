@@ -8,8 +8,8 @@ import Movie from 'Movie/Movie';
 import dimensions from 'Styles/Variables/dimensions';
 import SceneIndexPoster from './SceneIndexPoster';
 
-const columnPadding = parseInt(dimensions.movieIndexColumnPadding);
-const columnPaddingSmallScreen = parseInt(
+const columnPadding = Number.parseInt(dimensions.movieIndexColumnPadding);
+const columnPaddingSmallScreen = Number.parseInt(
   dimensions.movieIndexColumnPaddingSmallScreen
 );
 
@@ -23,7 +23,7 @@ interface SceneIndexPostersProps {
   items: Movie[];
   sortKey: string;
   sortDirection?: SortDirection;
-  scrollerRef: RefObject<HTMLElement>;
+  scrollerRef: RefObject<HTMLElement | null>;
   isSelectMode: boolean;
   isSmallScreen: boolean;
 }

@@ -7,29 +7,25 @@ import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import CollectionOverview from './CollectionOverview';
 
 function createMapStateToProps() {
-  return createSelector(
-    createDimensionsSelector(),
-    (dimensions) => {
-      return {
-        isSmallScreen: dimensions.isSmallScreen
-      };
-    }
-  );
+  return createSelector(createDimensionsSelector(), (dimensions) => {
+    return {
+      isSmallScreen: dimensions.isSmallScreen,
+    };
+  });
 }
 
 const mapDispatchToProps = {
-  toggleCollectionMonitored
+  toggleCollectionMonitored,
 };
 
 class CollectionOverviewConnector extends Component {
-
   //
   // Listeners
 
   onMonitorTogglePress = (monitored) => {
     this.props.toggleCollectionMonitored({
       collectionId: this.props.collectionId,
-      monitored
+      monitored,
     });
   };
 
@@ -49,7 +45,10 @@ class CollectionOverviewConnector extends Component {
 CollectionOverviewConnector.propTypes = {
   collectionId: PropTypes.number.isRequired,
   monitored: PropTypes.bool.isRequired,
-  toggleCollectionMonitored: PropTypes.func.isRequired
+  toggleCollectionMonitored: PropTypes.func.isRequired,
 };
 
-export default connect(createMapStateToProps, mapDispatchToProps)(CollectionOverviewConnector);
+export default connect(
+  createMapStateToProps,
+  mapDispatchToProps
+)(CollectionOverviewConnector);

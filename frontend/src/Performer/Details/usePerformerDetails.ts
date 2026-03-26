@@ -14,7 +14,7 @@ const PATH = 'performer';
 export const usePerformerDetails = (foreignId: string) => {
   const dispatch = useDispatch();
   const [isManualRefresh, setIsManualRefresh] = useState(false);
-  const prevPerformerRef = useRef<Performer | undefined>();
+  const prevPerformerRef = useRef<Performer | undefined>(undefined);
 
   const {
     data: performer,

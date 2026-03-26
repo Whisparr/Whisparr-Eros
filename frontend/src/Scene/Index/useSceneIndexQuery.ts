@@ -31,7 +31,7 @@ export function useSceneIndexQuery(params: SceneIndexQueryParams) {
   if (
     selectedFilterKey !== undefined &&
     selectedFilterKey !== null &&
-    !isNaN(Number(selectedFilterKey))
+    !Number.isNaN(Number(selectedFilterKey))
   ) {
     // Numeric ID indicates a custom filter
     filterDef = customFilters.find(

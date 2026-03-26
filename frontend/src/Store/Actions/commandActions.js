@@ -27,7 +27,7 @@ export const defaultState = {
   isPopulated: false,
   error: null,
   items: [],
-  handlers: {}
+  handlers: {},
 };
 
 //
@@ -56,19 +56,9 @@ export const removeCommand = createThunk(REMOVE_COMMAND);
 // Helpers
 
 function showCommandMessage(payload, dispatch) {
-  const {
-    id,
-    name,
-    trigger,
-    message,
-    body = {},
-    status
-  } = payload;
+  const { id, name, trigger, message, body = {}, status } = payload;
 
-  const {
-    sendUpdatesToClient,
-    suppressMessages
-  } = body;
+  const { sendUpdatesToClient, suppressMessages } = body;
 
   if (!message || !body || !sendUpdatesToClient || suppressMessages) {
     return;
@@ -85,20 +75,19 @@ function showCommandMessage(payload, dispatch) {
     hideAfter = trigger === 'manual' ? 10 : 4;
   }
 
-  dispatch(showMessage({
-    id,
-    name,
-    message,
-    type,
-    hideAfter
-  }));
+  dispatch(
+    showMessage({
+      id,
+      name,
+      message,
+      type,
+      hideAfter,
+    })
+  );
 }
 
 function scheduleRemoveCommand(command, dispatch) {
-  const {
-    id,
-    status
-  } = command;
+  const { id, status } = command;
 
   if (status === 'queued') {
     return;
@@ -111,10 +100,12 @@ function scheduleRemoveCommand(command, dispatch) {
   }
 
   removeCommandTimeoutIds[id] = setTimeout(() => {
-    dispatch(batchActions([
-      removeCommand({ section: 'commands', id }),
-      hideMessage({ id })
-    ]));
+    dispatch(
+      batchActions([
+        removeCommand({ section: 'commands', id }),
+        hideMessage({ id }),
+      ])
+    );
 
     delete removeCommandTimeoutIds[id];
   }, 60000 * 5);
@@ -123,7 +114,9 @@ function scheduleRemoveCommand(command, dispatch) {
 export function executeCommandHelper(payload, dispatch) {
   // TODO: show a message for the user
   if (lastCommand && isSameCommand(lastCommand, payload)) {
-    console.warn('Please wait at least 5 seconds before running this command again');
+    console.warn(
+      'Please wait at least 5 seconds before running this command again'
+    );
   }
 
   lastCommand = payload;
@@ -137,16 +130,13 @@ export function executeCommandHelper(payload, dispatch) {
     lastCommand = null;
   }, 5000);
 
-  const {
-    commandFinished,
-    ...requestPayload
-  } = payload;
+  const { commandFinished, ...requestPayload } = payload;
 
   const promise = createAjaxRequest({
     url: '/command',
     method: 'POST',
     data: JSON.stringify(requestPayload),
-    dataType: 'json'
+    dataType: 'json',
   }).request;
 
   return promise.then((data) => {
@@ -164,24 +154,24 @@ export function executeCommandHelper(payload, dispatch) {
 export const actionHandlers = handleThunks({
   [FETCH_COMMANDS]: createFetchHandler('commands', '/command'),
 
-  [EXECUTE_COMMAND]: function(getState, payload, dispatch) {
+  [EXECUTE_COMMAND]: function (getState, payload, dispatch) {
     executeCommandHelper(payload, dispatch);
   },
 
   [CANCEL_COMMAND]: createRemoveItemHandler(section, '/command'),
 
-  [ADD_COMMAND]: function(getState, payload, dispatch) {
+  [ADD_COMMAND]: function (getState, payload, dispatch) {
     dispatch(updateItem({ section: 'commands', ...payload }));
   },
 
-  [UPDATE_COMMAND]: function(getState, payload, dispatch) {
+  [UPDATE_COMMAND]: function (getState, payload, dispatch) {
     dispatch(updateItem({ section: 'commands', ...payload }));
 
     showCommandMessage(payload, dispatch);
     scheduleRemoveCommand(payload, dispatch);
   },
 
-  [FINISH_COMMAND]: function(getState, payload, dispatch) {
+  [FINISH_COMMAND]: function (getState, payload, dispatch) {
     const state = getState();
     const handlers = state.commands.handlers;
 
@@ -206,10 +196,9 @@ export const actionHandlers = handleThunks({
     showCommandMessage(payload, dispatch);
   },
 
-  [REMOVE_COMMAND]: function(getState, payload, dispatch) {
+  [REMOVE_COMMAND]: function (getState, payload, dispatch) {
     dispatch(removeItem({ section: 'commands', ...payload }));
-  }
-
+  },
 });
 
 //

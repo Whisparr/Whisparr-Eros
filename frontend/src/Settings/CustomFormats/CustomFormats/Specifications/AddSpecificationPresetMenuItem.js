@@ -3,19 +3,15 @@ import React, { Component } from 'react';
 import MenuItem from 'Components/Menu/MenuItem';
 
 class AddSpecificationPresetMenuItem extends Component {
-
   //
   // Listeners
 
   onPress = () => {
-    const {
-      name,
-      implementation
-    } = this.props;
+    const { name, implementation } = this.props;
 
     this.props.onPress({
       name,
-      implementation
+      implementation,
     });
   };
 
@@ -23,17 +19,10 @@ class AddSpecificationPresetMenuItem extends Component {
   // Render
 
   render() {
-    const {
-      name,
-      implementation,
-      ...otherProps
-    } = this.props;
+    const { name, implementation, ...otherProps } = this.props;
 
     return (
-      <MenuItem
-        {...otherProps}
-        onPress={this.onPress}
-      >
+      <MenuItem {...otherProps} onPress={this.onPress}>
         {name}
       </MenuItem>
     );
@@ -43,7 +32,7 @@ class AddSpecificationPresetMenuItem extends Component {
 AddSpecificationPresetMenuItem.propTypes = {
   name: PropTypes.string.isRequired,
   implementation: PropTypes.string.isRequired,
-  onPress: PropTypes.func.isRequired
+  onPress: PropTypes.func.isRequired,
 };
 
 export default AddSpecificationPresetMenuItem;

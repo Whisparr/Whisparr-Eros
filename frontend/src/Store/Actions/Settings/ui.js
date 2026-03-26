@@ -21,18 +21,20 @@ export const SAVE_UI_SETTINGS = 'SAVE_UI_SETTINGS';
 
 export const fetchUISettings = createThunk(FETCH_UI_SETTINGS);
 export const saveUISettings = createThunk(SAVE_UI_SETTINGS);
-export const setUISettingsValue = createAction(SET_UI_SETTINGS_VALUE, (payload) => {
-  return {
-    section,
-    ...payload
-  };
-});
+export const setUISettingsValue = createAction(
+  SET_UI_SETTINGS_VALUE,
+  (payload) => {
+    return {
+      section,
+      ...payload,
+    };
+  }
+);
 
 //
 // Details
 
 export default {
-
   //
   // State
 
@@ -43,7 +45,7 @@ export default {
     pendingChanges: {},
     isSaving: false,
     saveError: null,
-    item: {}
+    item: {},
   },
 
   //
@@ -51,14 +53,13 @@ export default {
 
   actionHandlers: {
     [FETCH_UI_SETTINGS]: createFetchHandler(section, '/config/ui'),
-    [SAVE_UI_SETTINGS]: createSaveHandler(section, '/config/ui')
+    [SAVE_UI_SETTINGS]: createSaveHandler(section, '/config/ui'),
   },
 
   //
   // Reducers
 
   reducers: {
-    [SET_UI_SETTINGS_VALUE]: createSetSettingValueReducer(section)
-  }
-
+    [SET_UI_SETTINGS_VALUE]: createSetSettingValueReducer(section),
+  },
 };

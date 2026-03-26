@@ -12,7 +12,6 @@ import EditDownloadClientModalConnector from './EditDownloadClientModalConnector
 import styles from './DownloadClients.css';
 
 class DownloadClients extends Component {
-
   //
   // Lifecycle
 
@@ -21,7 +20,7 @@ class DownloadClients extends Component {
 
     this.state = {
       isAddDownloadClientModalOpen: false,
-      isEditDownloadClientModalOpen: false
+      isEditDownloadClientModalOpen: false,
     };
   }
 
@@ -35,7 +34,7 @@ class DownloadClients extends Component {
   onAddDownloadClientModalClose = ({ downloadClientSelected = false } = {}) => {
     this.setState({
       isAddDownloadClientModalOpen: false,
-      isEditDownloadClientModalOpen: downloadClientSelected
+      isEditDownloadClientModalOpen: downloadClientSelected,
     });
   };
 
@@ -47,17 +46,11 @@ class DownloadClients extends Component {
   // Render
 
   render() {
-    const {
-      items,
-      onConfirmDeleteDownloadClient,
-      tagList,
-      ...otherProps
-    } = this.props;
+    const { items, onConfirmDeleteDownloadClient, tagList, ...otherProps } =
+      this.props;
 
-    const {
-      isAddDownloadClientModalOpen,
-      isEditDownloadClientModalOpen
-    } = this.state;
+    const { isAddDownloadClientModalOpen, isEditDownloadClientModalOpen } =
+      this.state;
 
     return (
       <FieldSet legend={translate('DownloadClients')}>
@@ -66,28 +59,23 @@ class DownloadClients extends Component {
           {...otherProps}
         >
           <div className={styles.downloadClients}>
-            {
-              items.map((item) => {
-                return (
-                  <DownloadClient
-                    key={item.id}
-                    {...item}
-                    tagList={tagList}
-                    onConfirmDeleteDownloadClient={onConfirmDeleteDownloadClient}
-                  />
-                );
-              })
-            }
+            {items.map((item) => {
+              return (
+                <DownloadClient
+                  key={item.id}
+                  {...item}
+                  tagList={tagList}
+                  onConfirmDeleteDownloadClient={onConfirmDeleteDownloadClient}
+                />
+              );
+            })}
 
             <Card
               className={styles.addDownloadClient}
               onPress={this.onAddDownloadClientPress}
             >
               <div className={styles.center}>
-                <Icon
-                  name={icons.ADD}
-                  size={45}
-                />
+                <Icon name={icons.ADD} size={45} />
               </div>
             </Card>
           </div>
@@ -112,7 +100,7 @@ DownloadClients.propTypes = {
   error: PropTypes.object,
   items: PropTypes.arrayOf(PropTypes.object).isRequired,
   tagList: PropTypes.arrayOf(PropTypes.object).isRequired,
-  onConfirmDeleteDownloadClient: PropTypes.func.isRequired
+  onConfirmDeleteDownloadClient: PropTypes.func.isRequired,
 };
 
 export default DownloadClients;

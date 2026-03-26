@@ -8,15 +8,12 @@ function createMapStateToProps() {
     (state) => state.system.backups,
     (state) => state.app.isRestarting,
     (backups, isRestarting) => {
-      const {
-        isRestoring,
-        restoreError
-      } = backups;
+      const { isRestoring, restoreError } = backups;
 
       return {
         isRestoring,
         restoreError,
-        isRestarting
+        isRestarting,
       };
     }
   );
@@ -30,8 +27,11 @@ function createMapDispatchToProps(dispatch, props) {
 
     dispatchRestart() {
       dispatch(restart());
-    }
+    },
   };
 }
 
-export default connect(createMapStateToProps, createMapDispatchToProps)(RestoreBackupModalContent);
+export default connect(
+  createMapStateToProps,
+  createMapDispatchToProps
+)(RestoreBackupModalContent);

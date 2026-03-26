@@ -22,6 +22,7 @@ namespace NzbDrone.Core.Movies.Performers
         List<Performer> SearchPerformers(string query);
         List<Performer> GetAllPerformers();
         List<string> AllPerformerForeignIds();
+        List<int> AllPerformerIdsByLastInfoSync();
         Performer Update(Performer performer);
         List<Performer> Update(List<Performer> performers);
         void RemovePerformer(Performer performer);
@@ -56,13 +57,13 @@ namespace NzbDrone.Core.Movies.Performers
             _cacheName = "Whisparr.Api.V3.Performers.PerformerResource_performerResources";
         }
 
-        public Performer AddPerformer(Performer newPerformer)
+        public Performer AddPerformer(Performer performer)
         {
-            var performer = _performerRepo.Insert(newPerformer);
+            var newPerformer = _performerRepo.Insert(performer);
 
-            _eventAggregator.PublishEvent(new PerformerAddedEvent(GetById(performer.Id)));
+            _eventAggregator.PublishEvent(new PerformerAddedEvent(newPerformer));
 
-            return performer;
+            return newPerformer;
         }
 
         public List<Performer> AddPerformers(List<Performer> performers)
@@ -159,6 +160,11 @@ namespace NzbDrone.Core.Movies.Performers
         public List<string> AllPerformerForeignIds()
         {
             return _performerRepo.AllPerformerForeignIds();
+        }
+
+        public List<int> AllPerformerIdsByLastInfoSync()
+        {
+            return _performerRepo.AllPerformerIdsByLastInfoSync();
         }
 
         public PagingSpec<Performer> Paged(PagingSpec<Performer> pagingSpec)

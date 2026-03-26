@@ -1,5 +1,5 @@
 .footer {
-  composes: contentFooter from '~Components/Page/PageContentFooter.css';
+  composes: contentFooter from 'Components/Page/PageContentFooter.css';
 
   align-items: center;
 }
@@ -16,7 +16,7 @@
   padding: 16px 32px;
   border-top: 1px solid #222;
   background: #18191c;
-  box-shadow: 0 -2px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.15);
   /* No left border or margin, flush with sidebar */
 
   .buttons {

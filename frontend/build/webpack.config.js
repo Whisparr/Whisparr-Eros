@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 const path = require('path');
 const webpack = require('webpack');
 const FileManagerPlugin = require('filemanager-webpack-plugin');
@@ -185,12 +184,14 @@ module.exports = (env) => {
           exclude: /(node_modules|globals.css)/,
           use: [
             { loader: MiniCssExtractPlugin.loader },
-            { loader: 'css-modules-typescript-loader' },
+            { loader: '@teamsupercell/typings-for-css-modules-loader' },
             {
               loader: 'css-loader',
               options: {
                 importLoaders: 1,
                 modules: {
+                  namedExport: false,
+                  exportLocalsConvention: 'as-is',
                   localIdentName: isProduction ? '[name]/[local]/[hash:base64:5]' : '[name]/[local]'
                 }
               }

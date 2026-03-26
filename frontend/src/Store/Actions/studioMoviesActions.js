@@ -26,152 +26,157 @@ export const defaultState = {
       name: 'monitored',
       columnLabel: () => translate('Monitored'),
       isVisible: true,
-      isModifiable: false
+      isModifiable: false,
     },
     {
       name: 'title',
       label: () => translate('Title'),
       isVisible: true,
-      isSortable: true
+      isSortable: true,
     },
     {
       name: 'credits',
       label: 'Performers',
-      isVisible: false
+      isVisible: false,
     },
     {
       name: 'femaleCredits',
       label: 'Female Performers',
-      isVisible: true
+      isVisible: true,
     },
     {
       name: 'path',
       label: () => translate('Path'),
       isVisible: false,
-      isSortable: true
+      isSortable: true,
     },
     {
       name: 'relativePath',
       label: () => translate('RelativePath'),
       isVisible: false,
-      isSortable: true
+      isSortable: true,
     },
     {
       name: 'releaseDate',
       label: () => translate('ReleaseDate'),
       isVisible: true,
-      isSortable: true
+      isSortable: true,
     },
     {
       name: 'runtime',
       label: () => translate('Runtime'),
       isVisible: false,
-      isSortable: true
+      isSortable: true,
     },
     {
       name: 'languages',
       label: () => translate('Languages'),
-      isVisible: false
+      isVisible: false,
     },
     {
       name: 'audioInfo',
       label: () => translate('AudioInfo'),
-      isVisible: false
+      isVisible: false,
     },
     {
       name: 'videoCodec',
       label: () => translate('VideoCodec'),
-      isVisible: false
+      isVisible: false,
     },
     {
       name: 'videoDynamicRangeType',
       label: () => translate('VideoDynamicRange'),
-      isVisible: false
+      isVisible: false,
     },
     {
       name: 'audioLanguages',
       label: () => translate('AudioLanguages'),
-      isVisible: false
+      isVisible: false,
     },
     {
       name: 'subtitleLanguages',
       label: () => translate('SubtitleLanguages'),
-      isVisible: false
+      isVisible: false,
     },
     {
       name: 'size',
       label: () => translate('Size'),
       isVisible: false,
-      isSortable: true
+      isSortable: true,
     },
     {
       name: 'releaseGroup',
       label: () => translate('ReleaseGroup'),
-      isVisible: false
+      isVisible: false,
     },
     {
       name: 'customFormats',
       label: () => translate('Formats'),
-      isVisible: false
+      isVisible: false,
     },
     {
       name: 'customFormatScore',
       columnLabel: () => translate('CustomFormatScore'),
       label: React.createElement(Icon, {
         name: icons.SCORE,
-        title: () => translate('CustomFormatScore')
+        title: () => translate('CustomFormatScore'),
       }),
       isVisible: false,
-      isSortable: true
+      isSortable: true,
     },
     {
       name: 'status',
       label: () => translate('Status'),
-      isVisible: true
+      isVisible: true,
     },
     {
       name: 'actions',
       columnLabel: () => translate('Actions'),
       isVisible: true,
-      isModifiable: false
-    }
+      isModifiable: false,
+    },
   ],
 
   sortPredicates: {
-    gender: function(item) {
+    gender: function (item) {
       const gender = item.gender;
 
       return gender ? gender.toLowerCase() : '';
-    }
-  }
+    },
+  },
 };
 
 export const persistState = [
   'studioMovies.sortKey',
   'studioMovies.sortDirection',
   'studioMovies.columns',
-  'studioMovies.tableOptions'
+  'studioMovies.tableOptions',
 ];
 
 //
 // Actions Types
 
 export const SET_STUDIO_MOVIES_SORT = 'studioMovies/setStudioMoviesSort';
-export const SET_STUDIO_MOVIES_TABLE_OPTION = 'studioMovies/setStudioMoviesTableOption';
+export const SET_STUDIO_MOVIES_TABLE_OPTION =
+  'studioMovies/setStudioMoviesTableOption';
 
 //
 // Action Creators
 
 export const setStudioMoviesSort = createAction(SET_STUDIO_MOVIES_SORT);
-export const setStudioMoviesTableOption = createAction(SET_STUDIO_MOVIES_TABLE_OPTION);
+export const setStudioMoviesTableOption = createAction(
+  SET_STUDIO_MOVIES_TABLE_OPTION
+);
 
 //
 // Reducers
 
-export const reducers = createHandleActions({
+export const reducers = createHandleActions(
+  {
+    [SET_STUDIO_MOVIES_SORT]: createSetClientSideCollectionSortReducer(section),
 
-  [SET_STUDIO_MOVIES_SORT]: createSetClientSideCollectionSortReducer(section),
-
-  [SET_STUDIO_MOVIES_TABLE_OPTION]: createSetTableOptionReducer(section)
-
-}, defaultState, section);
+    [SET_STUDIO_MOVIES_TABLE_OPTION]: createSetTableOptionReducer(section),
+  },
+  defaultState,
+  section
+);

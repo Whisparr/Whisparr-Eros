@@ -1,4 +1,3 @@
-
 function getNewStudio(performer, payload) {
   const {
     rootFolderPath,
@@ -6,13 +5,13 @@ function getNewStudio(performer, payload) {
     moviesMonitored,
     qualityProfileId,
     tags,
-    searchForMovie = false
+    searchForMovie = false,
   } = payload;
 
   const addOptions = {
     monitored,
     moviesMonitored,
-    searchForMovie
+    searchForMovie,
   };
 
   performer.addOptions = addOptions;

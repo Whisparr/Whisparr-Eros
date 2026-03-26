@@ -5,7 +5,11 @@ import { createSelector } from 'reselect';
 import * as commandNames from 'Commands/commandNames';
 import { clearPendingChanges } from 'Store/Actions/baseActions';
 import { executeCommand } from 'Store/Actions/commandActions';
-import { fetchGeneralSettings, saveGeneralSettings, setGeneralSettingsValue } from 'Store/Actions/settingsActions';
+import {
+  fetchGeneralSettings,
+  saveGeneralSettings,
+  setGeneralSettingsValue,
+} from 'Store/Actions/settingsActions';
 import { restart } from 'Store/Actions/systemActions';
 import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
 import createSettingsSectionSelector from 'Store/Selectors/createSettingsSectionSelector';
@@ -25,10 +29,11 @@ function createMapStateToProps() {
         advancedSettings,
         isResettingApiKey,
         isWindows: systemStatus.isWindows,
-        isWindowsService: systemStatus.isWindows && systemStatus.mode === 'service',
+        isWindowsService:
+          systemStatus.isWindows && systemStatus.mode === 'service',
         mode: systemStatus.mode,
         packageUpdateMechanism: systemStatus.packageUpdateMechanism,
-        ...sectionSettings
+        ...sectionSettings,
       };
     }
   );
@@ -40,11 +45,10 @@ const mapDispatchToProps = {
   fetchGeneralSettings,
   executeCommand,
   restart,
-  clearPendingChanges
+  clearPendingChanges,
 };
 
 class GeneralSettingsConnector extends Component {
-
   //
   // Lifecycle
 
@@ -104,7 +108,10 @@ GeneralSettingsConnector.propTypes = {
   fetchGeneralSettings: PropTypes.func.isRequired,
   executeCommand: PropTypes.func.isRequired,
   restart: PropTypes.func.isRequired,
-  clearPendingChanges: PropTypes.func.isRequired
+  clearPendingChanges: PropTypes.func.isRequired,
 };
 
-export default connect(createMapStateToProps, mapDispatchToProps)(GeneralSettingsConnector);
+export default connect(
+  createMapStateToProps,
+  mapDispatchToProps
+)(GeneralSettingsConnector);

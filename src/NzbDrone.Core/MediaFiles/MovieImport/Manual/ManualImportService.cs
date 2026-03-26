@@ -454,6 +454,12 @@ namespace NzbDrone.Core.MediaFiles.MovieImport.Manual
                 var file = message.Files[i];
                 try
                 {
+                    if (!_diskProvider.FileExists(file.Path))
+                    {
+                        _logger.Warn("File does not exist: {0}", file.Path);
+                        continue;
+                    }
+
                     var movie = _movieService.GetMovie(file.MovieId);
                     var fileMovieInfo = Parser.Parser.ParseMoviePath(file.Path) ?? new ParsedMovieInfo();
                     var existingFile = movie.Path.IsParentPath(file.Path);

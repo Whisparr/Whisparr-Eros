@@ -5,13 +5,25 @@
 
 .missingUnmonitoredBackground {
   &:global(.colorImpaired) {
-    background: repeating-linear-gradient(45deg, var(--colorImpairedGradientDark), var(--colorImpairedGradientDark) 5px, var(--colorImpairedGradient) 5px, var(--colorImpairedGradient) 10px);
+    background: repeating-linear-gradient(
+      45deg,
+      var(--colorImpairedGradientDark),
+      var(--colorImpairedGradientDark) 5px,
+      var(--colorImpairedGradient) 5px,
+      var(--colorImpairedGradient) 10px
+    );
   }
 }
 
 .missingMonitoredBackground {
   &:global(.colorImpaired) {
-    background: repeating-linear-gradient(90deg, var(--colorImpairedGradientDark), var(--colorImpairedGradientDark) 5px, var(--colorImpairedGradient) 5px, var(--colorImpairedGradient) 10px);
+    background: repeating-linear-gradient(
+      90deg,
+      var(--colorImpairedGradientDark),
+      var(--colorImpairedGradientDark) 5px,
+      var(--colorImpairedGradient) 5px,
+      var(--colorImpairedGradient) 10px
+    );
   }
 }
 

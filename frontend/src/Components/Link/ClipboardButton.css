@@ -1,5 +1,5 @@
 .button {
-  composes: button from '~Components/Form/FormInputButton.css';
+  composes: button from 'Components/Form/FormInputButton.css';
 
   position: relative;
 }
@@ -17,7 +17,9 @@
 .clipboardIconContainer {
   position: relative;
   left: 0;
-  transition: left $defaultSpeed, opacity $defaultSpeed;
+  transition:
+    left $defaultSpeed,
+    opacity $defaultSpeed;
 }
 
 .showStateIcon {

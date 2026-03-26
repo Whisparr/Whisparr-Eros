@@ -50,7 +50,7 @@ export const shortcuts = {
 
 function useKeyboardShortcuts() {
   const bindings = useRef<Record<string, BindingOptions>>({});
-  const mouseTrap = useRef<MousetrapInstance | null>();
+  const mouseTrap = useRef<MousetrapInstance | null>(null);
 
   const handleStop = useCallback(
     (_e: Mousetrap.ExtendedKeyboardEvent, element: Element, combo: string) => {

@@ -22,7 +22,6 @@ import ModalHeader from 'Components/Modal/ModalHeader';
 import Column from 'Components/Table/Column';
 import Table from 'Components/Table/Table';
 import TableBody from 'Components/Table/TableBody';
-import usePrevious from 'Helpers/Hooks/usePrevious';
 import useSelectState from 'Helpers/Hooks/useSelectState';
 import { align, icons, kinds } from 'Helpers/Props';
 import { BOTH } from 'Helpers/Props/scrollDirections';
@@ -38,6 +37,7 @@ import SelectReleaseGroupModal from 'InteractiveImport/ReleaseGroup/SelectReleas
 import Language from 'Language/Language';
 import Movie from 'Movie/Movie';
 import { MovieFile } from 'MovieFile/MovieFile';
+import { useDeleteMovieFiles } from 'MovieFile/useMovieFile';
 import { QualityModel } from 'Quality/Quality';
 import { executeCommand } from 'Store/Actions/commandActions';
 import {
@@ -48,10 +48,7 @@ import {
   setInteractiveImportSort,
   updateInteractiveImportItems,
 } from 'Store/Actions/interactiveImportActions';
-import {
-  deleteMovieFiles,
-  updateMovieFiles,
-} from 'Store/Actions/movieFileActions';
+import { updateMovieFiles } from 'Store/Actions/movieFileActions';
 import createClientSideCollectionSelector from 'Store/Selectors/createClientSideCollectionSelector';
 import { SortCallback } from 'typings/callbacks';
 import { CheckInputChanged } from 'typings/inputs';
@@ -173,17 +170,6 @@ function isSameMovieFile(
   return true;
 }
 
-const movieFilesInfoSelector = createSelector(
-  (state: AppState) => state.movieFiles.isDeleting,
-  (state: AppState) => state.movieFiles.deleteError,
-  (isDeleting, deleteError) => {
-    return {
-      isDeleting,
-      deleteError,
-    };
-  }
-);
-
 const importModeSelector = createSelector(
   (state: AppState) => state.interactiveImport.importMode,
   (importMode) => {
@@ -242,8 +228,9 @@ function InteractiveImportModalContent(
     createClientSideCollectionSelector('interactiveImport')
   );
 
-  const { isDeleting, deleteError } = useSelector(movieFilesInfoSelector);
   const importMode = useSelector(importModeSelector);
+  const { mutate: deleteMovieFilesMutate, isPending: isDeleting } =
+    useDeleteMovieFiles();
 
   const [invalidRowsSelected, setInvalidRowsSelected] = useState<number[]>([]);
   const [withoutMovieFileIdRowsSelected, setWithoutMovieFileIdRowsSelected] =
@@ -258,7 +245,6 @@ function InteractiveImportModalContent(
     useState<string | null>(null);
   const [selectState, setSelectState] = useSelectState();
   const { allSelected, allUnselected, selectedState } = selectState;
-  const previousIsDeleting = usePrevious(isDeleting);
   const dispatch = useDispatch();
 
   const columns: Column[] = useMemo(() => {
@@ -357,12 +343,6 @@ function InteractiveImportModalContent(
     []
   );
 
-  useEffect(() => {
-    if (!isDeleting && previousIsDeleting && !deleteError) {
-      onModalClose();
-    }
-  }, [previousIsDeleting, isDeleting, deleteError, onModalClose]);
-
   const onSelectAllChange = useCallback(
     ({ value }: CheckInputChanged) => {
       setSelectState({ type: value ? 'selectAll' : 'unselectAll', items });
@@ -420,8 +400,8 @@ function InteractiveImportModalContent(
       return acc;
     }, []);
 
-    dispatch(deleteMovieFiles({ movieFileIds }));
-  }, [items, selectedIds, setIsConfirmDeleteModalOpen, dispatch]);
+    deleteMovieFilesMutate({ movieFileIds }, { onSuccess: onModalClose });
+  }, [items, selectedIds, deleteMovieFilesMutate, onModalClose]);
 
   const onConfirmDeleteModalClose = useCallback(() => {
     setIsConfirmDeleteModalOpen(false);

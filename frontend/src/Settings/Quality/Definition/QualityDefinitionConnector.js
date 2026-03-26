@@ -7,11 +7,10 @@ import QualityDefinition from './QualityDefinition';
 
 const mapDispatchToProps = {
   setQualityDefinitionValue,
-  clearPendingChanges
+  clearPendingChanges,
 };
 
 class QualityDefinitionConnector extends Component {
-
   componentWillUnmount() {
     this.props.clearPendingChanges({ section: 'settings.qualityDefinitions' });
   }
@@ -20,7 +19,11 @@ class QualityDefinitionConnector extends Component {
   // Listeners
 
   onTitleChange = ({ value }) => {
-    this.props.setQualityDefinitionValue({ id: this.props.id, name: 'title', value });
+    this.props.setQualityDefinitionValue({
+      id: this.props.id,
+      name: 'title',
+      value,
+    });
   };
 
   onSizeChange = ({ minSize, maxSize, preferredSize }) => {
@@ -28,19 +31,31 @@ class QualityDefinitionConnector extends Component {
       id,
       minSize: currentMinSize,
       maxSize: currentMaxSize,
-      preferredSize: currentPreferredSize
+      preferredSize: currentPreferredSize,
     } = this.props;
 
     if (minSize !== currentMinSize) {
-      this.props.setQualityDefinitionValue({ id, name: 'minSize', value: minSize });
+      this.props.setQualityDefinitionValue({
+        id,
+        name: 'minSize',
+        value: minSize,
+      });
     }
 
     if (maxSize !== currentMaxSize) {
-      this.props.setQualityDefinitionValue({ id, name: 'maxSize', value: maxSize });
+      this.props.setQualityDefinitionValue({
+        id,
+        name: 'maxSize',
+        value: maxSize,
+      });
     }
 
     if (preferredSize !== currentPreferredSize) {
-      this.props.setQualityDefinitionValue({ id, name: 'preferredSize', value: preferredSize });
+      this.props.setQualityDefinitionValue({
+        id,
+        name: 'preferredSize',
+        value: preferredSize,
+      });
     }
   };
 
@@ -64,7 +79,7 @@ QualityDefinitionConnector.propTypes = {
   maxSize: PropTypes.number,
   preferredSize: PropTypes.number,
   setQualityDefinitionValue: PropTypes.func.isRequired,
-  clearPendingChanges: PropTypes.func.isRequired
+  clearPendingChanges: PropTypes.func.isRequired,
 };
 
 export default connect(null, mapDispatchToProps)(QualityDefinitionConnector);

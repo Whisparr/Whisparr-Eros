@@ -12,7 +12,6 @@ import Notification from './Notification';
 import styles from './Notifications.css';
 
 class Notifications extends Component {
-
   //
   // Lifecycle
 
@@ -21,7 +20,7 @@ class Notifications extends Component {
 
     this.state = {
       isAddNotificationModalOpen: false,
-      isEditNotificationModalOpen: false
+      isEditNotificationModalOpen: false,
     };
   }
 
@@ -35,7 +34,7 @@ class Notifications extends Component {
   onAddNotificationModalClose = ({ notificationSelected = false } = {}) => {
     this.setState({
       isAddNotificationModalOpen: false,
-      isEditNotificationModalOpen: notificationSelected
+      isEditNotificationModalOpen: notificationSelected,
     });
   };
 
@@ -47,17 +46,11 @@ class Notifications extends Component {
   // Render
 
   render() {
-    const {
-      items,
-      tagList,
-      onConfirmDeleteNotification,
-      ...otherProps
-    } = this.props;
+    const { items, tagList, onConfirmDeleteNotification, ...otherProps } =
+      this.props;
 
-    const {
-      isAddNotificationModalOpen,
-      isEditNotificationModalOpen
-    } = this.state;
+    const { isAddNotificationModalOpen, isEditNotificationModalOpen } =
+      this.state;
 
     return (
       <FieldSet legend={translate('Connections')}>
@@ -66,28 +59,23 @@ class Notifications extends Component {
           {...otherProps}
         >
           <div className={styles.notifications}>
-            {
-              items.map((item) => {
-                return (
-                  <Notification
-                    key={item.id}
-                    {...item}
-                    tagList={tagList}
-                    onConfirmDeleteNotification={onConfirmDeleteNotification}
-                  />
-                );
-              })
-            }
+            {items.map((item) => {
+              return (
+                <Notification
+                  key={item.id}
+                  {...item}
+                  tagList={tagList}
+                  onConfirmDeleteNotification={onConfirmDeleteNotification}
+                />
+              );
+            })}
 
             <Card
               className={styles.addNotification}
               onPress={this.onAddNotificationPress}
             >
               <div className={styles.center}>
-                <Icon
-                  name={icons.ADD}
-                  size={45}
-                />
+                <Icon name={icons.ADD} size={45} />
               </div>
             </Card>
           </div>
@@ -112,7 +100,7 @@ Notifications.propTypes = {
   error: PropTypes.object,
   items: PropTypes.arrayOf(PropTypes.object).isRequired,
   tagList: PropTypes.arrayOf(PropTypes.object).isRequired,
-  onConfirmDeleteNotification: PropTypes.func.isRequired
+  onConfirmDeleteNotification: PropTypes.func.isRequired,
 };
 
 export default Notifications;

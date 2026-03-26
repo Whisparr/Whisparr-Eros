@@ -1,7 +1,11 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import TagInput from 'Components/Form/Tag/TagInput';
-import { filterBuilderTypes, filterBuilderValueTypes, kinds } from 'Helpers/Props';
+import {
+  filterBuilderTypes,
+  filterBuilderValueTypes,
+  kinds,
+} from 'Helpers/Props';
 import tagShape from 'Helpers/Props/Shapes/tagShape';
 import convertToBytes from 'Utilities/Number/convertToBytes';
 import formatBytes from 'Utilities/Number/formatBytes';
@@ -50,7 +54,7 @@ function getValue(input, selectedFilterBuilderProp) {
         case 'tib':
           return convertToBytes(value, 4, true);
         default:
-          return parseInt(value);
+          return Number.parseInt(value);
       }
     }
   }
@@ -65,16 +69,11 @@ function getValue(input, selectedFilterBuilderProp) {
 }
 
 class FilterBuilderRowValue extends Component {
-
   //
   // Listeners
 
   onTagAdd = (tag) => {
-    const {
-      filterValue,
-      selectedFilterBuilderProp,
-      onChange
-    } = this.props;
+    const { filterValue, selectedFilterBuilderProp, onChange } = this.props;
 
     let value = tag.id;
 
@@ -84,21 +83,18 @@ class FilterBuilderRowValue extends Component {
 
     onChange({
       name: NAME,
-      value: [...filterValue, value]
+      value: [...filterValue, value],
     });
   };
 
   onTagDelete = ({ index }) => {
-    const {
-      filterValue,
-      onChange
-    } = this.props;
+    const { filterValue, onChange } = this.props;
 
     const value = filterValue.filter((v, i) => i !== index);
 
     onChange({
       name: NAME,
-      value
+      value,
     });
   };
 
@@ -106,11 +102,7 @@ class FilterBuilderRowValue extends Component {
   // Render
 
   render() {
-    const {
-      filterValue,
-      selectedFilterBuilderProp,
-      tagList
-    } = this.props;
+    const { filterValue, selectedFilterBuilderProp, tagList } = this.props;
 
     const hasItems = !!tagList.length;
 
@@ -120,13 +112,13 @@ class FilterBuilderRowValue extends Component {
 
         return {
           id,
-          name: tag && tag.name
+          name: tag && tag.name,
         };
       }
 
       return {
         id,
-        name: getTagDisplayValue(id, selectedFilterBuilderProp)
+        name: getTagDisplayValue(id, selectedFilterBuilderProp),
       };
     });
 
@@ -149,14 +141,16 @@ class FilterBuilderRowValue extends Component {
 }
 
 FilterBuilderRowValue.propTypes = {
-  filterValue: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.bool, PropTypes.string, PropTypes.number])).isRequired,
+  filterValue: PropTypes.arrayOf(
+    PropTypes.oneOfType([PropTypes.bool, PropTypes.string, PropTypes.number])
+  ).isRequired,
   selectedFilterBuilderProp: PropTypes.object.isRequired,
   tagList: PropTypes.arrayOf(PropTypes.shape(tagShape)).isRequired,
-  onChange: PropTypes.func.isRequired
+  onChange: PropTypes.func.isRequired,
 };
 
 FilterBuilderRowValue.defaultProps = {
-  filterValue: []
+  filterValue: [],
 };
 
 export default FilterBuilderRowValue;

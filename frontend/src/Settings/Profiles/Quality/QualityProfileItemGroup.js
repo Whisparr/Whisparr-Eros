@@ -12,33 +12,23 @@ import QualityProfileItemDragSource from './QualityProfileItemDragSource';
 import styles from './QualityProfileItemGroup.css';
 
 class QualityProfileItemGroup extends Component {
-
   //
   // Listeners
 
   onAllowedChange = ({ value }) => {
-    const {
-      groupId,
-      onItemGroupAllowedChange
-    } = this.props;
+    const { groupId, onItemGroupAllowedChange } = this.props;
 
     onItemGroupAllowedChange(groupId, value);
   };
 
   onNameChange = ({ value }) => {
-    const {
-      groupId,
-      onItemGroupNameChange
-    } = this.props;
+    const { groupId, onItemGroupNameChange } = this.props;
 
     onItemGroupNameChange(groupId, value);
   };
 
   onDeleteGroupPress = ({ value }) => {
-    const {
-      groupId,
-      onDeleteGroupPress
-    } = this.props;
+    const { groupId, onDeleteGroupPress } = this.props;
 
     onDeleteGroupPress(groupId, value);
   };
@@ -60,7 +50,7 @@ class QualityProfileItemGroup extends Component {
       connectDragSource,
       onQualityProfileItemAllowedChange,
       onQualityProfileItemDragMove,
-      onQualityProfileItemDragEnd
+      onQualityProfileItemDragEnd,
     } = this.props;
 
     return (
@@ -72,103 +62,95 @@ class QualityProfileItemGroup extends Component {
         )}
       >
         <div className={styles.qualityProfileItemGroupInfo}>
-          {
-            editGroups &&
-              <div className={styles.qualityNameContainer}>
-                <IconButton
-                  className={styles.deleteGroupButton}
-                  name={icons.UNGROUP}
-                  title={translate('Ungroup')}
-                  onPress={this.onDeleteGroupPress}
-                />
+          {editGroups && (
+            <div className={styles.qualityNameContainer}>
+              <IconButton
+                className={styles.deleteGroupButton}
+                name={icons.UNGROUP}
+                title={translate('Ungroup')}
+                onPress={this.onDeleteGroupPress}
+              />
 
-                <TextInput
-                  className={styles.nameInput}
-                  name="name"
-                  value={name}
-                  onChange={this.onNameChange}
-                />
-              </div>
-          }
+              <TextInput
+                className={styles.nameInput}
+                name="name"
+                value={name}
+                onChange={this.onNameChange}
+              />
+            </div>
+          )}
 
-          {
-            !editGroups &&
-              <label
-                className={styles.qualityNameLabel}
-              >
-                <CheckInput
-                  className={styles.checkInput}
-                  containerClassName={styles.checkInputContainer}
-                  name="allowed"
-                  value={allowed}
-                  onChange={this.onAllowedChange}
-                />
+          {!editGroups && (
+            <label className={styles.qualityNameLabel}>
+              <CheckInput
+                className={styles.checkInput}
+                containerClassName={styles.checkInputContainer}
+                name="allowed"
+                value={allowed}
+                onChange={this.onAllowedChange}
+              />
 
-                <div className={styles.nameContainer}>
-                  <div className={classNames(
+              <div className={styles.nameContainer}>
+                <div
+                  className={classNames(
                     styles.name,
                     !allowed && styles.notAllowed
                   )}
-                  >
-                    {name}
-                  </div>
-
-                  <div className={styles.groupQualities}>
-                    {
-                      items.map(({ quality }) => {
-                        return (
-                          <Label key={quality.id}>
-                            {quality.name}
-                          </Label>
-                        );
-                      }).reverse()
-                    }
-                  </div>
+                >
+                  {name}
                 </div>
-              </label>
-          }
 
-          {
-            connectDragSource(
-              <div className={styles.dragHandle}>
-                <Icon
-                  className={styles.dragIcon}
-                  name={icons.REORDER}
-                  title={translate('Reorder')}
-                />
+                <div className={styles.groupQualities}>
+                  {items
+                    .map(({ quality }) => {
+                      return <Label key={quality.id}>{quality.name}</Label>;
+                    })
+                    .reverse()}
+                </div>
               </div>
-            )
-          }
+            </label>
+          )}
+
+          {connectDragSource(
+            <div className={styles.dragHandle}>
+              <Icon
+                className={styles.dragIcon}
+                name={icons.REORDER}
+                title={translate('Reorder')}
+              />
+            </div>
+          )}
         </div>
 
-        {
-          editGroups &&
-            <div className={styles.items}>
-              {
-                items.map(({ quality }, index) => {
-                  return (
-                    <QualityProfileItemDragSource
-                      key={quality.id}
-                      editGroups={editGroups}
-                      groupId={groupId}
-                      qualityId={quality.id}
-                      name={quality.name}
-                      allowed={allowed}
-                      items={items}
-                      qualityIndex={`${qualityIndex}.${index + 1}`}
-                      isDragging={isDragging}
-                      isDraggingUp={isDraggingUp}
-                      isDraggingDown={isDraggingDown}
-                      isInGroup={true}
-                      onQualityProfileItemAllowedChange={onQualityProfileItemAllowedChange}
-                      onQualityProfileItemDragMove={onQualityProfileItemDragMove}
-                      onQualityProfileItemDragEnd={onQualityProfileItemDragEnd}
-                    />
-                  );
-                }).reverse()
-              }
-            </div>
-        }
+        {editGroups && (
+          <div className={styles.items}>
+            {items
+              .map(({ quality }, index) => {
+                return (
+                  <QualityProfileItemDragSource
+                    key={quality.id}
+                    editGroups={editGroups}
+                    groupId={groupId}
+                    qualityId={quality.id}
+                    name={quality.name}
+                    allowed={allowed}
+                    items={items}
+                    qualityIndex={`${qualityIndex}.${index + 1}`}
+                    isDragging={isDragging}
+                    isDraggingUp={isDraggingUp}
+                    isDraggingDown={isDraggingDown}
+                    isInGroup={true}
+                    onQualityProfileItemAllowedChange={
+                      onQualityProfileItemAllowedChange
+                    }
+                    onQualityProfileItemDragMove={onQualityProfileItemDragMove}
+                    onQualityProfileItemDragEnd={onQualityProfileItemDragEnd}
+                  />
+                );
+              })
+              .reverse()}
+          </div>
+        )}
       </div>
     );
   }
@@ -190,12 +172,12 @@ QualityProfileItemGroup.propTypes = {
   onItemGroupNameChange: PropTypes.func.isRequired,
   onDeleteGroupPress: PropTypes.func.isRequired,
   onQualityProfileItemDragMove: PropTypes.func.isRequired,
-  onQualityProfileItemDragEnd: PropTypes.func.isRequired
+  onQualityProfileItemDragEnd: PropTypes.func.isRequired,
 };
 
 QualityProfileItemGroup.defaultProps = {
   // The drag preview will not connect the drag handle.
-  connectDragSource: (node) => node
+  connectDragSource: (node) => node,
 };
 
 export default QualityProfileItemGroup;

@@ -1,6 +1,10 @@
 import moment from 'moment';
 
-function formatTime(date, timeFormat, { includeMinuteZero = false, includeSeconds = false } = {}) {
+function formatTime(
+  date,
+  timeFormat,
+  { includeMinuteZero = false, includeSeconds = false } = {}
+) {
   if (!date) {
     return '';
   }

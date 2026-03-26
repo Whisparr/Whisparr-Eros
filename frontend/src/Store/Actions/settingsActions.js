@@ -88,13 +88,13 @@ export const defaultState = {
   qualityProfiles: qualityProfiles.defaultState,
   releaseProfiles: releaseProfiles.defaultState,
   remotePathMappings: remotePathMappings.defaultState,
-  ui: ui.defaultState
+  ui: ui.defaultState,
 };
 
 export const persistState = [
   'settings.advancedSettings',
   'settings.importListExclusions.pageSize',
-  'settings.safeForWorkMode'
+  'settings.safeForWorkMode',
 ];
 
 //
@@ -137,46 +137,52 @@ export const actionHandlers = handleThunks({
   ...qualityProfiles.actionHandlers,
   ...releaseProfiles.actionHandlers,
   ...remotePathMappings.actionHandlers,
-  ...ui.actionHandlers
+  ...ui.actionHandlers,
 });
 
 //
 // Reducers
 
-export const reducers = createHandleActions({
+export const reducers = createHandleActions(
+  {
+    [TOGGLE_ADVANCED_SETTINGS]: (state, { payload }) => {
+      return Object.assign({}, state, {
+        advancedSettings: !state.advancedSettings,
+      });
+    },
 
-  [TOGGLE_ADVANCED_SETTINGS]: (state, { payload }) => {
-    return Object.assign({}, state, { advancedSettings: !state.advancedSettings });
+    [TOGGLE_SFW_MODE]: (state, { payload }) => {
+      return Object.assign({}, state, {
+        safeForWorkMode: !state.safeForWorkMode,
+      });
+    },
+
+    ...autoTaggingSpecifications.reducers,
+    ...autoTaggings.reducers,
+    ...customFormatSpecifications.reducers,
+    ...customFormats.reducers,
+    ...delayProfiles.reducers,
+    ...downloadClients.reducers,
+    ...downloadClientOptions.reducers,
+    ...general.reducers,
+    ...importLists.reducers,
+    ...importListExclusions.reducers,
+    ...importListOptions.reducers,
+    ...indexerFlags.reducers,
+    ...indexerOptions.reducers,
+    ...indexers.reducers,
+    ...languages.reducers,
+    ...mediaManagement.reducers,
+    ...metadata.reducers,
+    ...naming.reducers,
+    ...namingExamples.reducers,
+    ...notifications.reducers,
+    ...qualityDefinitions.reducers,
+    ...qualityProfiles.reducers,
+    ...releaseProfiles.reducers,
+    ...remotePathMappings.reducers,
+    ...ui.reducers,
   },
-
-  [TOGGLE_SFW_MODE]: (state, { payload }) => {
-    return Object.assign({}, state, { safeForWorkMode: !state.safeForWorkMode });
-  },
-
-  ...autoTaggingSpecifications.reducers,
-  ...autoTaggings.reducers,
-  ...customFormatSpecifications.reducers,
-  ...customFormats.reducers,
-  ...delayProfiles.reducers,
-  ...downloadClients.reducers,
-  ...downloadClientOptions.reducers,
-  ...general.reducers,
-  ...importLists.reducers,
-  ...importListExclusions.reducers,
-  ...importListOptions.reducers,
-  ...indexerFlags.reducers,
-  ...indexerOptions.reducers,
-  ...indexers.reducers,
-  ...languages.reducers,
-  ...mediaManagement.reducers,
-  ...metadata.reducers,
-  ...naming.reducers,
-  ...namingExamples.reducers,
-  ...notifications.reducers,
-  ...qualityDefinitions.reducers,
-  ...qualityProfiles.reducers,
-  ...releaseProfiles.reducers,
-  ...remotePathMappings.reducers,
-  ...ui.reducers
-
-}, defaultState, section);
+  defaultState,
+  section
+);

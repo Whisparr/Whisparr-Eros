@@ -3,7 +3,11 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
 import { clearPendingChanges } from 'Store/Actions/baseActions';
-import { fetchDownloadClientOptions, saveDownloadClientOptions, setDownloadClientOptionsValue } from 'Store/Actions/settingsActions';
+import {
+  fetchDownloadClientOptions,
+  saveDownloadClientOptions,
+  setDownloadClientOptionsValue,
+} from 'Store/Actions/settingsActions';
 import createSettingsSectionSelector from 'Store/Selectors/createSettingsSectionSelector';
 import DownloadClientOptions from './DownloadClientOptions';
 
@@ -16,7 +20,7 @@ function createMapStateToProps() {
     (advancedSettings, sectionSettings) => {
       return {
         advancedSettings,
-        ...sectionSettings
+        ...sectionSettings,
       };
     }
   );
@@ -26,11 +30,10 @@ const mapDispatchToProps = {
   dispatchFetchDownloadClientOptions: fetchDownloadClientOptions,
   dispatchSetDownloadClientOptionsValue: setDownloadClientOptionsValue,
   dispatchSaveDownloadClientOptions: saveDownloadClientOptions,
-  dispatchClearPendingChanges: clearPendingChanges
+  dispatchClearPendingChanges: clearPendingChanges,
 };
 
 class DownloadClientOptionsConnector extends Component {
-
   //
   // Lifecycle
 
@@ -38,7 +41,7 @@ class DownloadClientOptionsConnector extends Component {
     const {
       dispatchFetchDownloadClientOptions,
       dispatchSaveDownloadClientOptions,
-      onChildMounted
+      onChildMounted,
     } = this.props;
 
     dispatchFetchDownloadClientOptions();
@@ -46,11 +49,7 @@ class DownloadClientOptionsConnector extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    const {
-      hasPendingChanges,
-      isSaving,
-      onChildStateChange
-    } = this.props;
+    const { hasPendingChanges, isSaving, onChildStateChange } = this.props;
 
     if (
       prevProps.isSaving !== isSaving ||
@@ -58,7 +57,7 @@ class DownloadClientOptionsConnector extends Component {
     ) {
       onChildStateChange({
         isSaving,
-        hasPendingChanges
+        hasPendingChanges,
       });
     }
   }
@@ -95,7 +94,10 @@ DownloadClientOptionsConnector.propTypes = {
   dispatchSaveDownloadClientOptions: PropTypes.func.isRequired,
   dispatchClearPendingChanges: PropTypes.func.isRequired,
   onChildMounted: PropTypes.func.isRequired,
-  onChildStateChange: PropTypes.func.isRequired
+  onChildStateChange: PropTypes.func.isRequired,
 };
 
-export default connect(createMapStateToProps, mapDispatchToProps)(DownloadClientOptionsConnector);
+export default connect(
+  createMapStateToProps,
+  mapDispatchToProps
+)(DownloadClientOptionsConnector);

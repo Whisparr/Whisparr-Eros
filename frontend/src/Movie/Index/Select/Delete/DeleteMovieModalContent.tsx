@@ -59,7 +59,7 @@ export function DeleteMovieModalContent({
         </FormGroup>
         <FormGroup>
           <FormLabel>
-            {translate('DeleteFilesLabel', { name: translate('All') })}
+            {translate('DeleteFiles', { name: translate('All') })}
           </FormLabel>
           <FormInputGroup
             type={inputTypes.CHECK}

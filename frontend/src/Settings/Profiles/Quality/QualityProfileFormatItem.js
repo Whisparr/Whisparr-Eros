@@ -4,14 +4,11 @@ import NumberInput from 'Components/Form/NumberInput';
 import styles from './QualityProfileFormatItem.css';
 
 class QualityProfileFormatItem extends Component {
-
   //
   // Listeners
 
   onScoreChange = ({ value }) => {
-    const {
-      formatId
-    } = this.props;
+    const { formatId } = this.props;
 
     this.props.onScoreChange(formatId, value);
   };
@@ -20,24 +17,13 @@ class QualityProfileFormatItem extends Component {
   // Render
 
   render() {
-    const {
-      name,
-      score
-    } = this.props;
+    const { name, score } = this.props;
 
     return (
-      <div
-        className={styles.qualityProfileFormatItemContainer}
-      >
-        <div
-          className={styles.qualityProfileFormatItem}
-        >
-          <label
-            className={styles.formatNameContainer}
-          >
-            <div className={styles.formatName}>
-              {name}
-            </div>
+      <div className={styles.qualityProfileFormatItemContainer}>
+        <div className={styles.qualityProfileFormatItem}>
+          <label className={styles.formatNameContainer}>
+            <div className={styles.formatName}>{name}</div>
             <NumberInput
               containerClassName={styles.scoreContainer}
               className={styles.scoreInput}
@@ -46,7 +32,6 @@ class QualityProfileFormatItem extends Component {
               onChange={this.onScoreChange}
             />
           </label>
-
         </div>
       </div>
     );
@@ -57,12 +42,12 @@ QualityProfileFormatItem.propTypes = {
   formatId: PropTypes.number.isRequired,
   name: PropTypes.string.isRequired,
   score: PropTypes.number.isRequired,
-  onScoreChange: PropTypes.func
+  onScoreChange: PropTypes.func,
 };
 
 QualityProfileFormatItem.defaultProps = {
   // To handle the case score is deleted during edit
-  score: 0
+  score: 0,
 };
 
 export default QualityProfileFormatItem;

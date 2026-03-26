@@ -13,10 +13,10 @@ function createTagListSelector() {
     (state, { selectedFilterBuilderProp }) => selectedFilterBuilderProp,
     (filterType, sectionItems, selectedFilterBuilderProp) => {
       if (
-        (selectedFilterBuilderProp.type === filterBuilderTypes.NUMBER ||
-        selectedFilterBuilderProp.type === filterBuilderTypes.STRING) &&
-        filterType !== filterTypes.EQUAL &&
-        filterType !== filterTypes.NOT_EQUAL ||
+        ((selectedFilterBuilderProp.type === filterBuilderTypes.NUMBER ||
+          selectedFilterBuilderProp.type === filterBuilderTypes.STRING) &&
+          filterType !== filterTypes.EQUAL &&
+          filterType !== filterTypes.NOT_EQUAL) ||
         !selectedFilterBuilderProp.optionsSelector
       ) {
         return [];
@@ -27,18 +27,20 @@ function createTagListSelector() {
       if (selectedFilterBuilderProp.optionsSelector) {
         items = selectedFilterBuilderProp.optionsSelector(sectionItems);
       } else {
-        items = sectionItems.reduce((acc, item) => {
-          const name = item[selectedFilterBuilderProp.name];
+        items = sectionItems
+          .reduce((acc, item) => {
+            const name = item[selectedFilterBuilderProp.name];
 
-          if (name) {
-            acc.push({
-              id: name,
-              name
-            });
-          }
+            if (name) {
+              acc.push({
+                id: name,
+                name,
+              });
+            }
 
-          return acc;
-        }, []).sort(sortByProp('name'));
+            return acc;
+          }, [])
+          .sort(sortByProp('name'));
       }
 
       return _.uniqBy(items, 'id');
@@ -47,14 +49,11 @@ function createTagListSelector() {
 }
 
 function createMapStateToProps() {
-  return createSelector(
-    createTagListSelector(),
-    (tagList) => {
-      return {
-        tagList
-      };
-    }
-  );
+  return createSelector(createTagListSelector(), (tagList) => {
+    return {
+      tagList,
+    };
+  });
 }
 
 export default connect(createMapStateToProps)(FilterBuilderRowValue);

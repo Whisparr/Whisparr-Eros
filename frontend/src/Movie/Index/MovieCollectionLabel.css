@@ -1,5 +1,5 @@
 .monitorToggleButton {
-  composes: toggleButton from '~Components/MonitorToggleButton.css';
+  composes: toggleButton from 'Components/MonitorToggleButton.css';
 
   width: 15px;
 

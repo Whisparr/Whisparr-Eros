@@ -3,7 +3,12 @@ import React, { Component } from 'react';
 import NumberInput from 'Components/Form/NumberInput';
 import SelectInput from 'Components/Form/SelectInput';
 import TextInput from 'Components/Form/TextInput';
-import { IN_LAST, IN_NEXT, NOT_IN_LAST, NOT_IN_NEXT } from 'Helpers/Props/filterTypes';
+import {
+  IN_LAST,
+  IN_NEXT,
+  NOT_IN_LAST,
+  NOT_IN_NEXT,
+} from 'Helpers/Props/filterTypes';
 import isString from 'Utilities/String/isString';
 import translate from 'Utilities/String/translate';
 import { NAME } from './FilterBuilderRowValue';
@@ -14,38 +19,38 @@ const timeOptions = [
     key: 'seconds',
     get value() {
       return translate('Seconds');
-    }
+    },
   },
   {
     key: 'minutes',
     get value() {
       return translate('Minutes');
-    }
+    },
   },
   {
     key: 'hours',
     get value() {
       return translate('Hours');
-    }
+    },
   },
   {
     key: 'days',
     get value() {
       return translate('Days');
-    }
+    },
   },
   {
     key: 'weeks',
     get value() {
       return translate('Weeks');
-    }
+    },
   },
   {
     key: 'months',
     get value() {
       return translate('Months');
-    }
-  }
+    },
+  },
 ];
 
 function isInFilter(filterType) {
@@ -58,34 +63,25 @@ function isInFilter(filterType) {
 }
 
 class DateFilterBuilderRowValue extends Component {
-
   //
   // Lifecycle
 
   componentDidMount() {
-    const {
-      filterType,
-      filterValue,
-      onChange
-    } = this.props;
+    const { filterType, filterValue, onChange } = this.props;
 
     if (isInFilter(filterType) && isString(filterValue)) {
       onChange({
         name: NAME,
         value: {
           time: timeOptions[0].key,
-          value: null
-        }
+          value: null,
+        },
       });
     }
   }
 
   componentDidUpdate(prevProps) {
-    const {
-      filterType,
-      filterValue,
-      onChange
-    } = this.props;
+    const { filterType, filterValue, onChange } = this.props;
 
     if (prevProps.filterType === filterType) {
       return;
@@ -96,8 +92,8 @@ class DateFilterBuilderRowValue extends Component {
         name: NAME,
         value: {
           time: timeOptions[0].key,
-          value: null
-        }
+          value: null,
+        },
       });
 
       return;
@@ -106,7 +102,7 @@ class DateFilterBuilderRowValue extends Component {
     if (!isInFilter(filterType) && !isString(filterValue)) {
       onChange({
         name: NAME,
-        value: ''
+        value: '',
       });
     }
   }
@@ -115,38 +111,32 @@ class DateFilterBuilderRowValue extends Component {
   // Listeners
 
   onValueChange = ({ value }) => {
-    const {
-      filterValue,
-      onChange
-    } = this.props;
+    const { filterValue, onChange } = this.props;
 
     let newValue = value;
 
     if (!isString(value)) {
       newValue = {
         time: filterValue.time,
-        value
+        value,
       };
     }
 
     onChange({
       name: NAME,
-      value: newValue
+      value: newValue,
     });
   };
 
   onTimeChange = ({ value }) => {
-    const {
-      filterValue,
-      onChange
-    } = this.props;
+    const { filterValue, onChange } = this.props;
 
     onChange({
       name: NAME,
       value: {
         time: value,
-        value: filterValue.value
-      }
+        value: filterValue.value,
+      },
     });
   };
 
@@ -154,10 +144,7 @@ class DateFilterBuilderRowValue extends Component {
   // Render
 
   render() {
-    const {
-      filterType,
-      filterValue
-    } = this.props;
+    const { filterType, filterValue } = this.props;
 
     if (
       (isInFilter(filterType) && isString(filterValue)) ||
@@ -201,8 +188,9 @@ class DateFilterBuilderRowValue extends Component {
 
 DateFilterBuilderRowValue.propTypes = {
   filterType: PropTypes.string,
-  filterValue: PropTypes.oneOfType([PropTypes.string, PropTypes.object]).isRequired,
-  onChange: PropTypes.func.isRequired
+  filterValue: PropTypes.oneOfType([PropTypes.string, PropTypes.object])
+    .isRequired,
+  onChange: PropTypes.func.isRequired,
 };
 
 export default DateFilterBuilderRowValue;

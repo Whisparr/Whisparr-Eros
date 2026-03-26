@@ -11,7 +11,6 @@ import EditCustomFormatModalConnector from './EditCustomFormatModalConnector';
 import styles from './CustomFormats.css';
 
 class CustomFormats extends Component {
-
   //
   // Lifecycle
 
@@ -20,7 +19,7 @@ class CustomFormats extends Component {
 
     this.state = {
       isCustomFormatModalOpen: false,
-      tagsFromId: undefined
+      tagsFromId: undefined,
     };
   }
 
@@ -31,7 +30,7 @@ class CustomFormats extends Component {
     this.props.onCloneCustomFormatPress(id);
     this.setState({
       isCustomFormatModalOpen: true,
-      tagsFromId: id
+      tagsFromId: id,
     });
   };
 
@@ -42,7 +41,7 @@ class CustomFormats extends Component {
   onModalClose = () => {
     this.setState({
       isCustomFormatModalOpen: false,
-      tagsFromId: undefined
+      tagsFromId: undefined,
     });
   };
 
@@ -65,29 +64,24 @@ class CustomFormats extends Component {
           {...otherProps}
         >
           <div className={styles.customFormats}>
-            {
-              items.map((item) => {
-                return (
-                  <CustomFormat
-                    key={item.id}
-                    {...item}
-                    isDeleting={isDeleting}
-                    onConfirmDeleteCustomFormat={onConfirmDeleteCustomFormat}
-                    onCloneCustomFormatPress={this.onCloneCustomFormatPress}
-                  />
-                );
-              })
-            }
+            {items.map((item) => {
+              return (
+                <CustomFormat
+                  key={item.id}
+                  {...item}
+                  isDeleting={isDeleting}
+                  onConfirmDeleteCustomFormat={onConfirmDeleteCustomFormat}
+                  onCloneCustomFormatPress={this.onCloneCustomFormatPress}
+                />
+              );
+            })}
 
             <Card
               className={styles.addCustomFormat}
               onPress={this.onEditCustomFormatPress}
             >
               <div className={styles.center}>
-                <Icon
-                  name={icons.ADD}
-                  size={45}
-                />
+                <Icon name={icons.ADD} size={45} />
               </div>
             </Card>
           </div>
@@ -97,7 +91,6 @@ class CustomFormats extends Component {
             tagsFromId={this.state.tagsFromId}
             onModalClose={this.onModalClose}
           />
-
         </PageSectionContent>
       </FieldSet>
     );
@@ -110,7 +103,7 @@ CustomFormats.propTypes = {
   isDeleting: PropTypes.bool.isRequired,
   items: PropTypes.arrayOf(PropTypes.object).isRequired,
   onConfirmDeleteCustomFormat: PropTypes.func.isRequired,
-  onCloneCustomFormatPress: PropTypes.func.isRequired
+  onCloneCustomFormatPress: PropTypes.func.isRequired,
 };
 
 export default CustomFormats;

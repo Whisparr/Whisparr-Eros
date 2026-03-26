@@ -14,7 +14,6 @@ import RestoreBackupModalConnector from './RestoreBackupModalConnector';
 import styles from './BackupRow.css';
 
 class BackupRow extends Component {
-
   //
   // Lifecycle
 
@@ -23,7 +22,7 @@ class BackupRow extends Component {
 
     this.state = {
       isRestoreModalOpen: false,
-      isConfirmDeleteModalOpen: false
+      isConfirmDeleteModalOpen: false,
     };
   }
 
@@ -47,10 +46,7 @@ class BackupRow extends Component {
   };
 
   onConfirmDeletePress = () => {
-    const {
-      id,
-      onDeleteBackupPress
-    } = this.props;
+    const { id, onDeleteBackupPress } = this.props;
 
     this.setState({ isConfirmDeleteModalOpen: false }, () => {
       onDeleteBackupPress(id);
@@ -61,19 +57,9 @@ class BackupRow extends Component {
   // Render
 
   render() {
-    const {
-      id,
-      type,
-      name,
-      path,
-      size,
-      time
-    } = this.props;
+    const { id, type, name, path, size, time } = this.props;
 
-    const {
-      isRestoreModalOpen,
-      isConfirmDeleteModalOpen
-    } = this.state;
+    const { isRestoreModalOpen, isConfirmDeleteModalOpen } = this.state;
 
     let iconClassName = icons.SCHEDULED;
     let iconTooltip = translate('Scheduled');
@@ -89,30 +75,18 @@ class BackupRow extends Component {
     return (
       <TableRow key={id}>
         <TableRowCell className={styles.type}>
-          {
-            <Icon
-              name={iconClassName}
-              title={iconTooltip}
-            />
-          }
+          {<Icon name={iconClassName} title={iconTooltip} />}
         </TableRowCell>
 
         <TableRowCell>
-          <Link
-            to={`${window.Whisparr.urlBase}${path}`}
-            noRouter={true}
-          >
+          <Link to={`${window.Whisparr.urlBase}${path}`} noRouter={true}>
             {name}
           </Link>
         </TableRowCell>
 
-        <TableRowCell>
-          {formatBytes(size)}
-        </TableRowCell>
+        <TableRowCell>{formatBytes(size)}</TableRowCell>
 
-        <RelativeDateCell
-          date={time}
-        />
+        <RelativeDateCell date={time} />
 
         <TableRowCell className={styles.actions}>
           <IconButton
@@ -140,7 +114,7 @@ class BackupRow extends Component {
           kind={kinds.DANGER}
           title={translate('DeleteBackup')}
           message={translate('DeleteBackupMessageText', {
-            name
+            name,
           })}
           confirmLabel={translate('Delete')}
           onConfirm={this.onConfirmDeletePress}
@@ -158,7 +132,7 @@ BackupRow.propTypes = {
   path: PropTypes.string.isRequired,
   size: PropTypes.number.isRequired,
   time: PropTypes.string.isRequired,
-  onDeleteBackupPress: PropTypes.func.isRequired
+  onDeleteBackupPress: PropTypes.func.isRequired,
 };
 
 export default BackupRow;

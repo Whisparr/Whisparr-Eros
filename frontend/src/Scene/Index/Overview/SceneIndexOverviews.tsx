@@ -5,18 +5,20 @@ import dimensions from 'Styles/Variables/dimensions';
 import SceneIndexOverview from './SceneIndexOverview';
 import selectOverviewOptions from './selectOverviewOptions';
 
-const columnPadding = parseInt(dimensions.movieIndexColumnPadding);
-const columnPaddingSmallScreen = parseInt(
+const columnPadding = Number.parseInt(dimensions.movieIndexColumnPadding);
+const columnPaddingSmallScreen = Number.parseInt(
   dimensions.movieIndexColumnPaddingSmallScreen
 );
-const progressBarHeight = parseInt(dimensions.progressBarSmallHeight);
-const detailedProgressBarHeight = parseInt(dimensions.progressBarMediumHeight);
+const progressBarHeight = Number.parseInt(dimensions.progressBarSmallHeight);
+const detailedProgressBarHeight = Number.parseInt(
+  dimensions.progressBarMediumHeight
+);
 
 interface SceneIndexOverviewsProps {
   items: Movie[];
   sortKey: string;
   sortDirection?: string;
-  scrollerRef: RefObject<HTMLElement>;
+  scrollerRef: RefObject<HTMLElement | null>;
   isSelectMode: boolean;
   isSmallScreen: boolean;
 }

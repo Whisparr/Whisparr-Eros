@@ -14,7 +14,6 @@ import FilterBuilderRow from './FilterBuilderRow';
 import styles from './FilterBuilderModalContent.css';
 
 class FilterBuilderModalContent extends Component {
-
   //
   // Lifecycle
 
@@ -33,7 +32,7 @@ class FilterBuilderModalContent extends Component {
     this.state = {
       label: props.label,
       filters,
-      labelErrors: []
+      labelErrors: [],
     };
   }
 
@@ -44,7 +43,7 @@ class FilterBuilderModalContent extends Component {
       isSaving,
       saveError,
       dispatchSetFilter,
-      onModalClose
+      onModalClose,
     } = this.props;
 
     if (prevProps.isSaving && !isSaving && !saveError) {
@@ -71,7 +70,7 @@ class FilterBuilderModalContent extends Component {
     filters.splice(index, 1, filter);
 
     this.setState({
-      filters
+      filters,
     });
   };
 
@@ -80,7 +79,7 @@ class FilterBuilderModalContent extends Component {
     filters.push({});
 
     this.setState({
-      filters
+      filters,
     });
   };
 
@@ -89,29 +88,22 @@ class FilterBuilderModalContent extends Component {
     filters.splice(index, 1);
 
     this.setState({
-      filters
+      filters,
     });
   };
 
   onSaveFilterPress = () => {
-    const {
-      id,
-      customFilterType,
-      onSaveCustomFilterPress
-    } = this.props;
+    const { id, customFilterType, onSaveCustomFilterPress } = this.props;
 
-    const {
-      label,
-      filters
-    } = this.state;
+    const { label, filters } = this.state;
 
     if (!label) {
       this.setState({
         labelErrors: [
           {
-            message: translate('LabelIsRequired')
-          }
-        ]
+            message: translate('LabelIsRequired'),
+          },
+        ],
       });
 
       return;
@@ -121,7 +113,7 @@ class FilterBuilderModalContent extends Component {
       id,
       type: customFilterType,
       label,
-      filters
+      filters,
     });
   };
 
@@ -135,26 +127,18 @@ class FilterBuilderModalContent extends Component {
       isSaving,
       saveError,
       onCancelPress,
-      onModalClose
+      onModalClose,
     } = this.props;
 
-    const {
-      label,
-      filters,
-      labelErrors
-    } = this.state;
+    const { label, filters, labelErrors } = this.state;
 
     return (
       <ModalContent onModalClose={onModalClose}>
-        <ModalHeader>
-          {translate('CustomFilter')}
-        </ModalHeader>
+        <ModalHeader>{translate('CustomFilter')}</ModalHeader>
 
         <ModalBody>
           <div className={styles.labelContainer}>
-            <div className={styles.label}>
-              {translate('Label')}
-            </div>
+            <div className={styles.label}>{translate('Label')}</div>
 
             <div className={styles.labelInputContainer}>
               <FormInputGroup
@@ -170,32 +154,28 @@ class FilterBuilderModalContent extends Component {
           <div className={styles.label}>{translate('Filters')}</div>
 
           <div className={styles.rows}>
-            {
-              filters.map((filter, index) => {
-                return (
-                  <FilterBuilderRow
-                    key={`${filter.key}-${index}`}
-                    index={index}
-                    sectionItems={sectionItems}
-                    filterBuilderProps={filterBuilderProps}
-                    filterKey={filter.key}
-                    filterValue={filter.value}
-                    filterType={filter.type}
-                    filterCount={filters.length}
-                    onAddPress={this.onAddFilterPress}
-                    onRemovePress={this.onRemoveFilterPress}
-                    onFilterChange={this.onFilterChange}
-                  />
-                );
-              })
-            }
+            {filters.map((filter, index) => {
+              return (
+                <FilterBuilderRow
+                  key={`${filter.key}-${index}`}
+                  index={index}
+                  sectionItems={sectionItems}
+                  filterBuilderProps={filterBuilderProps}
+                  filterKey={filter.key}
+                  filterValue={filter.value}
+                  filterType={filter.type}
+                  filterCount={filters.length}
+                  onAddPress={this.onAddFilterPress}
+                  onRemovePress={this.onRemoveFilterPress}
+                  onFilterChange={this.onFilterChange}
+                />
+              );
+            })}
           </div>
         </ModalBody>
 
         <ModalFooter>
-          <Button onPress={onCancelPress}>
-            {translate('Cancel')}
-          </Button>
+          <Button onPress={onCancelPress}>{translate('Cancel')}</Button>
 
           <SpinnerErrorButton
             isSpinning={isSaving}
@@ -224,7 +204,7 @@ FilterBuilderModalContent.propTypes = {
   onSaveCustomFilterPress: PropTypes.func.isRequired,
   dispatchSetFilter: PropTypes.func.isRequired,
   onCancelPress: PropTypes.func.isRequired,
-  onModalClose: PropTypes.func.isRequired
+  onModalClose: PropTypes.func.isRequired,
 };
 
 export default FilterBuilderModalContent;

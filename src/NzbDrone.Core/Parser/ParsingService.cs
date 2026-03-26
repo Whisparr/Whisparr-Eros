@@ -6,7 +6,6 @@ using NLog;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.IndexerSearch.Definitions;
 using NzbDrone.Core.Movies;
-using NzbDrone.Core.Movies.Studios;
 using NzbDrone.Core.Parser.Model;
 using NzbDrone.Core.Parser.RomanNumerals;
 
@@ -25,15 +24,12 @@ namespace NzbDrone.Core.Parser
         private static HashSet<ArabicRomanNumeral> _arabicRomanNumeralMappings;
 
         private readonly IMovieService _movieService;
-        private readonly IStudioService _studioService;
         private readonly Logger _logger;
 
         public ParsingService(IMovieService movieService,
-                              IStudioService studioService,
                               Logger logger)
         {
             _movieService = movieService;
-            _studioService = studioService;
             _logger = logger;
 
             if (_arabicRomanNumeralMappings == null)
@@ -216,7 +212,7 @@ namespace NzbDrone.Core.Parser
             return null;
         }
 
-        private FindMovieResult TryGetMovieBySearchCriteria(ParsedMovieInfo parsedMovieInfo, string imdbId, int tmdbId, SearchCriteriaBase searchCriteria)
+        private static FindMovieResult TryGetMovieBySearchCriteria(ParsedMovieInfo parsedMovieInfo, string imdbId, int tmdbId, SearchCriteriaBase searchCriteria)
         {
             Movie possibleMovie = null;
 
@@ -236,12 +232,9 @@ namespace NzbDrone.Core.Parser
                 possibleMovie = searchCriteria.Movie;
             }
 
-            if (possibleMovie != null)
+            if (possibleMovie != null && (parsedMovieInfo.Year < 1800 || possibleMovie.MovieMetadata.Value.Year == parsedMovieInfo.Year))
             {
-                if (parsedMovieInfo.Year < 1800 || possibleMovie.MovieMetadata.Value.Year == parsedMovieInfo.Year)
-                {
-                    return new FindMovieResult(possibleMovie, MovieMatchType.Title);
-                }
+                return new FindMovieResult(possibleMovie, MovieMatchType.Title);
             }
 
             if (tmdbId > 0 && tmdbId == searchCriteria.Movie.TmdbId)
@@ -267,7 +260,7 @@ namespace NzbDrone.Core.Parser
             }
             catch (Exception ex)
             {
-                _logger.Error("FindScene Failed for {0] {1} {2} {3}", parsedMovieInfo.StudioTitle, parsedMovieInfo.ReleaseDate, parsedMovieInfo.ReleaseTitle, ex.Message);
+                _logger.Error(ex, "FindScene Failed for {StudioTitle} {ReleaseDate} {ReleaseTitle}", parsedMovieInfo.StudioTitle, parsedMovieInfo.ReleaseDate, parsedMovieInfo.ReleaseTitle);
             }
 
             if (movie != null && searchCriteria != null)

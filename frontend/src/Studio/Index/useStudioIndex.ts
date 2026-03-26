@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import ModelBase from 'App/ModelBase';
 import { useSelect } from 'App/SelectContext';
 import AppState from 'App/State/AppState';
@@ -86,7 +86,7 @@ export function useStudioIndex() {
   );
   const view = useSelector((state: AppState) => state.studios.view);
 
-  const history = useHistory();
+  const navigate = useNavigate();
   const dispatch = useDispatch();
 
   // Read pageSize from the appropriate options based on view
@@ -154,8 +154,8 @@ export function useStudioIndex() {
 
   /** Navigate to the add studio page */
   const onAddStudioPress = useCallback(() => {
-    history.push('/add/new/studio');
-  }, [history]);
+    navigate('/add/new/studio');
+  }, [navigate]);
 
   /** Handle changes to table display options (columns, etc.) */
   const onTableOptionChange = useCallback(

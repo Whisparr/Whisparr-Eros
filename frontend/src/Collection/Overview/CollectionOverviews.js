@@ -10,8 +10,10 @@ import CollectionOverviewConnector from './CollectionOverviewConnector';
 import styles from './CollectionOverviews.css';
 
 // Poster container dimensions
-const columnPadding = parseInt(dimensions.movieIndexColumnPadding);
-const columnPaddingSmallScreen = parseInt(dimensions.movieIndexColumnPaddingSmallScreen);
+const columnPadding = Number.parseInt(dimensions.movieIndexColumnPadding);
+const columnPaddingSmallScreen = Number.parseInt(
+  dimensions.movieIndexColumnPaddingSmallScreen
+);
 
 function calculatePosterWidth(posterSize, isSmallScreen) {
   const maximumPosterWidth = isSmallScreen ? 152 : 162;
@@ -27,10 +29,15 @@ function calculatePosterWidth(posterSize, isSmallScreen) {
   return Math.floor(maximumPosterWidth * 0.5);
 }
 
-function calculateRowHeight(posterHeight, sortKey, isSmallScreen, overviewOptions) {
+function calculateRowHeight(
+  posterHeight,
+  sortKey,
+  isSmallScreen,
+  overviewOptions
+) {
   const heights = [
     overviewOptions.showPosters ? posterHeight : 75,
-    isSmallScreen ? columnPaddingSmallScreen : columnPadding
+    isSmallScreen ? columnPaddingSmallScreen : columnPadding,
   ];
 
   return heights.reduce((acc, height) => acc + height + 80, 0);
@@ -41,7 +48,6 @@ function calculatePosterHeight(posterWidth) {
 }
 
 class CollectionOverviews extends Component {
-
   //
   // Lifecycle
 
@@ -53,7 +59,7 @@ class CollectionOverviews extends Component {
       columnCount: 1,
       posterWidth: 162,
       posterHeight: 238,
-      rowHeight: calculateRowHeight(238, null, props.isSmallScreen, {})
+      rowHeight: calculateRowHeight(238, null, props.isSmallScreen, {}),
     };
 
     this._grid = null;
@@ -66,26 +72,25 @@ class CollectionOverviews extends Component {
       overviewOptions,
       jumpToCharacter,
       scrollTop,
-      isSmallScreen
+      isSmallScreen,
     } = this.props;
 
-    const {
-      width,
-      rowHeight,
-      scrollRestored
-    } = this.state;
+    const { width, rowHeight, scrollRestored } = this.state;
 
-    if (prevProps.sortKey !== sortKey ||
-        prevProps.overviewOptions !== overviewOptions) {
+    if (
+      prevProps.sortKey !== sortKey ||
+      prevProps.overviewOptions !== overviewOptions
+    ) {
       this.calculateGrid(this.state.width, isSmallScreen);
     }
 
     if (
       this._grid &&
-        (prevState.width !== width ||
-            prevState.rowHeight !== rowHeight ||
-            hasDifferentItemsOrOrder(prevProps.items, items) ||
-            prevProps.overviewOptions !== overviewOptions)) {
+      (prevState.width !== width ||
+        prevState.rowHeight !== rowHeight ||
+        hasDifferentItemsOrOrder(prevProps.items, items) ||
+        prevProps.overviewOptions !== overviewOptions)
+    ) {
       // recomputeGridSize also forces Grid to discard its cache of rendered cells
       this._grid.recomputeGridSize();
     }
@@ -95,13 +100,16 @@ class CollectionOverviews extends Component {
       this._gridScrollToPosition({ scrollTop });
     }
 
-    if (jumpToCharacter != null && jumpToCharacter !== prevProps.jumpToCharacter) {
+    if (
+      jumpToCharacter != null &&
+      jumpToCharacter !== prevProps.jumpToCharacter
+    ) {
       const index = getIndexOfFirstCharacter(items, jumpToCharacter);
 
       if (this._grid && index != null) {
         this._gridScrollToCell({
           rowIndex: index,
-          columnIndex: 0
+          columnIndex: 0,
         });
       }
     }
@@ -115,20 +123,26 @@ class CollectionOverviews extends Component {
   };
 
   calculateGrid = (width = this.state.width, isSmallScreen) => {
-    const {
-      sortKey,
-      overviewOptions
-    } = this.props;
+    const { sortKey, overviewOptions } = this.props;
 
-    const posterWidth = overviewOptions.showPosters ? calculatePosterWidth(overviewOptions.size, isSmallScreen) : 0;
-    const posterHeight = overviewOptions.showPosters ? calculatePosterHeight(posterWidth) : 0;
-    const rowHeight = calculateRowHeight(posterHeight, sortKey, isSmallScreen, overviewOptions);
+    const posterWidth = overviewOptions.showPosters
+      ? calculatePosterWidth(overviewOptions.size, isSmallScreen)
+      : 0;
+    const posterHeight = overviewOptions.showPosters
+      ? calculatePosterHeight(posterWidth)
+      : 0;
+    const rowHeight = calculateRowHeight(
+      posterHeight,
+      sortKey,
+      isSmallScreen,
+      overviewOptions
+    );
 
     this.setState({
       width,
       posterWidth,
       posterHeight,
-      rowHeight
+      rowHeight,
     });
   };
 
@@ -143,14 +157,10 @@ class CollectionOverviews extends Component {
       timeFormat,
       isSmallScreen,
       selectedState,
-      onSelectedChange
+      onSelectedChange,
     } = this.props;
 
-    const {
-      posterWidth,
-      posterHeight,
-      rowHeight
-    } = this.state;
+    const { posterWidth, posterHeight, rowHeight } = this.state;
 
     const collection = items[rowIndex];
 
@@ -159,11 +169,7 @@ class CollectionOverviews extends Component {
     }
 
     return (
-      <div
-        className={styles.container}
-        key={key}
-        style={style}
-      >
+      <div className={styles.container} key={key} style={style}>
         <CollectionItemConnector
           key={collection.id}
           component={CollectionOverviewConnector}
@@ -188,7 +194,7 @@ class CollectionOverviews extends Component {
   _gridScrollToCell = ({ rowIndex = 0, columnIndex = 0 }) => {
     const scrollOffset = this._grid.getOffsetForCell({
       rowIndex,
-      columnIndex
+      columnIndex,
     });
 
     this._gridScrollToPosition(scrollOffset);
@@ -209,26 +215,14 @@ class CollectionOverviews extends Component {
   // Render
 
   render() {
-    const {
-      isSmallScreen,
-      scroller,
-      items,
-      selectedState
-    } = this.props;
+    const { isSmallScreen, scroller, items, selectedState } = this.props;
 
-    const {
-      width,
-      rowHeight
-    } = this.state;
+    const { width, rowHeight } = this.state;
 
     return (
-      <Measure
-        whitelist={['width']}
-        onMeasure={this.onMeasure}
-      >
-        <WindowScroller
-          scrollElement={isSmallScreen ? undefined : scroller}
-        >
+      <Measure whitelist={['width']} onMeasure={this.onMeasure}>
+        <div>
+        <WindowScroller scrollElement={isSmallScreen ? undefined : scroller}>
           {({ height, registerChild, onChildScroll, scrollTop }) => {
             if (!height) {
               return <div />;
@@ -256,9 +250,9 @@ class CollectionOverviews extends Component {
                 />
               </div>
             );
-          }
-          }
+          }}
         </WindowScroller>
+        </div>
       </Measure>
     );
   }
@@ -277,7 +271,7 @@ CollectionOverviews.propTypes = {
   isSmallScreen: PropTypes.bool.isRequired,
   timeFormat: PropTypes.string.isRequired,
   selectedState: PropTypes.object.isRequired,
-  onSelectedChange: PropTypes.func.isRequired
+  onSelectedChange: PropTypes.func.isRequired,
 };
 
 export default CollectionOverviews;

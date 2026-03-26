@@ -90,7 +90,7 @@ function getFanartUrl(images: MovieImageType[]) {
 
 function MovieDetails(props: Readonly<Partial<Props>>) {
   // Get id from route params and fetch movie data
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams();
   const dispatch = useDispatch();
   const safeForWorkMode = useContext(SafeForWorkModeContext);
 
@@ -318,7 +318,7 @@ function MovieDetails(props: Readonly<Partial<Props>>) {
                       className={styles.title}
                       style={{ width: marqueeWidth }}
                     >
-                      <Marquee text={title} />
+                      <Marquee className="marquee" text={title} />
                     </div>
                   </div>
                 </div>
@@ -527,6 +527,7 @@ function MovieDetails(props: Readonly<Partial<Props>>) {
         <InteractiveImportModal
           isOpen={isInteractiveImportModalOpen}
           movie={movie}
+          movieId={movieId}
           title={title}
           folder={path}
           initialSortKey="relativePath"

@@ -12,39 +12,32 @@ const logLevelOptions = [
     key: 'warn',
     get value() {
       return translate('Warn');
-    }
+    },
   },
   {
     key: 'info',
     get value() {
       return translate('Info');
-    }
+    },
   },
   {
     key: 'debug',
     get value() {
       return translate('Debug');
-    }
+    },
   },
   {
     key: 'trace',
     get value() {
       return translate('Trace');
-    }
-  }
+    },
+  },
 ];
 
 function LoggingSettings(props) {
-  const {
-    advancedSettings,
-    settings,
-    onInputChange
-  } = props;
+  const { advancedSettings, settings, onInputChange } = props;
 
-  const {
-    logLevel,
-    logSizeLimit
-  } = settings;
+  const { logLevel, logSizeLimit } = settings;
 
   return (
     <FieldSet legend={translate('Logging')}>
@@ -55,16 +48,17 @@ function LoggingSettings(props) {
           type={inputTypes.SELECT}
           name="logLevel"
           values={logLevelOptions}
-          helpTextWarning={logLevel.value === 'trace' ? translate('LogLevelTraceHelpTextWarning') : undefined}
+          helpTextWarning={
+            logLevel.value === 'trace'
+              ? translate('LogLevelTraceHelpTextWarning')
+              : undefined
+          }
           onChange={onInputChange}
           {...logLevel}
         />
       </FormGroup>
 
-      <FormGroup
-        advancedSettings={advancedSettings}
-        isAdvanced={true}
-      >
+      <FormGroup advancedSettings={advancedSettings} isAdvanced={true}>
         <FormLabel>{translate('LogSizeLimit')}</FormLabel>
 
         <FormInputGroup
@@ -85,7 +79,7 @@ function LoggingSettings(props) {
 LoggingSettings.propTypes = {
   advancedSettings: PropTypes.bool.isRequired,
   settings: PropTypes.object.isRequired,
-  onInputChange: PropTypes.func.isRequired
+  onInputChange: PropTypes.func.isRequired,
 };
 
 export default LoggingSettings;

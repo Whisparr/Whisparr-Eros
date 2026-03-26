@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { queryClient } from 'App/queryClient';
 
 interface DeletePerformerOptions {
@@ -13,7 +13,7 @@ interface DeletePerformersPayload {
 }
 
 export function useDeletePerformersMutation() {
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const mutation = useMutation<void, Error, DeletePerformersPayload>({
     mutationFn: async ({ performerIds, options }: DeletePerformersPayload) => {
@@ -46,7 +46,7 @@ export function useDeletePerformersMutation() {
       });
 
       // Navigate back to performers list
-      history.push('/performers');
+      navigate('/performers');
     },
   });
 

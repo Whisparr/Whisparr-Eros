@@ -1,5 +1,5 @@
 .protocol {
-  composes: cell from '~Components/Table/Cells/TableRowCell.css';
+  composes: cell from 'Components/Table/Cells/TableRowCell.css';
 
   width: 80px;
 }
@@ -12,14 +12,14 @@
 }
 
 .indexer {
-  composes: cell from '~Components/Table/Cells/TableRowCell.css';
+  composes: cell from 'Components/Table/Cells/TableRowCell.css';
 
   width: 85px;
 }
 
 .quality,
 .languages {
-  composes: cell from '~Components/Table/Cells/TableRowCell.css';
+  composes: cell from 'Components/Table/Cells/TableRowCell.css';
 }
 
 .quality {
@@ -31,7 +31,7 @@
 }
 
 .customFormatScore {
-  composes: cell from '~Components/Table/Cells/TableRowCell.css';
+  composes: cell from 'Components/Table/Cells/TableRowCell.css';
 
   width: 55px;
   font-weight: bold;
@@ -40,26 +40,26 @@
 
 .rejected,
 .indexerFlags {
-  composes: cell from '~Components/Table/Cells/TableRowCell.css';
+  composes: cell from 'Components/Table/Cells/TableRowCell.css';
 
   width: 50px;
 }
 
 .age,
 .size {
-  composes: cell from '~Components/Table/Cells/TableRowCell.css';
+  composes: cell from 'Components/Table/Cells/TableRowCell.css';
 
   white-space: nowrap;
 }
 
 .peers {
-  composes: cell from '~Components/Table/Cells/TableRowCell.css';
+  composes: cell from 'Components/Table/Cells/TableRowCell.css';
 
   width: 75px;
 }
 
 .history {
-  composes: cell from '~Components/Table/Cells/TableRowCell.css';
+  composes: cell from 'Components/Table/Cells/TableRowCell.css';
 
   width: 75px;
 }
@@ -69,7 +69,7 @@
 }
 
 .download {
-  composes: cell from '~Components/Table/Cells/TableRowCell.css';
+  composes: cell from 'Components/Table/Cells/TableRowCell.css';
 
   width: 80px;
 }

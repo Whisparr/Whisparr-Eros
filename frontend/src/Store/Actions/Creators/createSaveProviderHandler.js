@@ -9,7 +9,7 @@ const abortCurrentRequests = {};
 let lastSaveData = null;
 
 export function createCancelSaveProviderHandler(section) {
-  return function(getState, payload, dispatch) {
+  return function (getState, payload, dispatch) {
     if (abortCurrentRequests[section]) {
       abortCurrentRequests[section]();
       abortCurrentRequests[section] = null;
@@ -18,16 +18,16 @@ export function createCancelSaveProviderHandler(section) {
 }
 
 function createSaveProviderHandler(section, url, options = {}) {
-  return function(getState, payload, dispatch) {
+  return function (getState, payload, dispatch) {
     dispatch(set({ section, isSaving: true }));
 
-    const {
-      id,
-      queryParams = {},
-      ...otherPayload
-    } = payload;
+    const { id, queryParams = {}, ...otherPayload } = payload;
 
-    const saveData = getProviderState({ id, ...otherPayload }, getState, section);
+    const saveData = getProviderState(
+      { id, ...otherPayload },
+      getState,
+      section
+    );
     const requestUrl = id ? `${url}/${id}` : url;
     const params = { ...queryParams };
 
@@ -45,7 +45,7 @@ function createSaveProviderHandler(section, url, options = {}) {
       method: id ? 'PUT' : 'POST',
       contentType: 'application/json',
       dataType: 'json',
-      data: JSON.stringify(saveData)
+      data: JSON.stringify(saveData),
     };
 
     const { request, abortRequest } = createAjaxRequest(ajaxOptions);
@@ -55,24 +55,28 @@ function createSaveProviderHandler(section, url, options = {}) {
     request.done((data) => {
       lastSaveData = null;
 
-      dispatch(batchActions([
-        updateItem({ section, ...data }),
+      dispatch(
+        batchActions([
+          updateItem({ section, ...data }),
 
-        set({
-          section,
-          isSaving: false,
-          saveError: null,
-          pendingChanges: {}
-        })
-      ]));
+          set({
+            section,
+            isSaving: false,
+            saveError: null,
+            pendingChanges: {},
+          }),
+        ])
+      );
     });
 
     request.fail((xhr) => {
-      dispatch(set({
-        section,
-        isSaving: false,
-        saveError: xhr.aborted ? null : xhr
-      }));
+      dispatch(
+        set({
+          section,
+          isSaving: false,
+          saveError: xhr.aborted ? null : xhr,
+        })
+      );
     });
   };
 }

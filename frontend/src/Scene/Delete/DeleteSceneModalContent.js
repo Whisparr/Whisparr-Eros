@@ -15,7 +15,6 @@ import translate from 'Utilities/String/translate';
 import styles from './DeleteSceneModalContent.css';
 
 class DeleteSceneModalContent extends Component {
-
   //
   // Lifecycle
 
@@ -23,7 +22,7 @@ class DeleteSceneModalContent extends Component {
     super(props, context);
 
     this.state = {
-      deleteFiles: false
+      deleteFiles: false,
     };
   }
 
@@ -53,13 +52,15 @@ class DeleteSceneModalContent extends Component {
       deleteOptions,
       sizeOnDisk,
       onModalClose,
-      onDeleteOptionChange
+      onDeleteOptionChange,
     } = this.props;
 
     const deleteFiles = this.state.deleteFiles;
     const addImportExclusion = deleteOptions.addImportExclusion;
 
-    let deleteFilesLabel = hasFile ? translate('DeleteFileLabel', [1]) : translate('DeleteFilesLabel', [0]);
+    let deleteFilesLabel = hasFile
+      ? translate('DeleteFileLabel', [1])
+      : translate('DeleteFiles', [0]);
     let deleteFilesHelpText = translate('DeleteFilesHelpText');
 
     if (!hasFile) {
@@ -68,27 +69,18 @@ class DeleteSceneModalContent extends Component {
     }
 
     return (
-      <ModalContent
-        onModalClose={onModalClose}
-      >
-        <ModalHeader>
-          {translate('DeleteHeader', [title])}
-        </ModalHeader>
+      <ModalContent onModalClose={onModalClose}>
+        <ModalHeader>{translate('DeleteHeader', [title])}</ModalHeader>
 
         <ModalBody>
           <div className={styles.pathContainer}>
-            <Icon
-              className={styles.pathIcon}
-              name={icons.FOLDER}
-            />
+            <Icon className={styles.pathIcon} name={icons.FOLDER} />
 
             {path}
           </div>
 
           <FormGroup>
-            <FormLabel>
-              {translate('AddListExclusion')}
-            </FormLabel>
+            <FormLabel>{translate('AddListExclusion')}</FormLabel>
 
             <FormInputGroup
               type={inputTypes.CHECK}
@@ -113,33 +105,24 @@ class DeleteSceneModalContent extends Component {
             />
           </FormGroup>
 
-          {
-            deleteFiles &&
-              <div className={styles.deleteFilesMessage}>
+          {deleteFiles && (
+            <div className={styles.deleteFilesMessage}>
+              <div>{translate('DeleteTheSceneFolder', { path })}</div>
+
+              {!!hasFile && (
                 <div>
-                  {translate('DeleteTheSceneFolder', { path })}
+                  {hasFile} {translate('SceneFilesTotaling')}{' '}
+                  {formatBytes(sizeOnDisk)}
                 </div>
-
-                {
-                  !!hasFile &&
-                    <div>
-                      {hasFile} {translate('SceneFilesTotaling')} {formatBytes(sizeOnDisk)}
-                    </div>
-                }
-              </div>
-          }
-
+              )}
+            </div>
+          )}
         </ModalBody>
 
         <ModalFooter>
-          <Button onPress={onModalClose}>
-            {translate('Close')}
-          </Button>
+          <Button onPress={onModalClose}>{translate('Close')}</Button>
 
-          <Button
-            kind={kinds.DANGER}
-            onPress={this.onDeleteSceneConfirmed}
-          >
+          <Button kind={kinds.DANGER} onPress={this.onDeleteSceneConfirmed}>
             {translate('Delete')}
           </Button>
         </ModalFooter>
@@ -156,7 +139,7 @@ DeleteSceneModalContent.propTypes = {
   deleteOptions: PropTypes.object.isRequired,
   onDeleteOptionChange: PropTypes.func.isRequired,
   onDeletePress: PropTypes.func.isRequired,
-  onModalClose: PropTypes.func.isRequired
+  onModalClose: PropTypes.func.isRequired,
 };
 
 export default DeleteSceneModalContent;

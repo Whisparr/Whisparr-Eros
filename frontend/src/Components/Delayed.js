@@ -3,7 +3,6 @@ import React from 'react';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 
 class Delayed extends React.Component {
-
   constructor(props) {
     super(props);
     this.state = { hidden: true };
@@ -22,7 +21,7 @@ class Delayed extends React.Component {
 
 Delayed.propTypes = {
   waitBeforeShow: PropTypes.number.isRequired,
-  children: PropTypes.element
+  children: PropTypes.element,
 };
 
 export default Delayed;

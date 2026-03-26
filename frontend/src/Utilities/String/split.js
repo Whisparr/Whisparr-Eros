@@ -5,13 +5,17 @@ function split(input, separator = ',') {
     return [];
   }
 
-  return _.reduce(input.split(separator), (result, s) => {
-    if (s) {
-      result.push(s);
-    }
+  return _.reduce(
+    input.split(separator),
+    (result, s) => {
+      if (s) {
+        result.push(s);
+      }
 
-    return result;
-  }, []);
+      return result;
+    },
+    []
+  );
 }
 
 export default split;

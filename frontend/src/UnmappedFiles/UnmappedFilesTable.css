@@ -8,10 +8,10 @@
   font-weight: 600;
 }
 
-.folderStructure{
- display: block;
- color: inherit;
- white-space: pre;
+.folderStructure {
+  display: block;
+  color: inherit;
+  white-space: pre;
 }
 
 .sceneImportHaveMore {

@@ -2,7 +2,10 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
-import { deleteDownloadClient, fetchDownloadClients } from 'Store/Actions/settingsActions';
+import {
+  deleteDownloadClient,
+  fetchDownloadClients,
+} from 'Store/Actions/settingsActions';
 import createSortedSectionSelector from 'Store/Selectors/createSortedSectionSelector';
 import createTagsSelector from 'Store/Selectors/createTagsSelector';
 import sortByProp from 'Utilities/Array/sortByProp';
@@ -15,7 +18,7 @@ function createMapStateToProps() {
     (downloadClients, tagList) => {
       return {
         ...downloadClients,
-        tagList
+        tagList,
       };
     }
   );
@@ -23,11 +26,10 @@ function createMapStateToProps() {
 
 const mapDispatchToProps = {
   fetchDownloadClients,
-  deleteDownloadClient
+  deleteDownloadClient,
 };
 
 class DownloadClientsConnector extends Component {
-
   //
   // Lifecycle
 
@@ -57,7 +59,10 @@ class DownloadClientsConnector extends Component {
 
 DownloadClientsConnector.propTypes = {
   fetchDownloadClients: PropTypes.func.isRequired,
-  deleteDownloadClient: PropTypes.func.isRequired
+  deleteDownloadClient: PropTypes.func.isRequired,
 };
 
-export default connect(createMapStateToProps, mapDispatchToProps)(DownloadClientsConnector);
+export default connect(
+  createMapStateToProps,
+  mapDispatchToProps
+)(DownloadClientsConnector);

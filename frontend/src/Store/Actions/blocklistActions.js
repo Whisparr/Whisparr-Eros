@@ -1,6 +1,10 @@
 import { createAction } from 'redux-actions';
 import { batchActions } from 'redux-batched-actions';
-import { filterBuilderTypes, filterBuilderValueTypes, sortDirections } from 'Helpers/Props';
+import {
+  filterBuilderTypes,
+  filterBuilderValueTypes,
+  sortDirections,
+} from 'Helpers/Props';
 import { createThunk, handleThunks } from 'Store/thunks';
 import createAjaxRequest from 'Utilities/createAjaxRequest';
 import serverSideCollectionHandlers from 'Utilities/serverSideCollectionHandlers';
@@ -35,50 +39,50 @@ export const defaultState = {
       name: 'movieMetadata.sortTitle',
       label: () => translate('MovieTitle'),
       isSortable: true,
-      isVisible: true
+      isVisible: true,
     },
     {
       name: 'sourceTitle',
       label: () => translate('SourceTitle'),
       isSortable: true,
-      isVisible: true
+      isVisible: true,
     },
     {
       name: 'languages',
       label: () => translate('Languages'),
       isSortable: true,
-      isVisible: true
+      isVisible: true,
     },
     {
       name: 'quality',
       label: () => translate('Quality'),
       isSortable: true,
-      isVisible: true
+      isVisible: true,
     },
     {
       name: 'customFormats',
       label: () => translate('Formats'),
       isSortable: false,
-      isVisible: true
+      isVisible: true,
     },
     {
       name: 'date',
       label: () => translate('Date'),
       isSortable: true,
-      isVisible: true
+      isVisible: true,
     },
     {
       name: 'indexer',
       label: () => translate('Indexer'),
       isSortable: true,
-      isVisible: false
+      isVisible: false,
     },
     {
       name: 'actions',
       columnLabel: () => translate('Actions'),
       isVisible: true,
-      isModifiable: false
-    }
+      isModifiable: false,
+    },
   ],
 
   selectedFilterKey: 'all',
@@ -87,8 +91,8 @@ export const defaultState = {
     {
       key: 'all',
       label: () => translate('All'),
-      filters: []
-    }
+      filters: [],
+    },
   ],
 
   filterBuilderProps: [
@@ -96,15 +100,15 @@ export const defaultState = {
       name: 'movieIds',
       label: () => translate('Movie'),
       type: filterBuilderTypes.EQUAL,
-      valueType: filterBuilderValueTypes.MOVIE
+      valueType: filterBuilderValueTypes.MOVIE,
     },
     {
       name: 'protocols',
       label: () => translate('Protocol'),
       type: filterBuilderTypes.EQUAL,
-      valueType: filterBuilderValueTypes.PROTOCOL
-    }
-  ]
+      valueType: filterBuilderValueTypes.PROTOCOL,
+    },
+  ],
 };
 
 export const persistState = [
@@ -112,7 +116,7 @@ export const persistState = [
   'blocklist.sortKey',
   'blocklist.sortDirection',
   'blocklist.selectedFilterKey',
-  'blocklist.columns'
+  'blocklist.columns',
 ];
 
 //
@@ -143,42 +147,38 @@ export const clearBlocklist = createAction(CLEAR_BLOCKLIST);
 // Action Handlers
 
 export const actionHandlers = handleThunks({
-  ...createServerSideCollectionHandlers(
-    section,
-    '/blocklist',
-    fetchBlocklist,
-    {
-      [serverSideCollectionHandlers.FETCH]: FETCH_BLOCKLIST,
-      [serverSideCollectionHandlers.EXACT_PAGE]: GOTO_BLOCKLIST_PAGE,
-      [serverSideCollectionHandlers.SORT]: SET_BLOCKLIST_SORT,
-      [serverSideCollectionHandlers.FILTER]: SET_BLOCKLIST_FILTER
-    }),
+  ...createServerSideCollectionHandlers(section, '/blocklist', fetchBlocklist, {
+    [serverSideCollectionHandlers.FETCH]: FETCH_BLOCKLIST,
+    [serverSideCollectionHandlers.EXACT_PAGE]: GOTO_BLOCKLIST_PAGE,
+    [serverSideCollectionHandlers.SORT]: SET_BLOCKLIST_SORT,
+    [serverSideCollectionHandlers.FILTER]: SET_BLOCKLIST_FILTER,
+  }),
 
   [REMOVE_BLOCKLIST_ITEM]: createRemoveItemHandler(section, '/blocklist'),
 
-  [REMOVE_BLOCKLIST_ITEMS]: function(getState, payload, dispatch) {
-    const {
-      ids
-    } = payload;
+  [REMOVE_BLOCKLIST_ITEMS]: function (getState, payload, dispatch) {
+    const { ids } = payload;
 
-    dispatch(batchActions([
-      ...ids.map((id) => {
-        return updateItem({
-          section,
-          id,
-          isRemoving: true
-        });
-      }),
+    dispatch(
+      batchActions([
+        ...ids.map((id) => {
+          return updateItem({
+            section,
+            id,
+            isRemoving: true,
+          });
+        }),
 
-      set({ section, isRemoving: true })
-    ]));
+        set({ section, isRemoving: true }),
+      ])
+    );
 
     const promise = createAjaxRequest({
       url: '/blocklist/bulk',
       method: 'DELETE',
       dataType: 'json',
       contentType: 'application/json',
-      data: JSON.stringify({ ids })
+      data: JSON.stringify({ ids }),
     }).request;
 
     promise.done((data) => {
@@ -189,35 +189,39 @@ export const actionHandlers = handleThunks({
     });
 
     promise.fail((xhr) => {
-      dispatch(batchActions([
-        ...ids.map((id) => {
-          return updateItem({
-            section,
-            id,
-            isRemoving: false
-          });
-        }),
+      dispatch(
+        batchActions([
+          ...ids.map((id) => {
+            return updateItem({
+              section,
+              id,
+              isRemoving: false,
+            });
+          }),
 
-        set({ section, isRemoving: false })
-      ]));
+          set({ section, isRemoving: false }),
+        ])
+      );
     });
-  }
+  },
 });
 
 //
 // Reducers
 
-export const reducers = createHandleActions({
+export const reducers = createHandleActions(
+  {
+    [SET_BLOCKLIST_TABLE_OPTION]: createSetTableOptionReducer(section),
 
-  [SET_BLOCKLIST_TABLE_OPTION]: createSetTableOptionReducer(section),
-
-  [CLEAR_BLOCKLIST]: createClearReducer(section, {
-    isFetching: false,
-    isPopulated: false,
-    error: null,
-    items: [],
-    totalPages: 0,
-    totalRecords: 0
-  })
-
-}, defaultState, section);
+    [CLEAR_BLOCKLIST]: createClearReducer(section, {
+      isFetching: false,
+      isPopulated: false,
+      error: null,
+      items: [],
+      totalPages: 0,
+      totalRecords: 0,
+    }),
+  },
+  defaultState,
+  section
+);

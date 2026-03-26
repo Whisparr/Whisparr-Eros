@@ -6,11 +6,7 @@ import EditNotificationModalContentConnector from './EditNotificationModalConten
 
 function EditNotificationModal({ isOpen, onModalClose, ...otherProps }) {
   return (
-    <Modal
-      size={sizes.MEDIUM}
-      isOpen={isOpen}
-      onModalClose={onModalClose}
-    >
+    <Modal size={sizes.MEDIUM} isOpen={isOpen} onModalClose={onModalClose}>
       <EditNotificationModalContentConnector
         {...otherProps}
         onModalClose={onModalClose}
@@ -21,7 +17,7 @@ function EditNotificationModal({ isOpen, onModalClose, ...otherProps }) {
 
 EditNotificationModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
-  onModalClose: PropTypes.func.isRequired
+  onModalClose: PropTypes.func.isRequired,
 };
 
 export default EditNotificationModal;

@@ -59,7 +59,7 @@ export default function SceneRow(props: SceneRowProps) {
         ''
       )}`;
     }
-    if (parseInt(foreignId) > 0) {
+    if (Number.parseInt(foreignId) > 0) {
       return `https://www.themoviedb.org/movie/${foreignId.replace(
         'tmdbId:',
         ''

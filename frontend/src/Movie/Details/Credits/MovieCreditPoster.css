@@ -58,8 +58,9 @@ $hoverScale: 1.05;
   z-index: 3;
 }
 
-.action, .movieAction {
-  composes: toggleButton from '~Components/MonitorToggleButton.css';
+.action,
+.movieAction {
+  composes: toggleButton from 'Components/MonitorToggleButton.css';
 
   width: 25px;
   color: var(--white);
@@ -74,7 +75,7 @@ $hoverScale: 1.05;
 }
 
 .link {
-  composes: link from '~Components/Link/Link.css';
+  composes: link from 'Components/Link/Link.css';
 
   position: relative;
   background-color: #374151;

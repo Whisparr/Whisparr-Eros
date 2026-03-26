@@ -5,8 +5,7 @@ import AppSectionState, { AppSectionSaveState } from './AppSectionState';
 import { Filter, FilterBuilderProp } from './AppState';
 
 interface PerformersAppState
-  extends AppSectionSaveState,
-    AppSectionState<Performer> {
+  extends AppSectionSaveState, AppSectionState<Performer> {
   sortKey: string;
   page: number;
   pageSize: number;

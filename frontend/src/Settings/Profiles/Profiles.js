@@ -1,6 +1,14 @@
 import React, { Component } from 'react';
-import { DndProvider } from 'react-dnd-multi-backend';
-import HTML5toTouch from 'react-dnd-multi-backend/dist/esm/HTML5toTouch';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import { DndProvider, HTML5DragTransition, TouchTransition } from 'react-dnd-multi-backend';
+import { TouchBackend } from 'react-dnd-touch-backend';
+
+const HTML5toTouch = {
+  backends: [
+    { id: 'html5', backend: HTML5Backend, transition: HTML5DragTransition },
+    { id: 'touch', backend: TouchBackend, options: { enableMouseEvents: true }, preview: true, transition: TouchTransition },
+  ],
+};
 import PageContent from 'Components/Page/PageContent';
 import PageContentBody from 'Components/Page/PageContentBody';
 import SettingsToolbar from 'Settings/SettingsToolbar';
@@ -13,7 +21,6 @@ import ReleaseProfiles from './Release/ReleaseProfiles';
 // quality profiles and reordering delay profiles to work.
 
 class Profiles extends Component {
-
   //
   // Render
 

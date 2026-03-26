@@ -1,5 +1,5 @@
 .cell {
-  /* composes: cell from '~Components/Table/Cells/VirtualTableRowCell.css'; */
+  /* composes: cell from 'Components/Table/Cells/VirtualTableRowCell.css'; */
   align-items: center;
 }
 

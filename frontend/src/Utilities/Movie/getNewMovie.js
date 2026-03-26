@@ -1,16 +1,15 @@
-
 function getNewMovie(movie, payload) {
   const {
     rootFolderPath,
     monitored,
     qualityProfileId,
     tags,
-    searchForMovie = false
+    searchForMovie = false,
   } = payload;
 
   const addOptions = {
     monitored,
-    searchForMovie
+    searchForMovie,
   };
 
   movie.addOptions = addOptions;

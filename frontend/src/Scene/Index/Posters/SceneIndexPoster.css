@@ -69,7 +69,7 @@ $hoverScale: 1.05;
 }
 
 .action {
-  composes: button from '~Components/Link/IconButton.css';
+  composes: button from 'Components/Link/IconButton.css';
 
   &:hover {
     color: var(--whisparrPurple);
@@ -107,7 +107,7 @@ $hoverScale: 1.05;
 }
 
 .link {
-  composes: link from '~Components/Link/Link.css';
+  composes: link from 'Components/Link/Link.css';
 
   position: relative;
   display: block;
@@ -120,6 +120,6 @@ $hoverScale: 1.05;
   font-size: $smallFontSize;
 }
 
-.poster{
+.poster {
   object-fit: cover;
 }

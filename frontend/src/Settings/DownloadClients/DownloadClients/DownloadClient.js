@@ -10,7 +10,6 @@ import EditDownloadClientModalConnector from './EditDownloadClientModalConnector
 import styles from './DownloadClient.css';
 
 class DownloadClient extends Component {
-
   //
   // Lifecycle
 
@@ -19,7 +18,7 @@ class DownloadClient extends Component {
 
     this.state = {
       isEditDownloadClientModalOpen: false,
-      isDeleteDownloadClientModalOpen: false
+      isDeleteDownloadClientModalOpen: false,
     };
   }
 
@@ -37,7 +36,7 @@ class DownloadClient extends Component {
   onDeleteDownloadClientPress = () => {
     this.setState({
       isEditDownloadClientModalOpen: false,
-      isDeleteDownloadClientModalOpen: true
+      isDeleteDownloadClientModalOpen: true,
     });
   };
 
@@ -53,14 +52,7 @@ class DownloadClient extends Component {
   // Render
 
   render() {
-    const {
-      id,
-      name,
-      enable,
-      priority,
-      tags,
-      tagList
-    } = this.props;
+    const { id, name, enable, priority, tags, tagList } = this.props;
 
     return (
       <Card
@@ -68,39 +60,25 @@ class DownloadClient extends Component {
         overlayContent={true}
         onPress={this.onEditDownloadClientPress}
       >
-        <div className={styles.name}>
-          {name}
-        </div>
+        <div className={styles.name}>{name}</div>
 
         <div className={styles.enabled}>
-          {
-            enable ?
-              <Label kind={kinds.SUCCESS}>
-                {translate('Enabled')}
-              </Label> :
-              <Label
-                kind={kinds.DISABLED}
-                outline={true}
-              >
-                {translate('Disabled')}
-              </Label>
-          }
+          {enable ? (
+            <Label kind={kinds.SUCCESS}>{translate('Enabled')}</Label>
+          ) : (
+            <Label kind={kinds.DISABLED} outline={true}>
+              {translate('Disabled')}
+            </Label>
+          )}
 
-          {
-            priority > 1 &&
-              <Label
-                kind={kinds.DISABLED}
-                outline={true}
-              >
-                {translate('PrioritySettings', { priority })}
-              </Label>
-          }
+          {priority > 1 && (
+            <Label kind={kinds.DISABLED} outline={true}>
+              {translate('PrioritySettings', { priority })}
+            </Label>
+          )}
         </div>
 
-        <TagList
-          tags={tags}
-          tagList={tagList}
-        />
+        <TagList tags={tags} tagList={tagList} />
 
         <EditDownloadClientModalConnector
           id={id}
@@ -130,7 +108,7 @@ DownloadClient.propTypes = {
   priority: PropTypes.number.isRequired,
   tags: PropTypes.arrayOf(PropTypes.number).isRequired,
   tagList: PropTypes.arrayOf(PropTypes.object).isRequired,
-  onConfirmDeleteDownloadClient: PropTypes.func.isRequired
+  onConfirmDeleteDownloadClient: PropTypes.func.isRequired,
 };
 
 export default DownloadClient;

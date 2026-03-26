@@ -1,16 +1,16 @@
-.pageContent{
+.pageContent {
   display: flex;
   flex: 1;
   flex-direction: column;
   width: 100%;
 }
 
-.performerIndexTable{
+.performerIndexTable {
   flex: 1;
   width: 100%;
 }
 
-.tablePager{
+.tablePager {
   flex: 0 0 auto;
 }
 
@@ -21,7 +21,7 @@
 }
 
 .contentBody {
-  composes: contentBody from '~Components/Page/PageContentBody.css';
+  composes: contentBody from 'Components/Page/PageContentBody.css';
 
   position: relative;
   display: flex;
@@ -29,7 +29,7 @@
 }
 
 .postersInnerContentBody {
-  composes: innerContentBody from '~Components/Page/PageContentBody.css';
+  composes: innerContentBody from 'Components/Page/PageContentBody.css';
 
   display: flex;
   flex-direction: column;
@@ -40,7 +40,7 @@
 }
 
 .tableInnerContentBody {
-  composes: innerContentBody from '~Components/Page/PageContentBody.css';
+  composes: innerContentBody from 'Components/Page/PageContentBody.css';
 
   display: flex;
   flex-direction: column;

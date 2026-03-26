@@ -1,5 +1,5 @@
 .modalBody {
-  composes: modalBody from '~Components/Modal/ModalBody.css';
+  composes: modalBody from 'Components/Modal/ModalBody.css';
 
   display: flex;
   flex: 1 1 auto;

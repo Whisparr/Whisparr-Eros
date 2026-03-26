@@ -3,14 +3,21 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
-import { fetchQualityProfileSchema, saveQualityProfile, setQualityProfileValue } from 'Store/Actions/settingsActions';
+import {
+  fetchQualityProfileSchema,
+  saveQualityProfile,
+  setQualityProfileValue,
+} from 'Store/Actions/settingsActions';
 import createProfileInUseSelector from 'Store/Selectors/createProfileInUseSelector';
 import createProviderSettingsSelector from 'Store/Selectors/createProviderSettingsSelector';
 import EditQualityProfileModalContent from './EditQualityProfileModalContent';
 
 function getQualityItemGroupId(qualityProfile) {
   // Get items with an `id` and filter out null/undefined values
-  const ids = _.filter(_.map(qualityProfile.items.value, 'id'), (i) => i != null);
+  const ids = _.filter(
+    _.map(qualityProfile.items.value, 'id'),
+    (i) => i != null
+  );
 
   return Math.max(1000, ...ids) + 1;
 }
@@ -19,16 +26,10 @@ function parseIndex(index) {
   const split = index.split('.');
 
   if (split.length === 1) {
-    return [
-      null,
-      parseInt(split[0]) - 1
-    ];
+    return [null, Number.parseInt(split[0]) - 1];
   }
 
-  return [
-    parseInt(split[0]) - 1,
-    parseInt(split[1]) - 1
-  ];
+  return [Number.parseInt(split[0]) - 1, Number.parseInt(split[1]) - 1];
 }
 
 function createQualitiesSelector() {
@@ -40,23 +41,27 @@ function createQualitiesSelector() {
         return [];
       }
 
-      return _.reduceRight(items.value, (result, { allowed, id, name, quality }) => {
-        if (allowed) {
-          if (id) {
-            result.push({
-              key: id,
-              value: name
-            });
-          } else {
-            result.push({
-              key: quality.id,
-              value: quality.name
-            });
+      return _.reduceRight(
+        items.value,
+        (result, { allowed, id, name, quality }) => {
+          if (allowed) {
+            if (id) {
+              result.push({
+                key: id,
+                value: name,
+              });
+            } else {
+              result.push({
+                key: quality.id,
+                value: quality.name,
+              });
+            }
           }
-        }
 
-        return result;
-      }, []);
+          return result;
+        },
+        []
+      );
     }
   );
 }
@@ -70,23 +75,27 @@ function createFormatsSelector() {
         return [];
       }
 
-      return _.reduceRight(items.value, (result, { id, name, format, score }) => {
-        if (id) {
-          result.push({
-            key: id,
-            value: name,
-            score
-          });
-        } else {
-          result.push({
-            key: format,
-            value: name,
-            score
-          });
-        }
+      return _.reduceRight(
+        items.value,
+        (result, { id, name, format, score }) => {
+          if (id) {
+            result.push({
+              key: id,
+              value: name,
+              score,
+            });
+          } else {
+            result.push({
+              key: format,
+              value: name,
+              score,
+            });
+          }
 
-        return result;
-      }, []);
+          return result;
+        },
+        []
+      );
     }
   );
 }
@@ -102,12 +111,14 @@ function createLanguagesSelector() {
         return [];
       }
 
-      const newItems = items.filter((lang) => !filterItems.includes(lang.name)).map((item) => {
-        return {
-          key: item.id,
-          value: item.name
-        };
-      });
+      const newItems = items
+        .filter((lang) => !filterItems.includes(lang.name))
+        .map((item) => {
+          return {
+            key: item.id,
+            value: item.name,
+          };
+        });
 
       return newItems;
     }
@@ -127,7 +138,7 @@ function createMapStateToProps() {
         customFormats,
         languages,
         ...qualityProfile,
-        isInUse
+        isInUse,
       };
     }
   );
@@ -136,11 +147,10 @@ function createMapStateToProps() {
 const mapDispatchToProps = {
   fetchQualityProfileSchema,
   setQualityProfileValue,
-  saveQualityProfile
+  saveQualityProfile,
 };
 
 class EditQualityProfileModalContentConnector extends Component {
-
   //
   // Lifecycle
 
@@ -151,7 +161,7 @@ class EditQualityProfileModalContentConnector extends Component {
       dragQualityIndex: null,
       dropQualityIndex: null,
       dropPosition: null,
-      editGroups: false
+      editGroups: false,
     };
   }
 
@@ -183,11 +193,15 @@ class EditQualityProfileModalContentConnector extends Component {
 
     // If the cutoff isn't allowed anymore or there isn't a cutoff set one
     if (!cutoff || !cutoffItem || !cutoffItem.allowed) {
-      const firstAllowed = _.find(qualityProfile.items.value, { allowed: true });
+      const firstAllowed = _.find(qualityProfile.items.value, {
+        allowed: true,
+      });
       let cutoffId = null;
 
       if (firstAllowed) {
-        cutoffId = firstAllowed.quality ? firstAllowed.quality.id : firstAllowed.id;
+        cutoffId = firstAllowed.quality
+          ? firstAllowed.quality.id
+          : firstAllowed.id;
       }
 
       this.props.setQualityProfileValue({ name: 'cutoff', value: cutoffId });
@@ -202,7 +216,7 @@ class EditQualityProfileModalContentConnector extends Component {
   };
 
   onCutoffChange = ({ name, value }) => {
-    const id = parseInt(value);
+    const id = Number.parseInt(value);
     const item = _.find(this.props.item.items.value, (i) => {
       if (i.quality) {
         return i.quality.id === id;
@@ -217,12 +231,14 @@ class EditQualityProfileModalContentConnector extends Component {
   };
 
   onLanguageChange = ({ name, value }) => {
-
-    const id = parseInt(value);
+    const id = Number.parseInt(value);
 
     const language = _.find(this.props.languages, (item) => item.key === id);
 
-    this.props.setQualityProfileValue({ name, value: { id: language.key, Name: language.value } });
+    this.props.setQualityProfileValue({
+      name,
+      value: { id: language.key, Name: language.value },
+    });
   };
 
   onSavePress = () => {
@@ -232,13 +248,16 @@ class EditQualityProfileModalContentConnector extends Component {
   onQualityProfileItemAllowedChange = (id, allowed) => {
     const qualityProfile = _.cloneDeep(this.props.item);
     const items = qualityProfile.items.value;
-    const item = _.find(qualityProfile.items.value, (i) => i.quality && i.quality.id === id);
+    const item = _.find(
+      qualityProfile.items.value,
+      (i) => i.quality && i.quality.id === id
+    );
 
     item.allowed = allowed;
 
     this.props.setQualityProfileValue({
       name: 'items',
-      value: items
+      value: items,
     });
 
     this.ensureCutoff(qualityProfile);
@@ -247,13 +266,16 @@ class EditQualityProfileModalContentConnector extends Component {
   onQualityProfileFormatItemScoreChange = (id, score) => {
     const qualityProfile = _.cloneDeep(this.props.item);
     const formatItems = qualityProfile.formatItems.value;
-    const item = _.find(qualityProfile.formatItems.value, (i) => i.format === id);
+    const item = _.find(
+      qualityProfile.formatItems.value,
+      (i) => i.format === id
+    );
 
     item.score = score;
 
     this.props.setQualityProfileValue({
       name: 'formatItems',
-      value: formatItems
+      value: formatItems,
     });
   };
 
@@ -271,7 +293,7 @@ class EditQualityProfileModalContentConnector extends Component {
 
     this.props.setQualityProfileValue({
       name: 'items',
-      value: items
+      value: items,
     });
 
     this.ensureCutoff(qualityProfile);
@@ -286,7 +308,7 @@ class EditQualityProfileModalContentConnector extends Component {
 
     this.props.setQualityProfileValue({
       name: 'items',
-      value: items
+      value: items,
     });
   };
 
@@ -301,9 +323,7 @@ class EditQualityProfileModalContentConnector extends Component {
       id: groupId,
       name: item.quality.name,
       allowed: item.allowed,
-      items: [
-        item
-      ]
+      items: [item],
     };
 
     // Add the group in the same location the quality item was in.
@@ -311,7 +331,7 @@ class EditQualityProfileModalContentConnector extends Component {
 
     this.props.setQualityProfileValue({
       name: 'items',
-      value: items
+      value: items,
     });
 
     this.ensureCutoff(qualityProfile);
@@ -328,18 +348,14 @@ class EditQualityProfileModalContentConnector extends Component {
 
     this.props.setQualityProfileValue({
       name: 'items',
-      value: items
+      value: items,
     });
 
     this.ensureCutoff(qualityProfile);
   };
 
   onQualityProfileItemDragMove = (options) => {
-    const {
-      dragQualityIndex,
-      dropQualityIndex,
-      dropPosition
-    } = options;
+    const { dragQualityIndex, dropQualityIndex, dropPosition } = options;
 
     const [dragGroupIndex, dragItemIndex] = parseIndex(dragQualityIndex);
     const [dropGroupIndex, dropItemIndex] = parseIndex(dropQualityIndex);
@@ -356,7 +372,7 @@ class EditQualityProfileModalContentConnector extends Component {
         this.setState({
           dragQualityIndex: null,
           dropQualityIndex: null,
-          dropPosition: null
+          dropPosition: null,
         });
       }
 
@@ -415,16 +431,13 @@ class EditQualityProfileModalContentConnector extends Component {
       this.setState({
         dragQualityIndex,
         dropQualityIndex: adjustedDropQualityIndex,
-        dropPosition
+        dropPosition,
       });
     }
   };
 
   onQualityProfileItemDragEnd = (didDrop) => {
-    const {
-      dragQualityIndex,
-      dropQualityIndex
-    } = this.state;
+    const { dragQualityIndex, dropQualityIndex } = this.state;
 
     if (didDrop && dropQualityIndex != null) {
       const qualityProfile = _.cloneDeep(this.props.item);
@@ -460,7 +473,7 @@ class EditQualityProfileModalContentConnector extends Component {
 
       this.props.setQualityProfileValue({
         name: 'items',
-        value: items
+        value: items,
       });
 
       this.ensureCutoff(qualityProfile);
@@ -469,7 +482,7 @@ class EditQualityProfileModalContentConnector extends Component {
     this.setState({
       dragQualityIndex: null,
       dropQualityIndex: null,
-      dropPosition: null
+      dropPosition: null,
     });
   };
 
@@ -495,12 +508,16 @@ class EditQualityProfileModalContentConnector extends Component {
         onLanguageChange={this.onLanguageChange}
         onCreateGroupPress={this.onCreateGroupPress}
         onDeleteGroupPress={this.onDeleteGroupPress}
-        onQualityProfileItemAllowedChange={this.onQualityProfileItemAllowedChange}
+        onQualityProfileItemAllowedChange={
+          this.onQualityProfileItemAllowedChange
+        }
         onItemGroupAllowedChange={this.onItemGroupAllowedChange}
         onItemGroupNameChange={this.onItemGroupNameChange}
         onQualityProfileItemDragMove={this.onQualityProfileItemDragMove}
         onQualityProfileItemDragEnd={this.onQualityProfileItemDragEnd}
-        onQualityProfileFormatItemScoreChange={this.onQualityProfileFormatItemScoreChange}
+        onQualityProfileFormatItemScoreChange={
+          this.onQualityProfileFormatItemScoreChange
+        }
         onToggleEditGroupsMode={this.onToggleEditGroupsMode}
       />
     );
@@ -518,7 +535,10 @@ EditQualityProfileModalContentConnector.propTypes = {
   setQualityProfileValue: PropTypes.func.isRequired,
   fetchQualityProfileSchema: PropTypes.func.isRequired,
   saveQualityProfile: PropTypes.func.isRequired,
-  onModalClose: PropTypes.func.isRequired
+  onModalClose: PropTypes.func.isRequired,
 };
 
-export default connect(createMapStateToProps, mapDispatchToProps)(EditQualityProfileModalContentConnector);
+export default connect(
+  createMapStateToProps,
+  mapDispatchToProps
+)(EditQualityProfileModalContentConnector);

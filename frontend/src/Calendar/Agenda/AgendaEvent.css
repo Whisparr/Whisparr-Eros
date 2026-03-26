@@ -71,27 +71,27 @@
  */
 
 .downloaded {
-  composes: downloaded from '~Calendar/Events/CalendarEvent.css';
+  composes: downloaded from 'Calendar/Events/CalendarEvent.css';
 }
 
 .queue {
-  composes: queue from '~Calendar/Events/CalendarEvent.css';
+  composes: queue from 'Calendar/Events/CalendarEvent.css';
 }
 
 .unmonitored {
-  composes: unmonitored from '~Calendar/Events/CalendarEvent.css';
+  composes: unmonitored from 'Calendar/Events/CalendarEvent.css';
 }
 
 .missingUnmonitored {
-  composes: missingUnmonitored from '~Calendar/Events/CalendarEvent.css';
+  composes: missingUnmonitored from 'Calendar/Events/CalendarEvent.css';
 }
 
 .missingMonitored {
-  composes: missingMonitored from '~Calendar/Events/CalendarEvent.css';
+  composes: missingMonitored from 'Calendar/Events/CalendarEvent.css';
 }
 
 .continuing {
-  composes: continuing from '~Calendar/Events/CalendarEvent.css';
+  composes: continuing from 'Calendar/Events/CalendarEvent.css';
 }
 
 @media only screen and (max-width: $breakpointSmall) {

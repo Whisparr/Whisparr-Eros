@@ -74,7 +74,9 @@ function Naming() {
     useModalOpenState(false);
   const [namingModalOptions, setNamingModalOptions] =
     useState<NamingModalOptions | null>(null);
-  const namingExampleTimeout = useRef<ReturnType<typeof setTimeout>>();
+  const namingExampleTimeout = useRef<
+    ReturnType<typeof setTimeout> | undefined
+  >(undefined);
 
   useEffect(() => {
     dispatch(fetchNamingSettings());

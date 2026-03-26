@@ -2,7 +2,12 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
-import { clearCustomFormatSpecificationPending, saveCustomFormatSpecification, setCustomFormatSpecificationFieldValue, setCustomFormatSpecificationValue } from 'Store/Actions/settingsActions';
+import {
+  clearCustomFormatSpecificationPending,
+  saveCustomFormatSpecification,
+  setCustomFormatSpecificationFieldValue,
+  setCustomFormatSpecificationValue,
+} from 'Store/Actions/settingsActions';
 import createProviderSettingsSelector from 'Store/Selectors/createProviderSettingsSelector';
 import EditSpecificationModalContent from './EditSpecificationModalContent';
 
@@ -13,7 +18,7 @@ function createMapStateToProps() {
     (advancedSettings, specification) => {
       return {
         advancedSettings,
-        ...specification
+        ...specification,
       };
     }
   );
@@ -23,11 +28,10 @@ const mapDispatchToProps = {
   setCustomFormatSpecificationValue,
   setCustomFormatSpecificationFieldValue,
   saveCustomFormatSpecification,
-  clearCustomFormatSpecificationPending
+  clearCustomFormatSpecificationPending,
 };
 
 class EditSpecificationModalContentConnector extends Component {
-
   //
   // Listeners
 
@@ -72,7 +76,10 @@ EditSpecificationModalContentConnector.propTypes = {
   setCustomFormatSpecificationFieldValue: PropTypes.func.isRequired,
   clearCustomFormatSpecificationPending: PropTypes.func.isRequired,
   saveCustomFormatSpecification: PropTypes.func.isRequired,
-  onModalClose: PropTypes.func.isRequired
+  onModalClose: PropTypes.func.isRequired,
 };
 
-export default connect(createMapStateToProps, mapDispatchToProps)(EditSpecificationModalContentConnector);
+export default connect(
+  createMapStateToProps,
+  mapDispatchToProps
+)(EditSpecificationModalContentConnector);

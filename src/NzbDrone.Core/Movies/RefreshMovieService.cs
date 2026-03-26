@@ -407,7 +407,7 @@ namespace NzbDrone.Core.Movies
                     updatedScenes = _movieInfo.GetChangedScenes(message.LastStartTime.Value);
                 }
 
-                var movieLists = _movieService.AllMovieIds().Chunk(1000);
+                var movieLists = _movieService.AllMovieIdsOrderByLastInfoSync().Chunk(1000);
                 foreach (var movieList in movieLists)
                 {
                     var allMovie = _movieService.GetMovies(movieList).ToList();

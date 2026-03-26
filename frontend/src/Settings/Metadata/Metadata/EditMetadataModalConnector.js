@@ -10,7 +10,7 @@ function createMapDispatchToProps(dispatch, props) {
   return {
     dispatchClearPendingChanges() {
       dispatch(clearPendingChanges({ section }));
-    }
+    },
   };
 }
 
@@ -28,17 +28,17 @@ class EditMetadataModalConnector extends Component {
 
   render() {
     return (
-      <EditMetadataModal
-        {...this.props}
-        onModalClose={this.onModalClose}
-      />
+      <EditMetadataModal {...this.props} onModalClose={this.onModalClose} />
     );
   }
 }
 
 EditMetadataModalConnector.propTypes = {
   onModalClose: PropTypes.func.isRequired,
-  dispatchClearPendingChanges: PropTypes.func.isRequired
+  dispatchClearPendingChanges: PropTypes.func.isRequired,
 };
 
-export default connect(null, createMapDispatchToProps)(EditMetadataModalConnector);
+export default connect(
+  null,
+  createMapDispatchToProps
+)(EditMetadataModalConnector);

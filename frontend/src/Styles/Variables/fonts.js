@@ -1,7 +1,9 @@
 module.exports = {
   // Families
-  defaultFontFamily: 'Roboto, "open sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
-  monoSpaceFontFamily: '"Ubuntu Mono", Menlo, Monaco, Consolas, "Courier New", monospace;',
+  defaultFontFamily:
+    'Roboto, "open sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
+  monoSpaceFontFamily:
+    '"Ubuntu Mono", Menlo, Monaco, Consolas, "Courier New", monospace;',
 
   // Sizes
   extraSmallFontSize: '11px',
@@ -10,5 +12,5 @@ module.exports = {
   intermediateFontSize: '15px',
   largeFontSize: '16px',
 
-  lineHeight: '1.528571429'
+  lineHeight: '1.528571429',
 };

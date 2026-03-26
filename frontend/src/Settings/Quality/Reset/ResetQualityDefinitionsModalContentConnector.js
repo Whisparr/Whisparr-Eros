@@ -12,23 +12,25 @@ function createMapStateToProps() {
     createCommandExecutingSelector(commandNames.RESET_QUALITY_DEFINITIONS),
     (isResettingQualityDefinitions) => {
       return {
-        isResettingQualityDefinitions
+        isResettingQualityDefinitions,
       };
     }
   );
 }
 
 const mapDispatchToProps = {
-  executeCommand
+  executeCommand,
 };
 
 class ResetQualityDefinitionsModalContentConnector extends Component {
-
   //
   // Listeners
 
   onResetQualityDefinitions = (resetTitles) => {
-    this.props.executeCommand({ name: commandNames.RESET_QUALITY_DEFINITIONS, resetTitles });
+    this.props.executeCommand({
+      name: commandNames.RESET_QUALITY_DEFINITIONS,
+      resetTitles,
+    });
     this.props.onModalClose(true);
   };
 
@@ -48,7 +50,10 @@ class ResetQualityDefinitionsModalContentConnector extends Component {
 ResetQualityDefinitionsModalContentConnector.propTypes = {
   onModalClose: PropTypes.func.isRequired,
   isResettingQualityDefinitions: PropTypes.bool.isRequired,
-  executeCommand: PropTypes.func.isRequired
+  executeCommand: PropTypes.func.isRequired,
 };
 
-export default connect(createMapStateToProps, mapDispatchToProps)(ResetQualityDefinitionsModalContentConnector);
+export default connect(
+  createMapStateToProps,
+  mapDispatchToProps
+)(ResetQualityDefinitionsModalContentConnector);

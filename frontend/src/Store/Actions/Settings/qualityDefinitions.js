@@ -17,9 +17,12 @@ const section = 'settings.qualityDefinitions';
 //
 // Actions Types
 
-export const FETCH_QUALITY_DEFINITIONS = 'settings/qualityDefinitions/fetchQualityDefinitions';
-export const SAVE_QUALITY_DEFINITIONS = 'settings/qualityDefinitions/saveQualityDefinitions';
-export const SET_QUALITY_DEFINITION_VALUE = 'settings/qualityDefinitions/setQualityDefinitionValue';
+export const FETCH_QUALITY_DEFINITIONS =
+  'settings/qualityDefinitions/fetchQualityDefinitions';
+export const SAVE_QUALITY_DEFINITIONS =
+  'settings/qualityDefinitions/saveQualityDefinitions';
+export const SET_QUALITY_DEFINITION_VALUE =
+  'settings/qualityDefinitions/setQualityDefinitionValue';
 
 //
 // Action Creators
@@ -27,13 +30,14 @@ export const SET_QUALITY_DEFINITION_VALUE = 'settings/qualityDefinitions/setQual
 export const fetchQualityDefinitions = createThunk(FETCH_QUALITY_DEFINITIONS);
 export const saveQualityDefinitions = createThunk(SAVE_QUALITY_DEFINITIONS);
 
-export const setQualityDefinitionValue = createAction(SET_QUALITY_DEFINITION_VALUE);
+export const setQualityDefinitionValue = createAction(
+  SET_QUALITY_DEFINITION_VALUE
+);
 
 //
 // Details
 
 export default {
-
   //
   // State
 
@@ -44,21 +48,29 @@ export default {
     items: [],
     isSaving: false,
     saveError: null,
-    pendingChanges: {}
+    pendingChanges: {},
   },
 
   //
   // Action Handlers
 
   actionHandlers: {
-    [FETCH_QUALITY_DEFINITIONS]: createFetchHandler(section, '/qualitydefinition'),
-    [SAVE_QUALITY_DEFINITIONS]: createSaveHandler(section, '/qualitydefinition'),
+    [FETCH_QUALITY_DEFINITIONS]: createFetchHandler(
+      section,
+      '/qualitydefinition'
+    ),
+    [SAVE_QUALITY_DEFINITIONS]: createSaveHandler(
+      section,
+      '/qualitydefinition'
+    ),
 
-    [SAVE_QUALITY_DEFINITIONS]: function(getState, payload, dispatch) {
+    [SAVE_QUALITY_DEFINITIONS]: function (getState, payload, dispatch) {
       const qualityDefinitions = getState().settings.qualityDefinitions;
 
-      const upatedDefinitions = Object.keys(qualityDefinitions.pendingChanges).map((key) => {
-        const id = parseInt(key);
+      const upatedDefinitions = Object.keys(
+        qualityDefinitions.pendingChanges
+      ).map((key) => {
+        const id = Number.parseInt(key);
         const pendingChanges = qualityDefinitions.pendingChanges[id] || {};
         const item = _.find(qualityDefinitions.items, { id });
 
@@ -70,47 +82,53 @@ export default {
         return;
       }
 
-      dispatch(set({
-        section,
-        isSaving: true
-      }));
+      dispatch(
+        set({
+          section,
+          isSaving: true,
+        })
+      );
 
       const promise = createAjaxRequest({
         method: 'PUT',
         url: '/qualitydefinition/update',
         data: JSON.stringify(upatedDefinitions),
         contentType: 'application/json',
-        dataType: 'json'
+        dataType: 'json',
       }).request;
 
       promise.done((data) => {
-        dispatch(batchActions([
-          set({
-            section,
-            isSaving: false,
-            saveError: null
-          }),
+        dispatch(
+          batchActions([
+            set({
+              section,
+              isSaving: false,
+              saveError: null,
+            }),
 
-          update({ section, data }),
-          clearPendingChanges({ section })
-        ]));
+            update({ section, data }),
+            clearPendingChanges({ section }),
+          ])
+        );
       });
 
       promise.fail((xhr) => {
-        dispatch(set({
-          section,
-          isSaving: false,
-          saveError: xhr
-        }));
+        dispatch(
+          set({
+            section,
+            isSaving: false,
+            saveError: xhr,
+          })
+        );
       });
-    }
+    },
   },
 
   //
   // Reducers
 
   reducers: {
-    [SET_QUALITY_DEFINITION_VALUE]: function(state, { payload }) {
+    [SET_QUALITY_DEFINITION_VALUE]: function (state, { payload }) {
       const { id, name, value } = payload;
       const newState = getSectionState(state, section);
       newState.pendingChanges = _.cloneDeep(newState.pendingChanges);
@@ -131,7 +149,6 @@ export default {
       }
 
       return updateSectionState(state, section, newState);
-    }
-  }
-
+    },
+  },
 };

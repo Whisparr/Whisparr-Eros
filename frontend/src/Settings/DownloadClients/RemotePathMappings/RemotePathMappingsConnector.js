@@ -2,7 +2,10 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
-import { deleteRemotePathMapping, fetchRemotePathMappings } from 'Store/Actions/settingsActions';
+import {
+  deleteRemotePathMapping,
+  fetchRemotePathMappings,
+} from 'Store/Actions/settingsActions';
 import RemotePathMappings from './RemotePathMappings';
 
 function createMapStateToProps() {
@@ -10,7 +13,7 @@ function createMapStateToProps() {
     (state) => state.settings.remotePathMappings,
     (remotePathMappings) => {
       return {
-        ...remotePathMappings
+        ...remotePathMappings,
       };
     }
   );
@@ -18,11 +21,10 @@ function createMapStateToProps() {
 
 const mapDispatchToProps = {
   fetchRemotePathMappings,
-  deleteRemotePathMapping
+  deleteRemotePathMapping,
 };
 
 class RemotePathMappingsConnector extends Component {
-
   //
   // Lifecycle
 
@@ -53,7 +55,10 @@ class RemotePathMappingsConnector extends Component {
 
 RemotePathMappingsConnector.propTypes = {
   fetchRemotePathMappings: PropTypes.func.isRequired,
-  deleteRemotePathMapping: PropTypes.func.isRequired
+  deleteRemotePathMapping: PropTypes.func.isRequired,
 };
 
-export default connect(createMapStateToProps, mapDispatchToProps)(RemotePathMappingsConnector);
+export default connect(
+  createMapStateToProps,
+  mapDispatchToProps
+)(RemotePathMappingsConnector);

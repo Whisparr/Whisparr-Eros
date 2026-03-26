@@ -4,17 +4,10 @@ import Modal from 'Components/Modal/Modal';
 import RestoreBackupModalContentConnector from './RestoreBackupModalContentConnector';
 
 function RestoreBackupModal(props) {
-  const {
-    isOpen,
-    onModalClose,
-    ...otherProps
-  } = props;
+  const { isOpen, onModalClose, ...otherProps } = props;
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onModalClose={onModalClose}
-    >
+    <Modal isOpen={isOpen} onModalClose={onModalClose}>
       <RestoreBackupModalContentConnector
         {...otherProps}
         onModalClose={onModalClose}
@@ -25,7 +18,7 @@ function RestoreBackupModal(props) {
 
 RestoreBackupModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
-  onModalClose: PropTypes.func.isRequired
+  onModalClose: PropTypes.func.isRequired,
 };
 
 export default RestoreBackupModal;

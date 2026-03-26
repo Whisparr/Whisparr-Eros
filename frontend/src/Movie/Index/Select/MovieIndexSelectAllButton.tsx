@@ -6,8 +6,10 @@ import PageToolbarButton, {
 import { icons } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 
-interface MovieIndexSelectAllButtonProps
-  extends Omit<PageToolbarButtonProps, 'iconName' | 'label'> {
+interface MovieIndexSelectAllButtonProps extends Omit<
+  PageToolbarButtonProps,
+  'iconName' | 'label'
+> {
   label?: string;
   isSelectMode: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -7,7 +7,7 @@ import React, {
   useState,
 } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useParams, useRouteMatch } from 'react-router-dom';
+import { useMatch, useParams } from 'react-router-dom';
 import Alert from 'Components/Alert';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import PageContent from 'Components/Page/PageContent';
@@ -52,11 +52,11 @@ function getSelectedIds(selectedState: Record<string, boolean>): string[] {
 }
 
 function ImportMovie() {
-  const { rootFolderId: rootFolderIdParam } = useParams<{
+  const { rootFolderId: rootFolderIdParam } = useParams() as {
     rootFolderId: string;
-  }>();
+  };
   const rootFolderId = Number.parseInt(rootFolderIdParam);
-  const scenesMatch = useRouteMatch('/add/import/scenes/:rootFolderId');
+  const scenesMatch = useMatch('/add/import/scenes/:rootFolderId');
   const itemType: 'movie' | 'scene' = scenesMatch ? 'scene' : 'movie';
 
   const reduxDispatch = useDispatch();
@@ -173,7 +173,7 @@ function ImportMovie() {
     importState.items.forEach((item) => {
       queueLookup({ id: item.id, term: item.term, itemType: item.itemType });
     });
-  }, [importState.items, queueLookup]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [importState.items, queueLookup]);
 
   const onSelectAllChange = useCallback(({ value }: { value: boolean }) => {
     setSelectionState(

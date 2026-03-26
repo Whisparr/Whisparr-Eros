@@ -2,7 +2,10 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { clearPendingChanges } from 'Store/Actions/baseActions';
-import { cancelSaveDownloadClient, cancelTestDownloadClient } from 'Store/Actions/settingsActions';
+import {
+  cancelSaveDownloadClient,
+  cancelTestDownloadClient,
+} from 'Store/Actions/settingsActions';
 import EditDownloadClientModal from './EditDownloadClientModal';
 
 function createMapDispatchToProps(dispatch, props) {
@@ -19,12 +22,11 @@ function createMapDispatchToProps(dispatch, props) {
 
     dispatchCancelSaveDownloadClient() {
       dispatch(cancelSaveDownloadClient({ section }));
-    }
+    },
   };
 }
 
 class EditDownloadClientModalConnector extends Component {
-
   //
   // Listeners
 
@@ -59,7 +61,10 @@ EditDownloadClientModalConnector.propTypes = {
   onModalClose: PropTypes.func.isRequired,
   dispatchClearPendingChanges: PropTypes.func.isRequired,
   dispatchCancelTestDownloadClient: PropTypes.func.isRequired,
-  dispatchCancelSaveDownloadClient: PropTypes.func.isRequired
+  dispatchCancelSaveDownloadClient: PropTypes.func.isRequired,
 };
 
-export default connect(null, createMapDispatchToProps)(EditDownloadClientModalConnector);
+export default connect(
+  null,
+  createMapDispatchToProps
+)(EditDownloadClientModalConnector);

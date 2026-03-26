@@ -1,7 +1,12 @@
 import _ from 'lodash';
 import { createAction } from 'redux-actions';
 import { batchActions } from 'redux-batched-actions';
-import { filterBuilderTypes, filterBuilderValueTypes, filterTypes, sortDirections } from 'Helpers/Props';
+import {
+  filterBuilderTypes,
+  filterBuilderValueTypes,
+  filterTypes,
+  sortDirections,
+} from 'Helpers/Props';
 import { createThunk, handleThunks } from 'Store/thunks';
 import sortByProp from 'Utilities/Array/sortByProp';
 import createAjaxRequest from 'Utilities/createAjaxRequest';
@@ -45,15 +50,15 @@ export const defaultState = {
     detailedProgressBar: false,
     size: 'large',
     showTitle: true,
-    pageSize: 25
+    pageSize: 25,
   },
 
   tableOptions: {
-    pageSize: 25
+    pageSize: 25,
   },
 
   deleteOptions: {
-    addImportExclusion: false
+    addImportExclusion: false,
   },
 
   defaults: {
@@ -61,7 +66,7 @@ export const defaultState = {
     monitored: true,
     qualityProfileId: 0,
     searchForMovie: true,
-    tags: []
+    tags: [],
   },
 
   columns: [
@@ -70,82 +75,82 @@ export const defaultState = {
       columnLabel: () => translate('Monitored'),
       isSortable: true,
       isVisible: true,
-      isModifiable: false
+      isModifiable: false,
     },
     {
       name: 'sortTitle',
       label: () => translate('StudioTitle'),
       isSortable: true,
       isVisible: true,
-      isModifiable: false
+      isModifiable: false,
     },
     {
       name: 'network',
       label: () => translate('Network'),
       isSortable: true,
       isVisible: true,
-      isModifiable: true
+      isModifiable: true,
     },
     {
       name: 'qualityProfileId',
       label: () => translate('QualityProfile'),
       isSortable: true,
       isVisible: true,
-      isModifiable: true
+      isModifiable: true,
     },
     {
       name: 'rootFolderPath',
       label: () => translate('RootFolderPath'),
       isSortable: true,
       isVisible: true,
-      isModifiable: true
+      isModifiable: true,
     },
     {
       name: 'aliases',
       label: () => translate('Aliases'),
       isSortable: false,
       isVisible: true,
-      isModifiable: true
+      isModifiable: true,
     },
     {
       name: 'tags',
       label: () => translate('Tags'),
       isSortable: false,
       isVisible: true,
-      isModifiable: true
+      isModifiable: true,
     },
     {
       name: 'totalMovieCount',
       label: () => translate('Movies'),
       isSortable: true,
-      isVisible: true
+      isVisible: true,
     },
     {
       name: 'totalSceneCount',
       label: () => translate('Scenes'),
       isSortable: true,
-      isVisible: true
+      isVisible: true,
     },
     {
       name: 'sizeOnDisk',
       label: () => translate('SizeOnDisk'),
       isSortable: true,
       isVisible: true,
-      isModifiable: true
+      isModifiable: true,
     },
     {
       name: 'actions',
       columnLabel: () => translate('Actions'),
       isVisible: true,
-      isModifiable: false
-    }
+      isModifiable: false,
+    },
   ],
 
   filters: [
     {
       key: 'all',
       label: () => translate('All'),
-      filters: []
+      filters: [],
     },
     {
       key: 'monitoredscenes',
@@ -154,9 +159,9 @@ export const defaultState = {
         {
           key: 'monitored',
           value: true,
-          type: filterTypes.EQUAL
-        }
-      ]
+          type: filterTypes.EQUAL,
+        },
+      ],
     },
     {
       key: 'monitoredMovies',
@@ -165,19 +170,20 @@ export const defaultState = {
         {
           key: 'moviesMonitored',
           value: true,
-          type: filterTypes.EQUAL
-        }
-      ]
-    }, {
+          type: filterTypes.EQUAL,
+        },
+      ],
+    },
+    {
       key: 'unmonitored',
       label: () => translate('Unmonitored'),
       filters: [
         {
           key: 'monitored',
           value: false,
-          type: filterTypes.EQUAL
-        }
-      ]
+          type: filterTypes.EQUAL,
+        },
+      ],
     },
     {
       key: 'deleted',
@@ -186,10 +192,10 @@ export const defaultState = {
         {
           key: 'status',
           value: 'deleted',
-          type: filterTypes.EQUAL
-        }
-      ]
-    }
+          type: filterTypes.EQUAL,
+        },
+      ],
+    },
   ],
 
   filterBuilderProps: [
@@ -197,83 +203,83 @@ export const defaultState = {
       name: 'monitored',
       label: () => translate('MonitoredScene'),
       type: filterBuilderTypes.EXACT,
-      valueType: filterBuilderValueTypes.BOOL
+      valueType: filterBuilderValueTypes.BOOL,
     },
     {
       name: 'moviesMonitored',
       label: () => translate('MonitoredMovie'),
       type: filterBuilderTypes.EXACT,
-      valueType: filterBuilderValueTypes.BOOL
+      valueType: filterBuilderValueTypes.BOOL,
     },
     {
       name: 'qualityProfileId',
       label: () => translate('QualityProfile'),
       type: filterBuilderTypes.EXACT,
-      valueType: filterBuilderValueTypes.QUALITY_PROFILE
+      valueType: filterBuilderValueTypes.QUALITY_PROFILE,
     },
     {
       name: 'title',
       label: () => translate('Title'),
       type: filterBuilderTypes.EXACT,
-      valueType: filterBuilderValueTypes.DEFAULT
+      valueType: filterBuilderValueTypes.DEFAULT,
     },
     {
       name: 'status',
       label: () => translate('Status'),
       type: filterBuilderTypes.EXACT,
-      optionsSelector: function(items) {
+      optionsSelector: function (items) {
         const tagList = ['active', 'deleted'];
 
         const tags = tagList.map((tag) => {
           return {
             id: tag,
-            name: camelCaseToString(tag)
+            name: camelCaseToString(tag),
           };
         });
 
         return tags.sort(sortByProp('name'));
-      }
+      },
     },
     {
       name: 'sceneCount',
       label: () => translate('SceneCount'),
       type: filterBuilderTypes.NUMBER,
-      valueType: filterBuilderValueTypes.DEFAULT
+      valueType: filterBuilderValueTypes.DEFAULT,
     },
     {
       name: 'totalSceneCount',
       label: () => translate('TotalSceneCount'),
       type: filterBuilderTypes.NUMBER,
-      valueType: filterBuilderValueTypes.DEFAULT
+      valueType: filterBuilderValueTypes.DEFAULT,
     },
     {
       name: 'movieCount',
       label: () => translate('MovieCount'),
       type: filterBuilderTypes.NUMBER,
-      valueType: filterBuilderValueTypes.DEFAULT
+      valueType: filterBuilderValueTypes.DEFAULT,
     },
     {
       name: 'totalMovieCount',
       label: () => translate('TotalMovieCount'),
       type: filterBuilderTypes.NUMBER,
-      valueType: filterBuilderValueTypes.DEFAULT
+      valueType: filterBuilderValueTypes.DEFAULT,
     },
     {
       name: 'sizeOnDisk',
       label: () => translate('SizeOnDisk'),
       type: filterBuilderTypes.NUMBER,
-      valueType: filterBuilderValueTypes.DEFAULT
+      valueType: filterBuilderValueTypes.DEFAULT,
     },
     {
       name: 'network',
       label: () => translate('Network'),
       type: filterBuilderTypes.EXACT,
-      optionsSelector: function(items) {
+      optionsSelector: function (items) {
         const tagList = (items || []).reduce((acc, studio) => {
           if (studio && studio.network) {
             acc.push({
               id: studio.network,
-              name: studio.network
+              name: studio.network,
             });
           }
 
@@ -283,15 +289,15 @@ export const defaultState = {
         const tags = _.uniqBy(tagList, 'id');
 
         return tags.sort(sortByProp('name'));
-      }
+      },
     },
     {
       name: 'tags',
       label: () => translate('Tags'),
       type: filterBuilderTypes.ARRAY,
-      valueType: filterBuilderValueTypes.TAG
-    }
-  ]
+      valueType: filterBuilderValueTypes.TAG,
+    },
+  ],
 };
 
 export const persistState = [
@@ -304,7 +310,7 @@ export const persistState = [
   'studios.selectedFilterKey',
   'studios.customFilters',
   'studios.posterOptions',
-  'studios.tableOptions'
+  'studios.tableOptions',
 ];
 
 //
@@ -339,8 +345,8 @@ export const deleteStudio = createThunk(DELETE_STUDIO, (payload) => {
     ...payload,
     queryParams: {
       deleteFiles: payload.deleteFiles,
-      addImportExclusion: payload.addImportExclusion
-    }
+      addImportExclusion: payload.addImportExclusion,
+    },
   };
 });
 
@@ -353,13 +359,13 @@ export const setStudioTableOption = createAction(SET_STUDIO_TABLE_OPTION);
 export const setStudioPosterOption = createAction(SET_STUDIO_POSTER_OPTION);
 export const setStudioPage = (page) => ({
   type: SET_STUDIO_PAGE,
-  payload: { page }
+  payload: { page },
 });
 
 export const setStudioValue = createAction(SET_STUDIO_VALUE, (payload) => {
   return {
     section,
-    ...payload
+    ...payload,
   };
 });
 
@@ -371,19 +377,17 @@ export const actionHandlers = handleThunks({
   [DELETE_STUDIO]: createRemoveItemHandler(section, '/studio'),
 
   [TOGGLE_STUDIO_MONITORED]: (getState, payload, dispatch) => {
-    const {
-      studioId: id,
-      monitored,
-      moviesMonitored
-    } = payload;
+    const { studioId: id, monitored, moviesMonitored } = payload;
 
     const studio = _.find(getState().studios.items, { id });
 
-    dispatch(updateItem({
-      id,
-      section,
-      isSaving: true
-    }));
+    dispatch(
+      updateItem({
+        id,
+        section,
+        isSaving: true,
+      })
+    );
 
     const promise = createAjaxRequest({
       url: `/studio/${id}`,
@@ -391,104 +395,116 @@ export const actionHandlers = handleThunks({
       data: JSON.stringify({
         ...studio,
         monitored,
-        moviesMonitored
+        moviesMonitored,
       }),
-      dataType: 'json'
+      dataType: 'json',
     }).request;
 
     promise.done((data) => {
-      dispatch(updateItem({
-        id,
-        section,
-        isSaving: false,
-        monitored,
-        moviesMonitored
-      }));
+      dispatch(
+        updateItem({
+          id,
+          section,
+          isSaving: false,
+          monitored,
+          moviesMonitored,
+        })
+      );
     });
 
     promise.fail((xhr) => {
-      dispatch(updateItem({
-        id,
-        section,
-        isSaving: false
-      }));
+      dispatch(
+        updateItem({
+          id,
+          section,
+          isSaving: false,
+        })
+      );
     });
   },
 
-  [SAVE_STUDIO_EDITOR]: function(getState, payload, dispatch) {
-    dispatch(set({
-      section,
-      isSaving: true
-    }));
+  [SAVE_STUDIO_EDITOR]: function (getState, payload, dispatch) {
+    dispatch(
+      set({
+        section,
+        isSaving: true,
+      })
+    );
 
     const promise = createAjaxRequest({
       url: '/studio/editor',
       method: 'PUT',
       data: JSON.stringify(payload),
-      dataType: 'json'
+      dataType: 'json',
     }).request;
 
     promise.done((data) => {
-      dispatch(batchActions([
-        updateItem({ section, ...data }),
+      dispatch(
+        batchActions([
+          updateItem({ section, ...data }),
 
-        set({
-          section,
-          isSaving: false,
-          saveError: null,
-          pendingChanges: {}
-        })
-      ]));
+          set({
+            section,
+            isSaving: false,
+            saveError: null,
+            pendingChanges: {},
+          }),
+        ])
+      );
     });
 
     promise.fail((xhr) => {
-      dispatch(set({
-        section,
-        isSaving: false,
-        saveError: xhr.aborted ? null : xhr
-      }));
+      dispatch(
+        set({
+          section,
+          isSaving: false,
+          saveError: xhr.aborted ? null : xhr,
+        })
+      );
     });
-  }
+  },
 });
 
 //
 // Reducers
 
-export const reducers = createHandleActions({
-
-  [SET_STUDIO_PAGE]: (state, { payload }) => ({
-    ...state,
-    page: payload.page
-  }),
-
-  [SET_STUDIO_SORT]: createSetClientSideCollectionSortReducer(section),
-  [SET_STUDIO_FILTER]: createSetClientSideCollectionFilterReducer(section),
-  [SET_STUDIO_VIEW]: (state, { payload }) => {
-    return Object.assign({}, state, { view: payload.view });
-  },
-  [SET_STUDIO_TABLE_OPTION]: createSetTableOptionReducer(section),
-  [SET_STUDIO_VALUE]: createSetSettingValueReducer(section),
-  [SET_DELETE_OPTION]: (state, { payload }) => {
-    return {
+export const reducers = createHandleActions(
+  {
+    [SET_STUDIO_PAGE]: (state, { payload }) => ({
       ...state,
-      deleteOptions: {
-        ...payload
-      }
-    };
+      page: payload.page,
+    }),
+
+    [SET_STUDIO_SORT]: createSetClientSideCollectionSortReducer(section),
+    [SET_STUDIO_FILTER]: createSetClientSideCollectionFilterReducer(section),
+    [SET_STUDIO_VIEW]: (state, { payload }) => {
+      return Object.assign({}, state, { view: payload.view });
+    },
+    [SET_STUDIO_TABLE_OPTION]: createSetTableOptionReducer(section),
+    [SET_STUDIO_VALUE]: createSetSettingValueReducer(section),
+    [SET_DELETE_OPTION]: (state, { payload }) => {
+      return {
+        ...state,
+        deleteOptions: {
+          ...payload,
+        },
+      };
+    },
+
+    [SET_STUDIO_POSTER_OPTION]: function (state, { payload }) {
+      const posterOptions = state.posterOptions;
+
+      return {
+        ...state,
+        posterOptions: {
+          ...posterOptions,
+          ...payload,
+        },
+      };
+    },
   },
-
-  [SET_STUDIO_POSTER_OPTION]: function(state, { payload }) {
-    const posterOptions = state.posterOptions;
-
-    return {
-      ...state,
-      posterOptions: {
-        ...posterOptions,
-        ...payload
-      }
-    };
-  }
-
-}, defaultState, section);
+  defaultState,
+  section
+);
 
 export const filters = defaultState.filters;

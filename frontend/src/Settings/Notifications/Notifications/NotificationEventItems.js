@@ -9,10 +9,7 @@ import translate from 'Utilities/String/translate';
 import styles from './NotificationEventItems.css';
 
 function NotificationEventItems(props) {
-  const {
-    item,
-    onInputChange
-  } = props;
+  const { item, onInputChange } = props;
 
   const {
     onGrab,
@@ -39,7 +36,7 @@ function NotificationEventItems(props) {
     supportsOnManualInteractionRequired,
     supportsOnHealthIssue,
     supportsOnHealthRestored,
-    includeHealthWarnings
+    includeHealthWarnings,
   } = item;
 
   return (
@@ -73,19 +70,18 @@ function NotificationEventItems(props) {
             />
           </div>
 
-          {
-            onDownload.value &&
-              <div>
-                <FormInputGroup
-                  type={inputTypes.CHECK}
-                  name="onUpgrade"
-                  helpText={translate('OnUpgrade')}
-                  isDisabled={!supportsOnUpgrade.value}
-                  {...onUpgrade}
-                  onChange={onInputChange}
-                />
-              </div>
-          }
+          {onDownload.value && (
+            <div>
+              <FormInputGroup
+                type={inputTypes.CHECK}
+                name="onUpgrade"
+                helpText={translate('OnUpgrade')}
+                isDisabled={!supportsOnUpgrade.value}
+                {...onUpgrade}
+                onChange={onInputChange}
+              />
+            </div>
+          )}
 
           <div>
             <FormInputGroup
@@ -131,19 +127,18 @@ function NotificationEventItems(props) {
             />
           </div>
 
-          {
-            onMovieFileDelete.value &&
-              <div>
-                <FormInputGroup
-                  type={inputTypes.CHECK}
-                  name="onMovieFileDeleteForUpgrade"
-                  helpText={translate('OnMovieFileDeleteForUpgrade')}
-                  isDisabled={!supportsOnMovieFileDeleteForUpgrade.value}
-                  {...onMovieFileDeleteForUpgrade}
-                  onChange={onInputChange}
-                />
-              </div>
-          }
+          {onMovieFileDelete.value && (
+            <div>
+              <FormInputGroup
+                type={inputTypes.CHECK}
+                name="onMovieFileDeleteForUpgrade"
+                helpText={translate('OnMovieFileDeleteForUpgrade')}
+                isDisabled={!supportsOnMovieFileDeleteForUpgrade.value}
+                {...onMovieFileDeleteForUpgrade}
+                onChange={onInputChange}
+              />
+            </div>
+          )}
 
           <div>
             <FormInputGroup
@@ -167,19 +162,18 @@ function NotificationEventItems(props) {
             />
           </div>
 
-          {
-            (onHealthIssue.value || onHealthRestored.value) &&
-              <div>
-                <FormInputGroup
-                  type={inputTypes.CHECK}
-                  name="includeHealthWarnings"
-                  helpText={translate('IncludeHealthWarnings')}
-                  isDisabled={!supportsOnHealthIssue.value}
-                  {...includeHealthWarnings}
-                  onChange={onInputChange}
-                />
-              </div>
-          }
+          {(onHealthIssue.value || onHealthRestored.value) && (
+            <div>
+              <FormInputGroup
+                type={inputTypes.CHECK}
+                name="includeHealthWarnings"
+                helpText={translate('IncludeHealthWarnings')}
+                isDisabled={!supportsOnHealthIssue.value}
+                {...includeHealthWarnings}
+                onChange={onInputChange}
+              />
+            </div>
+          )}
 
           <div>
             <FormInputGroup
@@ -210,7 +204,7 @@ function NotificationEventItems(props) {
 
 NotificationEventItems.propTypes = {
   item: PropTypes.object.isRequired,
-  onInputChange: PropTypes.func.isRequired
+  onInputChange: PropTypes.func.isRequired,
 };
 
 export default NotificationEventItems;

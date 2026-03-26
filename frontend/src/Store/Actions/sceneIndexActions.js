@@ -1,5 +1,9 @@
 import { createAction } from 'redux-actions';
-import { filterBuilderTypes, filterBuilderValueTypes, sortDirections } from 'Helpers/Props';
+import {
+  filterBuilderTypes,
+  filterBuilderValueTypes,
+  sortDirections,
+} from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import createHandleActions from './Creators/createHandleActions';
 import createSetTableOptionReducer from './Creators/Reducers/createSetTableOptionReducer';
@@ -34,7 +38,7 @@ export const defaultState = {
     showQualityProfile: true,
     showReleaseDate: false,
     showSearchAction: false,
-    pageSize: 25
+    pageSize: 25,
   },
 
   overviewOptions: {
@@ -47,12 +51,12 @@ export const defaultState = {
     showPath: false,
     showSizeOnDisk: false,
     showSearchAction: false,
-    pageSize: 25
+    pageSize: 25,
   },
 
   tableOptions: {
     pageSize: 25,
-    showSearchAction: false
+    showSearchAction: false,
   },
 
   columns: [
@@ -62,104 +66,104 @@ export const defaultState = {
       isSortable: false,
       isVisible: true,
       isModifiable: false,
-      isHidden: true
+      isHidden: true,
     },
     {
       name: 'status',
       columnLabel: () => translate('ReleaseStatus'),
       isSortable: true,
       isVisible: true,
-      isModifiable: false
+      isModifiable: false,
     },
     {
       name: 'sortTitle',
       label: () => translate('SceneTitle'),
       isSortable: true,
       isVisible: true,
-      isModifiable: false
+      isModifiable: false,
     },
     {
       name: 'studioTitle',
       label: () => translate('Studio'),
       isSortable: true,
-      isVisible: true
+      isVisible: true,
     },
     {
       name: 'qualityProfileId',
       label: () => translate('QualityProfile'),
       isSortable: true,
-      isVisible: true
+      isVisible: true,
     },
     {
       name: 'added',
       label: () => translate('Added'),
       isSortable: true,
-      isVisible: false
+      isVisible: false,
     },
     {
       name: 'year',
       label: () => translate('Year'),
       isSortable: true,
-      isVisible: false
+      isVisible: false,
     },
     {
       name: 'releaseDate',
       label: () => translate('ReleaseDate'),
       isSortable: true,
-      isVisible: false
+      isVisible: false,
     },
     {
       name: 'runtime',
       label: () => translate('Runtime'),
       isSortable: true,
-      isVisible: false
+      isVisible: false,
     },
     {
       name: 'path',
       label: () => translate('Path'),
       isSortable: true,
-      isVisible: false
+      isVisible: false,
     },
     {
       name: 'sizeOnDisk',
       label: () => translate('SizeOnDisk'),
       isSortable: true,
-      isVisible: false
+      isVisible: false,
     },
     {
       name: 'genres',
       label: () => translate('Genres'),
       isSortable: false,
-      isVisible: false
+      isVisible: false,
     },
     {
       name: 'movieStatus',
       label: () => translate('Status'),
       isSortable: true,
-      isVisible: true
+      isVisible: true,
     },
     {
       name: 'tags',
       label: () => translate('Tags'),
       isSortable: false,
-      isVisible: false
+      isVisible: false,
     },
     {
       name: 'actions',
       columnLabel: () => translate('Actions'),
       isVisible: true,
-      isModifiable: false
-    }
+      isModifiable: false,
+    },
   ],
 
   sortPredicates: {
     ...sortPredicates,
 
-    studio: function(item) {
+    studio: function (item) {
       const studio = item.studioTitle;
 
       return studio ? studio.toLowerCase() : '';
-    }
+    },
   },
 
   selectedFilterKey: 'all',
@@ -172,76 +176,76 @@ export const defaultState = {
       name: 'monitored',
       label: () => translate('Monitored'),
       type: filterBuilderTypes.EXACT,
-      valueType: filterBuilderValueTypes.BOOL
+      valueType: filterBuilderValueTypes.BOOL,
     },
     {
       name: 'isAvailable',
       label: () => translate('ConsideredAvailable'),
       type: filterBuilderTypes.EXACT,
-      valueType: filterBuilderValueTypes.BOOL
+      valueType: filterBuilderValueTypes.BOOL,
     },
     {
       name: 'title',
       label: () => translate('Title'),
-      type: filterBuilderTypes.STRING
+      type: filterBuilderTypes.STRING,
     },
     {
       name: 'genres',
       label: () => translate('Genres'),
-      type: filterBuilderTypes.STRING
+      type: filterBuilderTypes.STRING,
     },
     {
       name: 'status',
       label: () => translate('ReleaseStatus'),
       type: filterBuilderTypes.EXACT,
-      valueType: filterBuilderValueTypes.RELEASE_STATUS
+      valueType: filterBuilderValueTypes.RELEASE_STATUS,
     },
     {
       name: 'qualityProfileId',
       label: () => translate('QualityProfile'),
       type: filterBuilderTypes.EXACT,
-      valueType: filterBuilderValueTypes.QUALITY_PROFILE
+      valueType: filterBuilderValueTypes.QUALITY_PROFILE,
     },
     {
       name: 'added',
       label: () => translate('Added'),
       type: filterBuilderTypes.DATE,
-      valueType: filterBuilderValueTypes.DATE
+      valueType: filterBuilderValueTypes.DATE,
     },
     {
       name: 'year',
       label: () => translate('Year'),
-      type: filterBuilderTypes.NUMBER
+      type: filterBuilderTypes.NUMBER,
     },
     {
       name: 'releaseDate',
       label: () => translate('ReleaseDate'),
       type: filterBuilderTypes.DATE,
-      valueType: filterBuilderValueTypes.DATE
+      valueType: filterBuilderValueTypes.DATE,
     },
     {
       name: 'runtime',
       label: () => translate('Runtime'),
-      type: filterBuilderTypes.NUMBER
+      type: filterBuilderTypes.NUMBER,
     },
     {
       name: 'path',
       label: () => translate('Path'),
-      type: filterBuilderTypes.STRING
+      type: filterBuilderTypes.STRING,
     },
     {
       name: 'sizeOnDisk',
       label: () => translate('SizeOnDisk'),
       type: filterBuilderTypes.NUMBER,
-      valueType: filterBuilderValueTypes.BYTES
+      valueType: filterBuilderValueTypes.BYTES,
     },
     {
       name: 'tags',
       label: () => translate('Tags'),
       type: filterBuilderTypes.ARRAY,
-      valueType: filterBuilderValueTypes.TAG
-    }
-  ]
+      valueType: filterBuilderValueTypes.TAG,
+    },
+  ],
 };
 
 export const persistState = [
@@ -253,7 +257,7 @@ export const persistState = [
   'sceneIndex.columns',
   'sceneIndex.posterOptions',
   'sceneIndex.overviewOptions',
-  'sceneIndex.tableOptions'
+  'sceneIndex.tableOptions',
 ];
 
 //
@@ -283,56 +287,66 @@ export const setSceneIndexMode = createAction(SET_MOVIE_INDEX_MODE);
 //
 // Reducers
 
-export const reducers = createHandleActions({
+export const reducers = createHandleActions(
+  {
+    [SET_SCENE_PAGE]: function (state, { payload }) {
+      return Object.assign({}, state, { page: payload });
+    },
 
-  [SET_SCENE_PAGE]: function(state, { payload }) {
-    return Object.assign({}, state, { page: payload });
+    [SET_MOVIE_SORT]: function (state, { payload }) {
+      const { sortKey } = payload;
+      const newDirection =
+        state.sortKey === sortKey && state.sortDirection === 'ascending'
+          ? 'descending'
+          : 'ascending';
+      return Object.assign({}, state, {
+        sortKey,
+        sortDirection: newDirection,
+        page: 1,
+      });
+    },
+
+    [SET_MOVIE_FILTER]: function (state, { payload }) {
+      return Object.assign({}, state, {
+        selectedFilterKey: payload.selectedFilterKey,
+        page: 1,
+      });
+    },
+
+    [SET_MOVIE_VIEW]: function (state, { payload }) {
+      return Object.assign({}, state, { view: payload.view, page: 1 });
+    },
+
+    [SET_MOVIE_TABLE_OPTION]: createSetTableOptionReducer(section),
+
+    [SET_MOVIE_POSTER_OPTION]: function (state, { payload }) {
+      const posterOptions = state.posterOptions;
+
+      return {
+        ...state,
+        posterOptions: {
+          ...posterOptions,
+          ...payload,
+        },
+      };
+    },
+
+    [SET_MOVIE_OVERVIEW_OPTION]: function (state, { payload }) {
+      const overviewOptions = state.overviewOptions;
+
+      return {
+        ...state,
+        overviewOptions: {
+          ...overviewOptions,
+          ...payload,
+        },
+      };
+    },
+
+    [SET_MOVIE_INDEX_MODE]: function (state, { payload }) {
+      return Object.assign({}, state, { indexMode: payload.indexMode });
+    },
   },
-
-  [SET_MOVIE_SORT]: function(state, { payload }) {
-    const { sortKey } = payload;
-    const newDirection = state.sortKey === sortKey && state.sortDirection === 'ascending' ?
-      'descending' :
-      'ascending';
-    return Object.assign({}, state, { sortKey, sortDirection: newDirection, page: 1 });
-  },
-
-  [SET_MOVIE_FILTER]: function(state, { payload }) {
-    return Object.assign({}, state, { selectedFilterKey: payload.selectedFilterKey, page: 1 });
-  },
-
-  [SET_MOVIE_VIEW]: function(state, { payload }) {
-    return Object.assign({}, state, { view: payload.view, page: 1 });
-  },
-
-  [SET_MOVIE_TABLE_OPTION]: createSetTableOptionReducer(section),
-
-  [SET_MOVIE_POSTER_OPTION]: function(state, { payload }) {
-    const posterOptions = state.posterOptions;
-
-    return {
-      ...state,
-      posterOptions: {
-        ...posterOptions,
-        ...payload
-      }
-    };
-  },
-
-  [SET_MOVIE_OVERVIEW_OPTION]: function(state, { payload }) {
-    const overviewOptions = state.overviewOptions;
-
-    return {
-      ...state,
-      overviewOptions: {
-        ...overviewOptions,
-        ...payload
-      }
-    };
-  },
-
-  [SET_MOVIE_INDEX_MODE]: function(state, { payload }) {
-    return Object.assign({}, state, { indexMode: payload.indexMode });
-  }
-
-}, defaultState, section);
+  defaultState,
+  section
+);

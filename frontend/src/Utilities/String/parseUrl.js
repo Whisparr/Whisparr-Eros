@@ -18,10 +18,10 @@ export default function parseUrl(url) {
     pathname: anchor.pathname,
     port: anchor.port,
     protocol: anchor.protocol,
-    search: anchor.search
+    search: anchor.search,
   };
 
-  properties.isAbsolute = (/^[\w:]*\/\//).test(url);
+  properties.isAbsolute = /^[\w:]*\/\//.test(url);
 
   if (properties.search) {
     // Remove leading ? from querystring before parsing.

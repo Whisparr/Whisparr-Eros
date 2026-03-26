@@ -20,7 +20,6 @@ export const fetchLanguages = createThunk(FETCH_LANGUAGES);
 // Details
 
 export default {
-
   //
   // State
 
@@ -28,21 +27,18 @@ export default {
     isFetching: false,
     isPopulated: false,
     error: null,
-    items: []
+    items: [],
   },
 
   //
   // Action Handlers
 
   actionHandlers: {
-    [FETCH_LANGUAGES]: createFetchHandler(section, '/language')
+    [FETCH_LANGUAGES]: createFetchHandler(section, '/language'),
   },
 
   //
   // Reducers
 
-  reducers: {
-
-  }
-
+  reducers: {},
 };

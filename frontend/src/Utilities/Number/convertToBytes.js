@@ -1,8 +1,7 @@
-
 function convertToBytes(input, power, binaryPrefix) {
   const size = Number(input);
 
-  if (isNaN(size)) {
+  if (Number.isNaN(Number(size))) {
     return '';
   }
 

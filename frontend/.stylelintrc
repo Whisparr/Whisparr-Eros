@@ -86,6 +86,9 @@
           "z-index",
           "display",
           "visibility",
+          "place-content",
+          "place-items",
+          "place-self",
           "align-content",
           "align-items",
           "align-self",
@@ -319,7 +322,6 @@
     "selector-type-no-unknown": true,
     "shorthand-property-no-redundant-values": true,
     "string-no-newline": true,
-    "time-min-milliseconds": 100,
     "unit-no-unknown": true,
     "value-no-vendor-prefix": true
   }

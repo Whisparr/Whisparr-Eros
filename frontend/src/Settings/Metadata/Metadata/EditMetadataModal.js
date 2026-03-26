@@ -6,11 +6,7 @@ import EditMetadataModalContentConnector from './EditMetadataModalContentConnect
 
 function EditMetadataModal({ isOpen, onModalClose, ...otherProps }) {
   return (
-    <Modal
-      size={sizes.MEDIUM}
-      isOpen={isOpen}
-      onModalClose={onModalClose}
-    >
+    <Modal size={sizes.MEDIUM} isOpen={isOpen} onModalClose={onModalClose}>
       <EditMetadataModalContentConnector
         {...otherProps}
         onModalClose={onModalClose}
@@ -21,7 +17,7 @@ function EditMetadataModal({ isOpen, onModalClose, ...otherProps }) {
 
 EditMetadataModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
-  onModalClose: PropTypes.func.isRequired
+  onModalClose: PropTypes.func.isRequired,
 };
 
 export default EditMetadataModal;
