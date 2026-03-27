@@ -897,7 +897,7 @@ namespace Whisparr.Api.V3.Movies
         /// <summary> Standard paged movie index without tag filtering. </summary>
         private ActionResult<PagingResource<MovieResource>> GetPagedMoviesStandard(MoviePagingRequestResource request, NzbDrone.Core.Datastore.PagingSpec<Movie> pageSpec)
         {
-            pageSpec.DefaultSortKeys = "movieMetadata.ReleaseDate,movieMetadata.StudioTitle,movieMetadata.SortTitle";
+            pageSpec.DefaultSortKeys = new List<string> { "movieMetadata.ReleaseDate", "movieMetadata.StudioTitle", "movieMetadata.SortTitle" };
             Paging.ApplyMovieFiltersToPagingSpec(request.Filters, pageSpec);
 
             var paged = _moviesService.Paged(pageSpec);
