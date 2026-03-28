@@ -452,12 +452,39 @@ namespace NzbDrone.Core.Datastore
                 pagingSpec.SortKey = $"{_table}.{_keyProperty.Name}";
             }
 
-            var sortKey = TableMapping.Mapper.GetSortKey(pagingSpec.SortKey);
-            var sortDirection = pagingSpec.SortDirection == SortDirection.Descending ? "DESC" : "ASC";
-            var pagingOffset = Math.Max(pagingSpec.Page - 1, 0) * pagingSpec.PageSize;
-            builder.OrderBy($"\"{sortKey.Table ?? _table}\".\"{sortKey.Column}\" {sortDirection} LIMIT {pagingSpec.PageSize} OFFSET {pagingOffset}");
+            var orderByClause = BuildOrderByClause(pagingSpec);
+            builder.OrderBy(orderByClause);
 
             return queryFunc(builder).ToList();
+        }
+
+        private string BuildOrderByClause(PagingSpec<TModel> pagingSpec)
+        {
+            var pagingOffset = Math.Max(pagingSpec.Page - 1, 0) * pagingSpec.PageSize;
+
+            var sortKey = TableMapping.Mapper.GetSortKey(pagingSpec.SortKey);
+            var sortDirection = pagingSpec.SortDirection == SortDirection.Descending ? "DESC" : "ASC";
+
+            var sbOrderByClause = new StringBuilder(null);
+
+            sbOrderByClause.Append($"\"{sortKey.Table ?? _table}\".\"{sortKey.Column}\" {sortDirection}");
+            if (pagingSpec.DefaultSortKeys?.Any() == true)
+            {
+                foreach (var defaultSortKey in pagingSpec.DefaultSortKeys)
+                {
+                    var key = TableMapping.Mapper.GetSortKey(defaultSortKey);
+                    if (key.Column == sortKey.Column && key.Table == sortKey.Table)
+                    {
+                        continue;
+                    }
+
+                    sbOrderByClause.Append($", \"{key.Table ?? _table}\".\"{key.Column}\" ASC");
+                }
+            }
+
+            sbOrderByClause.Append($" LIMIT {pagingSpec.PageSize} OFFSET {pagingOffset}");
+
+            return sbOrderByClause.ToString();
         }
 
         protected int GetPagedRecordCount(SqlBuilder builder, PagingSpec<TModel> pagingSpec, string template = null)

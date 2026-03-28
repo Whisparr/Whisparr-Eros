@@ -28,6 +28,7 @@ namespace NzbDrone.Core.Test.Datastore
                 .CreateListOfSize(5)
                 .All()
                 .With(x => x.Id = 0)
+                .With(x => x.Interval = 1)
                 .BuildList();
         }
 
@@ -323,6 +324,22 @@ namespace NzbDrone.Core.Test.Datastore
             data.PageSize.Should().Be(2);
             data.TotalRecords.Should().Be(_basicList.Count);
             data.Records.Should().BeEquivalentTo(_basicList.OrderByDescending(x => x.Id).Skip((page - 1) * 2).Take(2));
+        }
+
+        [TestCase(1, 2)]
+        [TestCase(2, 2)]
+        [TestCase(3, 1)]
+        public void get_paged_should_work_with_default_sort_keys(int page, int count)
+        {
+            Subject.InsertMany(_basicList);
+            var pageSpec = new PagingSpec<ScheduledTask>() { Page = page, PageSize = 2, SortKey = "Interval", SortDirection = SortDirection.Descending, DefaultSortKeys = new List<string> { "LastExecution" } };
+            var data = Subject.GetPaged(pageSpec);
+
+            data.Page.Should().Be(page);
+            data.PageSize.Should().Be(2);
+            data.TotalRecords.Should().Be(_basicList.Count);
+            data.Records.Should().BeEquivalentTo(_basicList.OrderBy(x => x.LastExecution).OrderByDescending(x => x.Interval).Skip((page - 1) * 2).Take(2));
+            data.Records.Should().NotBeEquivalentTo(_basicList.OrderByDescending(x => x.LastExecution).OrderByDescending(x => x.Interval).Skip((page - 1) * 2).Take(2));
         }
     }
 }
