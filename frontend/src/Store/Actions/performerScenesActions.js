@@ -18,6 +18,11 @@ export const defaultState = {
   sortDirection: sortDirections.DESCENDING,
   secondarySortKey: 'title',
   secondarySortDirection: sortDirections.ASCENDING,
+  view: 'table',
+
+  posterOptions: {
+    size: 'large',
+  },
 
   columns: [
     {
@@ -97,6 +102,8 @@ export const persistState = [
   'performerScenes.sortDirection',
   'performerScenes.columns',
   'performerScenes.tableOptions',
+  'performerScenes.view',
+  'performerScenes.posterOptions',
 ];
 
 //
@@ -106,6 +113,10 @@ export const SET_PERFORMER_SCENES_SORT =
   'performerScenes/setPerformerScenesSort';
 export const SET_PERFORMER_SCENES_TABLE_OPTION =
   'performerScenes/setPerformerScenesTableOption';
+export const SET_PERFORMER_SCENES_VIEW =
+  'performerScenes/setPerformerScenesView';
+export const SET_PERFORMER_SCENES_POSTER_OPTION =
+  'performerScenes/setPerformerScenesPosterOption';
 
 //
 // Action Creators
@@ -113,6 +124,10 @@ export const SET_PERFORMER_SCENES_TABLE_OPTION =
 export const setPerformerScenesSort = createAction(SET_PERFORMER_SCENES_SORT);
 export const setPerformerScenesTableOption = createAction(
   SET_PERFORMER_SCENES_TABLE_OPTION
+);
+export const setPerformerScenesView = createAction(SET_PERFORMER_SCENES_VIEW);
+export const setPerformerScenesPosterOption = createAction(
+  SET_PERFORMER_SCENES_POSTER_OPTION
 );
 
 //
@@ -124,6 +139,20 @@ export const reducers = createHandleActions(
       createSetClientSideCollectionSortReducer(section),
 
     [SET_PERFORMER_SCENES_TABLE_OPTION]: createSetTableOptionReducer(section),
+
+    [SET_PERFORMER_SCENES_VIEW]: function (state, { payload }) {
+      return { ...state, view: payload.view };
+    },
+
+    [SET_PERFORMER_SCENES_POSTER_OPTION]: function (state, { payload }) {
+      return {
+        ...state,
+        posterOptions: {
+          ...state.posterOptions,
+          ...payload,
+        },
+      };
+    },
   },
   defaultState,
   section

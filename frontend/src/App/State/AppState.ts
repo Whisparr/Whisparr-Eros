@@ -100,6 +100,12 @@ interface AppState {
   movieIndex: MovieIndexAppState;
   movieSearch: MovieSearchAppState;
   sceneIndex: MovieIndexAppState;
+  performerScenes: {
+    view: string;
+    posterOptions: {
+      size: string;
+    };
+  };
   performers: PerformersAppState;
   studios: StudiosAppState;
   movies: MoviesAppState;

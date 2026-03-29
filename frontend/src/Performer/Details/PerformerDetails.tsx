@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import Flag from 'react-world-flags';
 import AppState from 'App/State/AppState';
@@ -9,6 +9,9 @@ import FieldSet from 'Components/FieldSet';
 import Icon from 'Components/Icon';
 import Label from 'Components/Label';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
+import MenuContent from 'Components/Menu/MenuContent';
+import ViewMenu from 'Components/Menu/ViewMenu';
+import ViewMenuItem from 'Components/Menu/ViewMenuItem';
 import MonitorToggleButton from 'Components/MonitorToggleButton';
 import PageContent from 'Components/Page/PageContent';
 import PageContentBody from 'Components/Page/PageContentBody';
@@ -29,6 +32,10 @@ import DeletePerformerModal from 'Performer/Delete/DeletePerformerModal';
 import PerformerGenderIcon from 'Performer/PerformerGenderIcon';
 import { getPerformerStatusDetails } from 'Performer/PerformerStatus';
 import QualityProfileName from 'Settings/Profiles/Quality/QualityProfileName';
+import {
+  setPerformerScenesPosterOption,
+  setPerformerScenesView,
+} from 'Store/Actions/performerScenesActions';
 import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
 import formatDate from 'Utilities/Date/formatDate';
 import formatBytes from 'Utilities/Number/formatBytes';
@@ -37,7 +44,9 @@ import firstCharToUpper from 'Utilities/String/firstCharToUpper';
 import translate from 'Utilities/String/translate';
 import EditPerformerModal from '../Edit/EditPerformerModal';
 import PerformerDetailsLinks from './PerformerDetailsLinks';
+import PerformerDetailsPosters from './PerformerDetailsPosters';
 import PerformerDetailsYear from './PerformerDetailsYear';
+import PerformerPosterOptionsModal from './PerformerPosterOptionsModal';
 import PerformerTags from './PerformerTags';
 import {
   usePerformerDetails,
@@ -79,8 +88,17 @@ function PerformerDetails() {
   ).sort((a, b) => b - a);
   const currentYear = new Date().getFullYear();
 
+  const dispatch = useDispatch();
+
+  const { view, posterOptions } = useSelector(
+    (state: AppState) => state.performerScenes
+  );
+  const posterSize = posterOptions.size as 'small' | 'medium' | 'large';
+
   const [isEditMovieModalOpen, setIsEditMovieModalOpen] = useState(false);
   const [isDeleteMovieModalOpen, setIsDeleteMovieModalOpen] = useState(false);
+  const [isPosterOptionsModalOpen, setIsPosterOptionsModalOpen] =
+    useState(false);
   const [allExpandedYears, setAllExpandedYears] = useState<boolean>(false);
 
   // Initialize expandedYears so current year is expanded by default
@@ -120,6 +138,12 @@ function PerformerDetails() {
       newExpanded[year] = nextAllExpanded;
     });
     setExpandedYears(newExpanded);
+  }
+
+  function handleViewChange(newView: string) {
+    if (newView === 'table' || newView === 'posters') {
+      dispatch(setPerformerScenesView({ view: newView }));
+    }
   }
 
   // Table columns for studios (from Redux, matches legacy connector)
@@ -217,6 +241,9 @@ function PerformerDetails() {
     movies: movies.filter((m) => m.year === year),
   }));
 
+  const scenes = movies.filter((m) => m.itemType === 'scene');
+  const featureMovies = movies.filter((m) => m.itemType === 'movie');
+
   // Handlers
   function handleDeleteMovieModalClose() {
     setIsDeleteMovieModalOpen(false);
@@ -229,6 +256,15 @@ function PerformerDetails() {
   }
   function handleDeleteMoviePress() {
     setIsDeleteMovieModalOpen(true);
+  }
+  function handlePosterOptionsPress() {
+    setIsPosterOptionsModalOpen(true);
+  }
+  function handlePosterOptionsModalClose() {
+    setIsPosterOptionsModalOpen(false);
+  }
+  function handlePosterSizeChange(size: string) {
+    dispatch(setPerformerScenesPosterOption({ size }));
   }
   function handleRefreshPress() {
     onRefreshPress();
@@ -278,11 +314,41 @@ function PerformerDetails() {
           onPress={handleDeleteMoviePress}
         />
         <PageToolbarSection alignContent="right">
-          <PageToolbarButton
-            label="Expand All"
-            iconName={expandIcon}
-            onPress={handleExpandAllPress}
-          />
+          {view === 'table' ? (
+            <PageToolbarButton
+              label="Expand All"
+              iconName={expandIcon}
+              onPress={handleExpandAllPress}
+            />
+          ) : null}
+
+          {view === 'posters' ? (
+            <PageToolbarButton
+              label={translate('Options')}
+              iconName={icons.POSTER}
+              onPress={handlePosterOptionsPress}
+            />
+          ) : null}
+
+          <ViewMenu alignMenu="right">
+            <MenuContent>
+              <ViewMenuItem
+                name="table"
+                selectedView={view}
+                onPress={handleViewChange}
+              >
+                {translate('Table')}
+              </ViewMenuItem>
+
+              <ViewMenuItem
+                name="posters"
+                selectedView={view}
+                onPress={handleViewChange}
+              >
+                {translate('Posters')}
+              </ViewMenuItem>
+            </MenuContent>
+          </ViewMenu>
         </PageToolbarSection>
       </PageToolbar>
       <PageContentBody innerClassName={styles.innerContentBody}>
@@ -527,7 +593,7 @@ function PerformerDetails() {
             </Alert>
           ) : null}
           {/* Studios section (delayed render for each studio) */}
-          {movies.length > 0 && (
+          {movies.length > 0 && view === 'table' && (
             <FieldSet legend={translate('Works')}>
               {moviesByYear.map(({ year, movies: yearMovies }) => (
                 <PerformerDetailsYear
@@ -548,6 +614,28 @@ function PerformerDetails() {
               ))}
             </FieldSet>
           )}
+          {scenes.length > 0 && view === 'posters' && (
+            <FieldSet legend={translate('Scenes')}>
+              <PerformerDetailsPosters
+                items={scenes}
+                itemType="scene"
+                sortKey={sortKey}
+                sortDirection={sortDirection}
+                posterSize={posterSize}
+              />
+            </FieldSet>
+          )}
+          {featureMovies.length > 0 && view === 'posters' && (
+            <FieldSet legend={translate('Movies')}>
+              <PerformerDetailsPosters
+                items={featureMovies}
+                itemType="movie"
+                sortKey={sortKey}
+                sortDirection={sortDirection}
+                posterSize={posterSize}
+              />
+            </FieldSet>
+          )}
         </div>
         <DeletePerformerModal
           isOpen={isDeleteMovieModalOpen}
@@ -559,6 +647,12 @@ function PerformerDetails() {
           performer={performer}
           showMovieMonitor={showMovieMonitorToggle}
           onModalClose={handleEditMovieModalClose}
+        />
+        <PerformerPosterOptionsModal
+          isOpen={isPosterOptionsModalOpen}
+          size={posterSize}
+          onSizeChange={handlePosterSizeChange}
+          onModalClose={handlePosterOptionsModalClose}
         />
       </PageContentBody>
     </PageContent>
