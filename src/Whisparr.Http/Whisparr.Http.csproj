@@ -13,6 +13,8 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.0" />
+    <PackageReference Include="Openur.FFprobeStatic" Version="8.1.0.334" />
+  <PackageReference Include="System.Data.SQLite" Version="2.0.3" />
     <ProjectReference Include="..\NzbDrone.Core\Whisparr.Core.csproj" />
     <ProjectReference Include="..\NzbDrone.SignalR\Whisparr.SignalR.csproj" />
   </ItemGroup>
