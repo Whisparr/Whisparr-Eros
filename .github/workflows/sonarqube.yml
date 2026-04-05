@@ -52,8 +52,16 @@ jobs:
       - name: Build and analyze
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_BRANCH: ${{ github.event.pull_request.head.ref }}
+          PR_BASE: ${{ github.event.pull_request.base.ref }}
         shell: powershell
         run: |
-          ${{ runner.temp }}\scanner\dotnet-sonarscanner begin /k:"Whisparr_Whisparr-Eros" /o:"whisparr-eros" /d:sonar.token="$env:SONAR_TOKEN"
+          if ($env:PR_NUMBER) {
+            $branchArgs = "/d:sonar.pullrequest.key=$env:PR_NUMBER /d:sonar.pullrequest.branch=$env:PR_BRANCH /d:sonar.pullrequest.base=$env:PR_BASE"
+          } else {
+            $branchArgs = "/d:sonar.branch.name=eros-develop"
+          }
+          ${{ runner.temp }}\scanner\dotnet-sonarscanner begin /k:"Whisparr_Whisparr-Eros" /o:"whisparr-eros" /d:sonar.token="$env:SONAR_TOKEN" $branchArgs
           dotnet build src/Whisparr.sln
           ${{ runner.temp }}\scanner\dotnet-sonarscanner end /d:sonar.token="$env:SONAR_TOKEN"
