@@ -8,15 +8,15 @@
     <PackageReference Include="Equ" Version="2.3.0" />
     <PackageReference Include="FuzzySharp" Version="2.0.2" />
     <PackageReference Include="MailKit" Version="4.16.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="10.0.5" />
+    <PackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="10.0.6" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.0" />
     <PackageReference Include="Npgsql" Version="10.0.2" />
     <PackageReference Include="Polly" Version="8.6.6" />
     <PackageReference Include="Openur.FFMpegCore" Version="5.4.0.31" />
     <PackageReference Include="Openur.FFprobeStatic" Version="8.1.0.334" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.5" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.6" />
     <PackageReference Include="FluentMigrator.Runner.Core" Version="8.0.1" />
     <PackageReference Include="FluentMigrator.Runner.SQLite" Version="8.0.1" />
     <PackageReference Include="FluentMigrator.Runner.Postgres" Version="8.0.1" />
@@ -25,7 +25,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="NLog" Version="6.1.2" />
     <PackageReference Include="MonoTorrent" Version="3.0.2" />
-    <PackageReference Include="System.Drawing.Common" Version="10.0.5" />
+    <PackageReference Include="System.Drawing.Common" Version="10.0.6" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NzbDrone.Common\Whisparr.Common.csproj" />
@@ -36,6 +36,9 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.6" />
+    <PackageReference Include="Sentry" Version="6.4.1" />
+  <PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.6" />
     <Content Include="Localization\Core\**">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

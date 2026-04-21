@@ -12,7 +12,14 @@
     <PackageReference Include="NLog" Version="6.1.2" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="10.0.6" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.0" />
+  <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.6" />
+  <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.6" />
+  <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.6" />
+  <PackageReference Include="Sentry" Version="6.4.1" />
+  <PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.6" />
+  <PackageReference Include="System.Drawing.Common" Version="10.0.6" />
     <ProjectReference Include="..\NzbDrone.Core\Whisparr.Core.csproj" />
     <ProjectReference Include="..\NzbDrone.SignalR\Whisparr.SignalR.csproj" />
   </ItemGroup>
