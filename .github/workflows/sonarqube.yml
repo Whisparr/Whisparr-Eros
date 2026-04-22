@@ -55,13 +55,19 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_BRANCH: ${{ github.event.pull_request.head.ref }}
           PR_BASE: ${{ github.event.pull_request.base.ref }}
+          EVENT_NAME: ${{ github.event_name }}
         shell: powershell
         run: |
-          if ($env:PR_NUMBER) {
-            $branchArgs = "/d:sonar.pullrequest.key=$env:PR_NUMBER /d:sonar.pullrequest.branch=$env:PR_BRANCH /d:sonar.pullrequest.base=$env:PR_BASE"
-          } else {
-            $branchArgs = "/d:sonar.branch.name=eros-develop"
+          $beginArgs = @(
+            "/k:Whisparr_Whisparr-Eros",
+            "/o:whisparr-eros",
+            "/d:sonar.token=$env:SONAR_TOKEN"
+          )
+          if ($env:EVENT_NAME -eq 'pull_request_target') {
+            $beginArgs += "/d:sonar.pullrequest.key=$env:PR_NUMBER"
+            $beginArgs += "/d:sonar.pullrequest.branch=$env:PR_BRANCH"
+            $beginArgs += "/d:sonar.pullrequest.base=$env:PR_BASE"
           }
-          ${{ runner.temp }}\scanner\dotnet-sonarscanner begin /k:"Whisparr_Whisparr-Eros" /o:"whisparr-eros" /d:sonar.token="$env:SONAR_TOKEN" $branchArgs
+          & ${{ runner.temp }}\scanner\dotnet-sonarscanner begin @beginArgs
           dotnet build src/Whisparr.sln
           ${{ runner.temp }}\scanner\dotnet-sonarscanner end /d:sonar.token="$env:SONAR_TOKEN"
