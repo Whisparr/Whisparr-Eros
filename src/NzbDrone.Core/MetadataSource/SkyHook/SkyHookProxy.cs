@@ -79,6 +79,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
             if (response.HasHttpError)
             {
+                _logger.Warn($"Error fetching changed movies from Skyhook: {request.Url} - {response.StatusCode}");
                 return new HashSet<int>();
             }
 
@@ -103,6 +104,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
             if (response.HasHttpError)
             {
+                _logger.Warn($"Error fetching changed TPDB movies from Skyhook: {request.Url} - {response.StatusCode}");
                 return new HashSet<string>();
             }
 
@@ -127,6 +129,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
             if (response.HasHttpError)
             {
+                _logger.Warn($"Error fetching changed scenes from Skyhook: {request.Url} - {response.StatusCode}");
                 return new HashSet<string>();
             }
 
@@ -151,6 +154,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
             if (response.HasHttpError)
             {
+                _logger.Warn($"Error fetching changed studios from Skyhook: {request.Url} - {response.StatusCode}");
                 return new HashSet<string>();
             }
 
@@ -175,6 +179,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
             if (response.HasHttpError)
             {
+                _logger.Warn($"Error fetching changed performers from Skyhook: {request.Url} - {response.StatusCode}");
                 return new HashSet<string>();
             }
 
@@ -486,7 +491,9 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
             var stashIds = httpResponse.Resource.Scenes;
             var tpdbIds = httpResponse.Resource.TpdbMovies;
-            var tmdbIds = httpResponse.Resource.Movies.ConvertAll(int.Parse);
+            var tmdbIds = httpResponse.Resource.Movies != null
+                ? httpResponse.Resource.Movies.ConvertAll(int.Parse)
+                : new List<int>();
 
             return (stashIds, tpdbIds, tmdbIds);
         }
@@ -530,15 +537,6 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             httpRequest.SuppressHttpError = true;
 
             var httpResponse = _httpClient.Get<StudioWorksResource>(httpRequest);
-            var stashdbIds = httpResponse.Resource.Scenes;
-            var tpdbIds = httpResponse.Resource.TpdbMovies;
-            var tmdbIds = new List<int>();
-
-            // Check while Skyhook is transitioning to return TMDB company movies.
-            if (httpResponse.Resource.Movies != null)
-            {
-                tmdbIds = httpResponse.Resource.Movies.ConvertAll(int.Parse);
-            }
 
             if (httpResponse.HasHttpError)
             {
@@ -551,6 +549,12 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                     throw new HttpException(httpRequest, httpResponse);
                 }
             }
+
+            var stashdbIds = httpResponse.Resource.Scenes;
+            var tpdbIds = httpResponse.Resource.TpdbMovies;
+            var tmdbIds = httpResponse.Resource.Movies != null
+                ? httpResponse.Resource.Movies.ConvertAll(int.Parse)
+                : new List<int>();
 
             return (stashdbIds, tpdbIds, tmdbIds);
         }
@@ -601,7 +605,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             movie.Genres = resource.Genres;
 
             // Check for tags with StashIDs as used for exclusion/tagging in Whisparr not stored locally
-            if (resource.Tags != null && resource.Tags.Where(t => !string.IsNullOrEmpty(t.ForeignIds?.StashId)).Any())
+            if (resource.Tags != null && resource.Tags.Any(t => !string.IsNullOrEmpty(t.ForeignIds?.StashId)))
             {
                 movie.TagIds = resource.Tags.Select(t => t.ForeignIds.StashId).ToList();
             }
@@ -1434,13 +1438,12 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
                 if (result.Credits != null)
                 {
-                    foreach (var performer in result.Credits)
-                    {
-                        movie.MovieMetadata.Value.Credits.Add(MapCast(performer));
-                    }
-
+                    movie.MovieMetadata.Value.Credits.AddRange(result.Credits.Select(MapCast));
                     movie.MovieMetadata.Value.PerformerNames = result.Credits.Select(c => c.Performer.Name).ToList();
-                    movie.MovieMetadata.Value.PerformerForeignIds = result.Credits.Select(c => c.Performer?.ForeignIds?.StashId).Where(id => id.IsNotNullOrWhiteSpace()).ToList();
+                    movie.MovieMetadata.Value.PerformerForeignIds = result.Credits
+                        .Select(c => c.Performer?.ForeignIds?.StashId)
+                        .Where(id => id.IsNotNullOrWhiteSpace())
+                        .ToList();
                 }
             }
 
