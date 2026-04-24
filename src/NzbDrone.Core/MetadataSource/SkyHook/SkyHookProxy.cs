@@ -77,6 +77,11 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
             var response = _httpClient.Get<List<int>>(request);
 
+            if (response.HasHttpError)
+            {
+                return new HashSet<int>();
+            }
+
             return new HashSet<int>(response.Resource);
         }
 
@@ -95,6 +100,11 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             request.SuppressHttpError = true;
 
             var response = _httpClient.Get<List<string>>(request);
+
+            if (response.HasHttpError)
+            {
+                return new HashSet<string>();
+            }
 
             return new HashSet<string>(response.Resource);
         }
@@ -115,6 +125,11 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
             var response = _httpClient.Get<List<string>>(request);
 
+            if (response.HasHttpError)
+            {
+                return new HashSet<string>();
+            }
+
             return new HashSet<string>(response.Resource);
         }
 
@@ -134,6 +149,11 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
             var response = _httpClient.Get<List<string>>(request);
 
+            if (response.HasHttpError)
+            {
+                return new HashSet<string>();
+            }
+
             return new HashSet<string>(response.Resource);
         }
 
@@ -152,6 +172,11 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             request.SuppressHttpError = true;
 
             var response = _httpClient.Get<List<string>>(request);
+
+            if (response.HasHttpError)
+            {
+                return new HashSet<string>();
+            }
 
             return new HashSet<string>(response.Resource);
         }
@@ -446,9 +471,6 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             httpRequest.SuppressHttpError = true;
 
             var httpResponse = _httpClient.Get<PerformerWorksResource>(httpRequest);
-            var stashIds = httpResponse.Resource.Scenes;
-            var tpdbIds = httpResponse.Resource.TpdbMovies;
-            var tmdbIds = httpResponse.Resource.Movies.ConvertAll(int.Parse);
 
             if (httpResponse.HasHttpError)
             {
@@ -461,6 +483,10 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                     throw new HttpException(httpRequest, httpResponse);
                 }
             }
+
+            var stashIds = httpResponse.Resource.Scenes;
+            var tpdbIds = httpResponse.Resource.TpdbMovies;
+            var tmdbIds = httpResponse.Resource.Movies.ConvertAll(int.Parse);
 
             return (stashIds, tpdbIds, tmdbIds);
         }
@@ -506,12 +532,12 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             var httpResponse = _httpClient.Get<StudioWorksResource>(httpRequest);
             var stashdbIds = httpResponse.Resource.Scenes;
             var tpdbIds = httpResponse.Resource.TpdbMovies;
-            var tmpdIds = new List<int>();
+            var tmdbIds = new List<int>();
 
             // Check while Skyhook is transitioning to return TMDB company movies.
             if (httpResponse.Resource.Movies != null)
             {
-                tmpdIds = httpResponse.Resource.Movies.ConvertAll(int.Parse);
+                tmdbIds = httpResponse.Resource.Movies.ConvertAll(int.Parse);
             }
 
             if (httpResponse.HasHttpError)
@@ -526,7 +552,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                 }
             }
 
-            return (stashdbIds, tpdbIds, tmpdIds);
+            return (stashdbIds, tpdbIds, tmdbIds);
         }
 
         public MovieMetadata MapMovie(MovieResource resource)
@@ -1406,13 +1432,16 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             {
                 movie = new Movie { MovieMetadata = MapMovie(result) };
 
-                foreach (var performer in result.Credits)
+                if (result.Credits != null)
                 {
-                    movie.MovieMetadata.Value.Credits.Add(MapCast(performer));
-                }
+                    foreach (var performer in result.Credits)
+                    {
+                        movie.MovieMetadata.Value.Credits.Add(MapCast(performer));
+                    }
 
-                movie.MovieMetadata.Value.PerformerNames = result.Credits.Select(c => c.Performer.Name).ToList();
-                movie.MovieMetadata.Value.PerformerForeignIds = result.Credits.Select(c => c.Performer?.ForeignIds?.StashId).Where(id => id.IsNotNullOrWhiteSpace()).ToList();
+                    movie.MovieMetadata.Value.PerformerNames = result.Credits.Select(c => c.Performer.Name).ToList();
+                    movie.MovieMetadata.Value.PerformerForeignIds = result.Credits.Select(c => c.Performer?.ForeignIds?.StashId).Where(id => id.IsNotNullOrWhiteSpace()).ToList();
+                }
             }
 
             return movie;
@@ -1509,7 +1538,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                 Tattoos = performer.Tattoos ?? new List<string>(),
                 Piercings = performer.Piercings ?? new List<string>(),
                 Ethnicity = MapEthnicity(performer.Ethnicity),
-                EyeColor = MapEyeColor(performer.EysColor),
+                EyeColor = MapEyeColor(performer.EyeColor),
                 HairColor = MapHairColor(performer.HairColor),
                 ForeignId = performer.ForeignIds.StashId,
                 TmdbId = performer.ForeignIds.TmdbId,
