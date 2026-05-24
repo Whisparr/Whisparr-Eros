@@ -406,6 +406,23 @@ namespace NzbDrone.Core.Parser
                         }
                     }
                 }
+
+                // If we got here, it means we were unable to parse the title with any of the regexes. Let's do some final checks before giving up.
+                var m = StashIdRegex.Match(releaseTitle);
+                if (m != null && m.Groups["stashid"].Success)
+                {
+                    var stashIdValue = m.Groups["stashid"].Value;
+                    var simpleReleaseTitle = SimpleReleaseTitleRegex.Replace(releaseTitle, string.Empty);
+                    var result = new ParsedMovieInfo
+                    {
+                        ReleaseTokens = releaseTitle,
+                        OriginalTitle = originalTitle,
+                        ReleaseTitle = releaseTitle,
+                        SimpleReleaseTitle = simpleReleaseTitle,
+                        StashId = stashIdValue
+                    };
+                    return result;
+                }
             }
             catch (Exception e)
             {
