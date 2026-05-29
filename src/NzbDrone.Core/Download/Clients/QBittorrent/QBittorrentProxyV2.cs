@@ -385,14 +385,14 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
 
         private string ProcessRequest(HttpRequestBuilder requestBuilder, QBittorrentSettings settings)
         {
-            var request = requestBuilder.Build();
-            request.LogResponseContent = true;
-
             if (settings.ApiKey.IsNotNullOrWhiteSpace())
             {
+                var requestWithApiKey = requestBuilder.Build();
+                requestWithApiKey.LogResponseContent = true;
+
                 try
                 {
-                    return _httpClient.Execute(request).Content;
+                    return _httpClient.Execute(requestWithApiKey).Content;
                 }
                 catch (HttpException ex)
                 {
@@ -413,6 +413,8 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
 
             AuthenticateClient(requestBuilder, settings);
 
+            var request = requestBuilder.Build();
+            request.LogResponseContent = true;
 #pragma warning disable SA1010 // Opening square brackets should be spaced correctly
             request.SuppressHttpErrorStatusCodes = [HttpStatusCode.Forbidden];
 #pragma warning restore SA1010 // Opening square brackets should be spaced correctly
