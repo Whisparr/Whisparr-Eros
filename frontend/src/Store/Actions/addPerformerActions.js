@@ -151,7 +151,7 @@ export const actionHandlers = handleThunks({
 
       const actions = [
         updateItem({ section: 'performers', ...data }),
-        updateItem({ section: 'addMovie', ...updatedItem }),
+        updateItem({ section, ...updatedItem }),
 
         set({
           section,

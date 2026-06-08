@@ -90,6 +90,9 @@ function useAddNewPerformer() {
   const dispatch = useDispatch();
   const addPerformer = useSelector((state: RootState) => state.addPerformer);
   const uiSettings = useSelector(createUISettingsSelector());
+  const existingPerformersCount = useSelector(
+    (state: AppState) => state.performers.items.length
+  );
   const [term, setTerm] = useState('');
 
   const performerLookupTimeout = React.useRef<ReturnType<
@@ -109,14 +112,28 @@ function useAddNewPerformer() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const lastRequestedIdsRef = React.useRef<string>('');
+  const hadNonEmptyItemsRef = React.useRef<boolean>(false);
+
   // When lookup results change, check which performers already exist
   React.useEffect(() => {
-    if (addPerformer?.items && addPerformer.items.length > 0) {
-      const foreignIds = addPerformer.items
+    const items = addPerformer?.items;
+
+    if (items && items.length > 0) {
+      const foreignIds = items
         .map((item: LookupPerformerItem) => item.performer.foreignId)
-        .filter((id: string | undefined) => id);
+        .filter((id: string | undefined): id is string => !!id);
 
       if (foreignIds.length > 0) {
+        // cache key covers both the queried ids and the current performer count, so
+        // we re-fetch when either changes (e.g. user just added a performer)
+        const key = `${existingPerformersCount}|${foreignIds.slice().sort().join('|')}`;
+        if (key === lastRequestedIdsRef.current) {
+          return;
+        }
+        lastRequestedIdsRef.current = key;
+        hadNonEmptyItemsRef.current = true;
+
         const { request } = createAjaxRequest({
           url: '/performer/list',
           method: 'POST',
@@ -131,7 +148,7 @@ function useAddNewPerformer() {
           );
 
           // Map over lookup items, using full performer data if available
-          const mapped = addPerformer.items.map((item: LookupPerformerItem) => {
+          const mapped = items.map((item: LookupPerformerItem) => {
             const fullPerformer = existingPerformerMap.get(
               item.performer.foreignId
             );
@@ -146,7 +163,7 @@ function useAddNewPerformer() {
 
         request.fail(() => {
           // If the request fails, assume none exist
-          const mapped = addPerformer.items.map(
+          const mapped = items.map(
             (item: LookupPerformerItem) => ({
               performer: item.performer,
               isExistingPerformer: false,
@@ -156,10 +173,13 @@ function useAddNewPerformer() {
           dispatch(setPerformersWithStatus(mapped));
         });
       }
-    } else {
+    } else if (hadNonEmptyItemsRef.current) {
+      hadNonEmptyItemsRef.current = false;
+      lastRequestedIdsRef.current = '';
       dispatch(setPerformersWithStatus([]));
     }
-  }, [addPerformer?.items, addPerformer, dispatch]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [addPerformer?.items, existingPerformersCount, dispatch]);
 
   const onPerformerLookupChange = React.useCallback(
     (value: string) => {
