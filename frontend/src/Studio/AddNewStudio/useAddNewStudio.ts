@@ -112,14 +112,28 @@ function useAddNewStudio() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const lastRequestedIdsRef = React.useRef<string>('');
+  const hadNonEmptyItemsRef = React.useRef<boolean>(false);
+
   // When lookup results change, check which studios already exist
   React.useEffect(() => {
-    if (addMovie?.items && addMovie.items.length > 0) {
-      const foreignIds = addMovie.items
+    const items = addMovie?.items;
+
+    if (items && items.length > 0) {
+      const foreignIds = items
         .map((item: LookupStudioItem) => item.studio.foreignId)
-        .filter((id: string | undefined) => id);
+        .filter((id: string | undefined): id is string => !!id);
 
       if (foreignIds.length > 0) {
+        // cache key covers both the queried ids and the current studio count, so
+        // we re-fetch when either changes (e.g. user just added a studio)
+        const key = `${existingStudiosCount}|${foreignIds.slice().sort().join('|')}`;
+        if (key === lastRequestedIdsRef.current) {
+          return;
+        }
+        lastRequestedIdsRef.current = key;
+        hadNonEmptyItemsRef.current = true;
+
         const { request } = createAjaxRequest({
           url: '/studio/list',
           method: 'POST',
@@ -134,7 +148,7 @@ function useAddNewStudio() {
           );
 
           // Map over lookup items, using full studio data if available
-          const mapped = addMovie.items.map((item: LookupStudioItem) => {
+          const mapped = items.map((item: LookupStudioItem) => {
             const fullStudio = existingStudioMap.get(item.studio.foreignId);
             return {
               studio: fullStudio || item.studio,
@@ -147,7 +161,7 @@ function useAddNewStudio() {
 
         request.fail(() => {
           // If the request fails, assume none exist
-          const mapped = addMovie.items.map((item: LookupStudioItem) => ({
+          const mapped = items.map((item: LookupStudioItem) => ({
             studio: item.studio,
             isExistingStudio: false,
           }));
@@ -155,10 +169,13 @@ function useAddNewStudio() {
           dispatch(setStudiosWithStatus(mapped));
         });
       }
-    } else {
+    } else if (hadNonEmptyItemsRef.current) {
+      hadNonEmptyItemsRef.current = false;
+      lastRequestedIdsRef.current = '';
       dispatch(setStudiosWithStatus([]));
     }
-  }, [addMovie?.items, addMovie, dispatch]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [addMovie?.items, existingStudiosCount, dispatch]);
 
   const onStudioLookupChange = React.useCallback(
     (value: string) => {
