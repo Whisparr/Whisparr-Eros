@@ -1,11 +1,13 @@
 import React from 'react';
 import Modal from 'Components/Modal/Modal';
 import { Image } from 'Movie/Movie';
+import Performer from 'Performer/Performer';
 import AddNewPerformerModalContent from './AddNewPerformerModalContent';
 
 interface AddNewPerformerModalProps {
   isOpen: boolean;
   onModalClose: () => void;
+  performer: Performer;
   foreignId: string;
   fullName: string;
   images: Image[];
@@ -14,6 +16,7 @@ interface AddNewPerformerModalProps {
 function AddNewPerformerModal({
   isOpen,
   onModalClose,
+  performer,
   foreignId,
   fullName,
   images,
@@ -21,6 +24,7 @@ function AddNewPerformerModal({
   return (
     <Modal isOpen={isOpen} onModalClose={onModalClose}>
       <AddNewPerformerModalContent
+        performer={performer}
         foreignId={foreignId}
         fullName={fullName}
         images={images}

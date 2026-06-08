@@ -12,12 +12,14 @@ import ModalHeader from 'Components/Modal/ModalHeader';
 import { inputTypes, kinds } from 'Helpers/Props';
 import { Image } from 'Movie/Movie';
 import MovieHeadshot from 'Movie/MovieHeadshot';
+import Performer from 'Performer/Performer';
 import { EnhancedSelectInputChanged } from 'typings/inputs';
 import translate from 'Utilities/String/translate';
 import { useAddNewPerformerModalContent } from './useAddNewPerformer';
 import styles from './AddNewPerformerModalContent.css';
 
 interface AddNewPerformerModalContentProps {
+  performer: Performer;
   foreignId: string;
   fullName: string;
   images: Image[];
@@ -25,7 +27,7 @@ interface AddNewPerformerModalContentProps {
 }
 
 function AddNewPerformerModalContent({
-  foreignId,
+  performer,
   fullName,
   images,
   onModalClose,
@@ -38,7 +40,7 @@ function AddNewPerformerModalContent({
     settings,
     onInputChange,
     onAddPerformerPress,
-  } = useAddNewPerformerModalContent(foreignId);
+  } = useAddNewPerformerModalContent(performer);
 
   const {
     rootFolderPath,

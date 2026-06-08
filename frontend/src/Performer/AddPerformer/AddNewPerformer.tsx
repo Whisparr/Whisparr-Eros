@@ -1,5 +1,4 @@
 import React from 'react';
-import { Error } from 'App/State/AppSectionState';
 import Alert from 'Components/Alert';
 import TextInput from 'Components/Form/TextInput';
 import Icon from 'Components/Icon';
@@ -10,7 +9,6 @@ import PageContent from 'Components/Page/PageContent';
 import PageContentBody from 'Components/Page/PageContentBody';
 import { icons, kinds } from 'Helpers/Props';
 import Performer from 'Performer/Performer';
-import getErrorMessage from 'Utilities/Object/getErrorMessage';
 import translate from 'Utilities/String/translate';
 import AddNewPerformerSearchResult from './AddNewPerformerSearchResult';
 import useAddNewPerformer from './useAddNewPerformer';
@@ -66,7 +64,7 @@ function AddNewPerformer() {
               {translate('YouCanAlsoSearchPerformer')}
             </div>
             <Alert kind={kinds.WARNING}>
-              {getErrorMessage(error as Error)}
+              {error?.statusBody?.message ?? error?.message ?? ''}
             </Alert>
             <div>
               <Link to="https://wiki.servarr.com/whisparr/troubleshooting#invalid-response-received-from-tmdb">

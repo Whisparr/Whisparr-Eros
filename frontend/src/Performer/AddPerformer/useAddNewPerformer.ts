@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import { cloneDeep } from 'lodash';
+import React, { useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Error as AppError } from 'App/State/AppSectionState';
+import { queryClient } from 'App/queryClient';
 import AppState from 'App/State/AppState';
 import { ValidationMessage } from 'Components/Form/FormInputGroup';
+import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import Performer from 'Performer/Performer';
 import {
-  addPerformer,
   clearAddPerformer,
-  lookupPerformer,
   setAddPerformerDefault,
-  setPerformersWithStatus,
 } from 'Store/Actions/addPerformerActions';
 import {
   clearQueueDetails,
@@ -21,18 +21,16 @@ import createSystemStatusSelector from 'Store/Selectors/createSystemStatusSelect
 import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
 import selectSettings from 'Store/Selectors/selectSettings';
 import { InputChanged } from 'typings/inputs';
-import createAjaxRequest from 'Utilities/createAjaxRequest';
+import fetchJson, {
+  ApiError,
+  apiRoot,
+  urlBase,
+} from 'Utilities/Fetch/fetchJson';
+import getNewPerformer from 'Utilities/Performer/getNewPerformer';
 
 export interface PerformerWithExistingStatus {
   performer: Performer;
   isExistingPerformer: boolean;
-}
-
-interface LookupPerformerItem {
-  foreignId: string;
-  performer: Performer;
-  id: string;
-  internalId: number;
 }
 
 interface PerformerDefaults {
@@ -61,22 +59,6 @@ interface AddPerformerSettings {
   tags: SettingValue<number[]>;
 }
 
-interface AddPerformerState {
-  isPopulated: boolean;
-  error: AppError | null;
-  isAdding: boolean;
-  isFetching: boolean;
-  isAdded: boolean;
-  addError: AppError | null;
-  items: LookupPerformerItem[];
-  performersWithStatus: PerformerWithExistingStatus[];
-  performerDefaults: PerformerDefaults;
-}
-
-type RootState = AppState & {
-  addPerformer: AddPerformerState;
-};
-
 const defaultPerformerDefaults: PerformerDefaults = {
   rootFolderPath: '',
   monitored: true,
@@ -86,25 +68,39 @@ const defaultPerformerDefaults: PerformerDefaults = {
   tags: [],
 };
 
+const AUTH_HEADERS = {
+  'X-Api-Key': window.Whisparr.apiKey,
+  'X-Whisparr-Client': 'Whisparr',
+};
+
+function apiPost<T, TBody>(path: string, body: TBody): Promise<T> {
+  return fetchJson<T, TBody>({
+    path: `${urlBase}${apiRoot}${path}`,
+    method: 'POST',
+    body,
+    headers: AUTH_HEADERS,
+  });
+}
+
+interface SearchResource {
+  foreignId: string;
+  performer: Performer;
+  isExisting: boolean;
+}
+
 function useAddNewPerformer() {
   const dispatch = useDispatch();
-  const addPerformer = useSelector((state: RootState) => state.addPerformer);
   const uiSettings = useSelector(createUISettingsSelector());
-  const existingPerformersCount = useSelector(
-    (state: AppState) => state.performers.items.length
-  );
   const [term, setTerm] = useState('');
-
-  const performerLookupTimeout = React.useRef<ReturnType<
-    typeof setTimeout
-  > | null>(null);
+  const [debouncedTerm, setDebouncedTerm] = useState('');
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   React.useEffect(() => {
     dispatch(fetchRootFolders());
     dispatch(fetchQueueDetails());
     return () => {
-      if (performerLookupTimeout.current) {
-        clearTimeout(performerLookupTimeout.current);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
       }
       dispatch(clearAddPerformer());
       dispatch(clearQueueDetails());
@@ -112,86 +108,28 @@ function useAddNewPerformer() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const lastRequestedIdsRef = React.useRef<string>('');
-  const hadNonEmptyItemsRef = React.useRef<boolean>(false);
-
-  // When lookup results change, check which performers already exist
-  React.useEffect(() => {
-    const items = addPerformer?.items;
-
-    if (items && items.length > 0) {
-      const foreignIds = items
-        .map((item: LookupPerformerItem) => item.performer.foreignId)
-        .filter((id: string | undefined): id is string => !!id);
-
-      if (foreignIds.length > 0) {
-        // cache key covers both the queried ids and the current performer count, so
-        // we re-fetch when either changes (e.g. user just added a performer)
-        const key = `${existingPerformersCount}|${foreignIds.slice().sort().join('|')}`;
-        if (key === lastRequestedIdsRef.current) {
-          return;
-        }
-        lastRequestedIdsRef.current = key;
-        hadNonEmptyItemsRef.current = true;
-
-        const { request } = createAjaxRequest({
-          url: '/performer/list',
-          method: 'POST',
-          contentType: 'application/json',
-          data: JSON.stringify(foreignIds),
-        });
-
-        request.done((existingPerformers: Performer[]) => {
-          // Create a map of foreignId to full performer object
-          const existingPerformerMap = new Map(
-            existingPerformers.map((p) => [p.foreignId, p])
-          );
-
-          // Map over lookup items, using full performer data if available
-          const mapped = items.map((item: LookupPerformerItem) => {
-            const fullPerformer = existingPerformerMap.get(
-              item.performer.foreignId
-            );
-            return {
-              performer: fullPerformer || item.performer,
-              isExistingPerformer: !!fullPerformer,
-            };
-          });
-
-          dispatch(setPerformersWithStatus(mapped));
-        });
-
-        request.fail(() => {
-          // If the request fails, assume none exist
-          const mapped = items.map(
-            (item: LookupPerformerItem) => ({
-              performer: item.performer,
-              isExistingPerformer: false,
-            })
-          );
-
-          dispatch(setPerformersWithStatus(mapped));
-        });
-      }
-    } else if (hadNonEmptyItemsRef.current) {
-      hadNonEmptyItemsRef.current = false;
-      lastRequestedIdsRef.current = '';
-      dispatch(setPerformersWithStatus([]));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [addPerformer?.items, existingPerformersCount, dispatch]);
+  const {
+    data: searchResources = [],
+    isFetching,
+    error,
+  } = useApiQuery<SearchResource[]>({
+    path: '/lookup/performer',
+    queryParams: { term: debouncedTerm },
+    queryOptions: { enabled: !!debouncedTerm.trim() },
+  });
 
   const onPerformerLookupChange = React.useCallback(
     (value: string) => {
       setTerm(value);
-      if (performerLookupTimeout.current) {
-        clearTimeout(performerLookupTimeout.current);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
       }
       if (value.trim() === '') {
+        setDebouncedTerm('');
         dispatch(clearAddPerformer());
       } else {
-        performerLookupTimeout.current = setTimeout(() => {
-          dispatch(lookupPerformer({ term: value }));
+        timeoutRef.current = setTimeout(() => {
+          setDebouncedTerm(value);
         }, 300);
       }
     },
@@ -200,18 +138,22 @@ function useAddNewPerformer() {
 
   const onClearPerformerLookupPress = React.useCallback(() => {
     setTerm('');
+    setDebouncedTerm('');
     dispatch(clearAddPerformer());
   }, [dispatch]);
 
   return {
-    isPopulated: addPerformer?.isPopulated || false,
-    error: addPerformer?.error,
-    isAdding: addPerformer?.isAdding || false,
-    isFetching: addPerformer?.isFetching || false,
-    isAdded: addPerformer?.isAdded || false,
-    addError: addPerformer?.addError,
-    items: addPerformer?.items || [],
-    performersWithStatus: addPerformer?.performersWithStatus || [],
+    isPopulated: !!debouncedTerm.trim() && !isFetching,
+    error,
+    isAdding: false,
+    isFetching: isFetching && !!debouncedTerm.trim(),
+    isAdded: false,
+    addError: null,
+    items: searchResources,
+    performersWithStatus: searchResources.map((r) => ({
+      performer: r.performer,
+      isExistingPerformer: r.isExisting,
+    })),
     term,
     colorImpairedMode: uiSettings.enableColorImpairedMode,
     onPerformerLookupChange,
@@ -231,27 +173,42 @@ export function useAddNewPerformerSearchResult() {
   };
 }
 
-export function useAddNewPerformerModalContent(foreignId: string) {
+export function useAddNewPerformerModalContent(performer: Performer) {
   const dispatch = useDispatch();
   const { isSmallScreen } = useSelector(createDimensionsSelector());
   const systemStatus = useSelector(createSystemStatusSelector());
   const safeForWorkMode = useSelector(
     (state: AppState) => state.settings.safeForWorkMode
   );
+
   const addPerformerState = useSelector(
-    (state: RootState) => state.addPerformer
+    (
+      state: AppState & {
+        addPerformer: {
+          performerDefaults: PerformerDefaults;
+          addError?: ApiError;
+        };
+      }
+    ) => state.addPerformer
   );
 
-  const {
-    isAdding = false,
-    addError,
-    performerDefaults = defaultPerformerDefaults,
-  } = addPerformerState || {};
+  const { performerDefaults = defaultPerformerDefaults } =
+    addPerformerState || {};
+
+  const mutation = useMutation<Performer, ApiError, Performer>({
+    mutationFn: (performerToAdd: Performer) => {
+      return apiPost<Performer, Performer>('/performer', performerToAdd);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/performer/paged'] });
+      queryClient.invalidateQueries({ queryKey: ['/lookup/performer'] });
+    },
+  });
 
   const { settings, validationErrors, validationWarnings } = selectSettings(
     performerDefaults,
     {},
-    addError
+    mutation.error
   ) as {
     settings: AddPerformerSettings;
     validationErrors: unknown[];
@@ -266,22 +223,21 @@ export function useAddNewPerformerModalContent(foreignId: string) {
   );
 
   const onAddPerformerPress = React.useCallback(() => {
-    dispatch(
-      addPerformer({
-        foreignId,
-        rootFolderPath: settings.rootFolderPath.value,
-        monitored: settings.monitored.value === true,
-        moviesMonitored: settings.moviesMonitored.value === true,
-        qualityProfileId: settings.qualityProfileId.value,
-        searchForMovie: settings.searchForMovie.value,
-        tags: settings.tags.value,
-      })
-    );
-  }, [dispatch, foreignId, settings]);
+    const performerToAdd = getNewPerformer(cloneDeep(performer) as object, {
+      rootFolderPath: settings.rootFolderPath.value,
+      monitored: settings.monitored.value === true,
+      moviesMonitored: settings.moviesMonitored.value === true,
+      qualityProfileId: settings.qualityProfileId.value,
+      searchForMovie: settings.searchForMovie.value,
+      tags: settings.tags.value,
+    }) as Performer;
+    performerToAdd.id = 0;
+    mutation.mutate(performerToAdd);
+  }, [performer, settings, mutation]);
 
   return {
-    addError,
-    isAdding,
+    addError: mutation.error,
+    isAdding: mutation.isPending,
     isSmallScreen,
     isWindows: systemStatus.isWindows,
     safeForWorkMode,
