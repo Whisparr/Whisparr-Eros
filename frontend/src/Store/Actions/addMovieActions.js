@@ -1,35 +1,20 @@
-import _ from 'lodash';
 import { createAction } from 'redux-actions';
-import { batchActions } from 'redux-batched-actions';
-import { createThunk, handleThunks } from 'Store/thunks';
-import createAjaxRequest from 'Utilities/createAjaxRequest';
-import getNewPerformer from 'Utilities/Performer/getNewPerformer';
 import getSectionState from 'Utilities/State/getSectionState';
 import updateSectionState from 'Utilities/State/updateSectionState';
-import getNewStudio from 'Utilities/Studio/getNewStudio';
-import { set, update, updateItem } from './baseActions';
 import createHandleActions from './Creators/createHandleActions';
 import createSetSettingValueReducer from './Creators/Reducers/createSetSettingValueReducer';
 
 //
 // Variables
+//
 
 export const section = 'addMovie';
-let abortCurrentRequest = null;
 
 //
 // State
+//
 
 export const defaultState = {
-  isFetching: false,
-  isPopulated: false,
-  error: null,
-  isAdding: false,
-  isAdded: false,
-  addError: null,
-  items: [],
-  studiosWithStatus: [],
-
   movieDefaults: {
     rootFolderPath: '',
     monitor: 'movieOnly',
@@ -64,32 +49,22 @@ export const persistState = [
 
 //
 // Actions Types
+//
 
-export const LOOKUP_STUDIO = 'addMovie/lookupStudio';
-export const LOOKUP_PERFORMER = 'addMovie/lookupPerformer';
-export const ADD_PERFORMER = 'addMovie/addPerformer';
-export const ADD_STUDIO = 'addMovie/addStudio';
 export const SET_ADD_MOVIE_VALUE = 'addMovie/setAddMovieValue';
 export const SET_ADD_PERFORMER_VALUE = 'addMovie/setAddPerformerValue';
 export const SET_ADD_STUDIO_VALUE = 'addMovie/setAddStudioValue';
-export const CLEAR_ADD_MOVIE = 'addMovie/clearAddMovie';
 export const SET_ADD_MOVIE_DEFAULT = 'addMovie/setAddMovieDefault';
 export const SET_ADD_PERFORMER_DEFAULT = 'addMovie/setAddPerformerDefault';
 export const SET_ADD_STUDIO_DEFAULT = 'addMovie/setAddStudioDefault';
-export const SET_STUDIOS_WITH_STATUS = 'addMovie/setStudiosWithStatus';
 
 //
 // Action Creators
+//
 
-export const lookupStudio = createThunk(LOOKUP_STUDIO);
-export const lookupPerformer = createThunk(LOOKUP_PERFORMER);
-export const addPerformer = createThunk(ADD_PERFORMER);
-export const addStudio = createThunk(ADD_STUDIO);
-export const clearAddMovie = createAction(CLEAR_ADD_MOVIE);
 export const setAddMovieDefault = createAction(SET_ADD_MOVIE_DEFAULT);
 export const setAddPerformerDefault = createAction(SET_ADD_PERFORMER_DEFAULT);
 export const setAddStudioDefault = createAction(SET_ADD_STUDIO_DEFAULT);
-export const setStudiosWithStatus = createAction(SET_STUDIOS_WITH_STATUS);
 
 export const setAddMovieValue = createAction(SET_ADD_MOVIE_VALUE, (payload) => {
   return {
@@ -115,214 +90,10 @@ export const setAddStudioValue = createAction(
     };
   }
 );
-//
-// Action Handlers
-
-export const actionHandlers = handleThunks({
-  [LOOKUP_STUDIO]: function (getState, payload, dispatch) {
-    dispatch(set({ section, isFetching: true }));
-
-    if (abortCurrentRequest) {
-      abortCurrentRequest();
-    }
-
-    const { request, abortRequest } = createAjaxRequest({
-      url: '/lookup/studio',
-      data: {
-        term: payload.term,
-      },
-    });
-
-    abortCurrentRequest = abortRequest;
-
-    request.done((data) => {
-      data = data.map((movie) => ({
-        ...movie,
-        internalId: movie.id,
-        id: movie.foreignId,
-      }));
-
-      dispatch(
-        batchActions([
-          update({ section, data }),
-
-          set({
-            section,
-            isFetching: false,
-            isPopulated: true,
-            error: null,
-          }),
-        ])
-      );
-    });
-
-    request.fail((xhr) => {
-      dispatch(
-        set({
-          section,
-          isFetching: false,
-          isPopulated: false,
-          error: xhr.aborted ? null : xhr,
-        })
-      );
-    });
-  },
-
-  [LOOKUP_PERFORMER]: function (getState, payload, dispatch) {
-    dispatch(set({ section, isFetching: true }));
-
-    if (abortCurrentRequest) {
-      abortCurrentRequest();
-    }
-
-    const { request, abortRequest } = createAjaxRequest({
-      url: '/lookup/performer',
-      data: {
-        term: payload.term,
-      },
-    });
-
-    abortCurrentRequest = abortRequest;
-
-    request.done((data) => {
-      data = data.map((movie) => ({
-        ...movie,
-        internalId: movie.id,
-        id: movie.foreignId,
-      }));
-
-      dispatch(
-        batchActions([
-          update({ section, data }),
-
-          set({
-            section,
-            isFetching: false,
-            isPopulated: true,
-            error: null,
-          }),
-        ])
-      );
-    });
-
-    request.fail((xhr) => {
-      dispatch(
-        set({
-          section,
-          isFetching: false,
-          isPopulated: false,
-          error: xhr.aborted ? null : xhr,
-        })
-      );
-    });
-  },
-
-  [ADD_PERFORMER]: function (getState, payload, dispatch) {
-    dispatch(set({ section, isAdding: true }));
-
-    const foreignId = payload.foreignId;
-    const items = getState().addMovie.items;
-    const itemToAdd = _.find(items, { foreignId });
-    const newPerformer = getNewPerformer(
-      _.cloneDeep(itemToAdd.performer),
-      payload
-    );
-    newPerformer.id = 0;
-
-    const promise = createAjaxRequest({
-      url: '/performer',
-      method: 'POST',
-      dataType: 'json',
-      contentType: 'application/json',
-      data: JSON.stringify(newPerformer),
-    }).request;
-
-    promise.done((data) => {
-      const updatedItem = _.cloneDeep(data);
-      updatedItem.internalId = updatedItem.id;
-      updatedItem.id = updatedItem.foreignId;
-      delete updatedItem.images;
-
-      const actions = [
-        updateItem({ section: 'performers', ...data }),
-        updateItem({ section: 'addMovie', ...updatedItem }),
-
-        set({
-          section,
-          isAdding: false,
-          isAdded: true,
-          addError: null,
-        }),
-      ];
-
-      dispatch(batchActions(actions));
-    });
-
-    promise.fail((xhr) => {
-      dispatch(
-        set({
-          section,
-          isAdding: false,
-          isAdded: false,
-          addError: xhr,
-        })
-      );
-    });
-  },
-
-  [ADD_STUDIO]: function (getState, payload, dispatch) {
-    dispatch(set({ section, isAdding: true }));
-
-    const foreignId = payload.foreignId;
-    const items = getState().addMovie.items;
-    const itemToAdd = _.find(items, { foreignId });
-    const newStudio = getNewStudio(_.cloneDeep(itemToAdd.studio), payload);
-    newStudio.id = 0;
-
-    const promise = createAjaxRequest({
-      url: '/studio',
-      method: 'POST',
-      dataType: 'json',
-      contentType: 'application/json',
-      data: JSON.stringify(newStudio),
-    }).request;
-
-    promise.done((data) => {
-      const updatedItem = _.cloneDeep(data);
-      updatedItem.internalId = updatedItem.id;
-      updatedItem.id = updatedItem.foreignId;
-      delete updatedItem.images;
-
-      const actions = [
-        updateItem({ section: 'studios', ...data }),
-        updateItem({ section: 'addMovie', ...updatedItem }),
-
-        set({
-          section,
-          isAdding: false,
-          isAdded: true,
-          addError: null,
-        }),
-      ];
-
-      dispatch(batchActions(actions));
-    });
-
-    promise.fail((xhr) => {
-      dispatch(
-        set({
-          section,
-          isAdding: false,
-          isAdded: false,
-          addError: xhr,
-        })
-      );
-    });
-  },
-});
 
 //
 // Reducers
+//
 
 export const reducers = createHandleActions(
   {
@@ -359,24 +130,6 @@ export const reducers = createHandleActions(
       };
 
       return updateSectionState(state, section, newState);
-    },
-
-    [SET_STUDIOS_WITH_STATUS]: function (state, { payload }) {
-      const newState = getSectionState(state, section);
-      newState.studiosWithStatus = payload;
-      return updateSectionState(state, section, newState);
-    },
-
-    [CLEAR_ADD_MOVIE]: function (state) {
-      const {
-        movieDefaults,
-        performerDefaults,
-        studioDefaults,
-        view,
-        ...otherDefaultState
-      } = defaultState;
-
-      return Object.assign({}, state, otherDefaultState);
     },
   },
   defaultState,

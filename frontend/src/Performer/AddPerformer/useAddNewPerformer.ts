@@ -8,7 +8,6 @@ import { ValidationMessage } from 'Components/Form/FormInputGroup';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import Performer from 'Performer/Performer';
 import {
-  clearAddPerformer,
   setAddPerformerDefault,
 } from 'Store/Actions/addPerformerActions';
 import {
@@ -102,7 +101,6 @@ function useAddNewPerformer() {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
-      dispatch(clearAddPerformer());
       dispatch(clearQueueDetails());
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -126,7 +124,6 @@ function useAddNewPerformer() {
       }
       if (value.trim() === '') {
         setDebouncedTerm('');
-        dispatch(clearAddPerformer());
       } else {
         timeoutRef.current = setTimeout(() => {
           setDebouncedTerm(value);
@@ -139,8 +136,7 @@ function useAddNewPerformer() {
   const onClearPerformerLookupPress = React.useCallback(() => {
     setTerm('');
     setDebouncedTerm('');
-    dispatch(clearAddPerformer());
-  }, [dispatch]);
+  }, []);
 
   return {
     isPopulated: !!debouncedTerm.trim() && !isFetching,

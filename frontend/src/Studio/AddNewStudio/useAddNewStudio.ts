@@ -7,7 +7,6 @@ import AppState from 'App/State/AppState';
 import { ValidationMessage } from 'Components/Form/FormInputGroup';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import {
-  clearAddMovie,
   setAddStudioDefault,
 } from 'Store/Actions/addMovieActions';
 import {
@@ -105,7 +104,6 @@ function useAddNewStudio() {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
-      dispatch(clearAddMovie());
       dispatch(clearQueueDetails());
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -129,7 +127,6 @@ function useAddNewStudio() {
       }
       if (value.trim() === '') {
         setDebouncedTerm('');
-        dispatch(clearAddMovie());
       } else {
         timeoutRef.current = setTimeout(() => {
           setDebouncedTerm(value);
@@ -142,8 +139,7 @@ function useAddNewStudio() {
   const onClearStudioLookupPress = React.useCallback(() => {
     setTerm('');
     setDebouncedTerm('');
-    dispatch(clearAddMovie());
-  }, [dispatch]);
+  }, []);
 
   return {
     isPopulated: !!debouncedTerm.trim() && !isFetching,
