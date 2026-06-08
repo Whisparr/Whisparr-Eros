@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import { cloneDeep } from 'lodash';
+import React, { useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Error as AppError } from 'App/State/AppSectionState';
+import { queryClient } from 'App/queryClient';
 import AppState from 'App/State/AppState';
 import { ValidationMessage } from 'Components/Form/FormInputGroup';
+import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import {
-  addStudio,
   clearAddMovie,
-  lookupStudio,
   setAddStudioDefault,
-  setStudiosWithStatus,
 } from 'Store/Actions/addMovieActions';
 import {
   clearQueueDetails,
@@ -21,18 +21,16 @@ import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
 import selectSettings from 'Store/Selectors/selectSettings';
 import Studio from 'Studio/Studio';
 import { InputChanged } from 'typings/inputs';
-import createAjaxRequest from 'Utilities/createAjaxRequest';
+import fetchJson, {
+  ApiError,
+  apiRoot,
+  urlBase,
+} from 'Utilities/Fetch/fetchJson';
+import getNewStudio from 'Utilities/Studio/getNewStudio';
 
 export interface StudioWithExistingStatus {
   studio: Studio;
   isExistingStudio: boolean;
-}
-
-interface LookupStudioItem {
-  foreignId: string;
-  studio: Studio;
-  id: string;
-  internalId: number;
 }
 
 interface StudioDefaults {
@@ -61,22 +59,6 @@ interface AddStudioSettings {
   tags: SettingValue<number[]>;
 }
 
-interface AddMovieState {
-  isPopulated: boolean;
-  error: AppError | null;
-  isAdding: boolean;
-  isFetching: boolean;
-  isAdded: boolean;
-  addError: AppError | null;
-  items: LookupStudioItem[];
-  studiosWithStatus: StudioWithExistingStatus[];
-  studioDefaults: StudioDefaults;
-}
-
-type RootState = AppState & {
-  addMovie: AddMovieState;
-};
-
 const defaultStudioDefaults: StudioDefaults = {
   rootFolderPath: '',
   monitored: true,
@@ -86,25 +68,42 @@ const defaultStudioDefaults: StudioDefaults = {
   tags: [],
 };
 
+const AUTH_HEADERS = {
+  'X-Api-Key': window.Whisparr.apiKey,
+  'X-Whisparr-Client': 'Whisparr',
+};
+
+function apiPost<T, TBody>(path: string, body: TBody): Promise<T> {
+  return fetchJson<T, TBody>({
+    path: `${urlBase}${apiRoot}${path}`,
+    method: 'POST',
+    body,
+    headers: AUTH_HEADERS,
+  });
+}
+
+interface SearchResource {
+  foreignId: string;
+  studio: Studio;
+  isExisting: boolean;
+}
+
 function useAddNewStudio() {
   const dispatch = useDispatch();
-  const addMovie = useSelector((state: RootState) => state.addMovie);
   const uiSettings = useSelector(createUISettingsSelector());
   const existingStudiosCount = useSelector(
     (state: AppState) => state.studios.items.length
   );
   const [term, setTerm] = useState('');
-
-  const studioLookupTimeout = React.useRef<ReturnType<
-    typeof setTimeout
-  > | null>(null);
+  const [debouncedTerm, setDebouncedTerm] = useState('');
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   React.useEffect(() => {
     dispatch(fetchRootFolders());
     dispatch(fetchQueueDetails());
     return () => {
-      if (studioLookupTimeout.current) {
-        clearTimeout(studioLookupTimeout.current);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
       }
       dispatch(clearAddMovie());
       dispatch(clearQueueDetails());
@@ -112,82 +111,28 @@ function useAddNewStudio() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const lastRequestedIdsRef = React.useRef<string>('');
-  const hadNonEmptyItemsRef = React.useRef<boolean>(false);
-
-  // When lookup results change, check which studios already exist
-  React.useEffect(() => {
-    const items = addMovie?.items;
-
-    if (items && items.length > 0) {
-      const foreignIds = items
-        .map((item: LookupStudioItem) => item.studio.foreignId)
-        .filter((id: string | undefined): id is string => !!id);
-
-      if (foreignIds.length > 0) {
-        // cache key covers both the queried ids and the current studio count, so
-        // we re-fetch when either changes (e.g. user just added a studio)
-        const key = `${existingStudiosCount}|${foreignIds.slice().sort().join('|')}`;
-        if (key === lastRequestedIdsRef.current) {
-          return;
-        }
-        lastRequestedIdsRef.current = key;
-        hadNonEmptyItemsRef.current = true;
-
-        const { request } = createAjaxRequest({
-          url: '/studio/list',
-          method: 'POST',
-          contentType: 'application/json',
-          data: JSON.stringify(foreignIds),
-        });
-
-        request.done((existingStudios: Studio[]) => {
-          // Create a map of foreignId to full studio object
-          const existingStudioMap = new Map(
-            existingStudios.map((s) => [s.foreignId, s])
-          );
-
-          // Map over lookup items, using full studio data if available
-          const mapped = items.map((item: LookupStudioItem) => {
-            const fullStudio = existingStudioMap.get(item.studio.foreignId);
-            return {
-              studio: fullStudio || item.studio,
-              isExistingStudio: !!fullStudio,
-            };
-          });
-
-          dispatch(setStudiosWithStatus(mapped));
-        });
-
-        request.fail(() => {
-          // If the request fails, assume none exist
-          const mapped = items.map((item: LookupStudioItem) => ({
-            studio: item.studio,
-            isExistingStudio: false,
-          }));
-
-          dispatch(setStudiosWithStatus(mapped));
-        });
-      }
-    } else if (hadNonEmptyItemsRef.current) {
-      hadNonEmptyItemsRef.current = false;
-      lastRequestedIdsRef.current = '';
-      dispatch(setStudiosWithStatus([]));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [addMovie?.items, existingStudiosCount, dispatch]);
+  const {
+    data: searchResources = [],
+    isFetching,
+    error,
+  } = useApiQuery<SearchResource[]>({
+    path: '/lookup/studio',
+    queryParams: { term: debouncedTerm },
+    queryOptions: { enabled: !!debouncedTerm.trim() },
+  });
 
   const onStudioLookupChange = React.useCallback(
     (value: string) => {
       setTerm(value);
-      if (studioLookupTimeout.current) {
-        clearTimeout(studioLookupTimeout.current);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
       }
       if (value.trim() === '') {
+        setDebouncedTerm('');
         dispatch(clearAddMovie());
       } else {
-        studioLookupTimeout.current = setTimeout(() => {
-          dispatch(lookupStudio({ term: value }));
+        timeoutRef.current = setTimeout(() => {
+          setDebouncedTerm(value);
         }, 300);
       }
     },
@@ -196,18 +141,22 @@ function useAddNewStudio() {
 
   const onClearStudioLookupPress = React.useCallback(() => {
     setTerm('');
+    setDebouncedTerm('');
     dispatch(clearAddMovie());
   }, [dispatch]);
 
   return {
-    isPopulated: addMovie?.isPopulated || false,
-    error: addMovie?.error,
-    isAdding: addMovie?.isAdding || false,
-    isFetching: addMovie?.isFetching || false,
-    isAdded: addMovie?.isAdded || false,
-    addError: addMovie?.addError,
-    items: addMovie?.items || [],
-    studiosWithStatus: addMovie?.studiosWithStatus || [],
+    isPopulated: !!debouncedTerm.trim() && !isFetching,
+    error,
+    isAdding: false,
+    isFetching: isFetching && !!debouncedTerm.trim(),
+    isAdded: false,
+    addError: null,
+    items: searchResources,
+    studiosWithStatus: searchResources.map((r) => ({
+      studio: r.studio,
+      isExistingStudio: r.isExisting,
+    })),
     term,
     colorImpairedMode: uiSettings.enableColorImpairedMode,
     hasExistingStudios: existingStudiosCount > 0,
@@ -228,25 +177,38 @@ export function useAddNewStudioSearchResult() {
   };
 }
 
-export function useAddNewStudioModalContent(foreignId: string) {
+export function useAddNewStudioModalContent(studio: Studio) {
   const dispatch = useDispatch();
   const { isSmallScreen } = useSelector(createDimensionsSelector());
   const systemStatus = useSelector(createSystemStatusSelector());
   const safeForWorkMode = useSelector(
     (state: AppState) => state.settings.safeForWorkMode
   );
-  const addMovieState = useSelector((state: RootState) => state.addMovie);
 
-  const {
-    isAdding = false,
-    addError,
-    studioDefaults = defaultStudioDefaults,
-  } = addMovieState || {};
+  const addMovieState = useSelector(
+    (
+      state: AppState & {
+        addMovie: { studioDefaults: StudioDefaults; addError?: ApiError };
+      }
+    ) => state.addMovie
+  );
+
+  const { studioDefaults = defaultStudioDefaults } = addMovieState || {};
+
+  const mutation = useMutation<Studio, ApiError, Studio>({
+    mutationFn: (studioToAdd: Studio) => {
+      return apiPost<Studio, Studio>('/studio', studioToAdd);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/studio/paged'] });
+      queryClient.invalidateQueries({ queryKey: ['/lookup/studio'] });
+    },
+  });
 
   const { settings, validationErrors, validationWarnings } = selectSettings(
     studioDefaults,
     {},
-    addError
+    mutation.error
   ) as {
     settings: AddStudioSettings;
     validationErrors: unknown[];
@@ -261,22 +223,21 @@ export function useAddNewStudioModalContent(foreignId: string) {
   );
 
   const onAddStudioPress = React.useCallback(() => {
-    dispatch(
-      addStudio({
-        foreignId,
-        rootFolderPath: settings.rootFolderPath.value,
-        monitored: settings.monitored.value === true,
-        moviesMonitored: settings.moviesMonitored.value === true,
-        qualityProfileId: settings.qualityProfileId.value,
-        searchForMovie: settings.searchForMovie.value,
-        tags: settings.tags.value,
-      })
-    );
-  }, [dispatch, foreignId, settings]);
+    const studioToAdd = getNewStudio(cloneDeep(studio) as object, {
+      rootFolderPath: settings.rootFolderPath.value,
+      monitored: settings.monitored.value === true,
+      moviesMonitored: settings.moviesMonitored.value === true,
+      qualityProfileId: settings.qualityProfileId.value,
+      searchForMovie: settings.searchForMovie.value,
+      tags: settings.tags.value,
+    }) as Studio;
+    studioToAdd.id = 0;
+    mutation.mutate(studioToAdd);
+  }, [studio, settings, mutation]);
 
   return {
-    addError,
-    isAdding,
+    addError: mutation.error,
+    isAdding: mutation.isPending,
     isSmallScreen,
     isWindows: systemStatus.isWindows,
     safeForWorkMode,
