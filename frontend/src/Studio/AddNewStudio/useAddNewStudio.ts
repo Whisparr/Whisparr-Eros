@@ -1,14 +1,12 @@
-import { useMutation } from '@tanstack/react-query';
 import { cloneDeep } from 'lodash';
 import React, { useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { queryClient } from 'App/queryClient';
 import AppState from 'App/State/AppState';
 import { ValidationMessage } from 'Components/Form/FormInputGroup';
+import useApiMutation from 'Helpers/Hooks/useApiMutation';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
-import {
-  setAddStudioDefault,
-} from 'Store/Actions/addMovieActions';
+import { setAddStudioDefault } from 'Store/Actions/addMovieActions';
 import {
   clearQueueDetails,
   fetchQueueDetails,
@@ -20,11 +18,7 @@ import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
 import selectSettings from 'Store/Selectors/selectSettings';
 import Studio from 'Studio/Studio';
 import { InputChanged } from 'typings/inputs';
-import fetchJson, {
-  ApiError,
-  apiRoot,
-  urlBase,
-} from 'Utilities/Fetch/fetchJson';
+import { ApiError } from 'Utilities/Fetch/fetchJson';
 import getNewStudio from 'Utilities/Studio/getNewStudio';
 
 export interface StudioWithExistingStatus {
@@ -67,20 +61,6 @@ const defaultStudioDefaults: StudioDefaults = {
   tags: [],
 };
 
-const AUTH_HEADERS = {
-  'X-Api-Key': window.Whisparr.apiKey,
-  'X-Whisparr-Client': 'Whisparr',
-};
-
-function apiPost<T, TBody>(path: string, body: TBody): Promise<T> {
-  return fetchJson<T, TBody>({
-    path: `${urlBase}${apiRoot}${path}`,
-    method: 'POST',
-    body,
-    headers: AUTH_HEADERS,
-  });
-}
-
 interface SearchResource {
   foreignId: string;
   studio: Studio;
@@ -119,22 +99,19 @@ function useAddNewStudio() {
     queryOptions: { enabled: !!debouncedTerm.trim() },
   });
 
-  const onStudioLookupChange = React.useCallback(
-    (value: string) => {
-      setTerm(value);
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-      if (value.trim() === '') {
-        setDebouncedTerm('');
-      } else {
-        timeoutRef.current = setTimeout(() => {
-          setDebouncedTerm(value);
-        }, 300);
-      }
-    },
-    [dispatch]
-  );
+  const onStudioLookupChange = React.useCallback((value: string) => {
+    setTerm(value);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    if (value.trim() === '') {
+      setDebouncedTerm('');
+    } else {
+      timeoutRef.current = setTimeout(() => {
+        setDebouncedTerm(value);
+      }, 300);
+    }
+  }, []);
 
   const onClearStudioLookupPress = React.useCallback(() => {
     setTerm('');
@@ -191,13 +168,14 @@ export function useAddNewStudioModalContent(studio: Studio) {
 
   const { studioDefaults = defaultStudioDefaults } = addMovieState || {};
 
-  const mutation = useMutation<Studio, ApiError, Studio>({
-    mutationFn: (studioToAdd: Studio) => {
-      return apiPost<Studio, Studio>('/studio', studioToAdd);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/studio/paged'] });
-      queryClient.invalidateQueries({ queryKey: ['/lookup/studio'] });
+  const mutation = useApiMutation<Studio, Studio>({
+    method: 'POST',
+    path: '/studio',
+    mutationOptions: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['/studio/paged'] });
+        queryClient.invalidateQueries({ queryKey: ['/lookup/studio'] });
+      },
     },
   });
 
