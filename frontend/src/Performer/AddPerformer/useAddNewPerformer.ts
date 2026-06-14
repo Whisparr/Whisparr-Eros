@@ -159,7 +159,7 @@ function useAddNewPerformer() {
     } else {
       dispatch(setPerformersWithStatus([]));
     }
-  }, [addPerformer?.items, addPerformer, dispatch]);
+  }, [addPerformer?.items, addPerformer?.isAdding, dispatch]);
 
   const onPerformerLookupChange = React.useCallback(
     (value: string) => {

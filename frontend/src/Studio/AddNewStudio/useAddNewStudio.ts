@@ -158,7 +158,7 @@ function useAddNewStudio() {
     } else {
       dispatch(setStudiosWithStatus([]));
     }
-  }, [addMovie?.items, addMovie, dispatch]);
+  }, [addMovie?.items, addMovie?.isAdding, dispatch]);
 
   const onStudioLookupChange = React.useCallback(
     (value: string) => {
