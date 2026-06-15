@@ -17,8 +17,9 @@ export function useDeleteSceneModalFooterHandler({
     (deleteFiles: boolean, addImportExclusion: boolean) => {
       onModalClose(); // Close modal immediately when delete is confirmed
       deleteMutation.mutate({
-        sceneIds,
-        options: { deleteFiles, addImportExclusion },
+        movieIds: sceneIds,
+        deleteFiles,
+        addImportExclusion,
       });
     },
     [sceneIds, onModalClose, deleteMutation]
