@@ -17,7 +17,8 @@ export function useDeleteMovieModalFooterHandler({
       onModalClose();
       mutate({
         movieIds,
-        options: { deleteFiles, addImportExclusion },
+        deleteFiles,
+        addImportExclusion,
       });
     },
     [movieIds, onModalClose, mutate]
