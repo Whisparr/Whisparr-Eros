@@ -18,7 +18,8 @@ export function useDeletePerformerModalFooterHandler({
       onModalClose(); // Close modal immediately when delete is confirmed
       deleteMutation.mutate({
         performerIds,
-        options: { deleteFiles, addImportExclusion },
+        deleteFiles,
+        addImportExclusion,
       });
     },
     [performerIds, onModalClose, deleteMutation]

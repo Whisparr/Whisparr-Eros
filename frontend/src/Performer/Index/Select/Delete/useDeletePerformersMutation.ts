@@ -1,52 +1,27 @@
-import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { queryClient } from 'App/queryClient';
-
-interface DeletePerformerOptions {
-  deleteFiles: boolean;
-  addImportExclusion: boolean;
-}
+import useApiMutation from 'Helpers/Hooks/useApiMutation';
 
 interface DeletePerformersPayload {
   performerIds: number[];
-  options: DeletePerformerOptions;
+  deleteFiles: boolean;
+  addImportExclusion: boolean;
 }
 
 export function useDeletePerformersMutation() {
   const navigate = useNavigate();
 
-  const mutation = useMutation<void, Error, DeletePerformersPayload>({
-    mutationFn: async ({ performerIds, options }: DeletePerformersPayload) => {
-      // Delete performers sequentially
-      for (const id of performerIds) {
-        const queryParams = new URLSearchParams({
-          deleteFiles: String(options.deleteFiles),
-          addImportExclusion: String(options.addImportExclusion),
+  const mutation = useApiMutation<unknown, DeletePerformersPayload>({
+    method: 'DELETE',
+    path: '/performer/editor',
+    mutationOptions: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: ['/performer/paged'],
         });
 
-        const response = await fetch(
-          `/api/v3/performer/${id}?${queryParams.toString()}`,
-          {
-            method: 'DELETE',
-            headers: {
-              'X-Api-Key': window.Whisparr.apiKey,
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(`Failed to delete performer ${id}`);
-        }
-      }
-    },
-    onSuccess: () => {
-      // Invalidate all performer paged queries
-      queryClient.invalidateQueries({
-        queryKey: ['/performer/paged'],
-      });
-
-      // Navigate back to performers list
-      navigate('/performers');
+        navigate('/performers');
+      },
     },
   });
 
