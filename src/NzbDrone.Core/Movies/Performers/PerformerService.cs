@@ -3,6 +3,7 @@ using System.Linq;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Datastore;
+using NzbDrone.Core.ImportLists.ImportExclusions;
 using NzbDrone.Core.MediaFiles;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Movies.Performers.Events;
@@ -26,6 +27,7 @@ namespace NzbDrone.Core.Movies.Performers
         Performer Update(Performer performer);
         List<Performer> Update(List<Performer> performers);
         void RemovePerformer(Performer performer);
+        void DeletePerformers(List<int> performerIds, bool deleteFiles, bool addImportExclusion = false);
         PagingSpec<Performer> Paged(PagingSpec<Performer> pagingSpec);
         public int Count();
     }
@@ -38,6 +40,7 @@ namespace NzbDrone.Core.Movies.Performers
         private readonly MovieService _movieService;
         private readonly MediaFileService _movieFileService;
         private readonly MovieStatisticsService _movieStatisticsService;
+        private readonly IImportListExclusionService _exclusionService;
         private readonly string _cacheName;
 
         public PerformerService(
@@ -46,7 +49,8 @@ namespace NzbDrone.Core.Movies.Performers
             IEventAggregator eventAggregator,
             MovieService movieService,
             MovieStatisticsService movieStatisticsService,
-            MediaFileService movieFileService)
+            MediaFileService movieFileService,
+            IImportListExclusionService exclusionService)
         {
             _performerRepo = performerRepo;
             _movieService = movieService;
@@ -54,6 +58,7 @@ namespace NzbDrone.Core.Movies.Performers
             _movieFileService = movieFileService;
             _eventAggregator = eventAggregator;
             _cacheManager = cacheManager;
+            _exclusionService = exclusionService;
             _cacheName = "Whisparr.Api.V3.Performers.PerformerResource_performerResources";
         }
 
@@ -155,6 +160,35 @@ namespace NzbDrone.Core.Movies.Performers
             _performerRepo.Delete(performer);
             _eventAggregator.PublishEvent(new PerformersDeletedEvent(new List<Performer> { performer }));
             RemovePerformerResourcesCache(performer.ForeignId);
+        }
+
+        public void DeletePerformers(List<int> performerIds, bool deleteFiles, bool addImportExclusion = false)
+        {
+            foreach (var id in performerIds)
+            {
+                var performer = GetById(id);
+
+                if (performer == null)
+                {
+                    continue;
+                }
+
+                var sceneIds = _movieService.GetByPerformerForeignId(performer.ForeignId).Select(x => x.Id).ToList();
+                _movieService.DeleteMovies(sceneIds, deleteFiles);
+
+                if (addImportExclusion)
+                {
+                    _exclusionService.AddExclusion(new ImportListExclusion
+                    {
+                        ForeignId = performer.ForeignId,
+                        MovieTitle = performer.Name,
+                        Type = ImportExclusionType.Performer,
+                        Reason = ImportExclusionReason.DuringDelete
+                    });
+                }
+
+                RemovePerformer(performer);
+            }
         }
 
         public List<string> AllPerformerForeignIds()

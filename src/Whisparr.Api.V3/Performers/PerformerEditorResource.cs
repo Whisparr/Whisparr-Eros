@@ -28,5 +28,11 @@ namespace Whisparr.Api.V3.Performers
 
         /// <summary>Instructions for applying tags to the performers.</summary>
         public ApplyTags ApplyTags { get; set; }
+
+        /// <summary>Whether to delete the performers' files from disk.</summary>
+        public bool DeleteFiles { get; set; }
+
+        /// <summary>Whether to add an import exclusion for the deleted performers.</summary>
+        public bool AddImportExclusion { get; set; }
     }
 }
