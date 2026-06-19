@@ -1,11 +1,12 @@
 import React from 'react';
 import Modal from 'Components/Modal/Modal';
-import { Image } from 'Studio/Studio';
+import Studio, { Image } from 'Studio/Studio';
 import AddNewStudioModalContent from './AddNewStudioModalContent';
 
 interface AddNewStudioModalProps {
   isOpen: boolean;
   onModalClose: () => void;
+  studio: Studio;
   foreignId: string;
   title: string;
   images: Image[];

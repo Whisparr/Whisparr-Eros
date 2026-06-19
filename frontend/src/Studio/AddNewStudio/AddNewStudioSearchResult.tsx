@@ -134,6 +134,7 @@ function AddNewStudioSearchResult({
 
       <AddNewStudioModal
         isOpen={isNewAddStudioModalOpen && !isExistingStudio}
+        studio={studio}
         foreignId={foreignId}
         title={title}
         images={images}
