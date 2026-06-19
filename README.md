@@ -1,6 +1,7 @@
-# Whisparr
+# Whisparr-Eros
 
 [![Build-Develop](https://github.com/Whisparr/Whisparr-Eros/actions/workflows/build_v3.yml/badge.svg?branch=eros-develop)](https://github.com/Whisparr/Whisparr-Eros/actions/workflows/build_v3.yml)
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/whisparr/whisparr-eros/total)
 [![Translation status](https://translate.servarr.com/widget/servarr/whisparr/svg-badge.svg)](https://translate.servarr.com/engage/servarr/?utm_source=widget)
 [![Docker](https://img.shields.io/badge/Docker-Info-blue)](https://wiki.servarr.com/whisparr/installation/docker)
 [![Backers on Open Collective](https://opencollective.com/Whisparr/backers/badge.svg)](#backers)

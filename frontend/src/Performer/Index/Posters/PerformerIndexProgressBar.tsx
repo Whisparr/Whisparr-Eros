@@ -46,6 +46,8 @@ function PerformerIndexProgressBar({
     progressBar = 100; // Show full bar for 0 progress
   } else if (progress < 100) {
     kind = monitored ? kinds.WARNING : kinds.DEFAULT;
+  } else if (progress === 100) {
+    kind = monitored ? kinds.SUCCESS : kinds.DEFAULT;
   }
 
   if (progressBar < 10) {

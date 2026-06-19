@@ -107,7 +107,7 @@ function EditSpecificationModalContent({
               <div>
                 <InlineMarkdown
                   data={translate('RegularExpressionsCanBeTested', {
-                    url: 'http://regexstorm.net/tester',
+                    url: 'http://regex101.com/',
                   })}
                 />
               </div>

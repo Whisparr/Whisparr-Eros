@@ -17,7 +17,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook.Resource
         public int? Age { get; set; }
         public string Ethnicity { get; set; }
         public string Country { get; set; }
-        public string EysColor { get; set; }
+        public string EyeColor { get; set; }
         public string HairColor { get; set; }
         public int? Height { get; set; }
         public string CupSize { get; set; }

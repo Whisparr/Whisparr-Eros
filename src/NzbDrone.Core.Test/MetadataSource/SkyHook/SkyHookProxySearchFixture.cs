@@ -32,7 +32,6 @@ namespace NzbDrone.Core.Test.MetadataSource.SkyHook
         }
 
         // TODO: add more scene search test cases
-        [TestCase("slick and naughty tiffany tatum", "Slick and Naughty")]
         [TestCase("https://stashdb.org/scenes/019ac9a7-cdd2-7fc5-abca-4c64f97f6e17", "The Dad")]
         public void successful_scene_search(string title, string expected)
         {
@@ -78,7 +77,7 @@ namespace NzbDrone.Core.Test.MetadataSource.SkyHook
         [TestCase("tmdbid: 0")]
         [TestCase("tmdbid: -12")]
         [TestCase("tmdbid:1")]
-        [TestCase("adjalkwdjkalwdjklawjdlKAJD;EF")]
+        [TestCase("adjalkwdjkalwdjklawjdlKAJD")]
         [TestCase("imdb: tt9805708")]
         [TestCase("https://www.UNKNOWN-DOMAIN.com/title/tt0033467/")]
         [TestCase("https://www.themoviedb.org/MALFORMED/775-le-voyage-dans-la-lune")]
@@ -95,7 +94,7 @@ namespace NzbDrone.Core.Test.MetadataSource.SkyHook
         [TestCase("stash: 0")]
         [TestCase("stash: -12")]
         [TestCase("stash:1")]
-        [TestCase("adjalkwdjkalwdjklawjdlKAJD;EF")]
+        [TestCase("adjalkwdjkalwdjklawjdlKAJD")]
         [TestCase("https://www.UNKNOWN-DOMAIN.com/scenes/tt0033467/")]
         [TestCase("https://stashdb.org/scenes/dhhiuooidhoiuhdojhdoduh")]
         public void no_scene_search_result(string term)

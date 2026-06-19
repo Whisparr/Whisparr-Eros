@@ -83,5 +83,13 @@ namespace Whisparr.Api.V3.Performers
 
             return Accepted(_performerService.Update(performersToUpdate).ToResource());
         }
+
+        [HttpDelete]
+        public object DeletePerformers([FromBody] PerformerEditorResource resource)
+        {
+            _performerService.DeletePerformers(resource.PerformerIds, resource.DeleteFiles, resource.AddImportExclusion);
+
+            return new { };
+        }
     }
 }

@@ -612,7 +612,8 @@ namespace Whisparr.Api.V3.Movies
                 Page = request.Page ?? 1,
                 PageSize = request.PageSize ?? 10,
                 SortKey = Sorting.GetSortKeyNormalized(_allowedMovieSortKeys.Contains(request.SortKey ?? "") ? request.SortKey : null),
-                SortDirection = request.SortDirection ?? NzbDrone.Core.Datastore.SortDirection.Ascending
+                SortDirection = request.SortDirection ?? NzbDrone.Core.Datastore.SortDirection.Ascending,
+                DefaultSortKeys = new List<string> { "movieMetadata.ReleaseDate", "movieMetadata.StudioTitle", "movieMetadata.SortTitle" }
             };
 
             if (hasTagFilter)

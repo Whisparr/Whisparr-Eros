@@ -152,5 +152,49 @@ namespace NzbDrone.Core.Test.ParserTests
         {
             Parser.Parser.ParseMovieTitle(title)?.Code.Should().Be(result);
         }
+
+        [TestCase("something random 77f1b861-91c1-4e6f-b0b1-3b1c46733fb2 anything")]
+        [TestCase("77f1b861-91c1-4e6f-b0b1-3b1c46733fb2")]
+        [TestCase("[77f1b861-91c1-4e6f-b0b1-3b1c46733fb2]")]
+        [TestCase("prefix 77f1b861-91c1-4e6f-b0b1-3b1c46733fb2 suffix")]
+        [TestCase("77f1b861-91c1-4e6f-b0b1-3b1c46733fb2.mkv")]
+        public void should_parse_stash_id_as_fallback_when_no_regex_matches(string title)
+        {
+            var result = Parser.Parser.ParseMovieTitle(title);
+
+            result.Should().NotBeNull();
+            result.StashId.Should().Be("77f1b861-91c1-4e6f-b0b1-3b1c46733fb2");
+            result.ReleaseTitle.Should().NotBeNullOrEmpty();
+            result.OriginalTitle.Should().Be(title);
+            result.IsScene.Should().BeTrue();
+        }
+
+        [TestCase("something random 77f1b861-91c1-4e6f-b0b1-3b1c46733fb2 anything")]
+        [TestCase("prefix 77f1b861-91c1-4e6f-b0b1-3b1c46733fb2 suffix")]
+        public void should_populate_all_required_fields_on_stash_id_fallback(string title)
+        {
+            var result = Parser.Parser.ParseMovieTitle(title);
+
+            result.Should().NotBeNull();
+            result.OriginalTitle.Should().Be(title);
+            result.ReleaseTitle.Should().NotBeNullOrEmpty();
+            result.SimpleReleaseTitle.Should().NotBeNullOrEmpty();
+            result.StashId.Should().Be("77f1b861-91c1-4e6f-b0b1-3b1c46733fb2");
+            result.ReleaseTokens.Should().NotBeNullOrEmpty();
+        }
+
+        [TestCase("no-valid-uuid-here")]
+        [TestCase("77f1b861-91c1-4e6f")]
+        [TestCase("")]
+        [TestCase("12345678-1234-5678-1234")]
+        public void should_not_parse_invalid_stash_id_as_fallback(string title)
+        {
+            var result = Parser.Parser.ParseMovieTitle(title);
+
+            if (result != null)
+            {
+                result.StashId.Should().BeNullOrEmpty();
+            }
+        }
     }
 }
