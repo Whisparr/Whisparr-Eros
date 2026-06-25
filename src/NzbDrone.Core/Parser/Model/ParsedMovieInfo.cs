@@ -33,8 +33,16 @@ namespace NzbDrone.Core.Parser.Model
         public int TmdbId { get; set; }
         public string HardcodedSubs { get; set; }
         public string ReleaseTokens { get; set; }
+        public string Season { get; set; }
+        public string EpisodeStart { get; set; }
+        public string EpisodeEnd { get; set; }
+        public string ParserSource { get; set; }
+        public bool IsNoDateEpisodic { get; set; }
+        public bool IsEpisodeRange { get; set; }
 
         public string MovieTitle => PrimaryMovieTitle;
+
+        public bool HasReleaseDate => ReleaseDate.IsNotNullOrWhiteSpace();
 
         public string PrimaryMovieTitle
         {
@@ -59,6 +67,11 @@ namespace NzbDrone.Core.Parser.Model
 
         public override string ToString()
         {
+            if (IsNoDateEpisodic)
+            {
+                return string.Format("{0} - no-date - {1} {2} [{3}]", StudioTitle, ReleaseTokens, Episode, Quality);
+            }
+
             var result = string.Format("{0} - {1} {2}", PrimaryMovieTitle, Year, Quality);
 
             if (IsScene)
