@@ -9,6 +9,7 @@
 - Added config kill switches (defaults: InteractiveOnly)
 - Added import conflict guard for grabbed no-date episodic targets
 - Core unit suite: 3950 passed, 0 failed
+- Diagnostics: structured debug logs in parser and resolver; Parse API inherits new ParsedMovieInfo fields via existing endpoint
 
 ## v1 limitations
 
