@@ -217,6 +217,22 @@ namespace NzbDrone.Core.Parser
         private static readonly Regex CleanQualityBracketsRegex = new Regex(@"\[[a-z0-9 ._-]+\]$",
                                                                    RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
+        private static readonly Regex BracketStudioSxxExxRangeRegex = new Regex(
+            @"^\[(?<studiotitle>[^\]]+)\]\s*(?<title>.+?)\s+S(?<season>\d{1,2})\s*E(?<from>\d{1,3})\s*[-–]\s*E?(?<to>\d{1,3})(?<tail>.*)$",
+            RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+        private static readonly Regex BracketStudioSxxExxRegex = new Regex(
+            @"^\[(?<studiotitle>[^\]]+)\]\s*(?<title>.+?)\s+S(?<season>\d{1,2})\s*E(?<episode>\d{1,3})(?<tail>.*)$",
+            RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+        private static readonly Regex BracketStudioSeasonEpisodeRegex = new Regex(
+            @"^\[(?<studiotitle>[^\]]+)\]\s*(?<title>.+?)\s+Season\s*(?<season>\d{1,2})\s*[:\-]?\s*Episode\s*(?<episode>\d{1,3})(?<tail>.*)$",
+            RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+        private static readonly Regex ExplicitNoDateEpisodicMarkerRegex = new Regex(
+            @"^\[(?<studiotitle>[^\]]+)\].*?(?:S\d{1,2}\s*E\d{1,3}|Season\s+\d{1,2}\s*[:\-]?\s*Episode\s+\d{1,3})",
+            RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
         private static readonly Regex YearInTitleRegex = new Regex(@"^(?<title>.+?)(?:\W|_.)?[\(\[]?(?<year>\d{4})[\]\)]?",
                                                                 RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
@@ -324,6 +340,8 @@ namespace NzbDrone.Core.Parser
                     allRegexes.AddRange(ReportTitleFolderRegex);
                 }
 
+                ParsedMovieInfo regexResult = null;
+
                 foreach (var regex in allRegexes)
                 {
                     var match = regex.Matches(simpleTitle);
@@ -396,7 +414,8 @@ namespace NzbDrone.Core.Parser
                                 result.ImdbId = ParseImdbId(simpleReleaseTitle);
                                 result.TmdbId = ParseTmdbId(simpleReleaseTitle);
 
-                                return result;
+                                regexResult = result;
+                                break;
                             }
                         }
                         catch (InvalidDateException ex)
@@ -405,6 +424,20 @@ namespace NzbDrone.Core.Parser
                             break;
                         }
                     }
+                }
+
+                if (ShouldTryNoDateEpisodicParse(originalTitle, regexResult))
+                {
+                    var noDateEpisodicResult = TryParseNoDateEpisodicRelease(originalTitle, releaseTitle, simpleTitle);
+                    if (noDateEpisodicResult != null)
+                    {
+                        return noDateEpisodicResult;
+                    }
+                }
+
+                if (regexResult != null)
+                {
+                    return regexResult;
                 }
 
                 // If we got here, it means we were unable to parse the title with any of the regexes. Let's do some final checks before giving up.
@@ -1035,6 +1068,129 @@ namespace NzbDrone.Core.Parser
             }
 
             return string.Empty;
+        }
+
+        private static bool ShouldTryNoDateEpisodicParse(string originalTitle, ParsedMovieInfo regexResult)
+        {
+            if (regexResult?.HasReleaseDate == true)
+            {
+                return false;
+            }
+
+            return HasExplicitNoDateEpisodicMarker(originalTitle);
+        }
+
+        private static bool HasExplicitNoDateEpisodicMarker(string title)
+        {
+            if (title.IsNullOrWhiteSpace())
+            {
+                return false;
+            }
+
+            return ExplicitNoDateEpisodicMarkerRegex.IsMatch(title);
+        }
+
+        private static ParsedMovieInfo TryParseNoDateEpisodicRelease(string originalTitle, string releaseTitle, string simpleTitle)
+        {
+            var titleToMatch = CleanQualityBracketsRegex.Replace(releaseTitle, string.Empty).Trim();
+
+            var match = BracketStudioSxxExxRangeRegex.Match(titleToMatch);
+            if (match.Success)
+            {
+                return BuildNoDateEpisodicParsedMovieInfo(
+                    originalTitle,
+                    releaseTitle,
+                    simpleTitle,
+                    match.Groups["studiotitle"].Value,
+                    match.Groups["title"].Value.Trim(),
+                    match.Groups["season"].Value,
+                    match.Groups["from"].Value,
+                    match.Groups["to"].Value,
+                    isRange: true);
+            }
+
+            match = BracketStudioSxxExxRegex.Match(titleToMatch);
+            if (match.Success)
+            {
+                return BuildNoDateEpisodicParsedMovieInfo(
+                    originalTitle,
+                    releaseTitle,
+                    simpleTitle,
+                    match.Groups["studiotitle"].Value,
+                    match.Groups["title"].Value.Trim(),
+                    match.Groups["season"].Value,
+                    match.Groups["episode"].Value,
+                    episodeEnd: null,
+                    isRange: false);
+            }
+
+            match = BracketStudioSeasonEpisodeRegex.Match(titleToMatch);
+            if (match.Success)
+            {
+                return BuildNoDateEpisodicParsedMovieInfo(
+                    originalTitle,
+                    releaseTitle,
+                    simpleTitle,
+                    match.Groups["studiotitle"].Value,
+                    match.Groups["title"].Value.Trim(),
+                    match.Groups["season"].Value,
+                    match.Groups["episode"].Value,
+                    episodeEnd: null,
+                    isRange: false);
+            }
+
+            return null;
+        }
+
+        private static ParsedMovieInfo BuildNoDateEpisodicParsedMovieInfo(
+            string originalTitle,
+            string releaseTitle,
+            string simpleTitle,
+            string studioTitle,
+            string baseTitle,
+            string season,
+            string episodeStart,
+            string episodeEnd = null,
+            bool isRange = false)
+        {
+            if (!int.TryParse(season, out var seasonNumber) || !int.TryParse(episodeStart, out var episodeNumber))
+            {
+                return null;
+            }
+
+            var studio = studioTitle.Replace('.', ' ').Replace('_', ' ').Trim();
+            var releaseTokens = baseTitle.Trim();
+
+            var result = new ParsedMovieInfo
+            {
+                StudioTitle = studio,
+                ReleaseTokens = releaseTokens,
+                MovieTitles = new List<string> { releaseTokens },
+                Season = seasonNumber.ToString(),
+                EpisodeStart = episodeNumber.ToString(),
+                EpisodeEnd = isRange && int.TryParse(episodeEnd, out var episodeEndNumber) ? episodeEndNumber.ToString() : null,
+                Episode = $"S{seasonNumber:00}E{episodeNumber:00}",
+                IsNoDateEpisodic = true,
+                IsEpisodeRange = isRange,
+                ParserSource = "NoDateEpisodic",
+                OriginalTitle = originalTitle,
+                ReleaseTitle = releaseTitle,
+                SimpleReleaseTitle = simpleTitle,
+                Quality = QualityParser.ParseQuality(originalTitle),
+                Languages = LanguageParser.ParseLanguages(simpleTitle)
+            };
+
+            Logger.Debug(
+                "NoDateEpisodicParser matched: Original='{0}', Studio='{1}', Title='{2}', Season={3}, EpisodeStart={4}, EpisodeEnd={5}, Quality='{6}'",
+                originalTitle,
+                studio,
+                releaseTokens,
+                seasonNumber,
+                episodeNumber,
+                episodeEnd ?? "null",
+                result.Quality);
+
+            return result;
         }
     }
 }
