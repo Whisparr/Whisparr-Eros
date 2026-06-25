@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using NLog;
 using NzbDrone.Common.Extensions;
+using NzbDrone.Core.Configuration;
 using NzbDrone.Core.IndexerSearch.Definitions;
 using NzbDrone.Core.Movies;
 using NzbDrone.Core.Parser.Model;
@@ -24,12 +25,15 @@ namespace NzbDrone.Core.Parser
         private static HashSet<ArabicRomanNumeral> _arabicRomanNumeralMappings;
 
         private readonly IMovieService _movieService;
+        private readonly IConfigService _configService;
         private readonly Logger _logger;
 
         public ParsingService(IMovieService movieService,
+                              IConfigService configService,
                               Logger logger)
         {
             _movieService = movieService;
+            _configService = configService;
             _logger = logger;
 
             if (_arabicRomanNumeralMappings == null)
@@ -252,6 +256,16 @@ namespace NzbDrone.Core.Parser
 
         private FindMovieResult GetSceneMovie(ParsedMovieInfo parsedMovieInfo, SearchCriteriaBase searchCriteria)
         {
+            if (parsedMovieInfo.IsNoDateEpisodic
+                && searchCriteria?.Movie != null
+                && IsNoDateEpisodicSearchAllowed(searchCriteria, parsedMovieInfo.IsEpisodeRange))
+            {
+                if (_movieService.IsNoDateEpisodicSceneMatch(parsedMovieInfo, searchCriteria.Movie, searchCriteria.InteractiveSearch))
+                {
+                    return new FindMovieResult(searchCriteria.Movie, MovieMatchType.Title);
+                }
+            }
+
             Movie movieInfo = null;
             Movie movie = null;
             try
@@ -291,6 +305,48 @@ namespace NzbDrone.Core.Parser
             }
 
             return new FindMovieResult(movieInfo, MovieMatchType.Title);
+        }
+
+        private bool IsNoDateEpisodicSearchAllowed(SearchCriteriaBase searchCriteria, bool isRangePack)
+        {
+            if (isRangePack)
+            {
+                var rangeMode = _configService.NoDateEpisodicRangePackMode;
+                if (rangeMode == NoDateEpisodicRangePackMode.Off)
+                {
+                    return false;
+                }
+
+                if (searchCriteria == null)
+                {
+                    return false;
+                }
+
+                if (searchCriteria.InteractiveSearch)
+                {
+                    return rangeMode >= NoDateEpisodicRangePackMode.InteractiveOnly;
+                }
+
+                return rangeMode >= NoDateEpisodicRangePackMode.InteractiveAndAutomatic;
+            }
+
+            var parsingMode = _configService.NoDateEpisodicParsingMode;
+            if (parsingMode == NoDateEpisodicParsingMode.Off)
+            {
+                return false;
+            }
+
+            if (searchCriteria == null)
+            {
+                return parsingMode == NoDateEpisodicParsingMode.AllIncludingRss;
+            }
+
+            if (searchCriteria.InteractiveSearch)
+            {
+                return parsingMode >= NoDateEpisodicParsingMode.InteractiveOnly;
+            }
+
+            return parsingMode >= NoDateEpisodicParsingMode.InteractiveAndAutomatic;
         }
     }
 }

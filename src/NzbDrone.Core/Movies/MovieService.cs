@@ -71,6 +71,7 @@ namespace NzbDrone.Core.Movies
         bool ExistsByMetadataId(int metadataId);
         void SetFileIds(List<Movie> movies);
         Dictionary<Movie, MovieParseMatchType> MatchMovies(string parsedMovieTitle, string releaseDate, string foreignId, string episode, List<Movie> movies, bool verifyDate, bool verifyEpisode);
+        bool IsNoDateEpisodicSceneMatch(ParsedMovieInfo parsedMovieInfo, Movie targetMovie, bool interactiveSearch);
         List<Movie> SearchMovies(string query);
         HashSet<int> AllMovieWithCollectionsTmdbIds();
     }
@@ -1160,6 +1161,171 @@ namespace NzbDrone.Core.Movies
             }
 
             return matches;
+        }
+
+        public bool IsNoDateEpisodicSceneMatch(ParsedMovieInfo parsedMovieInfo, Movie targetMovie, bool interactiveSearch)
+        {
+            if (parsedMovieInfo == null || targetMovie == null || !parsedMovieInfo.IsNoDateEpisodic)
+            {
+                return false;
+            }
+
+            if (targetMovie.MovieMetadata?.Value?.ItemType != ItemType.Scene)
+            {
+                _logger.Debug("NoDateEpisodicResolver rejected: target is not a scene");
+                return false;
+            }
+
+            if (!StudioMatchesNoDateEpisodic(parsedMovieInfo.StudioTitle, targetMovie))
+            {
+                _logger.Debug("NoDateEpisodicResolver rejected: studio mismatch '{0}' != '{1}'",
+                    parsedMovieInfo.StudioTitle,
+                    targetMovie.MovieMetadata.Value.StudioTitle);
+                return false;
+            }
+
+            if (!TitleMatchesNoDateEpisodic(parsedMovieInfo, targetMovie))
+            {
+                _logger.Debug("NoDateEpisodicResolver rejected: title score below threshold for target '{0}'", targetMovie.Title);
+                return false;
+            }
+
+            if (!TryExtractSeasonEpisode(targetMovie.Title, out var targetSeason, out var targetEpisode))
+            {
+                _logger.Debug("NoDateEpisodicResolver rejected: unable to extract season/episode from target '{0}'", targetMovie.Title);
+                return false;
+            }
+
+            if (!EpisodeWithinRange(parsedMovieInfo, targetSeason, targetEpisode))
+            {
+                _logger.Debug("NoDateEpisodicResolver rejected: target episode S{0:D2}E{1:D2} outside parsed range S{2}E{3}-S{4}E{5}",
+                    targetSeason,
+                    targetEpisode,
+                    parsedMovieInfo.Season,
+                    parsedMovieInfo.EpisodeStart,
+                    parsedMovieInfo.Season,
+                    parsedMovieInfo.EpisodeEnd ?? parsedMovieInfo.EpisodeStart);
+                return false;
+            }
+
+            _logger.Debug(
+                "NoDateEpisodicResolver target match: Target='{0}', Parsed='{1} / {2} / S{3}E{4}-S{5}E{6}', Reason='title+studio+episode-in-range'",
+                targetMovie.Title,
+                parsedMovieInfo.StudioTitle,
+                parsedMovieInfo.ReleaseTokens,
+                parsedMovieInfo.Season,
+                parsedMovieInfo.EpisodeStart,
+                parsedMovieInfo.Season,
+                parsedMovieInfo.IsEpisodeRange ? parsedMovieInfo.EpisodeEnd : parsedMovieInfo.EpisodeStart);
+
+            return true;
+        }
+
+        private bool StudioMatchesNoDateEpisodic(string parsedStudioTitle, Movie targetMovie)
+        {
+            var targetStudioTitle = targetMovie.MovieMetadata?.Value?.StudioTitle;
+            if (parsedStudioTitle.IsNullOrWhiteSpace() || targetStudioTitle.IsNullOrWhiteSpace())
+            {
+                return false;
+            }
+
+            var studios = _studioService.FindAllByTitle(parsedStudioTitle);
+            var targetStudioForeignId = targetMovie.MovieMetadata.Value.StudioForeignId;
+
+            if (studios != null && studios.Any(studio => studio.ForeignId == targetStudioForeignId))
+            {
+                return true;
+            }
+
+            return Parser.Parser.NormalizeEpisodeTitle(parsedStudioTitle)
+                .Equals(Parser.Parser.NormalizeEpisodeTitle(targetStudioTitle));
+        }
+
+        private bool TitleMatchesNoDateEpisodic(ParsedMovieInfo parsedMovieInfo, Movie targetMovie)
+        {
+            var parsedTitle = NormalizeNoDateEpisodicTitle(parsedMovieInfo.ReleaseTokens);
+            var targetTitle = NormalizeNoDateEpisodicTitle(StripSeasonEpisodeFromTitle(targetMovie.Title));
+
+            if (parsedTitle.Equals(targetTitle))
+            {
+                return true;
+            }
+
+            var minimumConfidence = _configService.NoDateEpisodicMinimumConfidence;
+            var score = FuzzySharp.Fuzz.Ratio(parsedTitle, targetTitle);
+            return score >= minimumConfidence;
+        }
+
+        private static string NormalizeNoDateEpisodicTitle(string value)
+        {
+            return Parser.Parser.NormalizeEpisodeTitle(value);
+        }
+
+        private static string StripSeasonEpisodeFromTitle(string title)
+        {
+            if (title.IsNullOrWhiteSpace())
+            {
+                return string.Empty;
+            }
+
+            title = Regex.Replace(title, @"\s*S\d{1,2}\s*E\d{1,3}\s*$", string.Empty, RegexOptions.IgnoreCase);
+            title = Regex.Replace(title, @"\s*Season\s+\d{1,2}\s*[:\-]?\s*Episode\s+\d{1,3}\s*$", string.Empty, RegexOptions.IgnoreCase);
+
+            return title.Trim();
+        }
+
+        public static bool TryExtractSeasonEpisode(string value, out int season, out int episode)
+        {
+            season = 0;
+            episode = 0;
+
+            if (value.IsNullOrWhiteSpace())
+            {
+                return false;
+            }
+
+            var sxxExxMatch = Regex.Match(value, @"S(?<season>\d{1,2})\s*E(?<episode>\d{1,3})", RegexOptions.IgnoreCase);
+            if (sxxExxMatch.Success
+                && int.TryParse(sxxExxMatch.Groups["season"].Value, out season)
+                && int.TryParse(sxxExxMatch.Groups["episode"].Value, out episode))
+            {
+                return true;
+            }
+
+            var seasonEpisodeMatch = Regex.Match(value, @"Season\s+(?<season>\d{1,2})\s*[:\-]?\s*Episode\s+(?<episode>\d{1,3})", RegexOptions.IgnoreCase);
+            if (seasonEpisodeMatch.Success
+                && int.TryParse(seasonEpisodeMatch.Groups["season"].Value, out season)
+                && int.TryParse(seasonEpisodeMatch.Groups["episode"].Value, out episode))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool EpisodeWithinRange(ParsedMovieInfo parsed, int season, int episode)
+        {
+            if (!int.TryParse(parsed.Season, out var parsedSeason) || parsedSeason != season)
+            {
+                return false;
+            }
+
+            if (!int.TryParse(parsed.EpisodeStart, out var episodeStart))
+            {
+                return false;
+            }
+
+            if (!parsed.IsEpisodeRange)
+            {
+                return episodeStart == episode;
+            }
+
+            if (!int.TryParse(parsed.EpisodeEnd, out var episodeEnd))
+            {
+                return episodeStart == episode;
+            }
+
+            return episode >= episodeStart && episode <= episodeEnd;
         }
 
         /// <summary> Return a single movie from a list or throw an exception if multiple movies are found. </summary>
