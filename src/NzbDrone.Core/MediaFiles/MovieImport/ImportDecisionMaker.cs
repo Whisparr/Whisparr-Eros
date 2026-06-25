@@ -268,6 +268,14 @@ namespace NzbDrone.Core.MediaFiles.MovieImport
 
                         // Switch the movie so that the QualityProfile is populated
                         localMovie.Movie = matchedMovie;
+
+                        if (_configService.PreferGrabbedTargetOnImport
+                            && localMovie.DownloadClientMovieInfo?.IsNoDateEpisodic == true
+                            && fileMovieInfo?.IsNoDateEpisodic == true
+                            && !_movieService.IsNoDateEpisodicSceneMatch(fileMovieInfo, matchedMovie, true))
+                        {
+                            return new ImportDecision(localMovie, new ImportRejection(ImportRejectionReason.UnknownMovie, "Downloaded file episode conflicts with grabbed no-date episodic scene target"));
+                        }
                     }
                     else
                     {
