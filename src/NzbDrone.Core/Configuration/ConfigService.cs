@@ -554,6 +554,30 @@ namespace NzbDrone.Core.Configuration
             set { SetValue("WhisparrFuzzyTitleMatchingThreshold", value); }
         }
 
+        public NoDateEpisodicParsingMode NoDateEpisodicParsingMode
+        {
+            get { return GetValueEnum("WhisparrNoDateEpisodicParsingMode", NoDateEpisodicParsingMode.InteractiveOnly); }
+            set { SetValue("WhisparrNoDateEpisodicParsingMode", value); }
+        }
+
+        public NoDateEpisodicRangePackMode NoDateEpisodicRangePackMode
+        {
+            get { return GetValueEnum("WhisparrNoDateEpisodicRangePackMode", NoDateEpisodicRangePackMode.InteractiveOnly); }
+            set { SetValue("WhisparrNoDateEpisodicRangePackMode", value); }
+        }
+
+        public int NoDateEpisodicMinimumConfidence
+        {
+            get { return GetValueInt("WhisparrNoDateEpisodicMinimumConfidence", 85); }
+            set { SetValue("WhisparrNoDateEpisodicMinimumConfidence", value); }
+        }
+
+        public bool PreferGrabbedTargetOnImport
+        {
+            get { return GetValueBoolean("WhisparrPreferGrabbedTargetOnImport", true); }
+            set { SetValue("WhisparrPreferGrabbedTargetOnImport", value); }
+        }
+
         public bool WhisparrValidateRuntime
         {
             get { return GetValueBoolean("WhisparrValidateRuntime", false); }

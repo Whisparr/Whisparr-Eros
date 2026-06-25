@@ -120,6 +120,10 @@ namespace NzbDrone.Core.Configuration
         bool WhisparrCacheStudioAPI { get; }
         bool WhisparrCorruptFileDetection { get; }
         int WhisparrFuzzyTitleMatchingThreshold { get; }
+        NoDateEpisodicParsingMode NoDateEpisodicParsingMode { get; }
+        NoDateEpisodicRangePackMode NoDateEpisodicRangePackMode { get; }
+        int NoDateEpisodicMinimumConfidence { get; }
+        bool PreferGrabbedTargetOnImport { get; }
         MovieMetadataType WhisparrMovieMetadataSource { get; }
         bool WhisparrValidateRuntime { get; }
         int WhisparrValidateRuntimeLimit { get; }
