@@ -22,7 +22,7 @@ namespace NzbDrone.Core.CustomFormats
 
     public class ResolutionSpecification : CustomFormatSpecificationBase
     {
-        private static readonly ResolutionSpecificationValidator Validator = new ResolutionSpecificationValidator();
+        private static readonly ResolutionSpecificationValidator Validator = new();
 
         public override int Order => 6;
         public override string ImplementationName => "Resolution";

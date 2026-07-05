@@ -22,7 +22,7 @@ namespace NzbDrone.Core.CustomFormats
 
     public class SourceSpecification : CustomFormatSpecificationBase
     {
-        private static readonly SourceSpecificationValidator Validator = new SourceSpecificationValidator();
+        private static readonly SourceSpecificationValidator Validator = new();
 
         public override int Order => 5;
         public override string ImplementationName => "Source";
