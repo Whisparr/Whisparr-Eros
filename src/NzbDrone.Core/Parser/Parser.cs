@@ -99,6 +99,12 @@ namespace NzbDrone.Core.Parser
             new Regex(@"\[(?<studiotitle>.+?)?\].?[(]+(?<episode>[eE]+\d{1,6})?[\)]",
                 RegexOptions.IgnoreCase | RegexOptions.Compiled),
 
+            // SCENE year-only bracket: "[Studio.com / Network.com] Performer - Title [2026 ., tags, 1080p, SiteRip]"
+            // A common multi-brand posting format: brand(s) in the first bracket, then performer/title, then a
+            // YEAR-ONLY date bracket (no month/day). Matched by studio + year + fuzzy title downstream.
+            new Regex(@"^\[(?<studiotitle>[^\]]+)\][-_. ]*(?<releasetoken>.+?)[-_. ]*\[[ ]*(?<airyear>(?:19|20)\d{2})[ ]*[.,\]]",
+                RegexOptions.IgnoreCase | RegexOptions.Compiled),
+
             // Some german or french tracker formats (missing year, ...) (Only applies to german and TrueFrench releases) - see ParserFixture for examples and tests - french removed as it broke all movies w/ french titles
             new Regex(@"^(?<title>(?![(\[]).+?)((\W|_))(" + EditionRegex + @".{1,3})?(?:(?<!(19|20)\d{2}.*?)(?<!(?:Good|The)[_ .-])(German|TrueFrench))(.+?)(?=((19|20)\d{2}|$))(?<year>(19|20)\d{2}(?!p|i|\d+|\]|\W\d+))?(\W+|_|$)(?!\\)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
 
@@ -231,6 +237,9 @@ namespace NzbDrone.Core.Parser
         private static readonly Regex UniCodeRegex = new Regex(@"[^\u0000-\u007F]+", RegexOptions.Compiled);
 
         private static readonly Regex RequestInfoRegex = new Regex(@"^(?:\[.+?\])+", RegexOptions.Compiled);
+
+        // Strips domain suffixes (Site.com -> Site) anywhere in the studio token, not just the trailing one.
+        private static readonly Regex StudioDomainSuffixRegex = new Regex(@"\.(com|net|org|tv|xxx|co|io)\b", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         private static readonly string[] Numbers = new[] { "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine" };
         private static Dictionary<string, string> _umlautMappings = new Dictionary<string, string>
@@ -867,56 +876,72 @@ namespace NzbDrone.Core.Parser
                         airYear = CultureInfo.CurrentCulture.Calendar.ToFourDigitYear(airYear);
                     }
 
-                    // Try to Parse as a daily show
-                    int airmonth;
-                    if (matchCollection[0].Groups["airmonthname"].Success)
+                    if (matchCollection[0].Groups["airmonth"].Success && matchCollection[0].Groups["airday"].Success)
                     {
-                        // Convert month name to number
-                        var monthName = matchCollection[0].Groups["airmonthname"].Value;
-                        airmonth = DateTime.ParseExact(monthName, "MMMM", CultureInfo.InvariantCulture).Month;
+                        // Try to Parse as a daily show
+                        int airmonth;
+                        if (matchCollection[0].Groups["airmonthname"].Success)
+                        {
+                            // Convert month name to number
+                            var monthName = matchCollection[0].Groups["airmonthname"].Value;
+                            airmonth = DateTime.ParseExact(monthName, "MMMM", CultureInfo.InvariantCulture).Month;
+                        }
+                        else
+                        {
+                            airmonth = Convert.ToInt32(matchCollection[0].Groups["airmonth"].Value);
+                        }
+
+                        var airday = Convert.ToInt32(matchCollection[0].Groups["airday"].Value);
+
+                        // Swap day and month if month is bigger than 12 (scene fail)
+                        if (airmonth > 12)
+                        {
+                            var tempDay = airday;
+                            airday = airmonth;
+                            airmonth = tempDay;
+                        }
+
+                        DateTime airDate;
+
+                        try
+                        {
+                            airDate = new DateTime(airYear, airmonth, airday);
+                        }
+                        catch (Exception)
+                        {
+                            throw new InvalidDateException("Invalid date found: {0}-{1}-{2}", airYear, airmonth, airday);
+                        }
+
+                        // Check if episode is in the future (most likely a parse error)
+                        if (airDate > DateTime.Now.AddDays(1).Date)
+                        {
+                            throw new InvalidDateException("Invalid date found: {0}", airDate);
+                        }
+
+                        // If the parsed air date is before 1970 and the title year wasn't matched (not a match for the Plex DVR format) throw an error
+                        if (airDate < new DateTime(1970, 1, 1) && matchCollection[0].Groups["titleyear"].Value.IsNullOrWhiteSpace())
+                        {
+                            throw new InvalidDateException("Invalid date found: {0}", airDate);
+                        }
+
+                        result.ReleaseDate = airDate.ToString(Movie.RELEASE_DATE_FORMAT);
                     }
                     else
                     {
-                        airmonth = Convert.ToInt32(matchCollection[0].Groups["airmonth"].Value);
+                        // Year-only release (e.g. "[Studio] Performer (Title) [2026 .]"): no month/day available.
+                        // Downstream scene matching falls back to studio + year + fuzzy title.
+                        result.Year = airYear;
                     }
-
-                    var airday = Convert.ToInt32(matchCollection[0].Groups["airday"].Value);
-
-                    // Swap day and month if month is bigger than 12 (scene fail)
-                    if (airmonth > 12)
-                    {
-                        var tempDay = airday;
-                        airday = airmonth;
-                        airmonth = tempDay;
-                    }
-
-                    DateTime airDate;
-
-                    try
-                    {
-                        airDate = new DateTime(airYear, airmonth, airday);
-                    }
-                    catch (Exception)
-                    {
-                        throw new InvalidDateException("Invalid date found: {0}-{1}-{2}", airYear, airmonth, airday);
-                    }
-
-                    // Check if episode is in the future (most likely a parse error)
-                    if (airDate > DateTime.Now.AddDays(1).Date)
-                    {
-                        throw new InvalidDateException("Invalid date found: {0}", airDate);
-                    }
-
-                    // If the parsed air date is before 1970 and the title year wasn't matched (not a match for the Plex DVR format) throw an error
-                    if (airDate < new DateTime(1970, 1, 1) && matchCollection[0].Groups["titleyear"].Value.IsNullOrWhiteSpace())
-                    {
-                        throw new InvalidDateException("Invalid date found: {0}", airDate);
-                    }
-
-                    result.ReleaseDate = airDate.ToString(Movie.RELEASE_DATE_FORMAT);
                 }
 
-                var studioTitle = matchCollection[0].Groups["studiotitle"].Value.TrimAtEnd(".com").Replace('.', ' ').Replace('_', ' ');
+                // Scene sites are frequently cross-posted under several umbrella brands, e.g.
+                // "[SiteA.com / SiteB.com]" or "[SiteC.com / SiteD.com]". Take the
+                // first (most specific) brand and strip domain suffixes so the token resolves to a known
+                // studio. Previously this produced e.g. "SiteA com / SiteB", which matched nothing.
+                var studioTitleToken = matchCollection[0].Groups["studiotitle"].Value.Split('/', '|')[0];
+                studioTitleToken = StudioDomainSuffixRegex.Replace(studioTitleToken, string.Empty);
+
+                var studioTitle = studioTitleToken.TrimAtEnd(".com").Replace('.', ' ').Replace('_', ' ');
                 studioTitle = RequestInfoRegex.Replace(studioTitle, "").Trim(' ');
 
                 var lastSeasonEpisodeStringIndex = matchCollection[0].Groups["studiotitle"].EndIndex();

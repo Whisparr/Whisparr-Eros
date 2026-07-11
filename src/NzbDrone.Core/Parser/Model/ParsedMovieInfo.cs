@@ -53,7 +53,7 @@ namespace NzbDrone.Core.Parser.Model
         {
             get
             {
-                return ReleaseDate.IsNotNullOrWhiteSpace() || Episode.IsNotNullOrWhiteSpace() || Code.IsNotNullOrWhiteSpace() || StashId.IsNotNullOrWhiteSpace();
+                return ReleaseDate.IsNotNullOrWhiteSpace() || Episode.IsNotNullOrWhiteSpace() || Code.IsNotNullOrWhiteSpace() || StashId.IsNotNullOrWhiteSpace() || (StudioTitle.IsNotNullOrWhiteSpace() && Year > 0);
             }
         }
 
