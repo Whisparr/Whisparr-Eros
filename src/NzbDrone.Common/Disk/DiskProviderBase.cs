@@ -552,17 +552,39 @@ namespace NzbDrone.Common.Disk
         {
             try
             {
-                var mounts = GetAllMounts();
+                // IsParentPath walks the path back up to the root, and that walk is identical for every mount, so
+                // do it once here rather than once per mount. MountCheck performs a lookup per movie path, so on a
+                // large library this comparison runs hundreds of thousands of times.
+                var ancestors = GetAncestors(path);
 
-                return mounts.Where(drive => drive.RootDirectory.PathEquals(path) ||
-                                             drive.RootDirectory.IsParentPath(path))
-                          .MaxBy(drive => drive.RootDirectory.Length);
+                return GetAllMounts()
+                    .Where(drive => drive.RootDirectory.PathEquals(path) || IsAncestor(ancestors, drive.RootDirectory))
+                    .MaxBy(drive => drive.RootDirectory.Length);
             }
             catch (Exception ex)
             {
                 Logger.Debug(ex, $"Failed to get mount for path {path}");
                 return null;
             }
+        }
+
+        private static List<OsPath> GetAncestors(string path)
+        {
+            var ancestors = new List<OsPath>();
+
+            for (var directory = new OsPath(path).Directory; directory != OsPath.Null; directory = directory.Directory)
+            {
+                ancestors.Add(directory);
+            }
+
+            return ancestors;
+        }
+
+        private static bool IsAncestor(List<OsPath> ancestors, string parentPath)
+        {
+            var parent = new OsPath(parentPath);
+
+            return ancestors.Any(a => a.Equals(parent, true));
         }
 
         protected List<DriveInfo> GetDriveInfoMounts()

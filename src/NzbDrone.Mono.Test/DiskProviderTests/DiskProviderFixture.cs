@@ -175,6 +175,49 @@ namespace NzbDrone.Mono.Test.DiskProviderTests
             mount.RootDirectory.Should().Be(rootDir);
         }
 
+        private void GivenMounts(params string[] rootDirs)
+        {
+            Mocker.GetMock<ISymbolicLinkResolver>()
+                .Setup(v => v.GetCompleteRealPath(It.IsAny<string>()))
+                .Returns<string>(s => s);
+
+            Mocker.GetMock<IProcMountProvider>()
+                .Setup(v => v.GetMounts())
+                .Returns(rootDirs.Select(r =>
+                    (IMount)new ProcMount(DriveType.Fixed, r, r, "myfs", new MountOptions(new Dictionary<string, string>())))
+                    .ToList());
+        }
+
+        [Test]
+        public void should_return_the_longest_matching_mount()
+        {
+            GivenMounts("/mnt/nested-test", "/mnt/nested-test/media");
+
+            var mount = Subject.GetMount("/mnt/nested-test/media/movie/file.mkv");
+
+            mount.RootDirectory.Should().Be("/mnt/nested-test/media");
+        }
+
+        [Test]
+        public void should_return_mount_when_path_is_the_mount_root()
+        {
+            GivenMounts("/mnt/exact-test");
+
+            var mount = Subject.GetMount("/mnt/exact-test");
+
+            mount.RootDirectory.Should().Be("/mnt/exact-test");
+        }
+
+        [Test]
+        public void should_return_mount_for_path_containing_relative_segments()
+        {
+            GivenMounts("/mnt/relative-test");
+
+            var mount = Subject.GetMount("/mnt/other/../relative-test");
+
+            mount.RootDirectory.Should().Be("/mnt/relative-test");
+        }
+
         [Test]
         public void should_only_enumerate_mounts_once_for_repeated_lookups()
         {
