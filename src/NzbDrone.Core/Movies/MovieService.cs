@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using DryIoc.ImTools;
@@ -721,78 +720,7 @@ namespace NzbDrone.Core.Movies
                 }
             }
 
-            // Year-only fallback: release parsed a studio + year but no full date
-            // (e.g. "[Studio.com / Network.com] Performer (Title) [2026 .]"). Match by studio + year + fuzzy title.
-            if (result == null
-                && parsedMovieInfo.ReleaseDate.IsNullOrWhiteSpace()
-                && parsedMovieInfo.Year > 0
-                && parsedMovieInfo.StudioTitle.IsNotNullOrWhiteSpace())
-            {
-                result = FindSceneByStudioAndYear(parsedMovieInfo);
-            }
-
             return result;
-        }
-
-        private Movie FindSceneByStudioAndYear(ParsedMovieInfo parsedMovieInfo)
-        {
-            var studios = _studioService.FindAllByTitle(parsedMovieInfo.StudioTitle);
-            if (studios == null || studios.Count == 0)
-            {
-                return null;
-            }
-
-            var yearPrefix = parsedMovieInfo.Year.ToString(CultureInfo.InvariantCulture) + "-";
-            var threshold = _configService.WhisparrFuzzyTitleMatchingThreshold;
-            var normalizedRelease = parsedMovieInfo.ReleaseTokens.CleanMovieTitle().StripSpaces();
-            var candidates = new List<Movie>();
-
-            foreach (var studio in studios)
-            {
-                foreach (var scene in _movieRepository.GetByStudioForeignId(studio.ForeignId))
-                {
-                    var match = MatchYearOnlyScene(scene, yearPrefix, normalizedRelease, parsedMovieInfo.ReleaseTokens, threshold);
-                    if (match != null)
-                    {
-                        candidates.Add(match);
-                    }
-                }
-            }
-
-            var distinct = candidates.DistinctBy(m => m.Id).ToList();
-            if (distinct.Count == 1)
-            {
-                _logger.Debug("Year-only scene match: [{0}] {1} -> {2}", parsedMovieInfo.StudioTitle, parsedMovieInfo.Year, distinct[0].Title);
-                return distinct[0];
-            }
-
-            return null;
-        }
-
-        // Extracted from FindSceneByStudioAndYear to keep cognitive complexity down: a scene
-        // only qualifies if its release date falls in the target year, and then matches either
-        // by title containment (unambiguous, tried first) or fuzzy ratio. Returns the matched
-        // movie or null.
-        private Movie MatchYearOnlyScene(Movie scene, string yearPrefix, string normalizedRelease, string releaseTokens, int threshold)
-        {
-            var relDate = scene.MovieMetadata?.Value?.ReleaseDate;
-            if (string.IsNullOrWhiteSpace(relDate) || !relDate.StartsWith(yearPrefix, StringComparison.Ordinal))
-            {
-                return null;
-            }
-
-            // Containment first: Scene titles often embed the performer name and the release
-            // token repeats it (e.g. "Jane Doe - Jane Doe Sample Scene Title"), which drags
-            // the symmetric fuzzy ratio below threshold. If the scene's clean title is contained in the
-            // normalized release token it is an unambiguous match.
-            var sceneClean = scene.CleanTitle;
-            if (sceneClean.IsNotNullOrWhiteSpace() && sceneClean.Length >= 6 && normalizedRelease.Contains(sceneClean, StringComparison.Ordinal))
-            {
-                return scene;
-            }
-
-            var fuzzy = FuzzyMatchReleaseTokens(releaseTokens, scene);
-            return fuzzy.movie != null && fuzzy.score >= threshold ? fuzzy.movie : null;
         }
 
         /// <summary> Get a set of all TMDB IDs for movies with collections in the repository. </summary>

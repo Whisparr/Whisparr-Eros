@@ -71,6 +71,7 @@ namespace NzbDrone.Core.Test.ParserTests
         [TestCase("Oil Explosion 3 (Elegant Angel) XXX DVDRip NEW 2018", "Oil Explosion 3")]
         [TestCase("Elegant Angel.2024.Oil Explosion 8.1080p-VERIFIED", "Oil Explosion 8")]
         [TestCase("Blacked.2024.Level Up Vol. 3.1080p-VERIFIED", "Level Up Vol  3")]
+        [TestCase("[EvilAngel] Strap Attack #16 [2012] [1080p]", "Strap Attack #16")]
         public void should_parse_movie_title(string postTitle, string title)
         {
             Parser.Parser.ParseMovieTitle(postTitle).PrimaryMovieTitle.Should().Be(title);
