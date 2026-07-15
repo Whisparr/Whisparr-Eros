@@ -870,62 +870,53 @@ namespace NzbDrone.Core.Parser
                         airYear = CultureInfo.CurrentCulture.Calendar.ToFourDigitYear(airYear);
                     }
 
-                    if ((matchCollection[0].Groups["airmonth"].Success || matchCollection[0].Groups["airmonthname"].Success) && matchCollection[0].Groups["airday"].Success)
+                    // Try to Parse as a daily show
+                    int airmonth;
+                    if (matchCollection[0].Groups["airmonthname"].Success)
                     {
-                        // Try to Parse as a daily show
-                        int airmonth;
-                        if (matchCollection[0].Groups["airmonthname"].Success)
-                        {
-                            // Convert month name to number
-                            var monthName = matchCollection[0].Groups["airmonthname"].Value;
-                            airmonth = DateTime.ParseExact(monthName, "MMMM", CultureInfo.InvariantCulture).Month;
-                        }
-                        else
-                        {
-                            airmonth = Convert.ToInt32(matchCollection[0].Groups["airmonth"].Value);
-                        }
-
-                        var airday = Convert.ToInt32(matchCollection[0].Groups["airday"].Value);
-
-                        // Swap day and month if month is bigger than 12 (scene fail)
-                        if (airmonth > 12)
-                        {
-                            var tempDay = airday;
-                            airday = airmonth;
-                            airmonth = tempDay;
-                        }
-
-                        DateTime airDate;
-
-                        try
-                        {
-                            airDate = new DateTime(airYear, airmonth, airday);
-                        }
-                        catch (Exception)
-                        {
-                            throw new InvalidDateException("Invalid date found: {0}-{1}-{2}", airYear, airmonth, airday);
-                        }
-
-                        // Check if episode is in the future (most likely a parse error)
-                        if (airDate > DateTime.Now.AddDays(1).Date)
-                        {
-                            throw new InvalidDateException("Invalid date found: {0}", airDate);
-                        }
-
-                        // If the parsed air date is before 1970 and the title year wasn't matched (not a match for the Plex DVR format) throw an error
-                        if (airDate < new DateTime(1970, 1, 1) && matchCollection[0].Groups["titleyear"].Value.IsNullOrWhiteSpace())
-                        {
-                            throw new InvalidDateException("Invalid date found: {0}", airDate);
-                        }
-
-                        result.ReleaseDate = airDate.ToString(Movie.RELEASE_DATE_FORMAT);
+                        // Convert month name to number
+                        var monthName = matchCollection[0].Groups["airmonthname"].Value;
+                        airmonth = DateTime.ParseExact(monthName, "MMMM", CultureInfo.InvariantCulture).Month;
                     }
                     else
                     {
-                        // Year-only release (e.g. "[Studio] Performer (Title) [2026 .]"): no month/day available.
-                        // Downstream scene matching falls back to studio + year + fuzzy title.
-                        result.Year = airYear;
+                        airmonth = Convert.ToInt32(matchCollection[0].Groups["airmonth"].Value);
                     }
+
+                    var airday = Convert.ToInt32(matchCollection[0].Groups["airday"].Value);
+
+                    // Swap day and month if month is bigger than 12 (scene fail)
+                    if (airmonth > 12)
+                    {
+                        var tempDay = airday;
+                        airday = airmonth;
+                        airmonth = tempDay;
+                    }
+
+                    DateTime airDate;
+
+                    try
+                    {
+                        airDate = new DateTime(airYear, airmonth, airday);
+                    }
+                    catch (Exception)
+                    {
+                        throw new InvalidDateException("Invalid date found: {0}-{1}-{2}", airYear, airmonth, airday);
+                    }
+
+                    // Check if episode is in the future (most likely a parse error)
+                    if (airDate > DateTime.Now.AddDays(1).Date)
+                    {
+                        throw new InvalidDateException("Invalid date found: {0}", airDate);
+                    }
+
+                    // If the parsed air date is before 1970 and the title year wasn't matched (not a match for the Plex DVR format) throw an error
+                    if (airDate < new DateTime(1970, 1, 1) && matchCollection[0].Groups["titleyear"].Value.IsNullOrWhiteSpace())
+                    {
+                        throw new InvalidDateException("Invalid date found: {0}", airDate);
+                    }
+
+                    result.ReleaseDate = airDate.ToString(Movie.RELEASE_DATE_FORMAT);
                 }
 
                 // Scene sites are frequently cross-posted under several umbrella brands, e.g.
@@ -935,7 +926,7 @@ namespace NzbDrone.Core.Parser
                 var studioTitleToken = matchCollection[0].Groups["studiotitle"].Value.Split(new[] { '/', '|' })[0];
                 studioTitleToken = StudioDomainSuffixRegex.Replace(studioTitleToken, string.Empty);
 
-                var studioTitle = studioTitleToken.TrimAtEnd(".com").Replace('.', ' ').Replace('_', ' ');
+                var studioTitle = studioTitleToken.Replace('.', ' ').Replace('_', ' ');
                 studioTitle = RequestInfoRegex.Replace(studioTitle, "").Trim(' ');
 
                 var lastSeasonEpisodeStringIndex = matchCollection[0].Groups["studiotitle"].EndIndex();
