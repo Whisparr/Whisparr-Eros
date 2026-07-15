@@ -102,8 +102,10 @@ namespace NzbDrone.Core.Parser
             // SCENE year-only bracket: "[Studio.com / Network.com] Performer - Title [2026 ., tags, 1080p, SiteRip]"
             // A common multi-brand posting format: brand(s) in the first bracket, then performer/title, then a
             // YEAR-ONLY date bracket (no month/day). Matched by studio + year + fuzzy title downstream.
-            new Regex(@"^\[(?<studiotitle>[^\]]+)\][-_. ]*(?<releasetoken>.+?)[-_. ]*\[[ ]*(?<airyear>(?:19|20)\d{2})[ ]*[.,\]]",
-                RegexOptions.IgnoreCase | RegexOptions.Compiled),
+            new Regex(
+                @"^\[(?<studiotitle>[^\]]+)\][-_. ]*(?<releasetoken>.+?)[-_. ]*\[[ ]*(?<airyear>(?:19|20)\d{2})[ ]*[.,\]]",
+                RegexOptions.IgnoreCase | RegexOptions.Compiled,
+                TimeSpan.FromSeconds(5)),
 
             // Some german or french tracker formats (missing year, ...) (Only applies to german and TrueFrench releases) - see ParserFixture for examples and tests - french removed as it broke all movies w/ french titles
             new Regex(@"^(?<title>(?![(\[]).+?)((\W|_))(" + EditionRegex + @".{1,3})?(?:(?<!(19|20)\d{2}.*?)(?<!(?:Good|The)[_ .-])(German|TrueFrench))(.+?)(?=((19|20)\d{2}|$))(?<year>(19|20)\d{2}(?!p|i|\d+|\]|\W\d+))?(\W+|_|$)(?!\\)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
@@ -239,7 +241,7 @@ namespace NzbDrone.Core.Parser
         private static readonly Regex RequestInfoRegex = new Regex(@"^(?:\[.+?\])+", RegexOptions.Compiled);
 
         // Strips domain suffixes (Site.com -> Site) anywhere in the studio token, not just the trailing one.
-        private static readonly Regex StudioDomainSuffixRegex = new Regex(@"\.(com|net|org|tv|xxx|co|io)\b", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex StudioDomainSuffixRegex = new Regex(@"\.(com|net|org|tv|xxx|co|io)\b", RegexOptions.IgnoreCase | RegexOptions.Compiled, TimeSpan.FromSeconds(5));
 
         private static readonly string[] Numbers = new[] { "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine" };
         private static Dictionary<string, string> _umlautMappings = new Dictionary<string, string>

@@ -776,7 +776,7 @@ namespace NzbDrone.Core.Movies
         private Movie MatchYearOnlyScene(Movie scene, string yearPrefix, string normalizedRelease, string releaseTokens, int threshold)
         {
             var relDate = scene.MovieMetadata?.Value?.ReleaseDate;
-            if (relDate.IsNullOrWhiteSpace() || !relDate.StartsWith(yearPrefix, StringComparison.Ordinal))
+            if (string.IsNullOrWhiteSpace(relDate) || !relDate.StartsWith(yearPrefix, StringComparison.Ordinal))
             {
                 return null;
             }
