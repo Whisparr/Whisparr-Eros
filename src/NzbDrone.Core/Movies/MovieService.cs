@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using DryIoc.ImTools;
@@ -741,7 +742,7 @@ namespace NzbDrone.Core.Movies
                 return null;
             }
 
-            var yearPrefix = parsedMovieInfo.Year.ToString() + "-";
+            var yearPrefix = parsedMovieInfo.Year.ToString(CultureInfo.InvariantCulture) + "-";
             var threshold = _configService.WhisparrFuzzyTitleMatchingThreshold;
             var normalizedRelease = parsedMovieInfo.ReleaseTokens.CleanMovieTitle().StripSpaces();
             var candidates = new List<Movie>();
@@ -750,27 +751,10 @@ namespace NzbDrone.Core.Movies
             {
                 foreach (var scene in _movieRepository.GetByStudioForeignId(studio.ForeignId))
                 {
-                    var relDate = scene.MovieMetadata?.Value?.ReleaseDate;
-                    if (relDate.IsNullOrWhiteSpace() || !relDate.StartsWith(yearPrefix))
+                    var match = MatchYearOnlyScene(scene, yearPrefix, normalizedRelease, parsedMovieInfo.ReleaseTokens, threshold);
+                    if (match != null)
                     {
-                        continue;
-                    }
-
-                    // Containment first: Scene titles often embed the performer name and the release
-                    // token repeats it (e.g. "Jane Doe - Jane Doe Sample Scene Title"), which drags
-                    // the symmetric fuzzy ratio below threshold. If the scene's clean title is contained in the
-                    // normalized release token it is an unambiguous match.
-                    var sceneClean = scene.CleanTitle;
-                    if (sceneClean.IsNotNullOrWhiteSpace() && sceneClean.Length >= 6 && normalizedRelease.Contains(sceneClean))
-                    {
-                        candidates.Add(scene);
-                        continue;
-                    }
-
-                    var fuzzy = FuzzyMatchReleaseTokens(parsedMovieInfo.ReleaseTokens, scene);
-                    if (fuzzy.movie != null && fuzzy.score >= threshold)
-                    {
-                        candidates.Add(fuzzy.movie);
+                        candidates.Add(match);
                     }
                 }
             }
@@ -783,6 +767,32 @@ namespace NzbDrone.Core.Movies
             }
 
             return null;
+        }
+
+        // Extracted from FindSceneByStudioAndYear to keep cognitive complexity down: a scene
+        // only qualifies if its release date falls in the target year, and then matches either
+        // by title containment (unambiguous, tried first) or fuzzy ratio. Returns the matched
+        // movie or null.
+        private Movie MatchYearOnlyScene(Movie scene, string yearPrefix, string normalizedRelease, string releaseTokens, int threshold)
+        {
+            var relDate = scene.MovieMetadata?.Value?.ReleaseDate;
+            if (relDate.IsNullOrWhiteSpace() || !relDate.StartsWith(yearPrefix, StringComparison.Ordinal))
+            {
+                return null;
+            }
+
+            // Containment first: Scene titles often embed the performer name and the release
+            // token repeats it (e.g. "Jane Doe - Jane Doe Sample Scene Title"), which drags
+            // the symmetric fuzzy ratio below threshold. If the scene's clean title is contained in the
+            // normalized release token it is an unambiguous match.
+            var sceneClean = scene.CleanTitle;
+            if (sceneClean.IsNotNullOrWhiteSpace() && sceneClean.Length >= 6 && normalizedRelease.Contains(sceneClean, StringComparison.Ordinal))
+            {
+                return scene;
+            }
+
+            var fuzzy = FuzzyMatchReleaseTokens(releaseTokens, scene);
+            return fuzzy.movie != null && fuzzy.score >= threshold ? fuzzy.movie : null;
         }
 
         /// <summary> Get a set of all TMDB IDs for movies with collections in the repository. </summary>

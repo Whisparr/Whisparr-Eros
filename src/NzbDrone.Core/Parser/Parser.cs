@@ -938,7 +938,7 @@ namespace NzbDrone.Core.Parser
                 // "[SiteA.com / SiteB.com]" or "[SiteC.com / SiteD.com]". Take the
                 // first (most specific) brand and strip domain suffixes so the token resolves to a known
                 // studio. Previously this produced e.g. "SiteA com / SiteB", which matched nothing.
-                var studioTitleToken = matchCollection[0].Groups["studiotitle"].Value.Split('/', '|')[0];
+                var studioTitleToken = matchCollection[0].Groups["studiotitle"].Value.Split(new[] { '/', '|' })[0];
                 studioTitleToken = StudioDomainSuffixRegex.Replace(studioTitleToken, string.Empty);
 
                 var studioTitle = studioTitleToken.TrimAtEnd(".com").Replace('.', ' ').Replace('_', ' ');
