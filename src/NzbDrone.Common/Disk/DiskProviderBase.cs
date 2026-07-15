@@ -155,7 +155,7 @@ namespace NzbDrone.Common.Disk
             }
             catch (Exception e)
             {
-                Logger.Trace("Directory '{0}' isn't writable. {1}", path, e.Message);
+                Logger.Trace(e, "Directory '{0}' isn't writable.", path);
                 return false;
             }
         }
@@ -405,11 +405,11 @@ namespace NzbDrone.Common.Disk
             File.SetLastWriteTime(path, dateTime);
         }
 
-        public bool IsFileLocked(string file)
+        public bool IsFileLocked(string path)
         {
             try
             {
-                using (File.Open(file, FileMode.Open, FileAccess.Read, FileShare.None))
+                using (File.Open(path, FileMode.Open, FileAccess.Read, FileShare.None))
                 {
                     return false;
                 }
@@ -451,20 +451,6 @@ namespace NzbDrone.Common.Disk
                 {
                     var newAttributes = attributes & ~FileAttributes.ReadOnly;
                     File.SetAttributes(path, newAttributes);
-                }
-            }
-        }
-
-        private static void RemoveReadOnlyFolder(string path)
-        {
-            if (Directory.Exists(path))
-            {
-                var dirInfo = new DirectoryInfo(path);
-
-                if (dirInfo.Attributes.HasFlag(FileAttributes.ReadOnly))
-                {
-                    var newAttributes = dirInfo.Attributes & ~FileAttributes.ReadOnly;
-                    dirInfo.Attributes = newAttributes;
                 }
             }
         }
@@ -587,7 +573,7 @@ namespace NzbDrone.Common.Disk
             return ancestors.Any(a => a.Equals(parent, true));
         }
 
-        protected List<DriveInfo> GetDriveInfoMounts()
+        protected static List<DriveInfo> GetDriveInfoMounts()
         {
             return DriveInfo.GetDrives()
                             .Where(d => d.IsReady)
