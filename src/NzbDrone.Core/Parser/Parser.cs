@@ -876,7 +876,7 @@ namespace NzbDrone.Core.Parser
                         airYear = CultureInfo.CurrentCulture.Calendar.ToFourDigitYear(airYear);
                     }
 
-                    if (matchCollection[0].Groups["airmonth"].Success && matchCollection[0].Groups["airday"].Success)
+                    if ((matchCollection[0].Groups["airmonth"].Success || matchCollection[0].Groups["airmonthname"].Success) && matchCollection[0].Groups["airday"].Success)
                     {
                         // Try to Parse as a daily show
                         int airmonth;

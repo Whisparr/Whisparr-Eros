@@ -71,6 +71,8 @@ namespace NzbDrone.Core.Test.ParserTests
         [TestCase("[Vixen] Matthew Meie, Erica Mori & Era Queen - Bratty College Girls Have Naughty Threesome (2025-12-03) [2160p]", "Vixen")]
         [TestCase("[Vixen] Matthew Meie, Erica Mori & Era Queen - Bratty College Girls Have Naughty Threesome (2025-12-03) [2160p].mp4", "Vixen")]
         [TestCase("[Studio.com] (E09) Perfomer(aka Alias) [2015 г., All Sex, BJ, IR, 720p]", "Studio")]
+        [TestCase("[EvilAngel] Strap Attack #16 [2012] [1080p]", "EvilAngel")]
+        [TestCase("[EvilAngel.com / Gonzo.com] Some Performer - Multi Brand Test [2024]", "EvilAngel")]
         public void should_correctly_parse_studio_names(string title, string result)
         {
             Parser.Parser.ParseMovieTitle(title).StudioTitle.Should().Be(result);
@@ -127,6 +129,8 @@ namespace NzbDrone.Core.Test.ParserTests
         [TestCase("[Vixen] Matthew Meie, Erica Mori & Era Queen - Bratty College Girls Have Naughty Threesome (2025-12-03) [2160p]", "matthew meie erica mori and era queen bratty college girls have naughty threesome")]
         [TestCase("[Vixen] Matthew Meie, Erica Mori & Era Queen - Bratty College Girls Have Naughty Threesome (2025-12-03) [2160p].mp4", "matthew meie erica mori and era queen bratty college girls have naughty threesome")]
         [TestCase("[Studio.com] (E09) Perfomer(aka Alias) [2015 г., All Sex, BJ, IR, 720p]", "perfomer aka alias")]
+        [TestCase("[EvilAngel] Strap Attack #16 [2012] [1080p]", "strap attack 16")]
+        [TestCase("[EvilAngel.com / Gonzo.com] Some Performer - Multi Brand Test [2024]", "some performer multi brand test")]
         public void should_correctly_parse_normalize_release_token(string title, string result)
         {
             var releaseTokens = Parser.Parser.ParseMovieTitle(title).ReleaseTokens;
