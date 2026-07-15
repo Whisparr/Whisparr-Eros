@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using NLog;
+using NzbDrone.Common.Cache;
 using NzbDrone.Common.EnsureThat;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Extensions;
@@ -14,6 +15,22 @@ namespace NzbDrone.Common.Disk
     public abstract class DiskProviderBase : IDiskProvider
     {
         private static readonly Logger Logger = NzbDroneLogger.GetLogger(typeof(DiskProviderBase));
+
+        // Enumerating the mount table is expensive: on Linux it reads /proc/mounts and stats every mount point,
+        // which on a host with a lot of network mounts is hundreds of syscalls (and round trips) per call.
+        // GetMount is called once per movie path by MountCheck, so a library with a few hundred thousand movies
+        // performed that enumeration a few hundred thousand times.
+        //
+        // Only the mount topology is cached. Free space is not: IMount implementations read it live from the
+        // underlying DriveInfo/UnixDriveInfo on every property access, so cached mounts never report stale space.
+        private static readonly TimeSpan MountCacheLifetime = TimeSpan.FromSeconds(15);
+
+        private readonly ICached<List<IMount>> _mountCache;
+
+        protected DiskProviderBase(ICacheManager cacheManager)
+        {
+            _mountCache = cacheManager.GetCache<List<IMount>>(GetType(), "AllMounts");
+        }
 
         public static StringComparison PathStringComparison
         {
@@ -509,7 +526,16 @@ namespace NzbDrone.Common.Disk
             return GetAllMounts().Where(d => !IsSpecialMount(d)).ToList();
         }
 
-        protected virtual List<IMount> GetAllMounts()
+        // The returned list is shared between callers for the lifetime of the cache entry, treat it as read-only.
+        private List<IMount> GetAllMounts()
+        {
+            // The lifetime has to be passed explicitly, GetCache has no default and a null lifetime never expires.
+            return _mountCache.Get("all", FetchAllMounts, MountCacheLifetime);
+        }
+
+        // Don't call this from a constructor, overrides depend on fields that derived constructors haven't
+        // assigned yet. Going through GetAllMounts() keeps it lazy.
+        protected virtual List<IMount> FetchAllMounts()
         {
             return GetDriveInfoMounts().Where(d => d.DriveType == DriveType.Fixed || d.DriveType == DriveType.Network || d.DriveType == DriveType.Removable)
                                        .Select(d => new DriveInfoMount(d))

@@ -5,6 +5,7 @@ using System.Linq;
 using Mono.Unix;
 using Mono.Unix.Native;
 using NLog;
+using NzbDrone.Common.Cache;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnsureThat;
 using NzbDrone.Common.EnvironmentInfo;
@@ -23,7 +24,8 @@ namespace NzbDrone.Mono.Disk
         private readonly ISymbolicLinkResolver _symLinkResolver;
         private readonly ICreateRefLink _createRefLink;
 
-        public DiskProvider(IProcMountProvider procMountProvider, ISymbolicLinkResolver symLinkResolver, ICreateRefLink createRefLink, Logger logger)
+        public DiskProvider(IProcMountProvider procMountProvider, ISymbolicLinkResolver symLinkResolver, ICreateRefLink createRefLink, ICacheManager cacheManager, Logger logger)
+            : base(cacheManager)
         {
             _procMountProvider = procMountProvider;
             _symLinkResolver = symLinkResolver;
@@ -166,7 +168,7 @@ namespace NzbDrone.Mono.Disk
             }
         }
 
-        protected override List<IMount> GetAllMounts()
+        protected override List<IMount> FetchAllMounts()
         {
             var mounts = new List<IMount>();
 

@@ -176,6 +176,19 @@ namespace NzbDrone.Mono.Test.DiskProviderTests
         }
 
         [Test]
+        public void should_only_enumerate_mounts_once_for_repeated_lookups()
+        {
+            GivenSpecialMount("/mnt/cache-test");
+
+            Subject.GetMount("/mnt/cache-test/dir/one.mkv");
+            Subject.GetMount("/mnt/cache-test/dir/two.mkv");
+            Subject.GetMounts();
+
+            Mocker.GetMock<IProcMountProvider>()
+                  .Verify(v => v.GetMounts(), Times.Once());
+        }
+
+        [Test]
         public void should_copy_folder_permissions()
         {
             var src = GetTempFilePath();
