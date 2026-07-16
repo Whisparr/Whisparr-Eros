@@ -232,6 +232,9 @@ namespace NzbDrone.Core.Parser
 
         private static readonly Regex RequestInfoRegex = new Regex(@"^(?:\[.+?\])+", RegexOptions.Compiled);
 
+        // Strips domain suffixes (Site.com -> Site) anywhere in the studio token, not just the trailing one.
+        private static readonly Regex StudioDomainSuffixRegex = new Regex(@"\.(com|net|org|tv|xxx|co|io)\b", RegexOptions.IgnoreCase | RegexOptions.Compiled, TimeSpan.FromSeconds(5));
+
         private static readonly string[] Numbers = new[] { "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine" };
         private static Dictionary<string, string> _umlautMappings = new Dictionary<string, string>
         {
@@ -916,7 +919,14 @@ namespace NzbDrone.Core.Parser
                     result.ReleaseDate = airDate.ToString(Movie.RELEASE_DATE_FORMAT);
                 }
 
-                var studioTitle = matchCollection[0].Groups["studiotitle"].Value.TrimAtEnd(".com").Replace('.', ' ').Replace('_', ' ');
+                // Scene sites are frequently cross-posted under several umbrella brands, e.g.
+                // "[SiteA.com / SiteB.com]" or "[SiteC.com / SiteD.com]". Take the
+                // first (most specific) brand and strip domain suffixes so the token resolves to a known
+                // studio. Previously this produced e.g. "SiteA com / SiteB", which matched nothing.
+                var studioTitleToken = matchCollection[0].Groups["studiotitle"].Value.Split(new[] { '/', '|' })[0];
+                studioTitleToken = StudioDomainSuffixRegex.Replace(studioTitleToken, string.Empty);
+
+                var studioTitle = studioTitleToken.Replace('.', ' ').Replace('_', ' ');
                 studioTitle = RequestInfoRegex.Replace(studioTitle, "").Trim(' ');
 
                 var lastSeasonEpisodeStringIndex = matchCollection[0].Groups["studiotitle"].EndIndex();
