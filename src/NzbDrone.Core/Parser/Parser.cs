@@ -344,21 +344,33 @@ namespace NzbDrone.Core.Parser
 
                             if (result != null)
                             {
-                                // TODO: Add tests for this!
                                 var simpleReleaseTitle = SimpleReleaseTitleRegex.Replace(releaseTitle, string.Empty);
 
                                 var simpleTitleReplaceString = match[0].Groups["title"].Success ? match[0].Groups["title"].Value : result.PrimaryMovieTitle;
 
                                 if (simpleTitleReplaceString.IsNotNullOrWhiteSpace())
                                 {
-                                    if (match[0].Groups["title"].Success && match[0].Groups["title"].Index < simpleReleaseTitle.Length)
+                                    var titleReplacement = simpleTitleReplaceString.Contains('.') ? "A.Movie" : "A Movie";
+                                    var releaseTokens = result.ReleaseTokens?.Trim('.', ' ', '-', '_');
+
+                                    // For a scene release the "title" capture runs to the end of the string, so it spans
+                                    // the quality block as well as the title, and its offsets count characters in
+                                    // simpleTitle, which has had the quality and codec tokens deleted. Replacing on those
+                                    // offsets overruns into simpleReleaseTitle's quality block and shreds the codec token.
+                                    // ReleaseTokens is cut from releaseTitle at the title boundary, so swapping it out by
+                                    // value keeps the quality block intact for custom formats to match against.
+                                    if (releaseTokens.IsNotNullOrWhiteSpace() && simpleReleaseTitle.Contains(releaseTokens))
+                                    {
+                                        simpleReleaseTitle = simpleReleaseTitle.Replace(releaseTokens, titleReplacement);
+                                    }
+                                    else if (match[0].Groups["title"].Success && match[0].Groups["title"].Index < simpleReleaseTitle.Length)
                                     {
                                         simpleReleaseTitle = simpleReleaseTitle.Remove(match[0].Groups["title"].Index, match[0].Groups["title"].Length)
-                                                                               .Insert(match[0].Groups["title"].Index, simpleTitleReplaceString.Contains('.') ? "A.Movie" : "A Movie");
+                                                                               .Insert(match[0].Groups["title"].Index, titleReplacement);
                                     }
                                     else
                                     {
-                                        simpleReleaseTitle = simpleReleaseTitle.Replace(simpleTitleReplaceString, simpleTitleReplaceString.Contains('.') ? "A.Movie" : "A Movie");
+                                        simpleReleaseTitle = simpleReleaseTitle.Replace(simpleTitleReplaceString, titleReplacement);
                                     }
                                 }
 

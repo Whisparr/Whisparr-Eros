@@ -171,6 +171,33 @@ namespace NzbDrone.Core.Test.ParserTests
             result.IsScene.Should().BeTrue();
         }
 
+        // The title capture is measured against a string that has already had the quality and codec
+        // tokens stripped, so replacing the title on those offsets used to overrun into the quality
+        // block and shred the codec token that Release Title custom formats match on.
+        [TestCase("Studio.26.07.09.Performer.Its.Great.In.The.Sample.XXX.1080p.x265-GROUP", "x265")]
+        [TestCase("Studio.26.07.09.Performer.Title.XXX.1080p.x265-GROUP", "x265")]
+        [TestCase("Studio.26.07.09.Performer.A.Much.Longer.Scene.Title.XXX.1080p.x265-GROUP", "x265")]
+        [TestCase("Studio2.24.07.26.Performer.Plain.Title.Words.Here.XXX.1080p.HEVC.x265.PRT", "x265")]
+        [TestCase("Studio.22.10.18.Title.XXX.720p.HEVC.x265.PRT[XvX]", "x265")]
+        [TestCase("Studio.26.07.09.Performer.Title.XXX.1080p.h264-GROUP", "h264")]
+        public void should_keep_codec_token_in_simple_release_title(string title, string codec)
+        {
+            var result = Parser.Parser.ParseMovieTitle(title);
+
+            result.Should().NotBeNull();
+            result.SimpleReleaseTitle.Should().Contain(codec);
+        }
+
+        [TestCase("Studio.26.07.09.Performer.Its.Great.In.The.Sample.XXX.1080p.x265-GROUP", "Studio.26.07.09.A.Movie.XXX.1080p.x265-GROUP")]
+        [TestCase("Studio.26.07.09.Performer.Title.XXX.1080p.x265-GROUP", "Studio.26.07.09.A.Movie.XXX.1080p.x265-GROUP")]
+        public void should_replace_only_the_title_tokens_in_simple_release_title(string title, string expected)
+        {
+            var result = Parser.Parser.ParseMovieTitle(title);
+
+            result.Should().NotBeNull();
+            result.SimpleReleaseTitle.Should().Be(expected);
+        }
+
         [TestCase("something random 77f1b861-91c1-4e6f-b0b1-3b1c46733fb2 anything")]
         [TestCase("prefix 77f1b861-91c1-4e6f-b0b1-3b1c46733fb2 suffix")]
         public void should_populate_all_required_fields_on_stash_id_fallback(string title)
