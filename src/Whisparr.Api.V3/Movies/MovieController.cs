@@ -610,7 +610,9 @@ namespace Whisparr.Api.V3.Movies
             var pageSpec = new NzbDrone.Core.Datastore.PagingSpec<Movie>
             {
                 Page = request.Page ?? 1,
-                PageSize = request.PageSize ?? 10,
+
+                // The index page size options allow up to 1000 inclusive.
+                PageSize = request.PageSize > 0 && request.PageSize <= 1000 ? request.PageSize.Value : 10,
                 SortKey = Sorting.GetSortKeyNormalized(_allowedMovieSortKeys.Contains(request.SortKey ?? "") ? request.SortKey : null),
                 SortDirection = request.SortDirection ?? NzbDrone.Core.Datastore.SortDirection.Ascending,
                 DefaultSortKeys = new List<string> { "movieMetadata.ReleaseDate", "movieMetadata.StudioTitle", "movieMetadata.SortTitle" }
