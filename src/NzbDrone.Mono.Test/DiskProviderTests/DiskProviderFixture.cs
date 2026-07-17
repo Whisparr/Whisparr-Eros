@@ -54,7 +54,7 @@ namespace NzbDrone.Mono.Test.DiskProviderTests
             SetWritePermissionsInternal(path, writable, false);
         }
 
-        protected void SetWritePermissionsInternal(string path, bool writable, bool setgid)
+        protected static void SetWritePermissionsInternal(string path, bool writable, bool setgid)
         {
             // Remove Write permissions, we're still owner so we can clean it up, but we'll have to do that explicitly.
             Syscall.stat(path, out var stat);
@@ -173,6 +173,62 @@ namespace NzbDrone.Mono.Test.DiskProviderTests
 
             mount.Should().NotBeNull();
             mount.RootDirectory.Should().Be(rootDir);
+        }
+
+        private void GivenMounts(params string[] rootDirs)
+        {
+            Mocker.GetMock<ISymbolicLinkResolver>()
+                .Setup(v => v.GetCompleteRealPath(It.IsAny<string>()))
+                .Returns<string>(s => s);
+
+            Mocker.GetMock<IProcMountProvider>()
+                .Setup(v => v.GetMounts())
+                .Returns(rootDirs.Select(r =>
+                    (IMount)new ProcMount(DriveType.Fixed, r, r, "myfs", new MountOptions(new Dictionary<string, string>())))
+                    .ToList());
+        }
+
+        [Test]
+        public void should_return_the_longest_matching_mount()
+        {
+            GivenMounts("/mnt/nested-test", "/mnt/nested-test/media");
+
+            var mount = Subject.GetMount("/mnt/nested-test/media/movie/file.mkv");
+
+            mount.RootDirectory.Should().Be("/mnt/nested-test/media");
+        }
+
+        [Test]
+        public void should_return_mount_when_path_is_the_mount_root()
+        {
+            GivenMounts("/mnt/exact-test");
+
+            var mount = Subject.GetMount("/mnt/exact-test");
+
+            mount.RootDirectory.Should().Be("/mnt/exact-test");
+        }
+
+        [Test]
+        public void should_return_mount_for_path_containing_relative_segments()
+        {
+            GivenMounts("/mnt/relative-test");
+
+            var mount = Subject.GetMount("/mnt/other/../relative-test");
+
+            mount.RootDirectory.Should().Be("/mnt/relative-test");
+        }
+
+        [Test]
+        public void should_only_enumerate_mounts_once_for_repeated_lookups()
+        {
+            GivenSpecialMount("/mnt/cache-test");
+
+            Subject.GetMount("/mnt/cache-test/dir/one.mkv");
+            Subject.GetMount("/mnt/cache-test/dir/two.mkv");
+            Subject.GetMounts();
+
+            Mocker.GetMock<IProcMountProvider>()
+                  .Verify(v => v.GetMounts(), Times.Once());
         }
 
         [Test]

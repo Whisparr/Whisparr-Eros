@@ -30,8 +30,11 @@ namespace NzbDrone.Core.HealthCheck.Checks
 
         public override HealthCheck Check()
         {
+            // Pass the root folders in, otherwise every cache miss re-queries them from the database, once per movie.
+            var allRootFolders = _rootFolderService.All();
+
             var rootFolders = _movieService.AllMoviePaths()
-                .Select(s => _rootFolderService.GetBestRootFolderPath(s.Value))
+                .Select(s => _rootFolderService.GetBestRootFolderPath(s.Value, allRootFolders))
                 .Distinct();
 
             var missingRootFolders = rootFolders.Where(s => !s.IsPathValid(PathValidationType.CurrentOs) || !_diskProvider.FolderExists(s))

@@ -52,9 +52,12 @@ namespace NzbDrone.Core.DiskSpace
             // Get all movie paths and find the correct root folder for each. For each unique root folder path,
             // ensure the path exists and get its path root and return all unique path roots.
 
+            // Pass the root folders in, otherwise every cache miss re-queries them from the database, once per movie.
+            var allRootFolders = _rootFolderService.All();
+
             return _movieService.AllMoviePaths()
                 .Where(s => s.Value.IsPathValid(PathValidationType.CurrentOs))
-                .Select(s => _rootFolderService.GetBestRootFolderPath(s.Value))
+                .Select(s => _rootFolderService.GetBestRootFolderPath(s.Value, allRootFolders))
                 .Distinct()
                 .Where(r => _diskProvider.FolderExists(r))
                 .Select(r => _diskProvider.GetPathRoot(r))
