@@ -55,10 +55,16 @@ jobs:
           # inherited from upstream (which glob-based matching cannot separate).
           # `|| true` keeps the default bash `-eo pipefail` shell from aborting the
           # step when no base tag matches yet (seed window) or when `head` closes the
-          # pipe early (SIGPIPE); an empty result then falls back below.
-          BASE=$(git tag --merged HEAD --sort=-v:refname 2>/dev/null \
-            | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n1 | sed 's/^v//' || true)
-          BASE=${BASE:-${{ env.VERSION_FALLBACK }}}
+          # pipe early (SIGPIPE).
+          BASE_TAG=$(git tag --merged HEAD --sort=-v:refname 2>/dev/null \
+            | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n1 || true)
+          if [ -n "$BASE_TAG" ]; then
+            BASE="${BASE_TAG#v}"
+            echo "Base version ${BASE} (from tag ${BASE_TAG})"
+          else
+            BASE="${{ env.VERSION_FALLBACK }}"
+            echo "Base version ${BASE} (from VERSION_FALLBACK; no vX.Y.Z tag reachable)"
+          fi
 
           if [[ "${{ github.ref_name }}" == "eros-develop" ]]; then
             SEMVER_LABEL="develop"
