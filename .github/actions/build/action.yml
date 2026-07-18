@@ -8,6 +8,9 @@ inputs:
   version:
     description: "Version number to build"
     required: true
+  assembly_version:
+    description: "Assembly version (major.minor.patch.build) to stamp"
+    required: true
   framework:
     description: ".net framework used for the build"
     required: true
@@ -38,7 +41,7 @@ runs:
         echo "SDK_PATH=${{ env.DOTNET_ROOT }}/sdk/${DOTNET_VERSION}" >> "$GITHUB_ENV"
         echo "WHISPARR_VERSION=${{ inputs.version }}" >> "$GITHUB_ENV"
         echo "BRANCH=${{ inputs.branch }}" >> "$GITHUB_ENV"
-        echo "WHISPARR_ASSEMBLY_VERSION=${{ env.WHISPARR_ASSEMBLY_VERSION }}" >> "$GITHUB_ENV"
+        echo "WHISPARR_ASSEMBLY_VERSION=${{ inputs.assembly_version }}" >> "$GITHUB_ENV"
 
         if [ "$RUNNER_OS" == "Windows" ]; then
           echo "NUGET_PACKAGES=D:\nuget\packages" >> "$GITHUB_ENV"

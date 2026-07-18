@@ -24,8 +24,10 @@ env:
   FRAMEWORK: net10.0
   RAW_BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
   WHISPARR_MAJOR_VERSION: 3
-  VERSION: 3.3.4
-  WHISPARR_ASSEMBLY_VERSION: 3.3.4.${{ github.run_number }}
+  # Base version now comes from the newest base tag (vX.Y.Z) reachable from the
+  # building branch; this is only the fallback for the seed window before any
+  # base tag exists. See prepare job below.
+  VERSION_FALLBACK: 3.3.4
 
 jobs:
   prepare:
@@ -34,12 +36,30 @@ jobs:
       framework: ${{ steps.variables.outputs.framework }}
       major_version: ${{ steps.variables.outputs.major_version }}
       version: ${{ steps.variables.outputs.version }}
+      assembly_version: ${{ steps.variables.outputs.assembly_version }}
       branch: ${{ steps.variables.outputs.branch }}
     steps:
+      - name: Check out
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0 # fetches tags; needed to read the version marker
+
       - name: Setup Environment Variables
         id: variables
         shell: bash
         run: |
+          # Base version = highest base tag (strictly vX.Y.Z) reachable from THIS
+          # branch's history. --merged keeps it reachability-scoped so eros-develop
+          # and eros each resolve their own base; the strict regex rejects both the
+          # CI-minted -develop.N/-release.N tags and the legacy 4-part vX.Y.Z.B tags
+          # inherited from upstream (which glob-based matching cannot separate).
+          # `|| true` keeps the default bash `-eo pipefail` shell from aborting the
+          # step when no base tag matches yet (seed window) or when `head` closes the
+          # pipe early (SIGPIPE); an empty result then falls back below.
+          BASE=$(git tag --merged HEAD --sort=-v:refname 2>/dev/null \
+            | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n1 | sed 's/^v//' || true)
+          BASE=${BASE:-${{ env.VERSION_FALLBACK }}}
+
           if [[ "${{ github.ref_name }}" == "eros-develop" ]]; then
             SEMVER_LABEL="develop"
           else
@@ -47,7 +67,8 @@ jobs:
           fi
           echo "framework=${{ env.FRAMEWORK }}" >> "$GITHUB_OUTPUT"
           echo "major_version=${{ env.WHISPARR_MAJOR_VERSION }}" >> "$GITHUB_OUTPUT"
-          echo "version=${{ env.VERSION }}-${SEMVER_LABEL}.${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+          echo "version=${BASE}-${SEMVER_LABEL}.${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+          echo "assembly_version=${BASE}.${{ github.run_number }}" >> "$GITHUB_OUTPUT"
           echo "branch=${RAW_BRANCH_NAME//\//-}" >> "$GITHUB_OUTPUT"
 
   backend:
@@ -99,6 +120,7 @@ jobs:
         with:
           branch: ${{ needs.prepare.outputs.branch }}
           version: ${{ needs.prepare.outputs.version }}
+          assembly_version: ${{ needs.prepare.outputs.assembly_version }}
           framework: ${{ needs.prepare.outputs.framework }}
           runtime: ${{ matrix.runtime }}
           package_tests: ${{ matrix.package_tests }}
