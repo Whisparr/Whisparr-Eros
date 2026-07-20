@@ -285,7 +285,7 @@ namespace NzbDrone.Core.Extras.Metadata.Consumers.Xbmc
 
                 details.Add(new XElement("year", movie.Year));
 
-                details.Add(new XElement("studio", movie.MovieMetadata.Value.Studio));
+                details.Add(new XElement("studio", movie.MovieMetadata.Value.Studio?.Title));
 
                 details.Add(new XElement("watched", watched));
 
