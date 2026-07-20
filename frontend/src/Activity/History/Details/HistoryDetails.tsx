@@ -104,7 +104,9 @@ function HistoryDetails(props: HistoryDetailsProps) {
         {customFormatScore && customFormatScore !== '0' ? (
           <DescriptionListItem
             title={translate('CustomFormatScore')}
-            data={formatCustomFormatScore(Number.parseInt(customFormatScore))}
+            data={formatCustomFormatScore(
+              Number.parseInt(customFormatScore, 10)
+            )}
           />
         ) : null}
 
@@ -230,7 +232,9 @@ function HistoryDetails(props: HistoryDetailsProps) {
         {customFormatScore && customFormatScore !== '0' ? (
           <DescriptionListItem
             title={translate('CustomFormatScore')}
-            data={formatCustomFormatScore(Number.parseInt(customFormatScore))}
+            data={formatCustomFormatScore(
+              Number.parseInt(customFormatScore, 10)
+            )}
           />
         ) : null}
 
@@ -301,7 +305,9 @@ function HistoryDetails(props: HistoryDetailsProps) {
         {customFormatScore && customFormatScore !== '0' ? (
           <DescriptionListItem
             title={translate('CustomFormatScore')}
-            data={formatCustomFormatScore(Number.parseInt(customFormatScore))}
+            data={formatCustomFormatScore(
+              Number.parseInt(customFormatScore, 10)
+            )}
           />
         ) : null}
 

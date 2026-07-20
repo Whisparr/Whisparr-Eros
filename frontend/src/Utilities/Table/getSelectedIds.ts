@@ -6,7 +6,7 @@ function getSelectedIds(selectedState: SelectedState): number[] {
     selectedState,
     (result: number[], value, id) => {
       if (value) {
-        result.push(Number.parseInt(id));
+        result.push(Number.parseInt(id, 10));
       }
 
       return result;

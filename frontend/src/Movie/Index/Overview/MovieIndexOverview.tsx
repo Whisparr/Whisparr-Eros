@@ -27,11 +27,12 @@ import MovieIndexOverviewInfo from './MovieIndexOverviewInfo';
 import selectOverviewOptions from './selectOverviewOptions';
 import styles from './MovieIndexOverview.css';
 
-const columnPadding = Number.parseInt(dimensions.movieIndexColumnPadding);
+const columnPadding = Number.parseInt(dimensions.movieIndexColumnPadding, 10);
 const columnPaddingSmallScreen = Number.parseInt(
-  dimensions.movieIndexColumnPaddingSmallScreen
+  dimensions.movieIndexColumnPaddingSmallScreen,
+  10
 );
-const defaultFontSize = Number.parseInt(fonts.defaultFontSize);
+const defaultFontSize = Number.parseInt(fonts.defaultFontSize, 10);
 const lineHeight = Number.parseFloat(fonts.lineHeight);
 
 // Hardcoded height beased on line-height of 32 + bottom margin of 10.

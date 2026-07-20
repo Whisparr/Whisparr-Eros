@@ -26,10 +26,10 @@ function parseIndex(index) {
   const split = index.split('.');
 
   if (split.length === 1) {
-    return [null, Number.parseInt(split[0]) - 1];
+    return [null, Number.parseInt(split[0], 10) - 1];
   }
 
-  return [Number.parseInt(split[0]) - 1, Number.parseInt(split[1]) - 1];
+  return [Number.parseInt(split[0], 10) - 1, Number.parseInt(split[1], 10) - 1];
 }
 
 function createQualitiesSelector() {
@@ -216,7 +216,7 @@ class EditQualityProfileModalContentConnector extends Component {
   };
 
   onCutoffChange = ({ name, value }) => {
-    const id = Number.parseInt(value);
+    const id = Number.parseInt(value, 10);
     const item = _.find(this.props.item.items.value, (i) => {
       if (i.quality) {
         return i.quality.id === id;
@@ -231,7 +231,7 @@ class EditQualityProfileModalContentConnector extends Component {
   };
 
   onLanguageChange = ({ name, value }) => {
-    const id = Number.parseInt(value);
+    const id = Number.parseInt(value, 10);
 
     const language = _.find(this.props.languages, (item) => item.key === id);
 

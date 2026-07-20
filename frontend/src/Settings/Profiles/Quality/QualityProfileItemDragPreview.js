@@ -6,12 +6,12 @@ import dimensions from 'Styles/Variables/dimensions.js';
 import QualityProfileItem from './QualityProfileItem';
 import styles from './QualityProfileItemDragPreview.css';
 
-const formGroupExtraSmallWidth = Number.parseInt(dimensions.formGroupExtraSmallWidth);
-const formLabelSmallWidth = Number.parseInt(dimensions.formLabelSmallWidth);
+const formGroupExtraSmallWidth = Number.parseInt(dimensions.formGroupExtraSmallWidth, 10);
+const formLabelSmallWidth = Number.parseInt(dimensions.formLabelSmallWidth, 10);
 const formLabelRightMarginWidth = Number.parseInt(
   dimensions.formLabelRightMarginWidth
-);
-const dragHandleWidth = Number.parseInt(dimensions.dragHandleWidth);
+, 10);
+const dragHandleWidth = Number.parseInt(dimensions.dragHandleWidth, 10);
 
 function QualityProfileItemDragPreview() {
   const { item, itemType, currentOffset } = useDragLayer((monitor) => ({

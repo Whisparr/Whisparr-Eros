@@ -56,7 +56,7 @@ function SelectLanguageModalContent(props: SelectLanguageModalContentProps) {
 
   const onLanguageChange = useCallback(
     ({ name, value }: { name: string; value: boolean }) => {
-      const changedId = Number.parseInt(name);
+      const changedId = Number.parseInt(name, 10);
 
       let newLanguages = [...languageIds];
 

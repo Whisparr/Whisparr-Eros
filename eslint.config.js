@@ -8,8 +8,6 @@ const { fixupPluginRules } = require('@eslint/compat');
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const globals = require('globals');
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const babelParser = require('@babel/eslint-parser');
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const tsParser = require('@typescript-eslint/parser');
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const tsPlugin = require('@typescript-eslint/eslint-plugin');
@@ -176,7 +174,9 @@ const baseRules = {
   'no-void': 'error',
   'no-warning-comments': 'off',
   'no-with': 'error',
-  radix: ['error', 'as-needed'],
+  // eslint 10 dropped the redundant-radix check; 'as-needed' is now a dead
+  // option that the rule never reads, so it enforces plain 'always'.
+  radix: 'error',
   'vars-on-top': 'off',
   'wrap-iife': ['error', 'inside'],
   yoda: 'error',
@@ -391,15 +391,12 @@ module.exports = [
   {
     files: ['frontend/**/*.js'],
     languageOptions: {
-      parser: babelParser,
+      parser: tsParser,
       parserOptions: {
-        ecmaVersion: 6,
+        ecmaVersion: 'latest',
         sourceType: 'module',
-        babelOptions: {
-          configFile: path.join(frontendFolder, 'babel.config.js')
-        },
         ecmaFeatures: {
-          modules: true,
+          jsx: true,
           impliedStrict: true
         }
       },
