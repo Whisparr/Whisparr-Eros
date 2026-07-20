@@ -13,7 +13,7 @@ updates:
       interval: "daily"
     open-pull-requests-limit: 1
     commit-message:
-      prefix: "Chore"
+      prefix: "chore"
     groups:
       all-npm-updates:
         patterns:
@@ -24,8 +24,11 @@ updates:
       interval: "daily"
     open-pull-requests-limit: 1
     commit-message:
-      prefix: "Chore"
+      prefix: "chore"
     groups:
       all-nuget-updates:
         patterns:
           - "*"
+    ignore:
+      - dependency-name: "SixLabors.ImageSharp"
+        update-types: ["version-update:semver-major"]
