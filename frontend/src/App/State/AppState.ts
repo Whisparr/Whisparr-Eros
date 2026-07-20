@@ -13,7 +13,6 @@ import MovieCollectionAppState from './MovieCollectionAppState';
 import MovieCreditAppState from './MovieCreditAppState';
 import MovieFilesAppState from './MovieFilesAppState';
 import MoviesAppState, { MovieIndexAppState } from './MoviesAppState';
-import MovieSearchAppState from './MovieSearchAppState';
 import OAuthAppState from './OAuthAppState';
 import OrganizePreviewAppState from './OrganizePreviewAppState';
 import ParseAppState from './ParseAppState';
@@ -98,7 +97,6 @@ interface AppState {
   movieFiles: MovieFilesAppState;
   movieHistory: MovieHistoryAppState;
   movieIndex: MovieIndexAppState;
-  movieSearch: MovieSearchAppState;
   sceneIndex: MovieIndexAppState;
   performers: PerformersAppState;
   studios: StudiosAppState;

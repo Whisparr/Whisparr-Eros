@@ -2,16 +2,6 @@ import _ from 'lodash';
 import { createSelector } from 'reselect';
 import movieEntities from 'Movie/movieEntities';
 
-export function createMovieSelectorForHook(movieId) {
-  return createSelector(
-    (state) => state.movies.itemMap || {},
-    (state) => state.movies.items || {},
-    (itemMap, allMovies) => {
-      return movieId ? allMovies[itemMap[movieId]] : undefined;
-    }
-  );
-}
-
 export function createMovieByEntitySelector() {
   return createSelector(
     (state, { movieId }) => movieId,

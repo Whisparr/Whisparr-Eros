@@ -15,7 +15,6 @@ import * as movieCredits from './movieCreditsActions';
 import * as movieFiles from './movieFileActions';
 import * as movieHistory from './movieHistoryActions';
 import * as movieIndex from './movieIndexActions';
-import * as movieSearch from './movieSearchActions';
 import * as oAuth from './oAuthActions';
 import * as organizePreview from './organizePreviewActions';
 import * as parse from './parseActions';
@@ -57,7 +56,6 @@ export default [
   releases,
   rootFolders,
   movies,
-  movieSearch,
   movieBlocklist,
   movieCollections,
   movieCredits,
