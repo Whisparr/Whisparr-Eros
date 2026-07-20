@@ -24,9 +24,9 @@ namespace NzbDrone.Core.Test.HealthCheck.Checks
                   .Returns("Some Warning Message");
         }
 
-        private void GivenMissingRootFolder(string rootFolderPath)
+        private void GivenMissingRootFolder(string rootFolderPath, int movieCount = 1)
         {
-            var movies = Builder<Movie>.CreateListOfSize(1)
+            var movies = Builder<Movie>.CreateListOfSize(movieCount)
                                         .Build()
                                         .ToList();
 
@@ -35,7 +35,11 @@ namespace NzbDrone.Core.Test.HealthCheck.Checks
                   .Returns(movies.ToDictionary(x => x.Id, x => x.Path));
 
             Mocker.GetMock<IRootFolderService>()
-                .Setup(s => s.GetBestRootFolderPath(It.IsAny<string>(), null))
+                .Setup(s => s.All())
+                .Returns(new List<RootFolder>());
+
+            Mocker.GetMock<IRootFolderService>()
+                .Setup(s => s.GetBestRootFolderPath(It.IsAny<string>(), It.IsAny<List<RootFolder>>()))
                 .Returns(rootFolderPath);
 
             Mocker.GetMock<IDiskProvider>()
@@ -77,6 +81,21 @@ namespace NzbDrone.Core.Test.HealthCheck.Checks
             GivenMissingRootFolder(@"C:\Movies");
 
             Subject.Check().ShouldBeError();
+        }
+
+        [Test]
+        public void should_only_fetch_root_folders_once_regardless_of_movie_count()
+        {
+            GivenMissingRootFolder(@"C:\Movies".AsOsAgnostic(), 10);
+
+            Subject.Check();
+
+            // Omitting the root folders makes GetBestRootFolderPath re-query them on every cache miss, once per movie.
+            Mocker.GetMock<IRootFolderService>()
+                  .Verify(s => s.GetBestRootFolderPath(It.IsAny<string>(), null), Times.Never());
+
+            Mocker.GetMock<IRootFolderService>()
+                  .Verify(s => s.All(), Times.Once());
         }
     }
 }

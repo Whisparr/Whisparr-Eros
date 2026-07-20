@@ -232,6 +232,9 @@ namespace NzbDrone.Core.Parser
 
         private static readonly Regex RequestInfoRegex = new Regex(@"^(?:\[.+?\])+", RegexOptions.Compiled);
 
+        // Strips domain suffixes (Site.com -> Site) anywhere in the studio token, not just the trailing one.
+        private static readonly Regex StudioDomainSuffixRegex = new Regex(@"\.(com|net|org|tv|xxx|co|io)\b", RegexOptions.IgnoreCase | RegexOptions.Compiled, TimeSpan.FromSeconds(5));
+
         private static readonly string[] Numbers = new[] { "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine" };
         private static Dictionary<string, string> _umlautMappings = new Dictionary<string, string>
         {
@@ -341,21 +344,33 @@ namespace NzbDrone.Core.Parser
 
                             if (result != null)
                             {
-                                // TODO: Add tests for this!
                                 var simpleReleaseTitle = SimpleReleaseTitleRegex.Replace(releaseTitle, string.Empty);
 
                                 var simpleTitleReplaceString = match[0].Groups["title"].Success ? match[0].Groups["title"].Value : result.PrimaryMovieTitle;
 
                                 if (simpleTitleReplaceString.IsNotNullOrWhiteSpace())
                                 {
-                                    if (match[0].Groups["title"].Success && match[0].Groups["title"].Index < simpleReleaseTitle.Length)
+                                    var titleReplacement = simpleTitleReplaceString.Contains('.') ? "A.Movie" : "A Movie";
+                                    var releaseTokens = result.ReleaseTokens?.Trim('.', ' ', '-', '_');
+
+                                    // For a scene release the "title" capture runs to the end of the string, so it spans
+                                    // the quality block as well as the title, and its offsets count characters in
+                                    // simpleTitle, which has had the quality and codec tokens deleted. Replacing on those
+                                    // offsets overruns into simpleReleaseTitle's quality block and shreds the codec token.
+                                    // ReleaseTokens is cut from releaseTitle at the title boundary, so swapping it out by
+                                    // value keeps the quality block intact for custom formats to match against.
+                                    if (releaseTokens.IsNotNullOrWhiteSpace() && simpleReleaseTitle.Contains(releaseTokens))
+                                    {
+                                        simpleReleaseTitle = simpleReleaseTitle.Replace(releaseTokens, titleReplacement);
+                                    }
+                                    else if (match[0].Groups["title"].Success && match[0].Groups["title"].Index < simpleReleaseTitle.Length)
                                     {
                                         simpleReleaseTitle = simpleReleaseTitle.Remove(match[0].Groups["title"].Index, match[0].Groups["title"].Length)
-                                                                               .Insert(match[0].Groups["title"].Index, simpleTitleReplaceString.Contains('.') ? "A.Movie" : "A Movie");
+                                                                               .Insert(match[0].Groups["title"].Index, titleReplacement);
                                     }
                                     else
                                     {
-                                        simpleReleaseTitle = simpleReleaseTitle.Replace(simpleTitleReplaceString, simpleTitleReplaceString.Contains('.') ? "A.Movie" : "A Movie");
+                                        simpleReleaseTitle = simpleReleaseTitle.Replace(simpleTitleReplaceString, titleReplacement);
                                     }
                                 }
 
@@ -916,7 +931,14 @@ namespace NzbDrone.Core.Parser
                     result.ReleaseDate = airDate.ToString(Movie.RELEASE_DATE_FORMAT);
                 }
 
-                var studioTitle = matchCollection[0].Groups["studiotitle"].Value.TrimAtEnd(".com").Replace('.', ' ').Replace('_', ' ');
+                // Scene sites are frequently cross-posted under several umbrella brands, e.g.
+                // "[SiteA.com / SiteB.com]" or "[SiteC.com / SiteD.com]". Take the
+                // first (most specific) brand and strip domain suffixes so the token resolves to a known
+                // studio. Previously this produced e.g. "SiteA com / SiteB", which matched nothing.
+                var studioTitleToken = matchCollection[0].Groups["studiotitle"].Value.Split(new[] { '/', '|' })[0];
+                studioTitleToken = StudioDomainSuffixRegex.Replace(studioTitleToken, string.Empty);
+
+                var studioTitle = studioTitleToken.Replace('.', ' ').Replace('_', ' ');
                 studioTitle = RequestInfoRegex.Replace(studioTitle, "").Trim(' ');
 
                 var lastSeasonEpisodeStringIndex = matchCollection[0].Groups["studiotitle"].EndIndex();

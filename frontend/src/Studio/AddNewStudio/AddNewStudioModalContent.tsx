@@ -10,7 +10,7 @@ import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { inputTypes, kinds } from 'Helpers/Props';
-import { Image } from 'Studio/Studio';
+import Studio, { Image } from 'Studio/Studio';
 import StudioLogo from 'Studio/StudioLogo';
 import { EnhancedSelectInputChanged } from 'typings/inputs';
 import translate from 'Utilities/String/translate';
@@ -18,6 +18,7 @@ import { useAddNewStudioModalContent } from './useAddNewStudio';
 import styles from './AddNewStudioModalContent.css';
 
 interface AddNewStudioModalContentProps {
+  studio: Studio;
   foreignId: string;
   title: string;
   images: Image[];
@@ -25,7 +26,7 @@ interface AddNewStudioModalContentProps {
 }
 
 function AddNewStudioModalContent(props: AddNewStudioModalContentProps) {
-  const { foreignId, title, images, onModalClose } = props;
+  const { title, images, onModalClose, studio } = props;
 
   const {
     isAdding,
@@ -35,7 +36,7 @@ function AddNewStudioModalContent(props: AddNewStudioModalContentProps) {
     settings,
     onInputChange,
     onAddStudioPress,
-  } = useAddNewStudioModalContent(foreignId);
+  } = useAddNewStudioModalContent(studio);
 
   const onQualityProfileIdChange = React.useCallback(
     ({ value }: EnhancedSelectInputChanged<string | number>) => {

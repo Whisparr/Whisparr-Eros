@@ -71,6 +71,7 @@ namespace NzbDrone.Core.Test.ParserTests
         [TestCase("[Vixen] Matthew Meie, Erica Mori & Era Queen - Bratty College Girls Have Naughty Threesome (2025-12-03) [2160p]", "Vixen")]
         [TestCase("[Vixen] Matthew Meie, Erica Mori & Era Queen - Bratty College Girls Have Naughty Threesome (2025-12-03) [2160p].mp4", "Vixen")]
         [TestCase("[Studio.com] (E09) Perfomer(aka Alias) [2015 г., All Sex, BJ, IR, 720p]", "Studio")]
+        [TestCase("[EvilAngel.com / Gonzo.com] Some Performer - Multi Brand Test (2024-01-15)", "EvilAngel")]
         public void should_correctly_parse_studio_names(string title, string result)
         {
             Parser.Parser.ParseMovieTitle(title).StudioTitle.Should().Be(result);
@@ -127,6 +128,7 @@ namespace NzbDrone.Core.Test.ParserTests
         [TestCase("[Vixen] Matthew Meie, Erica Mori & Era Queen - Bratty College Girls Have Naughty Threesome (2025-12-03) [2160p]", "matthew meie erica mori and era queen bratty college girls have naughty threesome")]
         [TestCase("[Vixen] Matthew Meie, Erica Mori & Era Queen - Bratty College Girls Have Naughty Threesome (2025-12-03) [2160p].mp4", "matthew meie erica mori and era queen bratty college girls have naughty threesome")]
         [TestCase("[Studio.com] (E09) Perfomer(aka Alias) [2015 г., All Sex, BJ, IR, 720p]", "perfomer aka alias")]
+        [TestCase("[EvilAngel.com / Gonzo.com] Some Performer - Multi Brand Test (2024-01-15)", "some performer multi brand test")]
         public void should_correctly_parse_normalize_release_token(string title, string result)
         {
             var releaseTokens = Parser.Parser.ParseMovieTitle(title).ReleaseTokens;
@@ -167,6 +169,33 @@ namespace NzbDrone.Core.Test.ParserTests
             result.ReleaseTitle.Should().NotBeNullOrEmpty();
             result.OriginalTitle.Should().Be(title);
             result.IsScene.Should().BeTrue();
+        }
+
+        // The title capture is measured against a string that has already had the quality and codec
+        // tokens stripped, so replacing the title on those offsets used to overrun into the quality
+        // block and shred the codec token that Release Title custom formats match on.
+        [TestCase("Studio.26.07.09.Performer.Its.Great.In.The.Sample.XXX.1080p.x265-GROUP", "x265")]
+        [TestCase("Studio.26.07.09.Performer.Title.XXX.1080p.x265-GROUP", "x265")]
+        [TestCase("Studio.26.07.09.Performer.A.Much.Longer.Scene.Title.XXX.1080p.x265-GROUP", "x265")]
+        [TestCase("Studio2.24.07.26.Performer.Plain.Title.Words.Here.XXX.1080p.HEVC.x265.PRT", "x265")]
+        [TestCase("Studio.22.10.18.Title.XXX.720p.HEVC.x265.PRT[XvX]", "x265")]
+        [TestCase("Studio.26.07.09.Performer.Title.XXX.1080p.h264-GROUP", "h264")]
+        public void should_keep_codec_token_in_simple_release_title(string title, string codec)
+        {
+            var result = Parser.Parser.ParseMovieTitle(title);
+
+            result.Should().NotBeNull();
+            result.SimpleReleaseTitle.Should().Contain(codec);
+        }
+
+        [TestCase("Studio.26.07.09.Performer.Its.Great.In.The.Sample.XXX.1080p.x265-GROUP", "Studio.26.07.09.A.Movie.XXX.1080p.x265-GROUP")]
+        [TestCase("Studio.26.07.09.Performer.Title.XXX.1080p.x265-GROUP", "Studio.26.07.09.A.Movie.XXX.1080p.x265-GROUP")]
+        public void should_replace_only_the_title_tokens_in_simple_release_title(string title, string expected)
+        {
+            var result = Parser.Parser.ParseMovieTitle(title);
+
+            result.Should().NotBeNull();
+            result.SimpleReleaseTitle.Should().Be(expected);
         }
 
         [TestCase("something random 77f1b861-91c1-4e6f-b0b1-3b1c46733fb2 anything")]

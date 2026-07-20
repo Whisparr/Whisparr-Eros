@@ -27,6 +27,7 @@ namespace Whisparr.Api.V3.Search
         private readonly IConfigService _configService;
         private readonly IImportListExclusionService _exclusionService;
         private readonly IMovieService _movieService;
+        private readonly IStudioService _studioService;
 
         public SearchController(ISearchForNewMovie searchProxy,
                                 IBuildFileNames fileNameBuilder,
@@ -34,7 +35,8 @@ namespace Whisparr.Api.V3.Search
                                 IMapCoversToLocal coverMapper,
                                 IConfigService configService,
                                 IImportListExclusionService exclusionService,
-                                IMovieService movieService)
+                                IMovieService movieService,
+                                IStudioService studioService)
         {
             _searchProxy = searchProxy;
             _fileNameBuilder = fileNameBuilder;
@@ -43,6 +45,7 @@ namespace Whisparr.Api.V3.Search
             _configService = configService;
             _exclusionService = exclusionService;
             _movieService = movieService;
+            _studioService = studioService;
         }
 
         [HttpGet("scene")]
@@ -67,7 +70,9 @@ namespace Whisparr.Api.V3.Search
         public object SearchStudio([FromQuery] string term)
         {
             var searchResults = _searchProxy.SearchForNewStudio(term);
-            return MapToResource(searchResults).ToList();
+            var searchResources = MapToResource(searchResults).ToList();
+            MapToExistingStudios(searchResources);
+            return searchResources;
         }
 
         [HttpGet("performer")]
@@ -80,6 +85,19 @@ namespace Whisparr.Api.V3.Search
         private void MapToExistingMovies(List<SearchResource> searchResources)
         {
             var matches = _movieService.FindByForeignIds(searchResources.Select(m => m.ForeignId).ToList());
+            foreach (var s in searchResources)
+            {
+                var match = matches.Where(m => m.ForeignId == s.ForeignId);
+                if (match.Any())
+                {
+                    s.isExisting = true;
+                }
+            }
+        }
+
+        private void MapToExistingStudios(List<SearchResource> searchResources)
+        {
+            var matches = _studioService.FindByForeignIds(searchResources.Select(s => s.ForeignId).ToList());
             foreach (var s in searchResources)
             {
                 var match = matches.Where(m => m.ForeignId == s.ForeignId);

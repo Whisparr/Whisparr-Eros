@@ -8,7 +8,6 @@ import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import PageContent from 'Components/Page/PageContent';
 import PageContentBody from 'Components/Page/PageContentBody';
 import { icons, kinds } from 'Helpers/Props';
-import getErrorMessage from 'Utilities/Object/getErrorMessage';
 import translate from 'Utilities/String/translate';
 import AddNewStudioSearchResult from './AddNewStudioSearchResult';
 import useAddNewStudio from './useAddNewStudio';
@@ -84,7 +83,9 @@ function AddNewStudio(props: AddNewStudioProps) {
             <div className={styles.helpText}>
               {translate('FailedLoadingSearchResults')}
             </div>
-            <Alert kind={kinds.WARNING}>{getErrorMessage(error)}</Alert>
+            <Alert kind={kinds.WARNING}>
+              {error?.statusBody?.message ?? error?.message ?? ''}
+            </Alert>
             <div>
               <Link to="https://wiki.servarr.com/whisparr/troubleshooting#invalid-response-received-from-tmdb">
                 {translate('WhySearchesCouldBeFailing')}

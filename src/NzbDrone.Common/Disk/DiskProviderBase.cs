@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using NLog;
+using NzbDrone.Common.Cache;
 using NzbDrone.Common.EnsureThat;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Extensions;
@@ -14,6 +15,22 @@ namespace NzbDrone.Common.Disk
     public abstract class DiskProviderBase : IDiskProvider
     {
         private static readonly Logger Logger = NzbDroneLogger.GetLogger(typeof(DiskProviderBase));
+
+        // Enumerating the mount table is expensive: on Linux it reads /proc/mounts and stats every mount point,
+        // which on a host with a lot of network mounts is hundreds of syscalls (and round trips) per call.
+        // GetMount is called once per movie path by MountCheck, so a library with a few hundred thousand movies
+        // performed that enumeration a few hundred thousand times.
+        //
+        // Only the mount topology is cached. Free space is not: IMount implementations read it live from the
+        // underlying DriveInfo/UnixDriveInfo on every property access, so cached mounts never report stale space.
+        private static readonly TimeSpan MountCacheLifetime = TimeSpan.FromSeconds(15);
+
+        private readonly ICached<List<IMount>> _mountCache;
+
+        protected DiskProviderBase(ICacheManager cacheManager)
+        {
+            _mountCache = cacheManager.GetCache<List<IMount>>(GetType(), "AllMounts");
+        }
 
         public static StringComparison PathStringComparison
         {
@@ -138,7 +155,7 @@ namespace NzbDrone.Common.Disk
             }
             catch (Exception e)
             {
-                Logger.Trace("Directory '{0}' isn't writable. {1}", path, e.Message);
+                Logger.Trace(e, "Directory '{0}' isn't writable.", path);
                 return false;
             }
         }
@@ -388,11 +405,11 @@ namespace NzbDrone.Common.Disk
             File.SetLastWriteTime(path, dateTime);
         }
 
-        public bool IsFileLocked(string file)
+        public bool IsFileLocked(string path)
         {
             try
             {
-                using (File.Open(file, FileMode.Open, FileAccess.Read, FileShare.None))
+                using (File.Open(path, FileMode.Open, FileAccess.Read, FileShare.None))
                 {
                     return false;
                 }
@@ -434,20 +451,6 @@ namespace NzbDrone.Common.Disk
                 {
                     var newAttributes = attributes & ~FileAttributes.ReadOnly;
                     File.SetAttributes(path, newAttributes);
-                }
-            }
-        }
-
-        private static void RemoveReadOnlyFolder(string path)
-        {
-            if (Directory.Exists(path))
-            {
-                var dirInfo = new DirectoryInfo(path);
-
-                if (dirInfo.Attributes.HasFlag(FileAttributes.ReadOnly))
-                {
-                    var newAttributes = dirInfo.Attributes & ~FileAttributes.ReadOnly;
-                    dirInfo.Attributes = newAttributes;
                 }
             }
         }
@@ -509,7 +512,16 @@ namespace NzbDrone.Common.Disk
             return GetAllMounts().Where(d => !IsSpecialMount(d)).ToList();
         }
 
-        protected virtual List<IMount> GetAllMounts()
+        // The returned list is shared between callers for the lifetime of the cache entry, treat it as read-only.
+        private List<IMount> GetAllMounts()
+        {
+            // The lifetime has to be passed explicitly, GetCache has no default and a null lifetime never expires.
+            return _mountCache.Get("all", FetchAllMounts, MountCacheLifetime);
+        }
+
+        // Don't call this from a constructor, overrides depend on fields that derived constructors haven't
+        // assigned yet. Going through GetAllMounts() keeps it lazy.
+        protected virtual List<IMount> FetchAllMounts()
         {
             return GetDriveInfoMounts().Where(d => d.DriveType == DriveType.Fixed || d.DriveType == DriveType.Network || d.DriveType == DriveType.Removable)
                                        .Select(d => new DriveInfoMount(d))
@@ -526,11 +538,14 @@ namespace NzbDrone.Common.Disk
         {
             try
             {
-                var mounts = GetAllMounts();
+                // IsParentPath walks the path back up to the root, and that walk is identical for every mount, so
+                // do it once here rather than once per mount. MountCheck performs a lookup per movie path, so on a
+                // large library this comparison runs hundreds of thousands of times.
+                var ancestors = GetAncestors(path);
 
-                return mounts.Where(drive => drive.RootDirectory.PathEquals(path) ||
-                                             drive.RootDirectory.IsParentPath(path))
-                          .MaxBy(drive => drive.RootDirectory.Length);
+                return GetAllMounts()
+                    .Where(drive => drive.RootDirectory.PathEquals(path) || IsAncestor(ancestors, drive.RootDirectory))
+                    .MaxBy(drive => drive.RootDirectory.Length);
             }
             catch (Exception ex)
             {
@@ -539,7 +554,26 @@ namespace NzbDrone.Common.Disk
             }
         }
 
-        protected List<DriveInfo> GetDriveInfoMounts()
+        private static List<OsPath> GetAncestors(string path)
+        {
+            var ancestors = new List<OsPath>();
+
+            for (var directory = new OsPath(path).Directory; directory != OsPath.Null; directory = directory.Directory)
+            {
+                ancestors.Add(directory);
+            }
+
+            return ancestors;
+        }
+
+        private static bool IsAncestor(List<OsPath> ancestors, string parentPath)
+        {
+            var parent = new OsPath(parentPath);
+
+            return ancestors.Any(a => a.Equals(parent, true));
+        }
+
+        protected static List<DriveInfo> GetDriveInfoMounts()
         {
             return DriveInfo.GetDrives()
                             .Where(d => d.IsReady)

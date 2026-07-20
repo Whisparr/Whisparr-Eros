@@ -63,6 +63,30 @@ namespace NzbDrone.Core.Movies
             _alternativeTitleRepository = alternativeTitleRepository;
         }
 
+        // MovieFiles.MediaInfo holds the full ffprobe dump (~7KB a row) that no paged consumer
+        // renders, so the file columns are listed explicitly instead of "MovieFiles".*. Built
+        // from the mapper rather than hardcoded so a new column can't silently go missing.
+        private static readonly string _pagedMovieFileColumns = BuildPagedMovieFileColumns();
+
+        private static string BuildPagedMovieFileColumns()
+        {
+            var table = TableMapping.Mapper.TableNameMapping(typeof(MovieFile));
+            var excluded = TableMapping.Mapper.ExcludeProperties(typeof(MovieFile)).Select(x => x.Name).ToList();
+
+            var columns = typeof(MovieFile).GetProperties()
+                .Where(x => x.IsMappableProperty() &&
+                            !excluded.Contains(x.Name) &&
+                            x.Name != nameof(MovieFile.MediaInfo))
+                .Select(x => x.Name)
+
+                // Dapper splits on the first "Id" column, so the file's must lead its segment.
+                .OrderBy(x => x == nameof(ModelBase.Id) ? 0 : 1)
+                .ThenBy(x => x, StringComparer.Ordinal)
+                .Select(x => $"\"{table}\".\"{x}\"");
+
+            return string.Join(", ", columns);
+        }
+
         protected override IEnumerable<Movie> PagedQuery(SqlBuilder builder) =>
             _database.QueryJoined<Movie, MovieMetadata>(builder, (movie, movieMetadata) =>
             {
@@ -73,11 +97,49 @@ namespace NzbDrone.Core.Movies
         // Paged queries omit the AlternativeTitles JOIN to prevent duplicate rows.
         // The one-to-many JOIN in Builder() multiplies rows; PagedQuery maps each
         // SQL row directly without the deduplication that Query() performs via Map().
-        // QualityProfile is intentionally excluded: QualityProfileId on Movies is sufficient
-        // for sort/filter; the client resolves the display name from its own store.
+        // QualityProfile is intentionally not joined: QualityProfileId on Movies is sufficient
+        // for sort/filter, and GetPaged hydrates the profile itself from the profile repository.
         protected override SqlBuilder PagedBuilder() => new SqlBuilder(_database.DatabaseType)
             .Join<Movie, MovieMetadata>((m, p) => m.MovieMetadataId == p.Id)
             .LeftJoin<Movie, MovieFile>((m, f) => m.MovieFileId == f.Id);
+
+        public override PagingSpec<Movie> GetPaged(PagingSpec<Movie> pagingSpec)
+        {
+            pagingSpec.Records = GetPagedRecords(PagedBuilder(), pagingSpec, PagedQueryWithFile);
+            pagingSpec.TotalRecords = GetPagedRecordCount(PagedBuilder().SelectCount(), pagingSpec);
+
+            return pagingSpec;
+        }
+
+        // The index renders the file's quality, so the paged index needs MovieFile hydrated.
+        // MoviesWithoutFiles and MoviesWhereCutoffUnmet deliberately keep using PagedQuery: they
+        // GROUP BY Movies.Id, and selecting a non-aggregated file column under that errors on
+        // Postgres. QualityProfile comes from the repository rather than a JOIN because
+        // MovieFileResource.ToResource dereferences it to compute QualityCutoffNotMet.
+        private IEnumerable<Movie> PagedQueryWithFile(SqlBuilder builder)
+        {
+            var profiles = _profileRepository.All().ToDictionary(x => x.Id);
+
+            // A movie can point at a profile that no longer exists, and QualityCutoffNotMet
+            // dereferences the profile, so fall back the way All() does rather than leave it null.
+            var fallbackProfile = profiles.Values.FirstOrDefault(x => x.Fallback) ?? profiles.Values.FirstOrDefault();
+
+            var sql = builder
+                .Select($"\"{_table}\".*, \"MovieMetadata\".*, {_pagedMovieFileColumns}")
+                .AddSelectTemplate(typeof(Movie));
+
+            return _database.Query<Movie, MovieMetadata, MovieFile, Movie>(
+                sql.RawSql,
+                (movie, movieMetadata, movieFile) =>
+                {
+                    movie.MovieMetadata = movieMetadata;
+                    movie.MovieFile = movieFile;
+                    movie.QualityProfile = profiles.TryGetValue(movie.QualityProfileId, out var profile) ? profile : fallbackProfile;
+
+                    return movie;
+                },
+                sql.Parameters);
+        }
 
         protected override SqlBuilder Builder() => new SqlBuilder(_database.DatabaseType)
             .Join<Movie, QualityProfile>((m, p) => m.QualityProfileId == p.Id)
