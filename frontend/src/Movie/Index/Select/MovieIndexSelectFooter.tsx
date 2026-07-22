@@ -203,6 +203,7 @@ function MovieIndexSelectFooter({
       <TagsModal
         isOpen={isTagsModalOpen}
         movieIds={movieIds}
+        items={items}
         onApplyTagsPress={onApplyTagsPress}
         onModalClose={onTagsModalClose}
       />

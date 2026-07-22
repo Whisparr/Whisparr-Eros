@@ -1,15 +1,17 @@
 import React from 'react';
 import Modal from 'Components/Modal/Modal';
+import Movie from 'Movie/Movie';
 import TagsModalContent from './TagsModalContent';
 
 interface TagsModalProps {
   isOpen: boolean;
   movieIds: number[];
+  items: Movie[];
   onApplyTagsPress: (tags: number[], applyTags: string) => void;
   onModalClose: () => void;
 }
 
-function TagsModal(props: TagsModalProps) {
+function TagsModal(props: Readonly<TagsModalProps>) {
   const { isOpen, onModalClose, ...otherProps } = props;
 
   return (
