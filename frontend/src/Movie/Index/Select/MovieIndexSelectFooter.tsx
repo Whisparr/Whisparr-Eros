@@ -7,6 +7,7 @@ import { RENAME_MOVIE } from 'Commands/commandNames';
 import SpinnerButton from 'Components/Link/SpinnerButton';
 import PageContentFooter from 'Components/Page/PageContentFooter';
 import { kinds } from 'Helpers/Props';
+import Movie from 'Movie/Movie';
 import { saveMovieEditor } from 'Store/Actions/movieActions';
 import { fetchRootFolders } from 'Store/Actions/rootFolderActions';
 import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
@@ -39,7 +40,13 @@ const sceneEditorSelector = createSelector(
   }
 );
 
-function MovieIndexSelectFooter() {
+interface MovieIndexSelectFooterProps {
+  items: Movie[];
+}
+
+function MovieIndexSelectFooter({
+  items,
+}: Readonly<MovieIndexSelectFooterProps>) {
   const { isSaving: legacyIsSaving } = useSelector(sceneEditorSelector);
   const isOrganizingMovies = useSelector(
     createCommandExecutingSelector(RENAME_MOVIE)
@@ -203,6 +210,7 @@ function MovieIndexSelectFooter() {
       <OrganizeMoviesModal
         isOpen={isOrganizeModalOpen}
         movieIds={movieIds}
+        items={items}
         onModalClose={onOrganizeModalClose}
       />
 
