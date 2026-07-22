@@ -32,11 +32,7 @@ export function formatLanguages(languages: string | undefined) {
 }
 
 export type MediaInfoType =
-  | 'audio'
-  | 'audioLanguages'
-  | 'subtitles'
-  | 'video'
-  | 'videoDynamicRangeType';
+  'audio' | 'audioLanguages' | 'subtitles' | 'video' | 'videoDynamicRangeType';
 
 interface MediaInfoDisplayProps {
   mediaInfo: MediaInfoData | undefined;

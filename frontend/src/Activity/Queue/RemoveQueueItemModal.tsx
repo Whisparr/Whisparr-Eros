@@ -33,9 +33,7 @@ interface RemoveQueueItemModalProps {
 
 type RemovalMethod = 'removeFromClient' | 'changeCategory' | 'ignore';
 type BlocklistMethod =
-  | 'doNotBlocklist'
-  | 'blocklistAndSearch'
-  | 'blocklistOnly';
+  'doNotBlocklist' | 'blocklistAndSearch' | 'blocklistOnly';
 
 function RemoveQueueItemModal(props: RemoveQueueItemModalProps) {
   const {
