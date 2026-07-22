@@ -54,7 +54,7 @@ function getValue(input, selectedFilterBuilderProp) {
         case 'tib':
           return convertToBytes(value, 4, true);
         default:
-          return Number.parseInt(value);
+          return Number.parseInt(value, 10);
       }
     }
   }

@@ -86,12 +86,14 @@ function Updates() {
 
   const { isMajorUpdate, hasUpdateToInstall } = useMemo(() => {
     const majorVersion = Number.parseInt(
-      currentVersion.match(VERSION_REGEX)?.[0] ?? '0'
+      currentVersion.match(VERSION_REGEX)?.[0] ?? '0',
+      10
     );
 
     const latestVersion = items[0]?.version;
     const latestMajorVersion = Number.parseInt(
-      latestVersion?.match(VERSION_REGEX)?.[0] ?? '0'
+      latestVersion?.match(VERSION_REGEX)?.[0] ?? '0',
+      10
     );
 
     return {

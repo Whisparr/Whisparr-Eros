@@ -8,9 +8,10 @@ import Movie from 'Movie/Movie';
 import dimensions from 'Styles/Variables/dimensions';
 import MovieIndexPoster from './MovieIndexPoster';
 
-const columnPadding = Number.parseInt(dimensions.movieIndexColumnPadding);
+const columnPadding = Number.parseInt(dimensions.movieIndexColumnPadding, 10);
 const columnPaddingSmallScreen = Number.parseInt(
-  dimensions.movieIndexColumnPaddingSmallScreen
+  dimensions.movieIndexColumnPaddingSmallScreen,
+  10
 );
 
 const ADDITIONAL_COLUMN_COUNT: Record<string, number> = {

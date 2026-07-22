@@ -42,7 +42,8 @@ interface MovieIndexOverviewInfoProps {
 }
 
 const infoRowHeight = Number.parseInt(
-  dimensions.movieIndexOverviewInfoRowHeight
+  dimensions.movieIndexOverviewInfoRowHeight,
+  10
 );
 
 const rows = [

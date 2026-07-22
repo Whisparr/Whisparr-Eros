@@ -68,7 +68,7 @@ function FileEditModal({
       releaseGroup: string;
       indexerFlags: number;
     }) => {
-      const qualityIdNum = Number.parseInt(payload.qualityId);
+      const qualityIdNum = Number.parseInt(payload.qualityId, 10);
       const quality = qualities.find(
         (item: { id: number }) => item.id === qualityIdNum
       );
@@ -76,7 +76,7 @@ function FileEditModal({
         .map((languageId) => {
           const id =
             typeof languageId === 'string'
-              ? Number.parseInt(languageId)
+              ? Number.parseInt(languageId, 10)
               : languageId;
           return filteredLanguages.find((item) => item.id === id);
         })

@@ -10,10 +10,10 @@ import CollectionOverviewConnector from './CollectionOverviewConnector';
 import styles from './CollectionOverviews.css';
 
 // Poster container dimensions
-const columnPadding = Number.parseInt(dimensions.movieIndexColumnPadding);
+const columnPadding = Number.parseInt(dimensions.movieIndexColumnPadding, 10);
 const columnPaddingSmallScreen = Number.parseInt(
   dimensions.movieIndexColumnPaddingSmallScreen
-);
+, 10);
 
 function calculatePosterWidth(posterSize, isSmallScreen) {
   const maximumPosterWidth = isSmallScreen ? 152 : 162;
