@@ -59,12 +59,7 @@ import InteractiveImportRow from './InteractiveImportRow';
 import styles from './InteractiveImportModalContent.css';
 
 type SelectType =
-  | 'select'
-  | 'movie'
-  | 'releaseGroup'
-  | 'quality'
-  | 'language'
-  | 'indexerFlags';
+  'select' | 'movie' | 'releaseGroup' | 'quality' | 'language' | 'indexerFlags';
 
 // TODO: This feels janky to do, but not sure of a better way currently
 type OnSelectedChangeCallback = React.ComponentProps<

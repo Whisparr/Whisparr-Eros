@@ -79,12 +79,7 @@ function EditMovieModalContent({
   // TODO: move to a .ts or reuse an existing one.
   interface Setting {
     value?:
-      | string
-      | boolean
-      | number
-      | Array<string | number>
-      | null
-      | undefined;
+      string | boolean | number | Array<string | number> | null | undefined;
     errors: Array<{
       message: string;
       link?: string;
@@ -96,12 +91,7 @@ function EditMovieModalContent({
       detailedMessage?: string;
     }>;
     previousValue?:
-      | string
-      | boolean
-      | number
-      | Array<string | number>
-      | null
-      | undefined;
+      string | boolean | number | Array<string | number> | null | undefined;
     pending?: boolean;
   }
 

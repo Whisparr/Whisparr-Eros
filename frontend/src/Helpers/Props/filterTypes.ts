@@ -54,12 +54,7 @@ export type FilterType =
   | 'notEndsWith';
 
 export type FilterDateType =
-  | 'seconds'
-  | 'minutes'
-  | 'hours'
-  | 'days'
-  | 'weeks'
-  | 'months';
+  'seconds' | 'minutes' | 'hours' | 'days' | 'weeks' | 'months';
 
 export interface DateFilterBuilderTime {
   key: FilterDateType;

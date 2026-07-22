@@ -28,11 +28,7 @@ import OverrideMatchData from './OverrideMatchData';
 import styles from './OverrideMatchModalContent.css';
 
 type SelectType =
-  | 'select'
-  | 'movie'
-  | 'quality'
-  | 'language'
-  | 'downloadClient';
+  'select' | 'movie' | 'quality' | 'language' | 'downloadClient';
 
 interface OverrideMatchModalContentProps {
   indexerId: number;
