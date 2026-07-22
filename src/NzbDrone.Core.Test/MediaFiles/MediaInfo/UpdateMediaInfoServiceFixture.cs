@@ -276,6 +276,31 @@ namespace NzbDrone.Core.Test.MediaFiles.MediaInfo
         }
 
         [Test]
+        public void should_not_persist_media_info_for_unsaved_movie_file()
+        {
+            // During import the file name is built (triggering a media info update) before the
+            // MovieFile is inserted, so its Id is still 0. Persisting it would throw
+            // "Can't update model with ID 0" (whisparr/whisparr#1075).
+            var movieFile = Builder<MovieFile>.CreateNew()
+                .With(v => v.Id = 0)
+                .With(v => v.Path = null)
+                .With(v => v.RelativePath = "media.mkv")
+                .With(v => v.MediaInfo = null)
+                .Build();
+
+            GivenFileExists();
+            GivenSuccessfulScan();
+
+            Subject.Update(movieFile, _movie);
+
+            Mocker.GetMock<IMediaFileService>()
+                .Verify(v => v.Update(It.IsAny<MovieFile>()), Times.Never());
+
+            movieFile.MediaInfo.Should().NotBeNull();
+            ExceptionVerification.IgnoreWarns();
+        }
+
+        [Test]
         public void should_not_update_media_info_if_new_info_is_null()
         {
             var movieFile = Builder<MovieFile>.CreateNew()
