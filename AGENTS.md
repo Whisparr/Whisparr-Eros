@@ -126,7 +126,7 @@ Each item names a representative path — follow the existing neighbors.
   + Yarn via `corepack enable`.
 - Backend: `dotnet msbuild -restore src/Whisparr.sln -p:Configuration=Debug -p:Platform=Posix -t:PublishAllRids`
   (or `Platform=Windows`), or the orchestrator `build.sh`. Output in `_output/`;
-  app runs at `http://localhost:7878`.
+  app runs at `http://localhost:6969`.
 - .NET SDK is pinned in `global.json` (10.0.x). API docs: `docs.sh`.
 
 ## Conventions live elsewhere

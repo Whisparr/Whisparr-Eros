@@ -193,8 +193,16 @@ function EnhancedSelectInput<V, T extends EnhancedSelectInputValue<V>>(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleComputeMaxHeight = useCallback(({ state }: { state: any }) => {
     const windowHeight = window.innerHeight;
+    const referenceRect = state.elements.reference.getBoundingClientRect();
+    const spaceBelow =
+      windowHeight - referenceRect.bottom - MINIMUM_DISTANCE_FROM_EDGE;
+    const spaceAbove = referenceRect.top - MINIMUM_DISTANCE_FROM_EDGE;
+    const available = state.placement.startsWith('top')
+      ? spaceAbove
+      : spaceBelow;
+    const maxHeight = Math.max(0, Math.min(windowHeight / 2, available));
 
-    state.styles.popper.maxHeight = `${windowHeight - MINIMUM_DISTANCE_FROM_EDGE}px`;
+    state.styles.popper.maxHeight = `${maxHeight}px`;
   }, []);
 
   const handleWindowClick = useCallback(
@@ -499,6 +507,7 @@ function EnhancedSelectInput<V, T extends EnhancedSelectInputValue<V>>(
                 requires: ['computeStyles'],
                 fn: handleComputeMaxHeight,
               },
+              { name: 'flip' },
               { name: 'preventOverflow' },
             ]}
           >
