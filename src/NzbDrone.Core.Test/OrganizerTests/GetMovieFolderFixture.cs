@@ -89,6 +89,7 @@ namespace NzbDrone.Core.Test.OrganizerTests
 
         [TestCase("scenes-{Studio Network}-{Studio Title}-{Release Date} - {Scene CleanTitle} {[StashId]}", "scenes-Network's Name-Studio's Name-2025-11-25 - The Last Train Home [019abb52-0557-7c5f-83df-94b828851fd1]")]
         [TestCase("scenes-{Studio CleanNetwork}-{Studio CleanTitle}-{Release Date} - {Scene CleanTitle} {[StashId]}", "scenes-Networks Name-Studios Name-2025-11-25 - The Last Train Home [019abb52-0557-7c5f-83df-94b828851fd1]")]
+        [TestCase("scenes-{Studio CleanNetwork}-{Studio CleanTitleSlug}-{Release Date} - {Scene CleanTitle} {[StashId]}", "scenes-Networks Name-StudiosName-2025-11-25 - The Last Train Home [019abb52-0557-7c5f-83df-94b828851fd1]")]
         public void should_use_sceneFolderFormat_to_build_folder_name(string format, string expected)
         {
             _namingConfig.SceneFolderFormat = format;
