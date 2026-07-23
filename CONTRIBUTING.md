@@ -23,14 +23,14 @@ For a map of the repository layout and where new code belongs (backend project s
 - HTML/Javascript editor of choice (VS Code/Sublime Text/Webstorm/Atom/etc)
 - [Git](https://git-scm.com/downloads)
 - The [Node.js](https://nodejs.org/) runtime is required. The following versions are supported:
-  - **20** (any minor or patch version within this)
+  - **22** (any minor or patch version within this)
 {.grid-list}
 
-> The Application will **NOT** run on older versions such as `18.x`, `16.x` or any version below 20.0! Due to a dependency issue, it will also not run on `21.x` and is untested on other verisons.
+> The Application will **NOT** run on older versions such as `20.x`, `18.x`, `16.x` or any version below 22.0! Odd-numbered (non-LTS) releases are untested.
 {.is-warning}
 
 - [Yarn](https://yarnpkg.com/getting-started/install) is required to build the frontend
-  - Yarn is included with **Node 20**+ by default. Enable it with `corepack enable`
+  - Yarn is included with **Node 22**+ by default. Enable it with `corepack enable`
   - For other Node versions, install it with `npm i -g corepack`
 
 ## Getting started

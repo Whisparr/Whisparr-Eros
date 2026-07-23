@@ -122,7 +122,7 @@ Each item names a representative path — follow the existing neighbors.
 
 ## Build & run
 
-- Frontend: `yarn install`, then `yarn start` (watch) or `yarn build`. Node 20
+- Frontend: `yarn install`, then `yarn start` (watch) or `yarn build`. Node 22
   + Yarn via `corepack enable`.
 - Backend: `dotnet msbuild -restore src/Whisparr.sln -p:Configuration=Debug -p:Platform=Posix -t:PublishAllRids`
   (or `Platform=Windows`), or the orchestrator `build.sh`. Output in `_output/`;
