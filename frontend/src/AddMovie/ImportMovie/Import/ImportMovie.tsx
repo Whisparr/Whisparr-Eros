@@ -55,7 +55,7 @@ function ImportMovie() {
   const { rootFolderId: rootFolderIdParam } = useParams() as {
     rootFolderId: string;
   };
-  const rootFolderId = Number.parseInt(rootFolderIdParam);
+  const rootFolderId = Number.parseInt(rootFolderIdParam, 10);
   const scenesMatch = useMatch('/add/import/scenes/:rootFolderId');
   const itemType: 'movie' | 'scene' = scenesMatch ? 'scene' : 'movie';
 

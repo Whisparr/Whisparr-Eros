@@ -34,11 +34,7 @@ import InteractiveImportRowCellPlaceholder from './InteractiveImportRowCellPlace
 import styles from './InteractiveImportRow.css';
 
 type SelectType =
-  | 'movie'
-  | 'releaseGroup'
-  | 'quality'
-  | 'language'
-  | 'indexerFlags';
+  'movie' | 'releaseGroup' | 'quality' | 'language' | 'indexerFlags';
 
 type SelectedChangeProps = SelectStateInputProps & {
   hasMovieFileId: boolean;

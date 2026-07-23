@@ -10,17 +10,23 @@ import StudioIndexPoster from 'Studio/Index/Posters/StudioIndexPoster';
 import Studio from 'Studio/Studio';
 import dimensions from 'Styles/Variables/dimensions';
 
-const bodyPadding = Number.parseInt(dimensions.pageContentBodyPadding);
+const bodyPadding = Number.parseInt(dimensions.pageContentBodyPadding, 10);
 const bodyPaddingSmallScreen = Number.parseInt(
-  dimensions.pageContentBodyPaddingSmallScreen
+  dimensions.pageContentBodyPaddingSmallScreen,
+  10
 );
-const columnPadding = Number.parseInt(dimensions.movieIndexColumnPadding);
+const columnPadding = Number.parseInt(dimensions.movieIndexColumnPadding, 10);
 const columnPaddingSmallScreen = Number.parseInt(
-  dimensions.movieIndexColumnPaddingSmallScreen
+  dimensions.movieIndexColumnPaddingSmallScreen,
+  10
 );
-const progressBarHeight = Number.parseInt(dimensions.progressBarSmallHeight);
+const progressBarHeight = Number.parseInt(
+  dimensions.progressBarSmallHeight,
+  10
+);
 const detailedProgressBarHeight = Number.parseInt(
-  dimensions.progressBarMediumHeight
+  dimensions.progressBarMediumHeight,
+  10
 );
 
 const ADDITIONAL_COLUMN_COUNT: Record<string, number> = {

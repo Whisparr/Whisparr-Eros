@@ -11,6 +11,8 @@ Setup guides, [FAQ](Whisparr/Whisparr-Eros/wiki/FAQ), the more information we ha
 
 Whisparr is written in C# (backend) and JS (frontend). The backend is built on the .NET10 framework, while the frontend utilizes Reactjs.
 
+For a map of the repository layout and where new code belongs (backend project structure, migrations, providers, the parser, tests, and localization), see [AGENTS.md](AGENTS.md).
+
 ## Tools required
 
 - Visual Studio 2022 or higher is recommended (<https://www.visualstudio.com/vs/>). The community version is free and works (<https://www.visualstudio.com/downloads/>).
@@ -65,7 +67,7 @@ The backend solution is most easily built and ran in Visual Studio [Code] or Rid
 
 1. First `Build` the solution in Visual Studio, this will ensure all projects are correctly built and dependencies restored
 1. Next `Debug/Run` the project in Visual Studio to start Whisparr
-1. Open <http://localhost:7878>
+1. Open <http://localhost:6969>
 
 #### Command line
 
@@ -94,6 +96,9 @@ dotnet msbuild -restore src/Whisparr.sln -p:Configuration=Debug -p:Platform=Posi
 - Commit with \*nix line endings for consistency (We checkout Windows and commit \*nix)
 - One feature/bug fix per pull request to keep things clean and easy to understand
 - Use 4 spaces instead of tabs, this is the default for VS 2022 and WebStorm
+
+> AI coding assistants are welcome as a tool, but you remain responsible for what you submit. Please understand and test any code before opening a PR. Submissions that appear to be unreviewed, machine-generated output — untested, broken, or unsafe — are unlikely to be merged. We've seen enough of these to treat them with caution, so make sure you can explain and stand behind your changes.
+{.is-warning}
 
 ## Pull Requesting
 

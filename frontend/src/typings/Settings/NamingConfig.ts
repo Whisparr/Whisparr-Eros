@@ -1,9 +1,5 @@
 type ColonReplacementFormat =
-  | 'delete'
-  | 'dash'
-  | 'spaceDash'
-  | 'spaceDashSpace'
-  | 'smart';
+  'delete' | 'dash' | 'spaceDash' | 'spaceDashSpace' | 'smart';
 
 export default interface NamingConfig {
   renameMovies: boolean;

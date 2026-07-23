@@ -7,7 +7,7 @@ import dimensions from 'Styles/Variables/dimensions.js';
 import DelayProfile from './DelayProfile';
 import styles from './DelayProfileDragPreview.css';
 
-const dragHandleWidth = Number.parseInt(dimensions.dragHandleWidth);
+const dragHandleWidth = Number.parseInt(dimensions.dragHandleWidth, 10);
 
 function DelayProfileDragPreview({ width }) {
   const { item, itemType, currentOffset } = useDragLayer((monitor) => ({

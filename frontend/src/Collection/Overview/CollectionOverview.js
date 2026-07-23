@@ -23,11 +23,11 @@ import styles from './CollectionOverview.css';
 import 'swiper/css';
 import 'swiper/css/navigation';
 
-const columnPadding = Number.parseInt(dimensions.movieIndexColumnPadding);
+const columnPadding = Number.parseInt(dimensions.movieIndexColumnPadding, 10);
 const columnPaddingSmallScreen = Number.parseInt(
   dimensions.movieIndexColumnPaddingSmallScreen
-);
-const defaultFontSize = Number.parseInt(fonts.defaultFontSize);
+, 10);
+const defaultFontSize = Number.parseInt(fonts.defaultFontSize, 10);
 const lineHeight = Number.parseFloat(fonts.lineHeight);
 
 // Hardcoded height beased on line-height of 32 + bottom margin of 10. 19 + 5 for List Row

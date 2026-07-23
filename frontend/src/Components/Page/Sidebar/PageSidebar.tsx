@@ -24,8 +24,8 @@ import Messages from './Messages/Messages';
 import PageSidebarItem from './PageSidebarItem';
 import styles from './PageSidebar.css';
 
-const HEADER_HEIGHT = Number.parseInt(dimensions.headerHeight);
-const SIDEBAR_WIDTH = Number.parseInt(dimensions.sidebarWidth);
+const HEADER_HEIGHT = Number.parseInt(dimensions.headerHeight, 10);
+const SIDEBAR_WIDTH = Number.parseInt(dimensions.sidebarWidth, 10);
 
 interface SidebarItem {
   iconName?: IconName;

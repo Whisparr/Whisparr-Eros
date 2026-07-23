@@ -108,7 +108,14 @@ namespace NzbDrone.Core.MediaFiles.MediaInfo
                 movieFile.Quality = localMovie.Quality;
             }
 
-            _mediaFileService.Update(movieFile);
+            // Only persist when the file already exists in the DB. During import the file name is
+            // built (which can trigger a media info update) before the MovieFile is inserted, so its
+            // Id is still 0. The in-memory MediaInfo/Quality set above is persisted by the later Add.
+            if (movieFile.Id > 0)
+            {
+                _mediaFileService.Update(movieFile);
+            }
+
             _logger.Debug("Updated MediaInfo for '{0}'", path);
 
             return true;

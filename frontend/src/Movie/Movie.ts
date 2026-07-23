@@ -6,11 +6,7 @@ import MovieCredit from 'typings/MovieCredit';
 export type MovieMonitor = 'monitor' | 'none';
 
 export type MovieStatus =
-  | 'tba'
-  | 'announced'
-  | 'inCinemas'
-  | 'released'
-  | 'deleted';
+  'tba' | 'announced' | 'inCinemas' | 'released' | 'deleted';
 
 export type CoverType = 'poster' | 'fanart' | 'screenshot' | 'clearlogo';
 

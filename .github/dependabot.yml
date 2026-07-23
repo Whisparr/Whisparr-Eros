@@ -10,22 +10,69 @@ updates:
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
-      interval: "daily"
-    open-pull-requests-limit: 1
+      interval: "weekly"
+    open-pull-requests-limit: 10
     commit-message:
-      prefix: "Chore"
+      prefix: "chore"
+    # A dependency joins the FIRST group it matches, so the coupled families
+    # are listed before the catch-all dev/prod groups. Anything matching no
+    # group gets its own PR -- which is how majors end up one-per-PR.
     groups:
-      all-npm-updates:
+      # Coupled families: these have to move together, majors included.
+      babel:
         patterns:
-          - "*"
+          - "@babel/*"
+          - "babel-loader"
+          - "babel-plugin-*"
+      eslint:
+        patterns:
+          - "eslint"
+          - "eslint-*"
+          - "@eslint/*"
+          - "@typescript-eslint/*"
+      redux:
+        patterns:
+          - "redux"
+          - "redux-*"
+          - "react-redux"
+          - "reselect"
+      react-router:
+        patterns:
+          - "react-router"
+          - "react-router-dom"
+      # Everything else: batched by intent, majors excluded so they land alone.
+      dev-minor:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
+      prod-minor:
+        dependency-type: "production"
+        update-types:
+          - "minor"
+          - "patch"
+    ignore:
+      # Each of these needs source changes, not just a version bump. Drop the
+      # entry when we're ready to do that migration.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "jquery"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-window"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "swiper"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: "nuget"
     directory: "/src"
     schedule:
       interval: "daily"
     open-pull-requests-limit: 1
     commit-message:
-      prefix: "Chore"
+      prefix: "chore"
     groups:
       all-nuget-updates:
         patterns:
           - "*"
+    ignore:
+      - dependency-name: "SixLabors.ImageSharp"
+        update-types: ["version-update:semver-major"]

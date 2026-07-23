@@ -17,13 +17,7 @@ interface FilterBuilderTypeOption {
 }
 
 export type FilterBuilderTypes =
-  | 'array'
-  | 'contains'
-  | 'date'
-  | 'equal'
-  | 'exact'
-  | 'number'
-  | 'string';
+  'array' | 'contains' | 'date' | 'equal' | 'exact' | 'number' | 'string';
 
 export const possibleFilterTypes: Record<
   FilterBuilderTypes,

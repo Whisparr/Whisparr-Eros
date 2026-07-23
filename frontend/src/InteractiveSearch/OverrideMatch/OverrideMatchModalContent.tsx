@@ -17,22 +17,18 @@ import Language from 'Language/Language';
 import Movie from 'Movie/Movie';
 import MovieLanguages from 'Movie/MovieLanguages';
 import MovieQuality from 'Movie/MovieQuality';
+import { useMovie } from 'Movie/useMovie';
 import { QualityModel } from 'Quality/Quality';
 import { grabRelease } from 'Store/Actions/releaseActions';
 import { fetchDownloadClients } from 'Store/Actions/settingsActions';
 import createEnabledDownloadClientsSelector from 'Store/Selectors/createEnabledDownloadClientsSelector';
-import { createMovieSelectorForHook } from 'Store/Selectors/createMovieSelector';
 import translate from 'Utilities/String/translate';
 import SelectDownloadClientModal from './DownloadClient/SelectDownloadClientModal';
 import OverrideMatchData from './OverrideMatchData';
 import styles from './OverrideMatchModalContent.css';
 
 type SelectType =
-  | 'select'
-  | 'movie'
-  | 'quality'
-  | 'language'
-  | 'downloadClient';
+  'select' | 'movie' | 'quality' | 'language' | 'downloadClient';
 
 interface OverrideMatchModalContentProps {
   indexerId: number;
@@ -47,7 +43,9 @@ interface OverrideMatchModalContentProps {
   onModalClose(): void;
 }
 
-function OverrideMatchModalContent(props: OverrideMatchModalContentProps) {
+function OverrideMatchModalContent(
+  props: Readonly<OverrideMatchModalContentProps>
+) {
   const modalTitle = translate('ManualGrab');
   const {
     indexerId,
@@ -59,7 +57,7 @@ function OverrideMatchModalContent(props: OverrideMatchModalContentProps) {
     onModalClose,
   } = props;
 
-  const [movieId, setMovieId] = useState(props.movieId);
+  const [selectedMovie, setSelectedMovie] = useState<Movie | undefined>();
   const [languages, setLanguages] = useState(props.languages);
   const [quality, setQuality] = useState(props.quality);
   const [downloadClientId, setDownloadClientId] = useState<number | null>(null);
@@ -70,9 +68,16 @@ function OverrideMatchModalContent(props: OverrideMatchModalContentProps) {
   const previousIsGrabbing = usePrevious(isGrabbing);
 
   const dispatch = useDispatch();
-  const movie: Movie | undefined = useSelector(
-    createMovieSelectorForHook(movieId)
+
+  // The release's mapped movie is only known by id, fetch it until the user
+  // picks a different one.
+  const { data: mappedMovie } = useMovie(
+    selectedMovie ? undefined : props.movieId
   );
+
+  const movie = selectedMovie ?? mappedMovie;
+  const movieId = movie?.id;
+
   const { items: downloadClients } = useSelector(
     createEnabledDownloadClientsSelector(protocol)
   );
@@ -87,10 +92,10 @@ function OverrideMatchModalContent(props: OverrideMatchModalContentProps) {
 
   const onMovieSelect = useCallback(
     (m: Movie) => {
-      setMovieId(m.id);
+      setSelectedMovie(m);
       setSelectModalOpen(null);
     },
-    [setMovieId, setSelectModalOpen]
+    [setSelectedMovie, setSelectModalOpen]
   );
 
   const onSelectQualityPress = useCallback(() => {

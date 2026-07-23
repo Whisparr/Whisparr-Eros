@@ -189,10 +189,7 @@ function EditStudioModalContent(props: Readonly<EditStudioModalContentProps>) {
                   {...searchOnAdd}
                   value={
                     getValue(searchOnAdd, false) as
-                      | string
-                      | boolean
-                      | null
-                      | undefined
+                      string | boolean | null | undefined
                   }
                   onChange={onInputChange}
                 />
