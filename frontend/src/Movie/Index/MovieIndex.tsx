@@ -290,7 +290,7 @@ function MovieIndex() {
           ) : null}
         </PageContentBody>
 
-        {isSelectMode ? <MovieIndexSelectFooter /> : null}
+        {isSelectMode ? <MovieIndexSelectFooter items={items} /> : null}
 
         <InteractiveImportModal
           isOpen={isInteractiveImportModalOpen}
