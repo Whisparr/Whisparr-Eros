@@ -180,6 +180,14 @@ namespace NzbDrone.Core.Test.ParserTests
         [TestCase("Studio2.24.07.26.Performer.Plain.Title.Words.Here.XXX.1080p.HEVC.x265.PRT", "x265")]
         [TestCase("Studio.22.10.18.Title.XXX.720p.HEVC.x265.PRT[XvX]", "x265")]
         [TestCase("Studio.26.07.09.Performer.Title.XXX.1080p.h264-GROUP", "h264")]
+
+        // The release tokens the title is masked from are only narrowed at a resolution or web
+        // source marker, so a release carrying none of those used to have its whole tag block
+        // masked away along with the title.
+        [TestCase("Studio.20.01.01.Performer.Some.Title.XXX.DVDRip.x264-GRP", "x264")]
+        [TestCase("Studio.20.01.01.Performer.Some.Title.XXX.BluRay.x264-GRP", "x264")]
+        [TestCase("Studio.23.05.12.Performer.Title.HEVC.x265-GROUP", "x265")]
+        [TestCase("Studio.20.01.01.Performer.Title.x264-GRP", "x264")]
         public void should_keep_codec_token_in_simple_release_title(string title, string codec)
         {
             var result = Parser.Parser.ParseMovieTitle(title);
@@ -190,6 +198,9 @@ namespace NzbDrone.Core.Test.ParserTests
 
         [TestCase("Studio.26.07.09.Performer.Its.Great.In.The.Sample.XXX.1080p.x265-GROUP", "Studio.26.07.09.A.Movie.XXX.1080p.x265-GROUP")]
         [TestCase("Studio.26.07.09.Performer.Title.XXX.1080p.x265-GROUP", "Studio.26.07.09.A.Movie.XXX.1080p.x265-GROUP")]
+        [TestCase("Studio.20.01.01.Performer.Some.Title.XXX.DVDRip.x264-GRP", "Studio.20.01.01.A.Movie.XXX.DVDRip.x264-GRP")]
+        [TestCase("Studio.23.05.12.Performer.Title.HEVC.x265-GROUP", "Studio.23.05.12.A.Movie.HEVC.x265-GROUP")]
+        [TestCase("Brazzers.19.11.02.Some.One.Scene.Name.XXX.SD.MP4-KLEENEX", "Brazzers.19.11.02.A.Movie.XXX.SD.MP4-KLEENEX")]
         public void should_replace_only_the_title_tokens_in_simple_release_title(string title, string expected)
         {
             var result = Parser.Parser.ParseMovieTitle(title);
