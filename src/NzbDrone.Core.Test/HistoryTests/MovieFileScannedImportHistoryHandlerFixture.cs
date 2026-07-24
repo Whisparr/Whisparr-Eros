@@ -93,7 +93,10 @@ namespace NzbDrone.Core.Test.HistoryTests
             var history = HandleScan(importedMovie);
 
             history.SourceTitle.Should().NotBe(importedMovie.Path);
-            history.Data["ImportedPath"].Should().Be(importedMovie.Path);
+
+            // Asserted by suffix because the handler builds this with Path.Combine, whose separator
+            // is platform specific.
+            history.Data["ImportedPath"].Should().EndWith(importedMovie.RelativePath);
         }
     }
 }
