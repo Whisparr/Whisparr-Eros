@@ -33,7 +33,7 @@ namespace NzbDrone.Core.History
                 Date = DateTime.UtcNow,
                 Quality = message.MovieInfo.Quality,
                 Languages = message.MovieInfo.Languages,
-                SourceTitle = message.ImportedMovie.Path ?? message.ImportedMovie.RelativePath,
+                SourceTitle = message.ImportedMovie.GetSceneOrFileName(),
                 MovieId = movie.Id
             };
 

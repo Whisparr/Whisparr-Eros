@@ -109,7 +109,11 @@ namespace NzbDrone.Core.CustomFormats
                 Movie = movie,
                 Size = size,
                 Languages = history.Languages,
-                IndexerFlags = indexerFlags
+                IndexerFlags = indexerFlags,
+
+                // Import and file events record a path rather than a release name, so give the
+                // specifications the file name to match on the same way the movie file does.
+                Filename = Path.GetFileName(history.SourceTitle)
             };
 
             return ParseCustomFormat(input);
