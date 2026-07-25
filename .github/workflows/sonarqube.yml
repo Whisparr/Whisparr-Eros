@@ -10,21 +10,83 @@ on:
   workflow_dispatch:
 
 jobs:
+  # Approval gate for fork PRs.
+  #
+  # SonarQube's .NET scanner needs SONAR_TOKEN at both `begin` and `end`, and C#
+  # analysis needs a real `dotnet build`. A build executes whatever the head
+  # branch says it should: Directory.Build.props/.targets, csproj PreBuild
+  # targets, nuget.config feeds. Under pull_request_target that runs in the base
+  # repo's context, with the base repo's secrets, which is the "pwn request"
+  # shape that actions/checkout now refuses by default (see
+  # https://gh.io/securely-using-pull_request_target).
+  #
+  # There is no way to analyse fork code automatically AND safely: a public
+  # repo never exposes secrets to `pull_request` from a fork, by design. So the
+  # unsafe checkout below is allowed only behind a human. The built-in "require
+  # approval for fork pull requests" setting does NOT cover pull_request_target,
+  # so the gate has to be an Environment with required reviewers.
+  #
+  # This job holds the environment and nothing else - it never checks out head
+  # code, so it is safe to run before approval. Same-repo PRs, pushes and manual
+  # dispatch skip it entirely and analysis proceeds unattended as before.
+  #
+  # REVIEWERS: the payload for a build-time attack lives in the build files, not
+  # in the C# you would normally read. Before approving a fork run, read any
+  # change to *.csproj, Directory.Build.*, nuget.config, global.json, build.sh,
+  # package.json scripts or .github/ line by line.
+  approve-fork-analysis:
+    name: Approve fork analysis
+    if: >-
+      github.repository == 'Whisparr/Whisparr-Eros' &&
+      github.event_name == 'pull_request_target' &&
+      github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    # This job only records the approval, so it needs no token scopes at all.
+    permissions: {}
+    # Create this in Settings > Environments with the maintainers as required
+    # reviewers. Without required reviewers configured, the gate is a no-op.
+    environment: sonar-fork-analysis
+    steps:
+      - name: Record approval
+        # Via env, not inline interpolation - never expand webhook-controlled
+        # values straight into a shell.
+        env:
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          echo "Approved analysis of fork code from $HEAD_REPO@$HEAD_SHA"
+
   analyze:
     name: Build and Analyze
+    needs: [approve-fork-analysis]
     # prevent runs outside default repo
-    if: github.repository == 'Whisparr/Whisparr-Eros'
+    # 'skipped' is the same-repo / push / dispatch path, where no gate applies.
+    if: >-
+      !cancelled() &&
+      github.repository == 'Whisparr/Whisparr-Eros' &&
+      (needs.approve-fork-analysis.result == 'success' ||
+       needs.approve-fork-analysis.result == 'skipped')
     runs-on: windows-latest
+    # pull_request_target hands the job a write-scoped GITHUB_TOKEN by default.
+    # Analysis only ever needs to read the tree, so clamp it.
+    permissions:
+      contents: read
     steps:
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: 17
           distribution: "zulu"
-      - uses: actions/checkout@v4
+      # v5 is the first major that declares node24 natively; v4 declares node20
+      # and only runs because the runner force-upgrades it. allow-unsafe-pr-checkout
+      # is present in v4 through v7, so the gate below is unaffected by the bump.
+      - uses: actions/checkout@v5
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
+          # Gated by approve-fork-analysis above. Do not enable this checkout
+          # anywhere that is not behind that gate.
+          allow-unsafe-pr-checkout: true
       - name: Cache SonarQube Cloud packages
         uses: actions/cache@v4
         with:
