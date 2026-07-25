@@ -76,3 +76,24 @@ updates:
     ignore:
       - dependency-name: "SixLabors.ImageSharp"
         update-types: ["version-update:semver-major"]
+  - package-ecosystem: "github-actions"
+    # "/" covers .github/workflows. The composite actions under
+    # .github/actions/*/action.yml pin their own `uses:` versions and drift
+    # independently, so they need their own glob - without it they are invisible
+    # to Dependabot.
+    directories:
+      - "/"
+      - "/.github/actions/*"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore"
+    # Same intent as the npm groups above: batch the safe updates, leave majors
+    # ungrouped so each one lands in its own reviewable PR. Action majors have
+    # bitten us before - checkout v7 added the fork-checkout block that broke
+    # SonarQube on every fork PR - so they deserve individual review.
+    groups:
+      actions-minor:
+        update-types:
+          - "minor"
+          - "patch"
