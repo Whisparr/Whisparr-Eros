@@ -1,0 +1,77 @@
+name: CodeQL
+
+# Replaces code scanning "default setup", which does not analyse fork pull
+# requests at all. GitHub documents the default setup PR trigger as:
+#
+#   "When creating or committing to a pull request based against the
+#    repository's default branch, or any protected branch, excluding pull
+#    requests from forks"
+#
+# So every outside-contributor PR merged so far has had zero CodeQL coverage -
+# no run, no check, silently. Advanced setup is a normal workflow, so it runs on
+# fork PRs the same way build_v3.yml already does, subject to the repository's
+# first-time-contributor approval gate.
+#
+# Default setup must be DISABLED (Settings > Advanced Security > Code scanning)
+# before this lands, or the two configurations fight and PR alert diffing
+# reports "configurations not found".
+#
+# Language and build-mode selection mirrors what default setup was running:
+# actions, csharp and javascript-typescript at the default query suite, with C#
+# in build-mode none. Buildless analysis means fork code is never executed here,
+# which is what makes this safe on pull_request where SonarQube is not.
+
+on:
+  push:
+    branches:
+      - eros-develop
+      - eros
+  pull_request:
+    branches:
+      - eros-develop
+      - eros
+  schedule:
+    # Keeps parity with the weekly scan default setup performed.
+    - cron: "27 4 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    # prevent runs outside default repo
+    if: github.repository == 'Whisparr/Whisparr-Eros'
+    runs-on: ubuntu-latest
+    permissions:
+      # Required to upload results to the code scanning API.
+      security-events: write
+      # Required by the CodeQL action to read workflow run metadata.
+      actions: read
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: actions
+            build-mode: none
+          - language: csharp
+            build-mode: none
+          - language: javascript-typescript
+            build-mode: none
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@v4
+        with:
+          category: "/language:${{ matrix.language }}"
