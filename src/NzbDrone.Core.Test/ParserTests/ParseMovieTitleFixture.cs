@@ -145,6 +145,9 @@ namespace NzbDrone.Core.Test.ParserTests
         [TestCase("[MNO.678] Dot Separator", "MNO.678")]
         [TestCase("[ABCD 123] Space Separator", "ABCD 123")]
         [TestCase("WXYZ-999 Title Without Brackets", "WXYZ-999")]
+        [TestCase("+++ [FHD] TEST-123 Some Title", "TEST-123")]
+        [TestCase("[8KVR] MOCK-456 [VR] Some Title", "MOCK-456")]
+        [TestCase("FOOABC-1234BAR", null)]
         [TestCase("No External ID Here", null)]
         [TestCase("", null)]
         [TestCase("Random [Text] Without ID Pattern", null)]
@@ -152,7 +155,9 @@ namespace NzbDrone.Core.Test.ParserTests
         [TestCase("[ABC] Letters Only", null)]
         public void should_correctly_parse_code(string title, string result)
         {
-            Parser.Parser.ParseMovieTitle(title)?.Code.Should().Be(result);
+            var code = Parser.Parser.ParseMovieTitle(title)?.Code;
+
+            code.Should().Be(result);
         }
 
         [TestCase("something random 77f1b861-91c1-4e6f-b0b1-3b1c46733fb2 anything")]

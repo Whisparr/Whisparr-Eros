@@ -137,13 +137,14 @@ namespace NzbDrone.Core.Parser
             new Regex(@"(?<stashid>.{8}-.{4}-.{4}-.{4}-.{12})", RegexOptions.IgnoreCase | RegexOptions.Compiled),
 
             // JAV
-            new Regex(@"^(?<code>[A-Z]{2,5}[- ][0-9]{3,5})", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+            new Regex(@"^(?<code>[A-Z]{2,5}[- ][0-9]{3,5})(?=$|[\s._+\-\[\]\(\)\{\}])", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+            new Regex(@"(?:^|[\s._+\-\[\]\(\)\{\}])(?<code>[A-Z]{2,5}-[0-9]{3,5})(?=$|[\s._+\-\[\]\(\)\{\}])", RegexOptions.IgnoreCase | RegexOptions.Compiled),
 
             // JAV-FC2
             new Regex(@"(?<code>FC2.*(?:PPV).*[0-9]{4,7})", RegexOptions.IgnoreCase | RegexOptions.Compiled),
 
             // Pattern for IDs in brackets like [SKMJ-649], (ABC-123), {XYZ-456}, [SKMJ_649], [SKMJ.649]
-            new Regex(@"[\[\(\{](?<code>[A-Z]{2,5}[- ][0-9]{3,5})[\]\)\}]", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+            new Regex(@"[\[\(\{](?<code>[A-Z]{2,5}[- _.][0-9]{3,5})[\]\)\}]", RegexOptions.IgnoreCase | RegexOptions.Compiled),
 
             // Final check that it is a video
             new Regex(@"^(?<title>.+?)?(480|540|576|720|1080|2160)p", RegexOptions.IgnoreCase | RegexOptions.Compiled),
