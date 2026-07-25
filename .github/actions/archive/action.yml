@@ -25,5 +25,5 @@ runs:
   using: 'composite'
   steps:
     - name: Archive Artifact
-      uses: thedoctor0/zip-release@0.7.5
+      uses: thedoctor0/zip-release@0.7.6
 
