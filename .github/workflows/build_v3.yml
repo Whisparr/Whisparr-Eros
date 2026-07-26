@@ -140,7 +140,7 @@ jobs:
           fetch-depth: 0
 
       - name: Volta
-        uses: volta-cli/action@v4
+        uses: volta-cli/action@v5
 
       - name: Yarn Install
         run: yarn install

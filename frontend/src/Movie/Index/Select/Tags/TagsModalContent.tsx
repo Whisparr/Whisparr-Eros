@@ -14,21 +14,20 @@ import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { inputTypes, kinds, sizes } from 'Helpers/Props';
 import Movie from 'Movie/Movie';
-import createAllMoviesSelector from 'Store/Selectors/createAllMoviesSelector';
 import createTagsSelector from 'Store/Selectors/createTagsSelector';
 import translate from 'Utilities/String/translate';
 import styles from './TagsModalContent.css';
 
 interface TagsModalContentProps {
   movieIds: number[];
+  items: Movie[];
   onApplyTagsPress: (tags: number[], applyTags: string) => void;
   onModalClose: () => void;
 }
 
 function TagsModalContent(props: TagsModalContentProps) {
-  const { movieIds, onModalClose, onApplyTagsPress } = props;
+  const { movieIds, items, onModalClose, onApplyTagsPress } = props;
 
-  const allMovies: Movie[] = useSelector(createAllMoviesSelector());
   const tagList: Tag[] = useSelector(createTagsSelector());
 
   const [tags, setTags] = useState<number[]>([]);
@@ -36,7 +35,7 @@ function TagsModalContent(props: TagsModalContentProps) {
 
   const movieTags = useMemo(() => {
     const tags = movieIds.reduce((acc: number[], id) => {
-      const s = allMovies.find((s) => s.id === id);
+      const s = items.find((s) => s.id === id);
 
       if (s) {
         acc.push(...s.tags);
@@ -46,7 +45,7 @@ function TagsModalContent(props: TagsModalContentProps) {
     }, []);
 
     return uniq(tags);
-  }, [movieIds, allMovies]);
+  }, [movieIds, items]);
 
   const onTagsChange = useCallback(
     ({ value }: { value: number[] }) => {

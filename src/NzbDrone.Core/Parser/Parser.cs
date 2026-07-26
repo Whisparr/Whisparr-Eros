@@ -142,8 +142,11 @@ namespace NzbDrone.Core.Parser
             // JAV-FC2
             new Regex(@"(?<code>FC2.*(?:PPV).*[0-9]{4,7})", RegexOptions.IgnoreCase | RegexOptions.Compiled),
 
+            // JAV code after leading tracker/tag blocks
+            new Regex(@"^(?:[\s._+\-]*(?:\[[^\]]+\]|\([^)]+\)|\{[^}]+\}))+[\s._+\-]*(?<code>[A-Z]{2,5}-[0-9]{3,5})(?=[A-Z]?(?:$|[\s._+\-\[\]\(\)\{\}]))", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+
             // Pattern for IDs in brackets like [SKMJ-649], (ABC-123), {XYZ-456}, [SKMJ_649], [SKMJ.649]
-            new Regex(@"[\[\(\{](?<code>[A-Z]{2,5}[- ][0-9]{3,5})[\]\)\}]", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+            new Regex(@"[\[\(\{](?<code>[A-Z]{2,5}[- _.][0-9]{3,5})[\]\)\}]", RegexOptions.IgnoreCase | RegexOptions.Compiled),
 
             // Final check that it is a video
             new Regex(@"^(?<title>.+?)?(480|540|576|720|1080|2160)p", RegexOptions.IgnoreCase | RegexOptions.Compiled),
@@ -207,6 +210,11 @@ namespace NzbDrone.Core.Parser
 
         private static readonly Regex SpecialEpisodeTitleRegex = new Regex(@"(?<episodetitle>.+?)(?:\[.*(?:480p|720p|1080p|2160p|HDTV|WEB|WEBRip|WEB-?DL).*\]|[. ]XXX[. ](?:480p|720p|1080p|2160p|HDTV|WEB|WEBRip|WEB-?DL).*|(?:480p|720p|1080p|2160p|HDTV|WEB|WEBRip|WEB-?DL)|$)",
                           RegexOptions.Compiled);
+
+        // Marks where the release tag block starts, so masking the scene title out of the simple
+        // release title can't reach into the quality, codec and release group behind it.
+        private static readonly Regex ReleaseTagBoundaryRegex = new Regex(@"[-_. ](?:XXX|\d{3,4}[ip]|WEB[-_. ]?DL|WEBRip|WEB|BluRay|BDRip|BRRip|DVDRip|DVD|HDTV|HDRip|SDTV|SD|HEVC|AVC|AV1|VP9|XviD|DivX|[xh][-_. ]?26[45]|AAC|AC3|DTS|MP3|mp4|mkv|avi|wmv|m4v)(?![a-z0-9])",
+                                                                         RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         private static readonly Regex StashIdRegex = new Regex(@"(?<stashid>.{8}-.{4}-.{4}-.{4}-.{12})", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
@@ -353,6 +361,18 @@ namespace NzbDrone.Core.Parser
                                     var titleReplacement = simpleTitleReplaceString.Contains('.') ? "A.Movie" : "A Movie";
                                     var releaseTokens = result.ReleaseTokens?.Trim('.', ' ', '-', '_');
 
+                                    // ReleaseTokens is only narrowed at a resolution or web source marker, so for any
+                                    // other tag block (DVDRip, BluRay, SD, a bare codec) it still runs to the end of the
+                                    // release title. Cut it back to where the tags start, or the mask takes them with it.
+                                    var releaseTagBoundary = releaseTokens.IsNotNullOrWhiteSpace()
+                                        ? ReleaseTagBoundaryRegex.Match(releaseTokens)
+                                        : Match.Empty;
+
+                                    if (releaseTagBoundary.Success)
+                                    {
+                                        releaseTokens = releaseTokens.Substring(0, releaseTagBoundary.Index).Trim('.', ' ', '-', '_');
+                                    }
+
                                     // For a scene release the "title" capture runs to the end of the string, so it spans
                                     // the quality block as well as the title, and its offsets count characters in
                                     // simpleTitle, which has had the quality and codec tokens deleted. Replacing on those
@@ -361,7 +381,7 @@ namespace NzbDrone.Core.Parser
                                     // value keeps the quality block intact for custom formats to match against.
                                     if (releaseTokens.IsNotNullOrWhiteSpace() && simpleReleaseTitle.Contains(releaseTokens))
                                     {
-                                        simpleReleaseTitle = simpleReleaseTitle.Replace(releaseTokens, titleReplacement);
+                                        simpleReleaseTitle = simpleReleaseTitle.Replace(releaseTokens, releaseTokens.Contains('.') ? "A.Movie" : "A Movie");
                                     }
                                     else if (match[0].Groups["title"].Success && match[0].Groups["title"].Index < simpleReleaseTitle.Length)
                                     {

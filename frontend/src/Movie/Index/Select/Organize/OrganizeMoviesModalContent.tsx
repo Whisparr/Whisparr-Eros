@@ -1,6 +1,6 @@
 import { orderBy } from 'lodash';
 import React, { useCallback, useMemo } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { RENAME_MOVIE } from 'Commands/commandNames';
 import Alert from 'Components/Alert';
 import Icon from 'Components/Icon';
@@ -12,24 +12,25 @@ import ModalHeader from 'Components/Modal/ModalHeader';
 import { icons, kinds } from 'Helpers/Props';
 import Movie from 'Movie/Movie';
 import { executeCommand } from 'Store/Actions/commandActions';
-import createAllMoviesSelector from 'Store/Selectors/createAllMoviesSelector';
 import translate from 'Utilities/String/translate';
 import styles from './OrganizeMoviesModalContent.css';
 
 interface OrganizeMoviesModalContentProps {
   movieIds: number[];
+  items: Movie[];
   onModalClose: () => void;
 }
 
-function OrganizeMoviesModalContent(props: OrganizeMoviesModalContentProps) {
-  const { movieIds, onModalClose } = props;
+function OrganizeMoviesModalContent(
+  props: Readonly<OrganizeMoviesModalContentProps>
+) {
+  const { movieIds, items, onModalClose } = props;
 
-  const allMovies: Movie[] = useSelector(createAllMoviesSelector());
   const dispatch = useDispatch();
 
   const movieTitles = useMemo(() => {
     const movie = movieIds.reduce((acc: Movie[], id) => {
-      const s = allMovies.find((s) => s.id === id);
+      const s = items.find((s) => s.id === id);
 
       if (s) {
         acc.push(s);
@@ -41,7 +42,7 @@ function OrganizeMoviesModalContent(props: OrganizeMoviesModalContentProps) {
     const sorted = orderBy(movie, ['sortTitle']);
 
     return sorted.map((s) => s.title);
-  }, [movieIds, allMovies]);
+  }, [movieIds, items]);
 
   const onOrganizePress = useCallback(() => {
     dispatch(
@@ -65,7 +66,7 @@ function OrganizeMoviesModalContent(props: OrganizeMoviesModalContentProps) {
         </Alert>
 
         <div className={styles.message}>
-          {translate('OrganizeConfirm', { count: movieTitles.length })}
+          {translate('OrganizeConfirm', { count: movieIds.length })}
         </div>
 
         <ul>

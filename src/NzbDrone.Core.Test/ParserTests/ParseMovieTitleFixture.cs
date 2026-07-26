@@ -145,6 +145,20 @@ namespace NzbDrone.Core.Test.ParserTests
         [TestCase("[MNO.678] Dot Separator", "MNO.678")]
         [TestCase("[ABCD 123] Space Separator", "ABCD 123")]
         [TestCase("WXYZ-999 Title Without Brackets", "WXYZ-999")]
+        [TestCase("+++ [FHD] TEST-123 Some Title", "TEST-123")]
+        [TestCase("[8KVR] MOCK-456 [VR] Some Title", "MOCK-456")]
+        [TestCase("FC2-PPV-1234 Some Title", "FC2-PPV-1234")]
+        [TestCase("[FC2-PPV-4321] Title", "FC2-PPV-4321")]
+        [TestCase("FC2-PPV-1234567 Some Title", "FC2-PPV-1234567")]
+        [TestCase("SSIS-001A.mp4", "SSIS-001")]
+        [TestCase("SSIS-001C.mp4", "SSIS-001")]
+        [TestCase("[FHD] SSIS-001A.mp4", "SSIS-001")]
+        [TestCase("FOOABC-1234BAR", null)]
+        [TestCase("[FHD] ABC-1234BAR", null)]
+        [TestCase("Some.Studio.Part-123.1080p", null)]
+        [TestCase("[Vixen] Some Title - Part-234 - 1080p", null)]
+        [TestCase("Brazzers - Some Title - Scene-123", null)]
+        [TestCase("Some Title [FHD] ABC-123", null)]
         [TestCase("No External ID Here", null)]
         [TestCase("", null)]
         [TestCase("Random [Text] Without ID Pattern", null)]
@@ -152,7 +166,9 @@ namespace NzbDrone.Core.Test.ParserTests
         [TestCase("[ABC] Letters Only", null)]
         public void should_correctly_parse_code(string title, string result)
         {
-            Parser.Parser.ParseMovieTitle(title)?.Code.Should().Be(result);
+            var code = Parser.Parser.ParseMovieTitle(title)?.Code;
+
+            code.Should().Be(result);
         }
 
         [TestCase("something random 77f1b861-91c1-4e6f-b0b1-3b1c46733fb2 anything")]
@@ -180,6 +196,14 @@ namespace NzbDrone.Core.Test.ParserTests
         [TestCase("Studio2.24.07.26.Performer.Plain.Title.Words.Here.XXX.1080p.HEVC.x265.PRT", "x265")]
         [TestCase("Studio.22.10.18.Title.XXX.720p.HEVC.x265.PRT[XvX]", "x265")]
         [TestCase("Studio.26.07.09.Performer.Title.XXX.1080p.h264-GROUP", "h264")]
+
+        // The release tokens the title is masked from are only narrowed at a resolution or web
+        // source marker, so a release carrying none of those used to have its whole tag block
+        // masked away along with the title.
+        [TestCase("Studio.20.01.01.Performer.Some.Title.XXX.DVDRip.x264-GRP", "x264")]
+        [TestCase("Studio.20.01.01.Performer.Some.Title.XXX.BluRay.x264-GRP", "x264")]
+        [TestCase("Studio.23.05.12.Performer.Title.HEVC.x265-GROUP", "x265")]
+        [TestCase("Studio.20.01.01.Performer.Title.x264-GRP", "x264")]
         public void should_keep_codec_token_in_simple_release_title(string title, string codec)
         {
             var result = Parser.Parser.ParseMovieTitle(title);
@@ -190,6 +214,9 @@ namespace NzbDrone.Core.Test.ParserTests
 
         [TestCase("Studio.26.07.09.Performer.Its.Great.In.The.Sample.XXX.1080p.x265-GROUP", "Studio.26.07.09.A.Movie.XXX.1080p.x265-GROUP")]
         [TestCase("Studio.26.07.09.Performer.Title.XXX.1080p.x265-GROUP", "Studio.26.07.09.A.Movie.XXX.1080p.x265-GROUP")]
+        [TestCase("Studio.20.01.01.Performer.Some.Title.XXX.DVDRip.x264-GRP", "Studio.20.01.01.A.Movie.XXX.DVDRip.x264-GRP")]
+        [TestCase("Studio.23.05.12.Performer.Title.HEVC.x265-GROUP", "Studio.23.05.12.A.Movie.HEVC.x265-GROUP")]
+        [TestCase("Brazzers.19.11.02.Some.One.Scene.Name.XXX.SD.MP4-KLEENEX", "Brazzers.19.11.02.A.Movie.XXX.SD.MP4-KLEENEX")]
         public void should_replace_only_the_title_tokens_in_simple_release_title(string title, string expected)
         {
             var result = Parser.Parser.ParseMovieTitle(title);
