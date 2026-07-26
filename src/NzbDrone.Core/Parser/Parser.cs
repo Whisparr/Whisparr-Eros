@@ -142,8 +142,11 @@ namespace NzbDrone.Core.Parser
             // JAV-FC2
             new Regex(@"(?<code>FC2.*(?:PPV).*[0-9]{4,7})", RegexOptions.IgnoreCase | RegexOptions.Compiled),
 
+            // JAV code after leading tracker/tag blocks
+            new Regex(@"^(?:[\s._+\-]*(?:\[[^\]]+\]|\([^)]+\)|\{[^}]+\}))+[\s._+\-]*(?<code>[A-Z]{2,5}-[0-9]{3,5})(?=[A-Z]?(?:$|[\s._+\-\[\]\(\)\{\}]))", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+
             // Pattern for IDs in brackets like [SKMJ-649], (ABC-123), {XYZ-456}, [SKMJ_649], [SKMJ.649]
-            new Regex(@"[\[\(\{](?<code>[A-Z]{2,5}[- ][0-9]{3,5})[\]\)\}]", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+            new Regex(@"[\[\(\{](?<code>[A-Z]{2,5}[- _.][0-9]{3,5})[\]\)\}]", RegexOptions.IgnoreCase | RegexOptions.Compiled),
 
             // Final check that it is a video
             new Regex(@"^(?<title>.+?)?(480|540|576|720|1080|2160)p", RegexOptions.IgnoreCase | RegexOptions.Compiled),
