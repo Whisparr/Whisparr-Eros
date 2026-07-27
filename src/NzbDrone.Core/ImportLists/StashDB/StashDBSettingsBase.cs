@@ -14,7 +14,6 @@ namespace NzbDrone.Core.ImportLists.StashDB
                 .NotEmpty()
                 .WithMessage("Api Key must not be empty");
 
-            // Limit not smaller than 1 and not larger than 100
             RuleFor(c => c.Limit)
                 .GreaterThan(0)
                 .WithMessage("Must be integer greater than 0");

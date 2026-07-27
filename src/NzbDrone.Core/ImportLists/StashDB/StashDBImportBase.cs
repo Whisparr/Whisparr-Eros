@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using NLog;
 using NzbDrone.Common.Http;
 using NzbDrone.Core.Configuration;
@@ -23,6 +24,15 @@ namespace NzbDrone.Core.ImportLists.StashDB
         public override bool EnableAuto => false;
         public override ImportListType ListType => ImportListType.StashDB;
         public override TimeSpan MinRefreshInterval => TimeSpan.FromHours(1);
+
+        public override ImportListFetchResult Fetch()
+        {
+            var result = base.Fetch();
+
+            result.Movies = result.Movies.Take(Settings.Limit).ToList();
+
+            return result;
+        }
 
         public override IParseImportListResponse GetParser()
         {

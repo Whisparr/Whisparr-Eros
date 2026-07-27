@@ -71,7 +71,7 @@ namespace NzbDrone.Core.ImportLists.StashDB.Studio
 
             var pagesInResponse = (jsonResponse.Data.QueryScenes.Count / _pageSize) + 1;
 
-            var maxPagesAllowed = _maxResultsPerQuery / _pageSize;
+            var maxPagesAllowed = StashDBPagingHelper.GetPageCount(_maxResultsPerQuery, _pageSize);
 
             var pages = Math.Min(pagesInResponse, maxPagesAllowed);
 
