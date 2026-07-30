@@ -80,7 +80,7 @@ jobs:
       # v5 is the first major that declares node24 natively; v4 declares node20
       # and only runs because the runner force-upgrades it. allow-unsafe-pr-checkout
       # is present in v4 through v7, so the gate below is unaffected by the bump.
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
