@@ -32,9 +32,8 @@ export interface FetchJsonOptions<TData> extends Omit<RequestInit, 'body'> {
   timeout?: number;
 }
 
-export const urlBase = window.Whisparr.urlBase;
-export const apiRoot = '/api/v3'; // window.Whisparr.apiRoot;
-
+// `path` is used verbatim — callers must pass an already-rooted path built with
+// `Utilities/Fetch/getQueryPath`.
 async function fetchJson<T, TData>({
   body,
   path,
