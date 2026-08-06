@@ -17,11 +17,8 @@ import selectSettings from 'Store/Selectors/selectSettings';
 import { InputChanged } from 'typings/inputs';
 import MovieCredit from 'typings/MovieCredit';
 import { ValidationError, ValidationWarning } from 'typings/pending';
-import fetchJson, {
-  ApiError,
-  apiRoot,
-  urlBase,
-} from 'Utilities/Fetch/fetchJson';
+import fetchJson, { ApiError } from 'Utilities/Fetch/fetchJson';
+import getQueryPath from 'Utilities/Fetch/getQueryPath';
 import getNewMovie from 'Utilities/Movie/getNewMovie';
 import parseUrl from 'Utilities/String/parseUrl';
 
@@ -100,7 +97,7 @@ const AUTH_HEADERS = {
 
 function apiPost<T, TBody>(path: string, body: TBody): Promise<T> {
   return fetchJson<T, TBody>({
-    path: `${urlBase}${apiRoot}${path}`,
+    path: getQueryPath(path),
     method: 'POST',
     body,
     headers: AUTH_HEADERS,

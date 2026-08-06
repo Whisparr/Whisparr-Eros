@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { queryClient } from 'App/queryClient';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
+import getQueryPath from 'Utilities/Fetch/getQueryPath';
 import fetchJson, { ApiError } from '../Utilities/Fetch/fetchJson';
 import Movie, { MoviePatchResource } from './Movie';
 
@@ -9,11 +10,10 @@ const AUTH_HEADERS = {
   'X-Api-Key': globalThis.Whisparr.apiKey,
   'X-Whisparr-Client': 'Whisparr',
 };
-const apiRoot = '/api/v3';
 
 function apiPut<T, TBody>(path: string, body: TBody) {
   return fetchJson<T, TBody>({
-    path: `${apiRoot}${path}`,
+    path: getQueryPath(path),
     method: 'PUT',
     body,
     headers: AUTH_HEADERS,
@@ -22,7 +22,7 @@ function apiPut<T, TBody>(path: string, body: TBody) {
 
 function apiPatch<T, TBody>(path: string, body: TBody) {
   return fetchJson<T, TBody>({
-    path: `${apiRoot}${path}`,
+    path: getQueryPath(path),
     method: 'PATCH',
     body,
     headers: AUTH_HEADERS,

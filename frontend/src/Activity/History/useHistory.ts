@@ -3,10 +3,10 @@ import { queryClient } from 'App/queryClient';
 import { PropertyFilter } from 'Filters/Filter';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import { SortDirection } from 'Helpers/Props/sortDirections';
+import getQueryPath from 'Utilities/Fetch/getQueryPath';
 import History from '../../typings/History';
-import fetchJson, { apiRoot } from '../../Utilities/Fetch/fetchJson';
+import fetchJson from '../../Utilities/Fetch/fetchJson';
 
-const API_ROOT = apiRoot;
 const AUTH_HEADERS = {
   'X-Api-Key': window.Whisparr.apiKey,
   'X-Whisparr-Client': 'Whisparr',
@@ -14,7 +14,7 @@ const AUTH_HEADERS = {
 
 function apiPost<T>(path: string, body: unknown) {
   return fetchJson<T, unknown>({
-    path: `${API_ROOT}${path}`,
+    path: getQueryPath(path),
     method: 'POST',
     headers: AUTH_HEADERS,
     body,
