@@ -1,3 +1,4 @@
+using System.Linq;
 using FluentAssertions;
 using NUnit.Framework;
 using NzbDrone.Core.ImportLists.StashDB.Favorite;
@@ -31,6 +32,24 @@ namespace NzbDrone.Core.Test.ImportListTests.StashDB
 
             settings.Validate().IsValid.Should().BeTrue();
             settings.Validate().Errors.Should().NotContain(c => c.PropertyName == "ApiKey");
+        }
+
+        [TestCase(0, false)]
+        [TestCase(1, true)]
+        [TestCase(1000, true)]
+        [TestCase(1001, false)]
+        public void limit_should_validate_within_supported_range(int limit, bool expectedIsValid)
+        {
+            var settings = new StashDBFavoriteSettings
+            {
+                ApiKey = "valid-api-key",
+                Limit = limit
+            };
+
+            var validationResult = settings.Validate();
+
+            validationResult.IsValid.Should().Be(expectedIsValid);
+            validationResult.Errors.Any(error => error.PropertyName == nameof(settings.Limit)).Should().Be(!expectedIsValid);
         }
     }
 }

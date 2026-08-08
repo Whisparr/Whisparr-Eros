@@ -59,11 +59,7 @@ namespace NzbDrone.Core.ImportLists.StashDB.Studio
 
             var jsonResponse = JsonConvert.DeserializeObject<QueryScenesResult>(HttpClient.Execute(requestBuilder.Build()).Content);
 
-            var pagesInResponse = (jsonResponse.Data.QueryScenes.Count / _pageSize) + 1;
-
-            var maxPagesAllowed = StashDBPagingHelper.GetPageCount(_maxResultsPerQuery, _pageSize);
-
-            var pages = Math.Min(pagesInResponse, maxPagesAllowed);
+            var pages = StashDBPagingHelper.GetPageCount(Math.Min(jsonResponse.Data.QueryScenes.Count, _maxResultsPerQuery), _pageSize);
 
             var requests = new List<ImportListRequest>();
 

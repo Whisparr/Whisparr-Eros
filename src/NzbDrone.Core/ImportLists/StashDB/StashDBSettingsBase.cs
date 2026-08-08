@@ -16,7 +16,8 @@ namespace NzbDrone.Core.ImportLists.StashDB
 
             RuleFor(c => c.Limit)
                 .GreaterThan(0)
-                .WithMessage("Must be integer greater than 0");
+                .WithMessage("Must be integer greater than 0")
+                .LessThanOrEqualTo(1000);
         }
     }
 
