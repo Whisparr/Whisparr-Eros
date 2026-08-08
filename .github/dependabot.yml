@@ -92,7 +92,22 @@ updates:
     # ungrouped so each one lands in its own reviewable PR. Action majors have
     # bitten us before - checkout v7 added the fork-checkout block that broke
     # SonarQube on every fork PR - so they deserve individual review.
+    #
+    # First match wins, so coupled families go before the catch-all.
     groups:
+      # upload/download-artifact have to move together: the download side must
+      # be able to read what the upload side wrote, and each directory above is
+      # a separate Dependabot run, so without this group a single bump arrives
+      # as one PR per file - eight of them, half of which collide on the same
+      # file. Majors are included here deliberately, unlike the rule below.
+      artifact-actions:
+        patterns:
+          - "actions/upload-artifact"
+          - "actions/download-artifact"
+        update-types:
+          - "major"
+          - "minor"
+          - "patch"
       actions-minor:
         update-types:
           - "minor"
