@@ -108,6 +108,20 @@ updates:
           - "major"
           - "minor"
           - "patch"
+      # Same one-PR-per-file problem, different cause: setup-dotnet is pinned in
+      # .github/workflows plus two composite actions, so a single major arrived
+      # as three PRs. Grouping it keeps the "one PR per action major" intent the
+      # comment above describes - the split was never wanted, it just falls out
+      # of `directories`. Only actions pinned in more than one directory need an
+      # entry here; checkout lives solely in .github/workflows and is fine
+      # ungrouped.
+      setup-dotnet:
+        patterns:
+          - "actions/setup-dotnet"
+        update-types:
+          - "major"
+          - "minor"
+          - "patch"
       actions-minor:
         update-types:
           - "minor"
