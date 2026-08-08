@@ -77,10 +77,12 @@ jobs:
         with:
           java-version: 17
           distribution: "zulu"
-      # v5 is the first major that declares node24 natively; v4 declares node20
-      # and only runs because the runner force-upgrades it. allow-unsafe-pr-checkout
-      # is present in v4 through v7, so the gate below is unaffected by the bump.
-      - uses: actions/checkout@v5
+      # v7 refuses to check out fork PR code under pull_request_target or
+      # workflow_run unless allow-unsafe-pr-checkout is set. It is set below,
+      # behind the approve-fork-analysis gate, so this job is unaffected -- but
+      # that input is load-bearing now, not decorative. Do not remove it while
+      # this workflow keeps its pull_request_target trigger.
+      - uses: actions/checkout@v7
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
