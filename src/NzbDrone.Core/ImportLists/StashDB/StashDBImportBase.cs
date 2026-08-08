@@ -25,11 +25,17 @@ namespace NzbDrone.Core.ImportLists.StashDB
         public override ImportListType ListType => ImportListType.StashDB;
         public override TimeSpan MinRefreshInterval => TimeSpan.FromHours(1);
 
+        // The fetch loop stops at MaxNumResultsPerQuery regardless of the configured limit,
+        // so clamp here rather than rejecting larger limits in the settings validator. Stored
+        // definitions are revalidated on every sync, so a validation rule would silently drop
+        // existing lists out of ImportListFactory.Active() instead of just capping them.
+        protected int EffectiveLimit => Math.Min(Settings.Limit, MaxNumResultsPerQuery);
+
         public override ImportListFetchResult Fetch()
         {
             var result = base.Fetch();
 
-            result.Movies = result.Movies.Take(Settings.Limit).ToList();
+            result.Movies = result.Movies.Take(EffectiveLimit).ToList();
 
             return result;
         }

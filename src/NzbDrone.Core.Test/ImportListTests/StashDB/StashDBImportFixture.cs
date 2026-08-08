@@ -22,6 +22,7 @@ namespace NzbDrone.Core.Test.ImportListTests.StashDB
     public class StashDBImportFixture : CoreTest
     {
         private const int PageSize = 100;
+        private const int MaxResultsPerQuery = 1000;
 
         private List<int> _requestedPages;
         private int _reportedCount;
@@ -50,6 +51,8 @@ namespace NzbDrone.Core.Test.ImportListTests.StashDB
         [TestCase(typeof(StashDBPerformerImport), 200, 1000, new[] { 1, 1, 2 })]
         [TestCase(typeof(StashDBStudioImport), 200, 1000, new[] { 1, 1, 2 })]
         [TestCase(typeof(StashDBTagsImport), 200, 1000, new[] { 1, 1, 2 })]
+        [TestCase(typeof(StashDBFavoriteImport), 2000, 1500, new[] { 1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 })]
+        [TestCase(typeof(StashDBTagsImport), 2000, 50000, new[] { 1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 })]
         public void should_fetch_only_enough_pages_and_respect_limit(Type importType, int reportedCount, int limit, int[] expectedPages)
         {
             _reportedCount = reportedCount;
@@ -60,7 +63,7 @@ namespace NzbDrone.Core.Test.ImportListTests.StashDB
             import.Definition = definition;
 
             var result = import.Fetch();
-            var expectedCount = Math.Min(reportedCount, limit);
+            var expectedCount = Math.Min(Math.Min(reportedCount, limit), MaxResultsPerQuery);
             var expectedStashIds = Enumerable.Range(1, expectedCount).Select(index => $"scene-{index}");
 
             result.AnyFailure.Should().BeFalse();

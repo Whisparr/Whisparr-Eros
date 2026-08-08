@@ -34,10 +34,14 @@ namespace NzbDrone.Core.Test.ImportListTests.StashDB
             settings.Validate().Errors.Should().NotContain(c => c.PropertyName == "ApiKey");
         }
 
+        // Limits above the fetch ceiling stay valid and are clamped at fetch time. Rejecting them
+        // here would drop existing definitions out of ImportListFactory.Active() on every sync,
+        // silently disabling lists that already work.
         [TestCase(0, false)]
         [TestCase(1, true)]
         [TestCase(1000, true)]
-        [TestCase(1001, false)]
+        [TestCase(1001, true)]
+        [TestCase(50000, true)]
         public void limit_should_validate_within_supported_range(int limit, bool expectedIsValid)
         {
             var settings = new StashDBFavoriteSettings

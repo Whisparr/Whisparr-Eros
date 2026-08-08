@@ -16,8 +16,7 @@ namespace NzbDrone.Core.ImportLists.StashDB
 
             RuleFor(c => c.Limit)
                 .GreaterThan(0)
-                .WithMessage("Must be integer greater than 0")
-                .LessThanOrEqualTo(1000);
+                .WithMessage("Must be integer greater than 0");
         }
     }
 
@@ -37,7 +36,7 @@ namespace NzbDrone.Core.ImportLists.StashDB
         [FieldDefinition(0, Label = "Api Key", Privacy = PrivacyLevel.ApiKey, HelpText = "Your StashDB Api Key")]
         public string ApiKey { get; set; }
 
-        [FieldDefinition(1, Label = "Limit", HelpText = "Limit the number of movies to get")]
+        [FieldDefinition(1, Label = "Limit", HelpText = "Limit the number of movies to get, values above 1000 are capped at 1000")]
         public int Limit { get; set; }
 
         [FieldDefinition(2, Label = "Sort Date Descending", Type = FieldType.Select, SelectOptions = typeof(SceneSort), HelpText = "Descending sort by date style")]
