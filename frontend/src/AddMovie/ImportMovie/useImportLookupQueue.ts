@@ -1,5 +1,6 @@
 import React, { useCallback, useRef, useState } from 'react';
-import fetchJson, { apiRoot, urlBase } from 'Utilities/Fetch/fetchJson';
+import fetchJson from 'Utilities/Fetch/fetchJson';
+import getQueryPath from 'Utilities/Fetch/getQueryPath';
 import { ImportAction, MovieLookupResult } from './ImportMovieTypes';
 
 interface QueueEntry {
@@ -55,7 +56,7 @@ function useImportLookupQueue(
 
     try {
       const results = await fetchJson<MovieLookupResult[], never>({
-        path: `${urlBase}${apiRoot}/movie/lookup?${params.toString()}`,
+        path: getQueryPath(`/movie/lookup?${params.toString()}`),
         method: 'GET',
         headers: {
           'X-Api-Key': globalThis.Whisparr.apiKey,

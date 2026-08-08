@@ -429,7 +429,45 @@ module.exports = [
     },
     rules: {
       ...tsRules,
-      ...prettierConfig.rules
+      ...prettierConfig.rules,
+
+      // API paths must be built with Utilities/Fetch/getQueryPath, which is the
+      // only place that applies the url base. Hardcoding the api root drops it
+      // and breaks every install behind a reverse proxy.
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'Literal[value=/\\/api\\/v\\d/]',
+          message:
+            'Do not hardcode the api root. Build the path with getQueryPath from Utilities/Fetch/getQueryPath.'
+        },
+        {
+          selector: 'TemplateElement[value.raw=/\\/api\\/v\\d/]',
+          message:
+            'Do not hardcode the api root. Build the path with getQueryPath from Utilities/Fetch/getQueryPath.'
+        }
+      ],
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['**/Utilities/Fetch/fetchJson', 'Utilities/Fetch/fetchJson'],
+              importNames: ['apiRoot', 'urlBase'],
+              message:
+                'fetchJson does not root paths. Use getQueryPath from Utilities/Fetch/getQueryPath instead of assembling one from parts.'
+            }
+          ]
+        }
+      ]
+    }
+  },
+
+  // getQueryPath owns the api root, so the guards above cannot apply to it
+  {
+    files: ['frontend/src/Utilities/Fetch/getQueryPath.ts'],
+    rules: {
+      'no-restricted-syntax': 'off'
     }
   },
 
