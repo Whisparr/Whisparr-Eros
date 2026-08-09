@@ -17,7 +17,7 @@
     <PackageReference Include="NLog.Targets.Syslog" Version="7.0.0" />
     <PackageReference Include="SharpZipLib" Version="1.4.2" />
     <PackageReference Include="SourceGear.sqlite3" Version="3.53.4" />
-    <PackageReference Include="System.Data.SQLite" Version="2.0.3" />
+    <PackageReference Include="System.Data.SQLite" Version="2.0.4" />
     <PackageReference Include="System.ValueTuple" Version="4.6.2" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.10" />
     <PackageReference Include="System.IO.FileSystem.AccessControl" Version="5.0.0" />
