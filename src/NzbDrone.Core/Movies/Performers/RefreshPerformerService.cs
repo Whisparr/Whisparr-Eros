@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using DryIoc.ImTools;
 using NLog;
 using NzbDrone.Common.Extensions;
@@ -156,7 +157,26 @@ namespace NzbDrone.Core.Movies.Performers
 
             // Chunk the into smaller lists
             var chunkSize = 10;
-            var performerWork = _movieInfo.GetPerformerWorks(performer.ForeignId);
+
+            (List<string> StashdbIds, List<string> TpdbIds, List<int> TmdbIds) performerWork = (new List<string>(), new List<string>(), new List<int>());
+
+            try
+            {
+                if (performer.Monitored || performer.MoviesMonitored)
+                {
+                    performerWork = _movieInfo.GetPerformerWorks(performer.ForeignId);
+                }
+            }
+            catch (WebException ex)
+            {
+                _logger.Warn(
+                ex,
+                "Unable to refresh works for performer '{0}' ({1}). Skipping performer.",
+                performer.Name,
+                performer.ForeignId);
+
+                return;
+            }
 
             if (performer.Monitored)
             {

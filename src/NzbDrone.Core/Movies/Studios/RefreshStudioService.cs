@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using NLog;
 using NzbDrone.Common.Instrumentation.Extensions;
 using NzbDrone.Core.Configuration;
@@ -107,12 +108,29 @@ namespace NzbDrone.Core.Movies.Studios
 
             // Chunk the into smaller lists
             var chunkSize = 10;
-            var studioWork = _movieInfo.GetStudioWorks(studio.ForeignId);
+
+            (List<string> StashdbIds, List<string> TpdbIds, List<int> TmdbIds) studioWork = (new List<string>(), new List<string>(), new List<int>());
+
+            try
+            {
+                if (studio.Monitored || studio.MoviesMonitored)
+                {
+                    studioWork = _movieInfo.GetStudioWorks(studio.ForeignId);
+                }
+            }
+            catch (WebException ex)
+            {
+                _logger.Warn(
+                ex,
+                "Unable to refresh works for studio '{0}' ({1}). Skipping studio.",
+                studio.Title,
+                studio.ForeignId);
+
+                return;
+            }
 
             if (studio.Monitored)
             {
-                // var studioWork = _movieInfo.GetStudioWorks(studio.ForeignId);
-
                 var existingScenes = _movieService.AllMovieStashIds();
                 var excludedScenes = _importListExclusionService.GetAllExclusions().Select(e => e.ForeignId);
                 var scenesToAdd = studioWork.StashdbIds.Where(m => !existingScenes.Contains(m)).Where(m => !excludedScenes.Contains(m));
