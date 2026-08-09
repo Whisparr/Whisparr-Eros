@@ -10,6 +10,7 @@ using NUnit.Framework;
 using NzbDrone.Common.Http;
 
 using NzbDrone.Core.ImportLists.ImportExclusions;
+using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.MetadataSource;
 using NzbDrone.Core.Movies;
 using NzbDrone.Core.Movies.Studios;
@@ -123,6 +124,37 @@ namespace NzbDrone.Core.Test.StudioTests
                     _timedOutStudio.Id,
                     _successfulStudio.Id
                 });
+
+            Assert.DoesNotThrow(() => Subject.Execute(command));
+
+            Mocker.GetMock<IProvideMovieInfo>()
+                .Verify(
+                    s => s.GetStudioWorks(_successfulStudio.ForeignId),
+                    Times.Once());
+        }
+
+        // The scheduled refresh takes the other branch of Execute, which walks
+        // every studio rather than a caller-supplied list. One bad studio there
+        // used to abort the whole run.
+        [Test]
+        public void should_continue_the_scheduled_refresh_when_skyhook_returns_an_http_error()
+        {
+            var request = new HttpRequest("https://api.whisparr.com/v4/site/timed-out/works");
+            var response = new HttpResponse(request, new HttpHeader(), string.Empty, HttpStatusCode.BadGateway);
+
+            Mocker.GetMock<IProvideMovieInfo>()
+                .Setup(s => s.GetStudioWorks(_timedOutStudio.ForeignId))
+                .Throws(new HttpException(request, response));
+
+            Mocker.GetMock<IStudioService>()
+                .Setup(s => s.AllStudioIdsByLastInfoSync())
+                .Returns(new List<int> { _timedOutStudio.Id, _successfulStudio.Id });
+
+            Mocker.GetMock<IStudioService>()
+                .Setup(s => s.GetStudios(It.IsAny<IEnumerable<int>>()))
+                .Returns(new List<Studio> { _timedOutStudio, _successfulStudio });
+
+            var command = new RefreshStudiosCommand { Trigger = CommandTrigger.Manual };
 
             Assert.DoesNotThrow(() => Subject.Execute(command));
 

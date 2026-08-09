@@ -9,6 +9,7 @@ using NUnit.Framework;
 
 using NzbDrone.Common.Http;
 
+using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.MetadataSource;
 using NzbDrone.Core.Movies;
 using NzbDrone.Core.Movies.Performers;
@@ -111,6 +112,47 @@ namespace NzbDrone.Core.Test.PerformerTests
                     _timedOutPerformer.Id,
                     _successfulPerformer.Id
                 });
+
+            Assert.DoesNotThrow(() => Subject.Execute(command));
+
+            Mocker.GetMock<IProvideMovieInfo>()
+                .Verify(
+                    s => s.GetPerformerWorks(_successfulPerformer.ForeignId),
+                    Times.Once());
+        }
+
+        // The scheduled refresh takes the other branch of Execute, which walks
+        // every performer rather than a caller-supplied list. One bad performer
+        // there used to abort the whole run.
+        [Test]
+        public void should_continue_the_scheduled_refresh_when_skyhook_returns_an_http_error()
+        {
+            // Let the info refresh succeed here so the test is about the works
+            // call; the shared Setup makes it throw for every performer.
+            Mocker.GetMock<IProvideMovieInfo>()
+                .Setup(s => s.GetPerformerInfo(_timedOutPerformer.ForeignId))
+                .Returns(_timedOutPerformer);
+
+            Mocker.GetMock<IProvideMovieInfo>()
+                .Setup(s => s.GetPerformerInfo(_successfulPerformer.ForeignId))
+                .Returns(_successfulPerformer);
+
+            var request = new HttpRequest("https://api.whisparr.com/v4/performer/timed-out/works");
+            var response = new HttpResponse(request, new HttpHeader(), string.Empty, HttpStatusCode.BadGateway);
+
+            Mocker.GetMock<IProvideMovieInfo>()
+                .Setup(s => s.GetPerformerWorks(_timedOutPerformer.ForeignId))
+                .Throws(new HttpException(request, response));
+
+            Mocker.GetMock<IPerformerService>()
+                .Setup(s => s.AllPerformerIdsByLastInfoSync())
+                .Returns(new List<int> { _timedOutPerformer.Id, _successfulPerformer.Id });
+
+            Mocker.GetMock<IPerformerService>()
+                .Setup(s => s.GetPerformers(It.IsAny<IEnumerable<int>>()))
+                .Returns(new List<Performer> { _timedOutPerformer, _successfulPerformer });
+
+            var command = new RefreshPerformersCommand { Trigger = CommandTrigger.Manual };
 
             Assert.DoesNotThrow(() => Subject.Execute(command));
 
