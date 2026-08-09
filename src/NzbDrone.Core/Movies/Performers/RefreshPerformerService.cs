@@ -167,10 +167,10 @@ namespace NzbDrone.Core.Movies.Performers
             catch (WebException ex)
             {
                 _logger.Warn(
-                ex,
-                "Unable to refresh works for performer '{0}' ({1}). Skipping performer.",
-                performer.Name,
-                performer.ForeignId);
+                    ex,
+                    "Unable to refresh works for performer '{0}' ({1}). Skipping performer.",
+                    performer.Name,
+                    performer.ForeignId);
 
                 return;
             }

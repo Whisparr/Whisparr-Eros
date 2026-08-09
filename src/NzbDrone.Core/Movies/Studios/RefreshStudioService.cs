@@ -118,10 +118,10 @@ namespace NzbDrone.Core.Movies.Studios
             catch (WebException ex)
             {
                 _logger.Warn(
-                ex,
-                "Unable to refresh works for studio '{0}' ({1}). Skipping studio.",
-                studio.Title,
-                studio.ForeignId);
+                    ex,
+                    "Unable to refresh works for studio '{0}' ({1}). Skipping studio.",
+                    studio.Title,
+                    studio.ForeignId);
 
                 return;
             }
