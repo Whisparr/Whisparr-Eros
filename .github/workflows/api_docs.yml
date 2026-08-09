@@ -22,21 +22,25 @@ concurrency:
 jobs:
   api_docs:
     runs-on: ubuntu-latest
-    if: github.repository == 'Whisparr/Whisparr'
+    if: github.repository == 'Whisparr/Whisparr-Eros'
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup dotnet
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         id: setup-dotnet
 
       - name: Create openapi.json
-        run: ./scripts/docs.sh Linux x64
+        run: ./docs.sh Linux x64
 
       - name: Commit API Docs Change
         continue-on-error: true
+        # Via env, not inline interpolation - a secret expanded straight into a
+        # run block lands in the process command line.
+        env:
+          OPENAPI_PAT: ${{ secrets.OPENAPI_PAT }}
         run: |
           git config --global user.email "development@whisparr.com"
           git config --global user.name "Whisparr"
@@ -46,14 +50,18 @@ jobs:
           then
             git commit -am 'Automated API Docs update' -m "ignore-downstream"
             git push -f --set-upstream origin api-docs
-            curl -X POST -H "Authorization: Bearer ${{ secrets.OPENAPI_PAT }}" -H "Accept: application/vnd.github+json" https://api.github.com/repos/whisparr/whisparr/pulls -d '{"head":"api-docs","base":"eros","title":"Update API docs"}'
+            curl -X POST --fail-with-body -sS \
+              -H "Authorization: Bearer $OPENAPI_PAT" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/$GITHUB_REPOSITORY/pulls" \
+              -d '{"head":"api-docs","base":"eros-develop","title":"Update API docs"}'
           else
             echo "No changes since last run"
           fi
 
       - name: Notify
         if: failure()
-        uses: tsickert/discord-webhook@v6.0.0
+        uses: tsickert/discord-webhook@v7.0.0
         with:
           webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
           username: "GitHub Actions"
