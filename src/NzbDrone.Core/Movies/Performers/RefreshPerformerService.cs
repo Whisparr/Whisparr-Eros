@@ -158,7 +158,7 @@ namespace NzbDrone.Core.Movies.Performers
             // Chunk the into smaller lists
             var chunkSize = 10;
 
-            (List<string> StashdbIds, List<string> TpdbIds, List<int> TmdbIds) performerWork = (new List<string>(), new List<string>(), new List<int>());
+            (List<string> StashdbIds, List<string> TpdbIds, List<int> TmdbIds) performerWork;
 
             try
             {
@@ -350,7 +350,18 @@ namespace NzbDrone.Core.Movies.Performers
                         RescanMovie(movie, isNew, trigger);
                     }
 
-                    SyncPerformerItems(performer);
+                    // SyncPerformerItems swallows the timeout itself, but
+                    // GetPerformerWorks throws HttpException for any other HTTP error
+                    // and MovieNotFoundException on a 404. Without this, either one
+                    // drops every performer the user selected after the one that failed.
+                    try
+                    {
+                        SyncPerformerItems(performer);
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.Error(e, "Couldn't sync items for {0}", performer.Name);
+                    }
                 }
             }
             else

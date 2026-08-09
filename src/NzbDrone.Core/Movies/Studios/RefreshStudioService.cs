@@ -109,7 +109,7 @@ namespace NzbDrone.Core.Movies.Studios
             // Chunk the into smaller lists
             var chunkSize = 10;
 
-            (List<string> StashdbIds, List<string> TpdbIds, List<int> TmdbIds) studioWork = (new List<string>(), new List<string>(), new List<int>());
+            (List<string> StashdbIds, List<string> TpdbIds, List<int> TmdbIds) studioWork;
 
             try
             {
@@ -306,7 +306,18 @@ namespace NzbDrone.Core.Movies.Studios
                         RescanMovie(movie, isNew, trigger);
                     }
 
-                    SyncStudioItems(studio);
+                    // SyncStudioItems swallows the timeout itself, but GetStudioWorks
+                    // throws HttpException for any other HTTP error and
+                    // MovieNotFoundException on a 404. Without this, either one drops
+                    // every studio the user selected after the one that failed.
+                    try
+                    {
+                        SyncStudioItems(studio);
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.Error(e, "Couldn't sync items for {0}", studio.Title);
+                    }
                 }
             }
             else

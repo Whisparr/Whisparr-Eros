@@ -7,6 +7,8 @@ using Moq;
 
 using NUnit.Framework;
 
+using NzbDrone.Common.Http;
+
 using NzbDrone.Core.MetadataSource;
 using NzbDrone.Core.Movies;
 using NzbDrone.Core.Movies.Performers;
@@ -83,6 +85,34 @@ namespace NzbDrone.Core.Test.PerformerTests
                 .Verify(
                     s => s.GetPerformerWorks(_timedOutPerformer.ForeignId),
                     Times.Once());
+
+            Mocker.GetMock<IProvideMovieInfo>()
+                .Verify(
+                    s => s.GetPerformerWorks(_successfulPerformer.ForeignId),
+                    Times.Once());
+        }
+
+        // A timeout is only one of the ways this call fails. GetPerformerWorks
+        // suppresses HTTP errors and throws them itself, so anything that is not
+        // a 404 arrives as HttpException, which SyncPerformerItems does not catch.
+        [Test]
+        public void should_continue_refreshing_performers_when_skyhook_returns_an_http_error()
+        {
+            var request = new HttpRequest("https://api.whisparr.com/v4/performer/timed-out/works");
+            var response = new HttpResponse(request, new HttpHeader(), string.Empty, HttpStatusCode.BadGateway);
+
+            Mocker.GetMock<IProvideMovieInfo>()
+                .Setup(s => s.GetPerformerWorks(_timedOutPerformer.ForeignId))
+                .Throws(new HttpException(request, response));
+
+            var command = new RefreshPerformersCommand(
+                new List<int>
+                {
+                    _timedOutPerformer.Id,
+                    _successfulPerformer.Id
+                });
+
+            Assert.DoesNotThrow(() => Subject.Execute(command));
 
             Mocker.GetMock<IProvideMovieInfo>()
                 .Verify(

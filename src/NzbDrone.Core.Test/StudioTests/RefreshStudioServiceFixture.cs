@@ -7,6 +7,8 @@ using Moq;
 
 using NUnit.Framework;
 
+using NzbDrone.Common.Http;
+
 using NzbDrone.Core.ImportLists.ImportExclusions;
 using NzbDrone.Core.MetadataSource;
 using NzbDrone.Core.Movies;
@@ -95,6 +97,34 @@ namespace NzbDrone.Core.Test.StudioTests
                 .Verify(
                     s => s.GetStudioWorks(_timedOutStudio.ForeignId),
                     Times.Once());
+
+            Mocker.GetMock<IProvideMovieInfo>()
+                .Verify(
+                    s => s.GetStudioWorks(_successfulStudio.ForeignId),
+                    Times.Once());
+        }
+
+        // A timeout is only one of the ways this call fails. GetStudioWorks
+        // suppresses HTTP errors and throws them itself, so anything that is not
+        // a 404 arrives as HttpException, which SyncStudioItems does not catch.
+        [Test]
+        public void should_continue_refreshing_studios_when_skyhook_returns_an_http_error()
+        {
+            var request = new HttpRequest("https://api.whisparr.com/v4/site/timed-out/works");
+            var response = new HttpResponse(request, new HttpHeader(), string.Empty, HttpStatusCode.BadGateway);
+
+            Mocker.GetMock<IProvideMovieInfo>()
+                .Setup(s => s.GetStudioWorks(_timedOutStudio.ForeignId))
+                .Throws(new HttpException(request, response));
+
+            var command = new RefreshStudiosCommand(
+                new List<int>
+                {
+                    _timedOutStudio.Id,
+                    _successfulStudio.Id
+                });
+
+            Assert.DoesNotThrow(() => Subject.Execute(command));
 
             Mocker.GetMock<IProvideMovieInfo>()
                 .Verify(
