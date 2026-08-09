@@ -6191,12 +6191,12 @@ postcss-modules-values@^4.0.0:
   dependencies:
     icss-utils "^5.0.0"
 
-postcss-nested@7.0.2:
-  version "7.0.2"
-  resolved "https://registry.yarnpkg.com/postcss-nested/-/postcss-nested-7.0.2.tgz#863d83a6b5df0a2894560394be93d5383ea37a65"
-  integrity sha512-5osppouFc0VR9/VYzYxO03VaDa3e8F23Kfd6/9qcZTUI8P58GIYlArOET2Wq0ywSl2o2PjELhYOFI4W7l5QHKw==
+postcss-nested@8.0.0:
+  version "8.0.0"
+  resolved "https://registry.yarnpkg.com/postcss-nested/-/postcss-nested-8.0.0.tgz#6955f902f3f200c042296f64219dfef2c30e3bbf"
+  integrity sha512-4iVyYzSpreefQJO1VLv3x2Eg5PBFDUGckCE9FeXPlyXjjO7QeKFeWYCjXVYEOsqzn4G8t1XqSziTtQfyjBQ3ag==
   dependencies:
-    postcss-selector-parser "^7.0.0"
+    postcss-selector-parser "^7.1.4"
 
 postcss-safe-parser@^7.0.1:
   version "7.0.1"
