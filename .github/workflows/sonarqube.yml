@@ -89,19 +89,34 @@ jobs:
           # Gated by approve-fork-analysis above. Do not enable this checkout
           # anywhere that is not behind that gate.
           allow-unsafe-pr-checkout: true
+      # Both caches below rotate weekly. An immutable key is always an exact
+      # hit, and actions/cache skips the save on an exact hit, so a fixed key
+      # means the cache is written once and never again. For the scanner that
+      # is not just stale data: the install step below is gated on cache-hit,
+      # so `dotnet tool update` would run exactly once, ever, freezing
+      # dotnet-sonarscanner at whatever version happened to be current the
+      # first time this job ran. The `-` suffixed restore-keys are prefix
+      # fallbacks, so a new week still starts warm from the previous one and
+      # then re-saves under the new key.
+      - name: Compute weekly cache key
+        id: cache-week
+        shell: bash
+        run: echo "week=$(date -u +'%Y-%V')" >> "$GITHUB_OUTPUT"
       - name: Cache SonarQube Cloud packages
         uses: actions/cache@v6
         with:
           path: ~\sonar\cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
+          # "packages", not a bare "-sonar-" prefix: restore-keys matches on
+          # prefix, and "<os>-sonar-" would also match the scanner cache below.
+          key: ${{ runner.os }}-sonar-packages-${{ steps.cache-week.outputs.week }}
+          restore-keys: ${{ runner.os }}-sonar-packages-
       - name: Cache SonarQube Cloud scanner
         id: cache-sonar-scanner
         uses: actions/cache@v6
         with:
           path: ${{ runner.temp }}\scanner
-          key: ${{ runner.os }}-sonar-scanner
-          restore-keys: ${{ runner.os }}-sonar-scanner
+          key: ${{ runner.os }}-sonar-scanner-${{ steps.cache-week.outputs.week }}
+          restore-keys: ${{ runner.os }}-sonar-scanner-
       - name: Setup .NET
         uses: actions/setup-dotnet@v6
         with:
@@ -111,7 +126,10 @@ jobs:
         if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
         shell: powershell
         run: |
-          New-Item -Path ${{ runner.temp }}\scanner -ItemType Directory
+          # -Force because this step now also runs on a restore-keys partial
+          # hit, where the directory already exists. `dotnet tool update` is
+          # happy to update a tool-path that already holds an older scanner.
+          New-Item -Path ${{ runner.temp }}\scanner -ItemType Directory -Force
           dotnet tool update dotnet-sonarscanner --tool-path ${{ runner.temp }}\scanner
       - name: Build and analyze
         env:
