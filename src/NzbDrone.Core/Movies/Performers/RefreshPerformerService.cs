@@ -382,6 +382,10 @@ namespace NzbDrone.Core.Movies.Performers
                         {
                             _logger.Error(ex, "Performer '{0}' (StashDb {1}) was not found, it may have been removed from The Movie Database.", performer.Name, performer.ForeignId);
                         }
+                        catch (Exception e)
+                        {
+                            _logger.Error(e, "Couldn't refresh info for {0}", performer.Name);
+                        }
                     }
                 }
             }

@@ -339,6 +339,10 @@ namespace NzbDrone.Core.Movies.Studios
                         {
                             _logger.Error("Studio '{0}' (StashDb {1}) was not found, it may have been removed from The Movie Database.", studio.Title, studio.ForeignId);
                         }
+                        catch (Exception e)
+                        {
+                            _logger.Error(e, "Couldn't refresh info for {0}", studio.Title);
+                        }
                     }
                 }
             }
