@@ -162,10 +162,7 @@ namespace NzbDrone.Core.Movies.Performers
 
             try
             {
-                if (performer.Monitored || performer.MoviesMonitored)
-                {
-                    performerWork = _movieInfo.GetPerformerWorks(performer.ForeignId);
-                }
+                performerWork = _movieInfo.GetPerformerWorks(performer.ForeignId);
             }
             catch (WebException ex)
             {

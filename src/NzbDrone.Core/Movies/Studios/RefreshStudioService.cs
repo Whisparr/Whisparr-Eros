@@ -113,10 +113,7 @@ namespace NzbDrone.Core.Movies.Studios
 
             try
             {
-                if (studio.Monitored || studio.MoviesMonitored)
-                {
-                    studioWork = _movieInfo.GetStudioWorks(studio.ForeignId);
-                }
+                studioWork = _movieInfo.GetStudioWorks(studio.ForeignId);
             }
             catch (WebException ex)
             {
