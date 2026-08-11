@@ -78,7 +78,7 @@ namespace Whisparr.Api.V3.Movies.Helpers
                         break;
 
                     case "year":
-                        NumericFilterInt.Apply(pageSpec, jsonElement, op, p => p.Year);
+                        NumericFilterInt.Apply(pageSpec, jsonElement, op, p => p.MovieMetadata.Value.Year);
                         break;
                 }
             }
