@@ -141,7 +141,7 @@
     "postcss-color-function": "4.1.0",
     "postcss-loader": "8.2.1",
     "postcss-mixins": "12.1.2",
-    "postcss-nested": "8.0.0",
+    "postcss-nested": "8.0.1",
     "postcss-simple-vars": "7.0.1",
     "postcss-url": "10.1.4",
     "prettier": "3.9.6",
