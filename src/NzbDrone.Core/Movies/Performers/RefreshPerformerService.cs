@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using DryIoc.ImTools;
 using NLog;
 using NzbDrone.Common.Extensions;
@@ -156,7 +157,23 @@ namespace NzbDrone.Core.Movies.Performers
 
             // Chunk the into smaller lists
             var chunkSize = 10;
-            var performerWork = _movieInfo.GetPerformerWorks(performer.ForeignId);
+
+            (List<string> StashdbIds, List<string> TpdbIds, List<int> TmdbIds) performerWork;
+
+            try
+            {
+                performerWork = _movieInfo.GetPerformerWorks(performer.ForeignId);
+            }
+            catch (WebException ex)
+            {
+                _logger.Warn(
+                    ex,
+                    "Unable to refresh works for performer '{0}' ({1}). Skipping performer.",
+                    performer.Name,
+                    performer.ForeignId);
+
+                return;
+            }
 
             if (performer.Monitored)
             {
@@ -333,7 +350,18 @@ namespace NzbDrone.Core.Movies.Performers
                         RescanMovie(movie, isNew, trigger);
                     }
 
-                    SyncPerformerItems(performer);
+                    // SyncPerformerItems swallows the timeout itself, but
+                    // GetPerformerWorks throws HttpException for any other HTTP error
+                    // and MovieNotFoundException on a 404. Without this, either one
+                    // drops every performer the user selected after the one that failed.
+                    try
+                    {
+                        SyncPerformerItems(performer);
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.Error(e, "Couldn't sync items for {0}", performer.Name);
+                    }
                 }
             }
             else
@@ -364,6 +392,10 @@ namespace NzbDrone.Core.Movies.Performers
                         catch (MovieNotFoundException ex)
                         {
                             _logger.Error(ex, "Performer '{0}' (StashDb {1}) was not found, it may have been removed from The Movie Database.", performer.Name, performer.ForeignId);
+                        }
+                        catch (Exception e)
+                        {
+                            _logger.Error(e, "Couldn't refresh info for {0}", performer.Name);
                         }
                     }
                 }

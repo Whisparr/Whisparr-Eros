@@ -34,6 +34,13 @@ jobs:
   # in the C# you would normally read. Before approving a fork run, read any
   # change to *.csproj, Directory.Build.*, nuget.config, global.json, build.sh,
   # package.json scripts or .github/ line by line.
+  #
+  # What this gate covers is deliberately kept to `dotnet build` and nothing
+  # else. Coverage is collected in build_v3.yml, which runs under
+  # `pull_request` with no secrets, and crosses over as an XML artifact -- so
+  # fork *test* code never executes here. Keep it that way: do not add test
+  # runs, `yarn install`, or any other fork-controlled execution to the analyze
+  # job. Each one widens what a reviewer is implicitly approving.
   approve-fork-analysis:
     name: Approve fork analysis
     if: >-
@@ -68,9 +75,11 @@ jobs:
        needs.approve-fork-analysis.result == 'skipped')
     runs-on: windows-latest
     # pull_request_target hands the job a write-scoped GITHUB_TOKEN by default.
-    # Analysis only ever needs to read the tree, so clamp it.
+    # Analysis only ever needs to read the tree, plus `actions: read` to pull
+    # build_v3.yml's coverage artifact. Clamp it to that.
     permissions:
       contents: read
+      actions: read
     steps:
       - name: Set up JDK 17
         uses: actions/setup-java@v5
@@ -89,19 +98,34 @@ jobs:
           # Gated by approve-fork-analysis above. Do not enable this checkout
           # anywhere that is not behind that gate.
           allow-unsafe-pr-checkout: true
+      # Both caches below rotate weekly. An immutable key is always an exact
+      # hit, and actions/cache skips the save on an exact hit, so a fixed key
+      # means the cache is written once and never again. For the scanner that
+      # is not just stale data: the install step below is gated on cache-hit,
+      # so `dotnet tool update` would run exactly once, ever, freezing
+      # dotnet-sonarscanner at whatever version happened to be current the
+      # first time this job ran. The `-` suffixed restore-keys are prefix
+      # fallbacks, so a new week still starts warm from the previous one and
+      # then re-saves under the new key.
+      - name: Compute weekly cache key
+        id: cache-week
+        shell: bash
+        run: echo "week=$(date -u +'%Y-%V')" >> "$GITHUB_OUTPUT"
       - name: Cache SonarQube Cloud packages
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~\sonar\cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
+          # "packages", not a bare "-sonar-" prefix: restore-keys matches on
+          # prefix, and "<os>-sonar-" would also match the scanner cache below.
+          key: ${{ runner.os }}-sonar-packages-${{ steps.cache-week.outputs.week }}
+          restore-keys: ${{ runner.os }}-sonar-packages-
       - name: Cache SonarQube Cloud scanner
         id: cache-sonar-scanner
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ${{ runner.temp }}\scanner
-          key: ${{ runner.os }}-sonar-scanner
-          restore-keys: ${{ runner.os }}-sonar-scanner
+          key: ${{ runner.os }}-sonar-scanner-${{ steps.cache-week.outputs.week }}
+          restore-keys: ${{ runner.os }}-sonar-scanner-
       - name: Setup .NET
         uses: actions/setup-dotnet@v6
         with:
@@ -111,8 +135,18 @@ jobs:
         if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
         shell: powershell
         run: |
-          New-Item -Path ${{ runner.temp }}\scanner -ItemType Directory
+          # -Force because this step now also runs on a restore-keys partial
+          # hit, where the directory already exists. `dotnet tool update` is
+          # happy to update a tool-path that already holds an older scanner.
+          New-Item -Path ${{ runner.temp }}\scanner -ItemType Directory -Force
           dotnet tool update dotnet-sonarscanner --tool-path ${{ runner.temp }}\scanner
+
+      # NOTE: do not add an ESLint report import here. It would always be empty
+      # -- build_v3.yml fails the frontend job on any lint finding, so every
+      # commit that reaches analysis is already clean -- and generating it means
+      # `yarn install` running fork-controlled lifecycle scripts in this job,
+      # which holds SONAR_TOKEN. Sonar applies its own JS/TS rules to the ~108k
+      # frontend ncloc regardless; that analysis needs no node toolchain here.
       - name: Build and analyze
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -125,7 +159,12 @@ jobs:
           $beginArgs = @(
             "/k:Whisparr_Whisparr-Eros",
             "/o:whisparr-eros",
-            "/d:sonar.token=$env:SONAR_TOKEN"
+            "/d:sonar.token=$env:SONAR_TOKEN",
+            # 45 near-identical translation files, ~49.6k ncloc -- 17% of the
+            # project, and a large share of the duplication figure. Excluding
+            # them makes both ncloc and duplicated_lines_density mean something.
+            "/d:sonar.exclusions=src/NzbDrone.Core/Localization/Core/**,**/node_modules/**,_output/**,_temp/**,_tests/**",
+            "/d:sonar.cs.opencover.reportsPaths=coverage/**/coverage.opencover.xml"
           )
           if ($env:EVENT_NAME -eq 'pull_request_target') {
             $beginArgs += "/d:sonar.pullrequest.key=$env:PR_NUMBER"
@@ -134,4 +173,47 @@ jobs:
           }
           & ${{ runner.temp }}\scanner\dotnet-sonarscanner begin @beginArgs
           dotnet build src/Whisparr.sln
+
+      # Coverage is NOT produced here. It comes from build_v3.yml's windows test
+      # leg, which runs under `pull_request` with no secrets in scope -- so fork
+      # test code never executes while this job holds SONAR_TOKEN. What crosses
+      # the boundary is an XML report, i.e. data the scanner parses, not code it
+      # runs. That keeps the approve-fork-analysis gate covering exactly what it
+      # covered before: `dotnet build`, and nothing more.
+      #
+      # The two workflows are independent runs of the same commit with no
+      # ordering guarantee, hence the wait. Missing coverage is not fatal: some
+      # PRs never trigger build_v3.yml at all (it has paths-ignore for
+      # localization and openapi.json), and analysis without coverage still
+      # beats no analysis.
+      - name: Download coverage from build_v3
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -uo pipefail
+          mkdir -p coverage
+          deadline=$(( SECONDS + 1500 ))
+          while (( SECONDS < deadline )); do
+            run_id=$(gh run list --repo "$REPO" --workflow build_v3.yml \
+              --commit "$HEAD_SHA" --limit 1 \
+              --json databaseId,status \
+              --jq '.[] | select(.status=="completed") | .databaseId' || true)
+            if [ -n "$run_id" ] && gh run download "$run_id" --repo "$REPO" \
+                 --pattern 'coverage-*' --dir coverage; then
+              echo "Coverage downloaded from build_v3 run $run_id"
+              find coverage -name 'coverage.opencover.xml'
+              exit 0
+            fi
+            sleep 30
+          done
+          echo "::warning::No coverage artifact for $HEAD_SHA; analysing without it."
+
+      - name: Finish analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        shell: powershell
+        run: |
           ${{ runner.temp }}\scanner\dotnet-sonarscanner end /d:sonar.token="$env:SONAR_TOKEN"
