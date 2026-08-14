@@ -211,6 +211,38 @@ jobs:
           done
           echo "::warning::No coverage artifact for $HEAD_SHA; analysing without it."
 
+      # Instrumenting is only half the job -- the report also has to name files
+      # the scanner can find. <PathMap> makes coverlet record every document as
+      # "./NzbDrone.Core/Foo.cs", but sonar.projectBaseDir is the repo root, so
+      # the scanner looks for "<root>/NzbDrone.Core/Foo.cs" and the real file is
+      # at "<root>/src/NzbDrone.Core/Foo.cs". Nothing matches, and the import
+      # silently contributes zero without logging a single warning.
+      #
+      # Re-rooting the paths at $GITHUB_WORKSPACE/src fixes that. Do NOT solve
+      # it by setting sonar.projectBaseDir=src instead: that would drop the
+      # ~108k ncloc of frontend/ out of the analysis entirely.
+      - name: Re-root coverage source paths
+        shell: bash
+        run: |
+          set -uo pipefail
+          # Git Bash reports GITHUB_WORKSPACE as D:\a\...; forward slashes are
+          # accepted everywhere and keep the sed replacement free of escapes.
+          ws="${GITHUB_WORKSPACE//\\//}"
+          count=0
+          while IFS= read -r f; do
+            # Explicit temp file rather than `sed -i`: BSD sed requires an
+            # argument to -i and GNU sed does not, and this step is the sort of
+            # thing that gets copied to a macOS runner later.
+            sed "s|fullPath=\"\./|fullPath=\"${ws}/src/|g" "$f" > "$f.tmp" \
+              && mv "$f.tmp" "$f"
+            count=$((count + 1))
+          done < <(find coverage -name 'coverage.opencover.xml' 2>/dev/null)
+          if [ "$count" -eq 0 ]; then
+            echo "No coverage reports to re-root."
+          else
+            echo "Re-rooted $count report(s) at ${ws}/src"
+          fi
+
       - name: Finish analysis
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

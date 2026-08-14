@@ -114,9 +114,25 @@ runs:
         # coverlet.collector is already referenced by every test project
         # (src/Directory.Build.props). Its default output is Cobertura, which
         # the Sonar .NET scanner cannot read, hence Format=opencover.
+        #
+        # ExcludeAssembliesWithoutSources=None is load-bearing. By default
+        # coverlet skips any assembly whose PDB has no locally-resolvable source
+        # document, and src/Directory.Build.props sets
+        # <PathMap>$(MSBuildThisFileDirectory)=./</PathMap>, which rewrites every
+        # document to "./NzbDrone.Core/..." - a path that resolves nowhere,
+        # because the real file lives under src/. The only documents left with
+        # absolute paths are three generated AssemblyInfo files under _temp/obj,
+        # and those point at the machine that BUILT the assemblies. Tests here
+        # run on a different runner against a downloaded artifact, so they do not
+        # exist either, every module gets skipped, and coverlet emits a 363-byte
+        # report containing <Modules />. That is what shipped in #439.
+        #
+        # Include=[Whisparr.*]* then narrows instrumentation back to our own
+        # assemblies; without it, disabling the source check pulls in Dapper,
+        # MonoTorrent and friends and nearly doubles the report for no gain.
         coverage_args=()
         if [ "$COLLECT_COVERAGE" = "true" ]; then
-          coverage_args=(--collect:"XPlat Code Coverage;Format=opencover" --results-directory coverage)
+          coverage_args=(--collect:"XPlat Code Coverage;Format=opencover;ExcludeAssembliesWithoutSources=None;Include=[Whisparr.*]*" --results-directory coverage)
         fi
         dotnet test ./_tests/Whisparr.*.Test.dll --filter "${{ inputs.filter }}" "${coverage_args[@]}" --logger "trx;LogFileName=${{ env.RESULTS_NAME }}.trx" --logger "GitHubActions;summary.includePassedTests=true;summary.includeSkippedTests=true"
 
