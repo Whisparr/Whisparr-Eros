@@ -24,6 +24,14 @@ inputs:
     description: 'Binary artifact for integration tests'
   binary_path:
     description: 'Path within binary artifact for integration tests'
+  collect_coverage:
+    description: >-
+      Collect OpenCover coverage and publish it as the `coverage-<results name>`
+      artifact, for sonarqube.yml to consume. Enabled on exactly one leg - see
+      build_v3.yml - because Sonar needs one consistent report, not a matrix of
+      them. Coverage is produced HERE, in the untrusted `pull_request` context
+      with no secrets in scope, precisely so that sonarqube.yml never has to run
+      fork test code while holding SONAR_TOKEN.
 
 runs:
   using: 'composite'
@@ -100,8 +108,17 @@ runs:
 
     - name: Run tests
       shell: bash
+      env:
+        COLLECT_COVERAGE: ${{ inputs.collect_coverage }}
       run: |
-        dotnet test ./_tests/Whisparr.*.Test.dll --filter "${{ inputs.filter }}" --logger "trx;LogFileName=${{ env.RESULTS_NAME }}.trx" --logger "GitHubActions;summary.includePassedTests=true;summary.includeSkippedTests=true"
+        # coverlet.collector is already referenced by every test project
+        # (src/Directory.Build.props). Its default output is Cobertura, which
+        # the Sonar .NET scanner cannot read, hence Format=opencover.
+        coverage_args=()
+        if [ "$COLLECT_COVERAGE" = "true" ]; then
+          coverage_args=(--collect:"XPlat Code Coverage;Format=opencover" --results-directory coverage)
+        fi
+        dotnet test ./_tests/Whisparr.*.Test.dll --filter "${{ inputs.filter }}" "${coverage_args[@]}" --logger "trx;LogFileName=${{ env.RESULTS_NAME }}.trx" --logger "GitHubActions;summary.includePassedTests=true;summary.includeSkippedTests=true"
 
     - name: Upload Test Results
       if: ${{ !cancelled() }}
@@ -109,3 +126,14 @@ runs:
       with:
         name: results-${{ env.RESULTS_NAME }}
         path: TestResults/*.trx
+
+    # Consumed by sonarqube.yml. Uploaded even on failure: a red suite still
+    # produces valid coverage for the tests that did run, and Sonar reporting
+    # 0% because of an unrelated test failure is worse than a partial figure.
+    - name: Upload Coverage
+      if: ${{ !cancelled() && inputs.collect_coverage == 'true' }}
+      uses: actions/upload-artifact@v7
+      with:
+        name: coverage-${{ env.RESULTS_NAME }}
+        path: coverage/**/coverage.opencover.xml
+        if-no-files-found: error
