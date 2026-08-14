@@ -76,7 +76,7 @@ namespace NzbDrone.Common.EnsureThat
         [DebuggerStepThrough]
         public static Param<string> Matches(this Param<string> param, string match)
         {
-            return Matches(param, new Regex(match));
+            return Matches(param, new Regex(match, RegexOptions.None, RegexDefaults.Timeout));
         }
 
         [DebuggerStepThrough]

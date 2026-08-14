@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using NzbDrone.Common;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
 using NzbDrone.Core.IndexerSearch.Definitions;
@@ -225,7 +226,7 @@ namespace NzbDrone.Core.Indexers.Newznab
                 {
                     if (releaseDateString.Key.IsNotNullOrWhiteSpace() && releaseDateString.Value.IsNotNullOrWhiteSpace())
                     {
-                        newtitle = Regex.Replace(newtitle, $"{releaseDateString.Key}", $"{releaseDateString.Value}");
+                        newtitle = Regex.Replace(newtitle, $"{releaseDateString.Key}", $"{releaseDateString.Value}", RegexOptions.None, RegexDefaults.Timeout);
                     }
                 }
             }

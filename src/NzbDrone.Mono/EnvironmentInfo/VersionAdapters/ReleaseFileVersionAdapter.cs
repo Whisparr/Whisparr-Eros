@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Text.RegularExpressions;
+using NzbDrone.Common;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnvironmentInfo;
 
@@ -32,7 +33,7 @@ namespace NzbDrone.Mono.EnvironmentInfo.VersionAdapters
             foreach (var releaseFile in releaseFiles)
             {
                 var fileContent = _diskProvider.ReadAllText(releaseFile);
-                var lines = Regex.Split(fileContent, "\r\n|\r|\n");
+                var lines = Regex.Split(fileContent, "\r\n|\r|\n", RegexOptions.None, RegexDefaults.Timeout);
 
                 foreach (var line in lines)
                 {

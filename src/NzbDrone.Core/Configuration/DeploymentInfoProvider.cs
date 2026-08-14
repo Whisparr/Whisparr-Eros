@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Text.RegularExpressions;
+using NzbDrone.Common;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Extensions;
@@ -73,7 +74,7 @@ namespace NzbDrone.Core.Configuration
 
         private static string ReadValue(string fileData, string key, string defaultValue = null)
         {
-            var match = Regex.Match(fileData, "^" + key + "=(.*)$", RegexOptions.Multiline);
+            var match = Regex.Match(fileData, "^" + key + "=(.*)$", RegexOptions.Multiline, RegexDefaults.Timeout);
             if (match.Success)
             {
                 return match.Groups[1].Value.Trim();

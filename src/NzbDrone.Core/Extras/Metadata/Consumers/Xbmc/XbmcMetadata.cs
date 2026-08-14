@@ -45,8 +45,8 @@ namespace NzbDrone.Core.Extras.Metadata.Consumers.Xbmc
             _tagRepository = tagRepository;
         }
 
-        private static readonly Regex MovieImagesRegex = new Regex(@"^(?<type>poster|banner|fanart|clearart|discart|keyart|landscape|logo|backdrop|clearlogo)\.(?:png|jpe?g)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        private static readonly Regex MovieFileImageRegex = new Regex(@"(?<type>-thumb|-poster|-banner|-fanart|-clearart|-discart|-keyart|-landscape|-logo|-backdrop|-clearlogo)\.(?:png|jpe?g)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex MovieImagesRegex = new Regex(@"^(?<type>poster|banner|fanart|clearart|discart|keyart|landscape|logo|backdrop|clearlogo)\.(?:png|jpe?g)", RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexDefaults.Timeout);
+        private static readonly Regex MovieFileImageRegex = new Regex(@"(?<type>-thumb|-poster|-banner|-fanart|-clearart|-discart|-keyart|-landscape|-logo|-backdrop|-clearlogo)\.(?:png|jpe?g)", RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexDefaults.Timeout);
 
         public override string Name => "Kodi (XBMC) / Emby";
 
@@ -450,7 +450,7 @@ namespace NzbDrone.Core.Extras.Metadata.Consumers.Xbmc
 
             var fileContent = _diskProvider.ReadAllText(fullPath);
 
-            return Regex.IsMatch(fileContent, "<watched>true</watched>");
+            return Regex.IsMatch(fileContent, "<watched>true</watched>", RegexOptions.None, RegexDefaults.Timeout);
         }
     }
 }

@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
 using Microsoft.Extensions.Options;
+using NzbDrone.Common;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnvironmentInfo;
@@ -86,7 +87,7 @@ namespace NzbDrone.Core.Configuration
         private readonly LogOptions _logOptions;
 
         private readonly string _configFile;
-        private static readonly Regex HiddenCharacterRegex = new Regex("[^a-z0-9]", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex HiddenCharacterRegex = new Regex("[^a-z0-9]", RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexDefaults.Timeout);
 
         private static readonly object Mutex = new object();
 

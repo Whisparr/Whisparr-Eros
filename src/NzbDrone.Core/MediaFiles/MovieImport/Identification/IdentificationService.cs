@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using NLog;
+using NzbDrone.Common;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Configuration;
@@ -92,7 +93,8 @@ namespace NzbDrone.Core.MediaFiles.MovieImport
 
             // Try to see if the scene has been organized into a folder already
             var folderRegex = new Regex(@"(?<airyear>\d{2}|\d{4})[-_. ]+(?<airmonth>[0-1][0-9])[-_. ]+(?<airday>[0-3][0-9])",
-                RegexOptions.IgnoreCase | RegexOptions.Compiled);
+                RegexOptions.IgnoreCase | RegexOptions.Compiled,
+                RegexDefaults.Timeout);
             var folder = Directory.GetParent(file).Name;
             var match = folderRegex.Match(folder);
 

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using NLog;
+using NzbDrone.Common;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
 
@@ -19,7 +20,7 @@ namespace NzbDrone.Mono.Disk
         private const string PROC_MOUNTS_FILENAME = @"/proc/mounts";
         private const string PROC_FILESYSTEMS_FILENAME = @"/proc/filesystems";
 
-        private static readonly Regex OctalRegex = new Regex(@"\\\d{3}", RegexOptions.Compiled);
+        private static readonly Regex OctalRegex = new Regex(@"\\\d{3}", RegexOptions.Compiled, RegexDefaults.Timeout);
         private readonly Logger _logger;
 
         private static string[] _fixedTypes = new[] { "ext3", "ext2", "ext4", "vfat", "fuseblk", "xfs", "jfs", "msdos", "ntfs", "minix", "hfs", "hfsplus", "qnx4", "ufs", "btrfs" };

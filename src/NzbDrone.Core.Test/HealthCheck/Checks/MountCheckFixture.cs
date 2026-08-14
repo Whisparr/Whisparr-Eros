@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using FluentAssertions;
 using Moq;
 using NUnit.Framework;
+using NzbDrone.Common;
 using NzbDrone.Common.Disk;
 using NzbDrone.Core.HealthCheck.Checks;
 using NzbDrone.Core.Localization;
@@ -129,7 +130,7 @@ namespace NzbDrone.Core.Test.HealthCheck.Checks
             var result = Subject.Check();
 
             result.ShouldBeError();
-            Regex.Matches(result.Message, "ReadOnlyMount").Count.Should().Be(1);
+            Regex.Matches(result.Message, "ReadOnlyMount", RegexOptions.None, RegexDefaults.Timeout).Count.Should().Be(1);
         }
 
         [Test]

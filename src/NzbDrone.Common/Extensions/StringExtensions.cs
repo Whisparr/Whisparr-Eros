@@ -11,7 +11,7 @@ namespace NzbDrone.Common.Extensions
 {
     public static class StringExtensions
     {
-        private static readonly Regex CamelCaseRegex = new Regex("(?<!^)[A-Z]", RegexOptions.Compiled);
+        private static readonly Regex CamelCaseRegex = new Regex("(?<!^)[A-Z]", RegexOptions.Compiled, RegexDefaults.Timeout);
 
         public static string NullSafe(this string target)
         {
@@ -53,7 +53,7 @@ namespace NzbDrone.Common.Extensions
             return string.Format(format, formattingArgs);
         }
 
-        private static readonly Regex CollapseSpace = new Regex(@"\s+", RegexOptions.Compiled);
+        private static readonly Regex CollapseSpace = new Regex(@"\s+", RegexOptions.Compiled, RegexDefaults.Timeout);
 
         public static string Replace(this string text, int index, int length, string replacement)
         {

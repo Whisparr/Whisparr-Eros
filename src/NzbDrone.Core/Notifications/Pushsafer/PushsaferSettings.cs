@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using FluentValidation;
+using NzbDrone.Common;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Annotations;
 using NzbDrone.Core.Validation;
@@ -18,7 +19,7 @@ namespace NzbDrone.Core.Notifications.Pushsafer
             RuleFor(c => c.Sound).ValidParsedStringRange(0, 62).When(c => c.Sound.IsNotNullOrWhiteSpace());
             RuleFor(c => c.Vibration).ValidParsedStringRange(1, 3).When(c => c.Vibration.IsNotNullOrWhiteSpace());
             RuleFor(c => c.Icon).ValidParsedStringRange(1, 181).When(c => c.Icon.IsNotNullOrWhiteSpace());
-            RuleFor(c => c.IconColor).Matches(new Regex("^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$")).When(c => c.IconColor.IsNotNullOrWhiteSpace());
+            RuleFor(c => c.IconColor).Matches(new Regex("^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$", RegexOptions.None, RegexDefaults.Timeout)).When(c => c.IconColor.IsNotNullOrWhiteSpace());
         }
     }
 

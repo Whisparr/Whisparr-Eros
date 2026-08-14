@@ -1,5 +1,6 @@
 using System;
 using System.Text.RegularExpressions;
+using NzbDrone.Common;
 using NzbDrone.Common.Http;
 using NzbDrone.Core.Datastore;
 
@@ -7,7 +8,7 @@ namespace NzbDrone.Core.HealthCheck
 {
     public class HealthCheck : ModelBase
     {
-        private static readonly Regex CleanFragmentRegex = new Regex("[^a-z ]", RegexOptions.Compiled);
+        private static readonly Regex CleanFragmentRegex = new Regex("[^a-z ]", RegexOptions.Compiled, RegexDefaults.Timeout);
 
         public Type Source { get; set; }
         public HealthCheckResult Type { get; set; }

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using NLog;
+using NzbDrone.Common;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Instrumentation;
 using NzbDrone.Core.Languages;
@@ -41,7 +42,8 @@ namespace NzbDrone.Core.Parser
                                                                             (?<mongolian>\b(?:mongolian|khalkha)\b)|
                                                                             (?<georgian>\b(?:georgian|geo|ka|kat)\b)|
                                                                             (?<original>\b(?:orig|original)\b)",
-                                                                RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.IgnorePatternWhitespace);
+                                                                RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.IgnorePatternWhitespace,
+                                                                RegexDefaults.Timeout);
 
         private static readonly Regex CaseSensitiveLanguageRegex = new Regex(@"(?:(?i)(?<!SUB[\W|_|^]))(?:(?<english>\bEN\b)|
                                                                                                           (?<lithuanian>\bLT\b)|
@@ -51,12 +53,13 @@ namespace NzbDrone.Core.Parser
                                                                                                           (?<slovak>\bSK\b)|
                                                                                                           (?<german>\bDE\b)|
                                                                                                           (?<spanish>\b(?<!DTS[._ -])ES\b))(?:(?i)(?![\W|_|^]SUB))",
-                                                                RegexOptions.Compiled | RegexOptions.IgnorePatternWhitespace);
+                                                                RegexOptions.Compiled | RegexOptions.IgnorePatternWhitespace,
+                                                                RegexDefaults.Timeout);
 
         private static readonly Regex GermanDualLanguageRegex = new (@"(?<!WEB[-_. ]?)\bDL\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         private static readonly Regex GermanMultiLanguageRegex = new (@"\bML\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        private static readonly Regex SubtitleLanguageRegex = new Regex(".+?[-_. ](?<iso_code>[a-z]{2,3})([-_. ](?<tags>full|forced|foreign|default|cc|psdh|sdh))*$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex SubtitleLanguageRegex = new Regex(".+?[-_. ](?<iso_code>[a-z]{2,3})([-_. ](?<tags>full|forced|foreign|default|cc|psdh|sdh))*$", RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexDefaults.Timeout);
 
         public static List<Language> ParseLanguages(string title)
         {

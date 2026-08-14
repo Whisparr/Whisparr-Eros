@@ -138,7 +138,7 @@ namespace NzbDrone.Common.Extensions
             return false;
         }
 
-        private static readonly Regex WindowsPathWithDriveRegex = new Regex(@"^[a-zA-Z]:\\", RegexOptions.Compiled);
+        private static readonly Regex WindowsPathWithDriveRegex = new Regex(@"^[a-zA-Z]:\\", RegexOptions.Compiled, RegexDefaults.Timeout);
 
         public static bool IsPathValid(this string path, PathValidationType validationType)
         {

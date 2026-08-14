@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using FluentValidation.Results;
 using NLog;
+using NzbDrone.Common;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
@@ -350,7 +351,7 @@ namespace NzbDrone.Core.Download.Clients.Transmission
         {
             var rawVersion = _proxy.GetClientVersion(Settings);
 
-            var versionResult = Regex.Match(rawVersion, @"(?<!\(|(\d|\.)+)(\d|\.)+(?!\)|(\d|\.)+)").Value;
+            var versionResult = Regex.Match(rawVersion, @"(?<!\(|(\d|\.)+)(\d|\.)+(?!\)|(\d|\.)+)", RegexOptions.None, RegexDefaults.Timeout).Value;
             var clientVersion = Version.Parse(versionResult);
 
             return clientVersion >= new Version(major, minor);
