@@ -9,6 +9,11 @@ on:
       - eros-develop
   workflow_dispatch:
 
+env:
+  # Keep in sync with build_v3.yml's VERSION_FALLBACK. Only used during the seed
+  # window before any vX.Y.Z tag is reachable.
+  VERSION_FALLBACK: 3.3.4
+
 jobs:
   # Approval gate for fork PRs.
   #
@@ -147,9 +152,40 @@ jobs:
       # `yarn install` running fork-controlled lifecycle scripts in this job,
       # which holds SONAR_TOKEN. Sonar applies its own JS/TS rules to the ~108k
       # frontend ncloc regardless; that analysis needs no node toolchain here.
+      # SonarCloud's New Code period is "previous_version", but nothing ever
+      # passed sonar.projectVersion, so no version boundary has ever existed and
+      # the branch's new-code window has been accumulating since the project was
+      # created ("New code: since 5 months ago"). That is why eros-develop
+      # reports ~14% new-code coverage while an individual PR reports 93% -- PR
+      # analysis scopes new code to the PR diff and is unaffected.
+      #
+      # Base version only, deliberately: build_v3.yml's full version carries a
+      # `-develop.<run_number>` suffix, and feeding that to Sonar would move the
+      # boundary on every single push, shrinking new code to one commit. Using
+      # the bare vX.Y.Z means new code == "since the last release tag", which is
+      # what the metric is supposed to express.
+      - name: Resolve project version
+        id: version
+        shell: bash
+        run: |
+          # Same reachability-scoped lookup build_v3.yml uses, same strict regex
+          # (rejects the CI-minted -develop.N tags and the legacy 4-part
+          # vX.Y.Z.B tags inherited from upstream).
+          BASE_TAG=$(git tag --merged HEAD --sort=-v:refname 2>/dev/null \
+            | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n1 || true)
+          if [ -n "$BASE_TAG" ]; then
+            BASE="${BASE_TAG#v}"
+            echo "Analysing as version ${BASE} (from tag ${BASE_TAG})"
+          else
+            BASE="${VERSION_FALLBACK}"
+            echo "Analysing as version ${BASE} (VERSION_FALLBACK; no vX.Y.Z tag reachable)"
+          fi
+          echo "version=${BASE}" >> "$GITHUB_OUTPUT"
+
       - name: Build and analyze
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_VERSION: ${{ steps.version.outputs.version }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_BRANCH: ${{ github.event.pull_request.head.ref }}
           PR_BASE: ${{ github.event.pull_request.base.ref }}
@@ -160,10 +196,20 @@ jobs:
             "/k:Whisparr_Whisparr-Eros",
             "/o:whisparr-eros",
             "/d:sonar.token=$env:SONAR_TOKEN",
-            # 45 near-identical translation files, ~49.6k ncloc -- 17% of the
-            # project, and a large share of the duplication figure. Excluding
-            # them makes both ncloc and duplicated_lines_density mean something.
-            "/d:sonar.exclusions=src/NzbDrone.Core/Localization/Core/**,**/node_modules/**,_output/**,_temp/**,_tests/**",
+            # Establishes the New Code boundary -- see "Resolve project version".
+            "/v:$env:SONAR_VERSION",
+            # Two groups of exclusions:
+            #  - Localization/Core is 45 near-identical translation files,
+            #    ~49.6k ncloc (17% of the project) and a large share of the
+            #    duplication figure; counting them made neither number mean
+            #    anything.
+            #  - The binaries are icons, logos and test media fixtures. Sonar
+            #    reads them as UTF-8 text and emits "Invalid character
+            #    encountered in file ..." for each, which is what raises the
+            #    "problems with file encoding" banner on the project summary.
+            #    sonar.sourceEncoding is NOT the fix; they are not text in any
+            #    encoding.
+            "/d:sonar.exclusions=src/NzbDrone.Core/Localization/Core/**,**/node_modules/**,_output/**,_temp/**,_tests/**,**/*.ico,**/*.png,**/*.mp4,**/*.zip,**/*.tar.gz",
             "/d:sonar.cs.opencover.reportsPaths=coverage/**/coverage.opencover.xml"
           )
           if ($env:EVENT_NAME -eq 'pull_request_target') {
