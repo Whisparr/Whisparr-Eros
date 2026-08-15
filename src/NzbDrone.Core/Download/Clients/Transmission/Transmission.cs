@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using FluentValidation.Results;
 using NLog;
+using NzbDrone.Common;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
@@ -78,7 +79,7 @@ namespace NzbDrone.Core.Download.Clients.Transmission
 
             _logger.Debug("Transmission version information: {0}", versionString);
 
-            var versionResult = Regex.Match(versionString, @"(?<!\(|(\d|\.)+)(\d|\.)+(?!\)|(\d|\.)+)").Value;
+            var versionResult = Regex.Match(versionString, @"(?<!\(|(\d|\.)+)(\d|\.)+(?!\)|(\d|\.)+)", RegexOptions.None, RegexDefaults.Timeout).Value;
             var version = Version.Parse(versionResult);
 
             if (version < new Version(2, 40))

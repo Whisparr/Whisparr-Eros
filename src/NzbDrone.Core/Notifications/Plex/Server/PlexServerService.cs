@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using FluentValidation.Results;
 using NLog;
+using NzbDrone.Common;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
@@ -90,7 +91,7 @@ namespace NzbDrone.Core.Notifications.Plex.Server
             _logger.Debug("Getting version from Plex host: {0}", settings.Host);
 
             var rawVersion = _plexServerProxy.Version(settings);
-            var version = new Version(Regex.Match(rawVersion, @"^(\d+[.-]){4}").Value.Trim('.', '-'));
+            var version = new Version(Regex.Match(rawVersion, @"^(\d+[.-]){4}", RegexOptions.None, RegexDefaults.Timeout).Value.Trim('.', '-'));
 
             return version;
         }

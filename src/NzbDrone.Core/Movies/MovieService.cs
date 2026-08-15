@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using DryIoc.ImTools;
 using NLog;
+using NzbDrone.Common;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.AutoTagging;
@@ -956,7 +957,7 @@ namespace NzbDrone.Core.Movies
                             matches.Add(movie, MovieParseMatchType.Episode);
                             continue;
                         }
-                        else if (int.TryParse(code, out var codeNumber) && int.TryParse(Regex.Match(episode, @"\d+").Value, out var episodeNumber))
+                        else if (int.TryParse(code, out var codeNumber) && int.TryParse(Regex.Match(episode, @"\d+", RegexOptions.None, RegexDefaults.Timeout).Value, out var episodeNumber))
                         {
                             if (codeNumber == episodeNumber)
                             {
@@ -1137,7 +1138,7 @@ namespace NzbDrone.Core.Movies
                         var code = match.Key.MovieMetadata.Value.Code;
                         if (!episode.Equals(code, StringComparison.InvariantCultureIgnoreCase))
                         {
-                            if (int.TryParse(code, out var codeNumber) && int.TryParse(Regex.Match(episode, @"\d+").Value, out var episodeNumber))
+                            if (int.TryParse(code, out var codeNumber) && int.TryParse(Regex.Match(episode, @"\d+", RegexOptions.None, RegexDefaults.Timeout).Value, out var episodeNumber))
                             {
                                 if (codeNumber != episodeNumber)
                                 {

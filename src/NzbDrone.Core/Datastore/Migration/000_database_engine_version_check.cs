@@ -2,6 +2,7 @@ using System.Data;
 using System.Text.RegularExpressions;
 using FluentMigrator;
 using NLog;
+using NzbDrone.Common;
 using NzbDrone.Common.Instrumentation;
 
 namespace NzbDrone.Core.Datastore.Migration
@@ -53,7 +54,7 @@ namespace NzbDrone.Core.Datastore.Migration
                     while (reader.Read())
                     {
                         var version = reader.GetString(0);
-                        var cleanVersion = Regex.Replace(version, @"\(.*?\)", "");
+                        var cleanVersion = Regex.Replace(version, @"\(.*?\)", "", RegexOptions.None, RegexDefaults.Timeout);
 
                         _logger.Info("Postgres {0}", cleanVersion);
                     }

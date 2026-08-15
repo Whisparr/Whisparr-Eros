@@ -4,6 +4,7 @@ using Diacritical;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.DependencyInjection;
+using NzbDrone.Common;
 using NzbDrone.Core.Authentication;
 using NzbDrone.Core.Configuration;
 
@@ -11,7 +12,7 @@ namespace Whisparr.Http.Authentication
 {
     public static class AuthenticationBuilderExtensions
     {
-        private static readonly Regex CookieNameRegex = new Regex(@"[^a-z0-9]+", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex CookieNameRegex = new Regex(@"[^a-z0-9]+", RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexDefaults.Timeout);
 
         public static AuthenticationBuilder AddApiKey(this AuthenticationBuilder authenticationBuilder, string name, Action<ApiKeyAuthenticationOptions> options)
         {

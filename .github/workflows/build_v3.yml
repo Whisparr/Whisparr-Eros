@@ -179,6 +179,12 @@ jobs:
             artifact: tests-win-x64
             binary_artifact: build-win-x64
             filter: TestCategory!=ManualTest&TestCategory!=LINUX&TestCategory!=IntegrationTest&TestCategory!=AutomationTest
+            # Sonar wants one coverage report, not three. Windows is the leg
+            # that produces it because sonarqube.yml analyses on windows-latest
+            # too, so the source paths in the report match the ones the scanner
+            # records. Collecting on a different OS than the analysis risks
+            # coverage that imports but maps to nothing.
+            collect_coverage: true
     runs-on: ${{ matrix.os }}
     steps:
       - name: Check out
@@ -193,6 +199,7 @@ jobs:
           artifact: ${{ matrix.artifact }}
           pattern: Whisparr.*.Test.dll
           filter: ${{ matrix.filter }}
+          collect_coverage: ${{ matrix.collect_coverage }}
 
   unit_test_postgres:
     needs: backend

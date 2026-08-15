@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using NLog;
+using NzbDrone.Common;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Movies;
@@ -23,7 +24,7 @@ namespace NzbDrone.Core.DiskSpace
         private readonly IDiskProvider _diskProvider;
         private readonly Logger _logger;
 
-        private static readonly Regex _regexSpecialDrive = new Regex(@"^/var/lib/(docker|rancher|kubelet)(/|$)|^/(boot|etc)(/|$)|/docker(/var)?/aufs(/|$)|/\.timemachine", RegexOptions.Compiled);
+        private static readonly Regex _regexSpecialDrive = new Regex(@"^/var/lib/(docker|rancher|kubelet)(/|$)|^/(boot|etc)(/|$)|/docker(/var)?/aufs(/|$)|/\.timemachine", RegexOptions.Compiled, RegexDefaults.Timeout);
 
         public DiskSpaceService(IMovieService movieService, IRootFolderService rootFolderService, IDiskProvider diskProvider, Logger logger)
         {

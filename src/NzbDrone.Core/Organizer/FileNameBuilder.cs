@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Diacritical;
 using NLog;
+using NzbDrone.Common;
 using NzbDrone.Common.EnsureThat;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.CustomFormats;
@@ -46,36 +47,43 @@ namespace NzbDrone.Core.Organizer
         private int _trimEnd;
 
         private static readonly Regex TitleRegex = new Regex(@"(?<tag>\{(?:imdb-|edition-))?\{(?<prefix>[- ._\[(]*)(?<token>(?:[a-z0-9]+)(?:(?<separator>[- ._]+)(?:[a-z0-9]+))?)(?::(?<customFormat>[ ,a-z0-9|+-]+(?<![- ])))?(?<suffix>[-} ._)\]]*)\}",
-                                                             RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+                                                             RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant,
+                                                             RegexDefaults.Timeout);
 
         public static readonly Regex MovieTitleRegex = new Regex(@"(?<token>\{((?:(Movie|Original))(?<separator>[- ._])(Clean)?(Original)?(Title|Filename)(The)?)(?::(?<customFormat>[a-z0-9|-]+))?\})",
-                                                                            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+                                                                            RegexOptions.Compiled | RegexOptions.IgnoreCase,
+                                                                            RegexDefaults.Timeout);
 
-        public static readonly Regex SceneFolderRegex = new Regex(@"(?<token>\{((?:(Studio|Original))(?<separator>[- ._])(Clean)?(Original)?(Title|Filename)(The|Slug|FirstCharacter)?)(?::(?<customFormat>[a-z0-9|]+))?\})",
-                                                                            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        public static readonly Regex SceneFolderRegex = new Regex(@"(?<token>\{((?:(Studio|Original))(?<separator>[- ._])(Clean)?(Original)?(Title|Filename)(The|Slug|FirstCharacter)?)(?::(?<customFormat>[a-z0-9|-]+))?\})",
+                                                                            RegexOptions.Compiled | RegexOptions.IgnoreCase,
+                                                                            RegexDefaults.Timeout);
 
-        // Matches any of the four scene title tokens: {Scene Title}, {Scene CleanTitle}, {Scene CleanTitleNoSeasonEpisode}, {Scene TitleThe}
-        public static readonly Regex SceneTitleTokenRegex = new Regex(@"\{Scene( |\.|-|_)(Title|CleanTitle|CleanTitleNoSeasonEpisode|TitleThe)\}",
-                                          RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        // Matches any of the four scene title tokens: {Scene Title}, {Scene CleanTitle}, {Scene CleanTitleNoSeasonEpisode}, {Scene TitleThe},
+        // each optionally carrying a truncation suffix, ex. {Scene CleanTitle:100} or {Scene CleanTitle:-30}
+        public static readonly Regex SceneTitleTokenRegex = new Regex(@"\{Scene( |\.|-|_)(CleanTitleNoSeasonEpisode|CleanTitle|TitleThe|Title)(?::(?<customFormat>[a-z0-9|-]+))?\}",
+                                          RegexOptions.Compiled | RegexOptions.IgnoreCase,
+                                          RegexDefaults.Timeout);
 
         public static readonly Regex MainFolderRegex = new Regex(@"^(?<main>(?:[a-zA-Z0-9]+(?:\\|\/)))",
-                                                                            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+                                                                            RegexOptions.Compiled | RegexOptions.IgnoreCase,
+                                                                            RegexDefaults.Timeout);
 
-        public static readonly Regex SceneTitleRegex = new Regex(@"(?<token>\{((?:(Scene|Original))(?<separator>[- ._])(Clean)?(Original)?(Title|Filename)(The)?(NoSeasonEpisode)?)(?::(?<customFormat>[a-z0-9|]+))?\})",
-                                                                            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        public static readonly Regex SceneTitleRegex = new Regex(@"(?<token>\{((?:(Scene|Original))(?<separator>[- ._])(Clean)?(Original)?(Title|Filename)(The)?(NoSeasonEpisode)?)(?::(?<customFormat>[a-z0-9|-]+))?\})",
+                                                                            RegexOptions.Compiled | RegexOptions.IgnoreCase,
+                                                                            RegexDefaults.Timeout);
 
-        private static readonly Regex FileNameCleanupRegex = new Regex(@"([- ._])(\1)+", RegexOptions.Compiled);
-        private static readonly Regex TrimSeparatorsRegex = new Regex(@"[- ._]+$", RegexOptions.Compiled);
+        private static readonly Regex FileNameCleanupRegex = new Regex(@"([- ._])(\1)+", RegexOptions.Compiled, RegexDefaults.Timeout);
+        private static readonly Regex TrimSeparatorsRegex = new Regex(@"[- ._]+$", RegexOptions.Compiled, RegexDefaults.Timeout);
 
-        private static readonly Regex ScenifyRemoveChars = new Regex(@"(?<=\s)(,|<|>|\/|\\|;|:|'|""|\||`|’|~|!|\?|@|$|%|^|\*|-|_|=){1}(?=\s)|('|`|’|:|\?|,)(?=(?:(?:s|m|t|ve|ll|d|re)\s)|\s|$)|(\(|\)|\[|\]|\{|\})", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        private static readonly Regex ScenifyReplaceChars = new Regex(@"[\/]", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex ScenifyRemoveChars = new Regex(@"(?<=\s)(,|<|>|\/|\\|;|:|'|""|\||`|’|~|!|\?|@|$|%|^|\*|-|_|=){1}(?=\s)|('|`|’|:|\?|,)(?=(?:(?:s|m|t|ve|ll|d|re)\s)|\s|$)|(\(|\)|\[|\]|\{|\})", RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexDefaults.Timeout);
+        private static readonly Regex ScenifyReplaceChars = new Regex(@"[\/]", RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexDefaults.Timeout);
 
-        private static readonly Regex EmojiRegex = new Regex(@"\p{Cs}", RegexOptions.Compiled);
-        private static readonly Regex WordDelimiterRegex = new Regex(@"(’|')+", RegexOptions.Compiled);
+        private static readonly Regex EmojiRegex = new Regex(@"\p{Cs}", RegexOptions.Compiled, RegexDefaults.Timeout);
+        private static readonly Regex WordDelimiterRegex = new Regex(@"(’|')+", RegexOptions.Compiled, RegexDefaults.Timeout);
 
-        private static readonly Regex TitlePrefixRegex = new Regex(@"^(The|An|A) (.*?)((?: *\([^)]+\))*)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex TitlePrefixRegex = new Regex(@"^(The|An|A) (.*?)((?: *\([^)]+\))*)$", RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexDefaults.Timeout);
 
-        private static readonly Regex ReservedDeviceNamesRegex = new Regex(@"^(?:aux|com[1-9]|con|lpt[1-9]|nul|prn)\.", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex ReservedDeviceNamesRegex = new Regex(@"^(?:aux|com[1-9]|con|lpt[1-9]|nul|prn)\.", RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexDefaults.Timeout);
 
         // generated from https://www.loc.gov/standards/iso639-2/ISO-639-2_utf-8.txt
         public static readonly ImmutableDictionary<string, string> Iso639BTMap = new Dictionary<string, string>
@@ -341,9 +349,9 @@ namespace NzbDrone.Core.Organizer
 
             title = CleanTitle(title);
 
-            title = Regex.Replace(title, @"\s*-?\s*S\d+:E\d+\s*", "", RegexOptions.IgnoreCase);
+            title = Regex.Replace(title, @"\s*-?\s*S\d+:E\d+\s*", "", RegexOptions.IgnoreCase, RegexDefaults.Timeout);
 
-            title = Regex.Replace(title, @"\s+", " ").Trim();
+            title = Regex.Replace(title, @"\s+", " ", RegexOptions.None, RegexDefaults.Timeout).Trim();
 
             return title;
         }
@@ -512,11 +520,11 @@ namespace NzbDrone.Core.Organizer
 
         private void AddSceneTitlePlaceholderTokens(Dictionary<string, Func<TokenMatch, string>> tokenHandlers, Movie movie)
         {
-            tokenHandlers["{Scene Title}"] = m => GetLanguageTitle(movie, m.CustomFormat).Remove(GetLanguageTitle(movie, m.CustomFormat).Length - _trimEnd, _trimEnd);
-            tokenHandlers["{Scene CleanTitle}"] = m => CleanTitle(GetLanguageTitle(movie, m.CustomFormat)).Remove(CleanTitle(GetLanguageTitle(movie, m.CustomFormat)).Length - _trimEnd, _trimEnd);
-            tokenHandlers["{Scene TitleThe}"] = m => TitleThe(movie.Title).Remove(TitleThe(movie.Title).Length - _trimEnd, _trimEnd);
-            tokenHandlers["{Scene TitleFirstCharacter}"] = m => TitleFirstCharacter(TitleThe(GetLanguageTitle(movie, m.CustomFormat))).Remove(TitleFirstCharacter(TitleThe(GetLanguageTitle(movie, m.CustomFormat))).Length - _trimEnd, _trimEnd);
-            tokenHandlers["{Scene CleanTitleNoSeasonEpisode}"] = m => CleanTitleNoSeasonEpisode(GetLanguageTitle(movie, m.CustomFormat)).Remove(CleanTitleNoSeasonEpisode(GetLanguageTitle(movie, m.CustomFormat)).Length - _trimEnd, _trimEnd);
+            tokenHandlers["{Scene Title}"] = m => TrimAndTruncate(GetLanguageTitle(movie, m.CustomFormat), m.CustomFormat);
+            tokenHandlers["{Scene CleanTitle}"] = m => TrimAndTruncate(CleanTitle(GetLanguageTitle(movie, m.CustomFormat)), m.CustomFormat);
+            tokenHandlers["{Scene TitleThe}"] = m => TrimAndTruncate(TitleThe(movie.Title), m.CustomFormat);
+            tokenHandlers["{Scene TitleFirstCharacter}"] = m => TrimAndTruncate(TitleFirstCharacter(TitleThe(GetLanguageTitle(movie, m.CustomFormat))), m.CustomFormat);
+            tokenHandlers["{Scene CleanTitleNoSeasonEpisode}"] = m => TrimAndTruncate(CleanTitleNoSeasonEpisode(GetLanguageTitle(movie, m.CustomFormat)), m.CustomFormat);
         }
 
         private void AddSceneTitleTokens(Dictionary<string, Func<TokenMatch, string>> tokenHandlers, Movie movie, int maxLength)
@@ -755,8 +763,8 @@ namespace NzbDrone.Core.Organizer
         {
             var edition = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(movieFile.Edition.ToLowerInvariant());
 
-            edition = Regex.Replace(edition, @"((?:\b|_)\d{1,3}(?:st|th|rd|nd)(?:\b|_))", match => match.Groups[1].Value.ToLowerInvariant(), RegexOptions.IgnoreCase);
-            edition = Regex.Replace(edition, @"((?:\b|_)(?:IMAX|3D|SDR|HDR|DV)(?:\b|_))", match => match.Groups[1].Value.ToUpperInvariant(), RegexOptions.IgnoreCase);
+            edition = Regex.Replace(edition, @"((?:\b|_)\d{1,3}(?:st|th|rd|nd)(?:\b|_))", match => match.Groups[1].Value.ToLowerInvariant(), RegexOptions.IgnoreCase, RegexDefaults.Timeout);
+            edition = Regex.Replace(edition, @"((?:\b|_)(?:IMAX|3D|SDR|HDR|DV)(?:\b|_))", match => match.Groups[1].Value.ToUpperInvariant(), RegexOptions.IgnoreCase, RegexDefaults.Timeout);
 
             return edition;
         }
@@ -937,6 +945,19 @@ namespace NzbDrone.Core.Organizer
             }
 
             return result.TrimStart(' ', '.').TrimEnd(' ');
+        }
+
+        // Scene titles are shortened from the end by _trimEnd when the built path is over the
+        // configured length limit; the token's own truncation (ex. {Scene CleanTitle:100}) is
+        // applied afterwards so the ellipsis placeholder stays at the end of the title.
+        private string TrimAndTruncate(string input, string formatter)
+        {
+            if (_trimEnd > 0 && input.IsNotNullOrWhiteSpace())
+            {
+                input = input.Substring(0, Math.Max(0, input.Length - _trimEnd));
+            }
+
+            return Truncate(input, formatter);
         }
 
         private string Truncate(string input, string formatter)

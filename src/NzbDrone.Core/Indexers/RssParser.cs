@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
 using NLog;
+using NzbDrone.Common;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
 using NzbDrone.Common.Instrumentation;
@@ -19,7 +20,7 @@ namespace NzbDrone.Core.Indexers
 {
     public class RssParser : IParseIndexerResponse
     {
-        private static readonly Regex ReplaceEntities = new Regex("&[a-z]+;", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex ReplaceEntities = new Regex("&[a-z]+;", RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexDefaults.Timeout);
         public const string NzbEnclosureMimeType = "application/x-nzb";
         public const string TorrentEnclosureMimeType = "application/x-bittorrent";
         public const string MagnetEnclosureMimeType = "application/x-bittorrent;x-scheme-handler/magnet";
@@ -363,7 +364,8 @@ namespace NzbDrone.Core.Indexers
         }
 
         private static readonly Regex ParseSizeRegex = new Regex(@"(?<value>(?<!\.\d*)(?:\d+,)*\d+(?:\.\d{1,3})?)\W?(?<unit>[KMG]i?B)(?![\w/])",
-            RegexOptions.IgnoreCase | RegexOptions.Compiled);
+            RegexOptions.IgnoreCase | RegexOptions.Compiled,
+            RegexDefaults.Timeout);
 
         public static long ParseSize(string sizeString, bool defaultToBinaryPrefix)
         {
@@ -381,7 +383,7 @@ namespace NzbDrone.Core.Indexers
 
             if (match.Count != 0)
             {
-                var value = decimal.Parse(Regex.Replace(match[0].Groups["value"].Value, "\\,", ""), CultureInfo.InvariantCulture);
+                var value = decimal.Parse(Regex.Replace(match[0].Groups["value"].Value, "\\,", "", RegexOptions.None, RegexDefaults.Timeout), CultureInfo.InvariantCulture);
 
                 var unit = match[0].Groups["unit"].Value.ToLower();
 

@@ -1920,6 +1920,7 @@
   "SceneFolderFormat": "Scene Folder Format",
   "SceneFolderFormatHelpText": "Used when adding a new scene or moving scenes via the editor",
   "SceneFolderFormatHelpTextDeprecatedWarning": "Tokens associated with scene file properties have been deprecated and will no longer be supported in future major versions.",
+  "SceneFootNote": "Optionally control truncation to a maximum number of bytes including ellipsis (`...`). Truncating from the end (e.g. `{Scene Title:30}`) or the beginning (e.g. `{Scene Title:-30}`) are both supported.",
   "SceneImportFolderFormat": "Scene Import Folder Format",
   "SceneImportFolderFormatHelpText": "Used when importing via Scenes > Import Scenes.",
   "sceneImportFolderFormatHelpTextPath": "Relative path inside default root folder",

@@ -9,6 +9,11 @@ on:
       - eros-develop
   workflow_dispatch:
 
+env:
+  # Keep in sync with build_v3.yml's VERSION_FALLBACK. Only used during the seed
+  # window before any vX.Y.Z tag is reachable.
+  VERSION_FALLBACK: 3.3.4
+
 jobs:
   # Approval gate for fork PRs.
   #
@@ -34,6 +39,13 @@ jobs:
   # in the C# you would normally read. Before approving a fork run, read any
   # change to *.csproj, Directory.Build.*, nuget.config, global.json, build.sh,
   # package.json scripts or .github/ line by line.
+  #
+  # What this gate covers is deliberately kept to `dotnet build` and nothing
+  # else. Coverage is collected in build_v3.yml, which runs under
+  # `pull_request` with no secrets, and crosses over as an XML artifact -- so
+  # fork *test* code never executes here. Keep it that way: do not add test
+  # runs, `yarn install`, or any other fork-controlled execution to the analyze
+  # job. Each one widens what a reviewer is implicitly approving.
   approve-fork-analysis:
     name: Approve fork analysis
     if: >-
@@ -68,9 +80,11 @@ jobs:
        needs.approve-fork-analysis.result == 'skipped')
     runs-on: windows-latest
     # pull_request_target hands the job a write-scoped GITHUB_TOKEN by default.
-    # Analysis only ever needs to read the tree, so clamp it.
+    # Analysis only ever needs to read the tree, plus `actions: read` to pull
+    # build_v3.yml's coverage artifact. Clamp it to that.
     permissions:
       contents: read
+      actions: read
     steps:
       - name: Set up JDK 17
         uses: actions/setup-java@v5
@@ -131,9 +145,47 @@ jobs:
           # happy to update a tool-path that already holds an older scanner.
           New-Item -Path ${{ runner.temp }}\scanner -ItemType Directory -Force
           dotnet tool update dotnet-sonarscanner --tool-path ${{ runner.temp }}\scanner
+
+      # NOTE: do not add an ESLint report import here. It would always be empty
+      # -- build_v3.yml fails the frontend job on any lint finding, so every
+      # commit that reaches analysis is already clean -- and generating it means
+      # `yarn install` running fork-controlled lifecycle scripts in this job,
+      # which holds SONAR_TOKEN. Sonar applies its own JS/TS rules to the ~108k
+      # frontend ncloc regardless; that analysis needs no node toolchain here.
+      # SonarCloud's New Code period is "previous_version", but nothing ever
+      # passed sonar.projectVersion, so no version boundary has ever existed and
+      # the branch's new-code window has been accumulating since the project was
+      # created ("New code: since 5 months ago"). That is why eros-develop
+      # reports ~14% new-code coverage while an individual PR reports 93% -- PR
+      # analysis scopes new code to the PR diff and is unaffected.
+      #
+      # Base version only, deliberately: build_v3.yml's full version carries a
+      # `-develop.<run_number>` suffix, and feeding that to Sonar would move the
+      # boundary on every single push, shrinking new code to one commit. Using
+      # the bare vX.Y.Z means new code == "since the last release tag", which is
+      # what the metric is supposed to express.
+      - name: Resolve project version
+        id: version
+        shell: bash
+        run: |
+          # Same reachability-scoped lookup build_v3.yml uses, same strict regex
+          # (rejects the CI-minted -develop.N tags and the legacy 4-part
+          # vX.Y.Z.B tags inherited from upstream).
+          BASE_TAG=$(git tag --merged HEAD --sort=-v:refname 2>/dev/null \
+            | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n1 || true)
+          if [ -n "$BASE_TAG" ]; then
+            BASE="${BASE_TAG#v}"
+            echo "Analysing as version ${BASE} (from tag ${BASE_TAG})"
+          else
+            BASE="${VERSION_FALLBACK}"
+            echo "Analysing as version ${BASE} (VERSION_FALLBACK; no vX.Y.Z tag reachable)"
+          fi
+          echo "version=${BASE}" >> "$GITHUB_OUTPUT"
+
       - name: Build and analyze
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_VERSION: ${{ steps.version.outputs.version }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_BRANCH: ${{ github.event.pull_request.head.ref }}
           PR_BASE: ${{ github.event.pull_request.base.ref }}
@@ -143,7 +195,30 @@ jobs:
           $beginArgs = @(
             "/k:Whisparr_Whisparr-Eros",
             "/o:whisparr-eros",
-            "/d:sonar.token=$env:SONAR_TOKEN"
+            "/d:sonar.token=$env:SONAR_TOKEN",
+            # Establishes the New Code boundary -- see "Resolve project version".
+            "/v:$env:SONAR_VERSION",
+            # Two groups of exclusions:
+            #  - Localization/Core is 45 near-identical translation files,
+            #    ~49.6k ncloc (17% of the project) and a large share of the
+            #    duplication figure; counting them made neither number mean
+            #    anything.
+            #  - The binaries are icons, logos and test media fixtures. Sonar
+            #    reads them as UTF-8 text and emits "Invalid character
+            #    encountered in file ..." for each, which is what raises the
+            #    "problems with file encoding" banner on the project summary.
+            #    sonar.sourceEncoding is NOT the fix; they are not text in any
+            #    encoding.
+            "/d:sonar.exclusions=src/NzbDrone.Core/Localization/Core/**,**/node_modules/**,_output/**,_temp/**,_tests/**,**/*.ico,**/*.png,**/*.mp4,**/*.zip,**/*.tar.gz",
+            # sonar.exclusions governs MAIN files only. The .NET scanner
+            # classifies every *.Test project as test code, so the media
+            # fixtures under src/NzbDrone.Core.Test/Files (H264_sample.mp4,
+            # TestArchive.zip, TestArchive.tar.gz) were untouched by the list
+            # above and kept warning after #442. They need the test-scoped
+            # equivalent. Binaries only -- do not add source patterns here, it
+            # would drop real test code from analysis.
+            "/d:sonar.test.exclusions=**/*.ico,**/*.png,**/*.mp4,**/*.zip,**/*.tar.gz",
+            "/d:sonar.cs.opencover.reportsPaths=coverage/**/coverage.opencover.xml"
           )
           if ($env:EVENT_NAME -eq 'pull_request_target') {
             $beginArgs += "/d:sonar.pullrequest.key=$env:PR_NUMBER"
@@ -152,4 +227,79 @@ jobs:
           }
           & ${{ runner.temp }}\scanner\dotnet-sonarscanner begin @beginArgs
           dotnet build src/Whisparr.sln
+
+      # Coverage is NOT produced here. It comes from build_v3.yml's windows test
+      # leg, which runs under `pull_request` with no secrets in scope -- so fork
+      # test code never executes while this job holds SONAR_TOKEN. What crosses
+      # the boundary is an XML report, i.e. data the scanner parses, not code it
+      # runs. That keeps the approve-fork-analysis gate covering exactly what it
+      # covered before: `dotnet build`, and nothing more.
+      #
+      # The two workflows are independent runs of the same commit with no
+      # ordering guarantee, hence the wait. Missing coverage is not fatal: some
+      # PRs never trigger build_v3.yml at all (it has paths-ignore for
+      # localization and openapi.json), and analysis without coverage still
+      # beats no analysis.
+      - name: Download coverage from build_v3
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -uo pipefail
+          mkdir -p coverage
+          deadline=$(( SECONDS + 1500 ))
+          while (( SECONDS < deadline )); do
+            run_id=$(gh run list --repo "$REPO" --workflow build_v3.yml \
+              --commit "$HEAD_SHA" --limit 1 \
+              --json databaseId,status \
+              --jq '.[] | select(.status=="completed") | .databaseId' || true)
+            if [ -n "$run_id" ] && gh run download "$run_id" --repo "$REPO" \
+                 --pattern 'coverage-*' --dir coverage; then
+              echo "Coverage downloaded from build_v3 run $run_id"
+              find coverage -name 'coverage.opencover.xml'
+              exit 0
+            fi
+            sleep 30
+          done
+          echo "::warning::No coverage artifact for $HEAD_SHA; analysing without it."
+
+      # Instrumenting is only half the job -- the report also has to name files
+      # the scanner can find. <PathMap> makes coverlet record every document as
+      # "./NzbDrone.Core/Foo.cs", but sonar.projectBaseDir is the repo root, so
+      # the scanner looks for "<root>/NzbDrone.Core/Foo.cs" and the real file is
+      # at "<root>/src/NzbDrone.Core/Foo.cs". Nothing matches, and the import
+      # silently contributes zero without logging a single warning.
+      #
+      # Re-rooting the paths at $GITHUB_WORKSPACE/src fixes that. Do NOT solve
+      # it by setting sonar.projectBaseDir=src instead: that would drop the
+      # ~108k ncloc of frontend/ out of the analysis entirely.
+      - name: Re-root coverage source paths
+        shell: bash
+        run: |
+          set -uo pipefail
+          # Git Bash reports GITHUB_WORKSPACE as D:\a\...; forward slashes are
+          # accepted everywhere and keep the sed replacement free of escapes.
+          ws="${GITHUB_WORKSPACE//\\//}"
+          count=0
+          while IFS= read -r f; do
+            # Explicit temp file rather than `sed -i`: BSD sed requires an
+            # argument to -i and GNU sed does not, and this step is the sort of
+            # thing that gets copied to a macOS runner later.
+            sed "s|fullPath=\"\./|fullPath=\"${ws}/src/|g" "$f" > "$f.tmp" \
+              && mv "$f.tmp" "$f"
+            count=$((count + 1))
+          done < <(find coverage -name 'coverage.opencover.xml' 2>/dev/null)
+          if [ "$count" -eq 0 ]; then
+            echo "No coverage reports to re-root."
+          else
+            echo "Re-rooted $count report(s) at ${ws}/src"
+          fi
+
+      - name: Finish analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        shell: powershell
+        run: |
           ${{ runner.temp }}\scanner\dotnet-sonarscanner end /d:sonar.token="$env:SONAR_TOKEN"

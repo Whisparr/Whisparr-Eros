@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Text.RegularExpressions;
 using NLog;
+using NzbDrone.Common;
 using NzbDrone.Common.Http;
 
 namespace NzbDrone.Core.Http.CloudFlare
@@ -9,7 +10,7 @@ namespace NzbDrone.Core.Http.CloudFlare
     {
         private const string _cloudFlareChallengeScript = "cdn-cgi/scripts/cf.challenge.js";
         private readonly Logger _logger;
-        private static readonly Regex _cloudFlareRegex = new Regex(@"data-ray=""(?<Ray>[\w-_]+)"".*?data-sitekey=""(?<SiteKey>[\w-_]+)"".*?data-stoken=""(?<SecretToken>[\w-_]+)""", RegexOptions.Compiled);
+        private static readonly Regex _cloudFlareRegex = new Regex(@"data-ray=""(?<Ray>[\w-_]+)"".*?data-sitekey=""(?<SiteKey>[\w-_]+)"".*?data-stoken=""(?<SecretToken>[\w-_]+)""", RegexOptions.Compiled, RegexDefaults.Timeout);
 
         public CloudFlareHttpInterceptor(Logger logger)
         {

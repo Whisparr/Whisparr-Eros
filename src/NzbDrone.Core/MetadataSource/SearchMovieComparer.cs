@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using NzbDrone.Common;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Movies;
 
@@ -8,9 +9,9 @@ namespace NzbDrone.Core.MetadataSource
 {
     public class SearchMovieComparer : IComparer<Movie>
     {
-        private static readonly Regex RegexCleanPunctuation = new Regex("[-._:]", RegexOptions.Compiled);
-        private static readonly Regex RegexCleanCountryYearPostfix = new Regex(@"(?<=.+)( \([A-Z]{2}\)| \(\d{4}\)| \([A-Z]{2}\) \(\d{4}\))$", RegexOptions.Compiled);
-        private static readonly Regex ArticleRegex = new Regex(@"^(a|an|the)\s", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex RegexCleanPunctuation = new Regex("[-._:]", RegexOptions.Compiled, RegexDefaults.Timeout);
+        private static readonly Regex RegexCleanCountryYearPostfix = new Regex(@"(?<=.+)( \([A-Z]{2}\)| \(\d{4}\)| \([A-Z]{2}\) \(\d{4}\))$", RegexOptions.Compiled, RegexDefaults.Timeout);
+        private static readonly Regex ArticleRegex = new Regex(@"^(a|an|the)\s", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout);
 
         public string SearchQuery { get; private set; }
 
@@ -21,7 +22,7 @@ namespace NzbDrone.Core.MetadataSource
         {
             SearchQuery = searchQuery;
 
-            var match = Regex.Match(SearchQuery, @"^(?<query>.+)\s+(?:\((?<year>\d{4})\)|(?<year>\d{4}))$");
+            var match = Regex.Match(SearchQuery, @"^(?<query>.+)\s+(?:\((?<year>\d{4})\)|(?<year>\d{4}))$", RegexOptions.None, RegexDefaults.Timeout);
             if (match.Success)
             {
                 _searchQueryWithoutYear = match.Groups["query"].Value.ToLowerInvariant();

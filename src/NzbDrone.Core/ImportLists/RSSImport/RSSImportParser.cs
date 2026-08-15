@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
 using NLog;
+using NzbDrone.Common;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
 using NzbDrone.Core.ImportLists.Exceptions;
@@ -22,7 +23,7 @@ namespace NzbDrone.Core.ImportLists.RSSImport
         private readonly Logger _logger;
         private ImportListResponse _importResponse;
 
-        private static readonly Regex ReplaceEntities = new Regex("&[a-z]+;", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex ReplaceEntities = new Regex("&[a-z]+;", RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexDefaults.Timeout);
 
         public RSSImportParser(RSSImportSettings settings,
                                Logger logger)

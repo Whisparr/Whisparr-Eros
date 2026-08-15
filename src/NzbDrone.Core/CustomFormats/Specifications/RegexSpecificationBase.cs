@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using FluentValidation;
+using NzbDrone.Common;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Annotations;
 using NzbDrone.Core.Validation;
@@ -31,7 +32,7 @@ namespace NzbDrone.Core.CustomFormats
 
                 if (value.IsNotNullOrWhiteSpace())
                 {
-                    _regex = new Regex(value, RegexOptions.Compiled | RegexOptions.IgnoreCase);
+                    _regex = new Regex(value, RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexDefaults.Timeout);
                 }
             }
         }

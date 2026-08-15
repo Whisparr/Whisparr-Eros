@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using NzbDrone.Common;
 
 namespace NzbDrone.Core.Organizer
 {
@@ -7,7 +8,7 @@ namespace NzbDrone.Core.Organizer
     {
         public static readonly FileNameBuilderTokenEqualityComparer Instance = new FileNameBuilderTokenEqualityComparer();
 
-        private static readonly Regex SimpleTokenRegex = new Regex(@"\s|_|\W", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex SimpleTokenRegex = new Regex(@"\s|_|\W", RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexDefaults.Timeout);
 
         private FileNameBuilderTokenEqualityComparer()
         {
