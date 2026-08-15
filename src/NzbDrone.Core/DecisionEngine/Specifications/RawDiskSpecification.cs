@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Text.RegularExpressions;
 using NLog;
+using NzbDrone.Common;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.IndexerSearch.Definitions;
 using NzbDrone.Core.Parser.Model;
@@ -11,9 +12,9 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
     {
         private static readonly Regex[] DiscRegex = new[]
                                                     {
-                                                        new Regex(@"(?:dis[ck])(?:[-_. ]\d+[-_. ])(?:(?:(?:480|720|1080|2160)[ip]|)[-_. ])?(?:Blu\-?ray)", RegexOptions.Compiled | RegexOptions.IgnoreCase),
-                                                        new Regex(@"(?:(?:480|720|1080|2160)[ip]|)[-_. ](?:full)[-_. ](?:Blu\-?ray)", RegexOptions.Compiled | RegexOptions.IgnoreCase),
-                                                        new Regex(@"(?:\d?x?M?DVD-?[R59])(?:[ ._]|$)", RegexOptions.Compiled | RegexOptions.IgnoreCase)
+                                                        new Regex(@"(?:dis[ck])(?:[-_. ]\d+[-_. ])(?:(?:(?:480|720|1080|2160)[ip]|)[-_. ])?(?:Blu\-?ray)", RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexDefaults.Timeout),
+                                                        new Regex(@"(?:(?:480|720|1080|2160)[ip]|)[-_. ](?:full)[-_. ](?:Blu\-?ray)", RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexDefaults.Timeout),
+                                                        new Regex(@"(?:\d?x?M?DVD-?[R59])(?:[ ._]|$)", RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexDefaults.Timeout)
                                                     };
 
         private static readonly string[] _dvdContainerTypes = new[] { "vob", "iso" };

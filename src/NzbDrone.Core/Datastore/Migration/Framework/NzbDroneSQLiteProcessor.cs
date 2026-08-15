@@ -118,7 +118,7 @@ namespace NzbDrone.Core.Datastore.Migration.Framework
             {
                 if (index.Name.StartsWith("IX_"))
                 {
-                    index.Name = Regex.Replace(index.Name, "(?<=_)" + Regex.Escape(expression.OldName) + "(?=_|$)", Regex.Escape(expression.NewName));
+                    index.Name = Regex.Replace(index.Name, "(?<=_)" + Regex.Escape(expression.OldName) + "(?=_|$)", Regex.Escape(expression.NewName), RegexOptions.None, NzbDrone.Common.RegexDefaults.Timeout);
                 }
 
                 foreach (var column in index.Columns)

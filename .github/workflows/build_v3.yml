@@ -40,7 +40,7 @@ jobs:
       branch: ${{ steps.variables.outputs.branch }}
     steps:
       - name: Check out
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0 # fetches tags; needed to read the version marker
 
@@ -117,7 +117,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Check out
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -135,7 +135,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -155,7 +155,7 @@ jobs:
         run: yarn build --env production
 
       - name: Publish UI Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build_ui
           path: _output/UI/**/*
@@ -179,10 +179,16 @@ jobs:
             artifact: tests-win-x64
             binary_artifact: build-win-x64
             filter: TestCategory!=ManualTest&TestCategory!=LINUX&TestCategory!=IntegrationTest&TestCategory!=AutomationTest
+            # Sonar wants one coverage report, not three. Windows is the leg
+            # that produces it because sonarqube.yml analyses on windows-latest
+            # too, so the source paths in the report match the ones the scanner
+            # records. Collecting on a different OS than the analysis risks
+            # coverage that imports but maps to nothing.
+            collect_coverage: true
     runs-on: ${{ matrix.os }}
     steps:
       - name: Check out
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -193,6 +199,7 @@ jobs:
           artifact: ${{ matrix.artifact }}
           pattern: Whisparr.*.Test.dll
           filter: ${{ matrix.filter }}
+          collect_coverage: ${{ matrix.collect_coverage }}
 
   unit_test_postgres:
     needs: backend
@@ -203,7 +210,7 @@ jobs:
         postgres-version: [16, 17, 18]
     steps:
       - name: Check out
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -242,7 +249,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Check out
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Test

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Dapper;
+using NzbDrone.Common;
 
 namespace NzbDrone.Core.Datastore
 {
@@ -73,7 +74,7 @@ namespace NzbDrone.Core.Datastore
 
         public class Template
         {
-            private static readonly Regex _regex = new Regex(@"\/\*\*.+?\*\*\/", RegexOptions.Compiled | RegexOptions.Multiline);
+            private static readonly Regex _regex = new Regex(@"\/\*\*.+?\*\*\/", RegexOptions.Compiled | RegexOptions.Multiline, RegexDefaults.Timeout);
 
             private readonly string _sql;
             private readonly SqlBuilder _builder;

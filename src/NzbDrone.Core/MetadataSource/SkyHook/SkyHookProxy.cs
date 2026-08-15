@@ -6,6 +6,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using NLog;
+using NzbDrone.Common;
 using NzbDrone.Common.Cloud;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
@@ -823,7 +824,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
         {
             try
             {
-                var regex = new Regex("^https://www.themoviedb.org/movie/(?<tmdbid>[0-9]+).*$");
+                var regex = new Regex("^https://www.themoviedb.org/movie/(?<tmdbid>[0-9]+).*$", RegexOptions.None, RegexDefaults.Timeout);
                 var match = regex.Match(title);
 
                 if (match.Success)
@@ -982,7 +983,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                 lowerTitle = lowerTitle.Replace(".", "");
 
                 // Allow search to accept a full StashDB URL
-                var regex = new Regex(@"^https://theporndb\.net/movies/(?<tpdbid>[A-Za-z0-9\-]+).*$", RegexOptions.Compiled);
+                var regex = new Regex(@"^https://theporndb\.net/movies/(?<tpdbid>[A-Za-z0-9\-]+).*$", RegexOptions.Compiled, RegexDefaults.Timeout);
                 var match = regex.Match(title);
 
                 if (match.Success)
@@ -1087,7 +1088,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                 lowerTitle = lowerTitle.Replace(".", "");
 
                 // Allow search to accept a full StashDB URL
-                var regex = new Regex(@"^https://stashdb\.org/scenes/(?<stashid>[A-Za-z0-9\-]+).*$", RegexOptions.Compiled);
+                var regex = new Regex(@"^https://stashdb\.org/scenes/(?<stashid>[A-Za-z0-9\-]+).*$", RegexOptions.Compiled, RegexDefaults.Timeout);
                 var match = regex.Match(title);
 
                 if (match.Success)
@@ -1185,7 +1186,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                 lowerTitle = lowerTitle.Replace(".", "");
 
                 // Allow search to accept a full StashDB URL
-                var regex = new Regex(@"^https://stashdb\.org/performers/(?<stashid>[A-Za-z0-9\-]+).*$", RegexOptions.Compiled);
+                var regex = new Regex(@"^https://stashdb\.org/performers/(?<stashid>[A-Za-z0-9\-]+).*$", RegexOptions.Compiled, RegexDefaults.Timeout);
                 var match = regex.Match(title);
 
                 if (match.Success)
@@ -1269,7 +1270,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                 lowerTitle = lowerTitle.Replace(".", "");
 
                 // Allow search to accept a full StashDB URL
-                var regex = new Regex(@"^https://stashdb\.org/studios/(?<stashid>[A-Za-z0-9\-]+).*$", RegexOptions.Compiled);
+                var regex = new Regex(@"^https://stashdb\.org/studios/(?<stashid>[A-Za-z0-9\-]+).*$", RegexOptions.Compiled, RegexDefaults.Timeout);
                 var match = regex.Match(title);
 
                 if (match.Success)

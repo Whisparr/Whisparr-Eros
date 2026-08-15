@@ -27,7 +27,7 @@ namespace NzbDrone.Core.ImportLists.StashDB.Performer
         public override string Name => "StashDB Performer";
         public override IImportListRequestGenerator GetRequestGenerator()
         {
-            return new StashDBPerformerRequestGenerator(PageSize, Settings.Limit)
+            return new StashDBPerformerRequestGenerator(PageSize, EffectiveLimit)
             {
                 RequestBuilder = _requestBuilder,
                 Settings = Settings,

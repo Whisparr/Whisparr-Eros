@@ -51,7 +51,7 @@ namespace NzbDrone.Core.Test.ParserTests
         [TestCase("Der.Movie.James.German.Bluray.FuckYou.Pso.Why.cant.you.follow.scene.rules.1998", "Der Movie James")]
         [TestCase("Movie.German.DL.AC3.Dubbed..BluRay.x264-PsO", "Movie")]
         [TestCase("Valana la Movie TRUEFRENCH BluRay 720p 2016 kjhlj", "Valana la Movie")]
-        [TestCase("Mission Movie: Rogue Movie (2015)�[XviD - Ita Ac3 - SoftSub Ita]azione, spionaggio, thriller *Prima Visione* Team mulnic Tom Cruise", "Mission Movie: Rogue Movie")]
+        [TestCase("Mission Movie: Rogue Movie (2015)\uFFFD[XviD - Ita Ac3 - SoftSub Ita]azione, spionaggio, thriller *Prima Visione* Team mulnic Tom Cruise", "Mission Movie: Rogue Movie")]
         [TestCase("Movie.Movie.2000.FRENCH..BluRay.-AiRLiNE", "Movie Movie")]
         [TestCase("My Movie 1999 German Bluray", "My Movie")]
         [TestCase("Leaving Movie by Movie (1897) [DVD].mp4", "Leaving Movie by Movie")]

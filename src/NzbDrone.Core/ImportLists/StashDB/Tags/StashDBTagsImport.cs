@@ -26,7 +26,7 @@ namespace NzbDrone.Core.ImportLists.StashDB.Studio
         public override string Name => "StashDB Tags";
         public override IImportListRequestGenerator GetRequestGenerator()
         {
-            return new StashDBTagsRequestGenerator(PageSize, Settings.Limit)
+            return new StashDBTagsRequestGenerator(PageSize, EffectiveLimit)
             {
                 RequestBuilder = _requestBuilder,
                 Settings = Settings,

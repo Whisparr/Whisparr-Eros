@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using NLog;
 using NzbDrone.Common.Instrumentation.Extensions;
 using NzbDrone.Core.Configuration;
@@ -107,12 +108,26 @@ namespace NzbDrone.Core.Movies.Studios
 
             // Chunk the into smaller lists
             var chunkSize = 10;
-            var studioWork = _movieInfo.GetStudioWorks(studio.ForeignId);
+
+            (List<string> StashdbIds, List<string> TpdbIds, List<int> TmdbIds) studioWork;
+
+            try
+            {
+                studioWork = _movieInfo.GetStudioWorks(studio.ForeignId);
+            }
+            catch (WebException ex)
+            {
+                _logger.Warn(
+                    ex,
+                    "Unable to refresh works for studio '{0}' ({1}). Skipping studio.",
+                    studio.Title,
+                    studio.ForeignId);
+
+                return;
+            }
 
             if (studio.Monitored)
             {
-                // var studioWork = _movieInfo.GetStudioWorks(studio.ForeignId);
-
                 var existingScenes = _movieService.AllMovieStashIds();
                 var excludedScenes = _importListExclusionService.GetAllExclusions().Select(e => e.ForeignId);
                 var scenesToAdd = studioWork.StashdbIds.Where(m => !existingScenes.Contains(m)).Where(m => !excludedScenes.Contains(m));
@@ -291,7 +306,18 @@ namespace NzbDrone.Core.Movies.Studios
                         RescanMovie(movie, isNew, trigger);
                     }
 
-                    SyncStudioItems(studio);
+                    // SyncStudioItems swallows the timeout itself, but GetStudioWorks
+                    // throws HttpException for any other HTTP error and
+                    // MovieNotFoundException on a 404. Without this, either one drops
+                    // every studio the user selected after the one that failed.
+                    try
+                    {
+                        SyncStudioItems(studio);
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.Error(e, "Couldn't sync items for {0}", studio.Title);
+                    }
                 }
             }
             else
@@ -323,6 +349,10 @@ namespace NzbDrone.Core.Movies.Studios
                         catch (MovieNotFoundException)
                         {
                             _logger.Error("Studio '{0}' (StashDb {1}) was not found, it may have been removed from The Movie Database.", studio.Title, studio.ForeignId);
+                        }
+                        catch (Exception e)
+                        {
+                            _logger.Error(e, "Couldn't refresh info for {0}", studio.Title);
                         }
                     }
                 }

@@ -26,7 +26,7 @@ namespace NzbDrone.Core.ImportLists.StashDB.Favorite
         public override string Name => "StashDB Favorites";
         public override IImportListRequestGenerator GetRequestGenerator()
         {
-            return new StashDBFavoriteRequestGenerator(PageSize, Settings.Limit)
+            return new StashDBFavoriteRequestGenerator(PageSize, EffectiveLimit)
             {
                 RequestBuilder = _requestBuilder,
                 Settings = Settings,

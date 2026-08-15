@@ -138,10 +138,14 @@ const movieTokens = [
 ];
 
 const sceneTokens = [
-  { token: '{Scene Title}', example: "Scene's Title" },
-  { token: '{Scene CleanTitle}', example: 'Scenes Title' },
-  { token: '{Scene CleanTitleNoSeasonEpisode}', example: 'Scenes Title' },
-  { token: '{Scene TitleThe}', example: "Scene's Title, The" },
+  { token: '{Scene Title}', example: "Scene's Title", footNote: true },
+  { token: '{Scene CleanTitle}', example: 'Scenes Title', footNote: true },
+  {
+    token: '{Scene CleanTitleNoSeasonEpisode}',
+    example: 'Scenes Title',
+    footNote: true,
+  },
+  { token: '{Scene TitleThe}', example: "Scene's Title, The", footNote: true },
   { token: '{Scene TitleFirstCharacter}', example: 'S' },
   {
     token: '{Scene Performers}',
@@ -449,18 +453,24 @@ function NamingModal(props: NamingModalProps) {
             <div>
               <FieldSet legend={translate('Scene')}>
                 <div className={styles.groups}>
-                  {sceneTokens.map(({ token, example }) => {
+                  {sceneTokens.map(({ token, example, footNote }) => {
                     return (
                       <NamingOption
                         key={token}
                         token={token}
                         example={example}
+                        footNote={footNote}
                         tokenSeparator={tokenSeparator}
                         tokenCase={tokenCase}
                         onPress={handleOptionPress}
                       />
                     );
                   })}
+                </div>
+
+                <div className={styles.footNote}>
+                  <Icon className={styles.icon} name={icons.FOOTNOTE} />
+                  <InlineMarkdown data={translate('SceneFootNote')} />
                 </div>
               </FieldSet>
 

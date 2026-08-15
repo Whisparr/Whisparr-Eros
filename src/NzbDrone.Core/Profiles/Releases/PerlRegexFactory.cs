@@ -1,11 +1,12 @@
 using System;
 using System.Text.RegularExpressions;
+using NzbDrone.Common;
 
 namespace NzbDrone.Core.Profiles.Releases
 {
     public static class PerlRegexFactory
     {
-        private static Regex _perlRegexFormat = new Regex(@"/(?<pattern>.*)/(?<modifiers>[a-z]*)", RegexOptions.Compiled);
+        private static Regex _perlRegexFormat = new Regex(@"/(?<pattern>.*)/(?<modifiers>[a-z]*)", RegexOptions.Compiled, RegexDefaults.Timeout);
 
         public static bool TryCreateRegex(string pattern, out Regex regex)
         {
@@ -26,7 +27,7 @@ namespace NzbDrone.Core.Profiles.Releases
             var options = GetOptions(modifiers);
 
             // For now we simply expect the pattern to be .net compliant. We should probably check and reject perl-specific constructs.
-            return new Regex(pattern, options | RegexOptions.Compiled);
+            return new Regex(pattern, options | RegexOptions.Compiled, RegexDefaults.Timeout);
         }
 
         private static RegexOptions GetOptions(string modifiers)
