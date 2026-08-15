@@ -210,6 +210,14 @@ jobs:
             #    sonar.sourceEncoding is NOT the fix; they are not text in any
             #    encoding.
             "/d:sonar.exclusions=src/NzbDrone.Core/Localization/Core/**,**/node_modules/**,_output/**,_temp/**,_tests/**,**/*.ico,**/*.png,**/*.mp4,**/*.zip,**/*.tar.gz",
+            # sonar.exclusions governs MAIN files only. The .NET scanner
+            # classifies every *.Test project as test code, so the media
+            # fixtures under src/NzbDrone.Core.Test/Files (H264_sample.mp4,
+            # TestArchive.zip, TestArchive.tar.gz) were untouched by the list
+            # above and kept warning after #442. They need the test-scoped
+            # equivalent. Binaries only -- do not add source patterns here, it
+            # would drop real test code from analysis.
+            "/d:sonar.test.exclusions=**/*.ico,**/*.png,**/*.mp4,**/*.zip,**/*.tar.gz",
             "/d:sonar.cs.opencover.reportsPaths=coverage/**/coverage.opencover.xml"
           )
           if ($env:EVENT_NAME -eq 'pull_request_target') {
