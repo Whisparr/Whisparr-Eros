@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using NLog;
+using NzbDrone.Common;
 using NzbDrone.Common.Cloud;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Http;
@@ -191,7 +192,7 @@ namespace NzbDrone.Core.Update
 
                 // Attempt to strip "what's new", as it's repetitive in our UI
                 var body = release?.body != null
-                    ? Regex.Replace(release.body, @"^## What's Changed\s*\r?\n", "", RegexOptions.Multiline)
+                    ? Regex.Replace(release.body, @"^## What's Changed\s*\r?\n", "", RegexOptions.Multiline, RegexDefaults.Timeout)
                     : string.Empty;
 
                 // Strip out lines that are not New: or Fix:

@@ -1,13 +1,14 @@
 using System;
 using System.Text.RegularExpressions;
 using FluentValidation;
+using NzbDrone.Common;
 using NzbDrone.Common.Extensions;
 
 namespace NzbDrone.Core.Validation
 {
     public static class RuleBuilderExtensions
     {
-        private static readonly Regex HostRegex = new Regex("^[-_a-z0-9.]+$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex HostRegex = new Regex("^[-_a-z0-9.]+$", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout);
 
         public static IRuleBuilderOptions<T, int> ValidId<T>(this IRuleBuilder<T, int> ruleBuilder)
         {

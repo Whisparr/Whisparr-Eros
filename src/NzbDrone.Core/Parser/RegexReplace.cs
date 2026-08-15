@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using NzbDrone.Common;
 
 namespace NzbDrone.Core.Parser
 {
@@ -10,13 +11,13 @@ namespace NzbDrone.Core.Parser
 
         public RegexReplace(string pattern, string replacement, RegexOptions regexOptions)
         {
-            _regex = new Regex(pattern, regexOptions);
+            _regex = new Regex(pattern, regexOptions, RegexDefaults.Timeout);
             _replacementFormat = replacement;
         }
 
         public RegexReplace(string pattern, MatchEvaluator replacement, RegexOptions regexOptions)
         {
-            _regex = new Regex(pattern, regexOptions);
+            _regex = new Regex(pattern, regexOptions, RegexDefaults.Timeout);
             _replacementFunc = replacement;
         }
 

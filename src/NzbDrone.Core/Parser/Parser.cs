@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using NLog;
+using NzbDrone.Common;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Instrumentation;
 using NzbDrone.Core.MediaFiles;
@@ -17,12 +18,13 @@ namespace NzbDrone.Core.Parser
     {
         private static readonly Logger Logger = NzbDroneLogger.GetLogger(typeof(Parser));
 
-        private static readonly Regex EditionRegex = new Regex(@"\(?\b(?<edition>(((Recut.|Extended.|Ultimate.)?(Director.?s|Collector.?s|Theatrical|Ultimate|Extended|Despecialized|(Special|Rouge|Final|Assembly|Imperial|Diamond|Signature|Hunter|Rekall)(?=(.(Cut|Edition|Version)))|\d{2,3}(th)?.Anniversary)(?:.(Cut|Edition|Version))?(.(Extended|Uncensored|Remastered|Unrated|Uncut|Open.?Matte|IMAX|Fan.?Edit))?|((Uncensored|Remastered|Unrated|Uncut|Open?.Matte|IMAX|Fan.?Edit|Restored|((2|3|4)in1))))))\b\)?", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex EditionRegex = new Regex(@"\(?\b(?<edition>(((Recut.|Extended.|Ultimate.)?(Director.?s|Collector.?s|Theatrical|Ultimate|Extended|Despecialized|(Special|Rouge|Final|Assembly|Imperial|Diamond|Signature|Hunter|Rekall)(?=(.(Cut|Edition|Version)))|\d{2,3}(th)?.Anniversary)(?:.(Cut|Edition|Version))?(.(Extended|Uncensored|Remastered|Unrated|Uncut|Open.?Matte|IMAX|Fan.?Edit))?|((Uncensored|Remastered|Unrated|Uncut|Open?.Matte|IMAX|Fan.?Edit|Restored|((2|3|4)in1))))))\b\)?", RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexDefaults.Timeout);
 
-        private static readonly Regex ReportEditionRegex = new Regex(@"^.+?" + EditionRegex, RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex ReportEditionRegex = new Regex(@"^.+?" + EditionRegex, RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexDefaults.Timeout);
 
         private static readonly Regex HardcodedSubsRegex = new Regex(@"\b((?<hcsub>(\w+(?<!SOFT|MULTI|HORRIBLE)SUBS?))|(?<hc>(HC|SUBBED)))\b",
-                                                        RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace);
+                                                        RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace,
+                                                        RegexDefaults.Timeout);
 
         private static readonly RegexReplace[] PreSubstitutionRegex = Array.Empty<RegexReplace>();
 
@@ -31,217 +33,239 @@ namespace NzbDrone.Core.Parser
             // Site - Performers - Title (Month DD, YYYY) [Quality]
             // Pure Taboo - Sarah Arabic, Lily LaBeau - A Costly Divorce (June 24, 2025) [1080p HEVC x265]
             new Regex(@"^(?<studiotitle>[^-]+?)(?<releasetoken>\s*-\s*.+?)\s*\(\s*(?<airmonthname>January|February|March|April|May|June|July|August|September|October|November|December)\s+(?<airday>[0-3]?\d),?\s+(?<airyear>(19|20)\d{2})\s*\)",
-                RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                RegexOptions.IgnoreCase | RegexOptions.Compiled,
+                RegexDefaults.Timeout),
 
             // [Site] Title - Performers (yyyy-mm-dd) [Quality]
             // [BellesaFilms] The Sister - Ashley Lane, Mannie Coco (2025-09-28) [2160p]
             new Regex(@"^\[(?<studiotitle>[^\]]+)]\s+(?<releasetoken>.+?)\s*\(\s*.*?(?<airyear>\d{4})-(?<airmonth>\d{2})-(?<airday>\d{2})\)(?:\s+\[(?<quality>\d+p)])?",
-                RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                RegexOptions.IgnoreCase | RegexOptions.Compiled,
+                RegexDefaults.Timeout),
 
             // SCENE - Site title in brackets with full year in date then episode info
             // [Blacked] - 2025-11-24 - BBC-Queen Violet Takes On Three Cocks - Violet Myers - 1080p
             new Regex(@"^\[(?<studiotitle>.+?)\][-_. ]{1,3}(?<airyear>(?:19|20)\d{2})[-_. ]+(?<airmonth>[0-1][0-9])[-_. ]+(?<airday>[0-3][0-9])(?:[-_. ]+)?(?<releasetoken>.+)",
-                RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                RegexOptions.IgnoreCase | RegexOptions.Compiled,
+                RegexDefaults.Timeout),
 
             // SCENE - Site title in brackets or parentheses, date after title and performer
             // [Site] Beautiful Episode - Loli - 2023-07-22 - 1080p
             // [Deeper] Key Mistress - Jessi Rae - 2025-12-18 - 1080p
             // (Studio) Title - Performer - 2025-12-18 - 1080p
             new Regex("^(\\[|\\()(?<studiotitle>.+?)(\\]|\\))(?<releasetoken>.+?)(?:( - |\\s)(\\[|\\()?(?<airyear>(19|20)\\d{2})[-_.](?<airmonth>[0-1][0-9])[-_.](?<airday>[0-3][0-9])(\\]|\\))?)",
-                RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                RegexOptions.IgnoreCase | RegexOptions.Compiled,
+                RegexDefaults.Timeout),
 
             // (?P<site>.+?)?[\s\.\-](?P<date>\d{2}[\s\.\-]\d{2}[\s\.\-]\d{2})[\s\.\-](?P<performer>\w+.+?)?[\s\.\-](?P<title>.*?(?=(?:[\s\.\-]mp4)|$))
             // SCENE with airdate (18.04.28, 2018.04.28, 18-04-28, 18 04 28, 18_04_28) and performer
             new Regex(@"^(?<studiotitle>.+?)?[-_. ]+(?<airyear>\d{2}|\d{4})[-_. ]+(?<airmonth>[0-1][0-9])[-_. ]+(?<airday>[0-3][0-9])[-_. ]+(?<performer>\w+.+?)?[-_. ](?<title>.*?(?=(?:[-_. ]mp4)|$))",
-                RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                RegexOptions.IgnoreCase | RegexOptions.Compiled,
+                RegexDefaults.Timeout),
 
             // SCENE - Site title in brackets with full year in date then episode info
             // [Site] 19-07-2023 - Loli - Beautiful Episode 2160p {RlsGroup}
             new Regex("^\\[(?<studiotitle>.+?)\\][-_. ]+(?<airday>[0-3][0-9])(?![-_. ]+[0-3][0-9])?[-_. ]+(?<airmonth>[0-1][0-9])[-_. ]+(?<airyear>(19|20)\\d{2})",
-                RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                RegexOptions.IgnoreCase | RegexOptions.Compiled,
+                RegexDefaults.Timeout),
 
             // SCENE - Site title in brackets, date after title and performer
             // [Site] Beautiful Episode - Loli - 2023-07-22 - 1080p
             new Regex("^\\[(?<studiotitle>.+?)\\](?<releasetoken>.+?)(?:( - |\\s)(\\[|\\()?(?<airyear>(19|20)\\d{2})[-_.](?<airmonth>[0-1][0-9])[-_.](?<airday>[0-3][0-9])(\\]|\\))?)",
-                RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                RegexOptions.IgnoreCase | RegexOptions.Compiled,
+                RegexDefaults.Timeout),
 
             // SCENE with non-separated airdate after title (20180428)
             new Regex(@"^(?<studiotitle>.+?)?[-_. ]+(?<airyear>(19|20)\d{2})(?<airmonth>[0-1][0-9])(?<airday>[0-3][0-9])",
-                RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                RegexOptions.IgnoreCase | RegexOptions.Compiled,
+                RegexDefaults.Timeout),
 
             // SCENE with airdate after title [studio] title (dd.mm.yyyy)
             new Regex(@"\[(?<studiotitle>.+?)\]+[-_. ]+(?<releasetoken>.+?)(?<airday>[0-3][0-9])\.(?<airmonth>[0-1][0-9])\.(?<airyear>(19|20)\d{2})\)",
-                RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                RegexOptions.IgnoreCase | RegexOptions.Compiled,
+                RegexDefaults.Timeout),
 
             // SCENE with airdate after title studio - title (dd.mm.yyyy)
             // StudioName-Performer.Name-ID.429.[19.10.2025].1080p-XXX
             // StudioName-Performer.Name-ID.429.(19.10.2025).1080p-XXX
             new Regex(@"(?<studiotitle>.+?)?[-]+(?<releasetoken>.+?)(?:\[|\()(?<airday>[0-3][0-9])\.(?<airmonth>[0-1][0-9])\.(?<airyear>(19|20)\d{2})(?:\)|\])",
-                RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                RegexOptions.IgnoreCase | RegexOptions.Compiled,
+                RegexDefaults.Timeout),
 
             // SCENE with airdate (18.04.28, 2018.04.28, 18-04-28, 18 04 28, 18_04_28)
             new Regex(@"^(?<studiotitle>.+?)?[-_. ]+(?<airyear>\d{2}|\d{4})[-_. ]+(?<airmonth>[0-1][0-9])[-_. ]+(?<airday>[0-3][0-9])",
-                RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                RegexOptions.IgnoreCase | RegexOptions.Compiled,
+                RegexDefaults.Timeout),
 
             // SCENE with airdate before title (2018-10-12, 20181012) (Strict pattern to avoid false matches)
             new Regex(@"^(?<airyear>19[6-9]\d|20\d{2})[-_]?(?<airmonth>[0-1][0-9])[-_]?(?<airday>[0-3][0-9])",
-                RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                RegexOptions.IgnoreCase | RegexOptions.Compiled,
+                RegexDefaults.Timeout),
 
             // SCENE with airdate after title [studio] title [dd.mm.yyyy
             new Regex(@"\[(?<studiotitle>.+?)\](?<releasetoken>.+?)\[(?<airday>[0-3][0-9])(?![-_\/. ]+[0-3][0-9])?[-_\/. ]+(?<airmonth>[0-1][0-9])[-_\/. ]+(?<airyear>(19|20)\d{2})",
-                RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                RegexOptions.IgnoreCase | RegexOptions.Compiled,
+                RegexDefaults.Timeout),
 
             // SCENE with airdate after title [studio] title yyyy-mm-dd
             new Regex(@"\[(?<studiotitle>.+?)\](?<releasetoken>.+?)((?<airyear>\d{2}|\d{4})[-_.](?<airmonth>[0-1][0-9])[-_.](?<airday>[0-3][0-9]))",
-                RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                RegexOptions.IgnoreCase | RegexOptions.Compiled,
+                RegexDefaults.Timeout),
 
             // SCENE with Episode numbers after studio E1234 title
             new Regex(@"\[(?<studiotitle>.+?)?\].?[(]+(?<episode>[eE]+\d{1,6})?[\)]",
-                RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                RegexOptions.IgnoreCase | RegexOptions.Compiled,
+                RegexDefaults.Timeout),
 
             // Some german or french tracker formats (missing year, ...) (Only applies to german and TrueFrench releases) - see ParserFixture for examples and tests - french removed as it broke all movies w/ french titles
-            new Regex(@"^(?<title>(?![(\[]).+?)((\W|_))(" + EditionRegex + @".{1,3})?(?:(?<!(19|20)\d{2}.*?)(?<!(?:Good|The)[_ .-])(German|TrueFrench))(.+?)(?=((19|20)\d{2}|$))(?<year>(19|20)\d{2}(?!p|i|\d+|\]|\W\d+))?(\W+|_|$)(?!\\)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+            new Regex(@"^(?<title>(?![(\[]).+?)((\W|_))(" + EditionRegex + @".{1,3})?(?:(?<!(19|20)\d{2}.*?)(?<!(?:Good|The)[_ .-])(German|TrueFrench))(.+?)(?=((19|20)\d{2}|$))(?<year>(19|20)\d{2}(?!p|i|\d+|\]|\W\d+))?(\W+|_|$)(?!\\)", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout),
 
             // Special, Despecialized, etc. Edition Movies, e.g: Mission.Impossible.3.Special.Edition.2011
             new Regex(@"^(?<title>(?![(\[]).+?)?(?:(?:[-_\W](?<![)\[!]))*" + EditionRegex + @".{1,3}(?<year>(1(8|9)|20)\d{2}(?!p|i|\d+|\]|\W\d+)))+(\W+|_|$)(?!\\)",
-                          RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                          RegexOptions.IgnoreCase | RegexOptions.Compiled,
+                          RegexDefaults.Timeout),
 
             // MOVIE format, e.g: Studio.2024.Title.1080p-VERIFIED
-            new Regex(@"^(?<studio>(?![(\[]).+?)?(?:(?:[-_\W](?<![)\[!]))*(?<year>(1(8|9)|20)\d{2}(?!p|i|(1(8|9)|20)\d{2}|\]|\W(1(8|9)|20)\d{2})))+(\W+|_|$)(?!\\)(?<title>.*)\-VERIFIED", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+            new Regex(@"^(?<studio>(?![(\[]).+?)?(?:(?:[-_\W](?<![)\[!]))*(?<year>(1(8|9)|20)\d{2}(?!p|i|(1(8|9)|20)\d{2}|\]|\W(1(8|9)|20)\d{2})))+(\W+|_|$)(?!\\)(?<title>.*)\-VERIFIED", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout),
 
             // MOVIE format, e.g: [Studio] Title [2024]
-            new Regex(@"^(?:\[(?<studio>.+?)\][-_. ]?)(?<title>.*)(\[(?<year>(1(8|9)|20)\d{2})\])", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+            new Regex(@"^(?:\[(?<studio>.+?)\][-_. ]?)(?<title>.*)(\[(?<year>(1(8|9)|20)\d{2})\])", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout),
 
             // MOVIE Oil Explosion 3 (Elegant Angel) XXX DVDRip NEW 2018
-            new Regex(@"^(?<title>(?![(\[]).+?)(\W+|_|$)\(.+\).+?(XXX)*(?<year>(1(8|9)|20)\d{2}(?!p|i|(1(8|9)|20)\d{2}|\]|\W(1(8|9)|20)\d{2}))", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+            new Regex(@"^(?<title>(?![(\[]).+?)(\W+|_|$)\(.+\).+?(XXX)*(?<year>(1(8|9)|20)\d{2}(?!p|i|(1(8|9)|20)\d{2}|\]|\W(1(8|9)|20)\d{2}))", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout),
 
             // Normal movie format, e.g: Mission.Impossible.3.2011
-            new Regex(@"^(?<title>(?![(\[]).+?)?(?:(?:[-_\W](?<![)\[!]))*(?<year>(1(8|9)|20)\d{2}(?!p|i|(1(8|9)|20)\d{2}|\]|\W(1(8|9)|20)\d{2})))+(\W+|_|$)(?!\\)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+            new Regex(@"^(?<title>(?![(\[]).+?)?(?:(?:[-_\W](?<![)\[!]))*(?<year>(1(8|9)|20)\d{2}(?!p|i|(1(8|9)|20)\d{2}|\]|\W(1(8|9)|20)\d{2})))+(\W+|_|$)(?!\\)", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout),
 
             // PassThePopcorn Torrent names: Star.Wars[PassThePopcorn]
-            new Regex(@"^(?<title>.+?)?(?:(?:[-_\W](?<![()\[!]))*(?<year>(\[\w *\])))+(\W+|_|$)(?!\\)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+            new Regex(@"^(?<title>.+?)?(?:(?:[-_\W](?<![()\[!]))*(?<year>(\[\w *\])))+(\W+|_|$)(?!\\)", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout),
 
             // That did not work? Maybe some tool uses [] for years. Who would do that?
-            new Regex(@"^(?<title>(?![(\[]).+?)?(?:(?:[-_\W](?<![)!]))*(?<year>(1(8|9)|20)\d{2}(?!p|i|\d+|\W\d+)))+(\W+|_|$)(?!\\)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+            new Regex(@"^(?<title>(?![(\[]).+?)?(?:(?:[-_\W](?<![)!]))*(?<year>(1(8|9)|20)\d{2}(?!p|i|\d+|\W\d+)))+(\W+|_|$)(?!\\)", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout),
 
             // SCENE with Episode numbers after studio E1234 title
             new Regex(@"(?<studiotitle>.+?)?[-_. ]+(?<episode>[eE]+\d{1,6})",
-                RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                RegexOptions.IgnoreCase | RegexOptions.Compiled,
+                RegexDefaults.Timeout),
 
             // As a last resort for movies that have ( or [ in their title.
-            new Regex(@"^(?<title>.+?)?(?:(?:[-_\W](?<![)\[!]))*(?<year>(1(8|9)|20)\d{2}(?!p|i|\d+|\]|\W\d+)))+(\W+|_|$)(?!\\)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+            new Regex(@"^(?<title>.+?)?(?:(?:[-_\W](?<![)\[!]))*(?<year>(1(8|9)|20)\d{2}(?!p|i|\d+|\]|\W\d+)))+(\W+|_|$)(?!\\)", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout),
 
-            new Regex(@"^(?<title>(?![(\[]).+?)?(XXX)(\W+|_|$)(?!\\)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+            new Regex(@"^(?<title>(?![(\[]).+?)?(XXX)(\W+|_|$)(?!\\)", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout),
 
             // StashId
-            new Regex(@"(?<stashid>.{8}-.{4}-.{4}-.{4}-.{12})", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+            new Regex(@"(?<stashid>.{8}-.{4}-.{4}-.{4}-.{12})", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout),
 
             // JAV
-            new Regex(@"^(?<code>[A-Z]{2,5}[- ][0-9]{3,5})", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+            new Regex(@"^(?<code>[A-Z]{2,5}[- ][0-9]{3,5})", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout),
 
             // JAV-FC2
-            new Regex(@"(?<code>FC2.*(?:PPV).*[0-9]{4,7})", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+            new Regex(@"(?<code>FC2.*(?:PPV).*[0-9]{4,7})", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout),
 
             // JAV code after leading tracker/tag blocks
-            new Regex(@"^(?:[\s._+\-]*(?:\[[^\]]+\]|\([^)]+\)|\{[^}]+\}))+[\s._+\-]*(?<code>[A-Z]{2,5}-[0-9]{3,5})(?=[A-Z]?(?:$|[\s._+\-\[\]\(\)\{\}]))", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+            new Regex(@"^(?:[\s._+\-]*(?:\[[^\]]+\]|\([^)]+\)|\{[^}]+\}))+[\s._+\-]*(?<code>[A-Z]{2,5}-[0-9]{3,5})(?=[A-Z]?(?:$|[\s._+\-\[\]\(\)\{\}]))", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout),
 
             // Pattern for IDs in brackets like [SKMJ-649], (ABC-123), {XYZ-456}, [SKMJ_649], [SKMJ.649]
-            new Regex(@"[\[\(\{](?<code>[A-Z]{2,5}[- _.][0-9]{3,5})[\]\)\}]", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+            new Regex(@"[\[\(\{](?<code>[A-Z]{2,5}[- _.][0-9]{3,5})[\]\)\}]", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout),
 
             // Final check that it is a video
-            new Regex(@"^(?<title>.+?)?(480|540|576|720|1080|2160)p", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+            new Regex(@"^(?<title>.+?)?(480|540|576|720|1080|2160)p", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout),
         };
 
         private static readonly Regex[] ReportTitleFolderRegex = new[]
         {
             // When year comes first.
-            new Regex(@"^(?:(?:[-_\W](?<![)!]))*(?<year>(19|20)\d{2}(?!p|i|\d+|\W\d+)))+(\W+|_|$)(?<title>.+?)?$")
+            new Regex(@"^(?:(?:[-_\W](?<![)!]))*(?<year>(19|20)\d{2}(?!p|i|\d+|\W\d+)))+(\W+|_|$)(?<title>.+?)?$", RegexOptions.None, RegexDefaults.Timeout)
         };
 
         private static readonly Regex[] RejectHashedReleasesRegex = new Regex[]
             {
                 // Generic match for md5 and mixed-case hashes.
-                new Regex(@"^[0-9a-zA-Z]{32}", RegexOptions.Compiled),
+                new Regex(@"^[0-9a-zA-Z]{32}", RegexOptions.Compiled, RegexDefaults.Timeout),
 
                 // Generic match for shorter lower-case hashes.
-                new Regex(@"^[a-z0-9]{24}$", RegexOptions.Compiled),
+                new Regex(@"^[a-z0-9]{24}$", RegexOptions.Compiled, RegexDefaults.Timeout),
 
                 // Format seen on some NZBGeek releases
                 // Be very strict with these coz they are very close to the valid 101 ep numbering.
-                new Regex(@"^[A-Z]{11}\d{3}$", RegexOptions.Compiled),
-                new Regex(@"^[a-z]{12}\d{3}$", RegexOptions.Compiled),
+                new Regex(@"^[A-Z]{11}\d{3}$", RegexOptions.Compiled, RegexDefaults.Timeout),
+                new Regex(@"^[a-z]{12}\d{3}$", RegexOptions.Compiled, RegexDefaults.Timeout),
 
                 // Backup filename (Unknown origins)
-                new Regex(@"^Backup_\d{5,}S\d{2}-\d{2}$", RegexOptions.Compiled),
+                new Regex(@"^Backup_\d{5,}S\d{2}-\d{2}$", RegexOptions.Compiled, RegexDefaults.Timeout),
 
                 // 123 - Started appearing December 2014
-                new Regex(@"^123$", RegexOptions.Compiled),
+                new Regex(@"^123$", RegexOptions.Compiled, RegexDefaults.Timeout),
 
                 // abc - Started appearing January 2015
-                new Regex(@"^abc$", RegexOptions.Compiled | RegexOptions.IgnoreCase),
+                new Regex(@"^abc$", RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexDefaults.Timeout),
 
                 // abc - Started appearing 2020
-                new Regex(@"^abc[-_. ]xyz", RegexOptions.Compiled | RegexOptions.IgnoreCase),
+                new Regex(@"^abc[-_. ]xyz", RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexDefaults.Timeout),
 
                 // b00bs - Started appearing January 2015
-                new Regex(@"^b00bs$", RegexOptions.Compiled | RegexOptions.IgnoreCase)
+                new Regex(@"^b00bs$", RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexDefaults.Timeout)
             };
 
         // Regex to detect whether the title was reversed.
-        private static readonly Regex ReversedTitleRegex = new Regex(@"(?:^|[-._ ])(p027|p0801)[-._ ]", RegexOptions.Compiled);
+        private static readonly Regex ReversedTitleRegex = new Regex(@"(?:^|[-._ ])(p027|p0801)[-._ ]", RegexOptions.Compiled, RegexDefaults.Timeout);
 
         // Regex to split movie titles that contain `AKA`.
-        private static readonly Regex AlternativeTitleRegex = new Regex(@"[ ]+(?:AKA|\/)[ ]+", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex AlternativeTitleRegex = new Regex(@"[ ]+(?:AKA|\/)[ ]+", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout);
 
         // Regex to unbracket alternative titles.
-        private static readonly Regex BracketedAlternativeTitleRegex = new Regex(@"(.*) \([ ]*AKA[ ]+(.*)\)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex BracketedAlternativeTitleRegex = new Regex(@"(.*) \([ ]*AKA[ ]+(.*)\)", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout);
 
-        private static readonly Regex NormalizeAlternativeTitleRegex = new Regex(@"[ ]+(?:A\.K\.A\.)[ ]+", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex NormalizeAlternativeTitleRegex = new Regex(@"[ ]+(?:A\.K\.A\.)[ ]+", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout);
 
         private static readonly Regex NormalizeRegex = new Regex(@"((?:\b|_)(?<!^|[^a-zA-Z0-9_']\w[^a-zA-Z0-9_'])([aà](?!$|[^a-zA-Z0-9_']\w[^a-zA-Z0-9_'])|an|the|and|or|of)(?!$)(?:\b|_))|\W|_",
-                                                                RegexOptions.IgnoreCase | RegexOptions.Compiled);
+                                                                RegexOptions.IgnoreCase | RegexOptions.Compiled,
+                                                                RegexDefaults.Timeout);
 
-        private static readonly Regex ReportImdbId = new Regex(@"(?<imdbid>tt\d{7,8})", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-        private static readonly Regex ReportTmdbId = new Regex(@"tmdb(id)?-(?<tmdbid>\d+)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex ReportImdbId = new Regex(@"(?<imdbid>tt\d{7,8})", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout);
+        private static readonly Regex ReportTmdbId = new Regex(@"tmdb(id)?-(?<tmdbid>\d+)", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout);
 
         private static readonly RegexReplace SimpleTitleRegex = new RegexReplace(@"(?:(480|540|576|720|1080|2160)[ip]|[xh][\W_]?26[45]|DD\W?5\W1|[<>?*]|848x480|1280x720|1920x1080|3840x2160|4096x2160|(8|10)b(it)?|10-bit)\s*?(?![a-b0-9])",
                                                                 string.Empty,
                                                                 RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         private static readonly Regex SpecialEpisodeTitleRegex = new Regex(@"(?<episodetitle>.+?)(?:\[.*(?:480p|720p|1080p|2160p|HDTV|WEB|WEBRip|WEB-?DL).*\]|[. ]XXX[. ](?:480p|720p|1080p|2160p|HDTV|WEB|WEBRip|WEB-?DL).*|(?:480p|720p|1080p|2160p|HDTV|WEB|WEBRip|WEB-?DL)|$)",
-                          RegexOptions.Compiled);
+                          RegexOptions.Compiled,
+                          RegexDefaults.Timeout);
 
         // Marks where the release tag block starts, so masking the scene title out of the simple
         // release title can't reach into the quality, codec and release group behind it.
         private static readonly Regex ReleaseTagBoundaryRegex = new Regex(@"[-_. ](?:XXX|\d{3,4}[ip]|WEB[-_. ]?DL|WEBRip|WEB|BluRay|BDRip|BRRip|DVDRip|DVD|HDTV|HDRip|SDTV|SD|HEVC|AVC|AV1|VP9|XviD|DivX|[xh][-_. ]?26[45]|AAC|AC3|DTS|MP3|mp4|mkv|avi|wmv|m4v)(?![a-z0-9])",
-                                                                         RegexOptions.IgnoreCase | RegexOptions.Compiled);
+                                                                         RegexOptions.IgnoreCase | RegexOptions.Compiled,
+                                                                         RegexDefaults.Timeout);
 
-        private static readonly Regex StashIdRegex = new Regex(@"(?<stashid>.{8}-.{4}-.{4}-.{4}-.{12})", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex StashIdRegex = new Regex(@"(?<stashid>.{8}-.{4}-.{4}-.{4}-.{12})", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout);
 
-        private static readonly Regex SimpleReleaseTitleRegex = new Regex(@"\s*(?:[<>?*|])", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex SimpleReleaseTitleRegex = new Regex(@"\s*(?:[<>?*|])", RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexDefaults.Timeout);
 
         // Valid TLDs http://data.iana.org/TLD/tlds-alpha-by-domain.txt
 
         private static readonly Regex CleanQualityBracketsRegex = new Regex(@"\[[a-z0-9 ._-]+\]$",
-                                                                   RegexOptions.IgnoreCase | RegexOptions.Compiled);
+                                                                   RegexOptions.IgnoreCase | RegexOptions.Compiled,
+                                                                   RegexDefaults.Timeout);
 
         private static readonly Regex YearInTitleRegex = new Regex(@"^(?<title>.+?)(?:\W|_.)?[\(\[]?(?<year>\d{4})[\]\)]?",
-                                                                RegexOptions.IgnoreCase | RegexOptions.Compiled);
+                                                                RegexOptions.IgnoreCase | RegexOptions.Compiled,
+                                                                RegexDefaults.Timeout);
 
-        private static readonly Regex SpecialCharRegex = new Regex(@"(\&|\:|\\|\/)+", RegexOptions.Compiled);
-        private static readonly Regex PunctuationRegex = new Regex(@"[^\w\s]", RegexOptions.Compiled);
-        private static readonly Regex ArticleWordRegex = new Regex(@"^(a|an|the)\s", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-        private static readonly Regex SpecialEpisodeWordRegex = new Regex(@"\b(part|special|edition|christmas)\b\s?", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-        private static readonly Regex DuplicateSpacesRegex = new Regex(@"\s{2,}", RegexOptions.Compiled);
-        private static readonly Regex NamerDuplicateRegex = new Regex(@"_\d$", RegexOptions.Compiled);
+        private static readonly Regex SpecialCharRegex = new Regex(@"(\&|\:|\\|\/)+", RegexOptions.Compiled, RegexDefaults.Timeout);
+        private static readonly Regex PunctuationRegex = new Regex(@"[^\w\s]", RegexOptions.Compiled, RegexDefaults.Timeout);
+        private static readonly Regex ArticleWordRegex = new Regex(@"^(a|an|the)\s", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout);
+        private static readonly Regex SpecialEpisodeWordRegex = new Regex(@"\b(part|special|edition|christmas)\b\s?", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout);
+        private static readonly Regex DuplicateSpacesRegex = new Regex(@"\s{2,}", RegexOptions.Compiled, RegexDefaults.Timeout);
+        private static readonly Regex NamerDuplicateRegex = new Regex(@"_\d$", RegexOptions.Compiled, RegexDefaults.Timeout);
 
-        private static readonly Regex EmojiRegex = new Regex(@"\p{Cs}", RegexOptions.Compiled);
-        private static readonly Regex UniCodeRegex = new Regex(@"[^\u0000-\u007F]+", RegexOptions.Compiled);
+        private static readonly Regex EmojiRegex = new Regex(@"\p{Cs}", RegexOptions.Compiled, RegexDefaults.Timeout);
+        private static readonly Regex UniCodeRegex = new Regex(@"[^\u0000-\u007F]+", RegexOptions.Compiled, RegexDefaults.Timeout);
 
-        private static readonly Regex RequestInfoRegex = new Regex(@"^(?:\[.+?\])+", RegexOptions.Compiled);
+        private static readonly Regex RequestInfoRegex = new Regex(@"^(?:\[.+?\])+", RegexOptions.Compiled, RegexDefaults.Timeout);
 
         // Strips domain suffixes (Site.com -> Site) anywhere in the studio token, not just the trailing one.
-        private static readonly Regex StudioDomainSuffixRegex = new Regex(@"\.(com|net|org|tv|xxx|co|io)\b", RegexOptions.IgnoreCase | RegexOptions.Compiled, TimeSpan.FromSeconds(5));
+        private static readonly Regex StudioDomainSuffixRegex = new Regex(@"\.(com|net|org|tv|xxx|co|io)\b", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout);
 
         private static readonly string[] Numbers = new[] { "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine" };
         private static Dictionary<string, string> _umlautMappings = new Dictionary<string, string>
@@ -550,7 +574,7 @@ namespace NzbDrone.Core.Parser
 
         public static string NormalizeImdbId(string imdbId)
         {
-            var imdbRegex = new Regex(@"^(\d{1,10}|(tt)\d{1,10})$");
+            var imdbRegex = new Regex(@"^(\d{1,10}|(tt)\d{1,10})$", RegexOptions.None, RegexDefaults.Timeout);
 
             if (!imdbRegex.IsMatch(imdbId))
             {
@@ -575,13 +599,13 @@ namespace NzbDrone.Core.Parser
             value = value.RemoveAccent();
 
             // Replace spaces
-            value = Regex.Replace(value, @"\s", "-", RegexOptions.Compiled);
+            value = Regex.Replace(value, @"\s", "-", RegexOptions.Compiled, RegexDefaults.Timeout);
 
             // Should invalid characters be replaced with dash or empty string?
             var replaceCharacter = invalidDashReplacement ? "-" : string.Empty;
 
             // Remove invalid chars
-            value = Regex.Replace(value, @"[^a-z0-9\s-_]", replaceCharacter, RegexOptions.Compiled);
+            value = Regex.Replace(value, @"[^a-z0-9\s-_]", replaceCharacter, RegexOptions.Compiled, RegexDefaults.Timeout);
 
             // Trim dashes or underscores from end, or user defined character set
             if (!string.IsNullOrEmpty(trimEndChars))
@@ -592,7 +616,7 @@ namespace NzbDrone.Core.Parser
             // Replace double occurrences of - or _, or user defined character set
             if (!string.IsNullOrEmpty(deduplicateChars))
             {
-                value = Regex.Replace(value, @"([" + deduplicateChars + "]){2,}", "$1", RegexOptions.Compiled);
+                value = Regex.Replace(value, @"([" + deduplicateChars + "]){2,}", "$1", RegexOptions.Compiled, RegexDefaults.Timeout);
             }
 
             return value;
@@ -716,7 +740,7 @@ namespace NzbDrone.Core.Parser
             // (\d+)         : Capturing group for the actual number
             var pattern = @"\s+(?:Volume|Vol\.?)\s+#?0*(\d+)";
             var replacement = " $1";
-            title = Regex.Replace(title, pattern, replacement);
+            title = Regex.Replace(title, pattern, replacement, RegexOptions.None, RegexDefaults.Timeout);
 
             return NormalizeTitle(title);
         }

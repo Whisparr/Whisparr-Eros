@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using NLog;
+using NzbDrone.Common;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Instrumentation;
 
@@ -14,7 +15,7 @@ namespace NzbDrone.Core.Indexers
     {
         private static readonly Logger Logger = NzbDroneLogger.GetLogger(typeof(XmlExtensions));
 
-        public static readonly Regex RemoveTimeZoneRegex = new Regex(@"\s[A-Z]{2,4}$", RegexOptions.Compiled);
+        public static readonly Regex RemoveTimeZoneRegex = new Regex(@"\s[A-Z]{2,4}$", RegexOptions.Compiled, RegexDefaults.Timeout);
 
         public static string Title(this XElement item)
         {

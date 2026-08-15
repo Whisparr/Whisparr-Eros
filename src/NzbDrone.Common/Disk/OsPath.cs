@@ -10,7 +10,7 @@ namespace NzbDrone.Common.Disk
         private readonly string _path;
         private readonly OsPathKind _kind;
 
-        private static readonly Regex UncPathRegex = new Regex(@"(?<unc>^\\\\(?:\?\\UNC\\)?[^\\]+\\[^\\]+)(?:\\|$)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex UncPathRegex = new Regex(@"(?<unc>^\\\\(?:\?\\UNC\\)?[^\\]+\\[^\\]+)(?:\\|$)", RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexDefaults.Timeout);
 
         public OsPath(string path)
         {
