@@ -128,12 +128,12 @@ namespace NzbDrone.Core.Movies.Studios
 
             if (studio.Monitored)
             {
-                var existingScenes = _movieService.AllMovieStashIds();
-                var excludedScenes = _importListExclusionService.GetAllExclusions().Select(e => e.ForeignId);
-                var scenesToAdd = studioWork.StashdbIds.Where(m => !existingScenes.Contains(m)).Where(m => !excludedScenes.Contains(m));
+                var existingScenes = _movieService.AllMovieStashIds().ToHashSet();
+                var excludedScenes = _importListExclusionService.GetAllExclusions().Select(e => e.ForeignId).ToHashSet();
+                var scenesToAdd = studioWork.StashdbIds.Where(m => !existingScenes.Contains(m) && !excludedScenes.Contains(m)).ToList();
                 var scenesAdded = 0;
 
-                if (scenesToAdd.Any())
+                if (scenesToAdd.Count > 0)
                 {
                     var sceneLists = scenesToAdd.Select(m => new Movie
                     {
@@ -157,7 +157,7 @@ namespace NzbDrone.Core.Movies.Studios
                     _logger.Info("Synced studio {0} has {1} movies adding {2} and added {3}",
                         studio.Title,
                         studioWork.StashdbIds.Count,
-                        scenesToAdd.Count(),
+                        scenesToAdd.Count,
                         scenesAdded);
                 }
             }
@@ -167,17 +167,17 @@ namespace NzbDrone.Core.Movies.Studios
                 if (_configService.WhisparrMovieMetadataSource == MovieMetadataType.TMDB)
                 {
                     var moviesAdded = 0;
-                    var tmbdId = 0;
-                    var existingMovies = _movieService.AllMovieTmdbIds();
+                    var existingMovies = _movieService.AllMovieTmdbIds().ToHashSet();
+
                     var excludedMovies = _importListExclusionService.GetAllExclusions()
-                        .Select(e => int.TryParse(e.ForeignId, out tmbdId))
-                        .Select(e => tmbdId).Where(e => e != 0)
-                        .ToList();
+                        .Select(e => int.TryParse(e.ForeignId, out var tmdbId) ? tmdbId : 0)
+                        .Where(e => e != 0)
+                        .ToHashSet();
 
                     var moviesToAdd = studioWork.TmdbIds
-                        .Where(m => !existingMovies.Contains(m)).Where(m => !excludedMovies.Contains(m));
+                        .Where(m => !existingMovies.Contains(m) && !excludedMovies.Contains(m)).ToList();
 
-                    if (moviesToAdd.Any())
+                    if (moviesToAdd.Count > 0)
                     {
                         var movieLists = moviesToAdd.Select(m => new Movie
                         {
@@ -203,18 +203,18 @@ namespace NzbDrone.Core.Movies.Studios
                     _logger.Info("Synced studio {0} has {1} movies adding {2} and added {3}",
                         studio.Title,
                         studioWork.TmdbIds.Count,
-                        moviesToAdd.Count(),
+                        moviesToAdd.Count,
                         moviesAdded);
                 }
 
                 if (_configService.WhisparrMovieMetadataSource == MovieMetadataType.TPDB)
                 {
                     var moviesAdded = 0;
-                    var existingMovies = _movieService.AllMovieTpdbIds();
-                    var excludedMovies = _importListExclusionService.GetAllExclusions().Where(e => e.Type == ImportExclusionType.Movie).Select(e => e.ForeignId).ToList();
-                    var moviesToAdd = studioWork.TpdbIds.Where(m => !existingMovies.Contains(m)).Where(m => !excludedMovies.Contains(m));
+                    var existingMovies = _movieService.AllMovieTpdbIds().ToHashSet();
+                    var excludedMovies = _importListExclusionService.GetAllExclusions().Where(e => e.Type == ImportExclusionType.Movie).Select(e => e.ForeignId).ToHashSet();
+                    var moviesToAdd = studioWork.TpdbIds.Where(m => !existingMovies.Contains(m) && !excludedMovies.Contains(m)).ToList();
 
-                    if (moviesToAdd.Any())
+                    if (moviesToAdd.Count > 0)
                     {
                         var movieLists = moviesToAdd.Select(m => new Movie
                         {
@@ -240,7 +240,7 @@ namespace NzbDrone.Core.Movies.Studios
                     _logger.Info("Synced studio {0} has {1} movies adding {2} and added {3}",
                         studio.Title,
                         studioWork.TpdbIds.Count,
-                        moviesToAdd.Count(),
+                        moviesToAdd.Count,
                         moviesAdded);
                 }
             }
@@ -300,10 +300,14 @@ namespace NzbDrone.Core.Movies.Studios
                     }
 
                     // Rescan before sync since syncing will add a new movie and scan automatically
-                    foreach (var movieItem in items)
+                    var movieIds = items.Select(i => i.Id).ToList();
+
+                    if (movieIds.Count > 0)
                     {
-                        var movie = _movieService.GetMovie(movieItem.Id);
-                        RescanMovie(movie, isNew, trigger);
+                        foreach (var movie in _movieService.GetMovies(movieIds))
+                        {
+                            RescanMovie(movie, isNew, trigger);
+                        }
                     }
 
                     // SyncStudioItems swallows the timeout itself, but GetStudioWorks

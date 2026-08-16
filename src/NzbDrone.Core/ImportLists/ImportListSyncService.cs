@@ -78,7 +78,7 @@ namespace NzbDrone.Core.ImportLists
             ProcessListItems(listItemsResult);
         }
 
-        private void ProcessMovieReport(ImportListDefinition importList, ImportListMovie report, List<ImportListExclusion> listExclusions, List<string> dbMovies, List<Movie> moviesToAdd)
+        private void ProcessMovieReport(ImportListDefinition importList, ImportListMovie report, HashSet<string> excludedForeignIds, HashSet<string> dbMovies, List<Movie> moviesToAdd, HashSet<string> pendingForeignIds)
         {
             if (report.ForeignId.IsNullOrWhiteSpace() || !importList.EnableAuto)
             {
@@ -93,16 +93,14 @@ namespace NzbDrone.Core.ImportLists
             }
 
             // Check to see if movie excluded
-            var excludedMovie = listExclusions.SingleOrDefault(s => s.ForeignId == report.ForeignId);
-
-            if (excludedMovie != null)
+            if (excludedForeignIds.Contains(report.ForeignId))
             {
                 _logger.Debug("{0} [{1}] Rejected due to list exclusion", report.ForeignId, report.Title);
                 return;
             }
 
             // Append Artist if not already in DB or already on add list
-            if (moviesToAdd.All(s => s.ForeignId != report.ForeignId))
+            if (pendingForeignIds.Add(report.ForeignId))
             {
                 var monitorType = importList.Monitor;
 
@@ -147,9 +145,10 @@ namespace NzbDrone.Core.ImportLists
 
             var listedMovies = listFetchResult.Movies.ToList();
 
-            var importExclusions = _listExclusionService.GetAllExclusions();
-            var dbMovies = _movieService.AllMovieForeignIds();
+            var excludedForeignIds = _listExclusionService.GetAllExclusions().Select(e => e.ForeignId).ToHashSet();
+            var dbMovies = _movieService.AllMovieForeignIds().ToHashSet();
             var moviesToAdd = new List<Movie>();
+            var pendingForeignIds = new HashSet<string>();
 
             var groupedMovies = listedMovies.GroupBy(x => x.ListId);
 
@@ -161,7 +160,7 @@ namespace NzbDrone.Core.ImportLists
                 {
                     if (movie.ForeignId.IsNotNullOrWhiteSpace())
                     {
-                        ProcessMovieReport(importList, movie, importExclusions, dbMovies, moviesToAdd);
+                        ProcessMovieReport(importList, movie, excludedForeignIds, dbMovies, moviesToAdd, pendingForeignIds);
                     }
                 }
             }
@@ -200,11 +199,13 @@ namespace NzbDrone.Core.ImportLists
             var moviesInLibrary = _movieService.GetAllMovies();
             _logger.Debug("Found {0} movies in library", moviesInLibrary.Count);
 
+            var listMovieForeignIds = listMovies.Select(c => c.ForeignId).ToHashSet();
+
             var moviesToUpdate = new List<Movie>();
 
             foreach (var movie in moviesInLibrary)
             {
-                var movieExists = listMovies.Any(c => c.ForeignId == movie.ForeignId);
+                var movieExists = listMovieForeignIds.Contains(movie.ForeignId);
 
                 if (!movieExists)
                 {

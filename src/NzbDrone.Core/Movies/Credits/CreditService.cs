@@ -7,6 +7,7 @@ namespace NzbDrone.Core.Movies.Credits
     public interface ICreditService
     {
         List<Credit> GetAllCreditsForMovieMetadata(int movieMetadataId);
+        Dictionary<int, List<Credit>> GetAllCreditsForMovieMetadataIds(List<int> movieMetadataIds);
         Credit AddCredit(Credit credit, MovieMetadata movie);
         List<Credit> AddCredits(List<Credit> credits, MovieMetadata movie);
         Credit GetById(int id);
@@ -27,6 +28,21 @@ namespace NzbDrone.Core.Movies.Credits
         public List<Credit> GetAllCreditsForMovieMetadata(int movieMetadataId)
         {
             return _creditRepo.FindByMovieMetadataId(movieMetadataId).ToList();
+        }
+
+        /// <summary> Get the credits for many movie metadata rows in a single query. </summary>
+        /// <param name="movieMetadataIds">The movie metadata identifiers to load credits for.</param>
+        /// <returns>The credits for each supplied identifier, keyed by movie metadata id.</returns>
+        public Dictionary<int, List<Credit>> GetAllCreditsForMovieMetadataIds(List<int> movieMetadataIds)
+        {
+            if (movieMetadataIds == null || movieMetadataIds.Count == 0)
+            {
+                return new Dictionary<int, List<Credit>>();
+            }
+
+            return _creditRepo.FindByMovieMetadataIds(movieMetadataIds)
+                              .GroupBy(c => c.MovieMetadataId)
+                              .ToDictionary(g => g.Key, g => g.ToList());
         }
 
         public Credit AddCredit(Credit credit, MovieMetadata movie)

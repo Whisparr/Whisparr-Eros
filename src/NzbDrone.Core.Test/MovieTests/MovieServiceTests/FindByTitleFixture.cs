@@ -76,6 +76,27 @@ namespace NzbDrone.Core.Test.MovieTests.MovieServiceTests
                 .Setup(s => s.GetAllCreditsForMovieMetadata(It.Is<int>(s => s.Equals(11))))
                 .Returns(vixenCredits);
 
+            var creditsByMetadataId = new Dictionary<int, List<Credit>>
+            {
+                { 1, credits },
+                { 2, otherCredits },
+                { 3, dualCredits },
+                { 4, differentCredits },
+                { 5, invalidCredits },
+                { 6, bellaCredits },
+                { 7, evilCredits },
+                { 8, ariAlectra },
+                { 9, amhyraShy },
+                { 10, cocoLovelock },
+                { 11, vixenCredits }
+            };
+
+            Mocker.GetMock<ICreditService>()
+                .Setup(s => s.GetAllCreditsForMovieMetadataIds(It.IsAny<List<int>>()))
+                .Returns((List<int> ids) => creditsByMetadataId
+                    .Where(kvp => ids.Contains(kvp.Key))
+                    .ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
+
             var studio = new Core.MetadataSource.SkyHook.Resource.StudioResource { Title = "Studio" };
             var evilStudio = new Core.MetadataSource.SkyHook.Resource.StudioResource { Title = "EvilAngel" };
             var jesseLoadsMonsterFacials = new Core.MetadataSource.SkyHook.Resource.StudioResource { Title = "JesseLoadsMonsterFacials" };

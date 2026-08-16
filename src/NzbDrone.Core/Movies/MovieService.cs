@@ -782,6 +782,10 @@ namespace NzbDrone.Core.Movies
             {
                 _logger.Trace("Fuzzy match running with a score of {1}", fuzzyTitleMatchingThreshold);
 
+                PreloadCredits(movies);
+
+                var normalizedReleaseTokens = releaseTokens.CleanMovieTitle().StripSpaces();
+
                 foreach (var movie in movies)
                 {
                     var fuzzyStudioTitle = movie.MovieMetadata.Value.StudioTitle;
@@ -794,7 +798,7 @@ namespace NzbDrone.Core.Movies
                         continue;
                     }
 
-                    var fuzzyMatch = FuzzyMatchReleaseTokens(releaseTokens, movie);
+                    var fuzzyMatch = FuzzyMatchNormalizedReleaseTokens(normalizedReleaseTokens, movie);
 
                     if (fuzzyMatch.score >= fuzzyTitleMatchingThreshold)
                     {
@@ -817,14 +821,6 @@ namespace NzbDrone.Core.Movies
 
             if (hasReleaseDate)
             {
-                _logger.Debug("{0}: DB query for for movies for Studio ForeignID: [{1}] and Date: [{2}].", methodName, studioForeignId, releaseDate);
-                movies = _movieRepository.FindByStudioAndDate(studioForeignId, releaseDate);
-
-                if (movies == null || !movies.Any())
-                {
-                    movies = new List<Movie>();
-                }
-
                 // movies with release date if missing day
                 if (releaseDate.EndsWith("-01"))
                 {
@@ -904,6 +900,41 @@ namespace NzbDrone.Core.Movies
             return null;
         }
 
+        /// <summary> Load credits for every supplied movie using a single query. </summary>
+        /// <param name="movies">The candidate movies whose credits should be resolved.</param>
+        /// <remarks>Movies that already carry credits are left untouched.</remarks>
+        private void PreloadCredits(List<Movie> movies)
+        {
+            var metadataIdsToLoad = movies
+                .Select(m => m.MovieMetadata.Value)
+                .Where(m => m != null && m.Credits.Empty() && m.Id > 0)
+                .Select(m => m.Id)
+                .Distinct()
+                .ToList();
+
+            if (metadataIdsToLoad.Empty())
+            {
+                return;
+            }
+
+            var creditsByMetadataId = _creditService.GetAllCreditsForMovieMetadataIds(metadataIdsToLoad);
+
+            if (creditsByMetadataId == null || creditsByMetadataId.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var movie in movies)
+            {
+                var metadata = movie.MovieMetadata.Value;
+
+                if (metadata != null && metadata.Credits.Empty() && creditsByMetadataId.TryGetValue(metadata.Id, out var credits))
+                {
+                    metadata.Credits = credits.ToList();
+                }
+            }
+        }
+
         /// <summary> Match parsed movie information against a list of movies. </summary>
         /// <param name="parsedMovieTitle">The parsed title of the movie.</param>
         /// <param name="releaseDate">The release date of the movie.</param>
@@ -918,6 +949,10 @@ namespace NzbDrone.Core.Movies
             var matches = new Dictionary<Movie, MovieParseMatchType>();
 
             _logger.Debug("Checking {0} against {1} movies", parsedMovieTitle, movies.Count);
+
+            PreloadCredits(movies);
+
+            var strippedParsedMovieTitle = Parser.Parser.StripSpaces(parsedMovieTitle);
 
             foreach (var movie in movies)
             {
@@ -939,7 +974,7 @@ namespace NzbDrone.Core.Movies
                     continue;
                 }
 
-                if (cleanTitle.IsNotNullOrWhiteSpace() && Parser.Parser.StripSpaces(parsedMovieTitle).Equals(Parser.Parser.StripSpaces(cleanTitle)))
+                if (cleanTitle.IsNotNullOrWhiteSpace() && strippedParsedMovieTitle.Equals(Parser.Parser.StripSpaces(cleanTitle)))
                 {
                     _logger.Debug("Match {0} against {1} [Title]", parsedMovieTitle, cleanTitle);
                     matches.Add(movie, MovieParseMatchType.Title);
@@ -979,17 +1014,12 @@ namespace NzbDrone.Core.Movies
                     }
                 }
 
-                if (!movie.MovieMetadata.Value.Credits.Any())
-                {
-                    // Load the Credits if not already loaded
-                    movie.MovieMetadata.Value.Credits = _creditService.GetAllCreditsForMovieMetadata(movie.MovieMetadata.Value.Id);
-                }
-
                 var cleanPerformers = movie.MovieMetadata.Value.Credits
                     .Select(a => Parser.Parser.NormalizeEpisodeTitle(a.Performer.Name ?? a.PersonName))
-                    .Where(n => n.IsNotNullOrWhiteSpace());
+                    .Where(n => n.IsNotNullOrWhiteSpace())
+                    .ToList();
 
-                if (cleanPerformers == null || cleanPerformers.Empty())
+                if (cleanPerformers.Empty())
                 {
                     continue;
                 }
@@ -1004,7 +1034,8 @@ namespace NzbDrone.Core.Movies
 
                 var cleanCharacters = movie.MovieMetadata.Value.Credits
                     .Select(a => Parser.Parser.NormalizeEpisodeTitle(a.Character))
-                    .Where(x => x.IsNotNullOrWhiteSpace());
+                    .Where(x => x.IsNotNullOrWhiteSpace())
+                    .ToList();
 
                 // If parsed title matches character, consider a match
                 if (cleanCharacters.Any() && cleanCharacters.Any(c => c.IsNotNullOrWhiteSpace() && parsedMovieTitle.Equals(c)))
@@ -1031,7 +1062,7 @@ namespace NzbDrone.Core.Movies
                                                                              .Where(x => x.IsNotNullOrWhiteSpace()).ToList();
 
                 // If all female characters are in title, consider a match
-                if (cleanFemaleCharacters.Any() && cleanFemalePerformers.All(x => parsedMovieTitle.Contains(x)))
+                if (cleanFemaleCharacters.Any() && cleanFemaleCharacters.All(x => parsedMovieTitle.Contains(x)))
                 {
                     _logger.Debug("Match {0} against {1} [Female Characters]", parsedMovieTitle, cleanFemaleCharacters.Join(", "));
                     matches.Add(movie, MovieParseMatchType.Characters);
@@ -1243,13 +1274,27 @@ namespace NzbDrone.Core.Movies
         /// <returns>(Movie movie, int score) local variable</returns>
         public (Movie movie, int score) FuzzyMatchReleaseTokens(string releaseTokens, Movie movie)
         {
+            return FuzzyMatchNormalizedReleaseTokens(releaseTokens.CleanMovieTitle().StripSpaces(), movie);
+        }
+
+        /// <summary> Score a movie against release tokens that have already been normalized. </summary>
+        /// <param name="normalizedReleaseTokens">Release tokens already run through CleanMovieTitle and StripSpaces.</param>
+        /// <param name="movie">The candidate movie to score.</param>
+        /// <returns>The movie and its fuzzy match score, or (null, 0) when it cannot be scored.</returns>
+        private (Movie movie, int score) FuzzyMatchNormalizedReleaseTokens(string normalizedReleaseTokens, Movie movie)
+        {
             var methodName = "FuzzyMatchReleaseTokens";
-            var normalizedTitle = releaseTokens.CleanMovieTitle().StripSpaces();
-            var credits = _creditService.GetAllCreditsForMovieMetadata(movie.MovieMetadata.Value.Id);
-            if (string.IsNullOrWhiteSpace(normalizedTitle) || string.IsNullOrWhiteSpace(movie.CleanTitle))
+
+            if (string.IsNullOrWhiteSpace(normalizedReleaseTokens) || string.IsNullOrWhiteSpace(movie.CleanTitle))
             {
                 return (null, 0);
             }
+
+            var credits = movie.MovieMetadata.Value.Credits.Empty()
+                ? _creditService.GetAllCreditsForMovieMetadata(movie.MovieMetadata.Value.Id) ?? new List<Credit>()
+                : movie.MovieMetadata.Value.Credits;
+
+            var normalizedTitle = normalizedReleaseTokens;
 
             // Remove performer and character names from the normalized title to improve matching accuracy
             foreach (var credit in credits)

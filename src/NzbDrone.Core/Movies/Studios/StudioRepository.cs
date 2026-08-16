@@ -1,6 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Dapper;
+using NzbDrone.Common.Cache;
+using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Datastore;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Parser;
@@ -20,9 +23,14 @@ namespace NzbDrone.Core.Movies.Studios
 
     public class StudioRepository : BasicRepository<Studio>, IStudioRepository
     {
-        public StudioRepository(IMainDatabase database, IEventAggregator eventAggregator)
+        private static readonly TimeSpan TitleLookupTtl = TimeSpan.FromSeconds(30);
+
+        private readonly ICachedDictionary<List<Studio>> _studiosByNormalizedTitle;
+
+        public StudioRepository(IMainDatabase database, IEventAggregator eventAggregator, ICacheManager cacheManager)
             : base(database, eventAggregator)
         {
+            _studiosByNormalizedTitle = cacheManager.GetCacheDictionary(GetType(), "byNormalizedTitle", BuildNormalizedTitleLookup, TitleLookupTtl);
         }
 
         public Studio FindByTitle(string title)
@@ -37,7 +45,56 @@ namespace NzbDrone.Core.Movies.Studios
 
         public List<Studio> FindAllByTitle(string title)
         {
-            return All().Where(x => x.CleanTitle == title || x.CleanSearchTitle == title || (x.Aliases != null && x.Aliases.Where(x => x.CleanStudioTitle()?.ToLower() == title).Any())).ToList();
+            if (title.IsNullOrWhiteSpace())
+            {
+                return new List<Studio>();
+            }
+
+            var matches = _studiosByNormalizedTitle.Find(title);
+
+            return matches == null ? new List<Studio>() : matches.ToList();
+        }
+
+        private static void IndexTitle(Dictionary<string, List<Studio>> lookup, string title, Studio studio)
+        {
+            if (title.IsNullOrWhiteSpace())
+            {
+                return;
+            }
+
+            if (!lookup.TryGetValue(title, out var studios))
+            {
+                studios = new List<Studio>();
+                lookup[title] = studios;
+            }
+
+            if (!studios.Any(s => s.Id == studio.Id))
+            {
+                studios.Add(studio);
+            }
+        }
+
+        private IDictionary<string, List<Studio>> BuildNormalizedTitleLookup()
+        {
+            var lookup = new Dictionary<string, List<Studio>>();
+
+            foreach (var studio in All())
+            {
+                IndexTitle(lookup, studio.CleanTitle, studio);
+                IndexTitle(lookup, studio.CleanSearchTitle, studio);
+
+                if (studio.Aliases == null)
+                {
+                    continue;
+                }
+
+                foreach (var alias in studio.Aliases)
+                {
+                    IndexTitle(lookup, alias.CleanStudioTitle()?.ToLower(), studio);
+                }
+            }
+
+            return lookup;
         }
 
         public Studio FindByForeignId(string foreignId)
