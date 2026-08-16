@@ -10,6 +10,7 @@ namespace NzbDrone.Core.Movies.Credits
     public interface ICreditRepository : IBasicRepository<Credit>
     {
         List<Credit> FindByMovieMetadataId(int movieId);
+        List<Credit> FindByMovieMetadataIds(List<int> movieMetadataIds);
         List<Credit> GetPerformerMovies(string performerForeignId);
         void DeleteForMovies(List<int> movieIds);
     }
@@ -27,36 +28,50 @@ namespace NzbDrone.Core.Movies.Credits
                .LeftJoin<Credit, Performer>((m, p) => m.PerformerForeignId == p.ForeignId)
                .Where<Credit>(x => x.MovieMetadataId == movieMetadataId);
 
-            return _database.QueryJoined<Credit, Performer>(
-                builder,
-                (credit, performer) =>
-                {
-                    // Use Performer Data over a Credit version if available
-                    if (performer?.Images.Count > 0)
-                    {
-                        credit.Images = performer.Images;
-                    }
+            return _database.QueryJoined<Credit, Performer>(builder, MapPerformerOntoCredit).ToList();
+        }
 
-                    if (performer?.Name.IsNotNullOrWhiteSpace() == true)
-                    {
-                        credit.PersonName = performer.Name;
-                    }
+        public List<Credit> FindByMovieMetadataIds(List<int> movieMetadataIds)
+        {
+            if (movieMetadataIds == null || movieMetadataIds.Empty())
+            {
+                return new List<Credit>();
+            }
 
-                    var creditPerformer = new CreditPerformer();
+            var builder = new SqlBuilder(_database.DatabaseType)
+               .LeftJoin<Credit, Performer>((m, p) => m.PerformerForeignId == p.ForeignId)
+               .Where<Credit>(x => movieMetadataIds.Contains(x.MovieMetadataId));
 
-                    creditPerformer.Id = performer?.Id ?? 0;
-                    creditPerformer.Name = performer?.Name ?? string.Empty;
-                    creditPerformer.ForeignId = performer?.ForeignId;
-                    creditPerformer.TpdbId = performer?.TpdbId;
-                    creditPerformer.TmdbId = performer?.TmdbId ?? 0;
-                    creditPerformer.Gender = performer?.Gender ?? Gender.Female;
-                    creditPerformer.Monitored = performer?.Monitored == true;
-                    creditPerformer.MoviesMonitored = performer?.MoviesMonitored == true;
+            return _database.QueryJoined<Credit, Performer>(builder, MapPerformerOntoCredit).ToList();
+        }
 
-                    credit.Performer = creditPerformer;
+        private static Credit MapPerformerOntoCredit(Credit credit, Performer performer)
+        {
+            // Use Performer Data over a Credit version if available
+            if (performer?.Images.Count > 0)
+            {
+                credit.Images = performer.Images;
+            }
 
-                    return credit;
-                }).ToList();
+            if (performer?.Name.IsNotNullOrWhiteSpace() == true)
+            {
+                credit.PersonName = performer.Name;
+            }
+
+            var creditPerformer = new CreditPerformer();
+
+            creditPerformer.Id = performer?.Id ?? 0;
+            creditPerformer.Name = performer?.Name ?? string.Empty;
+            creditPerformer.ForeignId = performer?.ForeignId;
+            creditPerformer.TpdbId = performer?.TpdbId;
+            creditPerformer.TmdbId = performer?.TmdbId ?? 0;
+            creditPerformer.Gender = performer?.Gender ?? Gender.Female;
+            creditPerformer.Monitored = performer?.Monitored == true;
+            creditPerformer.MoviesMonitored = performer?.MoviesMonitored == true;
+
+            credit.Performer = creditPerformer;
+
+            return credit;
         }
 
         public List<Credit> GetPerformerMovies(string performerForeignId)
