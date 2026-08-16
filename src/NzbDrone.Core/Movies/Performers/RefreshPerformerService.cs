@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using DryIoc.ImTools;
 using NLog;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Instrumentation.Extensions;
@@ -177,12 +176,12 @@ namespace NzbDrone.Core.Movies.Performers
 
             if (performer.Monitored)
             {
-                var existingScenes = _movieService.AllMovieStashIds();
-                var excludedScenes = _importListExclusionService.GetAllExclusions().Select(e => e.ForeignId);
-                var scenesToAdd = performerWork.StashdbIds.Where(m => !existingScenes.Contains(m)).Where(m => !excludedScenes.Contains(m));
+                var existingScenes = _movieService.AllMovieStashIds().ToHashSet();
+                var excludedScenes = _importListExclusionService.GetAllExclusions().Select(e => e.ForeignId).ToHashSet();
+                var scenesToAdd = performerWork.StashdbIds.Where(m => !existingScenes.Contains(m) && !excludedScenes.Contains(m)).ToList();
                 var scenesAdded = 0;
 
-                if (scenesToAdd.Any())
+                if (scenesToAdd.Count > 0)
                 {
                     var sceneLists = scenesToAdd.Select(m => new Movie
                     {
@@ -207,7 +206,7 @@ namespace NzbDrone.Core.Movies.Performers
                 _logger.Info("Synced performer {0} has {1} scenes adding {2} and added {3}",
                     performer.Name,
                     performerWork.StashdbIds.Count,
-                    scenesToAdd.Count(),
+                    scenesToAdd.Count,
                     scenesAdded);
             }
 
@@ -217,12 +216,16 @@ namespace NzbDrone.Core.Movies.Performers
 
                 if (_configService.WhisparrMovieMetadataSource == MovieMetadataType.TMDB)
                 {
-                    var tmbdId = 0;
-                    var existingMovies = _movieService.AllMovieTmdbIds();
-                    var excludedMovies = _importListExclusionService.GetAllExclusions().Select(e => int.TryParse(e.ForeignId, out tmbdId)).Select(e => tmbdId).Where(e => e != 0).ToList();
-                    var moviesToAdd = performerWork.TmdbIds.Where(m => !existingMovies.Contains(m)).Where(m => !excludedMovies.Contains(m));
+                    var existingMovies = _movieService.AllMovieTmdbIds().ToHashSet();
 
-                    if (moviesToAdd.Any())
+                    var excludedMovies = _importListExclusionService.GetAllExclusions()
+                        .Select(e => int.TryParse(e.ForeignId, out var tmdbId) ? tmdbId : 0)
+                        .Where(e => e != 0)
+                        .ToHashSet();
+
+                    var moviesToAdd = performerWork.TmdbIds.Where(m => !existingMovies.Contains(m) && !excludedMovies.Contains(m)).ToList();
+
+                    if (moviesToAdd.Count > 0)
                     {
                         var movieLists = moviesToAdd.Select(m => new Movie
                         {
@@ -248,17 +251,17 @@ namespace NzbDrone.Core.Movies.Performers
                     _logger.Info("Synced performer {0} has {1} movies adding {2} and added {3}",
                         performer.Name,
                         performerWork.TmdbIds.Count,
-                        moviesToAdd.Count(),
+                        moviesToAdd.Count,
                         moviesAdded);
                 }
 
                 if (_configService.WhisparrMovieMetadataSource == MovieMetadataType.TPDB)
                 {
-                    var existingMovies = _movieService.AllMovieTpdbIds();
-                    var excludedMovies = _importListExclusionService.GetAllExclusions().Where(e => e.Type == ImportExclusionType.Movie).Select(e => e.ForeignId).ToList();
-                    var moviesToAdd = performerWork.TpdbIds.Where(m => !existingMovies.Contains(m)).Where(m => !excludedMovies.Contains(m));
+                    var existingMovies = _movieService.AllMovieTpdbIds().ToHashSet();
+                    var excludedMovies = _importListExclusionService.GetAllExclusions().Where(e => e.Type == ImportExclusionType.Movie).Select(e => e.ForeignId).ToHashSet();
+                    var moviesToAdd = performerWork.TpdbIds.Where(m => !existingMovies.Contains(m) && !excludedMovies.Contains(m)).ToList();
 
-                    if (moviesToAdd.Any())
+                    if (moviesToAdd.Count > 0)
                     {
                         var movieLists = moviesToAdd.Select(m => new Movie
                         {
@@ -284,7 +287,7 @@ namespace NzbDrone.Core.Movies.Performers
                     _logger.Info("Synced performer {0} has {1} movies adding {2} and added {3}",
                         performer.Name,
                         performerWork.TpdbIds.Count,
-                        moviesToAdd.Count(),
+                        moviesToAdd.Count,
                         moviesAdded);
                 }
             }
@@ -344,10 +347,14 @@ namespace NzbDrone.Core.Movies.Performers
                     }
 
                     // Rescan before sync since syncing will add a new movie and scan automatically
-                    foreach (var movieItem in items)
+                    var movieIds = items.Select(i => i.Id).Distinct().ToList();
+
+                    if (movieIds.Count > 0)
                     {
-                        var movie = _movieService.GetMovie(movieItem.Id);
-                        RescanMovie(movie, isNew, trigger);
+                        foreach (var movie in _movieService.GetMovies(movieIds))
+                        {
+                            RescanMovie(movie, isNew, trigger);
+                        }
                     }
 
                     // SyncPerformerItems swallows the timeout itself, but
