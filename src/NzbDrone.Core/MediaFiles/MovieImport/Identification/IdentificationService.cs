@@ -26,6 +26,11 @@ namespace NzbDrone.Core.MediaFiles.MovieImport
 
     public class SceneIdentificationService : ISceneIdentificationService
     {
+        private static readonly Regex FolderDateRegex = new Regex(
+            @"(?<airyear>\d{2}|\d{4})[-_. ]+(?<airmonth>[0-1][0-9])[-_. ]+(?<airday>[0-3][0-9])",
+            RegexOptions.IgnoreCase | RegexOptions.Compiled,
+            RegexDefaults.Timeout);
+
         private readonly ISearchForNewMovie _searchProxy;
         private readonly IAddMovieService _addMovieService;
         private readonly IAggregationService _aggregationService;
@@ -92,11 +97,8 @@ namespace NzbDrone.Core.MediaFiles.MovieImport
             var searchedByStashId = false;
 
             // Try to see if the scene has been organized into a folder already
-            var folderRegex = new Regex(@"(?<airyear>\d{2}|\d{4})[-_. ]+(?<airmonth>[0-1][0-9])[-_. ]+(?<airday>[0-3][0-9])",
-                RegexOptions.IgnoreCase | RegexOptions.Compiled,
-                RegexDefaults.Timeout);
             var folder = Directory.GetParent(file).Name;
-            var match = folderRegex.Match(folder);
+            var match = FolderDateRegex.Match(folder);
 
             if (parsedMovieInfo.StashId.IsNotNullOrWhiteSpace())
             {

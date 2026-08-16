@@ -44,7 +44,7 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
 
             if (!_upgradableSpecification.CutoffNotMet(qualityProfile,
                     file.Quality,
-                    _formatService.ParseCustomFormat(file),
+                    customFormats,
                     subject.ParsedMovieInfo.Quality))
             {
                 _logger.Debug("Cutoff already met, rejecting.");
