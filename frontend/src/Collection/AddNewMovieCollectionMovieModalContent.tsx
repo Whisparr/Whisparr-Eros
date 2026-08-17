@@ -12,7 +12,6 @@ import ModalBody from 'Components/Modal/ModalBody';
 import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
-import useIsWindows from 'Helpers/Hooks/useIsWindows';
 import usePrevious from 'Helpers/Hooks/usePrevious';
 import { inputTypes, kinds } from 'Helpers/Props';
 import { Image } from 'Movie/Movie';
@@ -23,6 +22,7 @@ import {
 } from 'Store/Actions/movieCollectionActions';
 import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import selectSettings from 'Store/Selectors/selectSettings';
+import { useIsWindows } from 'System/Status/useSystemStatus';
 import { InputChanged } from 'typings/inputs';
 import translate from 'Utilities/String/translate';
 import styles from './AddNewMovieCollectionMovieModalContent.css';

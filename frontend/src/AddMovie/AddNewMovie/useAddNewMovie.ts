@@ -11,9 +11,9 @@ import { MovieStats } from 'Movie/Index/useMovieStats';
 import Movie, { Image, Ratings } from 'Movie/Movie';
 import { setAddMovieDefault } from 'Store/Actions/addMovieActions';
 import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
-import createSystemStatusSelector from 'Store/Selectors/createSystemStatusSelector';
 import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
 import selectSettings from 'Store/Selectors/selectSettings';
+import { useSystemStatusData } from 'System/Status/useSystemStatus';
 import { InputChanged } from 'typings/inputs';
 import MovieCredit from 'typings/MovieCredit';
 import { ValidationError, ValidationWarning } from 'typings/pending';
@@ -200,7 +200,7 @@ export function useAddMovieMutation(
 ) {
   const dispatch = useDispatch();
   const { isSmallScreen } = useSelector(createDimensionsSelector());
-  const systemStatus = useSelector(createSystemStatusSelector());
+  const systemStatus = useSystemStatusData();
   const safeForWorkMode = useSelector(
     (state: AppState) => state.settings.safeForWorkMode
   );

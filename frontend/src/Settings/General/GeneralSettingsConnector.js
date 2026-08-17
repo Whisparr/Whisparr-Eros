@@ -13,7 +13,6 @@ import {
 import { restart } from 'Store/Actions/systemActions';
 import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
 import createSettingsSectionSelector from 'Store/Selectors/createSettingsSectionSelector';
-import createSystemStatusSelector from 'Store/Selectors/createSystemStatusSelector';
 import GeneralSettings from './GeneralSettings';
 
 const SECTION = 'general';
@@ -23,7 +22,10 @@ function createMapStateToProps() {
     (state) => state.settings.advancedSettings,
     createSettingsSectionSelector(SECTION),
     createCommandExecutingSelector(commandNames.RESET_API_KEY),
-    createSystemStatusSelector(),
+    // Inlined from the former createSystemStatusSelector. connect() cannot use
+    // the React Query hook, so this stays on redux until General settings
+    // converts in Phase E.
+    (state) => state.system.status.item,
     (advancedSettings, sectionSettings, isResettingApiKey, systemStatus) => {
       return {
         advancedSettings,

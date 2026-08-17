@@ -19,7 +19,7 @@ verified to resolve against the public repo.
 
 | Metric | At assessment | Now |
 | --- | --- | --- |
-| Files importing `react-redux` | 327 of 1,255 | **324** of 1,259 |
+| Files importing `react-redux` | 327 of 1,255 | **316** of 1,259 |
 | Lines under `frontend/src/Store/` | 15,374 across 138 files | **15,226** across 137 |
 | Redux action slices | 41 | **40** |
 | Remaining `*Connector` files | 66 | 66 |
@@ -254,13 +254,15 @@ Four places where you cannot just copy their commit.
 
 ## 10. What to do next
 
-Phase A is done; Parse and Disk Space are converted. Continuing through Phase B
-smallest-first, rather than jumping straight to Queue — the point of the early pages is to
-make the PR shape routine before anything expensive.
+Phase A is done. Parse, Disk Space, Log Files and the read half of System Status are
+converted. Continuing through Phase B smallest-first, rather than jumping straight to
+Queue — the point of the early pages is to make the PR shape routine before anything
+expensive.
 
-1. **System Status**, then **Health** — with tasks, backups and events, these are what
-   is left of `systemActions`. Health goes last because it feeds the sidebar; converting it
-   last means the slice can be retired in the same PR as the page that finishes it.
+1. **System Status part 2** — retire the `status` slice and rewire `useAppPage`,
+   `About`, `Stats` and `FirstRun`. Small diff, but it is the boot path.
+2. **Health**, then tasks, backups and events — what is left of `systemActions`. Health
+   feeds the sidebar, so it goes last and retires the slice with it.
 3. **Organize preview + Unmapped Files** — two small pages, one PR.
 4. **Then Queue**, as Sonarr did, because it forces SignalR-driven invalidation into
    existence early rather than late. This is the first genuinely large one at 58 files, and
@@ -284,7 +286,9 @@ Worth repeating verbatim on each page:
    does — take out only that page's pieces and leave the rest, retiring the slice with the
    last page that uses it.
 6. Grep for every removed symbol before committing — the action file, the selector, the
-   AppState type, and the component if one was deleted.
+   AppState type, and the component if one was deleted. **Include `--include=*.js`.**
+   `checkJs` is false, so `tsc` cannot see the connectors; a dangling import in one only
+   surfaces when webpack runs. #463 hit exactly this.
 7. Verify with `tsc --noEmit`, `eslint frontend/`, `yarn build`, and where the change is
    behavioural, a local run against a real library.
 8. **Update this document in the same PR** — the metrics table in §1, the page's row in
@@ -302,6 +306,18 @@ the PR is about and leave the rest; the file will be visited again.
 The consequence is that the `react-redux` import count moves more slowly than the work
 does. A page can be most of the way converted and still import `react-redux` for one
 selector. The slice line count and the phase tables are the better progress signal.
+
+**Split a conversion when it reaches the boot path.** System Status touched 16 files and
+`useAppPage`, which gates the entire app render. It went out as #463 (move every reader
+onto the query, delete the duplicate redux paths) and a follow-up for the slice and boot
+rewiring. Readers are mechanical and reviewable in bulk; the boot gate is neither, and a
+mistake there is a blank screen rather than one broken page.
+
+**`tsc` is not enough on a shared symbol, and neither is a page-level check.** Removing
+`createSystemStatusSelector` left a dangling import in a `.js` connector that `tsc` cannot
+see. Run `yarn build`. And where the change touches app startup, boot the app — a headless
+Chrome over CDP asserting `#root` has children and the body has text catches a spinner
+lock that no static check will.
 
 ### On testing — what Sonarr actually did
 
@@ -369,6 +385,7 @@ If a JS test runner is ever added, remove that line and set
 | 2026-08-17 | #458 | **Parse.** First page conversion. Slice retired; unreachable `Parse.tsx` deleted. |
 | 2026-08-17 | #461 | **Disk Space.** 4 files, +19/−34. Partial trim of `systemActions`; slice survives for status, health, tasks, backups, logs, updates. |
 | 2026-08-17 | #462 | **Log Files.** App and update logs. First *partial component* conversion — the fetch half moves, the command half stays on redux until Phase C. |
+| 2026-08-17 | #463 | **System Status, part 1.** All 12 readers onto React Query; duplicate `useIsWindows` and `createSystemStatusSelector` deleted. Slice and boot path retained for part 2. |
 
 ### Open threads
 

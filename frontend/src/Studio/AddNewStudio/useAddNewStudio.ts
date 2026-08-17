@@ -13,10 +13,10 @@ import {
 } from 'Store/Actions/queueActions';
 import { fetchRootFolders } from 'Store/Actions/rootFolderActions';
 import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
-import createSystemStatusSelector from 'Store/Selectors/createSystemStatusSelector';
 import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
 import selectSettings from 'Store/Selectors/selectSettings';
 import Studio from 'Studio/Studio';
+import { useSystemStatusData } from 'System/Status/useSystemStatus';
 import { InputChanged } from 'typings/inputs';
 import { ApiError } from 'Utilities/Fetch/fetchJson';
 import getNewStudio from 'Utilities/Studio/getNewStudio';
@@ -153,7 +153,7 @@ export function useAddNewStudioSearchResult() {
 export function useAddNewStudioModalContent(studio: Studio) {
   const dispatch = useDispatch();
   const { isSmallScreen } = useSelector(createDimensionsSelector());
-  const systemStatus = useSelector(createSystemStatusSelector());
+  const systemStatus = useSystemStatusData();
   const safeForWorkMode = useSelector(
     (state: AppState) => state.settings.safeForWorkMode
   );
