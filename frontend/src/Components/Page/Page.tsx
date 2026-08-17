@@ -10,8 +10,8 @@ import AuthenticationRequiredModal from 'FirstRun/AuthenticationRequiredModal';
 import useAppPage from 'Helpers/Hooks/useAppPage';
 import { saveDimensions } from 'Store/Actions/appActions';
 import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
-import createSystemStatusSelector from 'Store/Selectors/createSystemStatusSelector';
 import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
+import { useSystemStatusData } from 'System/Status/useSystemStatus';
 import ErrorPage from './ErrorPage';
 import PageHeader from './Header/PageHeader';
 import LoadingPage from './LoadingPage';
@@ -35,7 +35,7 @@ function Page({ children }: PageProps) {
   );
   const { enableColorImpairedMode } = useSelector(createUISettingsSelector());
   const { isSmallScreen } = useSelector(createDimensionsSelector());
-  const { authentication } = useSelector(createSystemStatusSelector());
+  const { authentication } = useSystemStatusData();
   const authenticationEnabled = authentication !== 'none';
   const { isSidebarVisible, isUpdated, isDisconnected, version } = useSelector(
     (state: AppState) => state.app

@@ -13,6 +13,7 @@ import {
 } from 'Store/Actions/settingsActions';
 import { fetchStatus } from 'Store/Actions/systemActions';
 import { fetchTags } from 'Store/Actions/tagActions';
+import useSystemStatus from 'System/Status/useSystemStatus';
 
 const createErrorsSelector = () =>
   createSelector(
@@ -76,7 +77,16 @@ const createErrorsSelector = () =>
 const useAppPage = () => {
   const dispatch = useDispatch();
 
-  const isPopulated = useSelector(
+  // System status is read from React Query by every consumer now, so the app
+  // has to wait on that query rather than on the redux slice. Without this,
+  // components render once with an undefined status -- Page.tsx would compute
+  // `authentication !== 'none'` as true, and path handling would pick the
+  // wrong separator. The redux slice below is still populated for About,
+  // Stats and FirstRun until those convert.
+  const { isSuccess: isSystemStatusPopulated, error: systemStatusQueryError } =
+    useSystemStatus();
+
+  const isReduxPopulated = useSelector(
     (state: AppState) =>
       state.customFilters.isPopulated &&
       state.tags.isPopulated &&
@@ -89,7 +99,17 @@ const useAppPage = () => {
       state.app.translations.isPopulated
   );
 
-  const { hasError, errors } = useSelector(createErrorsSelector());
+  const isPopulated = isReduxPopulated && isSystemStatusPopulated;
+
+  const { hasError, errors: reduxErrors } = useSelector(createErrorsSelector());
+
+  const errors = useMemo(() => {
+    return {
+      ...reduxErrors,
+      systemStatusError:
+        reduxErrors.systemStatusError ?? systemStatusQueryError,
+    };
+  }, [reduxErrors, systemStatusQueryError]);
 
   const isLocalStorageSupported = useMemo(() => {
     const key = 'whisparrTest';
@@ -117,8 +137,19 @@ const useAppPage = () => {
   }, [dispatch]);
 
   return useMemo(() => {
-    return { errors, hasError, isLocalStorageSupported, isPopulated };
-  }, [errors, hasError, isLocalStorageSupported, isPopulated]);
+    return {
+      errors,
+      hasError: hasError || !!systemStatusQueryError,
+      isLocalStorageSupported,
+      isPopulated,
+    };
+  }, [
+    errors,
+    hasError,
+    systemStatusQueryError,
+    isLocalStorageSupported,
+    isPopulated,
+  ]);
 };
 
 export default useAppPage;
