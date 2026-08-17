@@ -5,7 +5,9 @@ declare namespace ParseModalContentCssNamespace {
     input: string;
     inputContainer: string;
     inputIconContainer: string;
+    loading: string;
     message: string;
+    modalFooter: string;
   }
 }
 

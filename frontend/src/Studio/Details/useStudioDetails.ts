@@ -391,7 +391,7 @@ export function ensureImageType(
  * @returns {StudioWorksData} Organized works data with year groupings and UI state
  */
 export function buildStudioWorksData(
-  allWorks: Movie[],
+  allWorks: readonly Movie[],
   expandedState: Record<number, boolean>
 ): StudioWorksData {
   const years = Array.from(

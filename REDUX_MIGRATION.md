@@ -7,23 +7,29 @@ Sources: `Whisparr/Whisparr-Eros@eros-develop` at
 [1d75cc96](https://github.com/Whisparr/Whisparr-Eros/commit/1d75cc96) ·
 `Sonarr/Sonarr@v5-develop` at
 [7e627f69](https://github.com/Sonarr/Sonarr/commit/7e627f69).
-Counts are file-level `react-redux` imports across 1,255 frontend source files.
+Counts are file-level `react-redux` imports across the frontend source tree.
 Every commit reference below links to the Sonarr commit it names; all were
 verified to resolve against the public repo.
+
+**Status: Phase A complete, Phase B started.** See §11 for the running log.
 
 ---
 
 ## 1. Where we actually are
 
-| Metric | Count |
-| --- | --- |
-| Files importing `react-redux` | 327 of 1,255 |
-| Lines under `frontend/src/Store/` | 15,374 across 138 files |
-| Remaining `*Connector` files | 66 |
-| Files touching `@tanstack/react-query` | 13 |
-| zustand stores | 0 (dependency not installed) |
+| Metric | At assessment | Now |
+| --- | --- | --- |
+| Files importing `react-redux` | 327 of 1,255 | **325** of 1,259 |
+| Lines under `frontend/src/Store/` | 15,374 across 138 files | **15,261** across 137 |
+| Redux action slices | 41 | **40** |
+| Remaining `*Connector` files | 66 | 66 |
+| Files touching React Query | 13 | **37** |
+| zustand stores | 0 (not installed) | **installed, 3 primitives** |
 
-Roughly: **4% migrated, 22% hybrid, 74% untouched.**
+The headline number barely moves early on, and that is expected: Phase A added the
+foundation without converting any page, and Phase B is starting with the smallest pages
+by design. The slice count is the number to watch — each page conversion retires one
+outright.
 
 ### The domains are started, not done
 
@@ -84,8 +90,9 @@ Sonarr finished this in **54 commits between Sep 2025 and Jun 2026**. Their tree
 
 ## 3. Phase A — the missing floor
 
-Blocking. ~5 PRs. Everything downstream needs these. Sonarr has all of them; Eros has
-none. Port close to verbatim — this is not the place to invent.
+**Done** — #452, #454, #455. Everything downstream needed these; all are now on
+`eros-develop`. Kept for reference, and because the "retires" column records what each
+primitive is expected to replace as the pages convert.
 
 | Build | Retires | Sonarr ref |
 | --- | --- | --- |
@@ -124,7 +131,7 @@ a whole state slice. Take them roughly in Sonarr's order.
 | **System: Status / Health / Disk Space** — three commits; Health has the sidebar dependency | `systemActions` (400 loc, 20 consumers), `createHealthCheckSelector.js`, `createSystemStatusSelector.ts` | [Sonarr/Sonarr@49c52c2e](https://github.com/Sonarr/Sonarr/commit/49c52c2e), [Sonarr/Sonarr@0552a811](https://github.com/Sonarr/Sonarr/commit/0552a811), [Sonarr/Sonarr@871ae955](https://github.com/Sonarr/Sonarr/commit/871ae955) |
 | **System: Tasks / Backups / Log Files / Events** | `BackupsConnector.js`, `RestoreBackupModal*Connector.js`, `LogsTableConnector.js` | [Sonarr/Sonarr@3091f40c](https://github.com/Sonarr/Sonarr/commit/3091f40c), [Sonarr/Sonarr@c295e24f](https://github.com/Sonarr/Sonarr/commit/c295e24f), [Sonarr/Sonarr@ff5e7327](https://github.com/Sonarr/Sonarr/commit/ff5e7327) |
 | **Calendar** — 12 files; needs the options store from phase A | `calendarActions` (443 loc), `CalendarAppState` | [Sonarr/Sonarr@ccb7f07c](https://github.com/Sonarr/Sonarr/commit/ccb7f07c) (28 files) |
-| **Parse** — small, isolated; Sonarr's deleted 333 lines for 55 | `parseActions.ts`, `ParseAppState` | [Sonarr/Sonarr@263f4839](https://github.com/Sonarr/Sonarr/commit/263f4839) |
+| ~~**Parse**~~ — **done, #458.** 14 files, +77/−337 | ~~`parseActions.ts`, `ParseAppState`~~ | [Sonarr/Sonarr@263f4839](https://github.com/Sonarr/Sonarr/commit/263f4839) |
 | **Wanted: Missing + Cutoff Unmet** — one commit; first real `usePagedApiQuery` consumer | `wantedActions` (342 loc), `WantedAppState` | [Sonarr/Sonarr@40712781](https://github.com/Sonarr/Sonarr/commit/40712781) |
 | **Organize preview + Unmapped Files** — two small pages, one PR | `organizePreviewActions`, `unmappedMovieFileActions` | [Sonarr/Sonarr@10c0e18a](https://github.com/Sonarr/Sonarr/commit/10c0e18a) |
 
@@ -247,17 +254,38 @@ Four places where you cannot just copy their commit.
 
 ## 10. What to do next
 
-The first four PRs:
+Phase A is done and Parse is converted. Continuing through Phase B smallest-first, rather
+than jumping straight to Queue — the point of the early pages is to make the PR shape
+routine before anything expensive.
 
-1. **Align `useApiQuery` / `useApiMutation` with Sonarr's** and remove the two
-   `TODO: Move to useApiMutation` markers in `Movie/useMovie.ts`. Small, and it stops the
-   drift compounding.
-2. **Add zustand + `createPersist` + `useOptionsStore`.** Port from Sonarr near-verbatim.
-3. **Convert one leaf page end-to-end — Parse or Disk Space.** Deliberately trivial. The
-   point is to establish the PR shape, test expectations and coverage story before anything
-   expensive.
+1. **Disk Space** — [Sonarr/Sonarr@871ae955](https://github.com/Sonarr/Sonarr/commit/871ae955),
+   4 files. Near-mechanical repeat of the Parse shape, with no dead-page question attached.
+2. **Log Files**, then **System Status** and **Health** — the rest of the `systemActions`
+   cluster. Health has the sidebar dependency, so it goes last of the three.
+3. **Organize preview + Unmapped Files** — two small pages, one PR.
 4. **Then Queue**, as Sonarr did, because it forces SignalR-driven invalidation into
-   existence early rather than late.
+   existence early rather than late. This is the first genuinely large one at 58 files, and
+   the first that needs the SignalR pivot in Phase C.
+
+### The per-page PR shape, as established by Parse (#458)
+
+Worth repeating verbatim on each page:
+
+1. Move the model out of `App/State/*AppState.ts` into the feature folder as `*Model.ts`,
+   dropping the `AppSectionItemState` wrapper. `git mv` so history follows.
+2. Add `use<Feature>.ts` wrapping `useApiQuery` / `usePagedApiQuery`.
+3. Convert the component. Watch two things the thunks did by hand that React Query already
+   does: debouncing via `setTimeout`, and request cancellation via a stashed
+   `abortRequest`. Both go.
+4. Prefer `isLoading` over `isFetching` for the main spinner, so a refetch keeps the
+   previous result on screen instead of blanking the panel. Add a small secondary spinner
+   if the page needs background-fetch feedback.
+5. Delete the slice, its selector, and its entries in `App/State/AppState.ts` and
+   `Store/Actions/index.js`.
+6. Grep for every removed symbol before committing — the action file, the selector, the
+   AppState type, and the component if one was deleted.
+7. Verify with `tsc --noEmit`, `eslint frontend/`, `yarn build`, and where the change is
+   behavioural, a local run against a real library.
 
 ### On testing — what Sonarr actually did
 
@@ -295,11 +323,48 @@ converted page moves code from unchecked to checked. Two consequences worth hold
    and uses infrastructure already in the repo. They still won't run in CI, so treat them
    as a local pre-merge check, not a gate.
 
-### Risk to verify on the first PR
+### The Sonar coverage gate — resolved
 
-Sonar's scanner is `dotnet-sonarscanner` with only `sonar.cs.opencover.reportsPaths` set —
-there is no JS/TS coverage report. `frontend/src` is not in `sonar.exclusions`, so those
-files are analysed for issues but have no coverage data. **Confirm on the first migration
-PR whether new frontend TypeScript counts as uncovered new code against the 80% new-code
-gate.** If it does, every PR in this roadmap fails the gate and the scanner config needs a
-frontend exclusion or a coverage source before phase B starts.
+This was flagged as a risk and it was real. #452 failed the quality gate on
+`0.0% Coverage on New Code (required ≥ 80%)`, on 106 lines of new TypeScript with no other
+condition unmet, because the frontend produces no coverage report and Sonar scored the
+absence as zero.
+
+Fixed in #453 with `sonar.coverage.exclusions=frontend/**` — note `coverage.exclusions`,
+not `exclusions`, so frontend files stay under analysis for bugs and smells and only drop
+out of the coverage metric. Confirmed working: #454 added more frontend TypeScript and
+came back green. Sonarr has no SonarQube workflow at all, so there was no upstream
+precedent to copy here.
+
+If a JS test runner is ever added, remove that line and set
+`sonar.javascript.lcov.reportPaths` instead.
+
+---
+
+## 11. Log
+
+| Date | PR | What |
+| --- | --- | --- |
+| 2026-08-16 | #452 | zustand, `createPersist`, `createOptionsStore`, `useSelectStore`. Foundation only, no consumers. |
+| 2026-08-16 | #453 | `sonar.coverage.exclusions=frontend/**`, plus linking the commit references in this file. |
+| 2026-08-16 | #454 | `usePagedApiQuery`, `clientSideFilterAndSort`, `getFilterTypePredicate`, `findSelectedFilters` to TypeScript. |
+| 2026-08-16 | #455 | `Readonly<T>` on query results, and movie mutations onto `useApiMutation`. |
+| 2026-08-16 | #456 | Dependabot: ignore the redux family — it is being removed, not upgraded. |
+| 2026-08-17 | #458 | **Parse.** First page conversion. Slice retired; unreachable `Parse.tsx` deleted. |
+
+### Open threads
+
+- **Whisparr/Whisparr#1123** — `AUTH_HEADERS` and hand-rolled fetch helpers still
+  duplicated in `useStudio`, `usePerformer`, `useHistory`, `useAddNewMovie`. Not on the
+  critical path; filed rather than folded into #455.
+- **Two `Filter` type definitions** — `App/State/AppState.ts` and `Filters/Filter.ts`
+  differ in how strictly `type` and `value` are typed. 21 files import from the former.
+  `History.tsx` carries a cast and a TODO. Collapse them with the custom filters work in
+  Phase C.
+- **Two live "toggle movie monitored" implementations** — the React Query hook serves
+  movie/scene details and the studio and performer scene rows; the Collection overview
+  connectors still dispatch the redux thunk. They do not share cache invalidation.
+  Resolves when Collection converts in Phase D.
+- **`getErrorMessage(error as Error)` in `AddNewPerformer.tsx`** — the cast is harmless
+  today because the value is redux-sourced, but it will silently lie once that page moves
+  to React Query and the value becomes an `ApiError`. Remove the cast then.

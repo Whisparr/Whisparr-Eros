@@ -1,9 +1,9 @@
 import React from 'react';
-import { ParseModel } from 'App/State/ParseAppState';
 import FieldSet from 'Components/FieldSet';
 import MovieFormats from 'Movie/MovieFormats';
 import MovieTitleLink from 'Movie/MovieTitleLink';
 import translate from 'Utilities/String/translate';
+import { ParseModel } from './ParseModel';
 import ParseResultItem from './ParseResultItem';
 import styles from './ParseResult.css';
 

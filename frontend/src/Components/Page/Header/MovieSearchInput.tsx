@@ -69,7 +69,7 @@ interface Section {
   suggestions: MovieSuggestion[] | AddNewMovieSuggestion[];
 }
 
-function moviesToSuggestions(movies: Movie[]): MovieSuggestion[] {
+function moviesToSuggestions(movies: readonly Movie[]): MovieSuggestion[] {
   return movies.map((m, i) => ({
     key: m.id,
     title: m.title,

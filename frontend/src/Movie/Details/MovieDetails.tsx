@@ -211,7 +211,7 @@ function MovieDetails(props: Readonly<Partial<Props>>) {
 
   function handleMonitoredPress() {
     if (!movie) return;
-    toggleMonitored({ movie, monitored: !monitored });
+    toggleMonitored({ id: movie.id, monitored: !monitored });
   }
 
   return (
