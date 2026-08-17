@@ -3,10 +3,13 @@
 Status assessment and playbook for migrating the Whisparr Eros frontend from Redux to
 React Query + zustand, benchmarked against Sonarr's completed `v5-develop` migration.
 
-Sources: `Whisparr/Whisparr-Eros@eros-develop` at `1d75cc96` ·
-`Sonarr/Sonarr@v5-develop` at `7e627f69`.
+Sources: `Whisparr/Whisparr-Eros@eros-develop` at
+[1d75cc96](https://github.com/Whisparr/Whisparr-Eros/commit/1d75cc96) ·
+`Sonarr/Sonarr@v5-develop` at
+[7e627f69](https://github.com/Sonarr/Sonarr/commit/7e627f69).
 Counts are file-level `react-redux` imports across 1,255 frontend source files.
-Sonarr commit hashes are short refs on `v5-develop`.
+Every commit reference below links to the Sonarr commit it names; all were
+verified to resolve against the public repo.
 
 ---
 
@@ -70,10 +73,10 @@ Sonarr finished this in **54 commits between Sep 2025 and Jun 2026**. Their tree
 
 1. **One page per commit, never batched.** Even the tiny ones (disk space: 4 files, 19
    insertions) shipped alone. Bisectable, reviewable, revertable.
-2. **zustand arrived late, deliberately.** `878f879c` lands in month four, after ~20 pages
+2. **zustand arrived late, deliberately.** [Sonarr/Sonarr@878f879c](https://github.com/Sonarr/Sonarr/commit/878f879c) lands in month four, after ~20 pages
    had already proven what client state actually still needed. They did not design the
    store layer up front.
-3. **A dedicated correctness pass near the end.** `9bed77c6` "Avoid mutation for
+3. **A dedicated correctness pass near the end.** [Sonarr/Sonarr@9bed77c6](https://github.com/Sonarr/Sonarr/commit/9bed77c6) "Avoid mutation for
    react-query data" — 37 files — cleaning up code that mutated cached objects in place, a
    habit carried over from reducers. Budget for this; it will bite here too.
 
@@ -87,11 +90,11 @@ none. Port close to verbatim — this is not the place to invent.
 | Build | Retires | Sonarr ref |
 | --- | --- | --- |
 | zustand + `createPersist` | `Store/Middleware/createPersistState.js`, `redux-localstorage`, `Store/Migrators/` | `Helpers/createPersist.ts` |
-| `useOptionsStore` factory — per-page columns, sort, filter key, view mode, poster/overview options | `movieIndexActions`, `sceneIndexActions`, `createSetTableOptionReducer` | `878f879c` |
+| `useOptionsStore` factory — per-page columns, sort, filter key, view mode, poster/overview options | `movieIndexActions`, `sceneIndexActions`, `createSetTableOptionReducer` | [Sonarr/Sonarr@878f879c](https://github.com/Sonarr/Sonarr/commit/878f879c) |
 | `useSelectStore` — row selection for every index and manage modal | `App/SelectContext.tsx`, `Helpers/Hooks/useSelectState.tsx` | `App/Select/useSelectStore.ts` |
 | `usePagedApiQuery` — server-side paging with `keepPreviousData` | `createFetchServerSideCollectionHandler.js`, `Components/Table/usePaging.ts` | `Helpers/Hooks/usePagedApiQuery.ts` |
 | `clientSideFilterAndSort` — the filter/sort engine every index shares | `createClientSideCollectionSelector.js`, `create*ClientSideCollectionItemsSelector` ×4 | `Utilities/Filter/` |
-| Pending-changes stores (×3) — defer to phase E, only Settings needs them | `createSetSettingValueReducer.js`, `createSetProviderFieldValueReducer.js` | `7e702380` |
+| Pending-changes stores (×3) — defer to phase E, only Settings needs them | `createSetSettingValueReducer.js`, `createSetProviderFieldValueReducer.js` | [Sonarr/Sonarr@7e702380](https://github.com/Sonarr/Sonarr/commit/7e702380) |
 
 ### Also fix while you're in here
 
@@ -115,15 +118,15 @@ a whole state slice. Take them roughly in Sonarr's order.
 
 | Page | Retires | Sonarr ref |
 | --- | --- | --- |
-| **Queue** — biggest leaf, 16 consumers, SignalR-driven, drives sidebar badge | `queueActions` (539 loc), `QueueAppState` | `ae201f52` (58 files) |
-| **Blocklist** — incl. per-movie blocklist tab | `blocklistActions`, `movieBlocklistActions` | `a4f21085` |
-| **History** *(hybrid)* — `useHistory` covers paged list + movie history; finish details modal | `historyActions`, `movieHistoryActions`, `HistoryDetailsConnector` ×2 | `a45b0776`, `6b479a5a` |
-| **System: Status / Health / Disk Space** — three commits; Health has the sidebar dependency | `systemActions` (400 loc, 20 consumers), `createHealthCheckSelector.js`, `createSystemStatusSelector.ts` | `49c52c2e`, `0552a811`, `871ae955` |
-| **System: Tasks / Backups / Log Files / Events** | `BackupsConnector.js`, `RestoreBackupModal*Connector.js`, `LogsTableConnector.js` | `3091f40c`, `c295e24f`, `ff5e7327` |
-| **Calendar** — 12 files; needs the options store from phase A | `calendarActions` (443 loc), `CalendarAppState` | `ccb7f07c` (28 files) |
-| **Parse** — small, isolated; Sonarr's deleted 333 lines for 55 | `parseActions.ts`, `ParseAppState` | `263f4839` |
-| **Wanted: Missing + Cutoff Unmet** — one commit; first real `usePagedApiQuery` consumer | `wantedActions` (342 loc), `WantedAppState` | `40712781` |
-| **Organize preview + Unmapped Files** — two small pages, one PR | `organizePreviewActions`, `unmappedMovieFileActions` | `10c0e18a` |
+| **Queue** — biggest leaf, 16 consumers, SignalR-driven, drives sidebar badge | `queueActions` (539 loc), `QueueAppState` | [Sonarr/Sonarr@ae201f52](https://github.com/Sonarr/Sonarr/commit/ae201f52) (58 files) |
+| **Blocklist** — incl. per-movie blocklist tab | `blocklistActions`, `movieBlocklistActions` | [Sonarr/Sonarr@a4f21085](https://github.com/Sonarr/Sonarr/commit/a4f21085) |
+| **History** *(hybrid)* — `useHistory` covers paged list + movie history; finish details modal | `historyActions`, `movieHistoryActions`, `HistoryDetailsConnector` ×2 | [Sonarr/Sonarr@a45b0776](https://github.com/Sonarr/Sonarr/commit/a45b0776), [Sonarr/Sonarr@6b479a5a](https://github.com/Sonarr/Sonarr/commit/6b479a5a) |
+| **System: Status / Health / Disk Space** — three commits; Health has the sidebar dependency | `systemActions` (400 loc, 20 consumers), `createHealthCheckSelector.js`, `createSystemStatusSelector.ts` | [Sonarr/Sonarr@49c52c2e](https://github.com/Sonarr/Sonarr/commit/49c52c2e), [Sonarr/Sonarr@0552a811](https://github.com/Sonarr/Sonarr/commit/0552a811), [Sonarr/Sonarr@871ae955](https://github.com/Sonarr/Sonarr/commit/871ae955) |
+| **System: Tasks / Backups / Log Files / Events** | `BackupsConnector.js`, `RestoreBackupModal*Connector.js`, `LogsTableConnector.js` | [Sonarr/Sonarr@3091f40c](https://github.com/Sonarr/Sonarr/commit/3091f40c), [Sonarr/Sonarr@c295e24f](https://github.com/Sonarr/Sonarr/commit/c295e24f), [Sonarr/Sonarr@ff5e7327](https://github.com/Sonarr/Sonarr/commit/ff5e7327) |
+| **Calendar** — 12 files; needs the options store from phase A | `calendarActions` (443 loc), `CalendarAppState` | [Sonarr/Sonarr@ccb7f07c](https://github.com/Sonarr/Sonarr/commit/ccb7f07c) (28 files) |
+| **Parse** — small, isolated; Sonarr's deleted 333 lines for 55 | `parseActions.ts`, `ParseAppState` | [Sonarr/Sonarr@263f4839](https://github.com/Sonarr/Sonarr/commit/263f4839) |
+| **Wanted: Missing + Cutoff Unmet** — one commit; first real `usePagedApiQuery` consumer | `wantedActions` (342 loc), `WantedAppState` | [Sonarr/Sonarr@40712781](https://github.com/Sonarr/Sonarr/commit/40712781) |
+| **Organize preview + Unmapped Files** — two small pages, one PR | `organizePreviewActions`, `unmappedMovieFileActions` | [Sonarr/Sonarr@10c0e18a](https://github.com/Sonarr/Sonarr/commit/10c0e18a) |
 
 ---
 
@@ -134,14 +137,14 @@ commands commit touched 51 files, custom filters 44. Ship them alone.
 
 | System | Retires | Sonarr ref |
 | --- | --- | --- |
-| **Commands** — 44 live consumers; every refresh/search button. SignalR-fed. | `commandActions` (207 loc), `createCommandSelector.ts`, `createExecutingCommandsSelector.ts`, `createCommandExecutingSelector.ts` | `dec6f4b5` (51 files) |
-| **Custom filters** — prerequisite for every index filter modal | `customFilterActions`, `CustomFiltersModalContentConnector.js`, `CustomFiltersAppState` | `7d2e01d5` (44 files) |
-| **Tags** — rewrite `useTags` for real, plus tag details and filter-builder rows | `tagActions`, `createTagsSelector.ts`, `createTagDetailsSelector.ts`, `TagFilterBuilderRowValueConnector.js` | `0809a72c` (40 files) |
-| **Root folders** — 17 consumers across Settings, Add flows, edit modals | `rootFolderActions`, `createRootFoldersSelector.ts` | `7a5157df` |
-| **Paths + file browser** *(hybrid)* — `usePaths` exists; finish `PathInput`, `FileBrowserModalContent` | `pathActions`, `PathsAppState` | `91b24290` |
-| **Provider options + captcha** — feeds every provider settings form; do before phase E | `providerOptionActions`, `captchaActions`, `oAuthActions` | `cd7adba1` |
+| **Commands** — 44 live consumers; every refresh/search button. SignalR-fed. | `commandActions` (207 loc), `createCommandSelector.ts`, `createExecutingCommandsSelector.ts`, `createCommandExecutingSelector.ts` | [Sonarr/Sonarr@dec6f4b5](https://github.com/Sonarr/Sonarr/commit/dec6f4b5) (51 files) |
+| **Custom filters** — prerequisite for every index filter modal | `customFilterActions`, `CustomFiltersModalContentConnector.js`, `CustomFiltersAppState` | [Sonarr/Sonarr@7d2e01d5](https://github.com/Sonarr/Sonarr/commit/7d2e01d5) (44 files) |
+| **Tags** — rewrite `useTags` for real, plus tag details and filter-builder rows | `tagActions`, `createTagsSelector.ts`, `createTagDetailsSelector.ts`, `TagFilterBuilderRowValueConnector.js` | [Sonarr/Sonarr@0809a72c](https://github.com/Sonarr/Sonarr/commit/0809a72c) (40 files) |
+| **Root folders** — 17 consumers across Settings, Add flows, edit modals | `rootFolderActions`, `createRootFoldersSelector.ts` | [Sonarr/Sonarr@7a5157df](https://github.com/Sonarr/Sonarr/commit/7a5157df) |
+| **Paths + file browser** *(hybrid)* — `usePaths` exists; finish `PathInput`, `FileBrowserModalContent` | `pathActions`, `PathsAppState` | [Sonarr/Sonarr@91b24290](https://github.com/Sonarr/Sonarr/commit/91b24290) |
+| **Provider options + captcha** — feeds every provider settings form; do before phase E | `providerOptionActions`, `captchaActions`, `oAuthActions` | [Sonarr/Sonarr@cd7adba1](https://github.com/Sonarr/Sonarr/commit/cd7adba1) |
 | **SignalR → query invalidation** — the pivot: `SignalRConnector.js` dispatches actions today; becomes a listener that invalidates query keys | `Components/SignalRConnector.js`, `Store/thunks.ts`, `redux-batched-actions` | `Components/SignalRListener.tsx` |
-| **App shell** — messages, dimensions, theme, advanced settings. zustand, not React Query. 34 files import `baseActions`. | `appActions`, `MessagesAppState`, `createDimensionsSelector.ts` | `878f879c`, `7e702380` |
+| **App shell** — messages, dimensions, theme, advanced settings. zustand, not React Query. 34 files import `baseActions`. | `appActions`, `MessagesAppState`, `createDimensionsSelector.ts` | [Sonarr/Sonarr@878f879c](https://github.com/Sonarr/Sonarr/commit/878f879c), [Sonarr/Sonarr@7e702380](https://github.com/Sonarr/Sonarr/commit/7e702380) |
 
 ---
 
@@ -153,15 +156,15 @@ shape: convert one properly, then the other three are largely mechanical.
 
 | Domain | Remaining work | Sonarr ref |
 | --- | --- | --- |
-| **Movie** *(hybrid)* — do first, set the template. 39 redux files. | Index options → `movieOptionsStore`; filters → `FILTERS`/`FILTER_BUILDER` in `useMovie`; select footer; Edit/Delete/Tags/Organize modals. Retires `movieActions`, `movieIndexActions`, `movieTitlesActions`. | `0521a6c3` (91 files) |
+| **Movie** *(hybrid)* — do first, set the template. 39 redux files. | Index options → `movieOptionsStore`; filters → `FILTERS`/`FILTER_BUILDER` in `useMovie`; select footer; Edit/Delete/Tags/Organize modals. Retires `movieActions`, `movieIndexActions`, `movieTitlesActions`. | [Sonarr/Sonarr@0521a6c3](https://github.com/Sonarr/Sonarr/commit/0521a6c3) (91 files) |
 | **Scene** *(hybrid)* — 24 redux files. Shares the `Movie` model, so hooks can share a generic base. | `sceneIndexActions`, `createAllScenesSelector.ts`, `DeleteSceneModalContentConnector.js` | — |
 | **Performer** *(hybrid)* — 23 redux files. Details, scenes tab, add flow, edit modal. | `performerActions` (676 loc), `performerScenesActions`, `addPerformerActions`, `EditPerformerModalContentConnector.js` | — |
 | **Studio** *(hybrid)* — 22 redux files. Same shape as Performer. | `studioActions` (510 loc), `studioMoviesActions`, `studioScenesActions`, `DeleteStudioModalConnector.js` | — |
 | **Collection** — untouched, fully connector-based. 7 of the 66 connectors live here. | `movieCollectionActions` (572 loc), `Collection*Connector.js` ×7, `createCollectionSelector.ts` | — |
-| **Movie files + credits** *(hybrid)* — `useMovieFile` covers most; credits and titles still redux | `movieFileActions`, `movieCreditsActions`, `MovieCreditPosterConnector.tsx` | `44fc1e0e` |
-| **Interactive search** — release list, override match, download client picker | `releaseActions` (365 loc), `ReleasesAppState` | `8f95849e` (41 files) |
-| **Interactive import** — folder picker, quality/language selects, row grid | `interactiveImportActions` (366 loc), `InteractiveImportAppState` | `ec44e1c5` |
-| **Add / Import Movie** *(hybrid)* — `useAddNewMovie` and `useImportMutation` exist; finish folder-select and import-list flows | `addMovieActions` | `ad57cf4b` |
+| **Movie files + credits** *(hybrid)* — `useMovieFile` covers most; credits and titles still redux | `movieFileActions`, `movieCreditsActions`, `MovieCreditPosterConnector.tsx` | [Sonarr/Sonarr@44fc1e0e](https://github.com/Sonarr/Sonarr/commit/44fc1e0e) |
+| **Interactive search** — release list, override match, download client picker | `releaseActions` (365 loc), `ReleasesAppState` | [Sonarr/Sonarr@8f95849e](https://github.com/Sonarr/Sonarr/commit/8f95849e) (41 files) |
+| **Interactive import** — folder picker, quality/language selects, row grid | `interactiveImportActions` (366 loc), `InteractiveImportAppState` | [Sonarr/Sonarr@ec44e1c5](https://github.com/Sonarr/Sonarr/commit/ec44e1c5) |
+| **Add / Import Movie** *(hybrid)* — `useAddNewMovie` and `useImportMutation` exist; finish folder-select and import-list flows | `addMovieActions` | [Sonarr/Sonarr@ad57cf4b](https://github.com/Sonarr/Sonarr/commit/ad57cf4b) |
 
 ---
 
@@ -178,17 +181,17 @@ their own PR before section one.
 
 | Order | Section | Retires | Sonarr ref |
 | --- | --- | --- | --- |
-| 1 | **UI settings** — smallest, 32 files read it. Good pathfinder. | `Settings/ui.js`, `UISettingsConnector.js`, `createUISettingsSelector.ts` | `74e6ce43` |
-| 2 | Remote path mappings · Release profiles | `Settings/remotePathMappings.js`, `Settings/releaseProfiles.js` | `8fcab2d3`, `4713615b` |
-| 3 | Quality profiles · Quality definitions (4 connectors incl. reset modal) | `Settings/qualityProfiles.js`, `Settings/qualityDefinitions.js`, `Quality*Connector.js` ×4 | `21ca65a0`, `cf593b1f` |
-| 4 | Connections (Notifications) | `Settings/notifications.js`, `DeviceInput.tsx` | `6d49b41d` |
-| 5 | Naming · Media Management · Metadata | `Settings/naming.js`, `Settings/namingExamples.js`, `Settings/mediaManagement.js`, `Settings/metadata.js` | `677c588a`, `bbb4c671`, `c0a56586` |
-| 6 | Languages · General (partial `useGeneralSettings` exists) | `Settings/languages.js`, `Settings/general.js`, `GeneralSettingsConnector.js` | `5bac016f`, `6764cf1c` |
-| 7 | Indexers · Indexer Options · Indexer Flags (11 files, three commits) | `Settings/indexers.js`, `Settings/indexerOptions.js`, `Settings/indexerFlags.js`, `IndexerFilterBuilderRowValueConnector.js` | `c4c0ec25`, `7a455dd0`, `fbb70519` |
-| 8 | Auto tagging · Import list exclusions | `Settings/autoTaggings.js`, `Settings/autoTaggingSpecifications.js`, `Settings/importListExclusions.js` | `0ebda892`, `b0fac152` |
-| 9 | Import lists + options (16 files — largest subtree) | `Settings/importLists.js`, `Settings/importListOptions.js`, `ImportListFilterBuilderRowValueConnector.js` | `75d1a958`, `ba7b6b03` |
-| 10 | Custom formats (10 files, 6 connectors, import/export modals) | `Settings/customFormats.js`, `Settings/customFormatSpecifications.js`, `CustomFormat*Connector.js` ×6 | `06aa7d57` (38 files) |
-| 11 | Delay profiles · Download clients + options | `Settings/delayProfiles.js`, `Settings/downloadClients.js`, `Settings/downloadClientOptions.js`, `createEnabledDownloadClientsSelector.ts` | `ed1d92c5`, `7be32b0c`, `d04e2996` |
+| 1 | **UI settings** — smallest, 32 files read it. Good pathfinder. | `Settings/ui.js`, `UISettingsConnector.js`, `createUISettingsSelector.ts` | [Sonarr/Sonarr@74e6ce43](https://github.com/Sonarr/Sonarr/commit/74e6ce43) |
+| 2 | Remote path mappings · Release profiles | `Settings/remotePathMappings.js`, `Settings/releaseProfiles.js` | [Sonarr/Sonarr@8fcab2d3](https://github.com/Sonarr/Sonarr/commit/8fcab2d3), [Sonarr/Sonarr@4713615b](https://github.com/Sonarr/Sonarr/commit/4713615b) |
+| 3 | Quality profiles · Quality definitions (4 connectors incl. reset modal) | `Settings/qualityProfiles.js`, `Settings/qualityDefinitions.js`, `Quality*Connector.js` ×4 | [Sonarr/Sonarr@21ca65a0](https://github.com/Sonarr/Sonarr/commit/21ca65a0), [Sonarr/Sonarr@cf593b1f](https://github.com/Sonarr/Sonarr/commit/cf593b1f) |
+| 4 | Connections (Notifications) | `Settings/notifications.js`, `DeviceInput.tsx` | [Sonarr/Sonarr@6d49b41d](https://github.com/Sonarr/Sonarr/commit/6d49b41d) |
+| 5 | Naming · Media Management · Metadata | `Settings/naming.js`, `Settings/namingExamples.js`, `Settings/mediaManagement.js`, `Settings/metadata.js` | [Sonarr/Sonarr@677c588a](https://github.com/Sonarr/Sonarr/commit/677c588a), [Sonarr/Sonarr@bbb4c671](https://github.com/Sonarr/Sonarr/commit/bbb4c671), [Sonarr/Sonarr@c0a56586](https://github.com/Sonarr/Sonarr/commit/c0a56586) |
+| 6 | Languages · General (partial `useGeneralSettings` exists) | `Settings/languages.js`, `Settings/general.js`, `GeneralSettingsConnector.js` | [Sonarr/Sonarr@5bac016f](https://github.com/Sonarr/Sonarr/commit/5bac016f), [Sonarr/Sonarr@6764cf1c](https://github.com/Sonarr/Sonarr/commit/6764cf1c) |
+| 7 | Indexers · Indexer Options · Indexer Flags (11 files, three commits) | `Settings/indexers.js`, `Settings/indexerOptions.js`, `Settings/indexerFlags.js`, `IndexerFilterBuilderRowValueConnector.js` | [Sonarr/Sonarr@c4c0ec25](https://github.com/Sonarr/Sonarr/commit/c4c0ec25), [Sonarr/Sonarr@7a455dd0](https://github.com/Sonarr/Sonarr/commit/7a455dd0), [Sonarr/Sonarr@fbb70519](https://github.com/Sonarr/Sonarr/commit/fbb70519) |
+| 8 | Auto tagging · Import list exclusions | `Settings/autoTaggings.js`, `Settings/autoTaggingSpecifications.js`, `Settings/importListExclusions.js` | [Sonarr/Sonarr@0ebda892](https://github.com/Sonarr/Sonarr/commit/0ebda892), [Sonarr/Sonarr@b0fac152](https://github.com/Sonarr/Sonarr/commit/b0fac152) |
+| 9 | Import lists + options (16 files — largest subtree) | `Settings/importLists.js`, `Settings/importListOptions.js`, `ImportListFilterBuilderRowValueConnector.js` | [Sonarr/Sonarr@75d1a958](https://github.com/Sonarr/Sonarr/commit/75d1a958), [Sonarr/Sonarr@ba7b6b03](https://github.com/Sonarr/Sonarr/commit/ba7b6b03) |
+| 10 | Custom formats (10 files, 6 connectors, import/export modals) | `Settings/customFormats.js`, `Settings/customFormatSpecifications.js`, `CustomFormat*Connector.js` ×6 | [Sonarr/Sonarr@06aa7d57](https://github.com/Sonarr/Sonarr/commit/06aa7d57) (38 files) |
+| 11 | Delay profiles · Download clients + options | `Settings/delayProfiles.js`, `Settings/downloadClients.js`, `Settings/downloadClientOptions.js`, `createEnabledDownloadClientsSelector.ts` | [Sonarr/Sonarr@ed1d92c5](https://github.com/Sonarr/Sonarr/commit/ed1d92c5), [Sonarr/Sonarr@7be32b0c](https://github.com/Sonarr/Sonarr/commit/7be32b0c), [Sonarr/Sonarr@d04e2996](https://github.com/Sonarr/Sonarr/commit/d04e2996) |
 
 ---
 
@@ -200,7 +203,7 @@ Sonarr's ending was two commits: a correctness sweep, then the delete.
 
 Reducer habits produce code that mutates objects in place. Under Redux that was contained;
 under React Query a cached object is shared across every component reading that key, so
-in-place edits corrupt other views silently. Sonarr's sweep hit 37 files (`9bed77c6`). Do
+in-place edits corrupt other views silently. Sonarr's sweep hit 37 files ([Sonarr/Sonarr@9bed77c6](https://github.com/Sonarr/Sonarr/commit/9bed77c6)). Do
 this **before** the delete, while the old code is still there to compare against.
 
 Sonarr also switched `useApiQuery`'s generic to `Readonly<T>` so the compiler catches it —
@@ -208,7 +211,7 @@ Eros's copy has not.
 
 ### F2 — Goodbye Redux
 
-Sonarr's final commit (`0460281f`) removed 1,996 lines across 51 files. The Eros equivalent:
+Sonarr's final commit ([Sonarr/Sonarr@0460281f](https://github.com/Sonarr/Sonarr/commit/0460281f)) removed 1,996 lines across 51 files. The Eros equivalent:
 
 - Delete `frontend/src/Store/` — 138 files, 15,374 lines.
 - Delete surviving `App/State/*AppState.ts` slices (33 today; most disappear with their phase).
