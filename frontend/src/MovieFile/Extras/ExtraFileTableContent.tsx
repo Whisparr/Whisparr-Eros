@@ -32,7 +32,7 @@ const columns = [
 
 interface ExtraFileTableContentProps {
   movieId?: number;
-  items: ExtraFileRowProps[];
+  items: readonly ExtraFileRowProps[];
 }
 
 function ExtraFileTableContent({ items }: ExtraFileTableContentProps) {

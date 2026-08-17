@@ -32,7 +32,7 @@ function calculateRowHeight(posterHeight: number, isSmallScreen: boolean) {
 }
 
 interface Props {
-  items: MovieCredit[];
+  items: readonly MovieCredit[];
   itemComponent: React.ElementType;
   isSmallScreen: boolean;
 }

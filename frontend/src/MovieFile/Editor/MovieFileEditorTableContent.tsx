@@ -11,7 +11,7 @@ import styles from './MovieFileEditorTableContent.css';
 export interface MovieFileEditorTableContentProps {
   movieId?: number;
   isDeleting: boolean;
-  items: MovieFile[];
+  items: readonly MovieFile[];
   columns: Column[];
   sortKey: string;
   sortDirection: SortDirection;

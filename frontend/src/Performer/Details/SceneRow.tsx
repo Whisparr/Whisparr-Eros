@@ -71,7 +71,7 @@ export default function SceneRow(props: SceneRowProps) {
 
   const { mutate: toggleMonitored } = useToggleMovieMonitored();
   function onMonitorToggle(): void {
-    toggleMonitored({ movie, monitored: !movie.monitored });
+    toggleMonitored({ id: movie.id, monitored: !movie.monitored });
   }
 
   const url = externalLink();

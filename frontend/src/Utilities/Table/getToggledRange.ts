@@ -1,7 +1,7 @@
 import { Id, SelectStoreModel } from 'App/Select/useSelectStore';
 
 function getToggledRange<T extends SelectStoreModel<Id>>(
-  items: T[],
+  items: readonly T[],
   id: number | string,
   lastToggled: number | string
 ) {

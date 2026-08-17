@@ -64,7 +64,7 @@ const onDetailsModalClose = (): void => {
 
   const { mutate: toggleMonitored } = useToggleMovieMonitored();
   function onMonitorToggle(): void {
-    toggleMonitored({ movie, monitored: !movie.monitored });
+    toggleMonitored({ id: movie.id, monitored: !movie.monitored });
   }
 
   return (
