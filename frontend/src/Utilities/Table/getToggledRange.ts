@@ -1,6 +1,6 @@
-import ModelBase from 'App/ModelBase';
+import { Id, SelectStoreModel } from 'App/Select/useSelectStore';
 
-function getToggledRange<T extends ModelBase>(
+function getToggledRange<T extends SelectStoreModel<Id>>(
   items: T[],
   id: number | string,
   lastToggled: number | string
