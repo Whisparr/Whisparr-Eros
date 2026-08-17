@@ -19,7 +19,7 @@ verified to resolve against the public repo.
 
 | Metric | At assessment | Now |
 | --- | --- | --- |
-| Files importing `react-redux` | 327 of 1,255 | **325** of 1,259 |
+| Files importing `react-redux` | 327 of 1,255 | **324** of 1,259 |
 | Lines under `frontend/src/Store/` | 15,374 across 138 files | **15,261** across 137 |
 | Redux action slices | 41 | **40** |
 | Remaining `*Connector` files | 66 | 66 |
@@ -128,7 +128,7 @@ a whole state slice. Take them roughly in Sonarr's order.
 | **Queue** — biggest leaf, 16 consumers, SignalR-driven, drives sidebar badge | `queueActions` (539 loc), `QueueAppState` | [Sonarr/Sonarr@ae201f52](https://github.com/Sonarr/Sonarr/commit/ae201f52) (58 files) |
 | **Blocklist** — incl. per-movie blocklist tab | `blocklistActions`, `movieBlocklistActions` | [Sonarr/Sonarr@a4f21085](https://github.com/Sonarr/Sonarr/commit/a4f21085) |
 | **History** *(hybrid)* — `useHistory` covers paged list + movie history; finish details modal | `historyActions`, `movieHistoryActions`, `HistoryDetailsConnector` ×2 | [Sonarr/Sonarr@a45b0776](https://github.com/Sonarr/Sonarr/commit/a45b0776), [Sonarr/Sonarr@6b479a5a](https://github.com/Sonarr/Sonarr/commit/6b479a5a) |
-| **System: Status / Health / Disk Space** — three commits; Health has the sidebar dependency | `systemActions` (400 loc, 20 consumers), `createHealthCheckSelector.js`, `createSystemStatusSelector.ts` | [Sonarr/Sonarr@49c52c2e](https://github.com/Sonarr/Sonarr/commit/49c52c2e), [Sonarr/Sonarr@0552a811](https://github.com/Sonarr/Sonarr/commit/0552a811), [Sonarr/Sonarr@871ae955](https://github.com/Sonarr/Sonarr/commit/871ae955) |
+| **System: Status / Health** — ~~Disk Space **done, #461**~~. Health has the sidebar dependency, so it goes last | `systemActions` (391 loc after #461), `createHealthCheckSelector.js`, `createSystemStatusSelector.ts` | [Sonarr/Sonarr@49c52c2e](https://github.com/Sonarr/Sonarr/commit/49c52c2e), [Sonarr/Sonarr@0552a811](https://github.com/Sonarr/Sonarr/commit/0552a811), ~~[Sonarr/Sonarr@871ae955](https://github.com/Sonarr/Sonarr/commit/871ae955)~~ |
 | **System: Tasks / Backups / Log Files / Events** | `BackupsConnector.js`, `RestoreBackupModal*Connector.js`, `LogsTableConnector.js` | [Sonarr/Sonarr@3091f40c](https://github.com/Sonarr/Sonarr/commit/3091f40c), [Sonarr/Sonarr@c295e24f](https://github.com/Sonarr/Sonarr/commit/c295e24f), [Sonarr/Sonarr@ff5e7327](https://github.com/Sonarr/Sonarr/commit/ff5e7327) |
 | **Calendar** — 12 files; needs the options store from phase A | `calendarActions` (443 loc), `CalendarAppState` | [Sonarr/Sonarr@ccb7f07c](https://github.com/Sonarr/Sonarr/commit/ccb7f07c) (28 files) |
 | ~~**Parse**~~ — **done, #458.** 14 files, +77/−337 | ~~`parseActions.ts`, `ParseAppState`~~ | [Sonarr/Sonarr@263f4839](https://github.com/Sonarr/Sonarr/commit/263f4839) |
@@ -254,14 +254,15 @@ Four places where you cannot just copy their commit.
 
 ## 10. What to do next
 
-Phase A is done and Parse is converted. Continuing through Phase B smallest-first, rather
-than jumping straight to Queue — the point of the early pages is to make the PR shape
-routine before anything expensive.
+Phase A is done; Parse and Disk Space are converted. Continuing through Phase B
+smallest-first, rather than jumping straight to Queue — the point of the early pages is to
+make the PR shape routine before anything expensive.
 
-1. **Disk Space** — [Sonarr/Sonarr@871ae955](https://github.com/Sonarr/Sonarr/commit/871ae955),
-   4 files. Near-mechanical repeat of the Parse shape, with no dead-page question attached.
-2. **Log Files**, then **System Status** and **Health** — the rest of the `systemActions`
-   cluster. Health has the sidebar dependency, so it goes last of the three.
+1. **Log Files** — [Sonarr/Sonarr@ff5e7327](https://github.com/Sonarr/Sonarr/commit/ff5e7327),
+   4 files. Next smallest, and another partial trim of `systemActions`.
+2. **System Status**, then **Health** — the rest of the `systemActions` cluster. Health
+   goes last because it feeds the sidebar; converting it last means the slice can be
+   retired in the same PR.
 3. **Organize preview + Unmapped Files** — two small pages, one PR.
 4. **Then Queue**, as Sonarr did, because it forces SignalR-driven invalidation into
    existence early rather than late. This is the first genuinely large one at 58 files, and
@@ -281,11 +282,17 @@ Worth repeating verbatim on each page:
    previous result on screen instead of blanking the panel. Add a small secondary spinner
    if the page needs background-fetch feedback.
 5. Delete the slice, its selector, and its entries in `App/State/AppState.ts` and
-   `Store/Actions/index.js`.
+   `Store/Actions/index.js`. Where the slice serves more than one page — `systemActions`
+   does — take out only that page's pieces and leave the rest, retiring the slice with the
+   last page that uses it.
 6. Grep for every removed symbol before committing — the action file, the selector, the
    AppState type, and the component if one was deleted.
 7. Verify with `tsc --noEmit`, `eslint frontend/`, `yarn build`, and where the change is
    behavioural, a local run against a real library.
+8. **Update this document in the same PR** — the metrics table in §1, the page's row in
+   its phase table, the next-up list above, and a row in the §11 log. It is the progress
+   tracker; keeping it current is part of the work, not a follow-up. It costs a minute
+   while the numbers are in front of you and is archaeology later.
 
 ### On testing — what Sonarr actually did
 
@@ -351,6 +358,7 @@ If a JS test runner is ever added, remove that line and set
 | 2026-08-16 | #455 | `Readonly<T>` on query results, and movie mutations onto `useApiMutation`. |
 | 2026-08-16 | #456 | Dependabot: ignore the redux family — it is being removed, not upgraded. |
 | 2026-08-17 | #458 | **Parse.** First page conversion. Slice retired; unreachable `Parse.tsx` deleted. |
+| 2026-08-17 | #461 | **Disk Space.** 4 files, +19/−34. Partial trim of `systemActions`; slice survives for status, health, tasks, backups, logs, updates. |
 
 ### Open threads
 
@@ -368,3 +376,8 @@ If a JS test runner is ever added, remove that line and set
 - **`getErrorMessage(error as Error)` in `AddNewPerformer.tsx`** — the cast is harmless
   today because the value is redux-sourced, but it will silently lie once that page moves
   to React Query and the value becomes an `ApiError`. Remove the cast then.
+- **`NaN` progress bars on zero-size mounts** — `/diskspace` returns entries with
+  `totalSpace: 0` for synthetic mounts (`/System/Volumes/Data/home` and similar). Disk
+  Space computes `100 - (freeSpace / totalSpace) * 100`, so those rows render a `NaN`-width
+  `ProgressBar`. Predates the migration and was left alone in #461 to keep that conversion
+  mechanical. A one-line guard fixes it, but it is a rendering change, not a migration one.
