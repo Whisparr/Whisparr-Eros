@@ -20,10 +20,10 @@ verified to resolve against the public repo.
 | Metric | At assessment | Now |
 | --- | --- | --- |
 | Files importing `react-redux` | 327 of 1,255 | **324** of 1,259 |
-| Lines under `frontend/src/Store/` | 15,374 across 138 files | **15,261** across 137 |
+| Lines under `frontend/src/Store/` | 15,374 across 138 files | **15,226** across 137 |
 | Redux action slices | 41 | **40** |
 | Remaining `*Connector` files | 66 | 66 |
-| Files touching React Query | 13 | **37** |
+| Files touching React Query | 13 | **39** |
 | zustand stores | 0 (not installed) | **installed, 3 primitives** |
 
 The headline number barely moves early on, and that is expected: Phase A added the
@@ -129,7 +129,7 @@ a whole state slice. Take them roughly in Sonarr's order.
 | **Blocklist** — incl. per-movie blocklist tab | `blocklistActions`, `movieBlocklistActions` | [Sonarr/Sonarr@a4f21085](https://github.com/Sonarr/Sonarr/commit/a4f21085) |
 | **History** *(hybrid)* — `useHistory` covers paged list + movie history; finish details modal | `historyActions`, `movieHistoryActions`, `HistoryDetailsConnector` ×2 | [Sonarr/Sonarr@a45b0776](https://github.com/Sonarr/Sonarr/commit/a45b0776), [Sonarr/Sonarr@6b479a5a](https://github.com/Sonarr/Sonarr/commit/6b479a5a) |
 | **System: Status / Health** — ~~Disk Space **done, #461**~~. Health has the sidebar dependency, so it goes last | `systemActions` (391 loc after #461), `createHealthCheckSelector.js`, `createSystemStatusSelector.ts` | [Sonarr/Sonarr@49c52c2e](https://github.com/Sonarr/Sonarr/commit/49c52c2e), [Sonarr/Sonarr@0552a811](https://github.com/Sonarr/Sonarr/commit/0552a811), ~~[Sonarr/Sonarr@871ae955](https://github.com/Sonarr/Sonarr/commit/871ae955)~~ |
-| **System: Tasks / Backups / Log Files / Events** | `BackupsConnector.js`, `RestoreBackupModal*Connector.js`, `LogsTableConnector.js` | [Sonarr/Sonarr@3091f40c](https://github.com/Sonarr/Sonarr/commit/3091f40c), [Sonarr/Sonarr@c295e24f](https://github.com/Sonarr/Sonarr/commit/c295e24f), [Sonarr/Sonarr@ff5e7327](https://github.com/Sonarr/Sonarr/commit/ff5e7327) |
+| **System: Tasks / Backups / Events** — ~~Log Files **done, #462**~~ | `BackupsConnector.js`, `RestoreBackupModal*Connector.js`, `LogsTableConnector.js` | [Sonarr/Sonarr@3091f40c](https://github.com/Sonarr/Sonarr/commit/3091f40c), [Sonarr/Sonarr@c295e24f](https://github.com/Sonarr/Sonarr/commit/c295e24f), [Sonarr/Sonarr@ff5e7327](https://github.com/Sonarr/Sonarr/commit/ff5e7327) |
 | **Calendar** — 12 files; needs the options store from phase A | `calendarActions` (443 loc), `CalendarAppState` | [Sonarr/Sonarr@ccb7f07c](https://github.com/Sonarr/Sonarr/commit/ccb7f07c) (28 files) |
 | ~~**Parse**~~ — **done, #458.** 14 files, +77/−337 | ~~`parseActions.ts`, `ParseAppState`~~ | [Sonarr/Sonarr@263f4839](https://github.com/Sonarr/Sonarr/commit/263f4839) |
 | **Wanted: Missing + Cutoff Unmet** — one commit; first real `usePagedApiQuery` consumer | `wantedActions` (342 loc), `WantedAppState` | [Sonarr/Sonarr@40712781](https://github.com/Sonarr/Sonarr/commit/40712781) |
@@ -258,11 +258,9 @@ Phase A is done; Parse and Disk Space are converted. Continuing through Phase B
 smallest-first, rather than jumping straight to Queue — the point of the early pages is to
 make the PR shape routine before anything expensive.
 
-1. **Log Files** — [Sonarr/Sonarr@ff5e7327](https://github.com/Sonarr/Sonarr/commit/ff5e7327),
-   4 files. Next smallest, and another partial trim of `systemActions`.
-2. **System Status**, then **Health** — the rest of the `systemActions` cluster. Health
-   goes last because it feeds the sidebar; converting it last means the slice can be
-   retired in the same PR.
+1. **System Status**, then **Health** — with tasks, backups and events, these are what
+   is left of `systemActions`. Health goes last because it feeds the sidebar; converting it
+   last means the slice can be retired in the same PR as the page that finishes it.
 3. **Organize preview + Unmapped Files** — two small pages, one PR.
 4. **Then Queue**, as Sonarr did, because it forces SignalR-driven invalidation into
    existence early rather than late. This is the first genuinely large one at 58 files, and
@@ -293,6 +291,17 @@ Worth repeating verbatim on each page:
    its phase table, the next-up list above, and a row in the §11 log. It is the progress
    tracker; keeping it current is part of the work, not a follow-up. It costs a minute
    while the numbers are in front of you and is archaeology later.
+
+**A component can convert halfway, and often should.** Log Files (#462) moved its data
+fetching to React Query but kept `useDispatch` and `createCommandExecutingSelector` for
+the delete-logs command, because commands are Phase C. Sonarr's version of that page uses
+their `Commands/useCommands` hooks, which do not exist here yet — porting it wholesale
+would have dragged the 44-consumer commands slice into a four-file PR. Convert the concern
+the PR is about and leave the rest; the file will be visited again.
+
+The consequence is that the `react-redux` import count moves more slowly than the work
+does. A page can be most of the way converted and still import `react-redux` for one
+selector. The slice line count and the phase tables are the better progress signal.
 
 ### On testing — what Sonarr actually did
 
@@ -359,6 +368,7 @@ If a JS test runner is ever added, remove that line and set
 | 2026-08-16 | #456 | Dependabot: ignore the redux family — it is being removed, not upgraded. |
 | 2026-08-17 | #458 | **Parse.** First page conversion. Slice retired; unreachable `Parse.tsx` deleted. |
 | 2026-08-17 | #461 | **Disk Space.** 4 files, +19/−34. Partial trim of `systemActions`; slice survives for status, health, tasks, backups, logs, updates. |
+| 2026-08-17 | #462 | **Log Files.** App and update logs. First *partial component* conversion — the fetch half moves, the command half stays on redux until Phase C. |
 
 ### Open threads
 

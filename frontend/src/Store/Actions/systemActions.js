@@ -152,19 +152,6 @@ export const defaultState = {
     ],
   },
 
-  logFiles: {
-    isFetching: false,
-    isPopulated: false,
-    error: null,
-    items: [],
-  },
-
-  updateLogFiles: {
-    isFetching: false,
-    isPopulated: false,
-    error: null,
-    items: [],
-  },
 };
 
 export const persistState = [
@@ -201,10 +188,6 @@ export const SET_LOGS_FILTER = 'system/logs/setLogsFilter';
 export const SET_LOGS_TABLE_OPTION = 'system/logs/setLogsTableOption';
 export const CLEAR_LOGS_TABLE = 'system/logs/clearLogsTable';
 
-export const FETCH_LOG_FILES = 'system/logFiles/fetchLogFiles';
-export const FETCH_UPDATE_LOG_FILES =
-  'system/updateLogFiles/fetchUpdateLogFiles';
-
 export const RESTART = 'system/restart';
 export const SHUTDOWN = 'system/shutdown';
 
@@ -234,9 +217,6 @@ export const setLogsSort = createThunk(SET_LOGS_SORT);
 export const setLogsFilter = createThunk(SET_LOGS_FILTER);
 export const setLogsTableOption = createAction(SET_LOGS_TABLE_OPTION);
 export const clearLogsTable = createAction(CLEAR_LOGS_TABLE);
-
-export const fetchLogFiles = createThunk(FETCH_LOG_FILES);
-export const fetchUpdateLogFiles = createThunk(FETCH_UPDATE_LOG_FILES);
 
 export const restart = createThunk(RESTART);
 export const shutdown = createThunk(SHUTDOWN);
@@ -321,11 +301,6 @@ export const actionHandlers = handleThunks({
   [DELETE_BACKUP]: createRemoveItemHandler(backupsSection, '/system/backup'),
 
   [FETCH_UPDATES]: createFetchHandler('system.updates', '/update'),
-  [FETCH_LOG_FILES]: createFetchHandler('system.logFiles', '/log/file'),
-  [FETCH_UPDATE_LOG_FILES]: createFetchHandler(
-    'system.updateLogFiles',
-    '/log/file/update'
-  ),
 
   ...createServerSideCollectionHandlers('system.logs', '/log', fetchLogs, {
     [serverSideCollectionHandlers.FETCH]: FETCH_LOGS,
