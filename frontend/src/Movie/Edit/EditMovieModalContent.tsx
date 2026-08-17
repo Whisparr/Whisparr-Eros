@@ -50,16 +50,19 @@ function EditMovieModalContent({
   const [isRootFolderModalOpen, setIsRootFolderModalOpen] = useState(false);
   const [isConfirmMoveModalOpen, setIsConfirmMoveModalOpen] = useState(false);
 
-  const saveMovie = useSaveMovie();
+  // moveFiles is a query param, so it is fixed per mutation instance rather
+  // than passed at mutate() time. The component has exactly two save paths.
+  const saveMovie = useSaveMovie(false);
+  const saveMovieAndMoveFiles = useSaveMovie(true);
 
-  const isSaving = saveMovie.isPending;
+  const isSaving = saveMovie.isPending || saveMovieAndMoveFiles.isPending;
   // Map ApiError to the { status, responseJSON } shape expected by
   // selectSettings and SpinnerErrorButton.
   const saveError = useMemo(() => {
-    const err = saveMovie.error;
+    const err = saveMovie.error ?? saveMovieAndMoveFiles.error;
     if (!err) return undefined;
     return { status: err.statusCode, responseJSON: err.statusBody };
-  }, [saveMovie.error]);
+  }, [saveMovie.error, saveMovieAndMoveFiles.error]);
 
   // Compute which fields have pending (unsaved) changes so selectSettings
   // can mark them accordingly.
@@ -182,12 +185,19 @@ function EditMovieModalContent({
 
   const doSave = useCallback(
     (moveFiles: boolean) => {
-      saveMovie.mutate({
-        movie: { ...movie, monitored, qualityProfileId, path, tags },
-        moveFiles,
-      });
+      const mutation = moveFiles ? saveMovieAndMoveFiles : saveMovie;
+
+      mutation.mutate({ ...movie, monitored, qualityProfileId, path, tags });
     },
-    [saveMovie, movie, monitored, qualityProfileId, path, tags]
+    [
+      saveMovie,
+      saveMovieAndMoveFiles,
+      movie,
+      monitored,
+      qualityProfileId,
+      path,
+      tags,
+    ]
   );
 
   const handleSavePress = useCallback(() => {
@@ -205,10 +215,10 @@ function EditMovieModalContent({
   }, [doSave]);
 
   useEffect(() => {
-    if (saveMovie.isSuccess) {
+    if (saveMovie.isSuccess || saveMovieAndMoveFiles.isSuccess) {
       onModalClose();
     }
-  }, [saveMovie.isSuccess, onModalClose]);
+  }, [saveMovie.isSuccess, saveMovieAndMoveFiles.isSuccess, onModalClose]);
 
   return (
     <ModalContent onModalClose={onModalClose}>
