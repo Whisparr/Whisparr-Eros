@@ -36,7 +36,7 @@ export interface UnmappedFilesTableProps {
   isDeleting: boolean;
   deleteError?: object;
   error?: object;
-  items: UnmappedFile[];
+  items: readonly UnmappedFile[];
   columns: Array<{ name: string; isVisible: boolean }>;
   onTableOptionChange: (payload: unknown) => void;
   fetchUnmappedFiles: () => void;
@@ -115,8 +115,10 @@ class UnmappedFilesTable extends Component<
   getSortedItems() {
     const { items } = this.props;
     const { sortKey, sortDirection } = this.state;
+    // Copy in both branches: query data is readonly, and the caller passes the
+    // result to VirtualTable, which takes a mutable array.
     if (!sortKey) {
-      return items;
+      return [...items];
     }
     return [...items].sort((a, b) => {
       let valA: string | number = '';
