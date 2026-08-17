@@ -1,5 +1,4 @@
 import ModelBase from 'App/ModelBase';
-import { AppSectionItemState } from 'App/State/AppSectionState';
 import Language from 'Language/Language';
 import Movie from 'Movie/Movie';
 import { QualityModel } from 'Quality/Quality';
@@ -34,7 +33,3 @@ export interface ParseModel extends ModelBase {
   customFormats?: CustomFormat[];
   customFormatScore?: number;
 }
-
-type ParseAppState = AppSectionItemState<ParseModel>;
-
-export default ParseAppState;
