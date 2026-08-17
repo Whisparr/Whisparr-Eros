@@ -1,13 +1,17 @@
+import { CustomFilter, Filter } from 'Filters/Filter';
+
 export default function findSelectedFilters(
-  selectedFilterKey,
-  filters = [],
-  customFilters = []
+  selectedFilterKey: string | number,
+  filters: Filter[] = [],
+  customFilters: CustomFilter[] = []
 ) {
   if (!selectedFilterKey) {
     return [];
   }
 
-  let selectedFilter = filters.find((f) => f.key === selectedFilterKey);
+  let selectedFilter: Filter | CustomFilter | undefined = filters.find(
+    (f) => f.key === selectedFilterKey
+  );
 
   if (!selectedFilter) {
     selectedFilter = customFilters.find((f) => f.id === selectedFilterKey);

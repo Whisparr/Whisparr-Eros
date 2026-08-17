@@ -15,7 +15,7 @@ import Table from 'Components/Table/Table';
 import TableBody from 'Components/Table/TableBody';
 import TableOptionsModalWrapper from 'Components/Table/TableOptions/TableOptionsModalWrapper';
 import TablePager from 'Components/Table/TablePager';
-import { PropertyFilter } from 'Filters/Filter';
+import { Filter, PropertyFilter } from 'Filters/Filter';
 import { align, icons, kinds } from 'Helpers/Props';
 import {
   setHistoryFilter,
@@ -60,9 +60,11 @@ function History(props: Partial<HistoryHandlerProps>) {
   const customFilters = useSelector(createCustomFiltersSelector('history'));
   const dispatch = useDispatch();
 
+  // TODO: Remove these casts once the duplicate Filter types in
+  // App/State/AppState are collapsed into Filters/Filter.
   const resolvedFilters = findSelectedFilters(
     selectedFilterKey,
-    filters,
+    filters as Filter[],
     customFilters
   ) as PropertyFilter[];
 
