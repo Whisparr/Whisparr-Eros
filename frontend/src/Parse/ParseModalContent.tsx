@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useCallback, useState } from 'react';
+import { useDebounce } from 'use-debounce';
 import TextInput from 'Components/Form/TextInput';
 import Icon from 'Components/Icon';
 import Button from 'Components/Link/Button';
@@ -9,12 +9,11 @@ import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { icons } from 'Helpers/Props';
-import { clear, fetch } from 'Store/Actions/parseActions';
 import { InputChanged } from 'typings/inputs';
 import getErrorMessage from 'Utilities/Object/getErrorMessage';
 import translate from 'Utilities/String/translate';
 import ParseResult from './ParseResult';
-import parseStateSelector from './parseStateSelector';
+import useParse from './useParse';
 import styles from './ParseModalContent.css';
 
 interface ParseModalContentProps {
@@ -23,40 +22,23 @@ interface ParseModalContentProps {
 
 function ParseModalContent(props: ParseModalContentProps) {
   const { onModalClose } = props;
-  const { isFetching, error, item } = useSelector(parseStateSelector());
 
   const [title, setTitle] = useState('');
-  const dispatch = useDispatch();
+  // Matches the 300ms the parse thunk used to debounce with, but clears
+  // immediately so emptying the box doesn't leave a stale result on screen.
+  const [queryTitle] = useDebounce(title, title ? 300 : 0);
+  const { isFetching, isLoading, error, data } = useParse(queryTitle);
 
   const onInputChange = useCallback(
     ({ value }: InputChanged<string>) => {
-      const trimmedValue = value.trim();
-
       setTitle(value);
-
-      if (trimmedValue === '') {
-        dispatch(clear());
-      } else {
-        dispatch(fetch({ title: trimmedValue }));
-      }
     },
-    [setTitle, dispatch]
+    [setTitle]
   );
 
   const onClearPress = useCallback(() => {
     setTitle('');
-    dispatch(clear());
-  }, [setTitle, dispatch]);
-
-  useEffect(
-    () => {
-      return () => {
-        dispatch(clear());
-      };
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
-  );
+  }, [setTitle]);
 
   return (
     <ModalContent onModalClose={onModalClose}>
@@ -82,9 +64,9 @@ function ParseModalContent(props: ParseModalContentProps) {
           </Button>
         </div>
 
-        {isFetching ? <LoadingIndicator /> : null}
+        {isLoading ? <LoadingIndicator /> : null}
 
-        {!isFetching && !!error ? (
+        {!isLoading && !!error ? (
           <div className={styles.message}>
             <div className={styles.helpText}>
               {translate('ParseModalErrorParsing')}
@@ -93,14 +75,14 @@ function ParseModalContent(props: ParseModalContentProps) {
           </div>
         ) : null}
 
-        {!isFetching && title && !error && !item.parsedMovieInfo ? (
+        {!isLoading && title && !error && !data.parsedMovieInfo ? (
           <div className={styles.message}>
             {translate('ParseModalUnableToParse')}
           </div>
         ) : null}
 
-        {!isFetching && !error && item.parsedMovieInfo ? (
-          <ParseResult item={item} />
+        {!isLoading && !error && data.parsedMovieInfo ? (
+          <ParseResult item={data} />
         ) : null}
 
         {title ? null : (
@@ -113,7 +95,13 @@ function ParseModalContent(props: ParseModalContentProps) {
         )}
       </ModalBody>
 
-      <ModalFooter>
+      <ModalFooter className={styles.modalFooter}>
+        <div>
+          {isFetching && !isLoading ? (
+            <LoadingIndicator className={styles.loading} size={20} />
+          ) : null}
+        </div>
+
         <Button onPress={onModalClose}>{translate('Close')}</Button>
       </ModalFooter>
     </ModalContent>
