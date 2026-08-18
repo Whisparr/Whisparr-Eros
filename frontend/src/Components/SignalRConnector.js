@@ -546,7 +546,7 @@ class SignalRConnector extends Component {
   };
 
   handleSystemTask = () => {
-    this.props.dispatchFetchCommands();
+    queryClient.invalidateQueries({ queryKey: ['/system/task'] });
   };
 
   handleRootfolder = () => {
