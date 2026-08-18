@@ -22,7 +22,7 @@ verified to resolve against the public repo.
 | Files importing `react-redux` | 327 of 1,255 | **316** of 1,259 |
 | Lines under `frontend/src/Store/` | 15,374 across 138 files | **14,882** across 135 |
 | Redux slices registered in `Store/Actions/index.js` | 35 | **34** |
-| Remaining `*Connector` files | 66 | **61** |
+| Remaining `*Connector` files | 66 | **60** |
 | Files touching React Query | 35 | **39** |
 | zustand stores | 0 (not installed) | **installed, 3 primitives + 2 stores** |
 
@@ -272,7 +272,7 @@ Five places where you cannot just copy their commit.
 5. **The SignalR container, and the cache helpers inside it.** Two separate things, and it
    is worth not conflating them:
 
-   *The container is ungated, not blocked.* Ours is `SignalRConnector.js` — a `connect()`ed
+   *The container is converted as of #470; what follows is why it was safe to do early.* Ours is `SignalRConnector.js` — a `connect()`ed
    class with a `createMapStateToProps` and 15 dispatch props. Sonarr's is
    `SignalRListener.tsx`, a function component on `useQueryClient()`. Sonarr made that
    change in [c3f9cd12](https://github.com/Sonarr/Sonarr/commit/c3f9cd12)
@@ -311,11 +311,8 @@ Continuing through Phase B smallest-first, rather than jumping straight to
 Queue — the point of the early pages is to make the PR shape routine before anything
 expensive.
 
-1. **The SignalR container** — `SignalRConnector.js` → `SignalRListener.tsx`, class to
-   function component, as its own PR. Ungated (see §9.5), and now worth doing before the
-   larger domains so Queue and Collection land in a converted file.
-2. **Organize preview + Unmapped Files** — two small pages, one PR.
-3. **Then Queue** — the first genuinely large one at 58 files. `usePage`, the option-store
+1. **Organize preview + Unmapped Files** — two small pages, one PR.
+2. **Then Queue** — the first genuinely large one at 58 files. `usePage`, the option-store
    pattern and `usePagedApiQuery` all exist now, proven together by Events, so Queue is
    mostly filter/selection work rather than new plumbing.
 2. **The SignalR container** — `SignalRConnector.js` → `SignalRListener.tsx`, class to
@@ -472,6 +469,7 @@ If a JS test runner is ever added, remove that line and set
 | 2026-08-18 | #467 | **Backups.** First conversion with mutations rather than reads alone, and the first to retire connectors — 66 to 62. Four files to TSX. |
 | 2026-08-18 | #468 | **Updates.** Fetch only; the GitHub release-note parsing is Eros-specific and was left untouched. |
 | 2026-08-18 | #469 | **Events.** First paged page. `usePage` added; the system slice is down to restart/shutdown. Three type holes fixed that only `.js` files had been hiding. |
+| 2026-08-18 | #470 | **SignalR container.** Class + `connect()` → function component, as Sonarr did in Jan 2025. Redux stays inside. |
 
 ### Open threads
 
