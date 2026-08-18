@@ -1,10 +1,12 @@
-import Update from 'typings/Update';
 import AppSectionState from './AppSectionState';
 
-export type UpdateAppState = AppSectionState<Update>;
+// `logs` is all that is left of the system slice. It is read only by the Events
+// connectors, which are still .js, so there is no typed model for it yet; it
+// retires with the Events page.
+export type LogsAppState = AppSectionState<unknown>;
 
 interface SystemAppState {
-  updates: UpdateAppState;
+  logs: LogsAppState;
 }
 
 export default SystemAppState;
