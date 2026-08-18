@@ -52,7 +52,7 @@ import QueueFilterModal from './QueueFilterModal';
 import QueueOptions from './QueueOptions';
 import QueueRow from './QueueRow';
 import RemoveQueueItemModal, { RemovePressProps } from './RemoveQueueItemModal';
-import createQueueStatusSelector from './Status/createQueueStatusSelector';
+import useQueueStatus from './Status/useQueueStatus';
 
 function Queue() {
   const requestCurrentPage = useCurrentPage();
@@ -76,7 +76,7 @@ function Queue() {
     isRemoving,
   } = useSelector((state: AppState) => state.queue.paged);
 
-  const { count } = useSelector(createQueueStatusSelector());
+  const { count } = useQueueStatus();
   const customFilters = useSelector(createCustomFiltersSelector('queue'));
 
   const isRefreshMonitoredDownloadsExecuting = useSelector(
