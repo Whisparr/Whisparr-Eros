@@ -5,10 +5,12 @@ import FormGroup from 'Components/Form/FormGroup';
 import FormInputGroup from 'Components/Form/FormInputGroup';
 import FormLabel from 'Components/Form/FormLabel';
 import { inputTypes, sizes } from 'Helpers/Props';
+import { useSystemStatusData } from 'System/Status/useSystemStatus';
 import translate from 'Utilities/String/translate';
 
 function HostSettings(props) {
-  const { advancedSettings, settings, isWindows, mode, onInputChange } = props;
+  const { advancedSettings, settings, onInputChange } = props;
+  const { isWindows, mode } = useSystemStatusData();
 
   const {
     bindAddress,
@@ -173,8 +175,6 @@ function HostSettings(props) {
 HostSettings.propTypes = {
   advancedSettings: PropTypes.bool.isRequired,
   settings: PropTypes.object.isRequired,
-  isWindows: PropTypes.bool.isRequired,
-  mode: PropTypes.string.isRequired,
   onInputChange: PropTypes.func.isRequired,
 };
 

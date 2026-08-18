@@ -97,10 +97,7 @@ class GeneralSettings extends Component {
       settings,
       hasSettings,
       isResettingApiKey,
-      isWindows,
       isWindowsService,
-      mode,
-      packageUpdateMechanism,
       onInputChange,
       onConfirmResetApiKey,
       ...otherProps
@@ -124,8 +121,6 @@ class GeneralSettings extends Component {
               <HostSettings
                 advancedSettings={advancedSettings}
                 settings={settings}
-                isWindows={isWindows}
-                mode={mode}
                 onInputChange={onInputChange}
               />
 
@@ -155,8 +150,6 @@ class GeneralSettings extends Component {
               <UpdateSettings
                 advancedSettings={advancedSettings}
                 settings={settings}
-                isWindows={isWindows}
-                packageUpdateMechanism={packageUpdateMechanism}
                 onInputChange={onInputChange}
               />
 
@@ -200,10 +193,7 @@ GeneralSettings.propTypes = {
   settings: PropTypes.object.isRequired,
   isResettingApiKey: PropTypes.bool.isRequired,
   hasSettings: PropTypes.bool.isRequired,
-  isWindows: PropTypes.bool.isRequired,
   isWindowsService: PropTypes.bool.isRequired,
-  mode: PropTypes.string.isRequired,
-  packageUpdateMechanism: PropTypes.string.isRequired,
   onInputChange: PropTypes.func.isRequired,
   onConfirmResetApiKey: PropTypes.func.isRequired,
   onConfirmRestart: PropTypes.func.isRequired,

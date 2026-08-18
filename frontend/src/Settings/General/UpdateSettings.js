@@ -5,14 +5,15 @@ import FormGroup from 'Components/Form/FormGroup';
 import FormInputGroup from 'Components/Form/FormInputGroup';
 import FormLabel from 'Components/Form/FormLabel';
 import { inputTypes, sizes } from 'Helpers/Props';
+import { useSystemStatusData } from 'System/Status/useSystemStatus';
 import titleCase from 'Utilities/String/titleCase';
 import translate from 'Utilities/String/translate';
 
 const branchValues = ['master', 'develop', 'nightly'];
 
 function UpdateSettings(props) {
-  const { advancedSettings, settings, packageUpdateMechanism, onInputChange } =
-    props;
+  const { advancedSettings, settings, onInputChange } = props;
+  const { packageUpdateMechanism } = useSystemStatusData();
 
   const { branch, updateAutomatically, updateMechanism, updateScriptPath } =
     settings;
@@ -114,8 +115,6 @@ function UpdateSettings(props) {
 UpdateSettings.propTypes = {
   advancedSettings: PropTypes.bool.isRequired,
   settings: PropTypes.object.isRequired,
-  isWindows: PropTypes.bool.isRequired,
-  packageUpdateMechanism: PropTypes.string.isRequired,
   onInputChange: PropTypes.func.isRequired,
 };
 

@@ -13,6 +13,7 @@ import {
 import { restart } from 'Store/Actions/systemActions';
 import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
 import createSettingsSectionSelector from 'Store/Selectors/createSettingsSectionSelector';
+import { useIsWindowsService } from 'System/Status/useSystemStatus';
 import GeneralSettings from './GeneralSettings';
 
 const SECTION = 'general';
@@ -22,19 +23,10 @@ function createMapStateToProps() {
     (state) => state.settings.advancedSettings,
     createSettingsSectionSelector(SECTION),
     createCommandExecutingSelector(commandNames.RESET_API_KEY),
-    // Inlined from the former createSystemStatusSelector. connect() cannot use
-    // the React Query hook, so this stays on redux until General settings
-    // converts in Phase E.
-    (state) => state.system.status.item,
-    (advancedSettings, sectionSettings, isResettingApiKey, systemStatus) => {
+    (advancedSettings, sectionSettings, isResettingApiKey) => {
       return {
         advancedSettings,
         isResettingApiKey,
-        isWindows: systemStatus.isWindows,
-        isWindowsService:
-          systemStatus.isWindows && systemStatus.mode === 'service',
-        mode: systemStatus.mode,
-        packageUpdateMechanism: systemStatus.packageUpdateMechanism,
         ...sectionSettings,
       };
     }
@@ -50,7 +42,7 @@ const mapDispatchToProps = {
   clearPendingChanges,
 };
 
-class GeneralSettingsConnector extends Component {
+class GeneralSettingsHandlers extends Component {
   //
   // Lifecycle
 
@@ -103,7 +95,7 @@ class GeneralSettingsConnector extends Component {
   }
 }
 
-GeneralSettingsConnector.propTypes = {
+GeneralSettingsHandlers.propTypes = {
   isResettingApiKey: PropTypes.bool.isRequired,
   setGeneralSettingsValue: PropTypes.func.isRequired,
   saveGeneralSettings: PropTypes.func.isRequired,
@@ -113,7 +105,18 @@ GeneralSettingsConnector.propTypes = {
   clearPendingChanges: PropTypes.func.isRequired,
 };
 
-export default connect(
+const ConnectedGeneralSettings = connect(
   createMapStateToProps,
   mapDispatchToProps
-)(GeneralSettingsConnector);
+)(GeneralSettingsHandlers);
+
+// GeneralSettings is still a class component and connect() cannot call hooks,
+// so neither can read system status from React Query directly. This bridges the
+// one value they need until General settings converts in Phase E; the other
+// three status props now go straight to HostSettings and UpdateSettings, which
+// are function components and read the query themselves.
+export default function GeneralSettingsConnector() {
+  const isWindowsService = useIsWindowsService();
+
+  return <ConnectedGeneralSettings isWindowsService={isWindowsService} />;
+}

@@ -11,7 +11,6 @@ import {
   fetchQualityProfiles,
   fetchUISettings,
 } from 'Store/Actions/settingsActions';
-import { fetchStatus } from 'Store/Actions/systemActions';
 import { fetchTags } from 'Store/Actions/tagActions';
 import useSystemStatus from 'System/Status/useSystemStatus';
 
@@ -26,7 +25,6 @@ const createErrorsSelector = () =>
     (state: AppState) => state.settings.languages.error,
     (state: AppState) => state.settings.importLists.error,
     (state: AppState) => state.settings.indexerFlags.error,
-    (state: AppState) => state.system.status.error,
     (state: AppState) => state.app.translations.error,
     (
       customFiltersError,
@@ -38,7 +36,6 @@ const createErrorsSelector = () =>
       languagesError,
       importListsError,
       indexerFlagsError,
-      systemStatusError,
       translationsError
     ) => {
       const hasError = !!(
@@ -51,7 +48,6 @@ const createErrorsSelector = () =>
         languagesError ||
         importListsError ||
         indexerFlagsError ||
-        systemStatusError ||
         translationsError
       );
 
@@ -67,7 +63,6 @@ const createErrorsSelector = () =>
           languagesError,
           importListsError,
           indexerFlagsError,
-          systemStatusError,
           translationsError,
         },
       };
@@ -78,11 +73,9 @@ const useAppPage = () => {
   const dispatch = useDispatch();
 
   // System status is read from React Query by every consumer now, so the app
-  // has to wait on that query rather than on the redux slice. Without this,
-  // components render once with an undefined status -- Page.tsx would compute
-  // `authentication !== 'none'` as true, and path handling would pick the
-  // wrong separator. The redux slice below is still populated for About,
-  // Stats and FirstRun until those convert.
+  // waits on that query. Without this, components render once with an
+  // undefined status -- Page.tsx would compute `authentication !== 'none'` as
+  // true, and path handling would pick the wrong separator.
   const { isSuccess: isSystemStatusPopulated, error: systemStatusQueryError } =
     useSystemStatus();
 
@@ -95,7 +88,6 @@ const useAppPage = () => {
       state.settings.languages.isPopulated &&
       state.settings.importLists.isPopulated &&
       state.settings.indexerFlags.isPopulated &&
-      state.system.status.isPopulated &&
       state.app.translations.isPopulated
   );
 
@@ -106,8 +98,7 @@ const useAppPage = () => {
   const errors = useMemo(() => {
     return {
       ...reduxErrors,
-      systemStatusError:
-        reduxErrors.systemStatusError ?? systemStatusQueryError,
+      systemStatusError: systemStatusQueryError,
     };
   }, [reduxErrors, systemStatusQueryError]);
 
@@ -132,7 +123,6 @@ const useAppPage = () => {
     dispatch(fetchImportLists());
     dispatch(fetchIndexerFlags());
     dispatch(fetchUISettings());
-    dispatch(fetchStatus());
     dispatch(fetchTranslations());
   }, [dispatch]);
 
