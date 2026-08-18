@@ -1,20 +1,24 @@
-import React from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import * as commandNames from 'Commands/commandNames';
-import Column from 'Components/Table/Column';
 import withCurrentPage from 'Components/withCurrentPage';
 import { executeCommand } from 'Store/Actions/commandActions';
 import {
   deleteMovieFile,
   deleteMovieFiles,
 } from 'Store/Actions/movieFileActions';
-import { setUnmappedMovieFilesTableOption } from 'Store/Actions/unmappedMovieFileActions';
 import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
+import { TableOptionsChangePayload } from 'typings/Table';
 import {
   registerPagePopulator,
   unregisterPagePopulator,
 } from 'Utilities/pagePopulator';
 import { useUnmappedMovieFiles } from '../MovieFile/useMovieFile';
+import {
+  setUnmappedFilesOptions,
+  setUnmappedFilesSort,
+  useUnmappedFilesOptions,
+} from './unmappedFilesOptionsStore';
 import UnmappedFilesTable from './UnmappedFilesTable';
 
 function UnmappedFilesTableConnector() {
@@ -25,10 +29,7 @@ function UnmappedFilesTableConnector() {
     isSuccess,
     refetch,
   } = useUnmappedMovieFiles();
-  const movieFileColumns = useSelector(
-    (state: { unmappedMovieFiles: { columns: Column[] } }) =>
-      state.unmappedMovieFiles || { columns: [] as Column[] }
-  );
+  const { columns, sortKey, sortDirection } = useUnmappedFilesOptions();
   const isScanningFolders = useSelector(
     createCommandExecutingSelector(commandNames.RESCAN_SCENES)
   );
@@ -36,12 +37,12 @@ function UnmappedFilesTableConnector() {
     createCommandExecutingSelector(commandNames.CLEAN_UNMAPPED_FILES)
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     registerPagePopulator(refetch);
     return () => unregisterPagePopulator(refetch);
   }, [refetch]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     // When scan completes, refetch unmapped files
     if (!isScanningFolders) {
       refetch();
@@ -50,41 +51,46 @@ function UnmappedFilesTableConnector() {
   }, [isScanningFolders, refetch]);
 
   // Stable callbacks for props
-  const handleDeleteUnmappedFile = React.useCallback(
+  const handleDeleteUnmappedFile = useCallback(
     (id: number) => {
       dispatch(deleteMovieFile(id));
     },
     [dispatch]
   );
-  const handleDeleteUnmappedFiles = React.useCallback(
+  const handleDeleteUnmappedFiles = useCallback(
     (ids: number[]) => {
       dispatch(deleteMovieFiles(ids));
     },
     [dispatch]
   );
-  const handleTableOptionChange = React.useCallback(
-    (payload: unknown) => {
-      dispatch(setUnmappedMovieFilesTableOption(payload));
+  const handleTableOptionChange = useCallback(
+    (payload: TableOptionsChangePayload) => {
+      setUnmappedFilesOptions(payload);
     },
-    [dispatch]
+    []
   );
-  const handleAddScenesPress = React.useCallback(() => {
+  const handleSortPress = useCallback((sortKey: string) => {
+    setUnmappedFilesSort({ sortKey });
+  }, []);
+  const handleAddScenesPress = useCallback(() => {
     dispatch(executeCommand({ name: commandNames.RESCAN_SCENES }));
   }, [dispatch]);
-  const handleCleanUnmappedFilesPress = React.useCallback(() => {
+  const handleCleanUnmappedFilesPress = useCallback(() => {
     dispatch(executeCommand({ name: commandNames.CLEAN_UNMAPPED_FILES }));
   }, [dispatch]);
 
   const isPopulated = isSuccess;
   const isDeleting = false;
-  const fetchUnmappedFiles = React.useCallback(() => {
+  const fetchUnmappedFiles = useCallback(() => {
     refetch();
   }, [refetch]);
 
   return (
     <UnmappedFilesTable
       items={items}
-      columns={movieFileColumns.columns}
+      columns={columns}
+      sortKey={sortKey}
+      sortDirection={sortDirection}
       isFetching={isLoading}
       isScanningFolders={isScanningFolders}
       isCleaningUnmappedFiles={isCleaningUnmappedFiles}
@@ -93,6 +99,7 @@ function UnmappedFilesTableConnector() {
       fetchUnmappedFiles={fetchUnmappedFiles}
       deleteUnmappedFile={handleDeleteUnmappedFile}
       deleteUnmappedFiles={handleDeleteUnmappedFiles}
+      onSortPress={handleSortPress}
       onTableOptionChange={handleTableOptionChange}
       onAddScenesPress={handleAddScenesPress}
       onCleanUnmappedFilesPress={handleCleanUnmappedFilesPress}

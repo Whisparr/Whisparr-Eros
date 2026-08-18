@@ -16,7 +16,6 @@ import * as movieFiles from './movieFileActions';
 import * as movieHistory from './movieHistoryActions';
 import * as movieIndex from './movieIndexActions';
 import * as oAuth from './oAuthActions';
-import * as organizePreview from './organizePreviewActions';
 import * as paths from './pathActions';
 import * as performers from './performerActions';
 import * as performerScenes from './performerScenesActions';
@@ -30,7 +29,6 @@ import * as studios from './studioActions';
 import * as studioScenes from './studioScenesActions';
 import * as system from './systemActions';
 import * as tags from './tagActions';
-import * as unmappedMovieFiles from './unmappedMovieFileActions';
 import * as wanted from './wantedActions';
 
 export default [
@@ -43,11 +41,9 @@ export default [
   commands,
   customFilters,
   movieFiles,
-  unmappedMovieFiles,
   history,
   interactiveImportActions,
   oAuth,
-  organizePreview,
   paths,
   providerOptions,
   queue,
