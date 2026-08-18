@@ -19,12 +19,12 @@ verified to resolve against the public repo.
 
 | Metric | At assessment | Now |
 | --- | --- | --- |
-| Files importing `react-redux` | 327 of 1,255 | **316** of 1,259 |
-| Lines under `frontend/src/Store/` | 15,374 across 138 files | **14,882** across 135 |
-| Redux slices registered in `Store/Actions/index.js` | 35 | **34** |
-| Remaining `*Connector` files | 66 | **60** |
-| Files touching React Query | 35 | **39** |
-| zustand stores | 0 (not installed) | **installed, 3 primitives + 2 stores** |
+| Files importing `react-redux` | 327 of 1,255 | **315** of 1,261 |
+| Lines under `frontend/src/Store/` | 15,374 across 138 files | **14,705** across 133 |
+| Redux slices registered in `Store/Actions/index.js` | 35 | **32** |
+| Remaining `*Connector` files | 66 | **61** |
+| Files touching React Query | 35 | **45** |
+| zustand stores | 0 (not installed) | **installed, 3 primitives + 3 stores** |
 
 > **Recomputed in #464.** Three rows previously carried figures that no command
 > reproduced — `react-redux` read 316 where the same command that yields the
@@ -43,6 +43,8 @@ verified to resolve against the public repo.
 > # React Query
 > grep -rl -E 'useApiQuery|useApiMutation|usePagedApiQuery|@tanstack/react-query' \
 >   --include='*.ts' --include='*.tsx' frontend/src | wc -l
+> # connectors (pinned in #471 — the "60" recorded at #470 did not reproduce)
+> git ls-files 'frontend/src/*Connector*' | grep -vE '\.css(\.d\.ts)?$' | wc -l
 > ```
 
 The headline number barely moves early on, and that is expected: Phase A added the
@@ -153,7 +155,7 @@ a whole state slice. Take them roughly in Sonarr's order.
 | **Calendar** — 12 files; needs the options store from phase A | `calendarActions` (443 loc), `CalendarAppState` | [Sonarr/Sonarr@ccb7f07c](https://github.com/Sonarr/Sonarr/commit/ccb7f07c) (28 files) |
 | ~~**Parse**~~ — **done, #458.** 14 files, +77/−337 | ~~`parseActions.ts`, `ParseAppState`~~ | [Sonarr/Sonarr@263f4839](https://github.com/Sonarr/Sonarr/commit/263f4839) |
 | **Wanted: Missing + Cutoff Unmet** — one commit; first real `usePagedApiQuery` consumer | `wantedActions` (342 loc), `WantedAppState` | [Sonarr/Sonarr@40712781](https://github.com/Sonarr/Sonarr/commit/40712781) |
-| **Organize preview + Unmapped Files** — two small pages, one PR | `organizePreviewActions`, `unmappedMovieFileActions` | [Sonarr/Sonarr@10c0e18a](https://github.com/Sonarr/Sonarr/commit/10c0e18a) |
+| ~~**Organize preview + Unmapped Files**~~ — **done, #471.** Two small pages, one PR | ~~`organizePreviewActions`, `unmappedMovieFileActions`, `OrganizePreviewAppState`~~ | [Sonarr/Sonarr@10c0e18a](https://github.com/Sonarr/Sonarr/commit/10c0e18a) |
 
 ---
 
@@ -306,21 +308,27 @@ Five places where you cannot just copy their commit.
 
 ## 10. What to do next
 
-Phase A is done. Parse, Disk Space, Log Files, System Status and Health are converted.
-Continuing through Phase B smallest-first, rather than jumping straight to
-Queue — the point of the early pages is to make the PR shape routine before anything
-expensive.
+Phase A is done. Parse, Disk Space, Log Files, System Status, Health, Tasks, Backups,
+Updates, Events, the SignalR container, and Organize preview + Unmapped Files are
+converted. Phase B's leaf pages are finished except Queue, Blocklist, History and
+Calendar.
 
-1. **Organize preview + Unmapped Files** — two small pages, one PR.
-2. **Then Queue** — the first genuinely large one at 58 files. `usePage`, the option-store
-   pattern and `usePagedApiQuery` all exist now, proven together by Events, so Queue is
-   mostly filter/selection work rather than new plumbing.
-2. **The SignalR container** — `SignalRConnector.js` → `SignalRListener.tsx`, class to
-   function component, as its own PR. Ungated (see §9.5), and worth doing before the
-   larger domains so that Queue and Collection land in a converted file rather than
-   forcing a second rewrite.
-3. **Organize preview + Unmapped Files** — two small pages, one PR.
-4. **Then Queue**, as Sonarr did. The first genuinely large one at 58 files.
+1. **Queue** — the first genuinely large one at 58 files. `usePage`, the options-store
+   pattern and `usePagedApiQuery` all exist now, proven together by Events and Unmapped
+   Files, so Queue is mostly filter/selection work rather than new plumbing.
+2. **Blocklist**, then **History**, then **Calendar** — the rest of Phase B.
+
+### `VirtualTable` blocks two connector removals
+
+`UnmappedFilesTableConnector.tsx` survived #471 even though the slice under it did not.
+Its own state moved to zustand, but it still dispatches `executeCommand` ×2,
+`deleteMovieFile` and `deleteMovieFiles`, and collapsing it into `UnmappedFilesTable`
+needs that table converted class → function. That conversion is entangled with
+`VirtualTable` itself: Eros still has the old `scroller`-prop API, which depends on the
+parent having already rendered so `scrollerRef.current` is populated — a pattern that does
+not survive a function component without extra state. Sonarr replaced it with a
+react-window API (`itemCount` / `itemData` / `Header`), so the fix is to port
+`VirtualTable` in Phase C and let the tables above it convert afterwards.
 
 ### A class component does not block the conversion below it
 
@@ -470,6 +478,7 @@ If a JS test runner is ever added, remove that line and set
 | 2026-08-18 | #468 | **Updates.** Fetch only; the GitHub release-note parsing is Eros-specific and was left untouched. |
 | 2026-08-18 | #469 | **Events.** First paged page. `usePage` added; the system slice is down to restart/shutdown. Three type holes fixed that only `.js` files had been hiding. |
 | 2026-08-18 | #470 | **SignalR container.** Class + `connect()` → function component, as Sonarr did in Jan 2025. Redux stays inside. |
+| 2026-08-18 | #471 | **Organize preview + Unmapped Files.** Two slices retired. First conversion where a page's table prefs move to a zustand options store rather than to React Query. |
 
 ### Open threads
 
@@ -487,6 +496,12 @@ If a JS test runner is ever added, remove that line and set
 - **`getErrorMessage(error as Error)` in `AddNewPerformer.tsx`** — the cast is harmless
   today because the value is redux-sourced, but it will silently lie once that page moves
   to React Query and the value becomes an `ApiError`. Remove the cast then.
+- **Unmapped Files' delete state is inert** — `UnmappedFilesTableConnector` hardcodes
+  `isDeleting = false`, so the Delete Selected spinner never spins and the
+  deselect-after-delete branch never fires. Pre-existing; #471 left it alone rather than
+  fold a behaviour change into a slice retirement. `useDeleteMovieFiles` already exists in
+  `MovieFile/useMovieFile.ts` and would supply a real `isPending` — do it with the
+  connector removal.
 - **"Open Browser on Start" is Windows-only in Eros** — `HostSettings` gates it on
   `isWindows && mode !== 'service'`, so the option is invisible on macOS and Linux.
   Sonarr gates the same field on `isWindowsService` alone and shows it everywhere else.

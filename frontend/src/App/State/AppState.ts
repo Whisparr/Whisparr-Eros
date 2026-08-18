@@ -14,7 +14,6 @@ import MovieCreditAppState from './MovieCreditAppState';
 import MovieFilesAppState from './MovieFilesAppState';
 import MoviesAppState, { MovieIndexAppState } from './MoviesAppState';
 import OAuthAppState from './OAuthAppState';
-import OrganizePreviewAppState from './OrganizePreviewAppState';
 import PathsAppState from './PathsAppState';
 import PerformersAppState from './PerformersAppState';
 import ProviderOptionsAppState from './ProviderOptionsAppState';
@@ -101,7 +100,6 @@ interface AppState {
   studios: StudiosAppState;
   movies: MoviesAppState;
   oAuth: OAuthAppState;
-  organizePreview: OrganizePreviewAppState;
   paths: PathsAppState;
   providerOptions: ProviderOptionsAppState;
   queue: QueueAppState;
