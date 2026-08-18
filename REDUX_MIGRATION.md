@@ -19,10 +19,10 @@ verified to resolve against the public repo.
 
 | Metric | At assessment | Now |
 | --- | --- | --- |
-| Files importing `react-redux` | 327 of 1,255 | **317** of 1,259 |
-| Lines under `frontend/src/Store/` | 15,374 across 138 files | **15,154** across 135 |
+| Files importing `react-redux` | 327 of 1,255 | **316** of 1,259 |
+| Lines under `frontend/src/Store/` | 15,374 across 138 files | **15,049** across 135 |
 | Redux slices registered in `Store/Actions/index.js` | 35 | **34** |
-| Remaining `*Connector` files | 66 | 66 |
+| Remaining `*Connector` files | 66 | **62** |
 | Files touching React Query | 35 | **39** |
 | zustand stores | 0 (not installed) | **installed, 3 primitives** |
 
@@ -305,9 +305,9 @@ Continuing through Phase B smallest-first, rather than jumping straight to
 Queue — the point of the early pages is to make the PR shape routine before anything
 expensive.
 
-1. **Backups, events and updates** — the rest of `systemActions`, one page per PR. Events
-   is the big one: it is a server-side paged table, so it needs `usePagedApiQuery` rather
-   than a plain list hook. The slice retires with the last of them.
+1. **Events and updates** — the rest of `systemActions`, one page per PR. Events is the
+   big one: it is a server-side paged table, so it needs `usePagedApiQuery` rather than a
+   plain list hook. The slice retires with the last of them.
 2. **The SignalR container** — `SignalRConnector.js` → `SignalRListener.tsx`, class to
    function component, as its own PR. Ungated (see §9.5), and worth doing before the
    larger domains so that Queue and Collection land in a converted file rather than
@@ -459,6 +459,7 @@ If a JS test runner is ever added, remove that line and set
 | 2026-08-17 | #464 | **System Status, part 2.** `status` slice, `FETCH_STATUS` and `SystemStatusAppState` deleted; `useAppPage` gate is now the query alone. Metrics table recomputed. |
 | 2026-08-18 | #465 | **Health.** First conversion to move a SignalR handler onto React Query rather than shim it. Two dead selectors deleted. |
 | 2026-08-18 | #466 | **Tasks.** `handleSystemTask` now invalidates instead of refetching commands, which let the per-row `setTimeout` refresh go. |
+| 2026-08-18 | #467 | **Backups.** First conversion with mutations rather than reads alone, and the first to retire connectors — 66 to 62. Four files to TSX. |
 
 ### Open threads
 

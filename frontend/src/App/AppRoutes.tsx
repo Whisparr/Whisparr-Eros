@@ -31,7 +31,7 @@ import UISettingsConnector from 'Settings/UI/UISettingsConnector';
 import AddNewStudio from 'Studio/AddNewStudio/AddNewStudio';
 import StudioDetails from 'Studio/Details/StudioDetails';
 import StudioIndex from 'Studio/Index/StudioIndex';
-import BackupsConnector from 'System/Backup/BackupsConnector';
+import Backups from 'System/Backup/Backups';
 import LogsTableConnector from 'System/Events/LogsTableConnector';
 import Logs from 'System/Logs/Logs';
 import Status from 'System/Status/Status';
@@ -149,7 +149,7 @@ function AppRoutes() {
 
       <Route path="/system/tasks" element={<Tasks />} />
 
-      <Route path="/system/backup" element={<BackupsConnector />} />
+      <Route path="/system/backup" element={<Backups />} />
 
       <Route path="/system/updates" element={<Updates />} />
 

@@ -64,6 +64,7 @@ export interface AppSectionState {
   isConnected: boolean;
   isDisconnected: boolean;
   isReconnecting: boolean;
+  isRestarting: boolean;
   version: string;
   prevVersion?: string;
   dimensions: {
