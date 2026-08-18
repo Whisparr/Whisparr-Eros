@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React from 'react';
 import Button from 'Components/Link/Button';
 import Modal from 'Components/Modal/Modal';
@@ -11,9 +10,19 @@ import { scrollDirections } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import styles from './LogsTableDetailsModal.css';
 
-function LogsTableDetailsModal(props) {
-  const { isOpen, message, exception, onModalClose } = props;
+interface LogsTableDetailsModalProps {
+  isOpen: boolean;
+  message: string;
+  exception?: string;
+  onModalClose: () => void;
+}
 
+function LogsTableDetailsModal({
+  isOpen,
+  message,
+  exception,
+  onModalClose,
+}: LogsTableDetailsModalProps) {
   return (
     <Modal isOpen={isOpen} onModalClose={onModalClose}>
       <ModalContent onModalClose={onModalClose}>
@@ -49,12 +58,5 @@ function LogsTableDetailsModal(props) {
     </Modal>
   );
 }
-
-LogsTableDetailsModal.propTypes = {
-  isOpen: PropTypes.bool.isRequired,
-  message: PropTypes.string.isRequired,
-  exception: PropTypes.string,
-  onModalClose: PropTypes.func.isRequired,
-};
 
 export default LogsTableDetailsModal;

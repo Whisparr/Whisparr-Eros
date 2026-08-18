@@ -23,7 +23,6 @@ import ReleasesAppState from './ReleasesAppState';
 import RootFolderAppState from './RootFolderAppState';
 import SettingsAppState from './SettingsAppState';
 import StudiosAppState from './StudiosAppState';
-import SystemAppState from './SystemAppState';
 import TagsAppState from './TagsAppState';
 import WantedAppState from './WantedAppState';
 
@@ -109,7 +108,6 @@ interface AppState {
   releases: ReleasesAppState;
   rootFolders: RootFolderAppState;
   settings: SettingsAppState;
-  system: SystemAppState;
   tags: TagsAppState;
   wanted: WantedAppState;
 }
