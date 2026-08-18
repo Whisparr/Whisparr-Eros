@@ -6,7 +6,6 @@ import createAjaxRequest from 'Utilities/createAjaxRequest';
 import serverSideCollectionHandlers from 'Utilities/serverSideCollectionHandlers';
 import translate from 'Utilities/String/translate';
 import { pingServer } from './appActions';
-import createFetchHandler from './Creators/createFetchHandler';
 import createHandleActions from './Creators/createHandleActions';
 import createServerSideCollectionHandlers from './Creators/createServerSideCollectionHandlers';
 import createClearReducer from './Creators/Reducers/createClearReducer';
@@ -21,13 +20,6 @@ export const section = 'system';
 // State
 
 export const defaultState = {
-  updates: {
-    isFetching: false,
-    isPopulated: false,
-    error: null,
-    items: [],
-  },
-
   logs: {
     isFetching: false,
     isPopulated: false,
@@ -131,8 +123,6 @@ export const persistState = [
 
 
 
-export const FETCH_UPDATES = 'system/updates/fetchUpdates';
-
 export const FETCH_LOGS = 'system/logs/fetchLogs';
 export const GOTO_FIRST_LOGS_PAGE = 'system/logs/gotoLogsFirstPage';
 export const GOTO_PREVIOUS_LOGS_PAGE = 'system/logs/gotoLogsPreviousPage';
@@ -152,8 +142,6 @@ export const SHUTDOWN = 'system/shutdown';
 
 
 
-export const fetchUpdates = createThunk(FETCH_UPDATES);
-
 export const fetchLogs = createThunk(FETCH_LOGS);
 export const gotoLogsFirstPage = createThunk(GOTO_FIRST_LOGS_PAGE);
 export const gotoLogsPreviousPage = createThunk(GOTO_PREVIOUS_LOGS_PAGE);
@@ -172,8 +160,6 @@ export const shutdown = createThunk(SHUTDOWN);
 // Action Handlers
 
 export const actionHandlers = handleThunks({
-
-  [FETCH_UPDATES]: createFetchHandler('system.updates', '/update'),
 
   ...createServerSideCollectionHandlers('system.logs', '/log', fetchLogs, {
     [serverSideCollectionHandlers.FETCH]: FETCH_LOGS,

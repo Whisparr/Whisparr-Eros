@@ -15,7 +15,6 @@ import PageContentBody from 'Components/Page/PageContentBody';
 import { icons, kinds } from 'Helpers/Props';
 import { executeCommand } from 'Store/Actions/commandActions';
 import { fetchGeneralSettings } from 'Store/Actions/settingsActions';
-import { fetchUpdates } from 'Store/Actions/systemActions';
 import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
 import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
 import { useSystemStatusData } from 'System/Status/useSystemStatus';
@@ -24,26 +23,21 @@ import formatDate from 'Utilities/Date/formatDate';
 import formatDateTime from 'Utilities/Date/formatDateTime';
 import translate from 'Utilities/String/translate';
 import UpdateChanges from './UpdateChanges';
+import useUpdates from './useUpdates';
 import styles from './Updates.css';
 
 const VERSION_REGEX = /\d+\.\d+\.\d+\.\d+/i;
 
-function createUpdatesSelector() {
+// Updates come from React Query; general settings are still redux until they
+// convert in phase E, and they supply the update mechanism.
+function createGeneralSettingsSelector() {
   return createSelector(
-    (state: AppState) => state.system.updates,
     (state: AppState) => state.settings.general,
-    (updates, generalSettings) => {
-      const { error: updatesError, items } = updates;
-
-      const isFetching = updates.isFetching || generalSettings.isFetching;
-      const isPopulated = updates.isPopulated && generalSettings.isPopulated;
-
+    (generalSettings) => {
       return {
-        isFetching,
-        isPopulated,
-        updatesError,
+        isFetchingGeneralSettings: generalSettings.isFetching,
+        isGeneralSettingsPopulated: generalSettings.isPopulated,
         generalSettingsError: generalSettings.error,
-        items,
         updateMechanism: generalSettings.item.updateMechanism,
       };
     }
@@ -61,13 +55,21 @@ function Updates() {
   );
 
   const {
-    isFetching,
-    isPopulated,
-    updatesError,
+    data: items,
+    isFetching: isFetchingUpdates,
+    isFetched: isUpdatesFetched,
+    error: updatesError,
+  } = useUpdates();
+
+  const {
+    isFetchingGeneralSettings,
+    isGeneralSettingsPopulated,
     generalSettingsError,
-    items,
     updateMechanism,
-  } = useSelector(createUpdatesSelector());
+  } = useSelector(createGeneralSettingsSelector());
+
+  const isFetching = isFetchingUpdates || isFetchingGeneralSettings;
+  const isPopulated = isUpdatesFetched && isGeneralSettingsPopulated;
 
   const dispatch = useDispatch();
   const [isMajorUpdateModalOpen, setIsMajorUpdateModalOpen] = useState(false);
@@ -128,7 +130,6 @@ function Updates() {
   }, [setIsMajorUpdateModalOpen]);
 
   useEffect(() => {
-    dispatch(fetchUpdates());
     dispatch(fetchGeneralSettings());
   }, [dispatch]);
 
