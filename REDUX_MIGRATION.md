@@ -20,7 +20,7 @@ verified to resolve against the public repo.
 | Metric | At assessment | Now |
 | --- | --- | --- |
 | Files importing `react-redux` | 327 of 1,255 | **318** of 1,259 |
-| Lines under `frontend/src/Store/` | 15,374 across 138 files | **15,203** across 136 |
+| Lines under `frontend/src/Store/` | 15,374 across 138 files | **15,167** across 135 |
 | Redux slices registered in `Store/Actions/index.js` | 35 | **34** |
 | Remaining `*Connector` files | 66 | 66 |
 | Files touching React Query | 35 | **39** |
@@ -252,7 +252,7 @@ Sonarr's final commit ([Sonarr/Sonarr@0460281f](https://github.com/Sonarr/Sonarr
 
 ## 9. Where Eros diverges from Sonarr
 
-Four places where you cannot just copy their commit.
+Five places where you cannot just copy their commit.
 
 1. **Four domains, not one.** Sonarr had Series; Eros has Movie, Scene, Performer and
    Studio, each with its own index, details, edit, delete and select-footer stack. Biggest
@@ -269,22 +269,50 @@ Four places where you cannot just copy their commit.
 4. **Safe-for-work mode.** `SafeForWorkContext` and `SafeForWorkButtonConnector.js` are
    Eros-specific global UI state. Belongs in the app zustand store alongside theme and
    advanced-settings, but there is no Sonarr commit to follow.
+5. **The SignalR container, and the cache helpers inside it.** Two separate things, and it
+   is worth not conflating them:
+
+   *The container is ungated, not blocked.* Ours is `SignalRConnector.js` — a `connect()`ed
+   class with a `createMapStateToProps` and 15 dispatch props. Sonarr's is
+   `SignalRListener.tsx`, a function component on `useQueryClient()`. Sonarr made that
+   change in [c3f9cd12](https://github.com/Sonarr/Sonarr/commit/c3f9cd12)
+   "Convert signalR to TypeScript" on **2025-01-18 — eight months before their React Query
+   migration started — and kept redux**, 37 `dispatch()` calls still in the new file.
+   react-redux did not leave it until
+   [be3b015b](https://github.com/Sonarr/Sonarr/commit/be3b015b) on 2026-05-29. So the shape
+   change is a standalone refactor available at any time; it does not wait on app-state or
+   any domain. It is only worth *deferring* because the diff shrinks with every domain
+   converted first — each one turns a redux dispatch into a two-line `invalidateQueries`
+   before the rewrite has to touch it.
+
+   *The helpers are genuinely ours.* Sonarr keeps three generic helpers keyed on
+   `id` — `updateQueryClientItem`, `removeQueryClientItem`, `updatePagedItem`. Eros has six
+   bespoke ones because the cache shape differs: keys are slug/foreignId
+   (`/movie/{titleSlug}`, `/performer/{foreignId}`), movies are nested inside
+   `/performer/{id}/works`, and the paged invalidators scan the cache by key prefix. Those
+   cannot collapse into Sonarr's helpers without changing the key scheme. Revisit when the
+   container converts; do not treat it as drift to be tidied away.
+
+   Common domains have neither problem. `/health` is a flat list on a plain key, so the
+   handler is Sonarr's line verbatim.
 
 ---
 
 ## 10. What to do next
 
-Phase A is done. Parse, Disk Space, Log Files and System Status are converted.
+Phase A is done. Parse, Disk Space, Log Files, System Status and Health are converted.
 Continuing through Phase B smallest-first, rather than jumping straight to
 Queue — the point of the early pages is to make the PR shape routine before anything
 expensive.
 
-1. **Health**, then tasks, backups and events — what is left of `systemActions`. Health
-   feeds the sidebar, so it goes last and retires the slice with it.
-2. **Organize preview + Unmapped Files** — two small pages, one PR.
-3. **Then Queue**, as Sonarr did, because it forces SignalR-driven invalidation into
-   existence early rather than late. This is the first genuinely large one at 58 files, and
-   the first that needs the SignalR pivot in Phase C.
+1. **Tasks, backups and events** — the rest of `systemActions`. The slice retires with the
+   last of them, not with Health; it holds five sections, and Health was one.
+2. **The SignalR container** — `SignalRConnector.js` → `SignalRListener.tsx`, class to
+   function component, as its own PR. Ungated (see §9.5), and worth doing before the
+   larger domains so that Queue and Collection land in a converted file rather than
+   forcing a second rewrite.
+3. **Organize preview + Unmapped Files** — two small pages, one PR.
+4. **Then Queue**, as Sonarr did. The first genuinely large one at 58 files.
 
 ### A class component does not block the conversion below it
 
@@ -428,6 +456,7 @@ If a JS test runner is ever added, remove that line and set
 | 2026-08-17 | #462 | **Log Files.** App and update logs. First *partial component* conversion — the fetch half moves, the command half stays on redux until Phase C. |
 | 2026-08-17 | #463 | **System Status, part 1.** All 12 readers onto React Query; duplicate `useIsWindows` and `createSystemStatusSelector` deleted. Slice and boot path retained for part 2. |
 | 2026-08-17 | #464 | **System Status, part 2.** `status` slice, `FETCH_STATUS` and `SystemStatusAppState` deleted; `useAppPage` gate is now the query alone. Metrics table recomputed. |
+| 2026-08-18 | #465 | **Health.** First conversion to move a SignalR handler onto React Query rather than shim it. Two dead selectors deleted. |
 
 ### Open threads
 
