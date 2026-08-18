@@ -24,13 +24,6 @@ const backupsSection = 'system.backups';
 // State
 
 export const defaultState = {
-  tasks: {
-    isFetching: false,
-    isPopulated: false,
-    error: null,
-    items: [],
-  },
-
   backups: {
     isFetching: false,
     isPopulated: false,
@@ -151,8 +144,6 @@ export const persistState = [
 // Actions Types
 
 
-export const FETCH_TASK = 'system/tasks/fetchTask';
-export const FETCH_TASKS = 'system/tasks/fetchTasks';
 
 export const FETCH_BACKUPS = 'system/backups/fetchBackups';
 export const RESTORE_BACKUP = 'system/backups/restoreBackup';
@@ -179,8 +170,6 @@ export const SHUTDOWN = 'system/shutdown';
 // Action Creators
 
 
-export const fetchTask = createThunk(FETCH_TASK);
-export const fetchTasks = createThunk(FETCH_TASKS);
 
 export const fetchBackups = createThunk(FETCH_BACKUPS);
 export const restoreBackup = createThunk(RESTORE_BACKUP);
@@ -207,8 +196,6 @@ export const shutdown = createThunk(SHUTDOWN);
 // Action Handlers
 
 export const actionHandlers = handleThunks({
-  [FETCH_TASK]: createFetchHandler('system.tasks', '/system/task'),
-  [FETCH_TASKS]: createFetchHandler('system.tasks', '/system/task'),
 
   [FETCH_BACKUPS]: createFetchHandler(backupsSection, '/system/backup'),
 
