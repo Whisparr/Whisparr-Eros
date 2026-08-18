@@ -32,7 +32,7 @@ import AddNewStudio from 'Studio/AddNewStudio/AddNewStudio';
 import StudioDetails from 'Studio/Details/StudioDetails';
 import StudioIndex from 'Studio/Index/StudioIndex';
 import Backups from 'System/Backup/Backups';
-import LogsTableConnector from 'System/Events/LogsTableConnector';
+import LogsTable from 'System/Events/LogsTable';
 import Logs from 'System/Logs/Logs';
 import Status from 'System/Status/Status';
 import Tasks from 'System/Tasks/Tasks';
@@ -153,7 +153,7 @@ function AppRoutes() {
 
       <Route path="/system/updates" element={<Updates />} />
 
-      <Route path="/system/events" element={<LogsTableConnector />} />
+      <Route path="/system/events" element={<LogsTable />} />
 
       <Route path="/system/logs/files/*" element={<Logs />} />
 
