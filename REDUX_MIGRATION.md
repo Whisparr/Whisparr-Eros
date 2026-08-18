@@ -19,17 +19,37 @@ verified to resolve against the public repo.
 
 | Metric | At assessment | Now |
 | --- | --- | --- |
-| Files importing `react-redux` | 327 of 1,255 | **316** of 1,259 |
-| Lines under `frontend/src/Store/` | 15,374 across 138 files | **15,226** across 137 |
-| Redux action slices | 41 | **40** |
+| Files importing `react-redux` | 327 of 1,255 | **318** of 1,259 |
+| Lines under `frontend/src/Store/` | 15,374 across 138 files | **15,203** across 136 |
+| Redux slices registered in `Store/Actions/index.js` | 35 | **34** |
 | Remaining `*Connector` files | 66 | 66 |
-| Files touching React Query | 13 | **39** |
+| Files touching React Query | 35 | **39** |
 | zustand stores | 0 (not installed) | **installed, 3 primitives** |
+
+> **Recomputed in #464.** Three rows previously carried figures that no command
+> reproduced — `react-redux` read 316 where the same command that yields the
+> assessment column gives 320 on `eros-develop`, and the slice and React Query rows
+> used definitions that were never written down. The assessment column is unchanged;
+> it reproduces exactly at
+> [1d75cc96](https://github.com/Whisparr/Whisparr-Eros/commit/1d75cc96). To keep this
+> honest, the commands are now fixed:
+>
+> ```sh
+> # react-redux importers / total source files
+> git grep -l "from 'react-redux'" <ref> -- 'frontend/src/*.ts' 'frontend/src/*.tsx' \
+>   'frontend/src/*.js' | grep -v '\.css\.d\.ts' | wc -l
+> # slices
+> grep -cE '^import \* as' frontend/src/Store/Actions/index.js
+> # React Query
+> grep -rl -E 'useApiQuery|useApiMutation|usePagedApiQuery|@tanstack/react-query' \
+>   --include='*.ts' --include='*.tsx' frontend/src | wc -l
+> ```
 
 The headline number barely moves early on, and that is expected: Phase A added the
 foundation without converting any page, and Phase B is starting with the smallest pages
-by design. The slice count is the number to watch — each page conversion retires one
-outright.
+by design. The slice count is the number to watch — but only where a page owns its slice
+outright. `systemActions` serves six areas, so System Status came out of it without
+moving that row at all.
 
 ### The domains are started, not done
 
@@ -254,19 +274,40 @@ Four places where you cannot just copy their commit.
 
 ## 10. What to do next
 
-Phase A is done. Parse, Disk Space, Log Files and the read half of System Status are
-converted. Continuing through Phase B smallest-first, rather than jumping straight to
+Phase A is done. Parse, Disk Space, Log Files and System Status are converted.
+Continuing through Phase B smallest-first, rather than jumping straight to
 Queue — the point of the early pages is to make the PR shape routine before anything
 expensive.
 
-1. **System Status part 2** — retire the `status` slice and rewire `useAppPage`,
-   `About`, `Stats` and `FirstRun`. Small diff, but it is the boot path.
-2. **Health**, then tasks, backups and events — what is left of `systemActions`. Health
+1. **Health**, then tasks, backups and events — what is left of `systemActions`. Health
    feeds the sidebar, so it goes last and retires the slice with it.
-3. **Organize preview + Unmapped Files** — two small pages, one PR.
-4. **Then Queue**, as Sonarr did, because it forces SignalR-driven invalidation into
+2. **Organize preview + Unmapped Files** — two small pages, one PR.
+3. **Then Queue**, as Sonarr did, because it forces SignalR-driven invalidation into
    existence early rather than late. This is the first genuinely large one at 58 files, and
    the first that needs the SignalR pivot in Phase C.
+
+### A class component does not block the conversion below it
+
+System Status part 2 (#464) had to get four status values out of redux while
+`GeneralSettings` was still a `connect()`-wrapped class — and `mapStateToProps` cannot
+call a hook. The instinct is to convert the class first. That is Phase E work and a much
+larger change than the one being made.
+
+What worked instead, and generalises: **push each read down to the lowest component that
+can call a hook, and bridge only what is left.** Three of the four values were consumed by
+`HostSettings` and `UpdateSettings`, which are plain function components — those call
+`useSystemStatusData()` directly and the prop-drilling through the class disappears
+permanently, exactly as Sonarr has it. Only the fourth (`isWindowsService`, one string in
+one modal) genuinely needed the class, so the connector's default export became a small
+function component that reads the hook and passes that one prop in.
+
+Two notes on doing this:
+
+- Whisparr's ESLint enforces `filenames/match-exported`, so the new exported wrapper has
+  to take the file's name; rename the inner class rather than the export.
+- `connect()`'s default `mergeProps` is `{...ownProps, ...stateProps, ...dispatchProps}`,
+  so a prop passed in from the wrapper reaches the component untouched as long as
+  `mapStateToProps` no longer returns a key of the same name.
 
 ### The per-page PR shape, as established by Parse (#458)
 
@@ -386,6 +427,7 @@ If a JS test runner is ever added, remove that line and set
 | 2026-08-17 | #461 | **Disk Space.** 4 files, +19/−34. Partial trim of `systemActions`; slice survives for status, health, tasks, backups, logs, updates. |
 | 2026-08-17 | #462 | **Log Files.** App and update logs. First *partial component* conversion — the fetch half moves, the command half stays on redux until Phase C. |
 | 2026-08-17 | #463 | **System Status, part 1.** All 12 readers onto React Query; duplicate `useIsWindows` and `createSystemStatusSelector` deleted. Slice and boot path retained for part 2. |
+| 2026-08-17 | #464 | **System Status, part 2.** `status` slice, `FETCH_STATUS` and `SystemStatusAppState` deleted; `useAppPage` gate is now the query alone. Metrics table recomputed. |
 
 ### Open threads
 
@@ -403,6 +445,11 @@ If a JS test runner is ever added, remove that line and set
 - **`getErrorMessage(error as Error)` in `AddNewPerformer.tsx`** — the cast is harmless
   today because the value is redux-sourced, but it will silently lie once that page moves
   to React Query and the value becomes an `ApiError`. Remove the cast then.
+- **"Open Browser on Start" is Windows-only in Eros** — `HostSettings` gates it on
+  `isWindows && mode !== 'service'`, so the option is invisible on macOS and Linux.
+  Sonarr gates the same field on `isWindowsService` alone and shows it everywhere else.
+  Preserved verbatim in #464 rather than quietly adopting Sonarr's condition; if it is a
+  bug it deserves its own PR, since the setting does work off Windows.
 - **`NaN` progress bars on zero-size mounts** — `/diskspace` returns entries with
   `totalSpace: 0` for synthetic mounts (`/System/Volumes/Data/home` and similar). Disk
   Space computes `100 - (freeSpace / totalSpace) * 100`, so those rows render a `NaN`-width
