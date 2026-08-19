@@ -17,7 +17,6 @@ import OAuthAppState from './OAuthAppState';
 import PathsAppState from './PathsAppState';
 import PerformersAppState from './PerformersAppState';
 import ProviderOptionsAppState from './ProviderOptionsAppState';
-import QueueAppState from './QueueAppState';
 import ReleasesAppState from './ReleasesAppState';
 import RootFolderAppState from './RootFolderAppState';
 import SettingsAppState from './SettingsAppState';
@@ -102,7 +101,6 @@ interface AppState {
   oAuth: OAuthAppState;
   paths: PathsAppState;
   providerOptions: ProviderOptionsAppState;
-  queue: QueueAppState;
   releases: ReleasesAppState;
   rootFolders: RootFolderAppState;
   settings: SettingsAppState;

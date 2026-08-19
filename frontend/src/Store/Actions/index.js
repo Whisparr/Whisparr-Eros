@@ -20,7 +20,6 @@ import * as paths from './pathActions';
 import * as performers from './performerActions';
 import * as performerScenes from './performerScenesActions';
 import * as providerOptions from './providerOptionActions';
-import * as queue from './queueActions';
 import * as releases from './releaseActions';
 import * as rootFolders from './rootFolderActions';
 import * as sceneIndex from './sceneIndexActions';
@@ -46,7 +45,6 @@ export default [
   oAuth,
   paths,
   providerOptions,
-  queue,
   releases,
   rootFolders,
   movies,

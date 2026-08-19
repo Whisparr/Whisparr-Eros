@@ -11,7 +11,6 @@ import {
   setAddPerformerDefault,
   setPerformersWithStatus,
 } from 'Store/Actions/addPerformerActions';
-import {} from 'Store/Actions/queueActions';
 import { fetchRootFolders } from 'Store/Actions/rootFolderActions';
 import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';

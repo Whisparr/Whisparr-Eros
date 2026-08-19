@@ -11,8 +11,6 @@ import {
   setMovieCollectionsFilter,
   setMovieCollectionsSort,
 } from 'Store/Actions/movieCollectionActions';
-import {
-} from 'Store/Actions/queueActions';
 import scrollPositions from 'Store/scrollPositions';
 import createCollectionClientSideCollectionItemsSelector from 'Store/Selectors/createCollectionClientSideCollectionItemsSelector';
 import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';

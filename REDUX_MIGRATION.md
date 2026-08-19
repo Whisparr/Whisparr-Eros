@@ -19,12 +19,12 @@ verified to resolve against the public repo.
 
 | Metric | At assessment | Now |
 | --- | --- | --- |
-| Files importing `react-redux` | 327 of 1,255 | **312** of 1,258 |
-| Lines under `frontend/src/Store/` | 15,374 across 138 files | **14,628** across 132 |
-| Redux slices registered in `Store/Actions/index.js` | 35 | **32** |
+| Files importing `react-redux` | 327 of 1,255 | **309** of 1,257 |
+| Lines under `frontend/src/Store/` | 15,374 across 138 files | **14,133** across 131 |
+| Redux slices registered in `Store/Actions/index.js` | 35 | **31** |
 | Remaining `*Connector` files | 66 | **61** |
-| Files touching React Query | 35 | **47** |
-| zustand stores | 0 (not installed) | **installed, 3 primitives + 3 stores** |
+| Files touching React Query | 35 | **48** |
+| zustand stores | 0 (not installed) | **installed, 3 primitives + 4 stores** |
 
 > **Recomputed in #464.** Three rows previously carried figures that no command
 > reproduced — `react-redux` read 316 where the same command that yields the
@@ -147,7 +147,7 @@ a whole state slice. Take them roughly in Sonarr's order.
 
 | Page | Retires | Sonarr ref |
 | --- | --- | --- |
-| **Queue** — biggest leaf, 14 importers, SignalR-driven, drives sidebar badge. **Split three ways** (see below); status done, #472 | `queueActions` (539 loc), `QueueAppState` | [Sonarr/Sonarr@ae201f52](https://github.com/Sonarr/Sonarr/commit/ae201f52) (58 files) |
+| ~~**Queue**~~ — **done, #472 / #473 / #474.** Biggest leaf, 14 importers, SignalR-driven, drives sidebar badge. Split three ways rather than Sonarr's single commit | ~~`queueActions` (539 loc), `QueueAppState`~~ | [Sonarr/Sonarr@ae201f52](https://github.com/Sonarr/Sonarr/commit/ae201f52) (58 files) |
 | **Blocklist** — incl. per-movie blocklist tab | `blocklistActions`, `movieBlocklistActions` | [Sonarr/Sonarr@a4f21085](https://github.com/Sonarr/Sonarr/commit/a4f21085) |
 | **History** *(hybrid)* — `useHistory` covers paged list + movie history; finish details modal | `historyActions`, `movieHistoryActions`, `HistoryDetailsConnector` ×2 | [Sonarr/Sonarr@a45b0776](https://github.com/Sonarr/Sonarr/commit/a45b0776), [Sonarr/Sonarr@6b479a5a](https://github.com/Sonarr/Sonarr/commit/6b479a5a) |
 | **System: Status / Health** — ~~Disk Space **done, #461**~~. Health has the sidebar dependency, so it goes last | `systemActions` (391 loc after #461), `createHealthCheckSelector.js`, `createSystemStatusSelector.ts` | [Sonarr/Sonarr@49c52c2e](https://github.com/Sonarr/Sonarr/commit/49c52c2e), [Sonarr/Sonarr@0552a811](https://github.com/Sonarr/Sonarr/commit/0552a811), ~~[Sonarr/Sonarr@871ae955](https://github.com/Sonarr/Sonarr/commit/871ae955)~~ |
@@ -313,14 +313,13 @@ Updates, Events, the SignalR container, and Organize preview + Unmapped Files ar
 converted. Phase B's leaf pages are finished except Queue, Blocklist, History and
 Calendar.
 
-1. **Queue**, in three PRs. Sonarr shipped it as one 58-file commit, but the slice already
+1. ~~**Queue**, in three PRs.~~ **Done.** Sonarr shipped it as one 58-file commit, but the slice already
    has three independent sub-sections and splitting along them gives three merge points
    instead of one:
    - ~~**`queue.status`** — `/queue/status`, drives the sidebar badge. **Done, #472.**~~
    - ~~**`queue.details`** — `/queue/details`, per-movie queue state with no UI of its own.
      **Done, #473.**~~
-   - **`queue.paged`** — the Queue page itself. The bulk: server-side collection,
-     grab/remove mutations, filters, table options, and `queue.options`.
+   - ~~**`queue.paged`** — the Queue page itself. **Done, #474.** Slice retired.~~
 2. **Blocklist**, then **History**, then **Calendar** — the rest of Phase B.
 
 ### `/queue/details` takes no filter, so it needs no provider
@@ -515,6 +514,7 @@ If a JS test runner is ever added, remove that line and set
 | 2026-08-18 | #469 | **Events.** First paged page. `usePage` added; the system slice is down to restart/shutdown. Three type holes fixed that only `.js` files had been hiding. |
 | 2026-08-18 | #470 | **SignalR container.** Class + `connect()` → function component, as Sonarr did in Jan 2025. Redux stays inside. |
 | 2026-08-18 | #471 | **Organize preview + Unmapped Files.** Two slices retired. First conversion where a page's table prefs move to a zustand options store rather than to React Query. |
+| 2026-08-18 | #474 | **Queue, part 3 of 3 — paged.** `queueActions` and `QueueAppState` deleted. Options to zustand, page to `usePagedApiQuery`, grab/remove to `useApiMutation`. The `isQueuePopulated` ref from #470 goes: React Query only refetches observed queries. |
 | 2026-08-18 | #473 | **Queue, part 2 of 3 — details.** Three selectors and nine fetch/clear dispatch sites replaced by one shared query. Collapsed rather than ported to Sonarr's context provider, because our endpoint takes no filter. |
 | 2026-08-18 | #472 | **Queue, part 1 of 3 — status.** Sidebar badge onto React Query; `queue/status` SignalR handler onto `setQueryData`; the reconnect refetch moves from the component into `handleReconnected`. |
 
@@ -534,6 +534,11 @@ If a JS test runner is ever added, remove that line and set
 - **`getErrorMessage(error as Error)` in `AddNewPerformer.tsx`** — the cast is harmless
   today because the value is redux-sourced, but it will silently lie once that page moves
   to React Query and the value becomes an `ApiError`. Remove the cast then.
+- **The queue Movie filter mixes scenes and movies** — `MovieFilterBuilderRowValue` lists
+  every record in the movie table by title, with no `itemType` distinction, so the queue's
+  `movieIds` filter cannot tell a scene from a movie. Shared filter-builder plumbing backed
+  by `state.movies`, so it belongs with custom filters in Phase C, not with a slice
+  retirement. Carried over unchanged by #474.
 - **Unmapped Files' delete state is inert** — `UnmappedFilesTableConnector` hardcodes
   `isDeleting = false`, so the Delete Selected spinner never spins and the
   deselect-after-delete branch never fires. Pre-existing; #471 left it alone rather than

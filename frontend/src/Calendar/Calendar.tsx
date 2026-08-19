@@ -12,7 +12,6 @@ import {
   fetchCalendar,
   gotoCalendarToday,
 } from 'Store/Actions/calendarActions';
-import {} from 'Store/Actions/queueActions';
 import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
 import {
   registerPagePopulator,
