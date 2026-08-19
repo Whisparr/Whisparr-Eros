@@ -19,11 +19,11 @@ verified to resolve against the public repo.
 
 | Metric | At assessment | Now |
 | --- | --- | --- |
-| Files importing `react-redux` | 327 of 1,255 | **309** of 1,261 |
-| Lines under `frontend/src/Store/` | 15,374 across 138 files | **13,744** across 129 |
-| Redux slices registered in `Store/Actions/index.js` | 35 | **30** |
+| Files importing `react-redux` | 327 of 1,255 | **308** of 1,261 |
+| Lines under `frontend/src/Store/` | 15,374 across 138 files | **13,515** across 128 |
+| Redux slices registered in `Store/Actions/index.js` | 35 | **29** |
 | Remaining `*Connector` files | 66 | **61** |
-| Files touching React Query | 35 | **51** |
+| Files touching React Query | 35 | **52** |
 | zustand stores | 0 (not installed) | **installed, 3 primitives + 4 stores** |
 
 > **Recomputed in #464.** Three rows previously carried figures that no command
@@ -157,7 +157,7 @@ a whole state slice. Take them roughly in Sonarr's order.
 | Page | Retires | Sonarr ref |
 | --- | --- | --- |
 | ~~**Queue**~~ — **done, #472 / #473 / #474.** Biggest leaf, 14 importers, SignalR-driven, drives sidebar badge. Split three ways rather than Sonarr's single commit | ~~`queueActions` (539 loc), `QueueAppState`~~ | [Sonarr/Sonarr@ae201f52](https://github.com/Sonarr/Sonarr/commit/ae201f52) (58 files) |
-| **Blocklist** — incl. per-movie blocklist tab | `blocklistActions`, `movieBlocklistActions` | [Sonarr/Sonarr@a4f21085](https://github.com/Sonarr/Sonarr/commit/a4f21085) |
+| ~~**Blocklist** — the page~~ — **done, #477.** `movieBlocklistActions` stays: it feeds one selector in `InteractiveSearchRow` jointly with `movieHistory`, so it converts with History | ~~`blocklistActions`, `BlocklistAppState`~~ | [Sonarr/Sonarr@a4f21085](https://github.com/Sonarr/Sonarr/commit/a4f21085) |
 | **History** *(hybrid)* — `useHistory` covers paged list + movie history; finish details modal | `historyActions`, `movieHistoryActions`, `HistoryDetailsConnector` ×2 | [Sonarr/Sonarr@a45b0776](https://github.com/Sonarr/Sonarr/commit/a45b0776), [Sonarr/Sonarr@6b479a5a](https://github.com/Sonarr/Sonarr/commit/6b479a5a) |
 | ~~**System: Status / Health**~~ — **done, #461 / #463 / #464 / #465.** Health had the sidebar dependency, so it went last | `systemActions` (391 loc after #461), `createHealthCheckSelector.js`, `createSystemStatusSelector.ts` | [Sonarr/Sonarr@49c52c2e](https://github.com/Sonarr/Sonarr/commit/49c52c2e), [Sonarr/Sonarr@0552a811](https://github.com/Sonarr/Sonarr/commit/0552a811), ~~[Sonarr/Sonarr@871ae955](https://github.com/Sonarr/Sonarr/commit/871ae955)~~ |
 | ~~**System: Tasks / Backups / Events**~~ — **done, #462 / #466 / #467 / #468 / #469.** | `BackupsConnector.js`, `RestoreBackupModal*Connector.js`, `LogsTableConnector.js` | [Sonarr/Sonarr@3091f40c](https://github.com/Sonarr/Sonarr/commit/3091f40c), [Sonarr/Sonarr@c295e24f](https://github.com/Sonarr/Sonarr/commit/c295e24f), [Sonarr/Sonarr@ff5e7327](https://github.com/Sonarr/Sonarr/commit/ff5e7327) |
@@ -318,8 +318,8 @@ Five places where you cannot just copy their commit.
 ## 10. What to do next
 
 Phase A is done. Parse, Disk Space, Log Files, System Status, Health, Tasks, Backups,
-Updates, Events, the SignalR container, Organize preview + Unmapped Files, Queue and
-Wanted are converted. Phase B's leaf pages are finished except Blocklist, History and
+Updates, Events, the SignalR container, Organize preview + Unmapped Files, Queue, Wanted
+and Blocklist are converted. Phase B's leaf pages are finished except History and
 Calendar.
 
 1. ~~**Queue**, in three PRs.~~ **Done.** Sonarr shipped it as one 58-file commit, but the slice already
@@ -330,7 +330,9 @@ Calendar.
      **Done, #473.**~~
    - ~~**`queue.paged`** — the Queue page itself. **Done, #474.** Slice retired.~~
 2. ~~**Wanted: Missing + Cutoff Unmet.**~~ **Done, #475.**
-3. **Blocklist**, then **History**, then **Calendar** — the rest of Phase B.
+3. ~~**Blocklist.**~~ **Done, #477.**
+4. **History**, then **Calendar** — the rest of Phase B. History takes `movieBlocklistActions`
+   with it.
 
 ### `/queue/details` takes no filter, so it needs no provider
 
@@ -381,6 +383,22 @@ scalar boolean, so the redux filters' `value: false` becomes `value: [false]` �
 `true`, which would have labelled the toolbar button "Unmonitor Selected" while the
 unmonitored filter was active. `Wanted/getMonitoredValue.ts` unwraps the array instead.
 `getFilterValue.ts` had no other callers and was deleted with the pages.
+
+### An empty 200 was breaking every `void` delete
+
+`fetchJson` short-circuited on 204 and called `response.json()` on everything else. Two
+endpoints answer 200 with *no body at all* — `[RestDeleteById]` actions declared `void`,
+which is what `DELETE /blocklist/{id}` and `DELETE /queue/{id}` are — so the parse threw,
+the mutation landed in `onError`, and its `onSuccess` invalidation never ran. The row
+stayed on screen after a successful delete, and nothing surfaced an error either. The
+redux path never saw this: `createAjaxRequest` tolerated the empty body and
+`createRemoveItemHandler` spliced the item out of the collection locally.
+
+#477 reads the body as text and treats empty as `{}`. That is what made Blocklist's
+per-row remove work, and it repairs the queue's per-row remove at the same time —
+`useRemoveQueueItem` has had the same silent failure since #474. Both bulk endpoints
+return `new { }` explicitly and were never affected, which is why the bug survived
+review: the toolbar button worked and only the row button did not.
 
 ### `VirtualTable` blocks two connector removals
 
@@ -543,6 +561,8 @@ If a JS test runner is ever added, remove that line and set
 | 2026-08-18 | #469 | **Events.** First paged page. `usePage` added; the system slice is down to restart/shutdown. Three type holes fixed that only `.js` files had been hiding. |
 | 2026-08-18 | #470 | **SignalR container.** Class + `connect()` → function component, as Sonarr did in Jan 2025. Redux stays inside. |
 | 2026-08-18 | #471 | **Organize preview + Unmapped Files.** Two slices retired. First conversion where a page's table prefs move to a zustand options store rather than to React Query. |
+| 2026-08-19 | #477 | **Blocklist.** `blocklistActions` and `BlocklistAppState` deleted. Also fixes `fetchJson` on empty 200 bodies, without which the per-row delete does not invalidate — see §10. `movieBlocklistActions` deferred to History; it shares a selector with `movieHistory`. |
+| 2026-08-19 | #476 | **Queue custom filters.** Regression fix, not a conversion: #474 resolved the filter key against the built-ins only, so selecting a custom filter stored the key and changed nothing on the wire. |
 | 2026-08-18 | #475 | **Wanted: Missing + Cutoff Unmet.** `wantedActions` and `WantedAppState` deleted; both pages onto `usePagedApiQuery` with one options store each. Batch monitor-toggle becomes a `/movie/editor` mutation, which retires `createBatchToggleMovieMonitoredHandler` and the `isSaving` row flag. |
 | 2026-08-18 | #474 | **Queue, part 3 of 3 — paged.** `queueActions` and `QueueAppState` deleted. Options to zustand, page to `usePagedApiQuery`, grab/remove to `useApiMutation`. The `isQueuePopulated` ref from #470 goes: React Query only refetches observed queries. |
 | 2026-08-18 | #473 | **Queue, part 2 of 3 — details.** Three selectors and nine fetch/clear dispatch sites replaced by one shared query. Collapsed rather than ported to Sonarr's context provider, because our endpoint takes no filter. |
@@ -550,6 +570,22 @@ If a JS test runner is ever added, remove that line and set
 
 ### Open threads
 
+- **Blocklist's two API filters 500** — `BlocklistController` builds
+  `movieIds.Contains(b.MovieId)` and `protocols.Contains(b.Protocol)`, and
+  `WhereBuilderSqlite.ParseEnumerableContains` rejects both with
+  `Unexpected form of Enumerable.Contains`, so any filter built from the Blocklist filter
+  builder returns a 500. `HistoryController` already works around this with hand-built
+  `Expression.OrElse` chains (`BuildOrMovieIdFilter`, `BuildOrEventTypeFilter`); Blocklist
+  is the only paged controller left using the array form. Backend, pre-existing, and
+  entirely independent of the migration — #477 verified that the frontend now puts the
+  filter on the wire and stopped there.
+- **Retired slices warn on upgrade** — `redux-localstorage` persists whatever the slice
+  declared in `persistState`, so a browser that used the app before a conversion still
+  has e.g. `blocklist` in its persisted blob. `createStore` then logs
+  `Unexpected key "blocklist" found in preloadedState`. Cosmetic — redux drops the key —
+  but it fires once per retired slice per user, and every conversion so far has added one.
+  `Store/Migrators/migrate.js` is where a sweep would go, and it wants doing once at the
+  end rather than per-PR.
 - **Whisparr/Whisparr#1123** — `AUTH_HEADERS` and hand-rolled fetch helpers still
   duplicated in `useStudio`, `usePerformer`, `useHistory`, `useAddNewMovie`. Not on the
   critical path; filed rather than folded into #455.

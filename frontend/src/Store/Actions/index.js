@@ -1,7 +1,6 @@
 import * as addMovie from './addMovieActions';
 import * as addPerformer from './addPerformerActions';
 import * as app from './appActions';
-import * as blocklist from './blocklistActions';
 import * as calendar from './calendarActions';
 import * as captcha from './captchaActions';
 import * as commands from './commandActions';
@@ -33,7 +32,6 @@ export default [
   addMovie,
   addPerformer,
   app,
-  blocklist,
   calendar,
   captcha,
   commands,

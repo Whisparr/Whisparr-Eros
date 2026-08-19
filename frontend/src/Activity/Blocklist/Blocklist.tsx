@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { SelectProvider } from 'App/SelectContext';
-import AppState from 'App/State/AppState';
+import { Filter as AppStateFilter } from 'App/State/AppState';
 import * as commandNames from 'Commands/commandNames';
 import Alert from 'Components/Alert';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
@@ -16,20 +16,10 @@ import Table from 'Components/Table/Table';
 import TableBody from 'Components/Table/TableBody';
 import TableOptionsModalWrapper from 'Components/Table/TableOptions/TableOptionsModalWrapper';
 import TablePager from 'Components/Table/TablePager';
-import usePaging from 'Components/Table/usePaging';
-import useCurrentPage from 'Helpers/Hooks/useCurrentPage';
 import usePrevious from 'Helpers/Hooks/usePrevious';
 import useSelectState from 'Helpers/Hooks/useSelectState';
 import { align, icons, kinds } from 'Helpers/Props';
-import {
-  clearBlocklist,
-  fetchBlocklist,
-  gotoBlocklistPage,
-  removeBlocklistItems,
-  setBlocklistFilter,
-  setBlocklistSort,
-  setBlocklistTableOption,
-} from 'Store/Actions/blocklistActions';
+import { SortDirection } from 'Helpers/Props/sortDirections';
 import { executeCommand } from 'Store/Actions/commandActions';
 import { createCustomFiltersSelector } from 'Store/Selectors/createClientSideCollectionSelector';
 import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
@@ -43,33 +33,40 @@ import {
 import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
 import BlocklistFilterModal from './BlocklistFilterModal';
+import {
+  setBlocklistOption,
+  setBlocklistOptions,
+  setBlocklistSort,
+  useBlocklistOptions,
+} from './blocklistOptionsStore';
 import BlocklistRow from './BlocklistRow';
+import useBlocklist, { FILTERS, useRemoveBlocklistItems } from './useBlocklist';
 
 function Blocklist() {
-  const requestCurrentPage = useCurrentPage();
+  const dispatch = useDispatch();
+
+  const { columns, pageSize, selectedFilterKey, sortKey, sortDirection } =
+    useBlocklistOptions();
 
   const {
-    isFetching,
-    isPopulated,
-    error,
-    items,
-    columns,
-    selectedFilterKey,
-    filters,
-    sortKey,
-    sortDirection,
-    page,
-    pageSize,
+    records: items,
     totalPages,
     totalRecords,
-    isRemoving,
-  } = useSelector((state: AppState) => state.blocklist);
+    isFetching,
+    isFetched,
+    isLoading,
+    error,
+    refetch,
+    page,
+    goToPage,
+  } = useBlocklist();
+
+  const { removeBlocklistItems, isRemoving } = useRemoveBlocklistItems();
 
   const customFilters = useSelector(createCustomFiltersSelector('blocklist'));
   const isClearingBlocklistExecuting = useSelector(
     createCommandExecutingSelector(commandNames.CLEAR_BLOCKLIST)
   );
-  const dispatch = useDispatch();
 
   const [isConfirmRemoveModalOpen, setIsConfirmRemoveModalOpen] =
     useState(false);
@@ -111,9 +108,9 @@ function Blocklist() {
   }, [setIsConfirmRemoveModalOpen]);
 
   const handleRemoveSelectedConfirmed = useCallback(() => {
-    dispatch(removeBlocklistItems({ ids: selectedIds }));
+    removeBlocklistItems({ ids: selectedIds });
     setIsConfirmRemoveModalOpen(false);
-  }, [selectedIds, setIsConfirmRemoveModalOpen, dispatch]);
+  }, [selectedIds, setIsConfirmRemoveModalOpen, removeBlocklistItems]);
 
   const handleConfirmRemoveModalClose = useCallback(() => {
     setIsConfirmRemoveModalOpen(false);
@@ -132,58 +129,51 @@ function Blocklist() {
     setIsConfirmClearModalOpen(false);
   }, [setIsConfirmClearModalOpen]);
 
-  const {
-    handleFirstPagePress,
-    handlePreviousPagePress,
-    handleNextPagePress,
-    handleLastPagePress,
-    handlePageSelect,
-  } = usePaging({
-    page,
-    totalPages,
-    gotoPage: gotoBlocklistPage,
-  });
-
   const handleFilterSelect = useCallback(
     (selectedFilterKey: string | number) => {
-      dispatch(setBlocklistFilter({ selectedFilterKey }));
+      setBlocklistOption('selectedFilterKey', selectedFilterKey);
+      goToPage(1);
     },
-    [dispatch]
+    [goToPage]
   );
 
   const handleSortPress = useCallback(
-    (sortKey: string) => {
-      dispatch(setBlocklistSort({ sortKey }));
+    (sortKey: string, sortDirection?: SortDirection) => {
+      setBlocklistSort({ sortKey, sortDirection });
     },
-    [dispatch]
+    []
   );
 
   const handleTableOptionChange = useCallback(
     (payload: TableOptionsChangePayload) => {
-      dispatch(setBlocklistTableOption(payload));
+      setBlocklistOptions(payload);
 
       if (payload.pageSize) {
-        dispatch(gotoBlocklistPage({ page: 1 }));
+        goToPage(1);
       }
     },
-    [dispatch]
+    [goToPage]
   );
 
-  useEffect(() => {
-    if (requestCurrentPage) {
-      dispatch(fetchBlocklist());
-    } else {
-      dispatch(gotoBlocklistPage({ page: 1 }));
-    }
+  const handleFirstPagePress = useCallback(() => {
+    goToPage(1);
+  }, [goToPage]);
 
-    return () => {
-      dispatch(clearBlocklist());
-    };
-  }, [requestCurrentPage, dispatch]);
+  const handlePreviousPagePress = useCallback(() => {
+    goToPage(Math.max(page - 1, 1));
+  }, [goToPage, page]);
+
+  const handleNextPagePress = useCallback(() => {
+    goToPage(Math.min(page + 1, totalPages));
+  }, [goToPage, page, totalPages]);
+
+  const handleLastPagePress = useCallback(() => {
+    goToPage(totalPages);
+  }, [goToPage, totalPages]);
 
   useEffect(() => {
     const repopulate = () => {
-      dispatch(fetchBlocklist());
+      refetch();
     };
 
     registerPagePopulator(repopulate);
@@ -191,13 +181,19 @@ function Blocklist() {
     return () => {
       unregisterPagePopulator(repopulate);
     };
-  }, [dispatch]);
+  }, [refetch]);
 
   useEffect(() => {
     if (wasClearingBlocklistExecuting && !isClearingBlocklistExecuting) {
-      dispatch(gotoBlocklistPage({ page: 1 }));
+      goToPage(1);
+      refetch();
     }
-  }, [isClearingBlocklistExecuting, wasClearingBlocklistExecuting, dispatch]);
+  }, [
+    isClearingBlocklistExecuting,
+    wasClearingBlocklistExecuting,
+    goToPage,
+    refetch,
+  ]);
 
   return (
     <SelectProvider items={items}>
@@ -236,22 +232,23 @@ function Blocklist() {
             <FilterMenu
               alignMenu={align.RIGHT}
               selectedFilterKey={selectedFilterKey}
-              filters={filters}
+              filters={FILTERS as unknown as AppStateFilter[]}
               customFilters={customFilters}
               filterModalConnectorComponent={BlocklistFilterModal}
+              filterModalConnectorComponentProps={{ sectionItems: items }}
               onFilterSelect={handleFilterSelect}
             />
           </PageToolbarSection>
         </PageToolbar>
 
         <PageContentBody>
-          {isFetching && !isPopulated ? <LoadingIndicator /> : null}
+          {isLoading && !isFetched ? <LoadingIndicator /> : null}
 
-          {!isFetching && !!error ? (
+          {!isLoading && !!error ? (
             <Alert kind={kinds.DANGER}>{translate('BlocklistLoadError')}</Alert>
           ) : null}
 
-          {isPopulated && !error && !items.length ? (
+          {isFetched && !error && !items.length ? (
             <Alert kind={kinds.INFO}>
               {selectedFilterKey === 'all'
                 ? translate('NoBlocklistItems')
@@ -259,7 +256,7 @@ function Blocklist() {
             </Alert>
           ) : null}
 
-          {isPopulated && !error && !!items.length ? (
+          {isFetched && !error && !!items.length ? (
             <div>
               <Table
                 selectAll={true}
@@ -296,7 +293,7 @@ function Blocklist() {
                 onPreviousPagePress={handlePreviousPagePress}
                 onNextPagePress={handleNextPagePress}
                 onLastPagePress={handleLastPagePress}
-                onPageSelect={handlePageSelect}
+                onPageSelect={goToPage}
               />
             </div>
           ) : null}

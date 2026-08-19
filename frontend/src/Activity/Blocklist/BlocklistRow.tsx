@@ -1,5 +1,4 @@
 import React, { useCallback, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import IconButton from 'Components/Link/IconButton';
 import RelativeDateCell from 'Components/Table/Cells/RelativeDateCell';
 import TableRowCell from 'Components/Table/Cells/TableRowCell';
@@ -12,11 +11,11 @@ import MovieLanguages from 'Movie/MovieLanguages';
 import MovieQuality from 'Movie/MovieQuality';
 import MovieTitleLink from 'Movie/MovieTitleLink';
 import useMovie from 'Movie/useMovie';
-import { removeBlocklistItem } from 'Store/Actions/blocklistActions';
 import Blocklist from 'typings/Blocklist';
 import { SelectStateInputProps } from 'typings/props';
 import translate from 'Utilities/String/translate';
 import BlocklistDetailsModal from './BlocklistDetailsModal';
+import { useRemoveBlocklistItem } from './useBlocklist';
 import styles from './BlocklistRow.css';
 
 interface BlocklistRowProps extends Blocklist {
@@ -43,7 +42,7 @@ function BlocklistRow(props: BlocklistRowProps) {
   } = props;
 
   const { data: movie } = useMovie(movieId);
-  const dispatch = useDispatch();
+  const { removeBlocklistItem, isRemoving } = useRemoveBlocklistItem(id);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
   const handleDetailsPress = useCallback(() => {
@@ -55,8 +54,8 @@ function BlocklistRow(props: BlocklistRowProps) {
   }, [setIsDetailsModalOpen]);
 
   const handleRemovePress = useCallback(() => {
-    dispatch(removeBlocklistItem({ id }));
-  }, [id, dispatch]);
+    removeBlocklistItem();
+  }, [removeBlocklistItem]);
 
   if (!movie) {
     return null;
@@ -136,6 +135,7 @@ function BlocklistRow(props: BlocklistRowProps) {
                 title={translate('RemoveFromBlocklist')}
                 name={icons.REMOVE}
                 kind={kinds.DANGER}
+                isSpinning={isRemoving}
                 onPress={handleRemovePress}
               />
             </TableRowCell>
