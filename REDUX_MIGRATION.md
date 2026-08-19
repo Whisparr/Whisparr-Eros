@@ -596,6 +596,12 @@ If a JS test runner is ever added, remove that line and set
   duplicated in `useStudio`, `usePerformer`, `useAddNewMovie`. Not on the critical path;
   filed rather than folded into #455. `useHistory` came off it in #478 — its `apiPost`
   helper is now `useApiMutation`.
+- **Whisparr/Whisparr#1127** — the interactive search's "blocked" badge reads
+  `/blocklist/movie` only, so an item excluded through an import list exclusion shows
+  nothing. Exclusions are keyed by `ForeignId`, not `MovieId`, which is why they never made
+  it into that cell. Filed off the back of #478's badge verification; the fix is a third
+  sibling read keyed by `foreignId`, or an `isExcluded` flag on `ReleaseResource` if the
+  extra dip is unwanted.
 - **Whisparr/Whisparr#1126** — `DiskScanImported` (`MovieHistoryEventType` `10`) was never
   added to the History page's built-in filter list, so the one event that means "a file
   changed underneath us" — a rename or a transcode outside the app — is reachable only
