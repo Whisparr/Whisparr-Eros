@@ -19,11 +19,11 @@ verified to resolve against the public repo.
 
 | Metric | At assessment | Now |
 | --- | --- | --- |
-| Files importing `react-redux` | 327 of 1,255 | **309** of 1,257 |
-| Lines under `frontend/src/Store/` | 15,374 across 138 files | **14,133** across 131 |
-| Redux slices registered in `Store/Actions/index.js` | 35 | **31** |
+| Files importing `react-redux` | 327 of 1,255 | **309** of 1,261 |
+| Lines under `frontend/src/Store/` | 15,374 across 138 files | **13,744** across 129 |
+| Redux slices registered in `Store/Actions/index.js` | 35 | **30** |
 | Remaining `*Connector` files | 66 | **61** |
-| Files touching React Query | 35 | **48** |
+| Files touching React Query | 35 | **51** |
 | zustand stores | 0 (not installed) | **installed, 3 primitives + 4 stores** |
 
 > **Recomputed in #464.** Three rows previously carried figures that no command
@@ -34,10 +34,19 @@ verified to resolve against the public repo.
 > [1d75cc96](https://github.com/Whisparr/Whisparr-Eros/commit/1d75cc96). To keep this
 > honest, the commands are now fixed:
 >
+> **#475 correction.** The denominator was never pinned, and the 1,257 recorded at
+> #474 does not reproduce — the command below gives 1,259 at
+> [f0b74bea](https://github.com/Whisparr/Whisparr-Eros/commit/f0b74bea). The
+> assessment figure of 1,255 does reproduce, so the method is the one recorded here
+> and the earlier entry was simply miscounted.
+>
 > ```sh
-> # react-redux importers / total source files
+> # react-redux importers
 > git grep -l "from 'react-redux'" <ref> -- 'frontend/src/*.ts' 'frontend/src/*.tsx' \
 >   'frontend/src/*.js' | grep -v '\.css\.d\.ts' | wc -l
+> # total source files (the denominator — pinned in #475)
+> git ls-tree -r --name-only <ref> -- frontend/src | grep -E '\.(ts|tsx|js)$' \
+>   | grep -v '\.css\.d\.ts' | wc -l
 > # slices
 > grep -cE '^import \* as' frontend/src/Store/Actions/index.js
 > # React Query
@@ -150,11 +159,11 @@ a whole state slice. Take them roughly in Sonarr's order.
 | ~~**Queue**~~ — **done, #472 / #473 / #474.** Biggest leaf, 14 importers, SignalR-driven, drives sidebar badge. Split three ways rather than Sonarr's single commit | ~~`queueActions` (539 loc), `QueueAppState`~~ | [Sonarr/Sonarr@ae201f52](https://github.com/Sonarr/Sonarr/commit/ae201f52) (58 files) |
 | **Blocklist** — incl. per-movie blocklist tab | `blocklistActions`, `movieBlocklistActions` | [Sonarr/Sonarr@a4f21085](https://github.com/Sonarr/Sonarr/commit/a4f21085) |
 | **History** *(hybrid)* — `useHistory` covers paged list + movie history; finish details modal | `historyActions`, `movieHistoryActions`, `HistoryDetailsConnector` ×2 | [Sonarr/Sonarr@a45b0776](https://github.com/Sonarr/Sonarr/commit/a45b0776), [Sonarr/Sonarr@6b479a5a](https://github.com/Sonarr/Sonarr/commit/6b479a5a) |
-| **System: Status / Health** — ~~Disk Space **done, #461**~~. Health has the sidebar dependency, so it goes last | `systemActions` (391 loc after #461), `createHealthCheckSelector.js`, `createSystemStatusSelector.ts` | [Sonarr/Sonarr@49c52c2e](https://github.com/Sonarr/Sonarr/commit/49c52c2e), [Sonarr/Sonarr@0552a811](https://github.com/Sonarr/Sonarr/commit/0552a811), ~~[Sonarr/Sonarr@871ae955](https://github.com/Sonarr/Sonarr/commit/871ae955)~~ |
-| **System: Tasks / Backups / Events** — ~~Log Files **done, #462**~~ | `BackupsConnector.js`, `RestoreBackupModal*Connector.js`, `LogsTableConnector.js` | [Sonarr/Sonarr@3091f40c](https://github.com/Sonarr/Sonarr/commit/3091f40c), [Sonarr/Sonarr@c295e24f](https://github.com/Sonarr/Sonarr/commit/c295e24f), [Sonarr/Sonarr@ff5e7327](https://github.com/Sonarr/Sonarr/commit/ff5e7327) |
+| ~~**System: Status / Health**~~ — **done, #461 / #463 / #464 / #465.** Health had the sidebar dependency, so it went last | `systemActions` (391 loc after #461), `createHealthCheckSelector.js`, `createSystemStatusSelector.ts` | [Sonarr/Sonarr@49c52c2e](https://github.com/Sonarr/Sonarr/commit/49c52c2e), [Sonarr/Sonarr@0552a811](https://github.com/Sonarr/Sonarr/commit/0552a811), ~~[Sonarr/Sonarr@871ae955](https://github.com/Sonarr/Sonarr/commit/871ae955)~~ |
+| ~~**System: Tasks / Backups / Events**~~ — **done, #462 / #466 / #467 / #468 / #469.** | `BackupsConnector.js`, `RestoreBackupModal*Connector.js`, `LogsTableConnector.js` | [Sonarr/Sonarr@3091f40c](https://github.com/Sonarr/Sonarr/commit/3091f40c), [Sonarr/Sonarr@c295e24f](https://github.com/Sonarr/Sonarr/commit/c295e24f), [Sonarr/Sonarr@ff5e7327](https://github.com/Sonarr/Sonarr/commit/ff5e7327) |
 | **Calendar** — 12 files; needs the options store from phase A | `calendarActions` (443 loc), `CalendarAppState` | [Sonarr/Sonarr@ccb7f07c](https://github.com/Sonarr/Sonarr/commit/ccb7f07c) (28 files) |
 | ~~**Parse**~~ — **done, #458.** 14 files, +77/−337 | ~~`parseActions.ts`, `ParseAppState`~~ | [Sonarr/Sonarr@263f4839](https://github.com/Sonarr/Sonarr/commit/263f4839) |
-| **Wanted: Missing + Cutoff Unmet** — one commit; first real `usePagedApiQuery` consumer | `wantedActions` (342 loc), `WantedAppState` | [Sonarr/Sonarr@40712781](https://github.com/Sonarr/Sonarr/commit/40712781) |
+| ~~**Wanted: Missing + Cutoff Unmet**~~ — **done, #475.** One PR, as Sonarr did; first page pair to share an options-store shape | ~~`wantedActions` (342 loc), `WantedAppState`~~ | [Sonarr/Sonarr@40712781](https://github.com/Sonarr/Sonarr/commit/40712781) |
 | ~~**Organize preview + Unmapped Files**~~ — **done, #471.** Two small pages, one PR | ~~`organizePreviewActions`, `unmappedMovieFileActions`, `OrganizePreviewAppState`~~ | [Sonarr/Sonarr@10c0e18a](https://github.com/Sonarr/Sonarr/commit/10c0e18a) |
 
 ---
@@ -309,8 +318,8 @@ Five places where you cannot just copy their commit.
 ## 10. What to do next
 
 Phase A is done. Parse, Disk Space, Log Files, System Status, Health, Tasks, Backups,
-Updates, Events, the SignalR container, and Organize preview + Unmapped Files are
-converted. Phase B's leaf pages are finished except Queue, Blocklist, History and
+Updates, Events, the SignalR container, Organize preview + Unmapped Files, Queue and
+Wanted are converted. Phase B's leaf pages are finished except Blocklist, History and
 Calendar.
 
 1. ~~**Queue**, in three PRs.~~ **Done.** Sonarr shipped it as one 58-file commit, but the slice already
@@ -320,7 +329,8 @@ Calendar.
    - ~~**`queue.details`** — `/queue/details`, per-movie queue state with no UI of its own.
      **Done, #473.**~~
    - ~~**`queue.paged`** — the Queue page itself. **Done, #474.** Slice retired.~~
-2. **Blocklist**, then **History**, then **Calendar** — the rest of Phase B.
+2. ~~**Wanted: Missing + Cutoff Unmet.**~~ **Done, #475.**
+3. **Blocklist**, then **History**, then **Calendar** — the rest of Phase B.
 
 ### `/queue/details` takes no filter, so it needs no provider
 
@@ -352,6 +362,25 @@ that: the hook reads the flag from redux and derives the badge from it. The opti
 with `queue.paged`, which is also where the paged fetch that injects the flag lives —
 converting the badge to Sonarr's unconditional shape first would have silently started
 counting unknown items for anyone who had unticked it.
+
+### Wanted keeps its two built-in filters and gains no filter modal
+
+Sonarr's Wanted conversion ([Sonarr/Sonarr@40712781](https://github.com/Sonarr/Sonarr/commit/40712781))
+also added a `FILTER_BUILDER`, a `MissingFilterModal`, a `CutoffUnmetFilterModal` and
+custom-filter support, none of which the Eros pages have ever had — they pass
+`customFilters={[]}` and no `filterModalConnectorComponent`, so the filter menu offers
+Monitored and Unmonitored and nothing else. #475 converted the plumbing and left the
+filter surface exactly where it was. Adding custom filters here is a feature, and it
+wants the shared filter-builder work in Phase C behind it rather than a drive-by inside
+a slice retirement.
+
+One thing did have to change. `PropertyFilter['value']` in `Filters/Filter.ts` has no
+scalar boolean, so the redux filters' `value: false` becomes `value: [false]` — the same
+`monitored=false` on the wire, because `getQueryString` stringifies it. But the old
+`getFilterValue` helper returned that value straight into a `!!`, and `!![false]` is
+`true`, which would have labelled the toolbar button "Unmonitor Selected" while the
+unmonitored filter was active. `Wanted/getMonitoredValue.ts` unwraps the array instead.
+`getFilterValue.ts` had no other callers and was deleted with the pages.
 
 ### `VirtualTable` blocks two connector removals
 
@@ -514,6 +543,7 @@ If a JS test runner is ever added, remove that line and set
 | 2026-08-18 | #469 | **Events.** First paged page. `usePage` added; the system slice is down to restart/shutdown. Three type holes fixed that only `.js` files had been hiding. |
 | 2026-08-18 | #470 | **SignalR container.** Class + `connect()` → function component, as Sonarr did in Jan 2025. Redux stays inside. |
 | 2026-08-18 | #471 | **Organize preview + Unmapped Files.** Two slices retired. First conversion where a page's table prefs move to a zustand options store rather than to React Query. |
+| 2026-08-18 | #475 | **Wanted: Missing + Cutoff Unmet.** `wantedActions` and `WantedAppState` deleted; both pages onto `usePagedApiQuery` with one options store each. Batch monitor-toggle becomes a `/movie/editor` mutation, which retires `createBatchToggleMovieMonitoredHandler` and the `isSaving` row flag. |
 | 2026-08-18 | #474 | **Queue, part 3 of 3 — paged.** `queueActions` and `QueueAppState` deleted. Options to zustand, page to `usePagedApiQuery`, grab/remove to `useApiMutation`. The `isQueuePopulated` ref from #470 goes: React Query only refetches observed queries. |
 | 2026-08-18 | #473 | **Queue, part 2 of 3 — details.** Three selectors and nine fetch/clear dispatch sites replaced by one shared query. Collapsed rather than ported to Sonarr's context provider, because our endpoint takes no filter. |
 | 2026-08-18 | #472 | **Queue, part 1 of 3 — status.** Sidebar badge onto React Query; `queue/status` SignalR handler onto `setQueryData`; the reconnect refetch moves from the component into `handleReconnected`. |

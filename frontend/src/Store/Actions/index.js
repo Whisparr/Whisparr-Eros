@@ -28,7 +28,6 @@ import * as studios from './studioActions';
 import * as studioScenes from './studioScenesActions';
 import * as system from './systemActions';
 import * as tags from './tagActions';
-import * as wanted from './wantedActions';
 
 export default [
   addMovie,
@@ -61,5 +60,4 @@ export default [
   studioScenes,
   system,
   tags,
-  wanted,
 ];
