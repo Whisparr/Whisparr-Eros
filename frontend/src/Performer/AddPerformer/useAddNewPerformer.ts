@@ -11,10 +11,7 @@ import {
   setAddPerformerDefault,
   setPerformersWithStatus,
 } from 'Store/Actions/addPerformerActions';
-import {
-  clearQueueDetails,
-  fetchQueueDetails,
-} from 'Store/Actions/queueActions';
+import {} from 'Store/Actions/queueActions';
 import { fetchRootFolders } from 'Store/Actions/rootFolderActions';
 import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
@@ -98,13 +95,11 @@ function useAddNewPerformer() {
 
   React.useEffect(() => {
     dispatch(fetchRootFolders());
-    dispatch(fetchQueueDetails());
     return () => {
       if (performerLookupTimeout.current) {
         clearTimeout(performerLookupTimeout.current);
       }
       dispatch(clearAddPerformer());
-      dispatch(clearQueueDetails());
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

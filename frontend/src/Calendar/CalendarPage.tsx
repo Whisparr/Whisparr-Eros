@@ -1,7 +1,8 @@
 import moment from 'moment';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { createSelector } from 'reselect';
+import { useQueueDetails } from 'Activity/Queue/Details/useQueueDetails';
 import AppState from 'App/State/AppState';
 import * as commandNames from 'Commands/commandNames';
 import FilterMenu from 'Components/Menu/FilterMenu';
@@ -37,32 +38,31 @@ import styles from './CalendarPage.css';
 
 const MINIMUM_DAY_WIDTH = 120;
 
-function createMissingMovieIdsSelector() {
-  return createSelector(
-    (state: AppState) => state.calendar.start,
-    (state: AppState) => state.calendar.end,
-    (state: AppState) => state.calendar.items,
-    (state: AppState) => state.queue.details.items,
-    (start, end, movies, queueDetails) => {
-      return movies.reduce<number[]>((acc, movie) => {
-        const { releaseDate } = movie;
-
-        if (
-          !movie.movieFileId &&
-          moment(releaseDate).isAfter(start) &&
-          moment(releaseDate).isBefore(end) &&
-          isBefore(movie.releaseDate) &&
-          !queueDetails.some(
-            (details) => !!details.movie && details.movie.id === movie.id
-          )
-        ) {
-          acc.push(movie.id);
-        }
-
-        return acc;
-      }, []);
-    }
+function useMissingMovieIds() {
+  const { start, end, items } = useSelector(
+    (state: AppState) => state.calendar
   );
+  const queueDetails = useQueueDetails();
+
+  return useMemo(() => {
+    return items.reduce<number[]>((acc, movie) => {
+      const { releaseDate } = movie;
+
+      if (
+        !movie.movieFileId &&
+        moment(releaseDate).isAfter(start) &&
+        moment(releaseDate).isBefore(end) &&
+        isBefore(movie.releaseDate) &&
+        !queueDetails.some(
+          (details) => !!details.movie && details.movie.id === movie.id
+        )
+      ) {
+        acc.push(movie.id);
+      }
+
+      return acc;
+    }, []);
+  }, [start, end, items, queueDetails]);
 }
 
 function createIsSearchingSelector() {
@@ -89,7 +89,7 @@ function CalendarPage() {
   const { selectedFilterKey, filters } = useSelector(
     (state: AppState) => state.calendar
   );
-  const missingMovieIds = useSelector(createMissingMovieIdsSelector());
+  const missingMovieIds = useMissingMovieIds();
   const isSearchingForMissing = useSelector(createIsSearchingSelector());
   const isRssSyncExecuting = useSelector(
     createCommandExecutingSelector(commandNames.RSS_SYNC)

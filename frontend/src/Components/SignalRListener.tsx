@@ -11,7 +11,7 @@ import {
   finishCommand,
   updateCommand,
 } from 'Store/Actions/commandActions';
-import { fetchQueue, fetchQueueDetails } from 'Store/Actions/queueActions';
+import { fetchQueue } from 'Store/Actions/queueActions';
 import { fetchRootFolders } from 'Store/Actions/rootFolderActions';
 import { fetchQualityDefinitions } from 'Store/Actions/settingsActions';
 import { fetchTagDetails, fetchTags } from 'Store/Actions/tagActions';
@@ -399,7 +399,7 @@ function SignalRListener() {
     }
 
     if (name === 'queue/details') {
-      dispatch(fetchQueueDetails());
+      queryClient.invalidateQueries({ queryKey: ['/queue/details'] });
       return;
     }
 

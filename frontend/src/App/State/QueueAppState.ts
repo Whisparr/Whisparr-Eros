@@ -6,10 +6,6 @@ import AppSectionState, {
   TableAppSectionState,
 } from './AppSectionState';
 
-export interface QueueDetailsAppState extends AppSectionState<Queue> {
-  params: unknown;
-}
-
 export interface QueuePagedAppState
   extends
     AppSectionState<Queue>,
@@ -23,7 +19,6 @@ export interface QueuePagedAppState
 }
 
 interface QueueAppState {
-  details: QueueDetailsAppState;
   paged: QueuePagedAppState;
   options: {
     includeUnknownMovieItems: boolean;

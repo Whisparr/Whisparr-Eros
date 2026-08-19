@@ -16,7 +16,6 @@ import { align, icons, kinds } from 'Helpers/Props';
 import InteractiveImportModal from 'InteractiveImport/InteractiveImportModal';
 import NoMovie from 'Movie/NoMovie';
 import { executeCommand } from 'Store/Actions/commandActions';
-import { fetchQueueDetails } from 'Store/Actions/queueActions';
 import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
 import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import translate from 'Utilities/String/translate';
@@ -80,9 +79,7 @@ function MovieIndex() {
   const [isInteractiveImportModalOpen, setIsInteractiveImportModalOpen] =
     useState(false);
 
-  useEffect(() => {
-    dispatch(fetchQueueDetails({ all: true }));
-  }, [dispatch]);
+  useEffect(() => {}, [dispatch]);
 
   const handleRssSyncPress = useCallback(() => {
     dispatch(executeCommand({ name: RSS_SYNC }));
