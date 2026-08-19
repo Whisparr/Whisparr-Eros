@@ -1,5 +1,4 @@
 import { Error } from './AppSectionState';
-import BlocklistAppState from './BlocklistAppState';
 import CalendarAppState from './CalendarAppState';
 import CaptchaAppState from './CaptchaAppState';
 import CommandAppState from './CommandAppState';
@@ -79,7 +78,6 @@ export interface AppSectionState {
 
 interface AppState {
   app: AppSectionState;
-  blocklist: BlocklistAppState;
   calendar: CalendarAppState;
   captcha: CaptchaAppState;
   commands: CommandAppState;
