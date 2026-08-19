@@ -8,8 +8,6 @@ import ModalHeader from 'Components/Modal/ModalHeader';
 import { BOTH } from 'Helpers/Props/scrollDirections';
 import InteractiveSearch from 'InteractiveSearch/InteractiveSearch';
 import { useMovie } from 'Movie/useMovie';
-import { clearMovieBlocklist } from 'Store/Actions/movieBlocklistActions';
-import { clearMovieHistory } from 'Store/Actions/movieHistoryActions';
 import {
   cancelFetchReleases,
   clearReleases,
@@ -35,9 +33,6 @@ function MovieInteractiveSearchModalContent({
     return () => {
       dispatch(cancelFetchReleases());
       dispatch(clearReleases());
-
-      dispatch(clearMovieBlocklist());
-      dispatch(clearMovieHistory());
     };
   }, [dispatch]);
 

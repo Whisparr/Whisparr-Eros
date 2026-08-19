@@ -1,8 +1,6 @@
-// TODO: Move functions like page handlers, sort handlers, filter handlers, and table option handlers to a custom hook (e.g., useHistoryHandlers) to keep the component cleaner and more focused on rendering.
-import React, { useCallback, useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { queryClient } from 'App/queryClient';
-import AppState from 'App/State/AppState';
+import React, { useCallback, useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import { Filter as AppStateFilter } from 'App/State/AppState';
 import Alert from 'Components/Alert';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import FilterMenu from 'Components/Menu/FilterMenu';
@@ -15,132 +13,94 @@ import Table from 'Components/Table/Table';
 import TableBody from 'Components/Table/TableBody';
 import TableOptionsModalWrapper from 'Components/Table/TableOptions/TableOptionsModalWrapper';
 import TablePager from 'Components/Table/TablePager';
-import { Filter, PropertyFilter } from 'Filters/Filter';
 import { align, icons, kinds } from 'Helpers/Props';
-import {
-  setHistoryFilter,
-  setHistorySort,
-  setHistoryTableOption,
-} from 'Store/Actions/historyActions';
+import { SortDirection } from 'Helpers/Props/sortDirections';
 import { createCustomFiltersSelector } from 'Store/Selectors/createClientSideCollectionSelector';
 import { TableOptionsChangePayload } from 'typings/Table';
-import findSelectedFilters from 'Utilities/Filter/findSelectedFilters';
 import {
   registerPagePopulator,
   unregisterPagePopulator,
 } from 'Utilities/pagePopulator';
 import translate from 'Utilities/String/translate';
 import HistoryFilterModal from './HistoryFilterModal';
+import {
+  setHistoryOption,
+  setHistoryOptions,
+  setHistorySort,
+  useHistoryOptions,
+} from './historyOptionsStore';
 import HistoryRow from './HistoryRow';
-import { useHistory } from './useHistory';
+import useHistory, { FILTERS } from './useHistory';
 
-interface HistoryHandlerProps {
-  handleFirstPagePress?: () => void;
-  handlePreviousPagePress?: () => void;
-  handleNextPagePress?: () => void;
-  handleLastPagePress?: () => void;
-  handlePageSelect?: (page: number) => void;
-  handleSortPress?: (sortKey: string) => void;
-  handleFilterSelect?: (selectedFilterKey: string | number) => void;
-  handleTableOptionChange?: (payload: TableOptionsChangePayload) => void;
-}
-
-function History(props: Partial<HistoryHandlerProps>) {
-  const [page, setPage] = useState(1);
+function History() {
+  const { columns, pageSize, selectedFilterKey, sortKey, sortDirection } =
+    useHistoryOptions();
 
   const {
-    columns,
-    selectedFilterKey,
-    filters,
-    sortKey,
-    sortDirection,
-    pageSize,
-  } = useSelector((state: AppState) => state.history);
+    records: items,
+    totalPages,
+    totalRecords,
+    isFetching,
+    isFetched,
+    isLoading,
+    error,
+    refetch,
+    page,
+    goToPage,
+  } = useHistory();
 
   const customFilters = useSelector(createCustomFiltersSelector('history'));
-  const dispatch = useDispatch();
-
-  // TODO: Remove these casts once the duplicate Filter types in
-  // App/State/AppState are collapsed into Filters/Filter.
-  const resolvedFilters = findSelectedFilters(
-    selectedFilterKey,
-    filters as Filter[],
-    customFilters
-  ) as PropertyFilter[];
-
-  const { data, isFetching, isSuccess, isError } = useHistory({
-    page,
-    pageSize,
-    sortKey,
-    sortDirection,
-    filters: resolvedFilters,
-  });
-
-  const items = data?.records ?? [];
-  const totalRecords = data?.totalRecords ?? 0;
-  const totalPages = Math.max(Math.ceil(totalRecords / pageSize), 1);
-
-  const isFetchingAny = isFetching;
-  const isAllPopulated = isSuccess;
-  const hasError = isError;
-
-  const {
-    handleFirstPagePress: propFirstPage,
-    handlePreviousPagePress: propPrevPage,
-    handleNextPagePress: propNextPage,
-    handleLastPagePress: propLastPage,
-    handlePageSelect: propPageSelect,
-    handleSortPress: propSort,
-    handleFilterSelect: propFilter,
-    handleTableOptionChange: propTableOption,
-  } = props;
-
-  const internalFirstPagePress = useCallback(() => {
-    setPage(1);
-    queryClient.invalidateQueries({ queryKey: ['/history'] });
-  }, []);
-
-  const firstPageHandler = propFirstPage ?? internalFirstPagePress;
-  const prevPageHandler =
-    propPrevPage ?? (() => setPage((p) => Math.max(p - 1, 1)));
-  const nextPageHandler =
-    propNextPage ?? (() => setPage((p) => Math.min(p + 1, totalPages)));
-  const lastPageHandler = propLastPage ?? (() => setPage(totalPages));
-  const pageSelectHandler = propPageSelect ?? setPage;
 
   const handleFilterSelect = useCallback(
     (selectedFilterKey: string | number) => {
-      dispatch(setHistoryFilter({ selectedFilterKey }));
-      setPage(1);
+      setHistoryOption('selectedFilterKey', selectedFilterKey);
+      goToPage(1);
     },
-    [dispatch]
+    [goToPage]
   );
 
   const handleSortPress = useCallback(
-    (sortKey: string) => {
-      dispatch(setHistorySort({ sortKey }));
-      setPage(1);
+    (sortKey: string, sortDirection?: SortDirection) => {
+      setHistorySort({ sortKey, sortDirection });
     },
-    [dispatch]
+    []
   );
 
   const handleTableOptionChange = useCallback(
     (payload: TableOptionsChangePayload) => {
-      dispatch(setHistoryTableOption(payload));
+      setHistoryOptions(payload);
+
       if (payload.pageSize) {
-        setPage(1);
+        goToPage(1);
       }
     },
-    [dispatch]
+    [goToPage]
   );
 
-  const sortHandler = propSort ?? handleSortPress;
-  const filterHandler = propFilter ?? handleFilterSelect;
-  const tableOptionHandler = propTableOption ?? handleTableOptionChange;
+  const handleRefreshPress = useCallback(() => {
+    goToPage(1);
+    refetch();
+  }, [goToPage, refetch]);
+
+  const handleFirstPagePress = useCallback(() => {
+    goToPage(1);
+  }, [goToPage]);
+
+  const handlePreviousPagePress = useCallback(() => {
+    goToPage(Math.max(page - 1, 1));
+  }, [goToPage, page]);
+
+  const handleNextPagePress = useCallback(() => {
+    goToPage(Math.min(page + 1, totalPages));
+  }, [goToPage, page, totalPages]);
+
+  const handleLastPagePress = useCallback(() => {
+    goToPage(totalPages);
+  }, [goToPage, totalPages]);
 
   useEffect(() => {
     const repopulate = () => {
-      queryClient.invalidateQueries({ queryKey: ['/history'] });
+      refetch();
     };
 
     registerPagePopulator(repopulate);
@@ -148,7 +108,7 @@ function History(props: Partial<HistoryHandlerProps>) {
     return () => {
       unregisterPagePopulator(repopulate);
     };
-  }, []);
+  }, [refetch]);
 
   return (
     <PageContent title={translate('History')}>
@@ -158,7 +118,7 @@ function History(props: Partial<HistoryHandlerProps>) {
             label={translate('Refresh')}
             iconName={icons.REFRESH}
             isSpinning={isFetching}
-            onPress={firstPageHandler}
+            onPress={handleRefreshPress}
           />
         </PageToolbarSection>
 
@@ -166,7 +126,7 @@ function History(props: Partial<HistoryHandlerProps>) {
           <TableOptionsModalWrapper
             columns={columns}
             pageSize={pageSize}
-            onTableOptionChange={tableOptionHandler}
+            onTableOptionChange={handleTableOptionChange}
           >
             <PageToolbarButton
               label={translate('Options')}
@@ -177,34 +137,35 @@ function History(props: Partial<HistoryHandlerProps>) {
           <FilterMenu
             alignMenu={align.RIGHT}
             selectedFilterKey={selectedFilterKey}
-            filters={filters}
+            filters={FILTERS as unknown as AppStateFilter[]}
             customFilters={customFilters}
             filterModalConnectorComponent={HistoryFilterModal}
-            onFilterSelect={filterHandler}
+            filterModalConnectorComponentProps={{ sectionItems: items }}
+            onFilterSelect={handleFilterSelect}
           />
         </PageToolbarSection>
       </PageToolbar>
 
       <PageContentBody>
-        {isFetchingAny && !isAllPopulated ? <LoadingIndicator /> : null}
+        {isLoading && !isFetched ? <LoadingIndicator /> : null}
 
-        {!isFetchingAny && hasError ? (
+        {!isLoading && !!error ? (
           <Alert kind={kinds.DANGER}>{translate('HistoryLoadError')}</Alert>
         ) : null}
 
-        {isSuccess && !hasError && !items.length ? (
+        {isFetched && !error && !items.length ? (
           <Alert kind={kinds.INFO}>{translate('NoHistoryFound')}</Alert>
         ) : null}
 
-        {isAllPopulated && !hasError && items.length ? (
+        {isFetched && !error && !!items.length ? (
           <div>
             <Table
               columns={columns}
               pageSize={pageSize}
               sortKey={sortKey}
               sortDirection={sortDirection}
-              onTableOptionChange={tableOptionHandler}
-              onSortPress={sortHandler}
+              onTableOptionChange={handleTableOptionChange}
+              onSortPress={handleSortPress}
             >
               <TableBody>
                 {items.map((item) => {
@@ -220,11 +181,11 @@ function History(props: Partial<HistoryHandlerProps>) {
               totalPages={totalPages}
               totalRecords={totalRecords}
               isFetching={isFetching}
-              onFirstPagePress={firstPageHandler}
-              onPreviousPagePress={prevPageHandler}
-              onNextPagePress={nextPageHandler}
-              onLastPagePress={lastPageHandler}
-              onPageSelect={pageSelectHandler}
+              onFirstPagePress={handleFirstPagePress}
+              onPreviousPagePress={handlePreviousPagePress}
+              onNextPagePress={handleNextPagePress}
+              onLastPagePress={handleLastPagePress}
+              onPageSelect={goToPage}
             />
           </div>
         ) : null}

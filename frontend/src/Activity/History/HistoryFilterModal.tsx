@@ -1,54 +1,33 @@
 import React, { useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { createSelector } from 'reselect';
-import AppState from 'App/State/AppState';
 import FilterModal from 'Components/Filter/FilterModal';
-import { setHistoryFilter } from 'Store/Actions/historyActions';
-
-function createHistorySelector() {
-  return createSelector(
-    (state: AppState) => state.history.items,
-    (queueItems) => {
-      return queueItems;
-    }
-  );
-}
-
-function createFilterBuilderPropsSelector() {
-  return createSelector(
-    (state: AppState) => state.history.filterBuilderProps,
-    (filterBuilderProps) => {
-      return filterBuilderProps;
-    }
-  );
-}
+import History from 'typings/History';
+import { setHistoryOption } from './historyOptionsStore';
+import { FILTER_BUILDER } from './useHistory';
 
 interface HistoryFilterModalProps {
   isOpen: boolean;
+  sectionItems: History[];
 }
 
-export default function HistoryFilterModal(props: HistoryFilterModalProps) {
-  const sectionItems = useSelector(createHistorySelector());
-  const filterBuilderProps = useSelector(createFilterBuilderPropsSelector());
-  const customFilterType = 'history';
-
-  const dispatch = useDispatch();
-
-  const dispatchSetFilter = useCallback(
-    (payload: unknown) => {
-      dispatch(setHistoryFilter(payload));
+export default function HistoryFilterModal({
+  sectionItems,
+  ...otherProps
+}: HistoryFilterModalProps) {
+  const handleSetFilter = useCallback(
+    ({ selectedFilterKey }: { selectedFilterKey: string | number }) => {
+      setHistoryOption('selectedFilterKey', selectedFilterKey);
     },
-    [dispatch]
+    []
   );
 
   return (
     <FilterModal
       // TODO: Don't spread all the props
-      {...props}
+      {...otherProps}
       sectionItems={sectionItems}
-      filterBuilderProps={filterBuilderProps}
-      customFilterType={customFilterType}
-      dispatchSetFilter={dispatchSetFilter}
+      filterBuilderProps={FILTER_BUILDER}
+      customFilterType="history"
+      dispatchSetFilter={handleSetFilter}
     />
   );
 }
