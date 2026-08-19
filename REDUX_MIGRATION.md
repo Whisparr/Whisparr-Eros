@@ -19,11 +19,11 @@ verified to resolve against the public repo.
 
 | Metric | At assessment | Now |
 | --- | --- | --- |
-| Files importing `react-redux` | 327 of 1,255 | **314** of 1,260 |
-| Lines under `frontend/src/Store/` | 15,374 across 138 files | **14,692** across 133 |
+| Files importing `react-redux` | 327 of 1,255 | **312** of 1,258 |
+| Lines under `frontend/src/Store/` | 15,374 across 138 files | **14,628** across 132 |
 | Redux slices registered in `Store/Actions/index.js` | 35 | **32** |
 | Remaining `*Connector` files | 66 | **61** |
-| Files touching React Query | 35 | **46** |
+| Files touching React Query | 35 | **47** |
 | zustand stores | 0 (not installed) | **installed, 3 primitives + 3 stores** |
 
 > **Recomputed in #464.** Three rows previously carried figures that no command
@@ -317,11 +317,31 @@ Calendar.
    has three independent sub-sections and splitting along them gives three merge points
    instead of one:
    - ~~**`queue.status`** — `/queue/status`, drives the sidebar badge. **Done, #472.**~~
-   - **`queue.details`** — `/queue/details`, per-movie queue state with no UI of its own.
-     Six consumers: Calendar, MovieIndex, SceneIndex, Missing, CutoffUnmet, Collection.
+   - ~~**`queue.details`** — `/queue/details`, per-movie queue state with no UI of its own.
+     **Done, #473.**~~
    - **`queue.paged`** — the Queue page itself. The bulk: server-side collection,
      grab/remove mutations, filters, table options, and `queue.options`.
 2. **Blocklist**, then **History**, then **Calendar** — the rest of Phase B.
+
+### `/queue/details` takes no filter, so it needs no provider
+
+Sonarr wraps each page in a `QueueDetailsProvider` carrying that page's filter
+(`{all}`, `{seriesId}`, `{episodeIds}`) and has descendants read it from context. Eros'
+controller binds only `movieId` and `includeMovie`:
+
+```csharp
+public List<QueueResource> GetQueue(int? movieId, bool includeMovie = false)
+```
+
+The `all`, `movieIds`, `time` and `view` params the redux thunk sent were never bound, so
+every caller already received the whole queue — and the slice's `params` memo existed to
+replay filters the server ignored. #473 therefore collapsed it to a single query that
+every consumer shares, and skipped the provider. One request now feeds 20+ row-level
+hooks on a page instead of one page-level dispatch priming a shared collection.
+
+That also removes a real hazard: `MovieDetails` read `state.queue.details.items` without
+ever dispatching a fetch, so what it displayed depended on which page you had visited
+first.
 
 ### `includeUnknownMovieItems` is an option in Eros and a filter in Sonarr
 
@@ -495,6 +515,7 @@ If a JS test runner is ever added, remove that line and set
 | 2026-08-18 | #469 | **Events.** First paged page. `usePage` added; the system slice is down to restart/shutdown. Three type holes fixed that only `.js` files had been hiding. |
 | 2026-08-18 | #470 | **SignalR container.** Class + `connect()` → function component, as Sonarr did in Jan 2025. Redux stays inside. |
 | 2026-08-18 | #471 | **Organize preview + Unmapped Files.** Two slices retired. First conversion where a page's table prefs move to a zustand options store rather than to React Query. |
+| 2026-08-18 | #473 | **Queue, part 2 of 3 — details.** Three selectors and nine fetch/clear dispatch sites replaced by one shared query. Collapsed rather than ported to Sonarr's context provider, because our endpoint takes no filter. |
 | 2026-08-18 | #472 | **Queue, part 1 of 3 — status.** Sidebar badge onto React Query; `queue/status` SignalR handler onto `setQueryData`; the reconnect refetch moves from the component into `handleReconnected`. |
 
 ### Open threads

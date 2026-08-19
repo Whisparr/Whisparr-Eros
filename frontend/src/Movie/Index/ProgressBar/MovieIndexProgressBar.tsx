@@ -1,10 +1,7 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
+import { useQueueDetailsForMovie } from 'Activity/Queue/Details/useQueueDetails';
 import ProgressBar from 'Components/ProgressBar';
 import { sizes } from 'Helpers/Props';
-import createMovieQueueItemsDetailsSelector, {
-  MovieQueueDetails,
-} from 'Movie/Index/createMovieQueueDetailsSelector';
 import { MovieStatus } from 'Movie/Movie';
 import { MovieFile } from 'MovieFile/MovieFile';
 import getProgressBarKind from 'Utilities/Movie/getProgressBarKind';
@@ -38,9 +35,7 @@ function MovieIndexProgressBar(props: Readonly<MovieIndexProgressBarProps>) {
     isStandAlone,
   } = props;
 
-  const queueDetails: MovieQueueDetails = useSelector(
-    createMovieQueueItemsDetailsSelector(movieId)
-  );
+  const queueDetails = useQueueDetailsForMovie(movieId);
 
   const progress = 100;
   const queueStatusText =

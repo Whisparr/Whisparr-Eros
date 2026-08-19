@@ -7,10 +7,7 @@ import { ValidationMessage } from 'Components/Form/FormInputGroup';
 import useApiMutation from 'Helpers/Hooks/useApiMutation';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import { setAddStudioDefault } from 'Store/Actions/addMovieActions';
-import {
-  clearQueueDetails,
-  fetchQueueDetails,
-} from 'Store/Actions/queueActions';
+import {} from 'Store/Actions/queueActions';
 import { fetchRootFolders } from 'Store/Actions/rootFolderActions';
 import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
@@ -79,12 +76,10 @@ function useAddNewStudio() {
 
   React.useEffect(() => {
     dispatch(fetchRootFolders());
-    dispatch(fetchQueueDetails());
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
-      dispatch(clearQueueDetails());
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

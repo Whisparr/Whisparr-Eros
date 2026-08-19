@@ -12,13 +12,8 @@ import {
   fetchCalendar,
   gotoCalendarToday,
 } from 'Store/Actions/calendarActions';
-import {
-  clearQueueDetails,
-  fetchQueueDetails,
-} from 'Store/Actions/queueActions';
+import {} from 'Store/Actions/queueActions';
 import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
-import hasDifferentItems from 'Utilities/Object/hasDifferentItems';
-import selectUniqueIds from 'Utilities/Object/selectUniqueIds';
 import {
   registerPagePopulator,
   unregisterPagePopulator,
@@ -39,7 +34,7 @@ function Calendar() {
     undefined
   );
 
-  const { isFetching, isPopulated, error, items, time, view } = useSelector(
+  const { isFetching, isPopulated, error, time, view } = useSelector(
     (state: AppState) => state.calendar
   );
 
@@ -53,7 +48,6 @@ function Calendar() {
 
   const wasRefreshingMovie = usePrevious(isRefreshingMovie);
   const previousFirstDayOfWeek = usePrevious(firstDayOfWeek);
-  const previousItems = usePrevious(items);
 
   const handleScheduleUpdate = useCallback(() => {
     clearTimeout(updateTimeout.current);
@@ -71,7 +65,6 @@ function Calendar() {
 
     return () => {
       dispatch(clearCalendar());
-      dispatch(clearQueueDetails());
       clearTimeout(updateTimeout.current);
     };
   }, [dispatch, handleScheduleUpdate]);
@@ -86,7 +79,6 @@ function Calendar() {
 
   useEffect(() => {
     const repopulate = () => {
-      dispatch(fetchQueueDetails({ time, view }));
       dispatch(fetchCalendar({ time, view }));
     };
 
@@ -115,15 +107,6 @@ function Calendar() {
       dispatch(fetchCalendar({ time, view }));
     }
   }, [time, view, isRefreshingMovie, wasRefreshingMovie, dispatch]);
-
-  useEffect(() => {
-    if (!previousItems || hasDifferentItems(items, previousItems)) {
-      const movieIds = selectUniqueIds(items, 'id');
-      if (items.length) {
-        dispatch(fetchQueueDetails({ movieIds }));
-      }
-    }
-  }, [items, previousItems, dispatch]);
 
   return (
     <div className={styles.calendar}>

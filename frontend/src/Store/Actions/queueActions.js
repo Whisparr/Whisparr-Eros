@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import moment from 'moment';
 import React from 'react';
 import { createAction } from 'redux-actions';
@@ -15,7 +14,6 @@ import createAjaxRequest from 'Utilities/createAjaxRequest';
 import serverSideCollectionHandlers from 'Utilities/serverSideCollectionHandlers';
 import translate from 'Utilities/String/translate';
 import { set, updateItem } from './baseActions';
-import createFetchHandler from './Creators/createFetchHandler';
 import createHandleActions from './Creators/createHandleActions';
 import createServerSideCollectionHandlers from './Creators/createServerSideCollectionHandlers';
 import createClearReducer from './Creators/Reducers/createClearReducer';
@@ -25,7 +23,6 @@ import createSetTableOptionReducer from './Creators/Reducers/createSetTableOptio
 // Variables
 
 export const section = 'queue';
-const details = `${section}.details`;
 const paged = `${section}.paged`;
 
 //
@@ -34,14 +31,6 @@ const paged = `${section}.paged`;
 export const defaultState = {
   options: {
     includeUnknownMovieItems: true,
-  },
-
-  details: {
-    isFetching: false,
-    isPopulated: false,
-    error: null,
-    items: [],
-    params: {},
   },
 
   paged: {
@@ -234,9 +223,6 @@ function fetchDataAugmenter(getState, payload, data) {
 //
 // Actions Types
 
-export const FETCH_QUEUE_DETAILS = 'queue/fetchQueueDetails';
-export const CLEAR_QUEUE_DETAILS = 'queue/clearQueueDetails';
-
 export const FETCH_QUEUE = 'queue/fetchQueue';
 export const GOTO_FIRST_QUEUE_PAGE = 'queue/gotoQueueFirstPage';
 export const GOTO_PREVIOUS_QUEUE_PAGE = 'queue/gotoQueuePreviousPage';
@@ -258,8 +244,6 @@ export const REMOVE_QUEUE_ITEMS = 'queue/removeQueueItems';
 // Action Creators
 
 
-export const fetchQueueDetails = createThunk(FETCH_QUEUE_DETAILS);
-export const clearQueueDetails = createAction(CLEAR_QUEUE_DETAILS);
 
 export const fetchQueue = createThunk(FETCH_QUEUE);
 export const gotoQueueFirstPage = createThunk(GOTO_FIRST_QUEUE_PAGE);
@@ -281,27 +265,12 @@ export const removeQueueItems = createThunk(REMOVE_QUEUE_ITEMS);
 //
 // Helpers
 
-const fetchQueueDetailsHelper = createFetchHandler(details, '/queue/details');
 
 //
 // Action Handlers
 
 export const actionHandlers = handleThunks({
-  [FETCH_QUEUE_DETAILS]: function (getState, payload, dispatch) {
-    let params = payload;
-
-    // If the payload params are empty try to get params from state.
-
-    if (params && !_.isEmpty(params)) {
-      dispatch(set({ section: details, params }));
-    } else {
-      params = getState().queue.details.params;
-    }
-
-    fetchQueueDetailsHelper(getState, params, dispatch);
-  },
-
-  ...createServerSideCollectionHandlers(
+   ...createServerSideCollectionHandlers(
     paged,
     '/queue',
     fetchQueue,
@@ -496,8 +465,6 @@ export const actionHandlers = handleThunks({
 
 export const reducers = createHandleActions(
   {
-    [CLEAR_QUEUE_DETAILS]: createClearReducer(details, defaultState.details),
-
     [SET_QUEUE_TABLE_OPTION]: createSetTableOptionReducer(paged),
 
     [SET_QUEUE_OPTION]: function (state, { payload }) {

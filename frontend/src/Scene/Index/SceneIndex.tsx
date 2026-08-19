@@ -21,7 +21,6 @@ import MovieIndexSelectModeMenuItem from 'Movie/Index/Select/MovieIndexSelectMod
 import ParseToolbarButton from 'Parse/ParseToolbarButton';
 import NoScene from 'Scene/NoScene';
 import { executeCommand } from 'Store/Actions/commandActions';
-import { fetchQueueDetails } from 'Store/Actions/queueActions';
 import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
 import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import translate from 'Utilities/String/translate';
@@ -80,9 +79,7 @@ function SceneIndex() {
   const [isInteractiveImportModalOpen, setIsInteractiveImportModalOpen] =
     useState(false);
 
-  useEffect(() => {
-    dispatch(fetchQueueDetails({ all: true }));
-  }, [dispatch]);
+  useEffect(() => {}, [dispatch]);
 
   const handleRssSyncPress = useCallback(() => {
     dispatch(executeCommand({ name: RSS_SYNC }));

@@ -2,6 +2,7 @@ import React, { useContext, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import TextTruncate from 'react-text-truncate';
+import { useQueueItemForMovie } from 'Activity/Queue/Details/useQueueDetails';
 import { SafeForWorkModeContext } from 'App/State/SafeForWorkContext';
 import { MOVIE_SEARCH, REFRESH_MOVIE } from 'Commands/commandNames';
 import Alert from 'Components/Alert';
@@ -48,7 +49,6 @@ import OrganizePreviewModal from 'Organize/OrganizePreviewModal';
 import QualityProfileName from 'Settings/Profiles/Quality/QualityProfileName';
 import { executeCommand } from 'Store/Actions/commandActions';
 import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
-import { createQueueItemSelectorForHook } from 'Store/Selectors/createQueueItemSelector';
 import fonts from 'Styles/Variables/fonts';
 import formatRuntime from 'Utilities/Date/formatRuntime';
 import formatBytes from 'Utilities/Number/formatBytes';
@@ -96,7 +96,7 @@ function MovieDetails(props: Readonly<Partial<Props>>) {
 
   const { data: movie, isLoading, isError, error } = useMovie(id);
   const statusDetails = getMovieStatusDetails(movie?.status);
-  const queueItem = useSelector(createQueueItemSelectorForHook(movie?.id ?? 0));
+  const queueItem = useQueueItemForMovie(movie?.id ?? 0);
 
   // State for modals and measurements
   const { isSmallScreen } = useSelector(createDimensionsSelector());
