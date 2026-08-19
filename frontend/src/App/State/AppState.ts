@@ -22,7 +22,6 @@ import RootFolderAppState from './RootFolderAppState';
 import SettingsAppState from './SettingsAppState';
 import StudiosAppState from './StudiosAppState';
 import TagsAppState from './TagsAppState';
-import WantedAppState from './WantedAppState';
 
 interface FilterBuilderPropOption {
   id: string;
@@ -105,7 +104,6 @@ interface AppState {
   rootFolders: RootFolderAppState;
   settings: SettingsAppState;
   tags: TagsAppState;
-  wanted: WantedAppState;
 }
 
 export default AppState;

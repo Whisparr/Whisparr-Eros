@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import AppState, { Filter } from 'App/State/AppState';
+import { Filter as AppStateFilter } from 'App/State/AppState';
 import * as commandNames from 'Commands/commandNames';
 import Alert from 'Components/Alert';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
@@ -16,60 +16,53 @@ import Table from 'Components/Table/Table';
 import TableBody from 'Components/Table/TableBody';
 import TableOptionsModalWrapper from 'Components/Table/TableOptions/TableOptionsModalWrapper';
 import TablePager from 'Components/Table/TablePager';
-import usePaging from 'Components/Table/usePaging';
-import useCurrentPage from 'Helpers/Hooks/useCurrentPage';
 import useSelectState from 'Helpers/Hooks/useSelectState';
 import { align, icons, kinds } from 'Helpers/Props';
+import { SortDirection } from 'Helpers/Props/sortDirections';
 import InteractiveImportModal from 'InteractiveImport/InteractiveImportModal';
 import { executeCommand } from 'Store/Actions/commandActions';
-import {
-  batchToggleMissingMovies,
-  clearMissing,
-  fetchMissing,
-  gotoMissingPage,
-  setMissingFilter,
-  setMissingSort,
-  setMissingTableOption,
-} from 'Store/Actions/wantedActions';
 import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
 import { CheckInputChanged } from 'typings/inputs';
 import { SelectStateInputProps } from 'typings/props';
 import { TableOptionsChangePayload } from 'typings/Table';
-import getFilterValue from 'Utilities/Filter/getFilterValue';
 import {
   registerPagePopulator,
   unregisterPagePopulator,
 } from 'Utilities/pagePopulator';
 import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
+import getMonitoredValue from 'Wanted/getMonitoredValue';
+import useToggleMoviesMonitored from 'Wanted/useToggleMoviesMonitored';
+import {
+  setMissingOption,
+  setMissingOptions,
+  setMissingSort,
+  useMissingOptions,
+} from './missingOptionsStore';
 import MissingRow from './MissingRow';
-
-function getMonitoredValue(
-  filters: Filter[],
-  selectedFilterKey: string
-): boolean {
-  return !!getFilterValue(filters, selectedFilterKey, 'monitored', false);
-}
+import useMissing, { FILTERS } from './useMissing';
 
 function Missing() {
   const dispatch = useDispatch();
-  const requestCurrentPage = useCurrentPage();
+
+  const { columns, pageSize, selectedFilterKey, sortKey, sortDirection } =
+    useMissingOptions();
 
   const {
-    isFetching,
-    isPopulated,
-    error,
-    items,
-    columns,
-    selectedFilterKey,
-    filters,
-    sortKey,
-    sortDirection,
-    page,
-    pageSize,
+    records: items,
     totalPages,
-    totalRecords = 0,
-  } = useSelector((state: AppState) => state.wanted.missing);
+    totalRecords,
+    isFetching,
+    isLoading,
+    error,
+    refetch,
+    page,
+    goToPage,
+    filters,
+  } = useMissing();
+
+  const { toggleMoviesMonitored, isToggling } =
+    useToggleMoviesMonitored('/wanted/missing');
 
   const isSearchingForAllMovies = useSelector(
     createCommandExecutingSelector(commandNames.MISSING_MOVIES_SEARCH)
@@ -87,28 +80,12 @@ function Missing() {
   const [isInteractiveImportModalOpen, setIsInteractiveImportModalOpen] =
     useState(false);
 
-  const {
-    handleFirstPagePress,
-    handlePreviousPagePress,
-    handleNextPagePress,
-    handleLastPagePress,
-    handlePageSelect,
-  } = usePaging({
-    page,
-    totalPages,
-    gotoPage: gotoMissingPage,
-  });
-
   const selectedIds = useMemo(() => {
     return getSelectedIds(selectedState);
   }, [selectedState]);
 
-  const isSaving = useMemo(() => {
-    return items.filter((m) => m.isSaving).length > 1;
-  }, [items]);
-
   const itemsSelected = !!selectedIds.length;
-  const isShowingMonitored = getMonitoredValue(filters, selectedFilterKey);
+  const isShowingMonitored = getMonitoredValue(filters);
   const isSearchingForMovies =
     isSearchingForAllMovies || isSearchingForSelectedMovies;
 
@@ -138,11 +115,11 @@ function Missing() {
         name: commandNames.MOVIE_SEARCH,
         movieIds: selectedIds,
         commandFinished: () => {
-          dispatch(fetchMissing());
+          refetch();
         },
       })
     );
-  }, [selectedIds, dispatch]);
+  }, [selectedIds, dispatch, refetch]);
 
   const handleSearchAllPress = useCallback(() => {
     setIsConfirmSearchAllModalOpen(true);
@@ -157,22 +134,20 @@ function Missing() {
       executeCommand({
         name: commandNames.MISSING_MOVIES_SEARCH,
         commandFinished: () => {
-          dispatch(fetchMissing());
+          refetch();
         },
       })
     );
 
     setIsConfirmSearchAllModalOpen(false);
-  }, [dispatch]);
+  }, [dispatch, refetch]);
 
   const handleToggleSelectedPress = useCallback(() => {
-    dispatch(
-      batchToggleMissingMovies({
-        movieIds: selectedIds,
-        monitored: !isShowingMonitored,
-      })
-    );
-  }, [isShowingMonitored, selectedIds, dispatch]);
+    toggleMoviesMonitored({
+      movieIds: selectedIds,
+      monitored: !isShowingMonitored,
+    });
+  }, [isShowingMonitored, selectedIds, toggleMoviesMonitored]);
 
   const handleInteractiveImportPress = useCallback(() => {
     setIsInteractiveImportModalOpen(true);
@@ -184,44 +159,49 @@ function Missing() {
 
   const handleFilterSelect = useCallback(
     (filterKey: number | string) => {
-      dispatch(setMissingFilter({ selectedFilterKey: filterKey }));
+      setMissingOption('selectedFilterKey', filterKey);
+      goToPage(1);
     },
-    [dispatch]
+    [goToPage]
   );
 
   const handleSortPress = useCallback(
-    (sortKey: string) => {
-      dispatch(setMissingSort({ sortKey }));
+    (sortKey: string, sortDirection?: SortDirection) => {
+      setMissingSort({ sortKey, sortDirection });
     },
-    [dispatch]
+    []
   );
 
   const handleTableOptionChange = useCallback(
     (payload: TableOptionsChangePayload) => {
-      dispatch(setMissingTableOption(payload));
+      setMissingOptions(payload);
 
       if (payload.pageSize) {
-        dispatch(gotoMissingPage({ page: 1 }));
+        goToPage(1);
       }
     },
-    [dispatch]
+    [goToPage]
   );
 
-  useEffect(() => {
-    if (requestCurrentPage) {
-      dispatch(fetchMissing());
-    } else {
-      dispatch(gotoMissingPage({ page: 1 }));
-    }
+  const handleFirstPagePress = useCallback(() => {
+    goToPage(1);
+  }, [goToPage]);
 
-    return () => {
-      dispatch(clearMissing());
-    };
-  }, [requestCurrentPage, dispatch]);
+  const handlePreviousPagePress = useCallback(() => {
+    goToPage(Math.max(page - 1, 1));
+  }, [goToPage, page]);
+
+  const handleNextPagePress = useCallback(() => {
+    goToPage(Math.min(page + 1, totalPages));
+  }, [goToPage, page, totalPages]);
+
+  const handleLastPagePress = useCallback(() => {
+    goToPage(totalPages);
+  }, [goToPage, totalPages]);
 
   useEffect(() => {
     const repopulate = () => {
-      dispatch(fetchMissing());
+      refetch();
     };
 
     registerPagePopulator(repopulate, [
@@ -233,7 +213,7 @@ function Missing() {
     return () => {
       unregisterPagePopulator(repopulate);
     };
-  }, [dispatch]);
+  }, [refetch]);
 
   return (
     <PageContent title={translate('Missing')}>
@@ -263,7 +243,7 @@ function Missing() {
             }
             iconName={icons.MONITORED}
             isDisabled={!itemsSelected}
-            isSpinning={isSaving}
+            isSpinning={isToggling}
             onPress={handleToggleSelectedPress}
           />
 
@@ -291,7 +271,7 @@ function Missing() {
           <FilterMenu
             alignMenu={align.RIGHT}
             selectedFilterKey={selectedFilterKey}
-            filters={filters}
+            filters={FILTERS as unknown as AppStateFilter[]}
             customFilters={[]}
             onFilterSelect={handleFilterSelect}
           />
@@ -299,17 +279,17 @@ function Missing() {
       </PageToolbar>
 
       <PageContentBody>
-        {isFetching && !isPopulated ? <LoadingIndicator /> : null}
+        {isFetching && isLoading ? <LoadingIndicator /> : null}
 
         {!isFetching && error ? (
           <Alert kind={kinds.DANGER}>{translate('MissingLoadError')}</Alert>
         ) : null}
 
-        {isPopulated && !error && !items.length ? (
+        {!isLoading && !error && !items.length ? (
           <Alert kind={kinds.INFO}>{translate('MissingNoItems')}</Alert>
         ) : null}
 
-        {isPopulated && !error && !!items.length ? (
+        {!isLoading && !error && !!items.length ? (
           <div>
             <Table
               selectAll={true}
@@ -347,7 +327,7 @@ function Missing() {
               onPreviousPagePress={handlePreviousPagePress}
               onNextPagePress={handleNextPagePress}
               onLastPagePress={handleLastPagePress}
-              onPageSelect={handlePageSelect}
+              onPageSelect={goToPage}
             />
 
             <ConfirmModal
