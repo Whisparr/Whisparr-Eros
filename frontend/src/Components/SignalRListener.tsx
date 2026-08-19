@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { queryClient } from 'App/queryClient';
 import AppState from 'App/State/AppState';
 import { setAppValue, setVersion } from 'Store/Actions/appActions';
-import { removeItem, update, updateItem } from 'Store/Actions/baseActions';
+import { removeItem, updateItem } from 'Store/Actions/baseActions';
 import {
   fetchCommands,
   finishCommand,
@@ -404,7 +404,7 @@ function SignalRListener() {
     }
 
     if (name === 'queue/status') {
-      dispatch(update({ section: 'queue.status', data: body.resource }));
+      queryClient.setQueryData(['/queue/status'], body.resource);
       return;
     }
 
@@ -537,6 +537,10 @@ function SignalRListener() {
     // are in sync after reconnecting.
     queryClient.invalidateQueries({ queryKey: ['/movie/paged'] });
     queryClient.invalidateQueries({ queryKey: ['/movie/stats'] });
+    // The sidebar badge misses every queue/status message while the connection
+    // is down. QueueStatus used to refetch itself on reconnect; now that it is
+    // a query, the refresh belongs here with the others.
+    queryClient.invalidateQueries({ queryKey: ['/queue/status'] });
     dispatch(fetchCommands());
     repopulatePage();
   });

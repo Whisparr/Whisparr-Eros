@@ -19,11 +19,11 @@ verified to resolve against the public repo.
 
 | Metric | At assessment | Now |
 | --- | --- | --- |
-| Files importing `react-redux` | 327 of 1,255 | **315** of 1,261 |
-| Lines under `frontend/src/Store/` | 15,374 across 138 files | **14,705** across 133 |
+| Files importing `react-redux` | 327 of 1,255 | **314** of 1,260 |
+| Lines under `frontend/src/Store/` | 15,374 across 138 files | **14,692** across 133 |
 | Redux slices registered in `Store/Actions/index.js` | 35 | **32** |
 | Remaining `*Connector` files | 66 | **61** |
-| Files touching React Query | 35 | **45** |
+| Files touching React Query | 35 | **46** |
 | zustand stores | 0 (not installed) | **installed, 3 primitives + 3 stores** |
 
 > **Recomputed in #464.** Three rows previously carried figures that no command
@@ -147,7 +147,7 @@ a whole state slice. Take them roughly in Sonarr's order.
 
 | Page | Retires | Sonarr ref |
 | --- | --- | --- |
-| **Queue** — biggest leaf, 16 consumers, SignalR-driven, drives sidebar badge | `queueActions` (539 loc), `QueueAppState` | [Sonarr/Sonarr@ae201f52](https://github.com/Sonarr/Sonarr/commit/ae201f52) (58 files) |
+| **Queue** — biggest leaf, 14 importers, SignalR-driven, drives sidebar badge. **Split three ways** (see below); status done, #472 | `queueActions` (539 loc), `QueueAppState` | [Sonarr/Sonarr@ae201f52](https://github.com/Sonarr/Sonarr/commit/ae201f52) (58 files) |
 | **Blocklist** — incl. per-movie blocklist tab | `blocklistActions`, `movieBlocklistActions` | [Sonarr/Sonarr@a4f21085](https://github.com/Sonarr/Sonarr/commit/a4f21085) |
 | **History** *(hybrid)* — `useHistory` covers paged list + movie history; finish details modal | `historyActions`, `movieHistoryActions`, `HistoryDetailsConnector` ×2 | [Sonarr/Sonarr@a45b0776](https://github.com/Sonarr/Sonarr/commit/a45b0776), [Sonarr/Sonarr@6b479a5a](https://github.com/Sonarr/Sonarr/commit/6b479a5a) |
 | **System: Status / Health** — ~~Disk Space **done, #461**~~. Health has the sidebar dependency, so it goes last | `systemActions` (391 loc after #461), `createHealthCheckSelector.js`, `createSystemStatusSelector.ts` | [Sonarr/Sonarr@49c52c2e](https://github.com/Sonarr/Sonarr/commit/49c52c2e), [Sonarr/Sonarr@0552a811](https://github.com/Sonarr/Sonarr/commit/0552a811), ~~[Sonarr/Sonarr@871ae955](https://github.com/Sonarr/Sonarr/commit/871ae955)~~ |
@@ -313,10 +313,26 @@ Updates, Events, the SignalR container, and Organize preview + Unmapped Files ar
 converted. Phase B's leaf pages are finished except Queue, Blocklist, History and
 Calendar.
 
-1. **Queue** — the first genuinely large one at 58 files. `usePage`, the options-store
-   pattern and `usePagedApiQuery` all exist now, proven together by Events and Unmapped
-   Files, so Queue is mostly filter/selection work rather than new plumbing.
+1. **Queue**, in three PRs. Sonarr shipped it as one 58-file commit, but the slice already
+   has three independent sub-sections and splitting along them gives three merge points
+   instead of one:
+   - ~~**`queue.status`** — `/queue/status`, drives the sidebar badge. **Done, #472.**~~
+   - **`queue.details`** — `/queue/details`, per-movie queue state with no UI of its own.
+     Six consumers: Calendar, MovieIndex, SceneIndex, Missing, CutoffUnmet, Collection.
+   - **`queue.paged`** — the Queue page itself. The bulk: server-side collection,
+     grab/remove mutations, filters, table options, and `queue.options`.
 2. **Blocklist**, then **History**, then **Calendar** — the rest of Phase B.
+
+### `includeUnknownMovieItems` is an option in Eros and a filter in Sonarr
+
+Sonarr deleted the "show unknown items" checkbox and replaced it with an
+`excludeUnknownSeriesItems` filter plus a filter-builder prop, so their `useQueueStatus`
+always reports `totalCount` and `errors || unknownErrors`. Eros still has the checkbox in
+`QueueOptions.tsx`, backed by `queue.options`, and the sidebar badge honours it. #472 kept
+that: the hook reads the flag from redux and derives the badge from it. The option moves
+with `queue.paged`, which is also where the paged fetch that injects the flag lives —
+converting the badge to Sonarr's unconditional shape first would have silently started
+counting unknown items for anyone who had unticked it.
 
 ### `VirtualTable` blocks two connector removals
 
@@ -479,6 +495,7 @@ If a JS test runner is ever added, remove that line and set
 | 2026-08-18 | #469 | **Events.** First paged page. `usePage` added; the system slice is down to restart/shutdown. Three type holes fixed that only `.js` files had been hiding. |
 | 2026-08-18 | #470 | **SignalR container.** Class + `connect()` → function component, as Sonarr did in Jan 2025. Redux stays inside. |
 | 2026-08-18 | #471 | **Organize preview + Unmapped Files.** Two slices retired. First conversion where a page's table prefs move to a zustand options store rather than to React Query. |
+| 2026-08-18 | #472 | **Queue, part 1 of 3 — status.** Sidebar badge onto React Query; `queue/status` SignalR handler onto `setQueryData`; the reconnect refetch moves from the component into `handleReconnected`. |
 
 ### Open threads
 

@@ -25,7 +25,6 @@ import createSetTableOptionReducer from './Creators/Reducers/createSetTableOptio
 // Variables
 
 export const section = 'queue';
-const status = `${section}.status`;
 const details = `${section}.details`;
 const paged = `${section}.paged`;
 
@@ -35,13 +34,6 @@ const paged = `${section}.paged`;
 export const defaultState = {
   options: {
     includeUnknownMovieItems: true,
-  },
-
-  status: {
-    isFetching: false,
-    isPopulated: false,
-    error: null,
-    item: {},
   },
 
   details: {
@@ -242,8 +234,6 @@ function fetchDataAugmenter(getState, payload, data) {
 //
 // Actions Types
 
-export const FETCH_QUEUE_STATUS = 'queue/fetchQueueStatus';
-
 export const FETCH_QUEUE_DETAILS = 'queue/fetchQueueDetails';
 export const CLEAR_QUEUE_DETAILS = 'queue/clearQueueDetails';
 
@@ -267,7 +257,6 @@ export const REMOVE_QUEUE_ITEMS = 'queue/removeQueueItems';
 //
 // Action Creators
 
-export const fetchQueueStatus = createThunk(FETCH_QUEUE_STATUS);
 
 export const fetchQueueDetails = createThunk(FETCH_QUEUE_DETAILS);
 export const clearQueueDetails = createAction(CLEAR_QUEUE_DETAILS);
@@ -298,8 +287,6 @@ const fetchQueueDetailsHelper = createFetchHandler(details, '/queue/details');
 // Action Handlers
 
 export const actionHandlers = handleThunks({
-  [FETCH_QUEUE_STATUS]: createFetchHandler(status, '/queue/status'),
-
   [FETCH_QUEUE_DETAILS]: function (getState, payload, dispatch) {
     let params = payload;
 
