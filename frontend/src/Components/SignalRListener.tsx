@@ -1,9 +1,8 @@
 // TODO: Standardize the "when" on React Query Key invalidation to avoid rapid-fire reloads during bulk operations.
 import * as signalR from '@microsoft/signalr';
 import { useEffect, useRef } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { queryClient } from 'App/queryClient';
-import AppState from 'App/State/AppState';
 import { setAppValue, setVersion } from 'Store/Actions/appActions';
 import { removeItem, updateItem } from 'Store/Actions/baseActions';
 import {
@@ -11,7 +10,6 @@ import {
   finishCommand,
   updateCommand,
 } from 'Store/Actions/commandActions';
-import { fetchQueue } from 'Store/Actions/queueActions';
 import { fetchRootFolders } from 'Store/Actions/rootFolderActions';
 import { fetchQualityDefinitions } from 'Store/Actions/settingsActions';
 import { fetchTagDetails, fetchTags } from 'Store/Actions/tagActions';
@@ -208,16 +206,6 @@ function SignalRListener() {
   const dispatch = useDispatch();
   const connection = useRef<signalR.HubConnection | null>(null);
 
-  // `handleQueue` reads this at message time, not at mount time. The handlers
-  // below live in refs so the connection is only built once, which would
-  // otherwise freeze this at its initial `false` and silently stop queue
-  // refreshes once the queue populates.
-  const isQueuePopulated = useSelector(
-    (state: AppState) => state.queue.paged.isPopulated
-  );
-  const isQueuePopulatedRef = useRef(isQueuePopulated);
-  isQueuePopulatedRef.current = isQueuePopulated;
-
   const handleMessage = useRef((message: SignalRMessage) => {
     const { name, body } = message;
 
@@ -391,10 +379,7 @@ function SignalRListener() {
     }
 
     if (name === 'queue') {
-      if (isQueuePopulatedRef.current) {
-        dispatch(fetchQueue());
-      }
-
+      queryClient.invalidateQueries({ queryKey: ['/queue'] });
       return;
     }
 

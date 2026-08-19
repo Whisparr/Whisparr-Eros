@@ -1,6 +1,5 @@
-import { useSelector } from 'react-redux';
-import AppState from 'App/State/AppState';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
+import { useQueueOption } from '../queueOptionsStore';
 
 export interface QueueStatus {
   totalCount: number;
@@ -18,12 +17,8 @@ export default function useQueueStatus() {
   });
 
   // Sonarr dropped this option and made it a queue filter instead, so their
-  // hook always counts unknown items. Eros still has the checkbox, and it
-  // still lives in `queue.options` alongside the paged fetch that reads it --
-  // both move together when the paged section converts.
-  const includeUnknownMovieItems = useSelector(
-    (state: AppState) => state.queue.options.includeUnknownMovieItems
-  );
+  // hook always counts unknown items. Eros still has the checkbox.
+  const includeUnknownMovieItems = useQueueOption('includeUnknownMovieItems');
 
   if (!data) {
     return {
