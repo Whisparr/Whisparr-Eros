@@ -71,9 +71,12 @@ function HistoryRow(props: HistoryRowProps) {
   }, [setIsDetailsModalOpen]);
 
   function handleMarkAsFailedPress() {
-    markHistoryFailed(id, {
-      onSuccess: () => setIsDetailsModalOpen(false),
-    });
+    markHistoryFailed(
+      { id },
+      {
+        onSuccess: () => setIsDetailsModalOpen(false),
+      }
+    );
   }
 
   if (!movie) {

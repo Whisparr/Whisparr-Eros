@@ -5,14 +5,11 @@ import * as calendar from './calendarActions';
 import * as captcha from './captchaActions';
 import * as commands from './commandActions';
 import * as customFilters from './customFilterActions';
-import * as history from './historyActions';
 import * as interactiveImportActions from './interactiveImportActions';
 import * as movies from './movieActions';
-import * as movieBlocklist from './movieBlocklistActions';
 import * as movieCollections from './movieCollectionActions';
 import * as movieCredits from './movieCreditsActions';
 import * as movieFiles from './movieFileActions';
-import * as movieHistory from './movieHistoryActions';
 import * as movieIndex from './movieIndexActions';
 import * as oAuth from './oAuthActions';
 import * as paths from './pathActions';
@@ -37,7 +34,6 @@ export default [
   commands,
   customFilters,
   movieFiles,
-  history,
   interactiveImportActions,
   oAuth,
   paths,
@@ -45,10 +41,8 @@ export default [
   releases,
   rootFolders,
   movies,
-  movieBlocklist,
   movieCollections,
   movieCredits,
-  movieHistory,
   movieIndex,
   performers,
   performerScenes,

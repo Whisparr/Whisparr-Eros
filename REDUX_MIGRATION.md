@@ -19,12 +19,12 @@ verified to resolve against the public repo.
 
 | Metric | At assessment | Now |
 | --- | --- | --- |
-| Files importing `react-redux` | 327 of 1,255 | **308** of 1,261 |
-| Lines under `frontend/src/Store/` | 15,374 across 138 files | **13,515** across 128 |
-| Redux slices registered in `Store/Actions/index.js` | 35 | **29** |
-| Remaining `*Connector` files | 66 | **61** |
+| Files importing `react-redux` | 327 of 1,255 | **307** of 1,255 |
+| Lines under `frontend/src/Store/` | 15,374 across 138 files | **13,073** across 125 |
+| Redux slices registered in `Store/Actions/index.js` | 35 | **26** |
+| Remaining `*Connector` files | 66 | **59** |
 | Files touching React Query | 35 | **52** |
-| zustand stores | 0 (not installed) | **installed, 3 primitives + 4 stores** |
+| zustand stores | 0 (not installed) | **installed, 3 primitives + 7 option stores** |
 
 > **Recomputed in #464.** Three rows previously carried figures that no command
 > reproduced — `react-redux` read 316 where the same command that yields the
@@ -39,6 +39,12 @@ verified to resolve against the public repo.
 > [f0b74bea](https://github.com/Whisparr/Whisparr-Eros/commit/f0b74bea). The
 > assessment figure of 1,255 does reproduce, so the method is the one recorded here
 > and the earlier entry was simply miscounted.
+>
+> **#478 correction.** The 308 recorded at #477 does not reproduce either — the command
+> below gives 309 at
+> [02d0c714](https://github.com/Whisparr/Whisparr-Eros/commit/02d0c714). History moves it
+> to 307: it drops three importers (`HistoryFilterModal`, both `HistoryDetailsConnector`
+> files) and adds one, because `useHistory` now reads custom filters from Redux itself.
 >
 > ```sh
 > # react-redux importers
@@ -158,7 +164,7 @@ a whole state slice. Take them roughly in Sonarr's order.
 | --- | --- | --- |
 | ~~**Queue**~~ — **done, #472 / #473 / #474.** Biggest leaf, 14 importers, SignalR-driven, drives sidebar badge. Split three ways rather than Sonarr's single commit | ~~`queueActions` (539 loc), `QueueAppState`~~ | [Sonarr/Sonarr@ae201f52](https://github.com/Sonarr/Sonarr/commit/ae201f52) (58 files) |
 | ~~**Blocklist** — the page~~ — **done, #477.** `movieBlocklistActions` stays: it feeds one selector in `InteractiveSearchRow` jointly with `movieHistory`, so it converts with History | ~~`blocklistActions`, `BlocklistAppState`~~ | [Sonarr/Sonarr@a4f21085](https://github.com/Sonarr/Sonarr/commit/a4f21085) |
-| **History** *(hybrid)* — `useHistory` covers paged list + movie history; finish details modal | `historyActions`, `movieHistoryActions`, `HistoryDetailsConnector` ×2 | [Sonarr/Sonarr@a45b0776](https://github.com/Sonarr/Sonarr/commit/a45b0776), [Sonarr/Sonarr@6b479a5a](https://github.com/Sonarr/Sonarr/commit/6b479a5a) |
+| ~~**History**~~ — **done, #478.** Was a hybrid: React Query fetched, redux still held the options. Took `movieBlocklistActions` with it, as planned | ~~`historyActions`, `movieHistoryActions`, `movieBlocklistActions`, `HistoryAppState`, `MovieBlocklistAppState`, `HistoryDetailsConnector` ×2~~ | [Sonarr/Sonarr@a45b0776](https://github.com/Sonarr/Sonarr/commit/a45b0776), [Sonarr/Sonarr@6b479a5a](https://github.com/Sonarr/Sonarr/commit/6b479a5a) |
 | ~~**System: Status / Health**~~ — **done, #461 / #463 / #464 / #465.** Health had the sidebar dependency, so it went last | `systemActions` (391 loc after #461), `createHealthCheckSelector.js`, `createSystemStatusSelector.ts` | [Sonarr/Sonarr@49c52c2e](https://github.com/Sonarr/Sonarr/commit/49c52c2e), [Sonarr/Sonarr@0552a811](https://github.com/Sonarr/Sonarr/commit/0552a811), ~~[Sonarr/Sonarr@871ae955](https://github.com/Sonarr/Sonarr/commit/871ae955)~~ |
 | ~~**System: Tasks / Backups / Events**~~ — **done, #462 / #466 / #467 / #468 / #469.** | `BackupsConnector.js`, `RestoreBackupModal*Connector.js`, `LogsTableConnector.js` | [Sonarr/Sonarr@3091f40c](https://github.com/Sonarr/Sonarr/commit/3091f40c), [Sonarr/Sonarr@c295e24f](https://github.com/Sonarr/Sonarr/commit/c295e24f), [Sonarr/Sonarr@ff5e7327](https://github.com/Sonarr/Sonarr/commit/ff5e7327) |
 | **Calendar** — 12 files; needs the options store from phase A | `calendarActions` (443 loc), `CalendarAppState` | [Sonarr/Sonarr@ccb7f07c](https://github.com/Sonarr/Sonarr/commit/ccb7f07c) (28 files) |
@@ -318,9 +324,8 @@ Five places where you cannot just copy their commit.
 ## 10. What to do next
 
 Phase A is done. Parse, Disk Space, Log Files, System Status, Health, Tasks, Backups,
-Updates, Events, the SignalR container, Organize preview + Unmapped Files, Queue, Wanted
-and Blocklist are converted. Phase B's leaf pages are finished except History and
-Calendar.
+Updates, Events, the SignalR container, Organize preview + Unmapped Files, Queue, Wanted,
+Blocklist and History are converted. Calendar is the last of Phase B's leaf pages.
 
 1. ~~**Queue**, in three PRs.~~ **Done.** Sonarr shipped it as one 58-file commit, but the slice already
    has three independent sub-sections and splitting along them gives three merge points
@@ -331,8 +336,8 @@ Calendar.
    - ~~**`queue.paged`** — the Queue page itself. **Done, #474.** Slice retired.~~
 2. ~~**Wanted: Missing + Cutoff Unmet.**~~ **Done, #475.**
 3. ~~**Blocklist.**~~ **Done, #477.**
-4. **History**, then **Calendar** — the rest of Phase B. History takes `movieBlocklistActions`
-   with it.
+4. ~~**History.**~~ **Done, #478.** Took `movieBlocklistActions` with it, as planned.
+5. **Calendar** — the last of Phase B.
 
 ### `/queue/details` takes no filter, so it needs no provider
 
@@ -561,6 +566,7 @@ If a JS test runner is ever added, remove that line and set
 | 2026-08-18 | #469 | **Events.** First paged page. `usePage` added; the system slice is down to restart/shutdown. Three type holes fixed that only `.js` files had been hiding. |
 | 2026-08-18 | #470 | **SignalR container.** Class + `connect()` → function component, as Sonarr did in Jan 2025. Redux stays inside. |
 | 2026-08-18 | #471 | **Organize preview + Unmapped Files.** Two slices retired. First conversion where a page's table prefs move to a zustand options store rather than to React Query. |
+| 2026-08-19 | #478 | **History.** `historyActions`, `movieHistoryActions`, `movieBlocklistActions`, `HistoryAppState` and `MovieBlocklistAppState` deleted, plus two dead `HistoryDetailsConnector` files. The page was already a hybrid — React Query fetched, Redux still held the options — so this is mostly the options store plus the two per-movie reads the interactive search needs. |
 | 2026-08-19 | #477 | **Blocklist.** `blocklistActions` and `BlocklistAppState` deleted. Also fixes `fetchJson` on empty 200 bodies, without which the per-row delete does not invalidate — see §10. `movieBlocklistActions` deferred to History; it shares a selector with `movieHistory`. |
 | 2026-08-19 | #476 | **Queue custom filters.** Regression fix, not a conversion: #474 resolved the filter key against the built-ins only, so selecting a custom filter stored the key and changed nothing on the wire. |
 | 2026-08-18 | #475 | **Wanted: Missing + Cutoff Unmet.** `wantedActions` and `WantedAppState` deleted; both pages onto `usePagedApiQuery` with one options store each. Batch monitor-toggle becomes a `/movie/editor` mutation, which retires `createBatchToggleMovieMonitoredHandler` and the `isSaving` row flag. |
@@ -587,8 +593,13 @@ If a JS test runner is ever added, remove that line and set
   `Store/Migrators/migrate.js` is where a sweep would go, and it wants doing once at the
   end rather than per-PR.
 - **Whisparr/Whisparr#1123** — `AUTH_HEADERS` and hand-rolled fetch helpers still
-  duplicated in `useStudio`, `usePerformer`, `useHistory`, `useAddNewMovie`. Not on the
-  critical path; filed rather than folded into #455.
+  duplicated in `useStudio`, `usePerformer`, `useAddNewMovie`. Not on the critical path;
+  filed rather than folded into #455. `useHistory` came off it in #478 — its `apiPost`
+  helper is now `useApiMutation`.
+- **`DiskScanImported` has no History filter** — the event type was added to
+  `MovieHistoryEventType` as `10` but never to the History page's built-in filter list, so
+  disk-scan imports are reachable only under *All*. Pre-existing; #478 copied the list over
+  verbatim rather than change what the page filters on. One entry in `FILTERS` fixes it.
 - **Two `Filter` type definitions** — `App/State/AppState.ts` and `Filters/Filter.ts`
   differ in how strictly `type` and `value` are typed. 21 files import from the former.
   `History.tsx` carries a cast and a TODO. Collapse them with the custom filters work in

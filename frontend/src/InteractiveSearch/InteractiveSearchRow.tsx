@@ -1,8 +1,10 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { createSelector } from 'reselect';
+import {
+  useMovieBlocklist,
+  useMovieHistory,
+} from 'Activity/History/useHistory';
 import ProtocolLabel from 'Activity/Queue/ProtocolLabel';
-import AppState from 'App/State/AppState';
 import Icon from 'Components/Icon';
 import Link from 'Components/Link/Link';
 import SpinnerIconButton from 'Components/Link/SpinnerIconButton';
@@ -71,42 +73,43 @@ function getDownloadTooltip(
   return translate('AddToDownloadQueue');
 }
 
-function releaseHistorySelector({ guid }: Release) {
-  return createSelector(
-    (state: AppState) => state.movieHistory.items,
-    (state: AppState) => state.movieBlocklist.items,
-    (movieHistory, movieBlocklist) => {
-      let historyFailedData = null;
-      let blocklistedData = null;
+// Both queries are keyed by movieId, so every row on a search shares the one
+// request React Query already has in flight.
+function useReleaseHistory(guid: string, movieId: number) {
+  const { data: movieHistory } = useMovieHistory(movieId);
+  const { data: movieBlocklist } = useMovieBlocklist(movieId);
 
-      const historyGrabbedData = movieHistory.find(
-        ({ eventType, data }) =>
-          eventType === 'grabbed' &&
-          data != null &&
-          typeof data === 'object' &&
-          'guid' in data &&
-          (data as { guid?: string }).guid === guid
+  return useMemo(() => {
+    let historyFailedData = null;
+    let blocklistedData = null;
+
+    const historyGrabbedData = movieHistory.find(
+      ({ eventType, data }) =>
+        eventType === 'grabbed' &&
+        data != null &&
+        typeof data === 'object' &&
+        'guid' in data &&
+        (data as { guid?: string }).guid === guid
+    );
+
+    if (historyGrabbedData) {
+      historyFailedData = movieHistory.find(
+        ({ eventType, sourceTitle }) =>
+          eventType === 'downloadFailed' &&
+          sourceTitle === historyGrabbedData.sourceTitle
       );
 
-      if (historyGrabbedData) {
-        historyFailedData = movieHistory.find(
-          ({ eventType, sourceTitle }) =>
-            eventType === 'downloadFailed' &&
-            sourceTitle === historyGrabbedData.sourceTitle
-        );
-
-        blocklistedData = movieBlocklist.find(
-          (item) => item.sourceTitle === historyGrabbedData.sourceTitle
-        );
-      }
-
-      return {
-        historyGrabbedData,
-        historyFailedData,
-        blocklistedData,
-      };
+      blocklistedData = movieBlocklist.find(
+        (item) => item.sourceTitle === historyGrabbedData.sourceTitle
+      );
     }
-  );
+
+    return {
+      historyGrabbedData,
+      historyFailedData,
+      blocklistedData,
+    };
+  }, [guid, movieHistory, movieBlocklist]);
 }
 
 interface InteractiveSearchRowProps extends Release {
@@ -149,7 +152,7 @@ function InteractiveSearchRow(props: InteractiveSearchRowProps) {
   );
 
   const { historyGrabbedData, historyFailedData, blocklistedData } =
-    useSelector(releaseHistorySelector(props));
+    useReleaseHistory(guid, searchPayload.movieId);
 
   const [isConfirmGrabModalOpen, setIsConfirmGrabModalOpen] = useState(false);
   const [isOverrideModalOpen, setIsOverrideModalOpen] = useState(false);
