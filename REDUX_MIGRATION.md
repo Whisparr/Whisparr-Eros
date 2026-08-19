@@ -596,10 +596,11 @@ If a JS test runner is ever added, remove that line and set
   duplicated in `useStudio`, `usePerformer`, `useAddNewMovie`. Not on the critical path;
   filed rather than folded into #455. `useHistory` came off it in #478 — its `apiPost`
   helper is now `useApiMutation`.
-- **`DiskScanImported` has no History filter** — the event type was added to
-  `MovieHistoryEventType` as `10` but never to the History page's built-in filter list, so
-  disk-scan imports are reachable only under *All*. Pre-existing; #478 copied the list over
-  verbatim rather than change what the page filters on. One entry in `FILTERS` fixes it.
+- **Whisparr/Whisparr#1126** — `DiskScanImported` (`MovieHistoryEventType` `10`) was never
+  added to the History page's built-in filter list, so the one event that means "a file
+  changed underneath us" — a rename or a transcode outside the app — is reachable only
+  under *All*. Pre-existing; #478 copied the list over verbatim rather than change what the
+  page filters on, and filed it. One entry in `FILTERS` fixes it.
 - **Two `Filter` type definitions** — `App/State/AppState.ts` and `Filters/Filter.ts`
   differ in how strictly `type` and `value` are typed. 21 files import from the former.
   `History.tsx` carries a cast and a TODO. Collapse them with the custom filters work in
