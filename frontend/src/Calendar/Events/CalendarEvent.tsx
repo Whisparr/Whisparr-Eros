@@ -3,7 +3,7 @@ import moment from 'moment';
 import React, { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { useQueueItemForMovie } from 'Activity/Queue/Details/useQueueDetails';
-import AppState from 'App/State/AppState';
+import { useCalendarOptions } from 'Calendar/calendarOptionsStore';
 import getStatusStyle from 'Calendar/getStatusStyle';
 import Icon from 'Components/Icon';
 import Link from 'Components/Link/Link';
@@ -53,7 +53,7 @@ function CalendarEvent({
   const { enableColorImpairedMode } = useSelector(createUISettingsSelector());
 
   const { showMovieInformation, showCutoffUnmetIcon, fullColorEvents } =
-    useSelector((state: AppState) => state.calendar.options);
+    useCalendarOptions();
 
   const isDownloading = !!(queueItem || grabbed);
   const statusStyle = getStatusStyle(

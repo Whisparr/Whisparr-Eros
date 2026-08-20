@@ -1,5 +1,4 @@
 import { Error } from './AppSectionState';
-import CalendarAppState from './CalendarAppState';
 import CaptchaAppState from './CaptchaAppState';
 import CommandAppState from './CommandAppState';
 import CustomFiltersAppState from './CustomFiltersAppState';
@@ -76,7 +75,6 @@ export interface AppSectionState {
 
 interface AppState {
   app: AppSectionState;
-  calendar: CalendarAppState;
   captcha: CaptchaAppState;
   commands: CommandAppState;
   customFilters: CustomFiltersAppState;

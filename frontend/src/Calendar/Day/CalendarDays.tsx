@@ -1,19 +1,21 @@
 import classNames from 'classnames';
 import moment from 'moment';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import AppState from 'App/State/AppState';
+import { useCalendarOption } from 'Calendar/calendarOptionsStore';
 import * as calendarViews from 'Calendar/calendarViews';
 import {
-  gotoCalendarNextRange,
-  gotoCalendarPreviousRange,
-} from 'Store/Actions/calendarActions';
+  goToNextRange,
+  goToPreviousRange,
+  useCalendarDates,
+} from 'Calendar/useCalendar';
 import CalendarDay from './CalendarDay';
 import styles from './CalendarDays.css';
 
 function CalendarDays() {
-  const dispatch = useDispatch();
-  const { dates, view } = useSelector((state: AppState) => state.calendar);
+  const dates = useCalendarDates();
+  const view = useCalendarOption('view');
   const isSidebarVisible = useSelector(
     (state: AppState) => state.app.isSidebarVisible
   );
@@ -55,31 +57,28 @@ function CalendarDays() {
     [isSidebarVisible]
   );
 
-  const handleTouchEnd = useCallback(
-    (event: TouchEvent) => {
-      const touches = event.changedTouches;
-      const currentTouch = touches[0].pageX;
+  const handleTouchEnd = useCallback((event: TouchEvent) => {
+    const touches = event.changedTouches;
+    const currentTouch = touches[0].pageX;
 
-      if (!touchStart.current) {
-        return;
-      }
+    if (!touchStart.current) {
+      return;
+    }
 
-      if (
-        currentTouch > touchStart.current &&
-        currentTouch - touchStart.current > 100
-      ) {
-        dispatch(gotoCalendarPreviousRange());
-      } else if (
-        currentTouch < touchStart.current &&
-        touchStart.current - currentTouch > 100
-      ) {
-        dispatch(gotoCalendarNextRange());
-      }
+    if (
+      currentTouch > touchStart.current &&
+      currentTouch - touchStart.current > 100
+    ) {
+      goToPreviousRange();
+    } else if (
+      currentTouch < touchStart.current &&
+      touchStart.current - currentTouch > 100
+    ) {
+      goToNextRange();
+    }
 
-      touchStart.current = null;
-    },
-    [dispatch]
-  );
+    touchStart.current = null;
+  }, []);
 
   const handleTouchCancel = useCallback(() => {
     touchStart.current = null;
