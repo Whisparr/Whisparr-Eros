@@ -1,5 +1,4 @@
 import React, { useCallback, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import Label from 'Components/Label';
 import IconButton from 'Components/Link/IconButton';
 import Link from 'Components/Link/Link';
@@ -7,13 +6,10 @@ import ConfirmModal from 'Components/Modal/ConfirmModal';
 import TableRowCell from 'Components/Table/Cells/TableRowCell';
 import TableRow from 'Components/Table/TableRow';
 import { icons, kinds } from 'Helpers/Props';
-import {
-  deleteRootFolder,
-  refreshRootFolder,
-} from 'Store/Actions/rootFolderActions';
 import ImportFile from 'typings/ImportFile';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
+import { useDeleteRootFolder, useRefreshRootFolder } from './useRootFolders';
 import styles from './RootFolderRow.css';
 
 interface RootFolderRowProps {
@@ -29,13 +25,14 @@ function RootFolderRow(props: RootFolderRowProps) {
 
   const isUnavailable = !accessible;
 
-  const dispatch = useDispatch();
+  const { deleteRootFolder } = useDeleteRootFolder(id);
+  const { refreshRootFolder } = useRefreshRootFolder();
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const onRefreshPress = useCallback(() => {
-    dispatch(refreshRootFolder({ id }));
-  }, [dispatch, id]);
+    refreshRootFolder({ id });
+  }, [refreshRootFolder, id]);
 
   const onDeletePress = useCallback(() => {
     setIsDeleteModalOpen(true);
@@ -46,10 +43,10 @@ function RootFolderRow(props: RootFolderRowProps) {
   }, [setIsDeleteModalOpen]);
 
   const onConfirmDelete = useCallback(() => {
-    dispatch(deleteRootFolder({ id }));
+    deleteRootFolder();
 
     setIsDeleteModalOpen(false);
-  }, [dispatch, id]);
+  }, [deleteRootFolder]);
 
   return (
     <TableRow>

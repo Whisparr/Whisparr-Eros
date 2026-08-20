@@ -5,9 +5,9 @@ import { useDispatch } from 'react-redux';
 import { queryClient } from 'App/queryClient';
 import Command from 'Commands/Command';
 import { COMMANDS_QUERY_KEY, useUpdateCommand } from 'Commands/useCommands';
+import { ROOT_FOLDERS_QUERY_KEY } from 'RootFolder/useRootFolders';
 import { setAppValue, setVersion } from 'Store/Actions/appActions';
 import { removeItem, updateItem } from 'Store/Actions/baseActions';
-import { fetchRootFolders } from 'Store/Actions/rootFolderActions';
 import { fetchQualityDefinitions } from 'Store/Actions/settingsActions';
 import { TAG_DETAILS_QUERY_KEY } from 'Tags/useTagDetails';
 import { TAGS_QUERY_KEY } from 'Tags/useTags';
@@ -476,7 +476,7 @@ function SignalRListener() {
     }
 
     if (name === 'rootfolder') {
-      dispatch(fetchRootFolders());
+      queryClient.invalidateQueries({ queryKey: ROOT_FOLDERS_QUERY_KEY });
       return;
     }
 

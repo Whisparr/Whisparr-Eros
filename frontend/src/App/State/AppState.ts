@@ -13,7 +13,6 @@ import PathsAppState from './PathsAppState';
 import PerformersAppState from './PerformersAppState';
 import ProviderOptionsAppState from './ProviderOptionsAppState';
 import ReleasesAppState from './ReleasesAppState';
-import RootFolderAppState from './RootFolderAppState';
 import SettingsAppState from './SettingsAppState';
 import StudiosAppState from './StudiosAppState';
 
@@ -96,7 +95,6 @@ interface AppState {
   paths: PathsAppState;
   providerOptions: ProviderOptionsAppState;
   releases: ReleasesAppState;
-  rootFolders: RootFolderAppState;
   settings: SettingsAppState;
 }
 

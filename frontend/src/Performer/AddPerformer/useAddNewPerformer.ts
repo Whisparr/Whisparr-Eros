@@ -11,7 +11,6 @@ import {
   setAddPerformerDefault,
   setPerformersWithStatus,
 } from 'Store/Actions/addPerformerActions';
-import { fetchRootFolders } from 'Store/Actions/rootFolderActions';
 import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
 import selectSettings from 'Store/Selectors/selectSettings';
@@ -93,7 +92,6 @@ function useAddNewPerformer() {
   > | null>(null);
 
   React.useEffect(() => {
-    dispatch(fetchRootFolders());
     return () => {
       if (performerLookupTimeout.current) {
         clearTimeout(performerLookupTimeout.current);

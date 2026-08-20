@@ -9,7 +9,6 @@ import SpinnerButton from 'Components/Link/SpinnerButton';
 import PageContentFooter from 'Components/Page/PageContentFooter';
 import { kinds } from 'Helpers/Props';
 import { saveMovieEditor } from 'Store/Actions/movieActions';
-import { fetchRootFolders } from 'Store/Actions/rootFolderActions';
 import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
 import { DeleteSceneModal } from './Delete/DeleteSceneModal';
@@ -134,10 +133,6 @@ function SceneIndexSelectFooter() {
       setIsSavingTags(false);
     }
   }, [legacyIsSaving]);
-
-  useEffect(() => {
-    dispatch(fetchRootFolders());
-  }, [dispatch]);
 
   const anySelected = selectedCount > 0;
 

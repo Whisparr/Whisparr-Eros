@@ -14,7 +14,6 @@ import * as performers from './performerActions';
 import * as performerScenes from './performerScenesActions';
 import * as providerOptions from './providerOptionActions';
 import * as releases from './releaseActions';
-import * as rootFolders from './rootFolderActions';
 import * as sceneIndex from './sceneIndexActions';
 import * as settings from './settingsActions';
 import * as studios from './studioActions';
@@ -32,7 +31,6 @@ export default [
   paths,
   providerOptions,
   releases,
-  rootFolders,
   movies,
   movieCollections,
   movieCredits,
