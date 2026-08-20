@@ -628,6 +628,7 @@ If a JS test runner is ever added, remove that line and set
 | 2026-08-18 | #469 | **Events.** First paged page. `usePage` added; the system slice is down to restart/shutdown. Three type holes fixed that only `.js` files had been hiding. |
 | 2026-08-18 | #470 | **SignalR container.** Class + `connect()` → function component, as Sonarr did in Jan 2025. Redux stays inside. |
 | 2026-08-18 | #471 | **Organize preview + Unmapped Files.** Two slices retired. First conversion where a page's table prefs move to a zustand options store rather than to React Query. |
+| 2026-08-20 | #485 | **React Query client defaults.** `staleTime: 60s` and `retry: 1` on `queryClient`, closing Whisparr/Whisparr#1132. Not a conversion — it changes behaviour for every already-converted page, which is why it rode alone. Measured before and after over four flows: 46–48 requests became 28–30. Verified push still drives updates: an external API mutation refetched `/movie/paged` unprompted on an idle page. Turned up a separate redux bug on the way — `useShowMovieMonitorToggleButton` dispatches `fetchGeneralSettings()` from a per-row mount effect, so `/config/host` fires once per table row. |
 | 2026-08-20 | #484 | **Custom filters, part 2 of 2 — reads.** `useCustomFilters`/`useCustomFiltersList` queries; all 19 `createCustomFiltersSelector` call sites swept across 8 filter domains; `customFilterActions` and `CustomFiltersAppState` deleted. `useAppPage` now gates on the query, which is what keeps a persisted filter from flashing the unfiltered list on reload. `createClientSideCollectionSelector` takes custom filters as an own prop. Also: `staleTime: Infinity` (the default 0 cost one extra GET per navigation), six vestigial `<section>.customFilters` persist paths removed, and `AppState`'s duplicate `CustomFilter` type now re-exports the canonical one. |
 | 2026-08-20 | #483 | **Custom filters, part 1 of 2 — mutations.** Save and delete onto `useApiMutation`; `FilterBuilderModalContentConnector` and `CustomFiltersModalContentConnector` retired, both modal contents to TSX. Reads stay on redux, so the mutations apply their own response to the slice rather than refetching. Two latent bugs fixed on the way: the manage modal's sort was a no-op, and its `Alert` took a prop the component does not have. |
 | 2026-08-20 | #481 | **Calendar.** `calendarActions` and `CalendarAppState` deleted; Phase B complete. Options and view to a persisted zustand store, the visible range to a second non-persisted one, `/calendar` to `useApiQuery`. Two fixes ride along, both in code the conversion rewrites: `executeCommandHelper` never returned the created command, which had left *Search for Missing* throwing and its spinner dead; and the view switch no longer resets to today (Whisparr/Whisparr#1131), matching what Sonarr's own conversion did. |
@@ -657,8 +658,9 @@ If a JS test runner is ever added, remove that line and set
   but it fires once per retired slice per user, and every conversion so far has added one.
   `Store/Migrators/migrate.js` is where a sweep would go, and it wants doing once at the
   end rather than per-PR.
-- **Whisparr/Whisparr#1132** — `App/queryClient.ts` builds the client with no defaults, so
-  `staleTime` is 0 and every observer that mounts after the first refetches. Measured on
+- ~~**Whisparr/Whisparr#1132**~~ — **Fixed, #485.** `App/queryClient.ts` built the client
+  with no defaults, so `staleTime` was 0 and every observer that mounted after the first
+  refetched. Measured on
   `eros-develop` before Calendar was touched: `/queue/details` ×2 and `/movie/stats` ×2 on
   the calendar, `/queue/details` ×3 on `/scenes`, `/system/status` ×2 everywhere. #481 adds
   `/calendar` to that list — 9 requests against the thunk's 6 over the same six-step
@@ -667,7 +669,12 @@ If a JS test runner is ever added, remove that line and set
   `new QueryClient()`, same `isMeasured` gate, same first-commit `useCalendar()` in the
   toolbar, same per-day-cell `useCalendar()` — so this is upstream's shape, not an Eros
   divergence. The fix is a client default; it changes behaviour for every converted page
-  and should not ride along in a page conversion.
+  and should not ride along in a page conversion — so it went out alone as #485,
+  `staleTime: 60s` plus `retry: 1`. A minute of staleness is safe because freshness here
+  is push-driven: `invalidateQueries` is not gated by `staleTime`, `refetchOnWindowFocus`
+  stays on, and nothing in the tree sets `refetchInterval`. Measured over four flows,
+  46–48 requests became 28–30 — navigating six index pages went 14 to 4, and paging back
+  to an already-fetched page went 8–10 to 2.
 - **Whisparr/Whisparr#1123** — `AUTH_HEADERS` and hand-rolled fetch helpers still
   duplicated in `useStudio`, `usePerformer`, `useAddNewMovie`. Not on the critical path;
   filed rather than folded into #455. `useHistory` came off it in #478 — its `apiPost`
