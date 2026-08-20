@@ -7,7 +7,6 @@ import SpinnerButton from 'Components/Link/SpinnerButton';
 import PageContentFooter from 'Components/Page/PageContentFooter';
 import { kinds } from 'Helpers/Props';
 import { savePerformerEditor } from 'Store/Actions/performerActions';
-import { fetchRootFolders } from 'Store/Actions/rootFolderActions';
 import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
 import { DeletePerformerModal } from './Delete/DeletePerformerModal';
@@ -121,10 +120,6 @@ function PerformerIndexSelectFooter() {
       setIsSavingTags(false);
     }
   }, [legacyIsSaving]);
-
-  useEffect(() => {
-    dispatch(fetchRootFolders());
-  }, [dispatch]);
 
   const anySelected = selectedCount > 0;
 

@@ -6,7 +6,6 @@ import AppState from 'App/State/AppState';
 import SpinnerButton from 'Components/Link/SpinnerButton';
 import PageContentFooter from 'Components/Page/PageContentFooter';
 import { kinds } from 'Helpers/Props';
-import { fetchRootFolders } from 'Store/Actions/rootFolderActions';
 import { saveStudioEditor } from 'Store/Actions/studioActions';
 import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
@@ -114,10 +113,6 @@ function StudioIndexSelectFooter() {
       setIsSavingTags(false);
     }
   }, [isSaving]);
-
-  useEffect(() => {
-    dispatch(fetchRootFolders());
-  }, [dispatch]);
 
   const anySelected = selectedCount > 0;
 

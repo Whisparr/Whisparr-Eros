@@ -13,9 +13,9 @@ import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import PageContent from 'Components/Page/PageContent';
 import PageContentBody from 'Components/Page/PageContentBody';
 import { kinds } from 'Helpers/Props';
+import { useRootFolder } from 'RootFolder/useRootFolders';
 import { setAddMovieDefault } from 'Store/Actions/addMovieActions';
-import { fetchRootFolders } from 'Store/Actions/rootFolderActions';
-import createRootFoldersSelector from 'Store/Selectors/createRootFoldersSelector';
+import ImportFile from 'typings/ImportFile';
 import { SelectStateInputProps } from 'typings/props';
 import { ApiError } from 'Utilities/Fetch/fetchJson';
 import translate from 'Utilities/String/translate';
@@ -30,6 +30,8 @@ import useImportLookupQueue from '../useImportLookupQueue';
 import useImportMutation, { buildImportBody } from '../useImportMutation';
 import ImportMovieFooter from './ImportMovieFooter';
 import ImportMovieTable from './ImportMovieTable';
+
+const EMPTY_IMPORT_FILES: ImportFile[] = [];
 
 interface SelectionState {
   allSelected: boolean;
@@ -61,22 +63,14 @@ function ImportMovie() {
 
   const reduxDispatch = useDispatch();
 
-  const rootFoldersState = useSelector(createRootFoldersSelector());
+  // The list endpoint already carries import files, but this page is reachable
+  // by url with no list in the cache, so it reads the folder on its own.
   const {
     isFetching: rootFoldersFetching,
-    isPopulated: rootFoldersPopulated,
+    isFetched: rootFoldersPopulated,
     error: rootFoldersError,
-    items: rootFolderItems,
-  } = rootFoldersState as unknown as {
-    isFetching: boolean;
-    isPopulated: boolean;
-    error: Error | null;
-    items: {
-      id: number;
-      path: string;
-      importFiles: { name: string; path: string; relativePath: string }[];
-    }[];
-  };
+    data: rootFolder,
+  } = useRootFolder(rootFolderId);
 
   const addMovieState = useSelector(
     (state: {
@@ -93,20 +87,8 @@ function ImportMovie() {
   const defaultMonitor = addMovieState.monitor ?? 'movieOnly';
   const defaultQualityProfileId = addMovieState.qualityProfileId;
 
-  const rootFolder = rootFolderItems.find((rf) => rf.id === rootFolderId);
   const path = rootFolder?.path;
-  const importFiles = rootFolder?.importFiles ?? [];
-
-  // Fetch this root folder's data on mount (includes importFiles via getMovieFolder)
-  useEffect(() => {
-    reduxDispatch(
-      fetchRootFolders({
-        id: rootFolderId,
-        timeout: false,
-        getMovieFolder: true,
-      })
-    );
-  }, [reduxDispatch, rootFolderId]);
+  const importFiles = rootFolder?.importFiles ?? EMPTY_IMPORT_FILES;
 
   // Ensure a valid quality profile default is set
   useEffect(() => {

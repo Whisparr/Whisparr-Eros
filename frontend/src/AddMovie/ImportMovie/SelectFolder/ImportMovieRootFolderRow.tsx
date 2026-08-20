@@ -1,12 +1,12 @@
 import React, { useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import IconButton from 'Components/Link/IconButton';
 import Link from 'Components/Link/Link';
 import TableRowCell from 'Components/Table/Cells/TableRowCell';
 import TableRow from 'Components/Table/TableRow';
 import { icons } from 'Helpers/Props';
-import { refreshRootFolder } from 'Store/Actions/rootFolderActions';
+import { useRefreshRootFolder } from 'RootFolder/useRootFolders';
 import createSettingsSectionSelector from 'Store/Selectors/createSettingsSectionSelector';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
@@ -21,7 +21,7 @@ interface ImportFile {
 interface ImportMovieRootFolderRowProps {
   id: number;
   path: string;
-  freeSpace: number;
+  freeSpace?: number;
   importFiles: ImportFile[];
 }
 
@@ -31,8 +31,8 @@ function ImportMovieRootFolderRow({
   freeSpace,
   importFiles,
 }: Readonly<ImportMovieRootFolderRowProps>) {
-  const dispatch = useDispatch();
   const location = useLocation();
+  const { refreshRootFolder } = useRefreshRootFolder();
   const { settings } = useSelector(namingSelector);
 
   const isMovies = location.pathname === '/add/import/movies';
@@ -42,8 +42,8 @@ function ImportMovieRootFolderRow({
   const importFilesCount = importFiles.length || '-';
 
   const handleRefreshPress = useCallback(() => {
-    dispatch(refreshRootFolder({ id }));
-  }, [dispatch, id]);
+    refreshRootFolder({ id });
+  }, [refreshRootFolder, id]);
 
   const sep = path.includes('\\') ? '\\' : '/';
   const importFormatValue = settings.sceneImportFolderFormat?.value;
@@ -63,7 +63,7 @@ function ImportMovieRootFolderRow({
       </TableRowCell>
 
       <TableRowCell className={styles.freeSpace}>
-        {formatBytes(freeSpace) || '-'}
+        {freeSpace == null ? '-' : formatBytes(freeSpace) || '-'}
       </TableRowCell>
 
       <TableRowCell className={styles.importFiles}>

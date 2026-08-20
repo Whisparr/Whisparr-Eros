@@ -1,7 +1,6 @@
-import { useDispatch } from 'react-redux';
 import useApiMutation from 'Helpers/Hooks/useApiMutation';
 import useQueryClient from 'Helpers/Hooks/useQueryClient';
-import { refreshRootFolder } from 'Store/Actions/rootFolderActions';
+import { useRefreshRootFolder } from 'RootFolder/useRootFolders';
 import { ImportItem, MovieLookupResult } from './ImportMovieTypes';
 
 interface ImportMovieBody extends MovieLookupResult {
@@ -41,7 +40,7 @@ function buildImportBody(items: ImportItem[]): ImportMovieBody[] {
 
 function useImportMutation(rootFolderId: number) {
   const queryClient = useQueryClient();
-  const dispatch = useDispatch();
+  const { refreshRootFolder } = useRefreshRootFolder();
 
   return useApiMutation<unknown, ImportMovieBody[]>({
     method: 'POST',
@@ -50,7 +49,7 @@ function useImportMutation(rootFolderId: number) {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['/movie/paged'] });
         queryClient.invalidateQueries({ queryKey: ['/movie/stats'] });
-        dispatch(refreshRootFolder({ id: rootFolderId }));
+        refreshRootFolder({ id: rootFolderId });
       },
     },
   });

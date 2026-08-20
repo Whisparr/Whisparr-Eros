@@ -7,7 +7,6 @@ import { ValidationMessage } from 'Components/Form/FormInputGroup';
 import useApiMutation from 'Helpers/Hooks/useApiMutation';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import { setAddStudioDefault } from 'Store/Actions/addMovieActions';
-import { fetchRootFolders } from 'Store/Actions/rootFolderActions';
 import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
 import selectSettings from 'Store/Selectors/selectSettings';
@@ -64,7 +63,6 @@ interface SearchResource {
 }
 
 function useAddNewStudio() {
-  const dispatch = useDispatch();
   const uiSettings = useSelector(createUISettingsSelector());
   const existingStudiosCount = useSelector(
     (state: AppState) => state.studios.items.length
@@ -74,13 +72,11 @@ function useAddNewStudio() {
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   React.useEffect(() => {
-    dispatch(fetchRootFolders());
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const {

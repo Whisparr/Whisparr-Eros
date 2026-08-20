@@ -1,5 +1,11 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { useDispatch } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Alert from 'Components/Alert';
 import FieldSet from 'Components/FieldSet';
@@ -11,14 +17,15 @@ import PageContent from 'Components/Page/PageContent';
 import PageContentBody from 'Components/Page/PageContentBody';
 import Table from 'Components/Table/Table';
 import TableBody from 'Components/Table/TableBody';
+import { getValidationFailures } from 'Helpers/Hooks/useApiMutation';
+import usePrevious from 'Helpers/Hooks/usePrevious';
 import { icons, kinds, sizes } from 'Helpers/Props';
-import {
-  addRootFolder,
-  fetchRootFolders,
-  refreshRootFolder,
-} from 'Store/Actions/rootFolderActions';
+import useRootFolders, {
+  useAddRootFolder,
+  useRefreshRootFolder,
+  useSortedRootFolders,
+} from 'RootFolder/useRootFolders';
 import { fetchNamingSettings } from 'Store/Actions/Settings/naming';
-import createRootFoldersSelector from 'Store/Selectors/createRootFoldersSelector';
 import translate from 'Utilities/String/translate';
 import ImportMovieRootFolderRow from './ImportMovieRootFolderRow';
 import styles from './ImportMovieSelectFolder.css';
@@ -34,56 +41,44 @@ const rootFolderColumns = [
   { name: 'actions', label: () => '', isVisible: true },
 ];
 
-interface RootFolder {
-  id: number;
-  path: string;
-  freeSpace: number;
-  importFiles: { name: string; path: string; relativePath: string }[];
-}
-
 function ImportMovieSelectFolder() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const rootFoldersState = useSelector(
-    createRootFoldersSelector()
-  ) as unknown as {
-    isFetching: boolean;
-    isPopulated: boolean;
-    isSaving: boolean;
-    error: Error | null;
-    saveError: { statusBody?: { errorMessage?: string }[] } | null;
-    items: RootFolder[];
-  };
+  const { isFetching, isFetched, error } = useRootFolders();
+  const items = useSortedRootFolders();
 
-  const { isFetching, isPopulated, isSaving, error, saveError, items } =
-    rootFoldersState;
+  const {
+    addRootFolder,
+    isAddingRootFolder,
+    addRootFolderError,
+    newRootFolder,
+  } = useAddRootFolder();
+
+  const { refreshRootFolder } = useRefreshRootFolder();
 
   const [isAddNewRootFolderModalOpen, setIsAddNewRootFolderModalOpen] =
     useState(false);
 
-  // Track items length to detect when a new root folder has been added
-  const prevItemsRef = useRef<RootFolder[]>([]);
-  const prevIsSavingRef = useRef(false);
+  const previousIsAddingRootFolder = usePrevious(isAddingRootFolder);
 
   const isMovies = location.pathname === '/add/import/movies';
   const importTitle = isMovies ? 'ImportMovies' : 'ImportScenes';
   const hasRootFolders = items.length > 0;
 
   useEffect(() => {
-    dispatch(fetchRootFolders());
     dispatch(fetchNamingSettings());
   }, [dispatch]);
 
   // Refresh all root folders on initial load so importFiles counts are current
   const didInitialRefreshRef = useRef(false);
   useEffect(() => {
-    if (isPopulated && !didInitialRefreshRef.current) {
+    if (isFetched && !didInitialRefreshRef.current) {
       didInitialRefreshRef.current = true;
-      items.forEach((rf) => dispatch(refreshRootFolder({ id: rf.id })));
+      items.forEach((rf) => refreshRootFolder({ id: rf.id }));
     }
-  }, [isPopulated, items, dispatch]);
+  }, [isFetched, items, refreshRootFolder]);
 
   const onAddNewRootFolderPress = useCallback(() => {
     setIsAddNewRootFolderModalOpen(true);
@@ -91,43 +86,50 @@ function ImportMovieSelectFolder() {
 
   const onNewRootFolderSelect = useCallback(
     ({ value }: { value: string }) => {
-      dispatch(addRootFolder({ path: value }));
+      addRootFolder({ path: value });
       setIsAddNewRootFolderModalOpen(false);
     },
-    [dispatch]
+    [addRootFolder]
   );
 
   const onAddRootFolderModalClose = useCallback(() => {
     setIsAddNewRootFolderModalOpen(false);
   }, []);
 
-  // After a save completes without error, navigate to the new folder's import page
+  // The mutation hands back the folder it created, so navigating no longer
+  // means diffing the list for an id that appeared.
   useEffect(() => {
-    if (prevIsSavingRef.current && !isSaving && !saveError) {
-      const prevIds = new Set(prevItemsRef.current.map((rf) => rf.id));
-      const newFolders = items.filter((rf) => !prevIds.has(rf.id));
-      if (newFolders.length === 1) {
-        navigate(`/add/import/movies/${newFolders[0].id}`);
-      }
+    if (
+      previousIsAddingRootFolder &&
+      !isAddingRootFolder &&
+      !addRootFolderError &&
+      newRootFolder
+    ) {
+      navigate(`/add/import/movies/${newRootFolder.id}`);
     }
-    prevIsSavingRef.current = isSaving;
-    prevItemsRef.current = items;
-  }, [navigate, isSaving, items, saveError]);
+  }, [
+    navigate,
+    previousIsAddingRootFolder,
+    isAddingRootFolder,
+    addRootFolderError,
+    newRootFolder,
+  ]);
 
-  const saveErrorBody = Array.isArray(saveError?.statusBody)
-    ? saveError.statusBody
-    : null;
+  const addFailures = useMemo(
+    () => getValidationFailures(addRootFolderError).errors,
+    [addRootFolderError]
+  );
 
   return (
     <PageContent title={translate(importTitle)}>
       <PageContentBody>
-        {isFetching && !isPopulated ? <LoadingIndicator /> : null}
+        {isFetching && !isFetched ? <LoadingIndicator /> : null}
 
         {!isFetching && error ? (
           <Alert kind={kinds.DANGER}>{translate('RootFoldersLoadError')}</Alert>
         ) : null}
 
-        {!error && isPopulated && (
+        {!error && isFetched && (
           <div>
             {isMovies ? (
               <div className={styles.header}>{translate('ImportHeader')}</div>
@@ -181,17 +183,17 @@ function ImportMovieSelectFolder() {
               </div>
             )}
 
-            {!isSaving && saveError ? (
+            {!isAddingRootFolder && addRootFolderError ? (
               <Alert className={styles.addErrorAlert} kind={kinds.DANGER}>
                 {translate('AddRootFolderError')}
 
                 <ul>
-                  {saveErrorBody ? (
-                    saveErrorBody.map((e) => (
+                  {addFailures.length ? (
+                    addFailures.map((e) => (
                       <li key={e.errorMessage}>{e.errorMessage}</li>
                     ))
                   ) : (
-                    <li>{JSON.stringify(saveError)}</li>
+                    <li>{JSON.stringify(addRootFolderError.statusBody)}</li>
                   )}
                 </ul>
               </Alert>

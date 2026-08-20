@@ -1,19 +1,24 @@
-import React, { useCallback, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useCallback, useMemo, useState } from 'react';
 import Alert from 'Components/Alert';
 import FileBrowserModal from 'Components/FileBrowser/FileBrowserModal';
 import Icon from 'Components/Icon';
 import Button from 'Components/Link/Button';
+import { getValidationFailures } from 'Helpers/Hooks/useApiMutation';
 import { icons, kinds, sizes } from 'Helpers/Props';
-import { addRootFolder } from 'Store/Actions/rootFolderActions';
-import createRootFoldersSelector from 'Store/Selectors/createRootFoldersSelector';
+import { useAddRootFolder } from 'RootFolder/useRootFolders';
 import translate from 'Utilities/String/translate';
 import styles from './AddRootFolder.css';
 
 function AddRootFolder() {
-  const { isSaving, saveError } = useSelector(createRootFoldersSelector());
+  const { addRootFolder, isAddingRootFolder, addRootFolderError } =
+    useAddRootFolder();
 
-  const dispatch = useDispatch();
+  // A rejected path comes back as a 400 carrying validation failures; anything
+  // else has no per-field detail to show, so it falls back to the raw body.
+  const addFailures = useMemo(
+    () => getValidationFailures(addRootFolderError).errors,
+    [addRootFolderError]
+  );
 
   const [isAddNewRootFolderModalOpen, setIsAddNewRootFolderModalOpen] =
     useState(false);
@@ -24,9 +29,9 @@ function AddRootFolder() {
 
   const onNewRootFolderSelect = useCallback(
     ({ value }: { value: string }) => {
-      dispatch(addRootFolder({ path: value }));
+      addRootFolder({ path: value });
     },
-    [dispatch]
+    [addRootFolder]
   );
 
   const onAddRootFolderModalClose = useCallback(() => {
@@ -35,17 +40,17 @@ function AddRootFolder() {
 
   return (
     <>
-      {!isSaving && saveError ? (
+      {!isAddingRootFolder && addRootFolderError ? (
         <Alert kind={kinds.DANGER}>
           {translate('AddRootFolderError')}
 
           <ul>
-            {Array.isArray(saveError.responseJSON) ? (
-              saveError.responseJSON.map((e, index) => {
+            {addFailures.length ? (
+              addFailures.map((e, index) => {
                 return <li key={index}>{e.errorMessage}</li>;
               })
             ) : (
-              <li>{JSON.stringify(saveError.responseJSON)}</li>
+              <li>{JSON.stringify(addRootFolderError.statusBody)}</li>
             )}
           </ul>
         </Alert>
