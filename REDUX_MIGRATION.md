@@ -605,13 +605,19 @@ If a JS test runner is ever added, remove that line and set
   the calendar, `/queue/details` ×3 on `/scenes`, `/system/status` ×2 everywhere. #481 adds
   `/calendar` to that list — 9 requests against the thunk's 6 over the same six-step
   session — because the page gates its body on a measurement and so mounts consumers in two
-  commits. The fix is a client default; it changes behaviour for every converted page and
-  should not ride along in a page conversion.
+  commits. Every precondition is present in Sonarr's `v5-develop` unchanged — same bare
+  `new QueryClient()`, same `isMeasured` gate, same first-commit `useCalendar()` in the
+  toolbar, same per-day-cell `useCalendar()` — so this is upstream's shape, not an Eros
+  divergence. The fix is a client default; it changes behaviour for every converted page
+  and should not ride along in a page conversion.
 - **Whisparr/Whisparr#1131** — `SET_CALENDAR_VIEW` read
   `view === FORECAST || AGENDA`, always truthy, so every calendar view change reset the
   date to today. #481 preserves it deliberately and links the issue from
-  `setCalendarView`. Sonarr's converted calendar drops the reset entirely; the original
-  intent was to reset only for the two "from now" views.
+  `setCalendarView`. Inherited from Sonarr — `git log -S` on that expression upstream shows
+  only the commit that introduced it and
+  [Sonarr@ccb7f07c](https://github.com/Sonarr/Sonarr/commit/ccb7f07c), which deleted the
+  file — and upstream's converted `handleViewChange` drops the reset entirely, so matching
+  Sonarr and fixing this are the same change.
 - **Whisparr/Whisparr#1123** — `AUTH_HEADERS` and hand-rolled fetch helpers still
   duplicated in `useStudio`, `usePerformer`, `useAddNewMovie`. Not on the critical path;
   filed rather than folded into #455. `useHistory` came off it in #478 — its `apiPost`
