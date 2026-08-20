@@ -219,7 +219,7 @@ export const setCalendarView = (view: CalendarView) => {
   // The redux thunk this replaces read `view === FORECAST || AGENDA`, which is
   // always truthy, so every view change also reset the calendar to today.
   // Preserved as-is rather than quietly changing navigation behaviour in a
-  // conversion PR — see Whisparr/Whisparr#1128.
+  // conversion PR — see Whisparr/Whisparr#1131.
   goToToday();
 };
 
