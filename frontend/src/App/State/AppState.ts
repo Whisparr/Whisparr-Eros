@@ -9,7 +9,6 @@ import MovieCreditAppState from './MovieCreditAppState';
 import MovieFilesAppState from './MovieFilesAppState';
 import MoviesAppState, { MovieIndexAppState } from './MoviesAppState';
 import OAuthAppState from './OAuthAppState';
-import PathsAppState from './PathsAppState';
 import PerformersAppState from './PerformersAppState';
 import ProviderOptionsAppState from './ProviderOptionsAppState';
 import ReleasesAppState from './ReleasesAppState';
@@ -92,7 +91,6 @@ interface AppState {
   studios: StudiosAppState;
   movies: MoviesAppState;
   oAuth: OAuthAppState;
-  paths: PathsAppState;
   providerOptions: ProviderOptionsAppState;
   releases: ReleasesAppState;
   settings: SettingsAppState;
