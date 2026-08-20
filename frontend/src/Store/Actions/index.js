@@ -2,7 +2,6 @@ import * as addMovie from './addMovieActions';
 import * as addPerformer from './addPerformerActions';
 import * as app from './appActions';
 import * as captcha from './captchaActions';
-import * as commands from './commandActions';
 import * as interactiveImportActions from './interactiveImportActions';
 import * as movies from './movieActions';
 import * as movieCollections from './movieCollectionActions';
@@ -28,7 +27,6 @@ export default [
   addPerformer,
   app,
   captcha,
-  commands,
   movieFiles,
   interactiveImportActions,
   oAuth,

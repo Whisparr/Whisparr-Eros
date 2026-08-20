@@ -1,13 +1,12 @@
 import React, { useCallback, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import * as commandNames from 'Commands/commandNames';
+import { useCommandExecuting, useExecuteCommand } from 'Commands/useCommands';
 import withCurrentPage from 'Components/withCurrentPage';
-import { executeCommand } from 'Store/Actions/commandActions';
 import {
   deleteMovieFile,
   deleteMovieFiles,
 } from 'Store/Actions/movieFileActions';
-import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
 import { TableOptionsChangePayload } from 'typings/Table';
 import {
   registerPagePopulator,
@@ -23,6 +22,7 @@ import UnmappedFilesTable from './UnmappedFilesTable';
 
 function UnmappedFilesTableConnector() {
   const dispatch = useDispatch();
+  const executeCommand = useExecuteCommand();
   const {
     data: items = [],
     isLoading,
@@ -30,11 +30,9 @@ function UnmappedFilesTableConnector() {
     refetch,
   } = useUnmappedMovieFiles();
   const { columns, sortKey, sortDirection } = useUnmappedFilesOptions();
-  const isScanningFolders = useSelector(
-    createCommandExecutingSelector(commandNames.RESCAN_SCENES)
-  );
-  const isCleaningUnmappedFiles = useSelector(
-    createCommandExecutingSelector(commandNames.CLEAN_UNMAPPED_FILES)
+  const isScanningFolders = useCommandExecuting(commandNames.RESCAN_SCENES);
+  const isCleaningUnmappedFiles = useCommandExecuting(
+    commandNames.CLEAN_UNMAPPED_FILES
   );
 
   useEffect(() => {
@@ -73,11 +71,11 @@ function UnmappedFilesTableConnector() {
     setUnmappedFilesSort({ sortKey });
   }, []);
   const handleAddScenesPress = useCallback(() => {
-    dispatch(executeCommand({ name: commandNames.RESCAN_SCENES }));
-  }, [dispatch]);
+    executeCommand({ name: commandNames.RESCAN_SCENES });
+  }, [executeCommand]);
   const handleCleanUnmappedFilesPress = useCallback(() => {
-    dispatch(executeCommand({ name: commandNames.CLEAN_UNMAPPED_FILES }));
-  }, [dispatch]);
+    executeCommand({ name: commandNames.CLEAN_UNMAPPED_FILES });
+  }, [executeCommand]);
 
   const isPopulated = isSuccess;
   const isDeleting = false;

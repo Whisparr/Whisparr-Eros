@@ -1,11 +1,11 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { Component, useCallback } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
 import * as commandNames from 'Commands/commandNames';
+import { useCommandExecuting, useExecuteCommand } from 'Commands/useCommands';
 import withScrollPosition from 'Components/withScrollPosition';
 import { useCustomFiltersList } from 'Filters/useCustomFilters';
-import { executeCommand } from 'Store/Actions/commandActions';
 import {
   fetchMovieCollections,
   saveMovieCollections,
@@ -14,7 +14,6 @@ import {
 } from 'Store/Actions/movieCollectionActions';
 import scrollPositions from 'Store/scrollPositions';
 import createCollectionClientSideCollectionItemsSelector from 'Store/Selectors/createCollectionClientSideCollectionItemsSelector';
-import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
 import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import Collection from './Collection';
 
@@ -27,12 +26,10 @@ const selectCollectionItems =
 function createMapStateToProps() {
   return createSelector(
     selectCollectionItems,
-    createCommandExecutingSelector(commandNames.REFRESH_COLLECTIONS),
     createDimensionsSelector(),
-    (collections, isRefreshingCollections, dimensionsState) => {
+    (collections, dimensionsState) => {
       return {
         ...collections,
-        isRefreshingCollections,
         isSmallScreen: dimensionsState.isSmallScreen,
       };
     }
@@ -52,13 +49,6 @@ function createMapDispatchToProps(dispatch, props) {
     },
     onFilterSelect(selectedFilterKey) {
       dispatch(setMovieCollectionsFilter({ selectedFilterKey }));
-    },
-    onRefreshMovieCollectionsPress() {
-      dispatch(
-        executeCommand({
-          name: commandNames.REFRESH_COLLECTIONS,
-        })
-      );
     },
   };
 }
@@ -114,10 +104,27 @@ const ConnectedCollection = connect(
   createMapDispatchToProps
 )(CollectionConnector);
 
+// Collection is still a class behind connect(), so custom filters and commands both
+// have to arrive as own props.
 function CollectionCustomFilters(props) {
   const customFilters = useCustomFiltersList('movieCollections');
+  const executeCommand = useExecuteCommand();
+  const isRefreshingCollections = useCommandExecuting(
+    commandNames.REFRESH_COLLECTIONS
+  );
 
-  return <ConnectedCollection {...props} customFilters={customFilters} />;
+  const onRefreshMovieCollectionsPress = useCallback(() => {
+    executeCommand({ name: commandNames.REFRESH_COLLECTIONS });
+  }, [executeCommand]);
+
+  return (
+    <ConnectedCollection
+      {...props}
+      customFilters={customFilters}
+      isRefreshingCollections={isRefreshingCollections}
+      onRefreshMovieCollectionsPress={onRefreshMovieCollectionsPress}
+    />
+  );
 }
 
 export default withScrollPosition(CollectionCustomFilters, 'movieCollections');

@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { SelectProvider } from 'App/SelectContext';
 import { Filter as AppStateFilter } from 'App/State/AppState';
 import * as commandNames from 'Commands/commandNames';
+import { useCommandExecuting, useExecuteCommand } from 'Commands/useCommands';
 import Alert from 'Components/Alert';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import FilterMenu from 'Components/Menu/FilterMenu';
@@ -21,8 +21,6 @@ import usePrevious from 'Helpers/Hooks/usePrevious';
 import useSelectState from 'Helpers/Hooks/useSelectState';
 import { align, icons, kinds } from 'Helpers/Props';
 import { SortDirection } from 'Helpers/Props/sortDirections';
-import { executeCommand } from 'Store/Actions/commandActions';
-import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
 import { CheckInputChanged } from 'typings/inputs';
 import { SelectStateInputProps } from 'typings/props';
 import { TableOptionsChangePayload } from 'typings/Table';
@@ -43,7 +41,7 @@ import BlocklistRow from './BlocklistRow';
 import useBlocklist, { FILTERS, useRemoveBlocklistItems } from './useBlocklist';
 
 function Blocklist() {
-  const dispatch = useDispatch();
+  const executeCommand = useExecuteCommand();
 
   const { columns, pageSize, selectedFilterKey, sortKey, sortDirection } =
     useBlocklistOptions();
@@ -64,8 +62,8 @@ function Blocklist() {
   const { removeBlocklistItems, isRemoving } = useRemoveBlocklistItems();
 
   const customFilters = useCustomFiltersList('blocklist');
-  const isClearingBlocklistExecuting = useSelector(
-    createCommandExecutingSelector(commandNames.CLEAR_BLOCKLIST)
+  const isClearingBlocklistExecuting = useCommandExecuting(
+    commandNames.CLEAR_BLOCKLIST
   );
 
   const [isConfirmRemoveModalOpen, setIsConfirmRemoveModalOpen] =
@@ -121,9 +119,9 @@ function Blocklist() {
   }, [setIsConfirmClearModalOpen]);
 
   const handleClearBlocklistConfirmed = useCallback(() => {
-    dispatch(executeCommand({ name: commandNames.CLEAR_BLOCKLIST }));
+    executeCommand({ name: commandNames.CLEAR_BLOCKLIST });
     setIsConfirmClearModalOpen(false);
-  }, [setIsConfirmClearModalOpen, dispatch]);
+  }, [setIsConfirmClearModalOpen, executeCommand]);
 
   const handleConfirmClearModalClose = useCallback(() => {
     setIsConfirmClearModalOpen(false);

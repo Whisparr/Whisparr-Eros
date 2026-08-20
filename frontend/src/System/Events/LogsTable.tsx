@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { Filter as AppStateFilter } from 'App/State/AppState';
 import * as commandNames from 'Commands/commandNames';
+import { useCommandExecuting, useExecuteCommand } from 'Commands/useCommands';
 import Alert from 'Components/Alert';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import FilterMenu from 'Components/Menu/FilterMenu';
@@ -16,8 +16,6 @@ import TableOptionsModalWrapper from 'Components/Table/TableOptions/TableOptions
 import TablePager from 'Components/Table/TablePager';
 import { align, icons, kinds } from 'Helpers/Props';
 import { SortDirection } from 'Helpers/Props/sortDirections';
-import { executeCommand } from 'Store/Actions/commandActions';
-import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
 import { TableOptionsChangePayload } from 'typings/Table';
 import translate from 'Utilities/String/translate';
 import {
@@ -30,7 +28,7 @@ import LogsTableRow from './LogsTableRow';
 import useEvents, { useFilters } from './useEvents';
 
 function LogsTable() {
-  const dispatch = useDispatch();
+  const executeCommand = useExecuteCommand();
 
   const {
     records,
@@ -50,9 +48,7 @@ function LogsTable() {
 
   const filters = useFilters();
 
-  const isClearLogExecuting = useSelector(
-    createCommandExecutingSelector(commandNames.CLEAR_LOGS)
-  );
+  const isClearLogExecuting = useCommandExecuting(commandNames.CLEAR_LOGS);
 
   const handleFilterSelect = useCallback(
     (selectedFilterKey: string | number) => {
@@ -105,16 +101,14 @@ function LogsTable() {
   }, [goToPage, refetch]);
 
   const handleClearLogsPress = useCallback(() => {
-    dispatch(
-      executeCommand({
-        name: commandNames.CLEAR_LOGS,
-        commandFinished: () => {
-          goToPage(1);
-          refetch();
-        },
-      })
-    );
-  }, [dispatch, goToPage, refetch]);
+    executeCommand({
+      name: commandNames.CLEAR_LOGS,
+      commandFinished: () => {
+        goToPage(1);
+        refetch();
+      },
+    });
+  }, [goToPage, refetch, executeCommand]);
 
   return (
     <PageContent title={translate('Logs')}>

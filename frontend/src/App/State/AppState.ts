@@ -1,7 +1,6 @@
 import { DateFilterValue } from 'Helpers/Props/filterTypes';
 import { Error } from './AppSectionState';
 import CaptchaAppState from './CaptchaAppState';
-import CommandAppState from './CommandAppState';
 import ExtraFilesAppState from './ExtraFilesAppState';
 import InteractiveImportAppState from './InteractiveImportAppState';
 import MessagesAppState from './MessagesAppState';
@@ -84,7 +83,6 @@ export interface AppSectionState {
 interface AppState {
   app: AppSectionState;
   captcha: CaptchaAppState;
-  commands: CommandAppState;
   extraFiles: ExtraFilesAppState;
   interactiveImport: InteractiveImportAppState;
   movieCollections: MovieCollectionAppState;

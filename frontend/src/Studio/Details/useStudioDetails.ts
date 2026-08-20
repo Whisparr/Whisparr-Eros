@@ -10,11 +10,11 @@ import { queryClient } from 'App/queryClient';
 import AppState from 'App/State/AppState';
 import { SafeForWorkModeContext } from 'App/State/SafeForWorkContext';
 import * as commandNames from 'Commands/commandNames';
+import useCommands, { useExecuteCommand } from 'Commands/useCommands';
 import type { IconName } from 'Components/Icon';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import { icons } from 'Helpers/Props';
 import Movie from 'Movie/Movie';
-import { executeCommand } from 'Store/Actions/commandActions';
 import { fetchGeneralSettings } from 'Store/Actions/Settings/general';
 import { toggleStudioScenesExpanded } from 'Store/Actions/studioScenesActions';
 import Studio, { type CoverType, type Image } from 'Studio/Studio';
@@ -116,6 +116,7 @@ export interface StudioWorksData {
  */
 export const useStudioDetails = (foreignId: string): UseStudioDetailsReturn => {
   const dispatch = useDispatch();
+  const executeCommand = useExecuteCommand();
 
   // Local state
   const safeForWorkMode = React.useContext(SafeForWorkModeContext);
@@ -142,16 +143,16 @@ export const useStudioDetails = (foreignId: string): UseStudioDetailsReturn => {
 
   const monitorToggleMutation = useToggleStudioMonitored();
 
-  // Redux selectors
-  const isStudioRefreshing = useSelector((state: AppState) => {
-    const commands = state.commands.items;
-    return commands.some(
-      (command) =>
-        command.name === commandNames.REFRESH_STUDIO &&
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (command as any).studioIds?.includes(studio?.id)
-    );
-  });
+  // Matching stays exactly as the slice had it, including reading `studioIds` off the
+  // command rather than its body.
+  const { data: allCommands } = useCommands();
+
+  const isStudioRefreshing = allCommands.some(
+    (command) =>
+      command.name === commandNames.REFRESH_STUDIO &&
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (command as any).studioIds?.includes(studio?.id)
+  );
 
   const generalSettings = useGeneralSettings();
   const studioId = studio?.id;
@@ -191,24 +192,20 @@ export const useStudioDetails = (foreignId: string): UseStudioDetailsReturn => {
   const onRefreshPress = useCallback(() => {
     if (!studioId) return;
     setIsManualRefresh(true);
-    dispatch(
-      executeCommand({
-        name: commandNames.REFRESH_STUDIO,
-        studioIds: [studioId],
-      })
-    );
-  }, [studioId, dispatch]);
+    executeCommand({
+      name: commandNames.REFRESH_STUDIO,
+      studioIds: [studioId],
+    });
+  }, [studioId, executeCommand]);
 
   // Handler: Search for studio
   const onSearchPress = useCallback(() => {
     if (!studioId) return;
-    dispatch(
-      executeCommand({
-        name: commandNames.STUDIO_SEARCH,
-        studioIds: [studioId],
-      })
-    );
-  }, [studioId, dispatch]);
+    executeCommand({
+      name: commandNames.STUDIO_SEARCH,
+      studioIds: [studioId],
+    });
+  }, [studioId, executeCommand]);
 
   // Handler: Toggle monitored state
   const onMonitorTogglePress = useCallback(
@@ -238,14 +235,12 @@ export const useStudioDetails = (foreignId: string): UseStudioDetailsReturn => {
     (ids: number[]) => {
       if (!studioId) return;
       setIsManualRefresh(true);
-      dispatch(
-        executeCommand({
-          name: commandNames.REFRESH_MOVIE,
-          movieIds: ids,
-        })
-      );
+      executeCommand({
+        name: commandNames.REFRESH_MOVIE,
+        movieIds: ids,
+      });
     },
-    [studioId, dispatch]
+    [studioId, executeCommand]
   );
 
   // Handler: Open edit modal

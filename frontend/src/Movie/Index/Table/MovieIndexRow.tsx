@@ -1,8 +1,9 @@
 import React, { useCallback, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useSelect } from 'App/SelectContext';
 import Command from 'Commands/Command';
 import { MOVIE_SEARCH, REFRESH_MOVIE } from 'Commands/commandNames';
+import { useExecuteCommand, useExecutingCommands } from 'Commands/useCommands';
 import Icon from 'Components/Icon';
 import IconButton from 'Components/Link/IconButton';
 import SpinnerIconButton from 'Components/Link/SpinnerIconButton';
@@ -19,8 +20,6 @@ import EditMovieModal from 'Movie/Edit/EditMovieModal';
 import Movie, { Statistics } from 'Movie/Movie';
 import MovieTitleLink from 'Movie/MovieTitleLink';
 import QualityProfileName from 'Settings/Profiles/Quality/QualityProfileName';
-import { executeCommand } from 'Store/Actions/commandActions';
-import createExecutingCommandsSelector from 'Store/Selectors/createExecutingCommandsSelector';
 import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
 import { SelectStateInputProps } from 'typings/props';
 import formatRuntime from 'Utilities/Date/formatRuntime';
@@ -42,7 +41,7 @@ function MovieIndexRow(props: MovieIndexRowProps) {
   const { movie, columns, isSelectMode } = props;
   const movieId = movie.id;
 
-  const executingCommands = useSelector(createExecutingCommandsSelector());
+  const executingCommands = useExecutingCommands();
 
   const isRefreshingMovie = executingCommands.some(
     (command: Command) =>
@@ -85,28 +84,24 @@ function MovieIndexRow(props: MovieIndexRowProps) {
 
   const { sizeOnDisk = 0, releaseGroups = [] } = statistics;
 
-  const dispatch = useDispatch();
+  const executeCommand = useExecuteCommand();
   const [isEditMovieModalOpen, setIsEditMovieModalOpen] = useState(false);
   const [isDeleteMovieModalOpen, setIsDeleteMovieModalOpen] = useState(false);
   const [selectState, selectDispatch] = useSelect();
 
   const onRefreshPress = useCallback(() => {
-    dispatch(
-      executeCommand({
-        name: REFRESH_MOVIE,
-        movieIds: [movieId],
-      })
-    );
-  }, [movieId, dispatch]);
+    executeCommand({
+      name: REFRESH_MOVIE,
+      movieIds: [movieId],
+    });
+  }, [movieId, executeCommand]);
 
   const onSearchPress = useCallback(() => {
-    dispatch(
-      executeCommand({
-        name: MOVIE_SEARCH,
-        movieIds: [movieId],
-      })
-    );
-  }, [movieId, dispatch]);
+    executeCommand({
+      name: MOVIE_SEARCH,
+      movieIds: [movieId],
+    });
+  }, [movieId, executeCommand]);
 
   const onEditMoviePress = useCallback(() => {
     setIsEditMovieModalOpen(true);

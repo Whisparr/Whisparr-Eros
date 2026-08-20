@@ -1,10 +1,11 @@
 import React, { useContext, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import TextTruncate from 'react-text-truncate';
 import { useQueueItemForMovie } from 'Activity/Queue/Details/useQueueDetails';
 import { SafeForWorkModeContext } from 'App/State/SafeForWorkContext';
 import { MOVIE_SEARCH, REFRESH_MOVIE } from 'Commands/commandNames';
+import { useExecuteCommand } from 'Commands/useCommands';
 import Alert from 'Components/Alert';
 import FieldSet from 'Components/FieldSet';
 import Icon from 'Components/Icon';
@@ -47,7 +48,6 @@ import MovieFileEditorTable from 'MovieFile/Editor/MovieFileEditorTable';
 import ExtraFileTable from 'MovieFile/Extras/ExtraFileTable';
 import OrganizePreviewModal from 'Organize/OrganizePreviewModal';
 import QualityProfileName from 'Settings/Profiles/Quality/QualityProfileName';
-import { executeCommand } from 'Store/Actions/commandActions';
 import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import fonts from 'Styles/Variables/fonts';
 import formatRuntime from 'Utilities/Date/formatRuntime';
@@ -91,7 +91,7 @@ function getFanartUrl(images: MovieImageType[]) {
 function MovieDetails(props: Readonly<Partial<Props>>) {
   // Get id from route params and fetch movie data
   const { id } = useParams();
-  const dispatch = useDispatch();
+  const executeCommand = useExecuteCommand();
   const safeForWorkMode = useContext(SafeForWorkModeContext);
 
   const { data: movie, isLoading, isError, error } = useMovie(id);
@@ -193,20 +193,16 @@ function MovieDetails(props: Readonly<Partial<Props>>) {
   }
 
   function handleRefreshPress() {
-    dispatch(
-      executeCommand({
-        name: REFRESH_MOVIE,
-        movieIds: [movieId],
-      })
-    );
+    executeCommand({
+      name: REFRESH_MOVIE,
+      movieIds: [movieId],
+    });
   }
   function handleSearchPress() {
-    dispatch(
-      executeCommand({
-        name: MOVIE_SEARCH,
-        movieIds: [movieId],
-      })
-    );
+    executeCommand({
+      name: MOVIE_SEARCH,
+      movieIds: [movieId],
+    });
   }
 
   function handleMonitoredPress() {

@@ -1,15 +1,14 @@
 import React, { useCallback, useMemo } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useSelect } from 'App/SelectContext';
 import AppState from 'App/State/AppState';
 import ClientSideCollectionAppState from 'App/State/ClientSideCollectionAppState';
 import MoviesAppState, { MovieIndexAppState } from 'App/State/MoviesAppState';
 import { MOVIE_SEARCH } from 'Commands/commandNames';
+import { useCommandExecuting, useExecuteCommand } from 'Commands/useCommands';
 import PageToolbarOverflowMenuItem from 'Components/Page/Toolbar/PageToolbarOverflowMenuItem';
 import { useCustomFiltersList } from 'Filters/useCustomFilters';
 import { icons } from 'Helpers/Props';
-import { executeCommand } from 'Store/Actions/commandActions';
-import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
 import createMovieClientSideCollectionItemsSelector from 'Store/Selectors/createMovieClientSideCollectionItemsSelector';
 import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
@@ -23,7 +22,7 @@ const selectMovieIndexItems =
   createMovieClientSideCollectionItemsSelector('movieIndex');
 
 function MovieIndexSearchMenuItem(props: MovieIndexSearchMenuItemProps) {
-  const isSearching = useSelector(createCommandExecutingSelector(MOVIE_SEARCH));
+  const isSearching = useCommandExecuting(MOVIE_SEARCH);
   const customFilters = useCustomFiltersList('movies', 'movieIndex');
 
   const {
@@ -36,7 +35,7 @@ function MovieIndexSearchMenuItem(props: MovieIndexSearchMenuItemProps) {
       )
     );
 
-  const dispatch = useDispatch();
+  const executeCommand = useExecuteCommand();
 
   const { isSelectMode, selectedFilterKey } = props;
   const [selectState] = useSelect();
@@ -62,13 +61,11 @@ function MovieIndexSearchMenuItem(props: MovieIndexSearchMenuItemProps) {
       : translate('SearchAll');
 
   const onPress = useCallback(() => {
-    dispatch(
-      executeCommand({
-        name: MOVIE_SEARCH,
-        movieIds: moviesToSearch,
-      })
-    );
-  }, [dispatch, moviesToSearch]);
+    executeCommand({
+      name: MOVIE_SEARCH,
+      movieIds: moviesToSearch,
+    });
+  }, [moviesToSearch, executeCommand]);
 
   return (
     <PageToolbarOverflowMenuItem

@@ -1,33 +1,17 @@
-import PropTypes from 'prop-types';
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
-import { createSelector } from 'reselect';
+import React from 'react';
 import * as commandNames from 'Commands/commandNames';
-import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
+import { useCommandExecuting } from 'Commands/useCommands';
 import Quality from './Quality';
 
-function createMapStateToProps() {
-  return createSelector(
-    createCommandExecutingSelector(commandNames.RESET_QUALITY_DEFINITIONS),
-    (isResettingQualityDefinitions) => {
-      return {
-        isResettingQualityDefinitions,
-      };
-    }
+// Quality is a class component, so it cannot read the command itself.
+function QualityConnector() {
+  const isResettingQualityDefinitions = useCommandExecuting(
+    commandNames.RESET_QUALITY_DEFINITIONS
+  );
+
+  return (
+    <Quality isResettingQualityDefinitions={isResettingQualityDefinitions} />
   );
 }
 
-class QualityConnector extends Component {
-  //
-  // Render
-
-  render() {
-    return <Quality {...this.props} />;
-  }
-}
-
-QualityConnector.propTypes = {
-  isResettingQualityDefinitions: PropTypes.bool.isRequired,
-};
-
-export default connect(createMapStateToProps)(QualityConnector);
+export default QualityConnector;

@@ -3,15 +3,14 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
 import * as commandNames from 'Commands/commandNames';
+import { useCommandExecuting, useExecuteCommand } from 'Commands/useCommands';
 import { clearPendingChanges } from 'Store/Actions/baseActions';
-import { executeCommand } from 'Store/Actions/commandActions';
 import {
   fetchGeneralSettings,
   saveGeneralSettings,
   setGeneralSettingsValue,
 } from 'Store/Actions/settingsActions';
 import { restart } from 'Store/Actions/systemActions';
-import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
 import createSettingsSectionSelector from 'Store/Selectors/createSettingsSectionSelector';
 import { useIsWindowsService } from 'System/Status/useSystemStatus';
 import GeneralSettings from './GeneralSettings';
@@ -22,7 +21,6 @@ function createMapStateToProps() {
   return createSelector(
     (state) => state.settings.advancedSettings,
     createSettingsSectionSelector(SECTION),
-    createCommandExecutingSelector(commandNames.RESET_API_KEY),
     (advancedSettings, sectionSettings, isResettingApiKey) => {
       return {
         advancedSettings,
@@ -37,7 +35,6 @@ const mapDispatchToProps = {
   setGeneralSettingsValue,
   saveGeneralSettings,
   fetchGeneralSettings,
-  executeCommand,
   restart,
   clearPendingChanges,
 };
@@ -97,10 +94,10 @@ class GeneralSettingsHandlers extends Component {
 
 GeneralSettingsHandlers.propTypes = {
   isResettingApiKey: PropTypes.bool.isRequired,
+  executeCommand: PropTypes.func.isRequired,
   setGeneralSettingsValue: PropTypes.func.isRequired,
   saveGeneralSettings: PropTypes.func.isRequired,
   fetchGeneralSettings: PropTypes.func.isRequired,
-  executeCommand: PropTypes.func.isRequired,
   restart: PropTypes.func.isRequired,
   clearPendingChanges: PropTypes.func.isRequired,
 };
@@ -117,6 +114,14 @@ const ConnectedGeneralSettings = connect(
 // are function components and read the query themselves.
 export default function GeneralSettingsConnector() {
   const isWindowsService = useIsWindowsService();
+  const executeCommand = useExecuteCommand();
+  const isResettingApiKey = useCommandExecuting(commandNames.RESET_API_KEY);
 
-  return <ConnectedGeneralSettings isWindowsService={isWindowsService} />;
+  return (
+    <ConnectedGeneralSettings
+      isWindowsService={isWindowsService}
+      isResettingApiKey={isResettingApiKey}
+      executeCommand={executeCommand}
+    />
+  );
 }

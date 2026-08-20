@@ -4,12 +4,12 @@ import { createSelector } from 'reselect';
 import { useSelect } from 'App/SelectContext';
 import AppState from 'App/State/AppState';
 import { RENAME_MOVIE } from 'Commands/commandNames';
+import { useCommandExecuting } from 'Commands/useCommands';
 import SpinnerButton from 'Components/Link/SpinnerButton';
 import PageContentFooter from 'Components/Page/PageContentFooter';
 import { kinds } from 'Helpers/Props';
 import { saveMovieEditor } from 'Store/Actions/movieActions';
 import { fetchRootFolders } from 'Store/Actions/rootFolderActions';
-import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
 import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
 import { DeleteSceneModal } from './Delete/DeleteSceneModal';
@@ -41,9 +41,7 @@ const sceneEditorSelector = createSelector(
 
 function SceneIndexSelectFooter() {
   const { isSaving: legacyIsSaving } = useSelector(sceneEditorSelector);
-  const isOrganizingMovies = useSelector(
-    createCommandExecutingSelector(RENAME_MOVIE)
-  );
+  const isOrganizingMovies = useCommandExecuting(RENAME_MOVIE);
 
   const dispatch = useDispatch();
   const editMutation = useEditScenesModalMutation();

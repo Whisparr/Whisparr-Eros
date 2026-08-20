@@ -1,13 +1,11 @@
 import React, { useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { MOVIE_SEARCH } from 'Commands/commandNames';
+import { useExecuteCommand, useExecutingCommands } from 'Commands/useCommands';
 import IconButton from 'Components/Link/IconButton';
 import SpinnerIconButton from 'Components/Link/SpinnerIconButton';
 import TableRowCell from 'Components/Table/Cells/TableRowCell';
 import useModalOpenState from 'Helpers/Hooks/useModalOpenState';
 import { icons } from 'Helpers/Props';
-import { executeCommand } from 'Store/Actions/commandActions';
-import createExecutingCommandsSelector from 'Store/Selectors/createExecutingCommandsSelector';
 import translate from 'Utilities/String/translate';
 import Movie from './Movie';
 import MovieInteractiveSearchModal from './Search/MovieInteractiveSearchModal';
@@ -19,13 +17,13 @@ interface MovieSearchCellProps {
 }
 
 function MovieSearchCell({ movieId }: MovieSearchCellProps) {
-  const executingCommands = useSelector(createExecutingCommandsSelector());
+  const executingCommands = useExecutingCommands();
   const isSearching = executingCommands.some(({ name, body }) => {
     const { movieIds = [] } = body;
     return name === MOVIE_SEARCH && movieIds.indexOf(movieId) > -1;
   });
 
-  const dispatch = useDispatch();
+  const executeCommand = useExecuteCommand();
 
   const [
     isInteractiveSearchModalOpen,
@@ -34,13 +32,11 @@ function MovieSearchCell({ movieId }: MovieSearchCellProps) {
   ] = useModalOpenState(false);
 
   const handleSearchPress = useCallback(() => {
-    dispatch(
-      executeCommand({
-        name: MOVIE_SEARCH,
-        movieIds: [movieId],
-      })
-    );
-  }, [movieId, dispatch]);
+    executeCommand({
+      name: MOVIE_SEARCH,
+      movieIds: [movieId],
+    });
+  }, [movieId, executeCommand]);
 
   return (
     <TableRowCell className={styles.movieSearchCell}>
