@@ -12,13 +12,12 @@ import { align, icons } from 'Helpers/Props';
 import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
 import translate from 'Utilities/String/translate';
-import { useCalendarOption } from '../calendarOptionsStore';
+import { setCalendarOption, useCalendarOption } from '../calendarOptionsStore';
 import { CalendarView } from '../calendarViews';
 import useCalendar, {
   goToNextRange,
   goToPreviousRange,
   goToToday,
-  setCalendarView,
   useCalendarRange,
   useCalendarTime,
 } from '../useCalendar';
@@ -39,7 +38,7 @@ function CalendarHeader() {
   const { longDateFormat } = useSelector(createUISettingsSelector());
 
   const handleViewChange = useCallback((newView: string) => {
-    setCalendarView(newView as CalendarView);
+    setCalendarOption('view', newView as CalendarView);
   }, []);
 
   const handleTodayPress = useCallback(() => {

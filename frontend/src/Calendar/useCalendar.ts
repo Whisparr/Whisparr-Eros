@@ -15,11 +15,7 @@ import { createCustomFiltersSelector } from 'Store/Selectors/createClientSideCol
 import { CalendarItem } from 'typings/Calendar';
 import findSelectedFilters from 'Utilities/Filter/findSelectedFilters';
 import translate from 'Utilities/String/translate';
-import {
-  getCalendarOption,
-  setCalendarOption,
-  useCalendarOption,
-} from './calendarOptionsStore';
+import { getCalendarOption, useCalendarOption } from './calendarOptionsStore';
 import { CalendarView } from './calendarViews';
 
 export const FILTERS: Filter[] = [
@@ -211,16 +207,6 @@ export const setCalendarSearchMissingCommandId = (
 
 export const goToToday = () => {
   calendarStore.setState({ time: moment() });
-};
-
-export const setCalendarView = (view: CalendarView) => {
-  setCalendarOption('view', view);
-
-  // The redux thunk this replaces read `view === FORECAST || AGENDA`, which is
-  // always truthy, so every view change also reset the calendar to today.
-  // Preserved as-is rather than quietly changing navigation behaviour in a
-  // conversion PR — see Whisparr/Whisparr#1131.
-  goToToday();
 };
 
 export const goToPreviousRange = () => {

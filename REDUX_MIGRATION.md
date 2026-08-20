@@ -572,7 +572,7 @@ If a JS test runner is ever added, remove that line and set
 | 2026-08-18 | #469 | **Events.** First paged page. `usePage` added; the system slice is down to restart/shutdown. Three type holes fixed that only `.js` files had been hiding. |
 | 2026-08-18 | #470 | **SignalR container.** Class + `connect()` → function component, as Sonarr did in Jan 2025. Redux stays inside. |
 | 2026-08-18 | #471 | **Organize preview + Unmapped Files.** Two slices retired. First conversion where a page's table prefs move to a zustand options store rather than to React Query. |
-| 2026-08-20 | #481 | **Calendar.** `calendarActions` and `CalendarAppState` deleted; Phase B complete. Options and view to a persisted zustand store, the visible range to a second non-persisted one, `/calendar` to `useApiQuery`. Also fixes `executeCommandHelper` never returning the created command, which had left *Search for Missing* throwing and its spinner dead. |
+| 2026-08-20 | #481 | **Calendar.** `calendarActions` and `CalendarAppState` deleted; Phase B complete. Options and view to a persisted zustand store, the visible range to a second non-persisted one, `/calendar` to `useApiQuery`. Two fixes ride along, both in code the conversion rewrites: `executeCommandHelper` never returned the created command, which had left *Search for Missing* throwing and its spinner dead; and the view switch no longer resets to today (Whisparr/Whisparr#1131), matching what Sonarr's own conversion did. |
 | 2026-08-19 | #478 | **History.** `historyActions`, `movieHistoryActions`, `movieBlocklistActions`, `HistoryAppState` and `MovieBlocklistAppState` deleted, plus two dead `HistoryDetailsConnector` files. The page was already a hybrid — React Query fetched, Redux still held the options — so this is mostly the options store plus the two per-movie reads the interactive search needs. |
 | 2026-08-19 | #477 | **Blocklist.** `blocklistActions` and `BlocklistAppState` deleted. Also fixes `fetchJson` on empty 200 bodies, without which the per-row delete does not invalidate — see §10. `movieBlocklistActions` deferred to History; it shares a selector with `movieHistory`. |
 | 2026-08-19 | #476 | **Queue custom filters.** Regression fix, not a conversion: #474 resolved the filter key against the built-ins only, so selecting a custom filter stored the key and changed nothing on the wire. |
@@ -610,14 +610,6 @@ If a JS test runner is ever added, remove that line and set
   toolbar, same per-day-cell `useCalendar()` — so this is upstream's shape, not an Eros
   divergence. The fix is a client default; it changes behaviour for every converted page
   and should not ride along in a page conversion.
-- **Whisparr/Whisparr#1131** — `SET_CALENDAR_VIEW` read
-  `view === FORECAST || AGENDA`, always truthy, so every calendar view change reset the
-  date to today. #481 preserves it deliberately and links the issue from
-  `setCalendarView`. Inherited from Sonarr — `git log -S` on that expression upstream shows
-  only the commit that introduced it and
-  [Sonarr@ccb7f07c](https://github.com/Sonarr/Sonarr/commit/ccb7f07c), which deleted the
-  file — and upstream's converted `handleViewChange` drops the reset entirely, so matching
-  Sonarr and fixing this are the same change.
 - **Whisparr/Whisparr#1123** — `AUTH_HEADERS` and hand-rolled fetch helpers still
   duplicated in `useStudio`, `usePerformer`, `useAddNewMovie`. Not on the critical path;
   filed rather than folded into #455. `useHistory` came off it in #478 — its `apiPost`
