@@ -37,11 +37,13 @@ import QualityProfileName from 'Settings/Profiles/Quality/QualityProfileName';
 import { setStudioScenesExpanded } from 'Store/Actions/studioScenesActions';
 import DeleteStudioModal from 'Studio/Delete/DeleteStudioModal';
 import EditStudioModal from 'Studio/Edit/EditStudioModal';
+import StudioIndexViewMenu from 'Studio/Index/Menus/StudioIndexViewMenu';
 import { type Image } from 'Studio/Studio';
 import StudioLogo from 'Studio/StudioLogo';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
 import StudioDetailsLinks from './StudioDetailsLinks';
+import StudioDetailsPosters from './StudioDetailsPosters';
 import StudioDetailsYear from './StudioDetailsYear';
 import StudioTags from './StudioTags';
 import {
@@ -67,6 +69,11 @@ function StudioDetails() {
   const [scrollContainer, setScrollContainer] = useState<Element | null>(null);
   const contentBodyRef = useCallback((el: HTMLDivElement | null) => {
     setScrollContainer(el);
+  }, []);
+
+  const [view, setView] = useState<'table' | 'posters'>('table');
+  const handleViewSelect = useCallback((value: string) => {
+    setView(value === 'posters' ? 'posters' : 'table');
   }, []);
 
   const listRef = useRef<List>(null);
@@ -279,11 +286,18 @@ function StudioDetails() {
         </PageToolbarSection>
 
         <PageToolbarSection alignContent="right">
-          <PageToolbarButton
-            label={allExpanded ? 'Collapse All' : 'Expand All'}
-            iconName={expandIcon}
-            onPress={handleExpandAllPress}
+          <StudioIndexViewMenu
+            view={view}
+            isDisabled={!isPopulated}
+            onViewSelect={handleViewSelect}
           />
+          {view === 'table' ? (
+            <PageToolbarButton
+              label={allExpanded ? 'Collapse All' : 'Expand All'}
+              iconName={expandIcon}
+              onPress={handleExpandAllPress}
+            />
+          ) : null}
         </PageToolbarSection>
       </PageToolbar>
 
@@ -505,56 +519,72 @@ function StudioDetails() {
 
           {isWorksFetching && !isPopulated ? <LoadingIndicator /> : null}
 
-          {/* WORKS BY YEAR */}
-          {isPopulated && (studio.hasMovies || studio.hasScenes) && (
-            <FieldSet legend={translate('Works')}>
-              <WindowScroller scrollElement={scrollContainer ?? undefined}>
-                {({
-                  height,
-                  isScrolling,
-                  onChildScroll,
-                  scrollTop,
-                  registerChild,
-                }) => {
-                  if (!height) {
-                    return null;
-                  }
+          {/* WORKS POSTER GRID */}
+          {isPopulated &&
+            (studio.hasMovies || studio.hasScenes) &&
+            view === 'posters' && (
+              <FieldSet legend={translate('Works')}>
+                <StudioDetailsPosters
+                  works={allWorks}
+                  scrollElement={scrollContainer}
+                  safeForWorkMode={safeForWorkMode}
+                  isSmallScreen={false}
+                />
+              </FieldSet>
+            )}
 
-                  return (
-                    <div
-                      ref={(element) => {
-                        (
-                          registerChild as unknown as (
-                            el: Element | null
-                          ) => void
-                        )(element);
-                      }}
-                    >
-                      <AutoSizer disableHeight={true}>
-                        {({ width }) => (
-                          <List
-                            ref={listRef}
-                            autoHeight={true}
-                            height={height}
-                            width={width}
-                            rowCount={worksByYear.length}
-                            rowHeight={cacheRef.current.rowHeight}
-                            estimatedRowSize={80}
-                            deferredMeasurementCache={cacheRef.current}
-                            overscanRowCount={6}
-                            scrollTop={scrollTop}
-                            isScrolling={isScrolling}
-                            rowRenderer={rowRenderer}
-                            onScroll={onChildScroll}
-                          />
-                        )}
-                      </AutoSizer>
-                    </div>
-                  );
-                }}
-              </WindowScroller>
-            </FieldSet>
-          )}
+          {/* WORKS BY YEAR */}
+          {isPopulated &&
+            (studio.hasMovies || studio.hasScenes) &&
+            view === 'table' && (
+              <FieldSet legend={translate('Works')}>
+                <WindowScroller scrollElement={scrollContainer ?? undefined}>
+                  {({
+                    height,
+                    isScrolling,
+                    onChildScroll,
+                    scrollTop,
+                    registerChild,
+                  }) => {
+                    if (!height) {
+                      return null;
+                    }
+
+                    return (
+                      <div
+                        ref={(element) => {
+                          (
+                            registerChild as unknown as (
+                              el: Element | null
+                            ) => void
+                          )(element);
+                        }}
+                      >
+                        <AutoSizer disableHeight={true}>
+                          {({ width }) => (
+                            <List
+                              ref={listRef}
+                              autoHeight={true}
+                              height={height}
+                              width={width}
+                              rowCount={worksByYear.length}
+                              rowHeight={cacheRef.current.rowHeight}
+                              estimatedRowSize={80}
+                              deferredMeasurementCache={cacheRef.current}
+                              overscanRowCount={6}
+                              scrollTop={scrollTop}
+                              isScrolling={isScrolling}
+                              rowRenderer={rowRenderer}
+                              onScroll={onChildScroll}
+                            />
+                          )}
+                        </AutoSizer>
+                      </div>
+                    );
+                  }}
+                </WindowScroller>
+              </FieldSet>
+            )}
         </div>
 
         {/* MODALS */}
