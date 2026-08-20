@@ -9,7 +9,6 @@ import * as movieCredits from './movieCreditsActions';
 import * as movieFiles from './movieFileActions';
 import * as movieIndex from './movieIndexActions';
 import * as oAuth from './oAuthActions';
-import * as paths from './pathActions';
 import * as performers from './performerActions';
 import * as performerScenes from './performerScenesActions';
 import * as providerOptions from './providerOptionActions';
@@ -28,7 +27,6 @@ export default [
   movieFiles,
   interactiveImportActions,
   oAuth,
-  paths,
   providerOptions,
   releases,
   movies,
