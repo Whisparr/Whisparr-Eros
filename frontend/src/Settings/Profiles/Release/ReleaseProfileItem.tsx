@@ -1,6 +1,5 @@
 import React, { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
-import { Tag } from 'App/State/TagsAppState';
 import Card from 'Components/Card';
 import Label from 'Components/Label';
 import MiddleTruncate from 'Components/MiddleTruncate';
@@ -9,6 +8,7 @@ import TagList from 'Components/TagList';
 import useModalOpenState from 'Helpers/Hooks/useModalOpenState';
 import { kinds } from 'Helpers/Props';
 import { deleteReleaseProfile } from 'Store/Actions/Settings/releaseProfiles';
+import { Tag } from 'Tags/useTags';
 import Indexer from 'typings/Indexer';
 import ReleaseProfile from 'typings/Settings/ReleaseProfile';
 import translate from 'Utilities/String/translate';
@@ -16,7 +16,7 @@ import EditReleaseProfileModal from './EditReleaseProfileModal';
 import styles from './ReleaseProfileItem.css';
 
 interface ReleaseProfileProps extends ReleaseProfile {
-  tagList: Tag[];
+  tagList: readonly Tag[];
   indexerList: Indexer[];
 }
 

@@ -7,18 +7,16 @@ import {
   fetchNotifications,
 } from 'Store/Actions/settingsActions';
 import createSortedSectionSelector from 'Store/Selectors/createSortedSectionSelector';
-import createTagsSelector from 'Store/Selectors/createTagsSelector';
+import { useTagList } from 'Tags/useTags';
 import sortByProp from 'Utilities/Array/sortByProp';
 import Notifications from './Notifications';
 
 function createMapStateToProps() {
   return createSelector(
     createSortedSectionSelector('settings.notifications', sortByProp('name')),
-    createTagsSelector(),
-    (notifications, tagList) => {
+    (notifications) => {
       return {
         ...notifications,
-        tagList,
       };
     }
   );
@@ -29,7 +27,7 @@ const mapDispatchToProps = {
   deleteNotification,
 };
 
-class NotificationsConnector extends Component {
+class NotificationsList extends Component {
   //
   // Lifecycle
 
@@ -57,12 +55,17 @@ class NotificationsConnector extends Component {
   }
 }
 
-NotificationsConnector.propTypes = {
+NotificationsList.propTypes = {
   fetchNotifications: PropTypes.func.isRequired,
   deleteNotification: PropTypes.func.isRequired,
 };
 
-export default connect(
+const ConnectedNotifications = connect(
   createMapStateToProps,
   mapDispatchToProps
-)(NotificationsConnector);
+)(NotificationsList);
+
+// `tagList` arrives as an own prop from React Query; see DownloadClientsConnector.
+export default function NotificationsConnector(props) {
+  return <ConnectedNotifications {...props} tagList={useTagList()} />;
+}

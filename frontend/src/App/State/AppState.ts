@@ -16,7 +16,6 @@ import ReleasesAppState from './ReleasesAppState';
 import RootFolderAppState from './RootFolderAppState';
 import SettingsAppState from './SettingsAppState';
 import StudiosAppState from './StudiosAppState';
-import TagsAppState from './TagsAppState';
 
 interface FilterBuilderPropOption {
   id: string;
@@ -99,7 +98,6 @@ interface AppState {
   releases: ReleasesAppState;
   rootFolders: RootFolderAppState;
   settings: SettingsAppState;
-  tags: TagsAppState;
 }
 
 export default AppState;

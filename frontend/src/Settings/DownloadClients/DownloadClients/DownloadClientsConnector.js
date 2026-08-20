@@ -7,18 +7,16 @@ import {
   fetchDownloadClients,
 } from 'Store/Actions/settingsActions';
 import createSortedSectionSelector from 'Store/Selectors/createSortedSectionSelector';
-import createTagsSelector from 'Store/Selectors/createTagsSelector';
+import { useTagList } from 'Tags/useTags';
 import sortByProp from 'Utilities/Array/sortByProp';
 import DownloadClients from './DownloadClients';
 
 function createMapStateToProps() {
   return createSelector(
     createSortedSectionSelector('settings.downloadClients', sortByProp('name')),
-    createTagsSelector(),
-    (downloadClients, tagList) => {
+    (downloadClients) => {
       return {
         ...downloadClients,
-        tagList,
       };
     }
   );
@@ -29,7 +27,7 @@ const mapDispatchToProps = {
   deleteDownloadClient,
 };
 
-class DownloadClientsConnector extends Component {
+class DownloadClientsList extends Component {
   //
   // Lifecycle
 
@@ -57,12 +55,19 @@ class DownloadClientsConnector extends Component {
   }
 }
 
-DownloadClientsConnector.propTypes = {
+DownloadClientsList.propTypes = {
   fetchDownloadClients: PropTypes.func.isRequired,
   deleteDownloadClient: PropTypes.func.isRequired,
 };
 
-export default connect(
+const ConnectedDownloadClients = connect(
   createMapStateToProps,
   mapDispatchToProps
-)(DownloadClientsConnector);
+)(DownloadClientsList);
+
+// `tagList` comes from React Query now, so it can only enter a connector from
+// the outside. connect() merges own props in for free, and the connector
+// already spreads its props into DownloadClients.
+export default function DownloadClientsConnector(props) {
+  return <ConnectedDownloadClients {...props} tagList={useTagList()} />;
+}

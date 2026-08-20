@@ -10,7 +10,7 @@ interface ErrorPageProps {
   translationsError?: Error;
   moviesError?: Error;
   customFiltersError?: ApiError | null;
-  tagsError?: Error;
+  tagsError?: ApiError | null;
   qualityProfilesError?: Error;
   languagesError?: Error;
   uiSettingsError?: Error;

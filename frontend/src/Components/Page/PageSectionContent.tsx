@@ -3,11 +3,14 @@ import { Error } from 'App/State/AppSectionState';
 import Alert from 'Components/Alert';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import { kinds } from 'Helpers/Props';
+import { ApiError } from 'Utilities/Fetch/fetchJson';
 
 interface PageSectionContentProps {
   isFetching: boolean;
   isPopulated: boolean;
-  error?: Error;
+  // Sections still on redux hand over the slice's error shape; converted ones
+  // hand over whatever the query threw. Only presence is read either way.
+  error?: Error | ApiError;
   errorMessage: string;
   children: React.ReactNode;
 }

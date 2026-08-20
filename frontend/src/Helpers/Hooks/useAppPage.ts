@@ -12,14 +12,13 @@ import {
   fetchQualityProfiles,
   fetchUISettings,
 } from 'Store/Actions/settingsActions';
-import { fetchTags } from 'Store/Actions/tagActions';
 import useSystemStatus from 'System/Status/useSystemStatus';
+import useTags from 'Tags/useTags';
 
 const createErrorsSelector = () =>
   createSelector(
     (state: AppState) => state.performers.error,
     (state: AppState) => state.studios.error,
-    (state: AppState) => state.tags.error,
     (state: AppState) => state.settings.ui.error,
     (state: AppState) => state.settings.qualityProfiles.error,
     (state: AppState) => state.settings.languages.error,
@@ -29,7 +28,6 @@ const createErrorsSelector = () =>
     (
       performersError,
       studiosError,
-      tagsError,
       uiSettingsError,
       qualityProfilesError,
       languagesError,
@@ -40,7 +38,6 @@ const createErrorsSelector = () =>
       const hasError = !!(
         performersError ||
         studiosError ||
-        tagsError ||
         uiSettingsError ||
         qualityProfilesError ||
         languagesError ||
@@ -54,7 +51,6 @@ const createErrorsSelector = () =>
         errors: {
           performersError,
           studiosError,
-          tagsError,
           uiSettingsError,
           qualityProfilesError,
           languagesError,
@@ -83,6 +79,11 @@ const useAppPage = () => {
   const { isFetched: isCustomFiltersPopulated, error: customFiltersError } =
     useCustomFilters();
 
+  // Tags gate the app for the same reason custom filters do: MovieTagInput and
+  // every tag filter resolve ids against this list, so rendering before it
+  // arrives shows a row of tagless inputs that fill in a moment later.
+  const { isFetched: isTagsPopulated, error: tagsError } = useTags();
+
   // Keeps one observer on the command list for the whole session. SignalR pushes command
   // updates that drive global toasts, and the periodic refetch is what clears finished
   // commands now that the slice's per-command removal timer is gone. The app does not
@@ -91,7 +92,6 @@ const useAppPage = () => {
 
   const isReduxPopulated = useSelector(
     (state: AppState) =>
-      state.tags.isPopulated &&
       state.settings.ui.isPopulated &&
       state.settings.qualityProfiles.isPopulated &&
       state.settings.languages.isPopulated &&
@@ -101,7 +101,10 @@ const useAppPage = () => {
   );
 
   const isPopulated =
-    isReduxPopulated && isSystemStatusPopulated && isCustomFiltersPopulated;
+    isReduxPopulated &&
+    isSystemStatusPopulated &&
+    isCustomFiltersPopulated &&
+    isTagsPopulated;
 
   const { hasError, errors: reduxErrors } = useSelector(createErrorsSelector());
 
@@ -109,9 +112,10 @@ const useAppPage = () => {
     return {
       ...reduxErrors,
       customFiltersError,
+      tagsError,
       systemStatusError: systemStatusQueryError,
     };
-  }, [reduxErrors, customFiltersError, systemStatusQueryError]);
+  }, [reduxErrors, customFiltersError, tagsError, systemStatusQueryError]);
 
   const isLocalStorageSupported = useMemo(() => {
     const key = 'whisparrTest';
@@ -127,7 +131,6 @@ const useAppPage = () => {
   }, []);
 
   useEffect(() => {
-    dispatch(fetchTags());
     dispatch(fetchQualityProfiles());
     dispatch(fetchLanguages());
     dispatch(fetchImportLists());
@@ -139,7 +142,11 @@ const useAppPage = () => {
   return useMemo(() => {
     return {
       errors,
-      hasError: hasError || !!customFiltersError || !!systemStatusQueryError,
+      hasError:
+        hasError ||
+        !!customFiltersError ||
+        !!tagsError ||
+        !!systemStatusQueryError,
       isLocalStorageSupported,
       isPopulated,
     };
@@ -147,6 +154,7 @@ const useAppPage = () => {
     errors,
     hasError,
     customFiltersError,
+    tagsError,
     systemStatusQueryError,
     isLocalStorageSupported,
     isPopulated,
