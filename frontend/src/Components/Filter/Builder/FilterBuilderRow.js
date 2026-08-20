@@ -21,7 +21,7 @@ import QualityFilterBuilderRowValueConnector from './QualityFilterBuilderRowValu
 import QualityProfileFilterBuilderRowValue from './QualityProfileFilterBuilderRowValue';
 import QueueStatusFilterBuilderRowValue from './QueueStatusFilterBuilderRowValue';
 import ReleaseStatusFilterBuilderRowValue from './ReleaseStatusFilterBuilderRowValue';
-import TagFilterBuilderRowValueConnector from './TagFilterBuilderRowValueConnector';
+import TagFilterBuilderRowValue from './TagFilterBuilderRowValue';
 import styles from './FilterBuilderRow.css';
 
 function getselectedFilterBuilderProp(filterBuilderProps, name) {
@@ -99,7 +99,7 @@ function getRowValueConnector(selectedFilterBuilderProp) {
       return ReleaseStatusFilterBuilderRowValue;
 
     case filterBuilderValueTypes.TAG:
-      return TagFilterBuilderRowValueConnector;
+      return TagFilterBuilderRowValue;
 
     case filterBuilderValueTypes.IMPORTLIST:
       return ImportListFilterBuilderRowValueConnector;

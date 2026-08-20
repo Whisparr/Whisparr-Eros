@@ -1,6 +1,5 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
-import createTagsSelector from 'Store/Selectors/createTagsSelector';
+import { useTagList } from 'Tags/useTags';
 import TagList from './TagList';
 
 interface MovieTagListProps {
@@ -8,7 +7,7 @@ interface MovieTagListProps {
 }
 
 function MovieTagList({ tags }: MovieTagListProps) {
-  const tagList = useSelector(createTagsSelector());
+  const tagList = useTagList();
 
   return <TagList tags={tags} tagList={tagList} />;
 }

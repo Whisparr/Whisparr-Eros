@@ -9,7 +9,8 @@ import { setAppValue, setVersion } from 'Store/Actions/appActions';
 import { removeItem, updateItem } from 'Store/Actions/baseActions';
 import { fetchRootFolders } from 'Store/Actions/rootFolderActions';
 import { fetchQualityDefinitions } from 'Store/Actions/settingsActions';
-import { fetchTagDetails, fetchTags } from 'Store/Actions/tagActions';
+import { TAG_DETAILS_QUERY_KEY } from 'Tags/useTagDetails';
+import { TAGS_QUERY_KEY } from 'Tags/useTags';
 import { repopulatePage } from 'Utilities/pagePopulator';
 import SignalRLogger from 'Utilities/SignalRLogger';
 
@@ -481,8 +482,8 @@ function SignalRListener() {
 
     if (name === 'tag') {
       if (body.action === 'sync') {
-        dispatch(fetchTags());
-        dispatch(fetchTagDetails());
+        queryClient.invalidateQueries({ queryKey: TAGS_QUERY_KEY });
+        queryClient.invalidateQueries({ queryKey: TAG_DETAILS_QUERY_KEY });
       }
 
       return;

@@ -19,6 +19,7 @@ import { fetchGeneralSettings } from 'Store/Actions/Settings/general';
 import { toggleStudioScenesExpanded } from 'Store/Actions/studioScenesActions';
 import Studio, { type CoverType, type Image } from 'Studio/Studio';
 import { useToggleStudioMonitored } from 'Studio/useStudio';
+import { useTagList } from 'Tags/useTags';
 
 const PATH = 'studio';
 
@@ -340,17 +341,21 @@ export function useStudioMoviesColumns() {
 }
 
 /**
- * Hook to fetch tag label data for given tag IDs from Redux state.
+ * Hook to fetch tag label data for given tag IDs.
  *
  * @param {number[]} tags - Array of tag IDs to look up
  * @returns {{id: number, label: string}[]} Array of tag objects with id and label
  */
 export function useStudioTags(tags: number[]) {
-  return useSelector((state: AppState) => {
-    return state.tags.items
-      .filter((tag) => tags.includes(tag.id))
-      .map((tag) => ({ id: tag.id, label: tag.label }));
-  });
+  const tagList = useTagList();
+
+  return useMemo(
+    () =>
+      tagList
+        .filter((tag) => tags.includes(tag.id))
+        .map((tag) => ({ id: tag.id, label: tag.label })),
+    [tagList, tags]
+  );
 }
 
 /**

@@ -8,14 +8,13 @@ import {
   fetchDelayProfiles,
   reorderDelayProfile,
 } from 'Store/Actions/settingsActions';
-import createTagsSelector from 'Store/Selectors/createTagsSelector';
+import { useTagList } from 'Tags/useTags';
 import DelayProfiles from './DelayProfiles';
 
 function createMapStateToProps() {
   return createSelector(
     (state) => state.settings.delayProfiles,
-    createTagsSelector(),
-    (delayProfiles, tagList) => {
+    (delayProfiles) => {
       const defaultProfile = _.find(delayProfiles.items, { id: 1 });
       const items = _.sortBy(_.reject(delayProfiles.items, { id: 1 }), [
         'order',
@@ -25,7 +24,6 @@ function createMapStateToProps() {
         defaultProfile,
         ...delayProfiles,
         items,
-        tagList,
       };
     }
   );
@@ -37,7 +35,7 @@ const mapDispatchToProps = {
   reorderDelayProfile,
 };
 
-class DelayProfilesConnector extends Component {
+class DelayProfilesList extends Component {
   //
   // Lifecycle
 
@@ -102,13 +100,18 @@ class DelayProfilesConnector extends Component {
   }
 }
 
-DelayProfilesConnector.propTypes = {
+DelayProfilesList.propTypes = {
   fetchDelayProfiles: PropTypes.func.isRequired,
   deleteDelayProfile: PropTypes.func.isRequired,
   reorderDelayProfile: PropTypes.func.isRequired,
 };
 
-export default connect(
+const ConnectedDelayProfiles = connect(
   createMapStateToProps,
   mapDispatchToProps
-)(DelayProfilesConnector);
+)(DelayProfilesList);
+
+// `tagList` arrives as an own prop from React Query; see DownloadClientsConnector.
+export default function DelayProfilesConnector(props) {
+  return <ConnectedDelayProfiles {...props} tagList={useTagList()} />;
+}

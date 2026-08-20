@@ -1,5 +1,4 @@
 import React, { useCallback, useState } from 'react';
-import { Tag } from 'App/State/TagsAppState';
 import Card from 'Components/Card';
 import Label from 'Components/Label';
 import IconButton from 'Components/Link/IconButton';
@@ -7,6 +6,7 @@ import ConfirmModal from 'Components/Modal/ConfirmModal';
 import TagList from 'Components/TagList';
 import { icons, kinds } from 'Helpers/Props';
 import { Kind } from 'Helpers/Props/kinds';
+import { Tag } from 'Tags/useTags';
 import { AutoTaggingSpecification } from 'typings/AutoTagging';
 import translate from 'Utilities/String/translate';
 import EditAutoTaggingModal from './EditAutoTaggingModal';
@@ -17,7 +17,7 @@ interface AutoTaggingProps {
   name: string;
   specifications: AutoTaggingSpecification[];
   tags: number[];
-  tagList: Tag[];
+  tagList: readonly Tag[];
   isDeleting: boolean;
   onConfirmDeleteAutoTagging: (id: number) => void;
   onCloneAutoTaggingPress: (id: number) => void;

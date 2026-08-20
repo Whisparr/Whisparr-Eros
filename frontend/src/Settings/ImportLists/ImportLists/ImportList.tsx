@@ -8,7 +8,7 @@ import TagList from 'Components/TagList';
 import { icons, kinds } from 'Helpers/Props';
 import { deleteImportList } from 'Store/Actions/settingsActions';
 import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
-import useTags from 'Tags/useTags';
+import { useTagList } from 'Tags/useTags';
 import formatShortTimeSpan from 'Utilities/Date/formatShortTimeSpan';
 import getRelativeDate from 'Utilities/Date/getRelativeDate';
 import translate from 'Utilities/String/translate';
@@ -37,7 +37,7 @@ function ImportList({
   onCloneImportListPress,
 }: ImportListProps) {
   const dispatch = useDispatch();
-  const tagList = useTags();
+  const tagList = useTagList();
 
   const { shortDateFormat, timeFormat } = useSelector(
     createUISettingsSelector()
