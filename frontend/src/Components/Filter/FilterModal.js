@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Modal from 'Components/Modal/Modal';
-import FilterBuilderModalContentConnector from './Builder/FilterBuilderModalContentConnector';
-import CustomFiltersModalContentConnector from './CustomFilters/CustomFiltersModalContentConnector';
+import FilterBuilderModalContent from './Builder/FilterBuilderModalContent';
+import CustomFiltersModalContent from './CustomFilters/CustomFiltersModalContent';
 
 class FilterModal extends Component {
   //
@@ -67,14 +67,14 @@ class FilterModal extends Component {
     return (
       <Modal isOpen={isOpen} onModalClose={this.onModalClose}>
         {filterBuilder ? (
-          <FilterBuilderModalContentConnector
+          <FilterBuilderModalContent
             {...otherProps}
             id={id}
             onCancelPress={this.onCancelPress}
             onModalClose={this.onModalClose}
           />
         ) : (
-          <CustomFiltersModalContentConnector
+          <CustomFiltersModalContent
             {...otherProps}
             onAddCustomFilter={this.onAddCustomFilter}
             onEditCustomFilter={this.onEditCustomFilter}
