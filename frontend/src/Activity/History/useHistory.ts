@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
-import { useSelector } from 'react-redux';
-import { CustomFilter, Filter, FilterBuilderProp } from 'Filters/Filter';
+import { Filter, FilterBuilderProp } from 'Filters/Filter';
+import { useCustomFiltersList } from 'Filters/useCustomFilters';
 import useApiMutation from 'Helpers/Hooks/useApiMutation';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import usePage from 'Helpers/Hooks/usePage';
@@ -11,7 +11,6 @@ import {
   filterBuilderValueTypes,
   filterTypes,
 } from 'Helpers/Props';
-import { createCustomFiltersSelector } from 'Store/Selectors/createClientSideCollectionSelector';
 import Blocklist from 'typings/Blocklist';
 import History from 'typings/History';
 import findSelectedFilters from 'Utilities/Filter/findSelectedFilters';
@@ -128,10 +127,7 @@ const useHistory = () => {
   const { pageSize, selectedFilterKey, sortKey, sortDirection } =
     useHistoryOptions();
 
-  // Custom filters are still redux-backed; they convert in Phase C.
-  const customFilters = useSelector(
-    createCustomFiltersSelector('history')
-  ) as CustomFilter[];
+  const customFilters = useCustomFiltersList('history');
 
   const filters = useMemo(() => {
     return findSelectedFilters(selectedFilterKey, FILTERS, customFilters);

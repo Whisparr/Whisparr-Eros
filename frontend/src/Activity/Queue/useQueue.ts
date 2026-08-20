@@ -1,12 +1,11 @@
 import { keepPreviousData, useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
-import { useSelector } from 'react-redux';
-import { CustomFilter, Filter, FilterBuilderProp } from 'Filters/Filter';
+import { Filter, FilterBuilderProp } from 'Filters/Filter';
+import { useCustomFiltersList } from 'Filters/useCustomFilters';
 import useApiMutation from 'Helpers/Hooks/useApiMutation';
 import usePage from 'Helpers/Hooks/usePage';
 import usePagedApiQuery from 'Helpers/Hooks/usePagedApiQuery';
 import { filterBuilderTypes, filterBuilderValueTypes } from 'Helpers/Props';
-import { createCustomFiltersSelector } from 'Store/Selectors/createClientSideCollectionSelector';
 import Queue from 'typings/Queue';
 import getQueryString from 'Utilities/Fetch/getQueryString';
 import findSelectedFilters from 'Utilities/Filter/findSelectedFilters';
@@ -99,12 +98,7 @@ const useQueue = () => {
     includeUnknownMovieItems,
   } = useQueueOptions();
 
-  // Custom filters are still redux-backed; they convert in Phase C. Leaving
-  // them out of the lookup silently drops the filter -- the key is stored, the
-  // query is not filtered.
-  const customFilters = useSelector(
-    createCustomFiltersSelector('queue')
-  ) as CustomFilter[];
+  const customFilters = useCustomFiltersList('queue');
 
   const filters = useMemo(() => {
     return findSelectedFilters(selectedFilterKey, FILTERS, customFilters);

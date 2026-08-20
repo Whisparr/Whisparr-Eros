@@ -4,14 +4,14 @@ import { useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { create } from 'zustand';
 import AppState from 'App/State/AppState';
-import { CustomFilter, Filter, FilterBuilderProp } from 'Filters/Filter';
+import { Filter, FilterBuilderProp } from 'Filters/Filter';
+import { useCustomFiltersList } from 'Filters/useCustomFilters';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import {
   filterBuilderTypes,
   filterBuilderValueTypes,
   filterTypes,
 } from 'Helpers/Props';
-import { createCustomFiltersSelector } from 'Store/Selectors/createClientSideCollectionSelector';
 import { CalendarItem } from 'typings/Calendar';
 import findSelectedFilters from 'Utilities/Filter/findSelectedFilters';
 import translate from 'Utilities/String/translate';
@@ -250,10 +250,7 @@ const useCalendar = () => {
   const view = useCalendarOption('view');
   const selectedFilterKey = useCalendarOption('selectedFilterKey');
 
-  // Custom filters are still redux-backed; they convert in Phase C.
-  const customFilters = useSelector(
-    createCustomFiltersSelector('calendar')
-  ) as CustomFilter[];
+  const customFilters = useCustomFiltersList('calendar');
 
   const { start, end } = useMemo(() => {
     return getPopulatableRange(rangeStart, rangeEnd, view);

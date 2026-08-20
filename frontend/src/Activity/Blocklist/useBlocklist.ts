@@ -1,12 +1,11 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
-import { useSelector } from 'react-redux';
-import { CustomFilter, Filter, FilterBuilderProp } from 'Filters/Filter';
+import { Filter, FilterBuilderProp } from 'Filters/Filter';
+import { useCustomFiltersList } from 'Filters/useCustomFilters';
 import useApiMutation from 'Helpers/Hooks/useApiMutation';
 import usePage from 'Helpers/Hooks/usePage';
 import usePagedApiQuery from 'Helpers/Hooks/usePagedApiQuery';
 import { filterBuilderTypes, filterBuilderValueTypes } from 'Helpers/Props';
-import { createCustomFiltersSelector } from 'Store/Selectors/createClientSideCollectionSelector';
 import Blocklist from 'typings/Blocklist';
 import findSelectedFilters from 'Utilities/Filter/findSelectedFilters';
 import translate from 'Utilities/String/translate';
@@ -46,10 +45,7 @@ const useBlocklist = () => {
   const { pageSize, selectedFilterKey, sortKey, sortDirection } =
     useBlocklistOptions();
 
-  // Custom filters are still redux-backed; they convert in Phase C.
-  const customFilters = useSelector(
-    createCustomFiltersSelector('blocklist')
-  ) as CustomFilter[];
+  const customFilters = useCustomFiltersList('blocklist');
 
   const filters = useMemo(() => {
     return findSelectedFilters(selectedFilterKey, FILTERS, customFilters);

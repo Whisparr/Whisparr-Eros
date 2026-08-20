@@ -252,7 +252,6 @@ export const persistState = [
   'sceneIndex.sortKey',
   'sceneIndex.sortDirection',
   'sceneIndex.selectedFilterKey',
-  'sceneIndex.customFilters',
   'sceneIndex.view',
   'sceneIndex.columns',
   'sceneIndex.posterOptions',

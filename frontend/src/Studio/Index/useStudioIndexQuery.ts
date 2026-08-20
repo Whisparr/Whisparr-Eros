@@ -1,10 +1,13 @@
 import { useSelector } from 'react-redux';
-import AppState, { Filter, PropertyFilter } from 'App/State/AppState';
-import { CustomFilter } from 'Filters/Filter';
+import AppState, {
+  CustomFilter,
+  Filter,
+  PropertyFilter,
+} from 'App/State/AppState';
+import { useCustomFiltersList } from 'Filters/useCustomFilters';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import { SortDirection } from 'Helpers/Props/sortDirections';
 import { filters as studioFilters } from 'Store/Actions/studioActions';
-import { createCustomFiltersSelector } from 'Store/Selectors/createClientSideCollectionSelector';
 import Studio from 'Studio/Studio';
 
 /**
@@ -78,10 +81,9 @@ export function useStudioIndexQuery(
     (state: AppState) => state.studios.selectedFilterKey
   );
 
-  // Get custom filters from Redux store
-  const customFilters = useSelector(createCustomFiltersSelector('studios'));
+  const customFilters = useCustomFiltersList('studios');
 
-  let filterDef: Filter | undefined = undefined;
+  let filterDef: Filter | CustomFilter | undefined = undefined;
   let filters: PropertyFilter[] = [];
 
   // Resolve filter definition: custom filters (numeric IDs) or predefined filters (string keys)

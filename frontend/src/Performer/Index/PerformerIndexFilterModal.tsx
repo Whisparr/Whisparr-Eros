@@ -4,11 +4,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { createSelector } from 'reselect';
 import AppState, { Filter } from 'App/State/AppState';
 import FilterModal from 'Components/Filter/FilterModal';
+import { useCustomFiltersList } from 'Filters/useCustomFilters';
 import {
   setPerformerFilter,
   setPerformerPage,
 } from 'Store/Actions/performerActions';
-import { createCustomFiltersSelector } from 'Store/Selectors/createClientSideCollectionSelector';
 
 function createPerformerSelector() {
   return createSelector(
@@ -46,9 +46,7 @@ export default function PerformerIndexFilterModal(
   const sectionItems = useSelector(createPerformerSelector());
   const filterBuilderProps = useSelector(createFilterBuilderPropsSelector());
   const customFilterType = 'performers';
-  const customFilters = useSelector(
-    createCustomFiltersSelector(customFilterType)
-  );
+  const customFilters = useCustomFiltersList(customFilterType);
 
   const dispatchSetFilter = useCallback(
     (payload: unknown) => {

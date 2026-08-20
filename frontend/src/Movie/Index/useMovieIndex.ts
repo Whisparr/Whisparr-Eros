@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import AppState from 'App/State/AppState';
+import { useCustomFiltersList } from 'Filters/useCustomFilters';
 import {
   setMovieFilter,
   setMovieIndexMode,
@@ -11,7 +12,6 @@ import {
   setMovieTableOption,
   setMovieView,
 } from 'Store/Actions/movieIndexActions';
-import { createCustomFiltersSelector } from 'Store/Selectors/createClientSideCollectionSelector';
 import { useMovieIndexQuery } from './useMovieIndexQuery';
 
 export function useMovieIndex() {
@@ -31,7 +31,7 @@ export function useMovieIndex() {
     overviewOptions,
   } = movieIndexState;
 
-  const customFilters = useSelector(createCustomFiltersSelector('movieIndex'));
+  const customFilters = useCustomFiltersList('movieIndex');
   function getPageSize() {
     switch (view) {
       case 'posters':

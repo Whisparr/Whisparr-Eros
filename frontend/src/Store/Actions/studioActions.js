@@ -308,7 +308,6 @@ export const persistState = [
   'studios.page',
   'studios.columns',
   'studios.selectedFilterKey',
-  'studios.customFilters',
   'studios.posterOptions',
   'studios.tableOptions',
 ];

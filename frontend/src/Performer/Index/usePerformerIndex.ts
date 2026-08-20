@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import AppState from 'App/State/AppState';
 import { SafeForWorkModeContext } from 'App/State/SafeForWorkContext';
+import { useCustomFiltersList } from 'Filters/useCustomFilters';
 import {
   setPerformerFilter,
   setPerformerPage,
@@ -10,7 +11,6 @@ import {
   setPerformerTableOption,
   setPerformerView,
 } from 'Store/Actions/performerActions';
-import { createCustomFiltersSelector } from 'Store/Selectors/createClientSideCollectionSelector';
 import { usePerformerIndexQuery } from './usePerformerIndexQuery';
 
 export function usePerformerIndex() {
@@ -29,7 +29,7 @@ export function usePerformerIndex() {
   );
   const columns = useSelector((state: AppState) => state.performers.columns);
   const filters = useSelector((state: AppState) => state.performers.filters);
-  const customFilters = useSelector(createCustomFiltersSelector('performers'));
+  const customFilters = useCustomFiltersList('performers');
 
   const pageSize = useSelector((state: AppState) => {
     if (view === 'posters') {

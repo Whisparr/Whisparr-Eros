@@ -3,7 +3,6 @@ import * as addPerformer from './addPerformerActions';
 import * as app from './appActions';
 import * as captcha from './captchaActions';
 import * as commands from './commandActions';
-import * as customFilters from './customFilterActions';
 import * as interactiveImportActions from './interactiveImportActions';
 import * as movies from './movieActions';
 import * as movieCollections from './movieCollectionActions';
@@ -30,7 +29,6 @@ export default [
   app,
   captcha,
   commands,
-  customFilters,
   movieFiles,
   interactiveImportActions,
   oAuth,

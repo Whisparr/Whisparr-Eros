@@ -11,6 +11,7 @@ import PageToolbar from 'Components/Page/Toolbar/PageToolbar';
 import PageToolbarButton from 'Components/Page/Toolbar/PageToolbarButton';
 import PageToolbarSection from 'Components/Page/Toolbar/PageToolbarSection';
 import PageToolbarSeparator from 'Components/Page/Toolbar/PageToolbarSeparator';
+import { useCustomFiltersList } from 'Filters/useCustomFilters';
 import useMeasure from 'Helpers/Hooks/useMeasure';
 import { align, icons } from 'Helpers/Props';
 import { useMovieStats } from 'Movie/Index/useMovieStats';
@@ -20,7 +21,6 @@ import {
   executeCommand,
   executeCommandHelper,
 } from 'Store/Actions/commandActions';
-import { createCustomFiltersSelector } from 'Store/Selectors/createClientSideCollectionSelector';
 import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
 import createCommandsSelector from 'Store/Selectors/createCommandsSelector';
 import { isCommandExecuting } from 'Utilities/Command';
@@ -94,7 +94,7 @@ function CalendarPage() {
   const isRssSyncExecuting = useSelector(
     createCommandExecutingSelector(commandNames.RSS_SYNC)
   );
-  const customFilters = useSelector(createCustomFiltersSelector('calendar'));
+  const customFilters = useCustomFiltersList('calendar');
   const { data: movieStats } = useMovieStats();
   const { data: sceneStats } = useSceneStats();
   const hasMovies = movieStats === undefined || movieStats.totalCount > 0;

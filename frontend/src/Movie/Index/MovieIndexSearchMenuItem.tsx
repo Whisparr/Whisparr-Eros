@@ -1,10 +1,12 @@
 import React, { useCallback, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useSelect } from 'App/SelectContext';
+import AppState from 'App/State/AppState';
 import ClientSideCollectionAppState from 'App/State/ClientSideCollectionAppState';
 import MoviesAppState, { MovieIndexAppState } from 'App/State/MoviesAppState';
 import { MOVIE_SEARCH } from 'Commands/commandNames';
 import PageToolbarOverflowMenuItem from 'Components/Page/Toolbar/PageToolbarOverflowMenuItem';
+import { useCustomFiltersList } from 'Filters/useCustomFilters';
 import { icons } from 'Helpers/Props';
 import { executeCommand } from 'Store/Actions/commandActions';
 import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
@@ -17,12 +19,22 @@ interface MovieIndexSearchMenuItemProps {
   selectedFilterKey: string;
 }
 
+const selectMovieIndexItems =
+  createMovieClientSideCollectionItemsSelector('movieIndex');
+
 function MovieIndexSearchMenuItem(props: MovieIndexSearchMenuItemProps) {
   const isSearching = useSelector(createCommandExecutingSelector(MOVIE_SEARCH));
+  const customFilters = useCustomFiltersList('movies', 'movieIndex');
+
   const {
     items,
   }: MoviesAppState & MovieIndexAppState & ClientSideCollectionAppState =
-    useSelector(createMovieClientSideCollectionItemsSelector('movieIndex'));
+    useSelector(
+      useCallback(
+        (state: AppState) => selectMovieIndexItems(state, { customFilters }),
+        [customFilters]
+      )
+    );
 
   const dispatch = useDispatch();
 

@@ -19,9 +19,9 @@ verified to resolve against the public repo.
 
 | Metric | At assessment | Now |
 | --- | --- | --- |
-| Files importing `react-redux` | 327 of 1,255 | **304** of 1,255 |
-| Lines under `frontend/src/Store/` | 15,374 across 138 files | **12,630** across 124 |
-| Redux slices registered in `Store/Actions/index.js` | 35 | **25** |
+| Files importing `react-redux` | 327 of 1,255 | **297** of 1,252 |
+| Lines under `frontend/src/Store/` | 15,374 across 138 files | **12,554** across 123 |
+| Redux slices registered in `Store/Actions/index.js` | 35 | **24** |
 | Remaining `*Connector` files | 66 | **57** |
 | Files touching React Query | 35 | **55** |
 | zustand stores | 0 (not installed) | **installed, 3 primitives + 8 option stores** |
@@ -182,7 +182,7 @@ commands commit touched 51 files, custom filters 44. Ship them alone.
 | System | Retires | Sonarr ref |
 | --- | --- | --- |
 | **Commands** — 44 live consumers; every refresh/search button. SignalR-fed. | `commandActions` (207 loc), `createCommandSelector.ts`, `createExecutingCommandsSelector.ts`, `createCommandExecutingSelector.ts` | [Sonarr/Sonarr@dec6f4b5](https://github.com/Sonarr/Sonarr/commit/dec6f4b5) (51 files) |
-| **Custom filters** *(part one done, #483)* — prerequisite for every index filter modal. Two PRs, split at the mutation boundary | `customFilterActions`, ~~`CustomFiltersModalContentConnector.js`~~, `CustomFiltersAppState` | [Sonarr/Sonarr@7d2e01d5](https://github.com/Sonarr/Sonarr/commit/7d2e01d5) (44 files) |
+| ~~**Custom filters**~~ — prerequisite for every index filter modal. Two PRs, split at the mutation boundary. **Done, #483 and #484.** | ~~`customFilterActions`~~, ~~`CustomFiltersModalContentConnector.js`~~, ~~`CustomFiltersAppState`~~ | [Sonarr/Sonarr@7d2e01d5](https://github.com/Sonarr/Sonarr/commit/7d2e01d5) (44 files) |
 | **Tags** — rewrite `useTags` for real, plus tag details and filter-builder rows | `tagActions`, `createTagsSelector.ts`, `createTagDetailsSelector.ts`, `TagFilterBuilderRowValueConnector.js` | [Sonarr/Sonarr@0809a72c](https://github.com/Sonarr/Sonarr/commit/0809a72c) (40 files) |
 | **Root folders** — 17 consumers across Settings, Add flows, edit modals | `rootFolderActions`, `createRootFoldersSelector.ts` | [Sonarr/Sonarr@7a5157df](https://github.com/Sonarr/Sonarr/commit/7a5157df) |
 | **Paths + file browser** *(hybrid)* — `usePaths` exists; finish `PathInput`, `FileBrowserModalContent` | `pathActions`, `PathsAppState` | [Sonarr/Sonarr@91b24290](https://github.com/Sonarr/Sonarr/commit/91b24290) |
@@ -340,12 +340,12 @@ the whole app rather than one page.
 3. ~~**Blocklist.**~~ **Done, #477.**
 4. ~~**History.**~~ **Done, #478.** Took `movieBlocklistActions` with it, as planned.
 5. ~~**Calendar.**~~ **Done, #481.** Phase B complete.
-6. **Phase C**, starting with **custom filters**, in two PRs.
+6. ~~**Phase C**, starting with **custom filters**, in two PRs.~~ **Done.**
    - ~~**Mutations.** Save and delete onto `useApiMutation`; both connectors retired.~~
      **Done, #483.**
-   - **Reads.** `useCustomFilters` + the 20 `createCustomFiltersSelector` call sites, and
-     the slice with them. Every conversion since #474 has had to leave that selector on
-     redux and say so in a comment — four pages carry that note today.
+   - ~~**Reads.** `useCustomFilters` + the 20 `createCustomFiltersSelector` call sites, and
+     the slice with them.~~ **Done, #484.** The slice is gone; the comment that four
+     pages carried since #474 is gone with it.
 
    The seam between the two is not where §5 assumed. See *Custom filters split at the
    mutation boundary, not the hook boundary* below.
@@ -371,6 +371,35 @@ paged, and edit and delete no longer refetch at all.
 The lesson generalises to the rest of Phase C: for a slice whose consumers resolve ids
 against it, reads and writes want to move together, and the safe intermediate state is
 *writes converted, reads untouched* rather than a half-populated query.
+
+Part two (#484) closed it from the other side. Two things keep the flash from coming back
+once reads move:
+
+- `useAppPage` gates the whole app on the query's `isFetched`, exactly as it gated on the
+  slice's `isPopulated`. No page renders before the filters are in the cache, so a
+  persisted `selectedFilterKey` resolves on the first pass. Verified: with a custom filter
+  selected, a hard reload of each index page fires exactly one `/paged` POST and it
+  already carries the filter.
+- The mutations keep writing their own result into the cache with `setQueryData` instead
+  of invalidating. `setQueryData` is synchronous, so the modal's "select what I just
+  saved" effect always finds it.
+
+The query also needs `staleTime: Infinity`. Without it the default of 0 refetched the
+whole list every time a page mounted a new observer — measured at one extra
+`GET /customFilter` per navigation, where the slice it replaces fetched once per session.
+This is issue #1132 (no app-wide default `staleTime`) showing up locally; setting it on
+this one query is not a workaround but the correct policy, since custom filters only ever
+change through this app's own mutations and those write straight to the cache.
+
+### `createClientSideCollectionSelector` takes custom filters as an own prop
+
+Three consumers of that selector really do carry custom filters — Interactive Search
+(`releases`), Collection (`movieCollections`) and the movie index search menu item. A
+selector cannot call a hook, so the filters now arrive as an own prop and the selector
+reads `props?.customFilters ?? []`; the six settings sections that have no custom filters
+pass nothing and get the empty default. For Collection, still a `connect()` class, a small
+function component wraps the connected component and injects the prop — `connect` passes
+own props to `mapStateToProps` as its second argument, so nothing else had to change.
 
 ### `/queue/details` takes no filter, so it needs no provider
 
@@ -599,6 +628,7 @@ If a JS test runner is ever added, remove that line and set
 | 2026-08-18 | #469 | **Events.** First paged page. `usePage` added; the system slice is down to restart/shutdown. Three type holes fixed that only `.js` files had been hiding. |
 | 2026-08-18 | #470 | **SignalR container.** Class + `connect()` → function component, as Sonarr did in Jan 2025. Redux stays inside. |
 | 2026-08-18 | #471 | **Organize preview + Unmapped Files.** Two slices retired. First conversion where a page's table prefs move to a zustand options store rather than to React Query. |
+| 2026-08-20 | #484 | **Custom filters, part 2 of 2 — reads.** `useCustomFilters`/`useCustomFiltersList` queries; all 19 `createCustomFiltersSelector` call sites swept across 8 filter domains; `customFilterActions` and `CustomFiltersAppState` deleted. `useAppPage` now gates on the query, which is what keeps a persisted filter from flashing the unfiltered list on reload. `createClientSideCollectionSelector` takes custom filters as an own prop. Also: `staleTime: Infinity` (the default 0 cost one extra GET per navigation), six vestigial `<section>.customFilters` persist paths removed, and `AppState`'s duplicate `CustomFilter` type now re-exports the canonical one. |
 | 2026-08-20 | #483 | **Custom filters, part 1 of 2 — mutations.** Save and delete onto `useApiMutation`; `FilterBuilderModalContentConnector` and `CustomFiltersModalContentConnector` retired, both modal contents to TSX. Reads stay on redux, so the mutations apply their own response to the slice rather than refetching. Two latent bugs fixed on the way: the manage modal's sort was a no-op, and its `Alert` took a prop the component does not have. |
 | 2026-08-20 | #481 | **Calendar.** `calendarActions` and `CalendarAppState` deleted; Phase B complete. Options and view to a persisted zustand store, the visible range to a second non-persisted one, `/calendar` to `useApiQuery`. Two fixes ride along, both in code the conversion rewrites: `executeCommandHelper` never returned the created command, which had left *Search for Missing* throwing and its spinner dead; and the view switch no longer resets to today (Whisparr/Whisparr#1131), matching what Sonarr's own conversion did. |
 | 2026-08-19 | #478 | **History.** `historyActions`, `movieHistoryActions`, `movieBlocklistActions`, `HistoryAppState` and `MovieBlocklistAppState` deleted, plus two dead `HistoryDetailsConnector` files. The page was already a hybrid — React Query fetched, Redux still held the options — so this is mostly the options store plus the two per-movie reads the interactive search needs. |

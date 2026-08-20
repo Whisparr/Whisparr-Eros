@@ -1,5 +1,4 @@
 import React, { useRef } from 'react';
-import { useSelector } from 'react-redux';
 import { SelectProvider } from 'App/SelectContext';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import PageContent from 'Components/Page/PageContent';
@@ -10,13 +9,13 @@ import PageToolbarSection from 'Components/Page/Toolbar/PageToolbarSection';
 import PageToolbarSeparator from 'Components/Page/Toolbar/PageToolbarSeparator';
 import TableOptionsModalWrapper from 'Components/Table/TableOptions/TableOptionsModalWrapper';
 import TablePager from 'Components/Table/TablePager';
+import { useCustomFiltersList } from 'Filters/useCustomFilters';
 import { align, icons } from 'Helpers/Props';
 import MovieIndexSelectAllButton from 'Movie/Index/Select/MovieIndexSelectAllButton';
 import MovieIndexSelectAllMenuItem from 'Movie/Index/Select/MovieIndexSelectAllMenuItem';
 import MovieIndexSelectModeButton from 'Movie/Index/Select/MovieIndexSelectModeButton';
 import MovieIndexSelectModeMenuItem from 'Movie/Index/Select/MovieIndexSelectModeMenuItem';
 import { defaultState } from 'Store/Actions/studioActions';
-import { createCustomFiltersSelector } from 'Store/Selectors/createClientSideCollectionSelector';
 import NoStudio from 'Studio/NoStudio';
 import translate from 'Utilities/String/translate';
 import StudioIndexFilterMenu from './Menus/StudioIndexFilterMenu';
@@ -62,7 +61,7 @@ function StudioIndex(): React.JSX.Element {
   } = useStudioIndex();
 
   const filters = defaultState.filters || [];
-  const customFilters = useSelector(createCustomFiltersSelector('studios'));
+  const customFilters = useCustomFiltersList('studios');
   const hasNoStudio = items.length === 0;
   const isLoaded = !!items.length;
   const scrollerRef = useRef<HTMLDivElement>(null);
