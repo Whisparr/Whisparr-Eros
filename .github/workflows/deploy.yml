@@ -71,8 +71,12 @@ jobs:
       - name: Check out
         uses: actions/checkout@v7
         with:
+          # The changelog step walks PREV_TAG..CUR_TAG and the signed tag is cut
+          # from this checkout, so the full commit graph and every tag have to be
+          # here; tree:0 fetches that graph without the trees and blobs behind it.
+          # fetch-tags is implied by fetch-depth: 0.
           fetch-depth: 0
-          fetch-tags: true
+          filter: tree:0
 
       - name: Download release artifacts
         uses: actions/download-artifact@v8

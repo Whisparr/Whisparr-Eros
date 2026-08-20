@@ -42,7 +42,14 @@ jobs:
       - name: Check out
         uses: actions/checkout@v7
         with:
-          fetch-depth: 0 # fetches tags; needed to read the version marker
+          # `git tag --merged HEAD` below needs the whole commit graph, so this
+          # one job cannot go shallow. tree:0 makes it a treeless partial clone:
+          # the commits and tags arrive (~5 MB), the trees and blobs behind them
+          # (~360 MB) do not. Every other job in this workflow builds or tests
+          # from a downloaded artifact and reads no history at all - leave those
+          # on the default shallow checkout.
+          fetch-depth: 0
+          filter: tree:0
 
       - name: Setup Environment Variables
         id: variables
@@ -118,8 +125,6 @@ jobs:
     steps:
       - name: Check out
         uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
 
       - name: Build
         uses: ./.github/actions/build
@@ -136,8 +141,6 @@ jobs:
     steps:
       - name: Check out
         uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
 
       - name: Volta
         uses: volta-cli/action@v5
@@ -189,8 +192,6 @@ jobs:
     steps:
       - name: Check out
         uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
 
       - name: Test
         uses: ./.github/actions/test
@@ -211,8 +212,6 @@ jobs:
     steps:
       - name: Check out
         uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
 
       - name: Test
         uses: ./.github/actions/test
@@ -250,8 +249,6 @@ jobs:
     steps:
       - name: Check out
         uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
       - name: Test
         uses: ./.github/actions/test
         with:
