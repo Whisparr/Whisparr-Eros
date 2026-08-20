@@ -1,12 +1,11 @@
 import React, { useCallback, useEffect, useRef } from 'react';
-import { useSelector } from 'react-redux';
 import * as commandNames from 'Commands/commandNames';
+import { useCommandExecuting } from 'Commands/useCommands';
 import Alert from 'Components/Alert';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import useCurrentPage from 'Helpers/Hooks/useCurrentPage';
 import usePrevious from 'Helpers/Hooks/usePrevious';
 import { kinds } from 'Helpers/Props';
-import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
 import {
   registerPagePopulator,
   unregisterPagePopulator,
@@ -33,9 +32,7 @@ function Calendar() {
   const view = useCalendarOption('view');
   const time = useCalendarTime();
 
-  const isRefreshingMovie = useSelector(
-    createCommandExecutingSelector(commandNames.REFRESH_MOVIE)
-  );
+  const isRefreshingMovie = useCommandExecuting(commandNames.REFRESH_MOVIE);
 
   const wasRefreshingMovie = usePrevious(isRefreshingMovie);
 

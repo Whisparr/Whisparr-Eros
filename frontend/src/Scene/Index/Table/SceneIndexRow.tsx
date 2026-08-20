@@ -1,9 +1,10 @@
 import React, { useCallback, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useSelect } from 'App/SelectContext';
 import AppState from 'App/State/AppState';
 import Command from 'Commands/Command';
 import { MOVIE_SEARCH, REFRESH_MOVIE } from 'Commands/commandNames';
+import { useExecuteCommand, useExecutingCommands } from 'Commands/useCommands';
 import Icon from 'Components/Icon';
 import IconButton from 'Components/Link/IconButton';
 import SpinnerIconButton from 'Components/Link/SpinnerIconButton';
@@ -20,8 +21,6 @@ import DeleteSceneModal from 'Scene/Delete/DeleteSceneModal';
 import SceneDetailsLinks from 'Scene/Details/SceneDetailsLinks';
 import SceneStudioTitleLink from 'Scene/SceneStudioTitleLink';
 import SceneTitleLink from 'Scene/SceneTitleLink';
-import { executeCommand } from 'Store/Actions/commandActions';
-import createExecutingCommandsSelector from 'Store/Selectors/createExecutingCommandsSelector';
 import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
 import { SelectStateInputProps } from 'typings/props';
 import formatRuntime from 'Utilities/Date/formatRuntime';
@@ -49,7 +48,7 @@ function SceneIndexRow(props: SceneIndexRowProps) {
     )
   );
 
-  const executingCommands = useSelector(createExecutingCommandsSelector());
+  const executingCommands = useExecutingCommands();
 
   const isRefreshingScene = executingCommands.some(
     (command: Command) =>
@@ -90,28 +89,24 @@ function SceneIndexRow(props: SceneIndexRowProps) {
 
   const { sizeOnDisk = 0, releaseGroups = [] } = statistics;
 
-  const dispatch = useDispatch();
+  const executeCommand = useExecuteCommand();
   const [isEditSceneModalOpen, setIsEditSceneModalOpen] = useState(false);
   const [isDeleteSceneModalOpen, setIsDeleteSceneModalOpen] = useState(false);
   const [selectState, selectDispatch] = useSelect();
 
   const onRefreshPress = useCallback(() => {
-    dispatch(
-      executeCommand({
-        name: REFRESH_MOVIE,
-        movieIds: [sceneId],
-      })
-    );
-  }, [sceneId, dispatch]);
+    executeCommand({
+      name: REFRESH_MOVIE,
+      movieIds: [sceneId],
+    });
+  }, [sceneId, executeCommand]);
 
   const onSearchPress = useCallback(() => {
-    dispatch(
-      executeCommand({
-        name: MOVIE_SEARCH,
-        movieIds: [sceneId],
-      })
-    );
-  }, [sceneId, dispatch]);
+    executeCommand({
+      name: MOVIE_SEARCH,
+      movieIds: [sceneId],
+    });
+  }, [sceneId, executeCommand]);
 
   const onEditScenePress = useCallback(() => {
     setIsEditSceneModalOpen(true);

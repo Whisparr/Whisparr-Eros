@@ -3,13 +3,10 @@ import * as signalR from '@microsoft/signalr';
 import { useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { queryClient } from 'App/queryClient';
+import Command from 'Commands/Command';
+import { COMMANDS_QUERY_KEY, useUpdateCommand } from 'Commands/useCommands';
 import { setAppValue, setVersion } from 'Store/Actions/appActions';
 import { removeItem, updateItem } from 'Store/Actions/baseActions';
-import {
-  fetchCommands,
-  finishCommand,
-  updateCommand,
-} from 'Store/Actions/commandActions';
 import { fetchRootFolders } from 'Store/Actions/rootFolderActions';
 import { fetchQualityDefinitions } from 'Store/Actions/settingsActions';
 import { fetchTagDetails, fetchTags } from 'Store/Actions/tagActions';
@@ -237,6 +234,7 @@ function updateCalendarQueryCache(updatedMovie: MovieResource) {
 
 function SignalRListener() {
   const dispatch = useDispatch();
+  const updateCommand = useUpdateCommand();
   const connection = useRef<signalR.HubConnection | null>(null);
 
   const handleMessage = useRef((message: SignalRMessage) => {
@@ -252,20 +250,15 @@ function SignalRListener() {
 
     if (name === 'command') {
       if (body.action === 'sync') {
-        dispatch(fetchCommands());
+        queryClient.invalidateQueries({ queryKey: COMMANDS_QUERY_KEY });
         return;
       }
 
-      const resource = body.resource;
-      const status = resource?.status;
-
-      // Both successful and failed commands need to be
-      // completed, otherwise they spin until they time out.
-
-      if (status === 'completed' || status === 'failed') {
-        dispatch(finishCommand(resource));
-      } else {
-        dispatch(updateCommand(resource));
+      // One path for both: updateCommand writes the command to the cache and, when it
+      // reports completed or failed, fires its finished callback. Failed commands need
+      // that too, or their button spins until it times out.
+      if (body.resource) {
+        updateCommand(body.resource as unknown as Command);
       }
 
       return;
@@ -553,7 +546,7 @@ function SignalRListener() {
     // is down. QueueStatus used to refetch itself on reconnect; now that it is
     // a query, the refresh belongs here with the others.
     queryClient.invalidateQueries({ queryKey: ['/queue/status'] });
-    dispatch(fetchCommands());
+    queryClient.invalidateQueries({ queryKey: COMMANDS_QUERY_KEY });
     repopulatePage();
   });
 

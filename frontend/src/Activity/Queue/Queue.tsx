@@ -6,9 +6,9 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { Filter as AppStateFilter } from 'App/State/AppState';
 import * as commandNames from 'Commands/commandNames';
+import { useCommandExecuting, useExecuteCommand } from 'Commands/useCommands';
 import Alert from 'Components/Alert';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import FilterMenu from 'Components/Menu/FilterMenu';
@@ -25,8 +25,6 @@ import TablePager from 'Components/Table/TablePager';
 import { useCustomFiltersList } from 'Filters/useCustomFilters';
 import useSelectState from 'Helpers/Hooks/useSelectState';
 import { align, icons, kinds } from 'Helpers/Props';
-import { executeCommand } from 'Store/Actions/commandActions';
-import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
 import { CheckInputChanged } from 'typings/inputs';
 import { SelectStateInputProps } from 'typings/props';
 import { TableOptionsChangePayload } from 'typings/Table';
@@ -54,7 +52,7 @@ import useQueue, {
 } from './useQueue';
 
 function Queue() {
-  const dispatch = useDispatch();
+  const executeCommand = useExecuteCommand();
 
   const { columns, selectedFilterKey, sortKey, sortDirection, pageSize } =
     useQueueOptions();
@@ -78,8 +76,8 @@ function Queue() {
   const { count } = useQueueStatus();
   const customFilters = useCustomFiltersList('queue');
 
-  const isRefreshMonitoredDownloadsExecuting = useSelector(
-    createCommandExecutingSelector(commandNames.REFRESH_MONITORED_DOWNLOADS)
+  const isRefreshMonitoredDownloadsExecuting = useCommandExecuting(
+    commandNames.REFRESH_MONITORED_DOWNLOADS
   );
 
   const shouldBlockRefresh = useRef(false);
@@ -129,12 +127,10 @@ function Queue() {
   );
 
   const handleRefreshPress = useCallback(() => {
-    dispatch(
-      executeCommand({
-        name: commandNames.REFRESH_MONITORED_DOWNLOADS,
-      })
-    );
-  }, [dispatch]);
+    executeCommand({
+      name: commandNames.REFRESH_MONITORED_DOWNLOADS,
+    });
+  }, [executeCommand]);
 
   const handleQueueRowModalOpenOrClose = useCallback((isOpen: boolean) => {
     shouldBlockRefresh.current = isOpen;

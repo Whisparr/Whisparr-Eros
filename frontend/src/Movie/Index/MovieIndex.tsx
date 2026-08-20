@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { SelectProvider } from 'App/SelectContext';
 import { RSS_SYNC } from 'Commands/commandNames';
+import { useCommandExecuting, useExecuteCommand } from 'Commands/useCommands';
 import Alert from 'Components/Alert';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import PageContent from 'Components/Page/PageContent';
@@ -15,8 +16,6 @@ import TablePager from 'Components/Table/TablePager';
 import { align, icons, kinds } from 'Helpers/Props';
 import InteractiveImportModal from 'InteractiveImport/InteractiveImportModal';
 import NoMovie from 'Movie/NoMovie';
-import { executeCommand } from 'Store/Actions/commandActions';
-import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
 import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import translate from 'Utilities/String/translate';
 import MovieIndexFilterMenu from './Menus/MovieIndexFilterMenu';
@@ -69,11 +68,10 @@ function MovieIndex() {
     handleSelectModePress,
   } = useMovieIndex();
 
-  const isRssSyncExecuting = useSelector(
-    createCommandExecutingSelector(RSS_SYNC)
-  );
+  const isRssSyncExecuting = useCommandExecuting(RSS_SYNC);
   const { isSmallScreen } = useSelector(createDimensionsSelector());
   const dispatch = useDispatch();
+  const executeCommand = useExecuteCommand();
 
   const [isOptionsModalOpen, setIsOptionsModalOpen] = useState(false);
   const [isInteractiveImportModalOpen, setIsInteractiveImportModalOpen] =
@@ -82,8 +80,8 @@ function MovieIndex() {
   useEffect(() => {}, [dispatch]);
 
   const handleRssSyncPress = useCallback(() => {
-    dispatch(executeCommand({ name: RSS_SYNC }));
-  }, [dispatch]);
+    executeCommand({ name: RSS_SYNC });
+  }, [executeCommand]);
 
   const handleOptionsPress = useCallback(() => {
     setIsOptionsModalOpen(true);

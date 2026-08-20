@@ -3,11 +3,11 @@ import { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import AppState from 'App/State/AppState';
 import * as commandNames from 'Commands/commandNames';
+import { useExecuteCommand } from 'Commands/useCommands';
 import Column from 'Components/Table/Column';
 import { sortDirections } from 'Helpers/Props';
 import { SortDirection } from 'Helpers/Props/sortDirections';
 import Movie from 'Movie/Movie';
-import { executeCommand } from 'Store/Actions/commandActions';
 import { bulkMonitorMovie } from 'Store/Actions/movieActions';
 import {
   setStudioScenesSort,
@@ -126,6 +126,7 @@ export function useStudioDetailsYearActions(
   items: Movie[]
 ): StudioDetailsYearActions {
   const dispatch = useDispatch();
+  const executeCommand = useExecuteCommand();
 
   const onMonitorYearPress = useCallback(() => {
     const allMonitored = items.every((movie: Movie) => movie.monitored);
@@ -171,14 +172,12 @@ export function useStudioDetailsYearActions(
   );
 
   const onSearchPress = useCallback(() => {
-    dispatch(
-      executeCommand({
-        name: commandNames.STUDIO_SEARCH,
-        studioIds: [studioId],
-        years: [year],
-      })
-    );
-  }, [dispatch, studioId, year]);
+    executeCommand({
+      name: commandNames.STUDIO_SEARCH,
+      studioIds: [studioId],
+      years: [year],
+    });
+  }, [studioId, year, executeCommand]);
 
   return {
     onMonitorYearPress,

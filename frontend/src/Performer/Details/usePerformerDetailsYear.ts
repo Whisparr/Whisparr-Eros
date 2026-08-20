@@ -1,12 +1,12 @@
 import { useDispatch } from 'react-redux';
 import * as commands from 'Commands/commandNames';
+import { useExecuteCommand } from 'Commands/useCommands';
 import {
   ASCENDING,
   DESCENDING,
   SortDirection,
 } from 'Helpers/Props/sortDirections';
 import Movie from 'Movie/Movie';
-import { executeCommand } from 'Store/Actions/commandActions';
 import { bulkMonitorMovie } from 'Store/Actions/movieActions';
 import {
   setPerformerScenesSort,
@@ -15,6 +15,7 @@ import {
 
 export function usePerformerDetailsYearActions() {
   const dispatch = useDispatch();
+  const executeCommand = useExecuteCommand();
 
   function searchMonitoredMovies(movies: Movie[]) {
     if (!Array.isArray(movies) || movies.length === 0) return;
@@ -22,12 +23,10 @@ export function usePerformerDetailsYearActions() {
       .filter((m) => m.monitored)
       .map((m) => m.id);
     if (monitoredMovieIds.length === 0) return;
-    dispatch(
-      executeCommand({
-        name: commands.MOVIE_SEARCH,
-        movieIds: monitoredMovieIds,
-      })
-    );
+    executeCommand({
+      name: commands.MOVIE_SEARCH,
+      movieIds: monitoredMovieIds,
+    });
   }
 
   function bulkMonitor(movies: Movie[]) {

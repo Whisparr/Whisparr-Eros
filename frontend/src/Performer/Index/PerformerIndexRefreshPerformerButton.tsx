@@ -1,12 +1,10 @@
 import React, { useCallback, useMemo } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import ModelBase from 'App/ModelBase';
 import { useSelect } from 'App/SelectContext';
 import { REFRESH_PERFORMER } from 'Commands/commandNames';
+import { useCommandExecuting, useExecuteCommand } from 'Commands/useCommands';
 import PageToolbarButton from 'Components/Page/Toolbar/PageToolbarButton';
 import { icons } from 'Helpers/Props';
-import { executeCommand } from 'Store/Actions/commandActions';
-import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
 import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
 
@@ -20,11 +18,9 @@ interface PerformerIndexRefreshPerformerButtonProps {
 function PerformerIndexRefreshPerformerButton(
   props: PerformerIndexRefreshPerformerButtonProps
 ) {
-  const isRefreshing = useSelector(
-    createCommandExecutingSelector(REFRESH_PERFORMER)
-  );
+  const isRefreshing = useCommandExecuting(REFRESH_PERFORMER);
 
-  const dispatch = useDispatch();
+  const executeCommand = useExecuteCommand();
   const { isSelectMode, selectedFilterKey, items, totalItems } = props;
   const [selectState] = useSelect();
   const { selectedState } = selectState;
@@ -49,13 +45,11 @@ function PerformerIndexRefreshPerformerButton(
       : translate('UpdateAll');
 
   const onPress = useCallback(() => {
-    dispatch(
-      executeCommand({
-        name: REFRESH_PERFORMER,
-        performerIds: performersToRefresh,
-      })
-    );
-  }, [dispatch, performersToRefresh]);
+    executeCommand({
+      name: REFRESH_PERFORMER,
+      performerIds: performersToRefresh,
+    });
+  }, [performersToRefresh, executeCommand]);
 
   return (
     <PageToolbarButton

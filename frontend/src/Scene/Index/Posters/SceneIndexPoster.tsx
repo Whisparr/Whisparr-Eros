@@ -1,8 +1,9 @@
 import React, { useCallback, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import AppState from 'App/State/AppState';
 import Command from 'Commands/Command';
 import { MOVIE_SEARCH, REFRESH_MOVIE } from 'Commands/commandNames';
+import { useExecuteCommand, useExecutingCommands } from 'Commands/useCommands';
 import Icon from 'Components/Icon';
 import Label from 'Components/Label';
 import IconButton from 'Components/Link/IconButton';
@@ -17,8 +18,6 @@ import DeleteSceneModal from 'Scene/Delete/DeleteSceneModal';
 import SceneDetailsLinks from 'Scene/Details/SceneDetailsLinks';
 import SceneIndexProgressBar from 'Scene/Index/ProgressBar/SceneIndexProgressBar';
 import ScenePoster from 'Scene/ScenePoster';
-import { executeCommand } from 'Store/Actions/commandActions';
-import createExecutingCommandsSelector from 'Store/Selectors/createExecutingCommandsSelector';
 import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
 import getRelativeDate from 'Utilities/Date/getRelativeDate';
 import translate from 'Utilities/String/translate';
@@ -44,7 +43,7 @@ function SceneIndexPoster(props: SceneIndexPosterProps) {
     )
   );
 
-  const executingCommands = useSelector(createExecutingCommandsSelector());
+  const executingCommands = useExecutingCommands();
 
   const isRefreshingScene = executingCommands.some(
     (command: Command) =>
@@ -93,28 +92,24 @@ function SceneIndexPoster(props: SceneIndexPosterProps) {
 
   const { sizeOnDisk = 0 } = statistics;
 
-  const dispatch = useDispatch();
+  const executeCommand = useExecuteCommand();
   const [hasPosterError, setHasPosterError] = useState(false);
   const [isEditSceneModalOpen, setIsEditSceneModalOpen] = useState(false);
   const [isDeleteSceneModalOpen, setIsDeleteSceneModalOpen] = useState(false);
 
   const onRefreshPress = useCallback(() => {
-    dispatch(
-      executeCommand({
-        name: REFRESH_MOVIE,
-        movieIds: [sceneId],
-      })
-    );
-  }, [sceneId, dispatch]);
+    executeCommand({
+      name: REFRESH_MOVIE,
+      movieIds: [sceneId],
+    });
+  }, [sceneId, executeCommand]);
 
   const onSearchPress = useCallback(() => {
-    dispatch(
-      executeCommand({
-        name: MOVIE_SEARCH,
-        movieIds: [sceneId],
-      })
-    );
-  }, [sceneId, dispatch]);
+    executeCommand({
+      name: MOVIE_SEARCH,
+      movieIds: [sceneId],
+    });
+  }, [sceneId, executeCommand]);
 
   const onPosterLoadError = useCallback(() => {
     setHasPosterError(true);

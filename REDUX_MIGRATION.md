@@ -19,11 +19,11 @@ verified to resolve against the public repo.
 
 | Metric | At assessment | Now |
 | --- | --- | --- |
-| Files importing `react-redux` | 327 of 1,255 | **297** of 1,252 |
-| Lines under `frontend/src/Store/` | 15,374 across 138 files | **12,554** across 123 |
-| Redux slices registered in `Store/Actions/index.js` | 35 | **24** |
+| Files importing `react-redux` | 327 of 1,255 | **277** of 1,247 |
+| Lines under `frontend/src/Store/` | 15,374 across 138 files | **12,294** across 118 |
+| Redux slices registered in `Store/Actions/index.js` | 35 | **23** |
 | Remaining `*Connector` files | 66 | **57** |
-| Files touching React Query | 35 | **55** |
+| Files touching React Query | 35 | **56** |
 | zustand stores | 0 (not installed) | **installed, 3 primitives + 8 option stores** |
 
 > **Recomputed in #464.** Three rows previously carried figures that no command
@@ -181,7 +181,7 @@ commands commit touched 51 files, custom filters 44. Ship them alone.
 
 | System | Retires | Sonarr ref |
 | --- | --- | --- |
-| **Commands** — 44 live consumers; every refresh/search button. SignalR-fed. | `commandActions` (207 loc), `createCommandSelector.ts`, `createExecutingCommandsSelector.ts`, `createCommandExecutingSelector.ts` | [Sonarr/Sonarr@dec6f4b5](https://github.com/Sonarr/Sonarr/commit/dec6f4b5) (51 files) |
+| ~~**Commands**~~ — 44 live consumers; every refresh/search button. SignalR-fed. **Done, #486.** | ~~`commandActions` (207 loc)~~, ~~`createCommandSelector.ts`~~, ~~`createExecutingCommandsSelector.ts`~~, ~~`createCommandExecutingSelector.ts`~~ | [Sonarr/Sonarr@dec6f4b5](https://github.com/Sonarr/Sonarr/commit/dec6f4b5) (51 files) |
 | ~~**Custom filters**~~ — prerequisite for every index filter modal. Two PRs, split at the mutation boundary. **Done, #483 and #484.** | ~~`customFilterActions`~~, ~~`CustomFiltersModalContentConnector.js`~~, ~~`CustomFiltersAppState`~~ | [Sonarr/Sonarr@7d2e01d5](https://github.com/Sonarr/Sonarr/commit/7d2e01d5) (44 files) |
 | **Tags** — rewrite `useTags` for real, plus tag details and filter-builder rows | `tagActions`, `createTagsSelector.ts`, `createTagDetailsSelector.ts`, `TagFilterBuilderRowValueConnector.js` | [Sonarr/Sonarr@0809a72c](https://github.com/Sonarr/Sonarr/commit/0809a72c) (40 files) |
 | **Root folders** — 17 consumers across Settings, Add flows, edit modals | `rootFolderActions`, `createRootFoldersSelector.ts` | [Sonarr/Sonarr@7a5157df](https://github.com/Sonarr/Sonarr/commit/7a5157df) |
@@ -628,6 +628,7 @@ If a JS test runner is ever added, remove that line and set
 | 2026-08-18 | #469 | **Events.** First paged page. `usePage` added; the system slice is down to restart/shutdown. Three type holes fixed that only `.js` files had been hiding. |
 | 2026-08-18 | #470 | **SignalR container.** Class + `connect()` → function component, as Sonarr did in Jan 2025. Redux stays inside. |
 | 2026-08-18 | #471 | **Organize preview + Unmapped Files.** Two slices retired. First conversion where a page's table prefs move to a zustand options store rather than to React Query. |
+| 2026-08-20 | #486 | **Commands.** `useCommands` and friends replace `commandActions` and its three selectors across 58 files; SignalR now writes the command cache instead of dispatching. Two behaviours changed on purpose, both following Sonarr: the per-command five-minute removal timer is gone in favour of a five-minute `refetchInterval`, and the `commands.handlers` table went with it — it was initialised, read once in `FINISH_COMMAND`, and never written to by anything. Toasts still dispatch `showMessage` to the redux app slice; commands are its only producer, and it converts with the rest of the app shell. |
 | 2026-08-20 | #485 | **React Query client defaults.** `staleTime: 60s` and `retry: 1` on `queryClient`, closing Whisparr/Whisparr#1132. Not a conversion — it changes behaviour for every already-converted page, which is why it rode alone. Measured before and after over four flows: 46–48 requests became 28–30. Verified push still drives updates: an external API mutation refetched `/movie/paged` unprompted on an idle page. Turned up a separate redux bug on the way — `useShowMovieMonitorToggleButton` dispatches `fetchGeneralSettings()` from a per-row mount effect, so `/config/host` fires once per table row. |
 | 2026-08-20 | #484 | **Custom filters, part 2 of 2 — reads.** `useCustomFilters`/`useCustomFiltersList` queries; all 19 `createCustomFiltersSelector` call sites swept across 8 filter domains; `customFilterActions` and `CustomFiltersAppState` deleted. `useAppPage` now gates on the query, which is what keeps a persisted filter from flashing the unfiltered list on reload. `createClientSideCollectionSelector` takes custom filters as an own prop. Also: `staleTime: Infinity` (the default 0 cost one extra GET per navigation), six vestigial `<section>.customFilters` persist paths removed, and `AppState`'s duplicate `CustomFilter` type now re-exports the canonical one. |
 | 2026-08-20 | #483 | **Custom filters, part 1 of 2 — mutations.** Save and delete onto `useApiMutation`; `FilterBuilderModalContentConnector` and `CustomFiltersModalContentConnector` retired, both modal contents to TSX. Reads stay on redux, so the mutations apply their own response to the slice rather than refetching. Two latent bugs fixed on the way: the manage modal's sort was a no-op, and its `Alert` took a prop the component does not have. |

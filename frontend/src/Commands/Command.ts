@@ -16,6 +16,14 @@ export interface CommandBody {
   movieIds?: number[];
 }
 
+// Loose by design: every page builds its own command payload, and the server accepts
+// whatever that command's handler declares.
+export interface NewCommandBody {
+  name: string;
+  [key: string]:
+    string | number | boolean | number[] | string[] | object | undefined;
+}
+
 interface Command extends ModelBase {
   name: string;
   commandName: string;

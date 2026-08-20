@@ -1,9 +1,13 @@
 import moment from 'moment';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { useQueueDetails } from 'Activity/Queue/Details/useQueueDetails';
 import { Filter as AppStateFilter } from 'App/State/AppState';
 import * as commandNames from 'Commands/commandNames';
+import useCommands, {
+  useCommandExecuting,
+  useExecuteCommand,
+  useExecuteCommandAsync,
+} from 'Commands/useCommands';
 import FilterMenu from 'Components/Menu/FilterMenu';
 import PageContent from 'Components/Page/PageContent';
 import PageContentBody from 'Components/Page/PageContentBody';
@@ -17,12 +21,6 @@ import { align, icons } from 'Helpers/Props';
 import { useMovieStats } from 'Movie/Index/useMovieStats';
 import NoMovie from 'Movie/NoMovie';
 import { useSceneStats } from 'Scene/Index/useSceneStats';
-import {
-  executeCommand,
-  executeCommandHelper,
-} from 'Store/Actions/commandActions';
-import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
-import createCommandsSelector from 'Store/Selectors/createCommandsSelector';
 import { isCommandExecuting } from 'Utilities/Command';
 import isBefore from 'Utilities/Date/isBefore';
 import translate from 'Utilities/String/translate';
@@ -72,7 +70,7 @@ function useMissingMovieIds() {
 
 function useIsSearchingForMissing() {
   const searchMissingCommandId = useCalendarSearchMissingCommandId();
-  const commands = useSelector(createCommandsSelector());
+  const commands = useCommands().data;
 
   if (searchMissingCommandId == null) {
     return false;
@@ -84,16 +82,15 @@ function useIsSearchingForMissing() {
 }
 
 function CalendarPage() {
-  const dispatch = useDispatch();
+  const executeCommand = useExecuteCommand();
+  const executeCommandAsync = useExecuteCommandAsync();
 
   useCalendarPage();
 
   const selectedFilterKey = useCalendarOption('selectedFilterKey');
   const missingMovieIds = useMissingMovieIds();
   const isSearchingForMissing = useIsSearchingForMissing();
-  const isRssSyncExecuting = useSelector(
-    createCommandExecutingSelector(commandNames.RSS_SYNC)
-  );
+  const isRssSyncExecuting = useCommandExecuting(commandNames.RSS_SYNC);
   const customFilters = useCustomFiltersList('calendar');
   const { data: movieStats } = useMovieStats();
   const { data: sceneStats } = useSceneStats();
@@ -124,24 +121,21 @@ function CalendarPage() {
   }, []);
 
   const handleRssSyncPress = useCallback(() => {
-    dispatch(
-      executeCommand({
-        name: commandNames.RSS_SYNC,
-      })
-    );
-  }, [dispatch]);
-
-  const handleSearchMissingPress = useCallback(() => {
-    executeCommandHelper(
-      {
-        name: commandNames.MOVIE_SEARCH,
-        movieIds: missingMovieIds,
-      },
-      dispatch
-    ).then((command: { id: number }) => {
-      setCalendarSearchMissingCommandId(command.id);
+    executeCommand({
+      name: commandNames.RSS_SYNC,
     });
-  }, [missingMovieIds, dispatch]);
+  }, [executeCommand]);
+
+  const handleSearchMissingPress = useCallback(async () => {
+    const command = await executeCommandAsync({
+      name: commandNames.MOVIE_SEARCH,
+      movieIds: missingMovieIds,
+    });
+
+    if (command) {
+      setCalendarSearchMissingCommandId(command.id);
+    }
+  }, [missingMovieIds, executeCommandAsync]);
 
   const handleFilterSelect = useCallback((key: string | number) => {
     setCalendarOption('selectedFilterKey', key);

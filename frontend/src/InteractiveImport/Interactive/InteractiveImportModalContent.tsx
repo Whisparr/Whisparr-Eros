@@ -5,6 +5,7 @@ import { createSelector } from 'reselect';
 import AppState from 'App/State/AppState';
 import InteractiveImportAppState from 'App/State/InteractiveImportAppState';
 import * as commandNames from 'Commands/commandNames';
+import { useExecuteCommand } from 'Commands/useCommands';
 import SelectInput, { SelectInputOption } from 'Components/Form/SelectInput';
 import Icon from 'Components/Icon';
 import Button from 'Components/Link/Button';
@@ -39,7 +40,6 @@ import Movie from 'Movie/Movie';
 import { MovieFile } from 'MovieFile/MovieFile';
 import { useDeleteMovieFiles } from 'MovieFile/useMovieFile';
 import { QualityModel } from 'Quality/Quality';
-import { executeCommand } from 'Store/Actions/commandActions';
 import {
   clearInteractiveImport,
   fetchInteractiveImportItems,
@@ -241,6 +241,7 @@ function InteractiveImportModalContent(
   const [selectState, setSelectState] = useSelectState();
   const { allSelected, allUnselected, selectedState } = selectState;
   const dispatch = useDispatch();
+  const executeCommand = useExecuteCommand();
 
   const columns: Column[] = useMemo(() => {
     const result: Column[] = cloneDeep(COLUMNS);
@@ -495,13 +496,11 @@ function InteractiveImportModalContent(
     }
 
     if (files.length) {
-      dispatch(
-        executeCommand({
-          name: commandNames.INTERACTIVE_IMPORT,
-          files,
-          importMode: finalImportMode,
-        })
-      );
+      executeCommand({
+        name: commandNames.INTERACTIVE_IMPORT,
+        files,
+        importMode: finalImportMode,
+      });
 
       shouldClose = true;
     }
@@ -518,6 +517,7 @@ function InteractiveImportModalContent(
     selectedIds,
     onModalClose,
     dispatch,
+    executeCommand,
   ]);
 
   const onSortPress = useCallback<SortCallback>(

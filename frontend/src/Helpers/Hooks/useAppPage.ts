@@ -2,6 +2,7 @@ import { useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { createSelector } from 'reselect';
 import AppState from 'App/State/AppState';
+import useCommands from 'Commands/useCommands';
 import useCustomFilters from 'Filters/useCustomFilters';
 import { fetchTranslations } from 'Store/Actions/appActions';
 import {
@@ -81,6 +82,12 @@ const useAppPage = () => {
   // out unfiltered and the user sees the whole library flash past.
   const { isFetched: isCustomFiltersPopulated, error: customFiltersError } =
     useCustomFilters();
+
+  // Keeps one observer on the command list for the whole session. SignalR pushes command
+  // updates that drive global toasts, and the periodic refetch is what clears finished
+  // commands now that the slice's per-command removal timer is gone. The app does not
+  // wait on this -- nothing renders differently for want of the command list.
+  useCommands();
 
   const isReduxPopulated = useSelector(
     (state: AppState) =>
