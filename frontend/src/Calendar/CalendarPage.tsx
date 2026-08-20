@@ -1,9 +1,8 @@
 import moment from 'moment';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { createSelector } from 'reselect';
 import { useQueueDetails } from 'Activity/Queue/Details/useQueueDetails';
-import AppState from 'App/State/AppState';
+import { Filter as AppStateFilter } from 'App/State/AppState';
 import * as commandNames from 'Commands/commandNames';
 import FilterMenu from 'Components/Menu/FilterMenu';
 import PageContent from 'Components/Page/PageContent';
@@ -18,11 +17,9 @@ import { useMovieStats } from 'Movie/Index/useMovieStats';
 import NoMovie from 'Movie/NoMovie';
 import { useSceneStats } from 'Scene/Index/useSceneStats';
 import {
-  searchMissing,
-  setCalendarDaysCount,
-  setCalendarFilter,
-} from 'Store/Actions/calendarActions';
-import { executeCommand } from 'Store/Actions/commandActions';
+  executeCommand,
+  executeCommandHelper,
+} from 'Store/Actions/commandActions';
 import { createCustomFiltersSelector } from 'Store/Selectors/createClientSideCollectionSelector';
 import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
 import createCommandsSelector from 'Store/Selectors/createCommandsSelector';
@@ -31,17 +28,25 @@ import isBefore from 'Utilities/Date/isBefore';
 import translate from 'Utilities/String/translate';
 import Calendar from './Calendar';
 import CalendarFilterModal from './CalendarFilterModal';
+import { setCalendarOption, useCalendarOption } from './calendarOptionsStore';
 import CalendarLinkModal from './iCal/CalendarLinkModal';
 import Legend from './Legend/Legend';
 import CalendarOptionsModal from './Options/CalendarOptionsModal';
+import useCalendar, {
+  FILTERS,
+  setCalendarDayCount,
+  setCalendarSearchMissingCommandId,
+  useCalendarPage,
+  useCalendarRange,
+  useCalendarSearchMissingCommandId,
+} from './useCalendar';
 import styles from './CalendarPage.css';
 
 const MINIMUM_DAY_WIDTH = 120;
 
 function useMissingMovieIds() {
-  const { start, end, items } = useSelector(
-    (state: AppState) => state.calendar
-  );
+  const { start, end } = useCalendarRange();
+  const { data: items } = useCalendar();
   const queueDetails = useQueueDetails();
 
   return useMemo(() => {
@@ -65,32 +70,27 @@ function useMissingMovieIds() {
   }, [start, end, items, queueDetails]);
 }
 
-function createIsSearchingSelector() {
-  return createSelector(
-    (state: AppState) => state.calendar.searchMissingCommandId,
-    createCommandsSelector(),
-    (searchMissingCommandId, commands) => {
-      if (searchMissingCommandId == null) {
-        return false;
-      }
+function useIsSearchingForMissing() {
+  const searchMissingCommandId = useCalendarSearchMissingCommandId();
+  const commands = useSelector(createCommandsSelector());
 
-      return isCommandExecuting(
-        commands.find((command) => {
-          return command.id === searchMissingCommandId;
-        })
-      );
-    }
+  if (searchMissingCommandId == null) {
+    return false;
+  }
+
+  return isCommandExecuting(
+    commands.find((command) => command.id === searchMissingCommandId)
   );
 }
 
 function CalendarPage() {
   const dispatch = useDispatch();
 
-  const { selectedFilterKey, filters } = useSelector(
-    (state: AppState) => state.calendar
-  );
+  useCalendarPage();
+
+  const selectedFilterKey = useCalendarOption('selectedFilterKey');
   const missingMovieIds = useMissingMovieIds();
-  const isSearchingForMissing = useSelector(createIsSearchingSelector());
+  const isSearchingForMissing = useIsSearchingForMissing();
   const isRssSyncExecuting = useSelector(
     createCommandExecutingSelector(commandNames.RSS_SYNC)
   );
@@ -132,28 +132,30 @@ function CalendarPage() {
   }, [dispatch]);
 
   const handleSearchMissingPress = useCallback(() => {
-    dispatch(searchMissing({ movieIds: missingMovieIds }));
+    executeCommandHelper(
+      {
+        name: commandNames.MOVIE_SEARCH,
+        movieIds: missingMovieIds,
+      },
+      dispatch
+    ).then((command: { id: number }) => {
+      setCalendarSearchMissingCommandId(command.id);
+    });
   }, [missingMovieIds, dispatch]);
 
-  const handleFilterSelect = useCallback(
-    (key: string | number) => {
-      dispatch(setCalendarFilter({ selectedFilterKey: key }));
-    },
-    [dispatch]
-  );
+  const handleFilterSelect = useCallback((key: string | number) => {
+    setCalendarOption('selectedFilterKey', key);
+  }, []);
 
   useEffect(() => {
     if (width === 0) {
       return;
     }
 
-    const dayCount = Math.max(
-      3,
-      Math.min(7, Math.floor(width / MINIMUM_DAY_WIDTH))
+    setCalendarDayCount(
+      Math.max(3, Math.min(7, Math.floor(width / MINIMUM_DAY_WIDTH)))
     );
-
-    dispatch(setCalendarDaysCount({ dayCount }));
-  }, [width, dispatch]);
+  }, [width]);
 
   return (
     <PageContent title={translate('Calendar')}>
@@ -194,7 +196,7 @@ function CalendarPage() {
             alignMenu={align.RIGHT}
             isDisabled={!hasMovies && !hasScenes}
             selectedFilterKey={selectedFilterKey}
-            filters={filters}
+            filters={FILTERS as unknown as AppStateFilter[]}
             customFilters={customFilters}
             filterModalConnectorComponent={CalendarFilterModal}
             onFilterSelect={handleFilterSelect}

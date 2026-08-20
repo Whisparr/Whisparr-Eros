@@ -145,6 +145,8 @@ export function executeCommandHelper(payload, dispatch) {
     }
 
     dispatch(addCommand(data));
+
+    return data;
   });
 }
 

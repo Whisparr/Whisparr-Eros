@@ -1,7 +1,6 @@
 import moment from 'moment';
 import React, { useMemo } from 'react';
-import { useSelector } from 'react-redux';
-import AppState from 'App/State/AppState';
+import useCalendar, { useCalendarRange } from 'Calendar/useCalendar';
 import Movie from 'Movie/Movie';
 import AgendaEvent from './AgendaEvent';
 import styles from './Agenda.css';
@@ -11,9 +10,8 @@ interface AgendaMovie extends Movie {
 }
 
 function Agenda() {
-  const { start, end, items } = useSelector(
-    (state: AppState) => state.calendar
-  );
+  const { start, end } = useCalendarRange();
+  const { data: items } = useCalendar();
 
   const events = useMemo(() => {
     const result = items.map((item): AgendaMovie => {

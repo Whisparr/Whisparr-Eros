@@ -19,12 +19,12 @@ verified to resolve against the public repo.
 
 | Metric | At assessment | Now |
 | --- | --- | --- |
-| Files importing `react-redux` | 327 of 1,255 | **307** of 1,255 |
-| Lines under `frontend/src/Store/` | 15,374 across 138 files | **13,073** across 125 |
-| Redux slices registered in `Store/Actions/index.js` | 35 | **26** |
+| Files importing `react-redux` | 327 of 1,255 | **305** of 1,255 |
+| Lines under `frontend/src/Store/` | 15,374 across 138 files | **12,630** across 124 |
+| Redux slices registered in `Store/Actions/index.js` | 35 | **25** |
 | Remaining `*Connector` files | 66 | **59** |
-| Files touching React Query | 35 | **52** |
-| zustand stores | 0 (not installed) | **installed, 3 primitives + 7 option stores** |
+| Files touching React Query | 35 | **53** |
+| zustand stores | 0 (not installed) | **installed, 3 primitives + 8 option stores** |
 
 > **Recomputed in #464.** Three rows previously carried figures that no command
 > reproduced — `react-redux` read 316 where the same command that yields the
@@ -167,7 +167,7 @@ a whole state slice. Take them roughly in Sonarr's order.
 | ~~**History**~~ — **done, #478.** Was a hybrid: React Query fetched, redux still held the options. Took `movieBlocklistActions` with it, as planned | ~~`historyActions`, `movieHistoryActions`, `movieBlocklistActions`, `HistoryAppState`, `MovieBlocklistAppState`, `HistoryDetailsConnector` ×2~~ | [Sonarr/Sonarr@a45b0776](https://github.com/Sonarr/Sonarr/commit/a45b0776), [Sonarr/Sonarr@6b479a5a](https://github.com/Sonarr/Sonarr/commit/6b479a5a) |
 | ~~**System: Status / Health**~~ — **done, #461 / #463 / #464 / #465.** Health had the sidebar dependency, so it went last | `systemActions` (391 loc after #461), `createHealthCheckSelector.js`, `createSystemStatusSelector.ts` | [Sonarr/Sonarr@49c52c2e](https://github.com/Sonarr/Sonarr/commit/49c52c2e), [Sonarr/Sonarr@0552a811](https://github.com/Sonarr/Sonarr/commit/0552a811), ~~[Sonarr/Sonarr@871ae955](https://github.com/Sonarr/Sonarr/commit/871ae955)~~ |
 | ~~**System: Tasks / Backups / Events**~~ — **done, #462 / #466 / #467 / #468 / #469.** | `BackupsConnector.js`, `RestoreBackupModal*Connector.js`, `LogsTableConnector.js` | [Sonarr/Sonarr@3091f40c](https://github.com/Sonarr/Sonarr/commit/3091f40c), [Sonarr/Sonarr@c295e24f](https://github.com/Sonarr/Sonarr/commit/c295e24f), [Sonarr/Sonarr@ff5e7327](https://github.com/Sonarr/Sonarr/commit/ff5e7327) |
-| **Calendar** — 12 files; needs the options store from phase A | `calendarActions` (443 loc), `CalendarAppState` | [Sonarr/Sonarr@ccb7f07c](https://github.com/Sonarr/Sonarr/commit/ccb7f07c) (28 files) |
+| ~~**Calendar**~~ — **done, #481.** 12 files. Range derivation ported unchanged; the visible range lives in a second, non-persisted store beside the options one | ~~`calendarActions` (443 loc), `CalendarAppState`~~ | [Sonarr/Sonarr@ccb7f07c](https://github.com/Sonarr/Sonarr/commit/ccb7f07c) (28 files) |
 | ~~**Parse**~~ — **done, #458.** 14 files, +77/−337 | ~~`parseActions.ts`, `ParseAppState`~~ | [Sonarr/Sonarr@263f4839](https://github.com/Sonarr/Sonarr/commit/263f4839) |
 | ~~**Wanted: Missing + Cutoff Unmet**~~ — **done, #475.** One PR, as Sonarr did; first page pair to share an options-store shape | ~~`wantedActions` (342 loc), `WantedAppState`~~ | [Sonarr/Sonarr@40712781](https://github.com/Sonarr/Sonarr/commit/40712781) |
 | ~~**Organize preview + Unmapped Files**~~ — **done, #471.** Two small pages, one PR | ~~`organizePreviewActions`, `unmappedMovieFileActions`, `OrganizePreviewAppState`~~ | [Sonarr/Sonarr@10c0e18a](https://github.com/Sonarr/Sonarr/commit/10c0e18a) |
@@ -323,9 +323,11 @@ Five places where you cannot just copy their commit.
 
 ## 10. What to do next
 
-Phase A is done. Parse, Disk Space, Log Files, System Status, Health, Tasks, Backups,
-Updates, Events, the SignalR container, Organize preview + Unmapped Files, Queue, Wanted,
-Blocklist and History are converted. Calendar is the last of Phase B's leaf pages.
+Phases A and B are done. Parse, Disk Space, Log Files, System Status, Health, Tasks,
+Backups, Updates, Events, the SignalR container, Organize preview + Unmapped Files, Queue,
+Wanted, Blocklist, History and Calendar are all converted. Phase C — the shared plumbing —
+is next, and it is a step up in blast radius: every item in it has consumers spread across
+the whole app rather than one page.
 
 1. ~~**Queue**, in three PRs.~~ **Done.** Sonarr shipped it as one 58-file commit, but the slice already
    has three independent sub-sections and splitting along them gives three merge points
@@ -337,7 +339,11 @@ Blocklist and History are converted. Calendar is the last of Phase B's leaf page
 2. ~~**Wanted: Missing + Cutoff Unmet.**~~ **Done, #475.**
 3. ~~**Blocklist.**~~ **Done, #477.**
 4. ~~**History.**~~ **Done, #478.** Took `movieBlocklistActions` with it, as planned.
-5. **Calendar** — the last of Phase B.
+5. ~~**Calendar.**~~ **Done, #481.** Phase B complete.
+6. **Phase C**, starting with **custom filters**. Every conversion since #474 has had to
+   leave `createCustomFiltersSelector` on redux and say so in a comment — six pages now
+   carry that same note. It is the one Phase C item that unblocks cleanup in code already
+   written, so it goes first.
 
 ### `/queue/details` takes no filter, so it needs no provider
 
@@ -566,6 +572,7 @@ If a JS test runner is ever added, remove that line and set
 | 2026-08-18 | #469 | **Events.** First paged page. `usePage` added; the system slice is down to restart/shutdown. Three type holes fixed that only `.js` files had been hiding. |
 | 2026-08-18 | #470 | **SignalR container.** Class + `connect()` → function component, as Sonarr did in Jan 2025. Redux stays inside. |
 | 2026-08-18 | #471 | **Organize preview + Unmapped Files.** Two slices retired. First conversion where a page's table prefs move to a zustand options store rather than to React Query. |
+| 2026-08-20 | #481 | **Calendar.** `calendarActions` and `CalendarAppState` deleted; Phase B complete. Options and view to a persisted zustand store, the visible range to a second non-persisted one, `/calendar` to `useApiQuery`. Two fixes ride along, both in code the conversion rewrites: `executeCommandHelper` never returned the created command, which had left *Search for Missing* throwing and its spinner dead; and the view switch no longer resets to today (Whisparr/Whisparr#1131), matching what Sonarr's own conversion did. |
 | 2026-08-19 | #478 | **History.** `historyActions`, `movieHistoryActions`, `movieBlocklistActions`, `HistoryAppState` and `MovieBlocklistAppState` deleted, plus two dead `HistoryDetailsConnector` files. The page was already a hybrid — React Query fetched, Redux still held the options — so this is mostly the options store plus the two per-movie reads the interactive search needs. |
 | 2026-08-19 | #477 | **Blocklist.** `blocklistActions` and `BlocklistAppState` deleted. Also fixes `fetchJson` on empty 200 bodies, without which the per-row delete does not invalidate — see §10. `movieBlocklistActions` deferred to History; it shares a selector with `movieHistory`. |
 | 2026-08-19 | #476 | **Queue custom filters.** Regression fix, not a conversion: #474 resolved the filter key against the built-ins only, so selecting a custom filter stored the key and changed nothing on the wire. |
@@ -592,6 +599,17 @@ If a JS test runner is ever added, remove that line and set
   but it fires once per retired slice per user, and every conversion so far has added one.
   `Store/Migrators/migrate.js` is where a sweep would go, and it wants doing once at the
   end rather than per-PR.
+- **Whisparr/Whisparr#1132** — `App/queryClient.ts` builds the client with no defaults, so
+  `staleTime` is 0 and every observer that mounts after the first refetches. Measured on
+  `eros-develop` before Calendar was touched: `/queue/details` ×2 and `/movie/stats` ×2 on
+  the calendar, `/queue/details` ×3 on `/scenes`, `/system/status` ×2 everywhere. #481 adds
+  `/calendar` to that list — 9 requests against the thunk's 6 over the same six-step
+  session — because the page gates its body on a measurement and so mounts consumers in two
+  commits. Every precondition is present in Sonarr's `v5-develop` unchanged — same bare
+  `new QueryClient()`, same `isMeasured` gate, same first-commit `useCalendar()` in the
+  toolbar, same per-day-cell `useCalendar()` — so this is upstream's shape, not an Eros
+  divergence. The fix is a client default; it changes behaviour for every converted page
+  and should not ride along in a page conversion.
 - **Whisparr/Whisparr#1123** — `AUTH_HEADERS` and hand-rolled fetch helpers still
   duplicated in `useStudio`, `usePerformer`, `useAddNewMovie`. Not on the critical path;
   filed rather than folded into #455. `useHistory` came off it in #478 — its `apiPost`

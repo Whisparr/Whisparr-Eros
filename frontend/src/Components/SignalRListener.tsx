@@ -202,6 +202,39 @@ function invalidateStudioPagedQueryCache() {
   });
 }
 
+// The calendar is a plain list keyed by its fetched range. Patch the movie in
+// place across every cached range rather than refetching -- matching the redux
+// `updateOnly` behaviour this replaces, which never added unseen movies.
+function updateCalendarQueryCache(updatedMovie: MovieResource) {
+  queryClient
+    .getQueryCache()
+    .findAll()
+    .forEach(({ queryKey }) => {
+      if (!Array.isArray(queryKey) || queryKey[0] !== '/calendar') {
+        return;
+      }
+
+      queryClient.setQueryData(queryKey, (oldData: MovieResource[]) => {
+        if (!Array.isArray(oldData)) {
+          return oldData;
+        }
+
+        const index = oldData.findIndex(
+          (movie) => movie.id === updatedMovie.id
+        );
+
+        if (index === -1) {
+          return oldData;
+        }
+
+        const newData = [...oldData];
+        newData[index] = { ...oldData[index], ...updatedMovie };
+
+        return newData;
+      });
+    });
+}
+
 function SignalRListener() {
   const dispatch = useDispatch();
   const connection = useRef<signalR.HubConnection | null>(null);
@@ -210,14 +243,8 @@ function SignalRListener() {
     const { name, body } = message;
 
     if (name === 'calendar') {
-      if (body.action === 'updated') {
-        dispatch(
-          updateItem({
-            section: 'calendar',
-            updateOnly: true,
-            ...body.resource,
-          })
-        );
+      if (body.action === 'updated' && body.resource) {
+        updateCalendarQueryCache(body.resource);
       }
 
       return;

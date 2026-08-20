@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import AppState from 'App/State/AppState';
 import FieldSet from 'Components/FieldSet';
 import Form from 'Components/Form/Form';
 import FormGroup from 'Components/Form/FormGroup';
@@ -17,12 +16,16 @@ import {
   timeFormatOptions,
   weekColumnOptions,
 } from 'Settings/UI/UISettings';
-import { setCalendarOption } from 'Store/Actions/calendarActions';
 import { saveUISettings } from 'Store/Actions/settingsActions';
 import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
 import { InputChanged } from 'typings/inputs';
 import UiSettings from 'typings/Settings/UiSettings';
 import translate from 'Utilities/String/translate';
+import {
+  CalendarOptions,
+  setCalendarOption,
+  useCalendarOptions,
+} from '../calendarOptionsStore';
 
 interface CalendarOptionsModalContentProps {
   onModalClose: () => void;
@@ -34,7 +37,7 @@ function CalendarOptionsModalContent({
   const dispatch = useDispatch();
 
   const { showMovieInformation, showCutoffUnmetIcon, fullColorEvents } =
-    useSelector((state: AppState) => state.calendar.options);
+    useCalendarOptions();
 
   const uiSettings = useSelector(createUISettingsSelector());
 
@@ -54,9 +57,12 @@ function CalendarOptionsModalContent({
 
   const handleOptionInputChange = useCallback(
     ({ name, value }: InputChanged) => {
-      dispatch(setCalendarOption({ [name]: value }));
+      setCalendarOption(
+        name as keyof CalendarOptions,
+        value as CalendarOptions[keyof CalendarOptions]
+      );
     },
-    [dispatch]
+    []
   );
 
   const handleGlobalInputChange = useCallback(

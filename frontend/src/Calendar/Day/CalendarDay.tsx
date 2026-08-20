@@ -1,11 +1,10 @@
 import classNames from 'classnames';
 import moment from 'moment';
-import React from 'react';
-import { useSelector } from 'react-redux';
-import { createSelector } from 'reselect';
-import AppState from 'App/State/AppState';
+import React, { useMemo } from 'react';
+import { useCalendarOption } from 'Calendar/calendarOptionsStore';
 import * as calendarViews from 'Calendar/calendarViews';
 import CalendarEvent from 'Calendar/Events/CalendarEvent';
+import useCalendar, { useCalendarTime } from 'Calendar/useCalendar';
 import { CalendarEvent as CalendarEventModel } from 'typings/Calendar';
 import styles from './CalendarDay.css';
 
@@ -18,24 +17,23 @@ function sort(items: CalendarEventModel[]) {
   });
 }
 
-function createCalendarEventsConnector(date: string) {
-  return createSelector(
-    (state: AppState) => state.calendar.items,
-    (items) => {
-      const momentDate = moment(date);
+function useCalendarEvents(date: string) {
+  const { data: items } = useCalendar();
 
-      const filtered = items.filter(({ releaseDate }) => {
-        return releaseDate && momentDate.isSame(moment(releaseDate), 'day');
-      });
+  return useMemo(() => {
+    const momentDate = moment(date);
 
-      return sort(
-        filtered.map((item) => ({
-          isGroup: false,
-          ...item,
-        }))
-      );
-    }
-  );
+    const filtered = items.filter(({ releaseDate }) => {
+      return releaseDate && momentDate.isSame(moment(releaseDate), 'day');
+    });
+
+    return sort(
+      filtered.map((item) => ({
+        isGroup: false,
+        ...item,
+      }))
+    );
+  }, [date, items]);
 }
 
 interface CalendarDayProps {
@@ -44,8 +42,9 @@ interface CalendarDayProps {
 }
 
 function CalendarDay({ date, isTodaysDate }: CalendarDayProps) {
-  const { time, view } = useSelector((state: AppState) => state.calendar);
-  const events = useSelector(createCalendarEventsConnector(date));
+  const time = useCalendarTime();
+  const view = useCalendarOption('view');
+  const events = useCalendarEvents(date);
 
   const ref = React.useRef<HTMLDivElement>(null);
 

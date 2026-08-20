@@ -3,7 +3,7 @@ import moment from 'moment';
 import React, { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { useQueueItemForMovie } from 'Activity/Queue/Details/useQueueDetails';
-import AppState from 'App/State/AppState';
+import { useCalendarOptions } from 'Calendar/calendarOptionsStore';
 import CalendarEventQueueDetails from 'Calendar/Events/CalendarEventQueueDetails';
 import getStatusStyle from 'Calendar/getStatusStyle';
 import Icon from 'Components/Icon';
@@ -53,9 +53,7 @@ function AgendaEvent({
     createUISettingsSelector()
   );
 
-  const { showMovieInformation, showCutoffUnmetIcon } = useSelector(
-    (state: AppState) => state.calendar.options
-  );
+  const { showMovieInformation, showCutoffUnmetIcon } = useCalendarOptions();
 
   const { eventDate, eventTitle, releaseIcon } = useMemo(() => {
     if (physicalRelease && sortDate.isSame(moment(physicalRelease), 'day')) {
