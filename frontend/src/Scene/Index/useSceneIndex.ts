@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import AppState from 'App/State/AppState';
+import { useCustomFiltersList } from 'Filters/useCustomFilters';
 import {
   setSceneFilter,
   setSceneIndexMode,
@@ -11,7 +12,6 @@ import {
   setSceneTableOption,
   setSceneView,
 } from 'Store/Actions/sceneIndexActions';
-import { createCustomFiltersSelector } from 'Store/Selectors/createClientSideCollectionSelector';
 import { useSceneIndexQuery } from './useSceneIndexQuery';
 
 export function useSceneIndex() {
@@ -28,7 +28,7 @@ export function useSceneIndex() {
   );
   const columns = useSelector((state: AppState) => state.sceneIndex.columns);
   const filters = useSelector((state: AppState) => state.sceneIndex.filters);
-  const customFilters = useSelector(createCustomFiltersSelector('sceneIndex'));
+  const customFilters = useCustomFiltersList('sceneIndex');
   const indexMode = useSelector(
     (state: AppState) => state.sceneIndex.indexMode
   );

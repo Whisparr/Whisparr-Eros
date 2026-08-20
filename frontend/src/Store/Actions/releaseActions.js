@@ -241,7 +241,6 @@ export const defaultState = {
 };
 
 export const persistState = [
-  'releases.customFilters',
   'releases.selectedFilterKey',
 ];
 

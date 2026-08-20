@@ -290,7 +290,6 @@ export const persistState = [
   'movieIndex.sortKey',
   'movieIndex.sortDirection',
   'movieIndex.selectedFilterKey',
-  'movieIndex.customFilters',
   'movieIndex.view',
   'movieIndex.columns',
   'movieIndex.posterOptions',

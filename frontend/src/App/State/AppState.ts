@@ -1,7 +1,7 @@
+import { DateFilterValue } from 'Helpers/Props/filterTypes';
 import { Error } from './AppSectionState';
 import CaptchaAppState from './CaptchaAppState';
 import CommandAppState from './CommandAppState';
-import CustomFiltersAppState from './CustomFiltersAppState';
 import ExtraFilesAppState from './ExtraFilesAppState';
 import InteractiveImportAppState from './InteractiveImportAppState';
 import MessagesAppState from './MessagesAppState';
@@ -34,7 +34,17 @@ export interface FilterBuilderProp<T> {
 
 export interface PropertyFilter {
   key: string;
-  value: boolean | string | number | string[] | number[];
+  // Predefined filters in the Store/Actions files carry scalar booleans and
+  // numbers; custom filters come from React Query typed by Filters/Filter,
+  // which adds boolean arrays and date values. Both end up here.
+  value:
+    | boolean
+    | string
+    | number
+    | string[]
+    | number[]
+    | boolean[]
+    | DateFilterValue;
   type: string;
 }
 
@@ -44,12 +54,10 @@ export interface Filter {
   filters: PropertyFilter[];
 }
 
-export interface CustomFilter {
-  id: number;
-  type: string;
-  label: string;
-  filters: PropertyFilter[];
-}
+// Custom filters come from React Query, which types them with the definition
+// in Filters/Filter. Re-exported here so the many components that import their
+// prop types from AppState keep working.
+export type { CustomFilter } from 'Filters/Filter';
 
 export interface AppSectionState {
   isUpdated: boolean;
@@ -77,7 +85,6 @@ interface AppState {
   app: AppSectionState;
   captcha: CaptchaAppState;
   commands: CommandAppState;
-  customFilters: CustomFiltersAppState;
   extraFiles: ExtraFilesAppState;
   interactiveImport: InteractiveImportAppState;
   movieCollections: MovieCollectionAppState;

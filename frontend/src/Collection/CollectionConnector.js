@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
 import * as commandNames from 'Commands/commandNames';
 import withScrollPosition from 'Components/withScrollPosition';
+import { useCustomFiltersList } from 'Filters/useCustomFilters';
 import { executeCommand } from 'Store/Actions/commandActions';
 import {
   fetchMovieCollections,
@@ -17,9 +18,15 @@ import createCommandExecutingSelector from 'Store/Selectors/createCommandExecuti
 import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import Collection from './Collection';
 
+// `customFilters` arrives as an own prop from CollectionCustomFilters below,
+// because it comes from React Query and this is still a connector. Own props
+// reach every input selector as the second argument.
+const selectCollectionItems =
+  createCollectionClientSideCollectionItemsSelector('movieCollections');
+
 function createMapStateToProps() {
   return createSelector(
-    createCollectionClientSideCollectionItemsSelector('movieCollections'),
+    selectCollectionItems,
     createCommandExecutingSelector(commandNames.REFRESH_COLLECTIONS),
     createDimensionsSelector(),
     (collections, isRefreshingCollections, dimensionsState) => {
@@ -102,7 +109,15 @@ CollectionConnector.propTypes = {
   dispatchFetchMovieCollections: PropTypes.func.isRequired,
 };
 
-export default withScrollPosition(
-  connect(createMapStateToProps, createMapDispatchToProps)(CollectionConnector),
-  'movieCollections'
-);
+const ConnectedCollection = connect(
+  createMapStateToProps,
+  createMapDispatchToProps
+)(CollectionConnector);
+
+function CollectionCustomFilters(props) {
+  const customFilters = useCustomFiltersList('movieCollections');
+
+  return <ConnectedCollection {...props} customFilters={customFilters} />;
+}
+
+export default withScrollPosition(CollectionCustomFilters, 'movieCollections');

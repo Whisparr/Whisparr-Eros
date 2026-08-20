@@ -10,8 +10,6 @@ function createFetchServerSideCollectionHandler(
   url,
   fetchDataAugmenter
 ) {
-  const [baseSection] = section.split('.');
-
   return function (getState, payload, dispatch) {
     dispatch(set({ section, isFetching: true }));
 
@@ -29,19 +27,10 @@ function createFetchServerSideCollectionHandler(
 
     const { selectedFilterKey, filters } = sectionState;
 
-    const customFilters = getState().customFilters.items.filter(
-      (customFilter) => {
-        return (
-          customFilter.type === section || customFilter.type === baseSection
-        );
-      }
-    );
-
-    const selectedFilters = findSelectedFilters(
-      selectedFilterKey,
-      filters,
-      customFilters
-    );
+    // The only section using this handler is settings.importListExclusions,
+    // which has no custom filters. Custom filters come from React Query now
+    // and a thunk cannot read a hook, so this resolves predefined filters only.
+    const selectedFilters = findSelectedFilters(selectedFilterKey, filters);
 
     selectedFilters.forEach((filter) => {
       data[filter.key] = filter.value;

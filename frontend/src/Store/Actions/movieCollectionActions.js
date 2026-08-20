@@ -175,7 +175,6 @@ export const persistState = [
   'movieCollections.sortKey',
   'movieCollections.sortDirection',
   'movieCollections.selectedFilterKey',
-  'movieCollections.customFilters',
   'movieCollections.options',
   'movieCollections.overviewOptions',
 ];

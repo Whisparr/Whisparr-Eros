@@ -112,24 +112,21 @@ function sort(items, state) {
   return _.orderBy(items, clauses, orders);
 }
 
-export function createCustomFiltersSelector(type, alternateType) {
-  return createSelector(
-    (state) => state.customFilters.items,
-    (customFilters) => {
-      return customFilters.filter((customFilter) => {
-        return (
-          customFilter.type === type || customFilter.type === alternateType
-        );
-      });
-    }
-  );
+const NO_CUSTOM_FILTERS = [];
+
+// Custom filters live in React Query now, so they can only reach a selector
+// from the outside. Callers that support them pass `useCustomFiltersList()`
+// through as an own prop; the settings sections that have no custom filters at
+// all pass nothing and get the empty default.
+function selectCustomFilters(state, props) {
+  return props?.customFilters ?? NO_CUSTOM_FILTERS;
 }
 
 function createClientSideCollectionSelector(section, uiSection) {
   return createSelector(
     (state) => _.get(state, section),
     (state) => _.get(state, uiSection),
-    createCustomFiltersSelector(section, uiSection),
+    selectCustomFilters,
     (sectionState, uiSectionState = {}, customFilters) => {
       const state = Object.assign({}, sectionState, uiSectionState, {
         customFilters,

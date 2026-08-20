@@ -4,12 +4,12 @@ import AppState, {
   Filter,
   PropertyFilter,
 } from 'App/State/AppState';
+import { useCustomFiltersList } from 'Filters/useCustomFilters';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import { SortDirection } from 'Helpers/Props/sortDirections';
 import Movie from 'Movie/Movie';
 import { PagingResource } from 'Movie/Movie.types';
 import { filters as movieIndexFilters } from 'Store/Actions/movieActions';
-import { createCustomFiltersSelector } from 'Store/Selectors/createClientSideCollectionSelector';
 
 export interface SceneIndexQueryParams {
   page: number;
@@ -23,9 +23,9 @@ export function useSceneIndexQuery(params: SceneIndexQueryParams) {
     (state: AppState) => state.sceneIndex.selectedFilterKey
   );
 
-  const customFilters = useSelector(createCustomFiltersSelector('sceneIndex'));
+  const customFilters = useCustomFiltersList('sceneIndex');
 
-  let filterDef: Filter | undefined = undefined;
+  let filterDef: Filter | CustomFilter | undefined = undefined;
   let filters: PropertyFilter[] = [];
 
   if (

@@ -2,8 +2,8 @@ import { useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { createSelector } from 'reselect';
 import AppState from 'App/State/AppState';
+import useCustomFilters from 'Filters/useCustomFilters';
 import { fetchTranslations } from 'Store/Actions/appActions';
-import { fetchCustomFilters } from 'Store/Actions/customFilterActions';
 import {
   fetchImportLists,
   fetchIndexerFlags,
@@ -16,7 +16,6 @@ import useSystemStatus from 'System/Status/useSystemStatus';
 
 const createErrorsSelector = () =>
   createSelector(
-    (state: AppState) => state.customFilters.error,
     (state: AppState) => state.performers.error,
     (state: AppState) => state.studios.error,
     (state: AppState) => state.tags.error,
@@ -27,7 +26,6 @@ const createErrorsSelector = () =>
     (state: AppState) => state.settings.indexerFlags.error,
     (state: AppState) => state.app.translations.error,
     (
-      customFiltersError,
       performersError,
       studiosError,
       tagsError,
@@ -39,7 +37,6 @@ const createErrorsSelector = () =>
       translationsError
     ) => {
       const hasError = !!(
-        customFiltersError ||
         performersError ||
         studiosError ||
         tagsError ||
@@ -54,7 +51,6 @@ const createErrorsSelector = () =>
       return {
         hasError,
         errors: {
-          customFiltersError,
           performersError,
           studiosError,
           tagsError,
@@ -79,9 +75,15 @@ const useAppPage = () => {
   const { isSuccess: isSystemStatusPopulated, error: systemStatusQueryError } =
     useSystemStatus();
 
+  // Every page that offers a filter menu resolves its selected filter key
+  // against this query, and the index pages send the result to the server. The
+  // app must not render a page before it resolves, or the first request goes
+  // out unfiltered and the user sees the whole library flash past.
+  const { isFetched: isCustomFiltersPopulated, error: customFiltersError } =
+    useCustomFilters();
+
   const isReduxPopulated = useSelector(
     (state: AppState) =>
-      state.customFilters.isPopulated &&
       state.tags.isPopulated &&
       state.settings.ui.isPopulated &&
       state.settings.qualityProfiles.isPopulated &&
@@ -91,16 +93,18 @@ const useAppPage = () => {
       state.app.translations.isPopulated
   );
 
-  const isPopulated = isReduxPopulated && isSystemStatusPopulated;
+  const isPopulated =
+    isReduxPopulated && isSystemStatusPopulated && isCustomFiltersPopulated;
 
   const { hasError, errors: reduxErrors } = useSelector(createErrorsSelector());
 
   const errors = useMemo(() => {
     return {
       ...reduxErrors,
+      customFiltersError,
       systemStatusError: systemStatusQueryError,
     };
-  }, [reduxErrors, systemStatusQueryError]);
+  }, [reduxErrors, customFiltersError, systemStatusQueryError]);
 
   const isLocalStorageSupported = useMemo(() => {
     const key = 'whisparrTest';
@@ -116,7 +120,6 @@ const useAppPage = () => {
   }, []);
 
   useEffect(() => {
-    dispatch(fetchCustomFilters());
     dispatch(fetchTags());
     dispatch(fetchQualityProfiles());
     dispatch(fetchLanguages());
@@ -129,13 +132,14 @@ const useAppPage = () => {
   return useMemo(() => {
     return {
       errors,
-      hasError: hasError || !!systemStatusQueryError,
+      hasError: hasError || !!customFiltersError || !!systemStatusQueryError,
       isLocalStorageSupported,
       isPopulated,
     };
   }, [
     errors,
     hasError,
+    customFiltersError,
     systemStatusQueryError,
     isLocalStorageSupported,
     isPopulated,

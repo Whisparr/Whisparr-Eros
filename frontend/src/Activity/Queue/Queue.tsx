@@ -22,10 +22,10 @@ import Table from 'Components/Table/Table';
 import TableBody from 'Components/Table/TableBody';
 import TableOptionsModalWrapper from 'Components/Table/TableOptions/TableOptionsModalWrapper';
 import TablePager from 'Components/Table/TablePager';
+import { useCustomFiltersList } from 'Filters/useCustomFilters';
 import useSelectState from 'Helpers/Hooks/useSelectState';
 import { align, icons, kinds } from 'Helpers/Props';
 import { executeCommand } from 'Store/Actions/commandActions';
-import { createCustomFiltersSelector } from 'Store/Selectors/createClientSideCollectionSelector';
 import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
 import { CheckInputChanged } from 'typings/inputs';
 import { SelectStateInputProps } from 'typings/props';
@@ -76,7 +76,7 @@ function Queue() {
   const { removeQueueItems, isRemoving } = useRemoveQueueItems();
 
   const { count } = useQueueStatus();
-  const customFilters = useSelector(createCustomFiltersSelector('queue'));
+  const customFilters = useCustomFiltersList('queue');
 
   const isRefreshMonitoredDownloadsExecuting = useSelector(
     createCommandExecutingSelector(commandNames.REFRESH_MONITORED_DOWNLOADS)

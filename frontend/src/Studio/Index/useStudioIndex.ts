@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import ModelBase from 'App/ModelBase';
 import { useSelect } from 'App/SelectContext';
 import AppState from 'App/State/AppState';
+import { useCustomFiltersList } from 'Filters/useCustomFilters';
 import { fetchGeneralSettings } from 'Store/Actions/Settings/general';
 import {
   setStudioFilter,
@@ -12,7 +13,6 @@ import {
   setStudioTableOption,
   setStudioView,
 } from 'Store/Actions/studioActions';
-import { createCustomFiltersSelector } from 'Store/Selectors/createClientSideCollectionSelector';
 import { useStudioIndexQuery } from './useStudioIndexQuery';
 
 /**
@@ -74,7 +74,7 @@ function StudioSelectModeReinitializer({
 export function useStudioIndex() {
   // Paging and sorting state from Redux store
   const filters: PageFilter[] = [];
-  const customFilters = useSelector(createCustomFiltersSelector('studios'));
+  const customFilters = useCustomFiltersList('studios');
   const columns = useSelector((state: AppState) => state.studios.columns);
   const selectedFilterKey = useSelector(
     (state: AppState) => state.studios.selectedFilterKey

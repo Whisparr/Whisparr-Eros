@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect } from 'react';
-import { useSelector } from 'react-redux';
 import { Filter as AppStateFilter } from 'App/State/AppState';
 import Alert from 'Components/Alert';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
@@ -13,9 +12,9 @@ import Table from 'Components/Table/Table';
 import TableBody from 'Components/Table/TableBody';
 import TableOptionsModalWrapper from 'Components/Table/TableOptions/TableOptionsModalWrapper';
 import TablePager from 'Components/Table/TablePager';
+import { useCustomFiltersList } from 'Filters/useCustomFilters';
 import { align, icons, kinds } from 'Helpers/Props';
 import { SortDirection } from 'Helpers/Props/sortDirections';
-import { createCustomFiltersSelector } from 'Store/Selectors/createClientSideCollectionSelector';
 import { TableOptionsChangePayload } from 'typings/Table';
 import {
   registerPagePopulator,
@@ -49,7 +48,7 @@ function History() {
     goToPage,
   } = useHistory();
 
-  const customFilters = useSelector(createCustomFiltersSelector('history'));
+  const customFilters = useCustomFiltersList('history');
 
   const handleFilterSelect = useCallback(
     (selectedFilterKey: string | number) => {

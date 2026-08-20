@@ -435,7 +435,6 @@ export const persistState = [
   'performers.view',
   'performers.columns',
   'performers.selectedFilterKey',
-  'performers.customFilters',
   'performers.posterOptions',
   'performers.tableOptions',
 ];

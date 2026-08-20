@@ -9,7 +9,7 @@ interface ErrorPageProps {
   isLocalStorageSupported: boolean;
   translationsError?: Error;
   moviesError?: Error;
-  customFiltersError?: Error;
+  customFiltersError?: ApiError | null;
   tagsError?: Error;
   qualityProfilesError?: Error;
   languagesError?: Error;

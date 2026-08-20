@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import AppState from 'App/State/AppState';
 import ClientSideCollectionAppState from 'App/State/ClientSideCollectionAppState';
 import ReleasesAppState from 'App/State/ReleasesAppState';
 import Alert from 'Components/Alert';
@@ -10,6 +11,7 @@ import PageMenuButton from 'Components/Menu/PageMenuButton';
 import Column from 'Components/Table/Column';
 import Table from 'Components/Table/Table';
 import TableBody from 'Components/Table/TableBody';
+import { useCustomFiltersList } from 'Filters/useCustomFilters';
 import { align, icons, kinds, sortDirections } from 'Helpers/Props';
 import {
   fetchReleases,
@@ -18,6 +20,9 @@ import {
   setReleasesSort,
 } from 'Store/Actions/releaseActions';
 import createClientSideCollectionSelector from 'Store/Selectors/createClientSideCollectionSelector';
+
+const createReleasesCollectionSelector =
+  createClientSideCollectionSelector('releases');
 import getErrorMessage from 'Utilities/Object/getErrorMessage';
 import translate from 'Utilities/String/translate';
 import InteractiveSearchFilterModal from './InteractiveSearchFilterModal';
@@ -122,6 +127,16 @@ interface InteractiveSearchProps {
   searchPayload: InteractiveSearchPayload;
 }
 
+function useReleasesSelector() {
+  const customFilters = useCustomFiltersList('releases');
+
+  return useCallback(
+    (state: AppState) =>
+      createReleasesCollectionSelector(state, { customFilters }),
+    [customFilters]
+  );
+}
+
 function InteractiveSearch({ searchPayload }: InteractiveSearchProps) {
   const {
     isFetching,
@@ -135,7 +150,7 @@ function InteractiveSearch({ searchPayload }: InteractiveSearchProps) {
     sortKey,
     sortDirection,
   }: ReleasesAppState & ClientSideCollectionAppState = useSelector(
-    createClientSideCollectionSelector('releases')
+    useReleasesSelector()
   );
 
   const dispatch = useDispatch();
