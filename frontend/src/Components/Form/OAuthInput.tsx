@@ -1,16 +1,16 @@
 import React, { useCallback, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import AppState from 'App/State/AppState';
+import { useDispatch } from 'react-redux';
 import SpinnerErrorButton from 'Components/Link/SpinnerErrorButton';
 import { kinds } from 'Helpers/Props';
-import { resetOAuth, startOAuth } from 'Store/Actions/oAuthActions';
+import useOAuth from 'OAuth/useOAuth';
+import { set } from 'Store/Actions/baseActions';
 import { InputOnChange } from 'typings/inputs';
 
 export interface OAuthInputProps {
   label?: string;
   name: string;
   provider: string;
-  providerData: object;
+  providerData: Record<string, unknown>;
   section: string;
   onChange: InputOnChange<unknown>;
 }
@@ -24,20 +24,22 @@ function OAuthInput({
   onChange,
 }: OAuthInputProps) {
   const dispatch = useDispatch();
-  const { authorizing, error, result } = useSelector(
-    (state: AppState) => state.oAuth
-  );
+  const { authorizing, error, result, startOAuth, resetOAuth } = useOAuth();
 
   const handlePress = useCallback(() => {
-    dispatch(
-      startOAuth({
-        name,
-        provider,
-        providerData,
-        section,
+    startOAuth({ name, provider, providerData })
+      .then(() => {
+        // Clear any previously set save error.
+        dispatch(set({ section, saveError: null }));
       })
-    );
-  }, [name, provider, providerData, section, dispatch]);
+      .catch((error) => {
+        // The provider form reads validation errors off the section's save
+        // error, so it still has to go through Redux until settings moves.
+        if (error?.status === 400) {
+          dispatch(set({ section, saveError: error }));
+        }
+      });
+  }, [name, provider, providerData, section, startOAuth, dispatch]);
 
   useEffect(() => {
     if (!result) {
@@ -51,9 +53,9 @@ function OAuthInput({
 
   useEffect(() => {
     return () => {
-      dispatch(resetOAuth());
+      resetOAuth();
     };
-  }, [dispatch]);
+  }, [resetOAuth]);
 
   return (
     <div>
