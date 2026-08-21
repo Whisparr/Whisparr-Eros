@@ -1,6 +1,5 @@
 import { DateFilterValue } from 'Helpers/Props/filterTypes';
 import { Error } from './AppSectionState';
-import CaptchaAppState from './CaptchaAppState';
 import ExtraFilesAppState from './ExtraFilesAppState';
 import InteractiveImportAppState from './InteractiveImportAppState';
 import MessagesAppState from './MessagesAppState';
@@ -8,9 +7,7 @@ import MovieCollectionAppState from './MovieCollectionAppState';
 import MovieCreditAppState from './MovieCreditAppState';
 import MovieFilesAppState from './MovieFilesAppState';
 import MoviesAppState, { MovieIndexAppState } from './MoviesAppState';
-import OAuthAppState from './OAuthAppState';
 import PerformersAppState from './PerformersAppState';
-import ProviderOptionsAppState from './ProviderOptionsAppState';
 import ReleasesAppState from './ReleasesAppState';
 import SettingsAppState from './SettingsAppState';
 import StudiosAppState from './StudiosAppState';
@@ -79,7 +76,6 @@ export interface AppSectionState {
 
 interface AppState {
   app: AppSectionState;
-  captcha: CaptchaAppState;
   extraFiles: ExtraFilesAppState;
   interactiveImport: InteractiveImportAppState;
   movieCollections: MovieCollectionAppState;
@@ -90,8 +86,6 @@ interface AppState {
   performers: PerformersAppState;
   studios: StudiosAppState;
   movies: MoviesAppState;
-  oAuth: OAuthAppState;
-  providerOptions: ProviderOptionsAppState;
   releases: ReleasesAppState;
   settings: SettingsAppState;
 }

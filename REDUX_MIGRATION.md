@@ -19,11 +19,11 @@ verified to resolve against the public repo.
 
 | Metric | At assessment | Now |
 | --- | --- | --- |
-| Files importing `react-redux` | 327 of 1,255 | **262** of 1,239 |
-| Lines under `frontend/src/Store/` | 15,374 across 138 files | **11,907** across 112 |
-| Redux slices registered in `Store/Actions/index.js` | 35 | **20** |
+| Files importing `react-redux` | 327 of 1,255 | **259** of 1,236 |
+| Lines under `frontend/src/Store/` | 15,374 across 138 files | **11,426** across 109 |
+| Redux slices registered in `Store/Actions/index.js` | 35 | **17** |
 | Remaining `*Connector` files | 66 | **56** |
-| Files touching React Query | 35 | **61** |
+| Files touching React Query | 35 | **62** |
 | zustand stores | 0 (not installed) | **installed, 3 primitives + 8 option stores** |
 
 > **Recomputed in #464.** Three rows previously carried figures that no command
@@ -185,7 +185,7 @@ commands commit touched 51 files, custom filters 44. Ship them alone.
 | ~~**Tags**~~ — rewrite `useTags` for real, plus tag details and filter-builder rows. **Done, #487.** | ~~`tagActions`~~, ~~`createTagsSelector.ts`~~, ~~`createTagDetailsSelector.ts`~~, ~~`TagFilterBuilderRowValueConnector.js`~~, ~~`TagsAppState`~~ | [Sonarr/Sonarr@0809a72c](https://github.com/Sonarr/Sonarr/commit/0809a72c) (40 files) |
 | ~~**Root folders**~~ — 17 consumers across Settings, Add flows, edit modals. **Done, #488.** | ~~`rootFolderActions`~~, ~~`createRootFoldersSelector.ts`~~, ~~`RootFolderAppState`~~ | [Sonarr/Sonarr@7a5157df](https://github.com/Sonarr/Sonarr/commit/7a5157df) |
 | ~~**Paths + file browser**~~ *(hybrid)* — `usePaths` existed; `PathInput` and `FileBrowserModalContent` finished. **Done, #489.** | ~~`pathActions`~~, ~~`PathsAppState`~~, ~~`createPathsSelector.ts`~~ | [Sonarr/Sonarr@91b24290](https://github.com/Sonarr/Sonarr/commit/91b24290), [Sonarr/Sonarr@9a0e23a9](https://github.com/Sonarr/Sonarr/commit/9a0e23a9) |
-| **Provider options + captcha** — feeds every provider settings form; do before phase E | `providerOptionActions`, `captchaActions`, `oAuthActions` | [Sonarr/Sonarr@cd7adba1](https://github.com/Sonarr/Sonarr/commit/cd7adba1) |
+| ~~**Provider options + captcha**~~ — feeds every provider settings form. **Done, #490.** | ~~`providerOptionActions`~~, ~~`captchaActions`~~, ~~`oAuthActions`~~, ~~`ProviderOptionsAppState`~~, ~~`CaptchaAppState`~~, ~~`OAuthAppState`~~ | [Sonarr/Sonarr@cd7adba1](https://github.com/Sonarr/Sonarr/commit/cd7adba1), [Sonarr/Sonarr@3c77c4b9](https://github.com/Sonarr/Sonarr/commit/3c77c4b9), [Sonarr/Sonarr@8a68c860](https://github.com/Sonarr/Sonarr/commit/8a68c860) |
 | **SignalR → query invalidation** — the pivot: `SignalRConnector.js` dispatches actions today; becomes a listener that invalidates query keys | `Components/SignalRConnector.js`, `Store/thunks.ts`, `redux-batched-actions` | `Components/SignalRListener.tsx` |
 | **App shell** — messages, dimensions, theme, advanced settings. zustand, not React Query. 34 files import `baseActions`. | `appActions`, `MessagesAppState`, `createDimensionsSelector.ts` | [Sonarr/Sonarr@878f879c](https://github.com/Sonarr/Sonarr/commit/878f879c), [Sonarr/Sonarr@7e702380](https://github.com/Sonarr/Sonarr/commit/7e702380) |
 
@@ -349,10 +349,10 @@ the whole app rather than one page.
    The seam between the two is not where §5 assumed. See *Custom filters split at the
    mutation boundary, not the hook boundary* below.
 7. ~~**Commands.**~~ **Done, #486.** ~~**Tags.**~~ **Done, #487.** ~~**Root folders.**~~
-   **Done, #488.** ~~**Paths + file browser.**~~ **Done, #489.**
+   **Done, #488.** ~~**Paths + file browser.**~~ **Done, #489.** ~~**Provider options +
+   captcha.**~~ **Done, #490.**
 
-   Three of Phase C's eight remain: provider options + captcha, the SignalR pivot, and
-   the app shell.
+   Two of Phase C's eight remain: the SignalR pivot and the app shell.
 
 ### Custom filters split at the mutation boundary, not the hook boundary
 
@@ -633,6 +633,7 @@ If a JS test runner is ever added, remove that line and set
 | 2026-08-18 | #470 | **SignalR container.** Class + `connect()` → function component, as Sonarr did in Jan 2025. Redux stays inside. |
 | 2026-08-18 | #471 | **Organize preview + Unmapped Files.** Two slices retired. First conversion where a page's table prefs move to a zustand options store rather than to React Query. |
 | 2026-08-20 | #487 | **Tags.** `useTags`/`useTagDetails` replace `tagActions`, both tag selectors and `TagsAppState`; the `Tags/useTags.ts` shim that had been a selector wearing a hook's name is now the real query. `TagFilterBuilderRowValueConnector` was a `connect()` whose whole job was reshaping the list, so it became a plain component and the connector count dropped with it. `useAppPage` gates on the query for the same reason it gates on custom filters. Delete writes the removal into the cache but leaves the refetch to SignalR — invalidating `/tag/detail` here as well fetched it twice, measured. `useSortedTagList` copies before sorting: `MovieTagInput` had been sorting the shared list in place, which was harmless against a slice that handed out a fresh array per fetch and is not against a query cache. |
+| 2026-08-20 | #490 | **Provider options + captcha.** `providerOptionActions`, `captchaActions`, `oAuthActions` and their three `AppState` files deleted for `Settings/useProviderOptions.ts`, `Components/Form/useCaptcha.ts` and `OAuth/useOAuth.ts`. `useProviderOptions` does not use `useApiQuery`: that helper keys a POST on the whole body, and the body here is the entire provider form, so every keystroke would be a new cache entry and a new request. It keys on `baseUrl`/`apiPath`/`apiKey`/`authToken` instead, which is what the old slice's `lastActions` de-duplication was approximating — measured, typing in *Name* now fires nothing where the four important fields fire one request each. Two deliberate departures from Sonarr's commits. Sonarr's `DeviceInput` rewrite reads the options as `{value, name}`, but the backend projects `{id, name}` in both apps, so this keeps `.id` — with `.value` the selected device renders as *Unknown (…)*, verified against a stubbed response. And `OAuthInput` keeps dispatching `set({section, saveError})`: Sonarr routes that through a `FormInputGroupContext` Eros does not have, and without it the pop-up-blocked message stops reaching the field. Converting `CaptchaInput` also fixes it — `refreshing`, `siteKey` and `secretToken` were declared as props and never passed by anything, so the ReCAPTCHA widget could not render; no provider in this build declares a `captcha` field, so that path is types-and-lint only. |
 | 2026-08-20 | #489 | **Paths + file browser.** `pathActions`, `PathsAppState` and `createPathsSelector` deleted; `PathInput` and `FileBrowserModalContent` finished onto the `usePaths` query that had been sitting unused since Phase A. The slice was a single shared listing that every path input on the page wrote to and read from; each component now owns a `currentPath` and the query follows it, which is why `PathInputInternal`'s Tab-complete and suggestion handlers had to stop calling their own dispatch and go through the `onFetchPaths` prop — inside the browser modal that prop is what moves the modal's path. Dropped `usePaths`' `enabled: path.trim().length > 0` guard, following Sonarr's own follow-up: the browser opens on an empty path and the endpoint answers that with the root listing, so the guard left the modal blank whenever the field it was opened from was empty. Costs one `GET /filesystem` on mount per page carrying a path field — Media Management and General, one each, both behind *Show Advanced*. |
 | 2026-08-20 | #488 | **Root folders.** `RootFolder/useRootFolders.ts` replaces `rootFolderActions`, `createRootFoldersSelector` and `RootFolderAppState`. Eight components dispatched `fetchRootFolders()` purely to prime the slice for a select they might never mount; the query fetches when `RootFolderSelectInput` actually mounts, so those effects are gone rather than rewritten. Whisparr has a `refresh` mutation Sonarr does not — it rescans one folder and returns it, so `useRefreshRootFolder` takes the id in the payload and writes the result into both the list and the by-id cache. `ImportMovie` read a single folder out of the list via a by-id fetch that `updateItem` merged back in; it now reads `/rootFolder/{id}` directly, and drops the `timeout`/`getMovieFolder` query params, which `GetResourceById` never bound. Add and delete write the cache; the server broadcasts `rootfolder` on create but **not** on delete, verified over the websocket, so the delete's cache write is what removes the row — same as the slice's remove handler. |
 | 2026-08-20 | #486 | **Commands.** `useCommands` and friends replace `commandActions` and its three selectors across 58 files; SignalR now writes the command cache instead of dispatching. Two behaviours changed on purpose, both following Sonarr: the per-command five-minute removal timer is gone in favour of a five-minute `refetchInterval`, and the `commands.handlers` table went with it — it was initialised, read once in `FINISH_COMMAND`, and never written to by anything. Toasts still dispatch `showMessage` to the redux app slice; commands are its only producer, and it converts with the rest of the app shell. |
