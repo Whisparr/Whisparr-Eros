@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import FormGroup from 'Components/Form/FormGroup';
 import FormInputGroup from 'Components/Form/FormInputGroup';
 import FormLabel from 'Components/Form/FormLabel';
@@ -9,37 +10,54 @@ import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { inputTypes, kinds, sizes } from 'Helpers/Props';
+import Studio from 'Studio/Studio';
+import {
+  setStudioDeleteOption,
+  useStudioDeleteOptions,
+} from 'Studio/studioDeleteOptionsStore';
 import translate from 'Utilities/String/translate';
+import { useDeleteStudioMutation } from './useDeleteStudioMutation';
 import styles from './DeleteStudioModal.css';
 
-interface DeleteStudioModalContentProps {
-  title: string;
-  deleteOptions: { addImportExclusion: boolean };
-  onDeleteOptionChange: (option: { name: string; value: boolean }) => void;
-  onDeletePress: (deleteFiles: boolean, addImportExclusion: boolean) => void;
+export interface DeleteStudioModalContentProps {
+  studio: Studio;
   onModalClose: () => void;
 }
 
 function DeleteStudioModalContent({
-  title,
-  deleteOptions,
+  studio,
   onModalClose,
-  onDeleteOptionChange,
-  onDeletePress,
-}: DeleteStudioModalContentProps) {
+}: Readonly<DeleteStudioModalContentProps>) {
+  const { title } = studio;
+
+  const { addImportExclusion } = useStudioDeleteOptions();
+  const { mutate: deleteStudio } = useDeleteStudioMutation();
+  const navigate = useNavigate();
+
   const [deleteFiles, setDeleteFiles] = useState(false);
 
-  const onDeleteFilesChange = useCallback(({ value }: { value: boolean }) => {
-    setDeleteFiles(value);
-  }, []);
+  const handleDeleteOptionChange = useCallback(
+    ({ value }: { value: boolean }) => {
+      setStudioDeleteOption('addImportExclusion', value);
+    },
+    []
+  );
 
-  const onDeleteStudioConfirmed = useCallback(() => {
-    const addImportExclusion = deleteOptions.addImportExclusion;
+  const handleDeleteFilesChange = useCallback(
+    ({ value }: { value: boolean }) => {
+      setDeleteFiles(value);
+    },
+    []
+  );
+
+  // This modal is opened from the index poster and from studio details, and the
+  // details route is gone once the studio is, so it navigates either way -- as
+  // the thunk it replaces did.
+  const handleDeleteStudioConfirmed = useCallback(() => {
+    deleteStudio({ id: studio.id, deleteFiles, addImportExclusion });
     setDeleteFiles(false);
-    onDeletePress(deleteFiles, addImportExclusion);
-  }, [deleteFiles, deleteOptions.addImportExclusion, onDeletePress]);
-
-  const addImportExclusion = deleteOptions.addImportExclusion;
+    navigate('/studios');
+  }, [studio.id, deleteFiles, addImportExclusion, deleteStudio, navigate]);
 
   return (
     <ModalContent onModalClose={onModalClose}>
@@ -59,7 +77,7 @@ function DeleteStudioModalContent({
             value={addImportExclusion}
             helpText={translate('AddImportExclusionHelpText')}
             kind={kinds.DANGER}
-            onChange={onDeleteOptionChange}
+            onChange={handleDeleteOptionChange}
           />
         </FormGroup>
         <FormGroup>
@@ -72,13 +90,13 @@ function DeleteStudioModalContent({
             value={deleteFiles}
             helpText={translate('DeleteFilesHelpText')}
             kind={kinds.DANGER}
-            onChange={onDeleteFilesChange}
+            onChange={handleDeleteFilesChange}
           />
         </FormGroup>
       </ModalBody>
       <ModalFooter>
         <Button onPress={onModalClose}>{translate('Close')}</Button>
-        <Button kind={kinds.DANGER} onPress={onDeleteStudioConfirmed}>
+        <Button kind={kinds.DANGER} onPress={handleDeleteStudioConfirmed}>
           {translate('Delete')}
         </Button>
       </ModalFooter>

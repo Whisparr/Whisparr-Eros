@@ -222,7 +222,7 @@ function StudioIndex(): React.JSX.Element {
           {/*
           FOOTER - SELECT MODE
           */}
-          {isSelectMode ? <StudioIndexSelectFooter /> : null}
+          {isSelectMode ? <StudioIndexSelectFooter items={items} /> : null}
 
           {/*
           MODALS
