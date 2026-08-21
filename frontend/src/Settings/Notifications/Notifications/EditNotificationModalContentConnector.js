@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
+import withAdvancedSettings from 'Components/withAdvancedSettings';
 import {
   saveNotification,
   setNotificationFieldValues,
@@ -13,11 +14,9 @@ import EditNotificationModalContent from './EditNotificationModalContent';
 
 function createMapStateToProps() {
   return createSelector(
-    (state) => state.settings.advancedSettings,
     createProviderSettingsSelector('notifications'),
-    (advancedSettings, notification) => {
+    (notification) => {
       return {
-        advancedSettings,
         ...notification,
       };
     }
@@ -91,7 +90,9 @@ EditNotificationModalContentConnector.propTypes = {
   onModalClose: PropTypes.func.isRequired,
 };
 
-export default connect(
+export default withAdvancedSettings(
+  connect(
   createMapStateToProps,
   mapDispatchToProps
-)(EditNotificationModalContentConnector);
+)(EditNotificationModalContentConnector)
+);

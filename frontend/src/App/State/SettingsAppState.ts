@@ -126,7 +126,6 @@ export type LanguageSettingsAppState = AppSectionState<Language>;
 export type UiSettingsAppState = AppSectionItemState<UiSettings>;
 
 interface SettingsAppState {
-  advancedSettings: boolean;
   autoTaggings: AutoTaggingAppState;
   autoTaggingSpecifications: AutoTaggingSpecificationAppState;
   customFormats: CustomFormatAppState;

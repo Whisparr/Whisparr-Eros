@@ -12,6 +12,7 @@ import FormLabel from 'Components/Form/FormLabel';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import useModalOpenState from 'Helpers/Hooks/useModalOpenState';
 import { inputTypes, kinds, sizes } from 'Helpers/Props';
+import { useShowAdvancedSettings } from 'Settings/advancedSettingsStore';
 import { clearPendingChanges } from 'Store/Actions/baseActions';
 import {
   fetchNamingExamples,
@@ -29,12 +30,10 @@ const SECTION = 'naming';
 
 function createNamingSelector() {
   return createSelector(
-    (state: AppState) => state.settings.advancedSettings,
     (state: AppState) => state.settings.namingExamples,
     createSettingsSectionSelector(SECTION),
-    (advancedSettings, namingExamples, sectionSettings) => {
+    (namingExamples, sectionSettings) => {
       return {
-        advancedSettings,
         examples: namingExamples.item,
         examplesPopulated: namingExamples.isPopulated,
         ...sectionSettings,
@@ -58,8 +57,8 @@ interface NamingModalOptions {
 }
 
 function Naming() {
+  const advancedSettings = useShowAdvancedSettings();
   const {
-    advancedSettings,
     isFetching,
     error,
     settings,
