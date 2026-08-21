@@ -11,7 +11,7 @@ Counts are file-level `react-redux` imports across the frontend source tree.
 Every commit reference below links to the Sonarr commit it names; all were
 verified to resolve against the public repo.
 
-**Status: Phases A, B and C complete. Phase D next.** See §11 for the running log.
+**Status: Phases A, B and C complete. Phase D in progress — Movie and the Scene index done.** See §11 for the running log.
 
 ---
 
@@ -19,9 +19,9 @@ verified to resolve against the public repo.
 
 | Metric | At assessment | Now |
 | --- | --- | --- |
-| Files importing `react-redux` | 327 of 1,255 | **235** of 1,237 |
-| Lines under `frontend/src/Store/` | 15,374 across 138 files | **10,586** across 106 |
-| Redux slices registered in `Store/Actions/index.js` | 35 | **15** |
+| Files importing `react-redux` | 327 of 1,255 | **224** of 1,234 |
+| Lines under `frontend/src/Store/` | 15,374 across 138 files | **10,157** across 104 |
+| Redux slices registered in `Store/Actions/index.js` | 35 | **14** |
 | Remaining `*Connector` files | 66 | **56** |
 | Files touching React Query | 35 | **65** |
 | zustand stores | 0 (not installed) | **installed, 19 files** |
@@ -39,6 +39,15 @@ verified to resolve against the public repo.
 > [f0b74bea](https://github.com/Whisparr/Whisparr-Eros/commit/f0b74bea). The
 > assessment figure of 1,255 does reproduce, so the method is the one recorded here
 > and the earlier entry was simply miscounted.
+>
+> **#498 corrections.** Three of the figures recorded at #497 do not reproduce at
+> [c47f968e](https://github.com/Whisparr/Whisparr-Eros/commit/c47f968e): the `Store/`
+> row was measured before `movieTitlesActions.js` was deleted in the same PR, so it
+> read 10,586 across 106 where the tree gives 10,511 across 105; the denominator gives
+> 1,236, not 1,237; and the zustand row gives 18, not 19. The lesson is procedural
+> rather than arithmetic — counts are now taken after the code commit lands, and the
+> doc update is a second commit. The zustand row had no pinned command either, so it
+> gets one below.
 >
 > **#478 correction.** The 308 recorded at #477 does not reproduce either — the command
 > below gives 309 at
@@ -58,6 +67,9 @@ verified to resolve against the public repo.
 > # React Query
 > grep -rl -E 'useApiQuery|useApiMutation|usePagedApiQuery|@tanstack/react-query' \
 >   --include='*.ts' --include='*.tsx' frontend/src | wc -l
+> # zustand (pinned in #498)
+> git grep -lE "from 'zustand|createPersist|createOptionsStore" <ref> \
+>   -- 'frontend/src/*.ts' 'frontend/src/*.tsx' | wc -l
 > # connectors (pinned in #471 — the "60" recorded at #470 did not reproduce)
 > git ls-files 'frontend/src/*Connector*' | grep -vE '\.css(\.d\.ts)?$' | wc -l
 > ```
@@ -78,12 +90,14 @@ all still Redux. The clearest tell is that the new hooks themselves call `useSel
 
 | File | Redux it still depends on |
 | --- | --- |
-| `Movie/Index/useMovieIndexQuery.ts` | `state.movieIndex.selectedFilterKey`, `movieActions.filters` |
-| `Movie/Index/useMovieIndex.ts` | 12 × `movieIndexActions` dispatches (`setMovieTableOption`, `setMoviePosterOption`, …) |
-| `Scene/Index/useSceneIndexQuery.ts` | `state.sceneIndex.selectedFilterKey` |
+| `Movie/Index/useMovieIndexQuery.ts` | ~~`state.movieIndex.selectedFilterKey`, `movieActions.filters`~~ — none, since #496/#497 |
+| `Movie/Index/useMovieIndex.ts` | ~~12 × `movieIndexActions` dispatches~~ — none, since #496 |
+| `Scene/Index/useSceneIndexQuery.ts` | ~~`state.sceneIndex.selectedFilterKey`~~ — none, since #498 |
 
 Custom filters are no longer among those dependencies: `createCustomFiltersSelector` was
-retired in #484 and both query hooks read `useCustomFiltersList` now.
+retired in #484 and both query hooks read `useCustomFiltersList` now. As of #498 neither
+index hook calls `useSelector` at all; what is left in Movie and Scene is the editing half
+— select footers, bulk modals, and Scene's delete connector.
 
 ### The ordering problem
 
@@ -208,7 +222,7 @@ shape: convert one properly, then the other three are largely mechanical.
 | Domain | Remaining work | Sonarr ref |
 | --- | --- | --- |
 | **Movie** *(hybrid)* — do first, set the template. 29 redux files, 2 connectors. **Index options done, #496; movie editing done, #497. 16 files left, 12 of them gated on Phase E.** | ~~Index options → `movieIndexOptionsStore`~~; ~~select footer~~; ~~Delete modal~~; ~~filter modal `sectionItems`~~. `movieActions` keeps only `toggleMovieMonitored` (Collection) and `bulkMonitorMovie` (Performer/Studio). Retires ~~`movieIndexActions`~~; `movieTitlesActions` was already dead. | [Sonarr/Sonarr@0521a6c3](https://github.com/Sonarr/Sonarr/commit/0521a6c3) (91 files) |
-| **Scene** *(hybrid)* — 21 redux files. Shares the `Movie` model, so hooks can share a generic base. | `sceneIndexActions`, `createAllScenesSelector.ts`, `DeleteSceneModalContentConnector.js` | — |
+| **Scene** *(hybrid)* — 21 redux files. Shares the `Movie` model, so hooks can share a generic base. **Index options done, #498, which also closed Whisparr/Whisparr#1134. 10 files left.** | ~~`sceneIndexActions`~~; select footer; Delete/Tags/Organize modals; `DeleteSceneModalContentConnector.js`, `createAllScenesSelector.ts` | — |
 | **Performer** *(hybrid)* — 20 redux files. Details, scenes tab, add flow, edit modal. | `performerActions` (675 loc), `performerScenesActions`, `addPerformerActions`, `EditPerformerModalContentConnector.js` | — |
 | **Studio** *(hybrid)* — 20 redux files. Same shape as Performer. | `studioActions` (509 loc), `studioMoviesActions`, `studioScenesActions`, `DeleteStudioModalConnector.js` | — |
 | **Collection** — untouched, fully connector-based. 7 of the 56 connectors live here, and 5 of those now take `isSmallScreen` through the #492 wrapper. | `movieCollectionActions` (571 loc), `Collection*Connector.js` ×7, `createCollectionSelector.ts` | — |
@@ -886,6 +900,7 @@ If a JS test runner is ever added, remove that line and set
 | 2026-08-18 | #470 | **SignalR container.** Class + `connect()` → function component, as Sonarr did in Jan 2025. Redux stays inside. |
 | 2026-08-18 | #471 | **Organize preview + Unmapped Files.** Two slices retired. First conversion where a page's table prefs move to a zustand options store rather than to React Query. |
 | 2026-08-20 | #487 | **Tags.** `useTags`/`useTagDetails` replace `tagActions`, both tag selectors and `TagsAppState`; the `Tags/useTags.ts` shim that had been a selector wearing a hook's name is now the real query. `TagFilterBuilderRowValueConnector` was a `connect()` whose whole job was reshaping the list, so it became a plain component and the connector count dropped with it. `useAppPage` gates on the query for the same reason it gates on custom filters. Delete writes the removal into the cache but leaves the refetch to SignalR — invalidating `/tag/detail` here as well fetched it twice, measured. `useSortedTagList` copies before sorting: `MovieTagInput` had been sorting the shared list in place, which was harmless against a slice that handed out a fresh array per fetch and is not against a query cache. |
+| 2026-08-21 | #498 | **Scene index view options.** `sceneIndexActions` (352 loc) retired for `Scene/Index/sceneIndexOptionsStore.ts`, the same shape #496 gave Movie: three pass-through `select*Options.ts` selectors deleted, `filterBuilderProps` lifted into `sceneIndexFilterBuilderProps.ts` (Scene's list is not Movie's — no release-group or studio rows, and `genres` is a plain string match), page number onto `usePage('sceneIndex')`. Slices 15 to 14. `SceneIndexFilterModal` also drops `state.movies.items` for the paged query, though unlike Movie that changes nothing observable: no Scene filter row declares an `optionsSelector`, and `FilterBuilderRowValueConnector` returns an empty list without one — the file says so rather than claiming a fix. Closes Whisparr/Whisparr#1134, both halves; the show-\* half turned out to be a landscape-poster layout fault rather than a state one, so it is its own commit — see the resolved thread above. Verified live: sort toggles direction on a repeat press and refetches once, `Wanted` sends its three predicates, poster `Show Title` persists and adds 25 titles, Overview page size 10 issues `pageSize: 10` where it previously issued nothing, opening the filter modal adds no request, and the Movie index is untouched. Scene view options reset to defaults once on upgrade, as Movie's did — the redux-persist blob is abandoned, not migrated. |
 | 2026-08-21 | #497 | **Movie editing.** `movieActions` loses `saveMovie`, `bulkDeleteMovie`, `setMovieValue` and the `filters` preset list; the first three had no dispatchers left and the list is a static definition, now `Movie/Index/movieIndexFilters.ts` (Scene imports it too — both indexes filter the same `/movie` resource). `deleteMovie` and `setDeleteOption` are replaced for Movie by `Movie/Delete/useDeleteMovieMutation.ts` and `Movie/movieDeleteOptionsStore.ts`, and the select footer's tags button drops `saveMovieEditor` for a second `useEditMoviesModalMutation` instance, so Edit and Set Tags spin independently instead of sharing one slice-level `isSaving`. `MovieIndexFilterModal` takes `sectionItems` from the paged query — see above, it was an empty array. Two dead hooks (`useEditMovieModal`, `useDeleteMovieModal`) and the orphan `movieTitlesActions.js` deleted. The delete mutation still dispatches one `updateItem` because the collection missing-count it nudges is Redux with no query to invalidate. Verified live: `DELETE /movie/33178?deleteFiles=false&addImportExclusion=true` matches the thunk's query params byte for byte, the checkbox survives a reload under `whisparr-dev_movie_delete_options`, `PUT /movie/editor {"movieIds":[33178],"tags":[],"applyTags":"add"}` matches `saveMovieEditor`, only the Set Tags button spins while it is in flight, and the Scene index and its preset filters still render off the lifted module. |
 | 2026-08-21 | #496 | **Movie index view options.** `movieIndexActions` (391 loc) retired for `Movie/Index/movieIndexOptionsStore.ts`; the three pass-through `select*Options.ts` selectors deleted; `filterBuilderProps` lifted out of slice state into `movieIndexFilterBuilderProps.ts`, since they are static definitions rather than user state. Page number moves to `usePage('movieIndex')`, which is where the sort/filter/view resets now land — the reducers they replace each reset it. `MovieIndexFilterModal` converts halfway: its `sectionItems` still reads the movies slice and goes with `movieActions`. Verified live: view and sort persist across a reload, filter and sort each refetch once, the table renders 20 rows against `tableOptions.pageSize`, and the initial load fires exactly one `/movie/paged`. |
 | 2026-08-20 | #490 | **Provider options + captcha.** `providerOptionActions`, `captchaActions`, `oAuthActions` and their three `AppState` files deleted for `Settings/useProviderOptions.ts`, `Components/Form/useCaptcha.ts` and `OAuth/useOAuth.ts`. `useProviderOptions` does not use `useApiQuery`: that helper keys a POST on the whole body, and the body here is the entire provider form, so every keystroke would be a new cache entry and a new request. It keys on `baseUrl`/`apiPath`/`apiKey`/`authToken` instead, which is what the old slice's `lastActions` de-duplication was approximating — measured, typing in *Name* now fires nothing where the four important fields fire one request each. Two deliberate departures from Sonarr's commits. Sonarr's `DeviceInput` rewrite reads the options as `{value, name}`, but the backend projects `{id, name}` in both apps, so this keeps `.id` — with `.value` the selected device renders as *Unknown (…)*, verified against a stubbed response. And `OAuthInput` keeps dispatching `set({section, saveError})`: Sonarr routes that through a `FormInputGroupContext` Eros does not have, and without it the pop-up-blocked message stops reaching the field. Converting `CaptchaInput` also fixes it — `refreshing`, `siteKey` and `secretToken` were declared as props and never passed by anything, so the ReCAPTCHA widget could not render; no provider in this build declares a `captcha` field, so that path is types-and-lint only. |
@@ -978,6 +993,29 @@ If a JS test runner is ever added, remove that line and set
   by `state.movies`, so it was filed against Phase C — but custom filters converted without
   touching `MovieFilterBuilderRowValue`, which still reads the movies slice. It moves with
   Movie in Phase D. Carried over unchanged by #474.
+- **Whisparr/Whisparr#1134 — the Scenes Overview view ignores its own options.**
+  ~~Open.~~ **Both halves fixed in #498.** The two faults were unrelated to each other and
+  only one was in the state layer:
+  - *Page Size* — `useSceneIndex.ts` derived the page size with
+    `if (view === 'posters') … else tableOptions.pageSize`, with no `overview` branch, so
+    the Overview view paged at the **table** size. Both index hooks were written in the same
+    commit ([eb4bcd11d1](https://github.com/Whisparr/Whisparr-Eros/commit/eb4bcd11d1),
+    "Movie and Scene index pagination"), Movie's as a three-way `switch` and Scene's as an
+    inline two-way `if` — the overview case was never there, so Movie's is the reference
+    implementation rather than merely the newer one. Porting its shape fixed it.
+  - *The show-\* toggles were applied all along; the rows had nowhere to go.* The suspicion
+    recorded here — the `maxRows` cap in `SceneIndexOverviewInfo` — was right, and the cause
+    is upstream of it. `SceneIndexOverviews` derives the row height from the poster alone,
+    and scene posters are **landscape**: 111px at the default medium size, leaving 74px after
+    the 42px title row, which is two 25px rows' worth. Movie's posters are portrait and about
+    twice as tall, so the identical code is not visibly broken there — the fault only ever
+    looked Scene-specific because of an aspect ratio. The row now reserves whichever is
+    taller, the poster or the title plus the rows the options ask for. A second, smaller bug
+    sat underneath: `shownRows` started at 1 while the cap compares `>= maxRows`, so one row
+    that fitted was always dropped.
+  - Measured on the running instance: at the default medium size three rows render where one
+    did, and enabling all six grows the row 116px → 197px and renders all six. With only
+    *Monitored* on the row stays at 116px, so the reservation never pads past the poster.
 - **Unmapped Files fetches an unbounded list** — `GET /moviefile?unmapped=true` returns a
   plain `List<MovieFileResource>`, so the page is the only one in the app that pages
   client-side, and the only consumer of `VirtualTable`. Paging the endpoint would delete
