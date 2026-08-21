@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback } from 'react';
 import { Filter as AppStateFilter } from 'App/State/AppState';
 import Alert from 'Components/Alert';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
@@ -16,10 +16,6 @@ import { useCustomFiltersList } from 'Filters/useCustomFilters';
 import { align, icons, kinds } from 'Helpers/Props';
 import { SortDirection } from 'Helpers/Props/sortDirections';
 import { TableOptionsChangePayload } from 'typings/Table';
-import {
-  registerPagePopulator,
-  unregisterPagePopulator,
-} from 'Utilities/pagePopulator';
 import translate from 'Utilities/String/translate';
 import HistoryFilterModal from './HistoryFilterModal';
 import {
@@ -96,18 +92,6 @@ function History() {
   const handleLastPagePress = useCallback(() => {
     goToPage(totalPages);
   }, [goToPage, totalPages]);
-
-  useEffect(() => {
-    const repopulate = () => {
-      refetch();
-    };
-
-    registerPagePopulator(repopulate);
-
-    return () => {
-      unregisterPagePopulator(repopulate);
-    };
-  }, [refetch]);
 
   return (
     <PageContent title={translate('History')}>

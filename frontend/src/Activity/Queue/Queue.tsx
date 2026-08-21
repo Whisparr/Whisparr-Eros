@@ -1,7 +1,6 @@
 import React, {
   ReactElement,
   useCallback,
-  useEffect,
   useMemo,
   useRef,
   useState,
@@ -28,10 +27,6 @@ import { align, icons, kinds } from 'Helpers/Props';
 import { CheckInputChanged } from 'typings/inputs';
 import { SelectStateInputProps } from 'typings/props';
 import { TableOptionsChangePayload } from 'typings/Table';
-import {
-  registerPagePopulator,
-  unregisterPagePopulator,
-} from 'Utilities/pagePopulator';
 import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
 import QueueFilterModal from './QueueFilterModal';
@@ -65,7 +60,6 @@ function Queue() {
     isLoading,
     isFetched,
     error,
-    refetch,
     page,
     goToPage,
   } = useQueue();
@@ -204,14 +198,6 @@ function Queue() {
     },
     [goToPage]
   );
-
-  useEffect(() => {
-    registerPagePopulator(refetch);
-
-    return () => {
-      unregisterPagePopulator(refetch);
-    };
-  }, [refetch]);
 
   if (!shouldBlockRefresh.current) {
     currentQueue.current = (

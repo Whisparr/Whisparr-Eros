@@ -8,10 +8,6 @@ import {
   deleteMovieFiles,
 } from 'Store/Actions/movieFileActions';
 import { TableOptionsChangePayload } from 'typings/Table';
-import {
-  registerPagePopulator,
-  unregisterPagePopulator,
-} from 'Utilities/pagePopulator';
 import { useUnmappedMovieFiles } from '../MovieFile/useMovieFile';
 import {
   setUnmappedFilesOptions,
@@ -34,11 +30,6 @@ function UnmappedFilesTableConnector() {
   const isCleaningUnmappedFiles = useCommandExecuting(
     commandNames.CLEAN_UNMAPPED_FILES
   );
-
-  useEffect(() => {
-    registerPagePopulator(refetch);
-    return () => unregisterPagePopulator(refetch);
-  }, [refetch]);
 
   useEffect(() => {
     // When scan completes, refetch unmapped files

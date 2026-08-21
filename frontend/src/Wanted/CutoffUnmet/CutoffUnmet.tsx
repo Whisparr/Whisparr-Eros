@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Filter as AppStateFilter } from 'App/State/AppState';
 import * as commandNames from 'Commands/commandNames';
 import { useCommandExecuting, useExecuteCommand } from 'Commands/useCommands';
@@ -22,10 +22,6 @@ import { SortDirection } from 'Helpers/Props/sortDirections';
 import { CheckInputChanged } from 'typings/inputs';
 import { SelectStateInputProps } from 'typings/props';
 import { TableOptionsChangePayload } from 'typings/Table';
-import {
-  registerPagePopulator,
-  unregisterPagePopulator,
-} from 'Utilities/pagePopulator';
 import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
 import getMonitoredValue from 'Wanted/getMonitoredValue';
@@ -180,22 +176,6 @@ function CutoffUnmet() {
   const handleLastPagePress = useCallback(() => {
     goToPage(totalPages);
   }, [goToPage, totalPages]);
-
-  useEffect(() => {
-    const repopulate = () => {
-      refetch();
-    };
-
-    registerPagePopulator(repopulate, [
-      'movieUpdated',
-      'movieFileUpdated',
-      'movieFileDeleted',
-    ]);
-
-    return () => {
-      unregisterPagePopulator(repopulate);
-    };
-  }, [refetch]);
 
   return (
     <PageContent title={translate('CutoffUnmet')}>
