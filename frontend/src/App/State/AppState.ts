@@ -9,7 +9,6 @@ import MoviesAppState from './MoviesAppState';
 import PerformersAppState from './PerformersAppState';
 import ReleasesAppState from './ReleasesAppState';
 import SettingsAppState from './SettingsAppState';
-import StudiosAppState from './StudiosAppState';
 
 interface FilterBuilderPropOption {
   id: string;
@@ -79,7 +78,6 @@ interface AppState {
   movieCredits: MovieCreditAppState;
   movieFiles: MovieFilesAppState;
   performers: PerformersAppState;
-  studios: StudiosAppState;
   movies: MoviesAppState;
   releases: ReleasesAppState;
   settings: SettingsAppState;

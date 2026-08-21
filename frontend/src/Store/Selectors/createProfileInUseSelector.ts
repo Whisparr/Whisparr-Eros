@@ -2,7 +2,6 @@ import { createSelector } from 'reselect';
 import AppState from 'App/State/AppState';
 import Movie from 'Movie/Movie';
 import Performer from 'Performer/Performer';
-import Studio from 'Studio/Studio';
 import ImportList from 'typings/ImportList';
 import createAllItemsSelector from './createAllItemsSelector';
 
@@ -12,8 +11,7 @@ function createProfileInUseSelector(profileProp: string) {
     createAllItemsSelector(),
     (state: AppState) => state.settings.importLists.items,
     (state: AppState) => state.performers.items,
-    (state: AppState) => state.studios.items,
-    (id, movies, lists, performers, studios) => {
+    (id, movies, lists, performers) => {
       if (!id) {
         return false;
       }
@@ -23,8 +21,7 @@ function createProfileInUseSelector(profileProp: string) {
         lists.some((list) => list[profileProp as keyof ImportList] === id) ||
         performers.some(
           (performer) => performer[profileProp as keyof Performer] === id
-        ) ||
-        studios.some((studio) => studio[profileProp as keyof Studio] === id)
+        )
       );
     }
   );
