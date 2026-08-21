@@ -282,7 +282,7 @@ function SceneIndex() {
           ) : null}
         </PageContentBody>
 
-        {isSelectMode ? <SceneIndexSelectFooter /> : null}
+        {isSelectMode ? <SceneIndexSelectFooter items={items} /> : null}
 
         <InteractiveImportModal
           isOpen={isInteractiveImportModalOpen}

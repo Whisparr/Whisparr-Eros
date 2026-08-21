@@ -1,31 +1,31 @@
 import React from 'react';
 import Modal from 'Components/Modal/Modal';
 import { sizes } from 'Helpers/Props';
-import DeleteSceneModalContent from './DeleteSceneModalContent';
+import Movie from 'Movie/Movie';
+import DeleteSceneModalContent, {
+  DeleteSceneModalContentProps,
+} from './DeleteSceneModalContent';
 
-export interface DeleteSceneModalProps {
+interface DeleteSceneModalProps extends DeleteSceneModalContentProps {
   isOpen: boolean;
-  sceneIds: number[];
-  onDeletePress: (deleteFiles: boolean, addImportExclusion: boolean) => void;
-  onModalClose: () => void;
-  [key: string]: string | unknown;
+  scene: Movie;
 }
 
-export function DeleteSceneModal({
+function DeleteSceneModal({
   isOpen,
   onModalClose,
-  sceneIds,
-  onDeletePress,
+  scene,
   ...otherProps
 }: DeleteSceneModalProps) {
   return (
     <Modal isOpen={isOpen} size={sizes.MEDIUM} onModalClose={onModalClose}>
       <DeleteSceneModalContent
         {...otherProps}
-        sceneIds={sceneIds}
-        onDeletePress={onDeletePress}
+        scene={scene}
         onModalClose={onModalClose}
       />
     </Modal>
   );
 }
+
+export default DeleteSceneModal;

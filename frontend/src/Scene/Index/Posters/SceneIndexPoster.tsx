@@ -271,7 +271,7 @@ function SceneIndexPoster(props: SceneIndexPosterProps) {
 
       <DeleteSceneModal
         isOpen={isDeleteSceneModalOpen}
-        sceneId={sceneId}
+        scene={scene}
         onModalClose={onDeleteSceneModalClose}
       />
     </div>

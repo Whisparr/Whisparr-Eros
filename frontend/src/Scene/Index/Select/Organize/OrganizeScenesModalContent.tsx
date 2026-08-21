@@ -1,6 +1,5 @@
 import { orderBy } from 'lodash';
 import React, { useCallback, useMemo } from 'react';
-import { useSelector } from 'react-redux';
 import { RENAME_MOVIE } from 'Commands/commandNames';
 import { useExecuteCommand } from 'Commands/useCommands';
 import Alert from 'Components/Alert';
@@ -12,24 +11,25 @@ import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { icons, kinds } from 'Helpers/Props';
 import Movie from 'Movie/Movie';
-import createAllScenesSelector from 'Store/Selectors/createAllScenesSelector';
 import translate from 'Utilities/String/translate';
 import styles from './OrganizeScenesModalContent.css';
 
 interface OrganizeScenesModalContentProps {
   sceneIds: number[];
+  items: Movie[];
   onModalClose: () => void;
 }
 
-function OrganizeScenesModalContent(props: OrganizeScenesModalContentProps) {
-  const { sceneIds, onModalClose } = props;
+function OrganizeScenesModalContent(
+  props: Readonly<OrganizeScenesModalContentProps>
+) {
+  const { sceneIds, items, onModalClose } = props;
 
-  const allScenes: Movie[] = useSelector(createAllScenesSelector());
   const executeCommand = useExecuteCommand();
 
   const sceneTitles = useMemo(() => {
     const scene = sceneIds.reduce((acc: Movie[], id) => {
-      const s = allScenes.find((s) => s.id === id);
+      const s = items.find((s) => s.id === id);
 
       if (s) {
         acc.push(s);
@@ -41,7 +41,7 @@ function OrganizeScenesModalContent(props: OrganizeScenesModalContentProps) {
     const sorted = orderBy(scene, ['sortTitle']);
 
     return sorted.map((s) => s.title);
-  }, [sceneIds, allScenes]);
+  }, [sceneIds, items]);
 
   const onOrganizePress = useCallback(() => {
     executeCommand({
@@ -63,7 +63,7 @@ function OrganizeScenesModalContent(props: OrganizeScenesModalContentProps) {
         </Alert>
 
         <div className={styles.message}>
-          {translate('OrganizeConfirm', { count: sceneTitles.length })}
+          {translate('OrganizeConfirm', { count: sceneIds.length })}
         </div>
 
         <ul>
