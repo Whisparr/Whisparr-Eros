@@ -19,12 +19,12 @@ verified to resolve against the public repo.
 
 | Metric | At assessment | Now |
 | --- | --- | --- |
-| Files importing `react-redux` | 327 of 1,255 | **248** of 1,238 |
-| Lines under `frontend/src/Store/` | 15,374 across 138 files | **11,166** across 107 |
-| Redux slices registered in `Store/Actions/index.js` | 35 | **16** |
+| Files importing `react-redux` | 327 of 1,255 | **235** of 1,237 |
+| Lines under `frontend/src/Store/` | 15,374 across 138 files | **10,586** across 106 |
+| Redux slices registered in `Store/Actions/index.js` | 35 | **15** |
 | Remaining `*Connector` files | 66 | **56** |
-| Files touching React Query | 35 | **64** |
-| zustand stores | 0 (not installed) | **installed, 13 files** |
+| Files touching React Query | 35 | **65** |
+| zustand stores | 0 (not installed) | **installed, 19 files** |
 
 > **Recomputed in #464.** Three rows previously carried figures that no command
 > reproduced — `react-redux` read 316 where the same command that yields the
@@ -207,7 +207,7 @@ shape: convert one properly, then the other three are largely mechanical.
 
 | Domain | Remaining work | Sonarr ref |
 | --- | --- | --- |
-| **Movie** *(hybrid)* — do first, set the template. 29 redux files, 2 connectors. **Index options done, #496.** | ~~Index options → `movieIndexOptionsStore`~~; select footer; Edit/Delete/Tags/Organize modals. Retires `movieActions`, ~~`movieIndexActions`~~, `movieTitlesActions`. | [Sonarr/Sonarr@0521a6c3](https://github.com/Sonarr/Sonarr/commit/0521a6c3) (91 files) |
+| **Movie** *(hybrid)* — do first, set the template. 29 redux files, 2 connectors. **Index options done, #496; movie editing done, #497. 16 files left, 12 of them gated on Phase E.** | ~~Index options → `movieIndexOptionsStore`~~; ~~select footer~~; ~~Delete modal~~; ~~filter modal `sectionItems`~~. `movieActions` keeps only `toggleMovieMonitored` (Collection) and `bulkMonitorMovie` (Performer/Studio). Retires ~~`movieIndexActions`~~; `movieTitlesActions` was already dead. | [Sonarr/Sonarr@0521a6c3](https://github.com/Sonarr/Sonarr/commit/0521a6c3) (91 files) |
 | **Scene** *(hybrid)* — 21 redux files. Shares the `Movie` model, so hooks can share a generic base. | `sceneIndexActions`, `createAllScenesSelector.ts`, `DeleteSceneModalContentConnector.js` | — |
 | **Performer** *(hybrid)* — 20 redux files. Details, scenes tab, add flow, edit modal. | `performerActions` (675 loc), `performerScenesActions`, `addPerformerActions`, `EditPerformerModalContentConnector.js` | — |
 | **Studio** *(hybrid)* — 20 redux files. Same shape as Performer. | `studioActions` (509 loc), `studioMoviesActions`, `studioScenesActions`, `DeleteStudioModalConnector.js` | — |
@@ -483,6 +483,42 @@ And one lie in a prop type: `MovieIndexSearchButton` and `MovieIndexRefreshMovie
 declared `selectedFilterKey: string`, but a custom filter's key is its numeric id. Both only
 compare it against `'all'`, so the behaviour was always right and the type was always wrong.
 Widened to `string | number`.
+
+### Nothing has fetched the movie list into Redux for months
+
+`movieActions` has no fetch handler — no `createFetchHandler`, no `FETCH_MOVIES`, nothing.
+The only writers left are `updateItem({ section: 'movies' })` calls from `movieFileActions`
+and `movieCollectionActions`, which fire on an event for one movie at a time, and the SignalR
+`movie` handler stopped dispatching to Redux when the index went paged. So `state.movies.items`
+is `[]` on every page load and stays that way.
+
+Everything reading it has been reading an empty array. That was visible, and #497 measured it:
+open *Filter → Custom Filters → Add Custom Filter*, choose **Studio**, focus the value box. On
+the code as merged the suggestion list is empty; sourcing `sectionItems` from the paged query
+instead lists the 16 studios on the current page. The same is true of **Release Groups**, the
+other `optionsSelector` prop.
+
+Sonarr's equivalent passes `useSeries()` — the whole library — because Sonarr's index is not
+paged. Eros paginates, so the honest ceiling here is the page the user is looking at. Calling
+`useMovieIndex()` from the modal costs nothing: it derives the identical query key, so React
+Query serves it from cache and the request count does not move (verified: one `/movie/paged`
+before opening the modal, one after).
+
+Five more selectors still read that empty array —  `createAllMoviesSelector`,
+`createAllScenesSelector`, `createMovieSelector`, `createMultiMoviesSelector` and
+`createMovieClientSideCollectionItemsSelector` — behind the tag details modal, the Scene delete
+modal, the queued-task name cell and the index overflow search item. Each is a separate small
+bug and each belongs to the domain that owns it, not to this PR.
+
+### The delete preference is briefly stored twice
+
+`persistState: ['movies.deleteOptions']` backed one checkbox, *Add List Exclusion*, shared by
+the movie delete modal and the scene one. #497 moves the movie half to
+`Movie/movieDeleteOptionsStore.ts` and leaves the scene half on the slice, so for one PR the
+two modals remember the setting separately. That is deliberate: Scene's delete path is a class
+component behind `DeleteSceneModalContentConnector`, which reads `createMovieSelector()` — the
+empty array above — and so needs rewriting rather than repointing. Doing it here would have
+meant a Scene conversion inside a Movie PR.
 
 ### The SignalR row was already spent
 
@@ -850,6 +886,7 @@ If a JS test runner is ever added, remove that line and set
 | 2026-08-18 | #470 | **SignalR container.** Class + `connect()` → function component, as Sonarr did in Jan 2025. Redux stays inside. |
 | 2026-08-18 | #471 | **Organize preview + Unmapped Files.** Two slices retired. First conversion where a page's table prefs move to a zustand options store rather than to React Query. |
 | 2026-08-20 | #487 | **Tags.** `useTags`/`useTagDetails` replace `tagActions`, both tag selectors and `TagsAppState`; the `Tags/useTags.ts` shim that had been a selector wearing a hook's name is now the real query. `TagFilterBuilderRowValueConnector` was a `connect()` whose whole job was reshaping the list, so it became a plain component and the connector count dropped with it. `useAppPage` gates on the query for the same reason it gates on custom filters. Delete writes the removal into the cache but leaves the refetch to SignalR — invalidating `/tag/detail` here as well fetched it twice, measured. `useSortedTagList` copies before sorting: `MovieTagInput` had been sorting the shared list in place, which was harmless against a slice that handed out a fresh array per fetch and is not against a query cache. |
+| 2026-08-21 | #497 | **Movie editing.** `movieActions` loses `saveMovie`, `bulkDeleteMovie`, `setMovieValue` and the `filters` preset list; the first three had no dispatchers left and the list is a static definition, now `Movie/Index/movieIndexFilters.ts` (Scene imports it too — both indexes filter the same `/movie` resource). `deleteMovie` and `setDeleteOption` are replaced for Movie by `Movie/Delete/useDeleteMovieMutation.ts` and `Movie/movieDeleteOptionsStore.ts`, and the select footer's tags button drops `saveMovieEditor` for a second `useEditMoviesModalMutation` instance, so Edit and Set Tags spin independently instead of sharing one slice-level `isSaving`. `MovieIndexFilterModal` takes `sectionItems` from the paged query — see above, it was an empty array. Two dead hooks (`useEditMovieModal`, `useDeleteMovieModal`) and the orphan `movieTitlesActions.js` deleted. The delete mutation still dispatches one `updateItem` because the collection missing-count it nudges is Redux with no query to invalidate. Verified live: `DELETE /movie/33178?deleteFiles=false&addImportExclusion=true` matches the thunk's query params byte for byte, the checkbox survives a reload under `whisparr-dev_movie_delete_options`, `PUT /movie/editor {"movieIds":[33178],"tags":[],"applyTags":"add"}` matches `saveMovieEditor`, only the Set Tags button spins while it is in flight, and the Scene index and its preset filters still render off the lifted module. |
 | 2026-08-21 | #496 | **Movie index view options.** `movieIndexActions` (391 loc) retired for `Movie/Index/movieIndexOptionsStore.ts`; the three pass-through `select*Options.ts` selectors deleted; `filterBuilderProps` lifted out of slice state into `movieIndexFilterBuilderProps.ts`, since they are static definitions rather than user state. Page number moves to `usePage('movieIndex')`, which is where the sort/filter/view resets now land — the reducers they replace each reset it. `MovieIndexFilterModal` converts halfway: its `sectionItems` still reads the movies slice and goes with `movieActions`. Verified live: view and sort persist across a reload, filter and sort each refetch once, the table renders 20 rows against `tableOptions.pageSize`, and the initial load fires exactly one `/movie/paged`. |
 | 2026-08-20 | #490 | **Provider options + captcha.** `providerOptionActions`, `captchaActions`, `oAuthActions` and their three `AppState` files deleted for `Settings/useProviderOptions.ts`, `Components/Form/useCaptcha.ts` and `OAuth/useOAuth.ts`. `useProviderOptions` does not use `useApiQuery`: that helper keys a POST on the whole body, and the body here is the entire provider form, so every keystroke would be a new cache entry and a new request. It keys on `baseUrl`/`apiPath`/`apiKey`/`authToken` instead, which is what the old slice's `lastActions` de-duplication was approximating — measured, typing in *Name* now fires nothing where the four important fields fire one request each. Two deliberate departures from Sonarr's commits. Sonarr's `DeviceInput` rewrite reads the options as `{value, name}`, but the backend projects `{id, name}` in both apps, so this keeps `.id` — with `.value` the selected device renders as *Unknown (…)*, verified against a stubbed response. And `OAuthInput` keeps dispatching `set({section, saveError})`: Sonarr routes that through a `FormInputGroupContext` Eros does not have, and without it the pop-up-blocked message stops reaching the field. Converting `CaptchaInput` also fixes it — `refreshing`, `siteKey` and `secretToken` were declared as props and never passed by anything, so the ReCAPTCHA widget could not render; no provider in this build declares a `captcha` field, so that path is types-and-lint only. |
 | 2026-08-20 | #494 | **App shell, part 3, and the end of Phase C.** `Settings/advancedSettingsStore` replaces `state.settings.advancedSettings`, its toggle action and its reducer, carved out of `settingsActions` ahead of Phase E. Eleven `connect()` components read the flag, so it is injected by a single `withAdvancedSettings` HOC in the shape of `withScrollPosition`, leaving the wrapped components untouched. `useShowAdvancedSettings` keeps its path and now re-exports from the store, so its five TSX importers did not change. Verified live: the toggle expands General from 18 form groups to 38 and Media Management from 7 to 30, adds the Megabytes Per Minute column to Quality Definitions, survives a reload through `createPersist`, and through the HOC adds exactly the two fields the API marks advanced on Kodi. |

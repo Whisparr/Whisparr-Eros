@@ -4,10 +4,11 @@ import {
   filterBuilderValueTypes,
   sortDirections,
 } from 'Helpers/Props';
+import { MOVIE_INDEX_FILTERS } from 'Movie/Index/movieIndexFilters';
 import translate from 'Utilities/String/translate';
 import createHandleActions from './Creators/createHandleActions';
 import createSetTableOptionReducer from './Creators/Reducers/createSetTableOptionReducer';
-import { filterPredicates, filters, sortPredicates } from './movieActions';
+import { filterPredicates, sortPredicates } from './movieActions';
 
 //
 // Variables
@@ -168,7 +169,7 @@ export const defaultState = {
 
   selectedFilterKey: 'all',
 
-  filters,
+  filters: MOVIE_INDEX_FILTERS,
   filterPredicates,
 
   filterBuilderProps: [

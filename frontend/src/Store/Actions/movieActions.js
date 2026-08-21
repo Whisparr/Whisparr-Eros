@@ -2,128 +2,20 @@ import _ from 'lodash';
 import moment from 'moment';
 import { createAction } from 'redux-actions';
 import { batchActions } from 'redux-batched-actions';
-import {
-  filterTypePredicates,
-  filterTypes,
-  sortDirections,
-} from 'Helpers/Props';
+import { filterTypePredicates, sortDirections } from 'Helpers/Props';
 import { createThunk, handleThunks } from 'Store/thunks';
 // import { batchActions } from 'redux-batched-actions';
 import createAjaxRequest from 'Utilities/createAjaxRequest';
 import dateFilterPredicate from 'Utilities/Date/dateFilterPredicate';
 import padNumber from 'Utilities/Number/padNumber';
-import translate from 'Utilities/String/translate';
 import { set, updateItem } from './baseActions';
 import createHandleActions from './Creators/createHandleActions';
 import createRemoveItemHandler from './Creators/createRemoveItemHandler';
-import createSaveProviderHandler from './Creators/createSaveProviderHandler';
-import createSetSettingValueReducer from './Creators/Reducers/createSetSettingValueReducer';
 
 //
 // Variables
 
 export const section = 'movies';
-
-export const filters = [
-  {
-    key: 'all',
-    label: () => translate('All'),
-    filters: [],
-  },
-  {
-    key: 'monitored',
-    label: () => translate('MonitoredOnly'),
-    filters: [
-      {
-        key: 'monitored',
-        value: true,
-        type: filterTypes.EQUAL,
-      },
-    ],
-  },
-  {
-    key: 'unmonitored',
-    label: () => translate('Unmonitored'),
-    filters: [
-      {
-        key: 'monitored',
-        value: false,
-        type: filterTypes.EQUAL,
-      },
-    ],
-  },
-  {
-    key: 'missing',
-    label: () => translate('Missing'),
-    filters: [
-      {
-        key: 'monitored',
-        value: true,
-        type: filterTypes.EQUAL,
-      },
-      {
-        key: 'sizeOnDisk',
-        value: 0,
-        type: filterTypes.EQUAL,
-      },
-    ],
-  },
-  {
-    key: 'wanted',
-    label: () => translate('Wanted'),
-    filters: [
-      {
-        key: 'monitored',
-        value: true,
-        type: filterTypes.EQUAL,
-      },
-      {
-        key: 'sizeOnDisk',
-        value: 0,
-        type: filterTypes.GREATER_THAN,
-      },
-      {
-        key: 'isAvailable',
-        value: true,
-        type: filterTypes.EQUAL,
-      },
-    ],
-  },
-
-  /* removing, duplicated by Wanted > Cutoff Unmet page
-  {
-    key: 'cutoffunmet',
-    label: () => translate('CutoffUnmet'),
-    filters: [
-      {
-        key: 'monitored',
-        value: true,
-        type: filterTypes.EQUAL
-      },
-      {
-        key: 'sizeOnDisk',
-        value: 0,
-        type: filterTypes.GREATER_THAN
-      },
-      {
-        key: 'qualityCutoffNotMet',
-        value: true,
-        type: filterTypes.EQUAL
-      }
-    ]
-  }*/
-  {
-    key: 'deleted',
-    label: () => translate('Deleted'),
-    filters: [
-      {
-        key: 'status',
-        value: 'deleted',
-        type: filterTypes.EQUAL,
-      },
-    ],
-  },
-];
 
 export const filterPredicates = {
   added: function (item, filterValue, type) {
@@ -277,7 +169,6 @@ export const defaultState = {
   items: [],
   sortKey: 'sortTitle',
   sortDirection: sortDirections.ASCENDING,
-  pendingChanges: {},
   deleteOptions: {
     addImportExclusion: false,
   },
@@ -288,11 +179,8 @@ export const persistState = ['movies.deleteOptions'];
 //
 // Actions Types
 
-export const SET_MOVIE_VALUE = 'movies/setMovieValue';
-export const SAVE_MOVIE = 'movies/saveMovie';
 export const DELETE_MOVIE = 'movies/deleteMovie';
 export const SAVE_MOVIE_EDITOR = 'movies/saveMovieEditor';
-export const BULK_DELETE_MOVIE = 'movies/bulkDeleteMovie';
 export const BULK_MONITOR_MOVIE = 'movies/bulkMonitorMovie';
 
 export const SET_DELETE_OPTION = 'movies/setDeleteOption';
@@ -301,22 +189,6 @@ export const TOGGLE_MOVIE_MONITORED = 'movies/toggleMovieMonitored';
 
 //
 // Action Creators
-
-export const saveMovie = createThunk(SAVE_MOVIE, (payload) => {
-  const newPayload = {
-    ...payload,
-  };
-
-  if (payload.moveFiles) {
-    newPayload.queryParams = {
-      moveFiles: true,
-    };
-  }
-
-  delete newPayload.moveFiles;
-
-  return newPayload;
-});
 
 export const deleteMovie = createThunk(DELETE_MOVIE, (payload) => {
   return {
@@ -330,14 +202,6 @@ export const deleteMovie = createThunk(DELETE_MOVIE, (payload) => {
 
 export const toggleMovieMonitored = createThunk(TOGGLE_MOVIE_MONITORED);
 export const saveMovieEditor = createThunk(SAVE_MOVIE_EDITOR);
-export const bulkDeleteMovie = createThunk(BULK_DELETE_MOVIE);
-
-export const setMovieValue = createAction(SET_MOVIE_VALUE, (payload) => {
-  return {
-    section,
-    ...payload,
-  };
-});
 
 export const bulkMonitorMovie = createThunk(
   BULK_MONITOR_MOVIE,
@@ -358,23 +222,9 @@ export const bulkMonitorMovie = createThunk(
 export const setDeleteOption = createAction(SET_DELETE_OPTION);
 
 //
-// Helpers
-
-function getSaveAjaxOptions({ ajaxOptions, payload }) {
-  if (payload.moveFolder) {
-    ajaxOptions.url = `${ajaxOptions.url}?moveFolder=true`;
-  }
-
-  return ajaxOptions;
-}
-
-//
 // Action Handlers
 
 export const actionHandlers = handleThunks({
-  [SAVE_MOVIE]: createSaveProviderHandler(section, '/movie', {
-    getAjaxOptions: getSaveAjaxOptions,
-  }),
   [DELETE_MOVIE]: (getState, payload, dispatch) => {
     createRemoveItemHandler(section, '/movie')(getState, payload, dispatch);
 
@@ -524,43 +374,6 @@ export const actionHandlers = handleThunks({
     });
   },
 
-  [BULK_DELETE_MOVIE]: function (getState, payload, dispatch) {
-    dispatch(
-      set({
-        section,
-        isDeleting: true,
-      })
-    );
-
-    const promise = createAjaxRequest({
-      url: '/movie/editor',
-      method: 'DELETE',
-      data: JSON.stringify(payload),
-      dataType: 'json',
-    }).request;
-
-    promise.done(() => {
-      // SignaR will take care of removing the movie from the collection
-
-      dispatch(
-        set({
-          section,
-          isDeleting: false,
-          deleteError: null,
-        })
-      );
-    });
-
-    promise.fail((xhr) => {
-      dispatch(
-        set({
-          section,
-          isDeleting: false,
-          deleteError: xhr,
-        })
-      );
-    });
-  },
 });
 
 //
@@ -568,7 +381,6 @@ export const actionHandlers = handleThunks({
 
 export const reducers = createHandleActions(
   {
-    [SET_MOVIE_VALUE]: createSetSettingValueReducer(section),
     [SET_DELETE_OPTION]: (state, { payload }) => {
       return {
         ...state,
