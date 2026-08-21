@@ -1,8 +1,7 @@
 import classNames from 'classnames';
 import moment from 'moment';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useSelector } from 'react-redux';
-import AppState from 'App/State/AppState';
+import { useAppValue } from 'App/appStore';
 import { useCalendarOption } from 'Calendar/calendarOptionsStore';
 import * as calendarViews from 'Calendar/calendarViews';
 import {
@@ -16,9 +15,7 @@ import styles from './CalendarDays.css';
 function CalendarDays() {
   const dates = useCalendarDates();
   const view = useCalendarOption('view');
-  const isSidebarVisible = useSelector(
-    (state: AppState) => state.app.isSidebarVisible
-  );
+  const isSidebarVisible = useAppValue('isSidebarVisible');
 
   const updateTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined

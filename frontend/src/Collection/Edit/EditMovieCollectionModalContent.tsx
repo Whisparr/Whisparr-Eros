@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useAppDimension } from 'App/appStore';
 import AppState from 'App/State/AppState';
 import useMovieCollection from 'Collection/useMovieCollection';
 import Form from 'Components/Form/Form';
@@ -19,7 +20,6 @@ import {
   saveMovieCollection,
   setMovieCollectionValue,
 } from 'Store/Actions/movieCollectionActions';
-import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import selectSettings from 'Store/Selectors/selectSettings';
 import { InputChanged } from 'typings/inputs';
 import translate from 'Utilities/String/translate';
@@ -50,7 +50,7 @@ function EditMovieCollectionModalContent({
   const { isSaving, saveError, pendingChanges } = useSelector(
     (state: AppState) => state.movieCollections
   );
-  const { isSmallScreen } = useSelector(createDimensionsSelector());
+  const isSmallScreen = useAppDimension('isSmallScreen');
 
   const wasSaving = usePrevious(isSaving);
 

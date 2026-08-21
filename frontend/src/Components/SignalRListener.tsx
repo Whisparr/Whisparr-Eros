@@ -2,12 +2,12 @@
 import * as signalR from '@microsoft/signalr';
 import { useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
+import { setAppValue, setVersion } from 'App/appStore';
 import { queryClient } from 'App/queryClient';
 import Command from 'Commands/Command';
 import { COMMANDS_QUERY_KEY, useUpdateCommand } from 'Commands/useCommands';
 import { PagedQueryResponse } from 'Helpers/Hooks/usePagedApiQuery';
 import { ROOT_FOLDERS_QUERY_KEY } from 'RootFolder/useRootFolders';
-import { setAppValue, setVersion } from 'Store/Actions/appActions';
 import { removeItem, updateItem } from 'Store/Actions/baseActions';
 import { fetchQualityDefinitions } from 'Store/Actions/settingsActions';
 import { TAG_DETAILS_QUERY_KEY } from 'Tags/useTagDetails';
@@ -493,7 +493,10 @@ function SignalRListener() {
     }
 
     if (name === 'version') {
-      dispatch(setVersion({ version: body.version }));
+      if (body.version) {
+        setVersion({ version: body.version });
+      }
+
       return;
     }
 
@@ -545,42 +548,36 @@ function SignalRListener() {
     console.error('[signalR] failed to connect');
     console.error(error);
 
-    dispatch(
-      setAppValue({
-        isConnected: false,
-        isReconnecting: false,
-        isDisconnected: false,
-        isRestarting: false,
-      })
-    );
+    setAppValue({
+      isConnected: false,
+      isReconnecting: false,
+      isDisconnected: false,
+      isRestarting: false,
+    });
   });
 
   const handleStart = useRef(() => {
     console.debug('[signalR] connected');
 
-    dispatch(
-      setAppValue({
-        isConnected: true,
-        isReconnecting: false,
-        isDisconnected: false,
-        isRestarting: false,
-      })
-    );
+    setAppValue({
+      isConnected: true,
+      isReconnecting: false,
+      isDisconnected: false,
+      isRestarting: false,
+    });
   });
 
   const handleReconnecting = useRef(() => {
-    dispatch(setAppValue({ isReconnecting: true }));
+    setAppValue({ isReconnecting: true });
   });
 
   const handleReconnected = useRef(() => {
-    dispatch(
-      setAppValue({
-        isConnected: true,
-        isReconnecting: false,
-        isDisconnected: false,
-        isRestarting: false,
-      })
-    );
+    setAppValue({
+      isConnected: true,
+      isReconnecting: false,
+      isDisconnected: false,
+      isRestarting: false,
+    });
 
     // Any message at all could have been missed while the connection was down,
     // so stale the whole cache rather than guess at a list of keys. Only the
@@ -597,7 +594,7 @@ function SignalRListener() {
   });
 
   const handleDisconnected = useRef(() => {
-    dispatch(setAppValue({ isDisconnected: true }));
+    setAppValue({ isDisconnected: true });
   });
 
   useEffect(

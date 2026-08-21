@@ -3,6 +3,7 @@ import { cloneDeep } from 'lodash';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
+import { useAppDimension, useAppDimensions } from 'App/appStore';
 import { queryClient } from 'App/queryClient';
 import AppState from 'App/State/AppState';
 import { ValidationMessage } from 'Components/Form/FormInputGroup';
@@ -10,7 +11,6 @@ import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import { MovieStats } from 'Movie/Index/useMovieStats';
 import Movie, { Image, Ratings } from 'Movie/Movie';
 import { setAddMovieDefault } from 'Store/Actions/addMovieActions';
-import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
 import selectSettings from 'Store/Selectors/selectSettings';
 import { useSystemStatusData } from 'System/Status/useSystemStatus';
@@ -178,7 +178,7 @@ export function useAddNewMovie(itemType: 'movie' | 'scene') {
 
 // Hook for AddNewMovieSearchResult card (display settings)
 export function useAddNewMovieSearchResult() {
-  const dimensions = useSelector(createDimensionsSelector());
+  const dimensions = useAppDimensions();
   const safeForWorkMode = useSelector(
     (state: AppState) => state.settings.safeForWorkMode
   );
@@ -199,7 +199,7 @@ export function useAddMovieMutation(
   onSuccess?: () => void
 ) {
   const dispatch = useDispatch();
-  const { isSmallScreen } = useSelector(createDimensionsSelector());
+  const isSmallScreen = useAppDimension('isSmallScreen');
   const systemStatus = useSystemStatusData();
   const safeForWorkMode = useSelector(
     (state: AppState) => state.settings.safeForWorkMode

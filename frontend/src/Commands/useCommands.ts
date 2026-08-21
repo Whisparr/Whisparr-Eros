@@ -1,10 +1,9 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo } from 'react';
-import { useDispatch } from 'react-redux';
+import { MessageType, showMessage } from 'App/messagesStore';
 import useApiMutation from 'Helpers/Hooks/useApiMutation';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import { messageTypes } from 'Helpers/Props';
-import { showMessage } from 'Store/Actions/appActions';
 import {
   findCommand,
   isCommandExecuting,
@@ -193,7 +192,6 @@ export const useCancelCommand = (id: number) => {
 // this is their only producer, and they convert with the rest of the app shell.
 export const useUpdateCommand = () => {
   const cache = useWriteCommand();
-  const dispatch = useDispatch();
 
   return useCallback(
     (command: Command) => {
@@ -202,7 +200,7 @@ export const useUpdateCommand = () => {
       const { id, name, trigger, message, body, status } = command;
 
       if (message && body?.sendUpdatesToClient && !body.suppressMessages) {
-        let type = messageTypes.INFO;
+        let type: MessageType = messageTypes.INFO;
         let hideAfter = 0;
 
         if (status === 'completed') {
@@ -213,7 +211,7 @@ export const useUpdateCommand = () => {
           hideAfter = trigger === 'manual' ? 10 : 4;
         }
 
-        dispatch(showMessage({ id, name, message, type, hideAfter }));
+        showMessage({ id, name, message, type, hideAfter });
       }
 
       // Failed commands need finishing too, or their button spins until it times out.
@@ -226,6 +224,6 @@ export const useUpdateCommand = () => {
         }
       }
     },
-    [cache, dispatch]
+    [cache]
   );
 };

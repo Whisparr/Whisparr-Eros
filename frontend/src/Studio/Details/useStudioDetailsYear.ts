@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useAppDimensions } from 'App/appStore';
 import AppState from 'App/State/AppState';
 import * as commandNames from 'Commands/commandNames';
 import { useExecuteCommand } from 'Commands/useCommands';
@@ -13,7 +14,6 @@ import {
   setStudioScenesSort,
   setStudioScenesTableOption,
 } from 'Store/Actions/studioScenesActions';
-import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import { TableOptionsChangePayload } from 'typings/Table';
 
 interface StudioDetailsYearState {
@@ -106,7 +106,7 @@ export function useStudioDetailsYearData(
     (state: AppState & { studioScenes: StudioScenesState }) =>
       state.studioScenes
   );
-  const dimensions = useSelector(createDimensionsSelector());
+  const dimensions = useAppDimensions();
 
   const sortedItems = sort(items, studioScenes);
 

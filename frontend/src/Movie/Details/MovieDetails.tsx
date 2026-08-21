@@ -1,8 +1,8 @@
 import React, { useContext, useState } from 'react';
-import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import TextTruncate from 'react-text-truncate';
 import { useQueueItemForMovie } from 'Activity/Queue/Details/useQueueDetails';
+import { useAppDimension } from 'App/appStore';
 import { SafeForWorkModeContext } from 'App/State/SafeForWorkContext';
 import { MOVIE_SEARCH, REFRESH_MOVIE } from 'Commands/commandNames';
 import { useExecuteCommand } from 'Commands/useCommands';
@@ -48,7 +48,6 @@ import MovieFileEditorTable from 'MovieFile/Editor/MovieFileEditorTable';
 import ExtraFileTable from 'MovieFile/Extras/ExtraFileTable';
 import OrganizePreviewModal from 'Organize/OrganizePreviewModal';
 import QualityProfileName from 'Settings/Profiles/Quality/QualityProfileName';
-import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import fonts from 'Styles/Variables/fonts';
 import formatRuntime from 'Utilities/Date/formatRuntime';
 import formatBytes from 'Utilities/Number/formatBytes';
@@ -99,7 +98,7 @@ function MovieDetails(props: Readonly<Partial<Props>>) {
   const queueItem = useQueueItemForMovie(movie?.id ?? 0);
 
   // State for modals and measurements
-  const { isSmallScreen } = useSelector(createDimensionsSelector());
+  const isSmallScreen = useAppDimension('isSmallScreen');
   const [overviewHeight, setOverviewHeight] = useState(0);
   const [titleWidth, setTitleWidth] = useState(0);
   const { mutate: toggleMonitored } = useToggleMovieMonitored();

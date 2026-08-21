@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useAppDimension, useAppDimensions } from 'App/appStore';
 import { Error as AppError } from 'App/State/AppSectionState';
 import AppState from 'App/State/AppState';
 import { ValidationMessage } from 'Components/Form/FormInputGroup';
@@ -11,7 +12,6 @@ import {
   setAddPerformerDefault,
   setPerformersWithStatus,
 } from 'Store/Actions/addPerformerActions';
-import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
 import selectSettings from 'Store/Selectors/selectSettings';
 import { useSystemStatusData } from 'System/Status/useSystemStatus';
@@ -192,7 +192,7 @@ function useAddNewPerformer() {
 }
 
 export function useAddNewPerformerSearchResult() {
-  const dimensions = useSelector(createDimensionsSelector());
+  const dimensions = useAppDimensions();
   const safeForWorkMode = useSelector(
     (state: AppState) => state.settings.safeForWorkMode
   );
@@ -205,7 +205,7 @@ export function useAddNewPerformerSearchResult() {
 
 export function useAddNewPerformerModalContent(foreignId: string) {
   const dispatch = useDispatch();
-  const { isSmallScreen } = useSelector(createDimensionsSelector());
+  const isSmallScreen = useAppDimension('isSmallScreen');
   const systemStatus = useSystemStatusData();
   const safeForWorkMode = useSelector(
     (state: AppState) => state.settings.safeForWorkMode

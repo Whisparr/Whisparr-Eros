@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
+import { useAppDimension } from 'App/appStore';
 import { SelectProvider } from 'App/SelectContext';
 import { RSS_SYNC } from 'Commands/commandNames';
 import { useCommandExecuting, useExecuteCommand } from 'Commands/useCommands';
@@ -21,7 +22,6 @@ import MovieIndexSelectModeButton from 'Movie/Index/Select/MovieIndexSelectModeB
 import MovieIndexSelectModeMenuItem from 'Movie/Index/Select/MovieIndexSelectModeMenuItem';
 import ParseToolbarButton from 'Parse/ParseToolbarButton';
 import NoScene from 'Scene/NoScene';
-import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import translate from 'Utilities/String/translate';
 import SceneIndexFilterMenu from './Menus/SceneIndexFilterMenu';
 import SceneIndexSortMenu from './Menus/SceneIndexSortMenu';
@@ -69,7 +69,7 @@ function SceneIndex() {
   } = useSceneIndex();
 
   const isRssSyncExecuting = useCommandExecuting(RSS_SYNC);
-  const { isSmallScreen } = useSelector(createDimensionsSelector());
+  const isSmallScreen = useAppDimension('isSmallScreen');
   const dispatch = useDispatch();
   const executeCommand = useExecuteCommand();
 

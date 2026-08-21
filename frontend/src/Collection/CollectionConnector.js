@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import React, { Component, useCallback } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
+import { useAppDimension } from 'App/appStore';
 import * as commandNames from 'Commands/commandNames';
 import { useCommandExecuting, useExecuteCommand } from 'Commands/useCommands';
 import withScrollPosition from 'Components/withScrollPosition';
@@ -14,7 +15,6 @@ import {
 } from 'Store/Actions/movieCollectionActions';
 import scrollPositions from 'Store/scrollPositions';
 import createCollectionClientSideCollectionItemsSelector from 'Store/Selectors/createCollectionClientSideCollectionItemsSelector';
-import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import Collection from './Collection';
 
 // `customFilters` arrives as an own prop from CollectionCustomFilters below,
@@ -24,16 +24,11 @@ const selectCollectionItems =
   createCollectionClientSideCollectionItemsSelector('movieCollections');
 
 function createMapStateToProps() {
-  return createSelector(
-    selectCollectionItems,
-    createDimensionsSelector(),
-    (collections, dimensionsState) => {
-      return {
-        ...collections,
-        isSmallScreen: dimensionsState.isSmallScreen,
-      };
-    }
-  );
+  return createSelector(selectCollectionItems, (collections) => {
+    return {
+      ...collections,
+    };
+  });
 }
 
 function createMapDispatchToProps(dispatch, props) {
@@ -108,6 +103,7 @@ const ConnectedCollection = connect(
 // have to arrive as own props.
 function CollectionCustomFilters(props) {
   const customFilters = useCustomFiltersList('movieCollections');
+  const isSmallScreen = useAppDimension('isSmallScreen');
   const executeCommand = useExecuteCommand();
   const isRefreshingCollections = useCommandExecuting(
     commandNames.REFRESH_COLLECTIONS
@@ -121,6 +117,7 @@ function CollectionCustomFilters(props) {
     <ConnectedCollection
       {...props}
       customFilters={customFilters}
+      isSmallScreen={isSmallScreen}
       isRefreshingCollections={isRefreshingCollections}
       onRefreshMovieCollectionsPress={onRefreshMovieCollectionsPress}
     />

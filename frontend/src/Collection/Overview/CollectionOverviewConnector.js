@@ -1,24 +1,15 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { createSelector } from 'reselect';
+import { useAppDimension } from 'App/appStore';
 import { toggleCollectionMonitored } from 'Store/Actions/movieCollectionActions';
-import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import CollectionOverview from './CollectionOverview';
-
-function createMapStateToProps() {
-  return createSelector(createDimensionsSelector(), (dimensions) => {
-    return {
-      isSmallScreen: dimensions.isSmallScreen,
-    };
-  });
-}
 
 const mapDispatchToProps = {
   toggleCollectionMonitored,
 };
 
-class CollectionOverviewConnector extends Component {
+class CollectionOverviewBase extends Component {
   //
   // Listeners
 
@@ -42,13 +33,24 @@ class CollectionOverviewConnector extends Component {
   }
 }
 
-CollectionOverviewConnector.propTypes = {
+CollectionOverviewBase.propTypes = {
   collectionId: PropTypes.number.isRequired,
   monitored: PropTypes.bool.isRequired,
   toggleCollectionMonitored: PropTypes.func.isRequired,
 };
 
-export default connect(
-  createMapStateToProps,
+const ConnectedCollectionOverview = connect(
+  null,
   mapDispatchToProps
-)(CollectionOverviewConnector);
+)(CollectionOverviewBase);
+
+// Dimensions come from a zustand store now, which a selector cannot read, so a
+// small function component subscribes and passes the breakpoint down as an own
+// prop. `connect` forwards own props to the wrapped component untouched.
+function CollectionOverviewConnector(props) {
+  const isSmallScreen = useAppDimension('isSmallScreen');
+
+  return <ConnectedCollectionOverview {...props} isSmallScreen={isSmallScreen} />;
+}
+
+export default CollectionOverviewConnector;

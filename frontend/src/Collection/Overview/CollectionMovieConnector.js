@@ -2,18 +2,16 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
+import { useAppDimension } from 'App/appStore';
 import { toggleMovieMonitored } from 'Store/Actions/movieActions';
 import createCollectionExistingMovieSelector from 'Store/Selectors/createCollectionExistingMovieSelector';
-import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import CollectionMovie from './CollectionMovie';
 
 function createMapStateToProps() {
   return createSelector(
-    createDimensionsSelector(),
     createCollectionExistingMovieSelector(),
-    (dimensions, existingMovie) => {
+    (existingMovie) => {
       return {
-        isSmallScreen: dimensions.isSmallScreen,
         isExistingMovie: !!existingMovie,
         ...existingMovie,
       };
@@ -25,7 +23,7 @@ const mapDispatchToProps = {
   toggleMovieMonitored,
 };
 
-class CollectionMovieConnector extends Component {
+class CollectionMovieBase extends Component {
   //
   // Listeners
 
@@ -49,13 +47,24 @@ class CollectionMovieConnector extends Component {
   }
 }
 
-CollectionMovieConnector.propTypes = {
+CollectionMovieBase.propTypes = {
   id: PropTypes.number,
   monitored: PropTypes.bool,
   toggleMovieMonitored: PropTypes.func.isRequired,
 };
 
-export default connect(
+const ConnectedCollectionMovie = connect(
   createMapStateToProps,
   mapDispatchToProps
-)(CollectionMovieConnector);
+)(CollectionMovieBase);
+
+// Dimensions come from a zustand store now, which a selector cannot read, so a
+// small function component subscribes and passes the breakpoint down as an own
+// prop. `connect` forwards own props to the wrapped component untouched.
+function CollectionMovieConnector(props) {
+  const isSmallScreen = useAppDimension('isSmallScreen');
+
+  return <ConnectedCollectionMovie {...props} isSmallScreen={isSmallScreen} />;
+}
+
+export default CollectionMovieConnector;

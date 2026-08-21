@@ -1,11 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import AppState from 'App/State/AppState';
+import { setIsSidebarVisible, useAppValue } from 'App/appStore';
 import IconButton from 'Components/Link/IconButton';
 import Link from 'Components/Link/Link';
 import useKeyboardShortcuts from 'Helpers/Hooks/useKeyboardShortcuts';
 import { icons } from 'Helpers/Props';
-import { setIsSidebarVisible } from 'Store/Actions/appActions';
 import translate from 'Utilities/String/translate';
 import KeyboardShortcutsModal from './KeyboardShortcutsModal';
 import MovieSearchInput from './MovieSearchInput';
@@ -18,9 +16,7 @@ interface PageHeaderProps {
 }
 
 function PageHeader({ isSmallScreen }: PageHeaderProps) {
-  const dispatch = useDispatch();
-
-  const { isSidebarVisible } = useSelector((state: AppState) => state.app);
+  const isSidebarVisible = useAppValue('isSidebarVisible');
 
   const [isKeyboardShortcutsModalOpen, setIsKeyboardShortcutsModalOpen] =
     useState(false);
@@ -28,8 +24,8 @@ function PageHeader({ isSmallScreen }: PageHeaderProps) {
   const { bindShortcut, unbindShortcut } = useKeyboardShortcuts();
 
   const handleSidebarToggle = useCallback(() => {
-    dispatch(setIsSidebarVisible({ isSidebarVisible: !isSidebarVisible }));
-  }, [isSidebarVisible, dispatch]);
+    setIsSidebarVisible({ isSidebarVisible: !isSidebarVisible });
+  }, [isSidebarVisible]);
 
   const handleOpenKeyboardShortcutsModal = useCallback(() => {
     setIsKeyboardShortcutsModalOpen(true);

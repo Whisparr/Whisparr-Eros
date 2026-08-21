@@ -2,7 +2,6 @@ import { DateFilterValue } from 'Helpers/Props/filterTypes';
 import { Error } from './AppSectionState';
 import ExtraFilesAppState from './ExtraFilesAppState';
 import InteractiveImportAppState from './InteractiveImportAppState';
-import MessagesAppState from './MessagesAppState';
 import MovieCollectionAppState from './MovieCollectionAppState';
 import MovieCreditAppState from './MovieCreditAppState';
 import MovieFilesAppState from './MovieFilesAppState';
@@ -71,7 +70,6 @@ export interface AppSectionState {
     isPopulated: boolean;
   };
   isSidebarVisible?: boolean;
-  messages: MessagesAppState;
 }
 
 interface AppState {

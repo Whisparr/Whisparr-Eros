@@ -6,16 +6,15 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { useDispatch } from 'react-redux';
 import { useLocation } from 'react-router';
 import QueueStatus from 'Activity/Queue/Status/QueueStatus';
+import { setIsSidebarVisible } from 'App/appStore';
 import { IconName } from 'Components/Icon';
 import OverlayScroller from 'Components/Scroller/OverlayScroller';
 import Scroller from 'Components/Scroller/Scroller';
 import usePrevious from 'Helpers/Hooks/usePrevious';
 import { icons } from 'Helpers/Props';
 import { VERTICAL } from 'Helpers/Props/scrollDirections';
-import { setIsSidebarVisible } from 'Store/Actions/appActions';
 import { useGeneralSettings } from 'Studio/Details/useStudioDetails';
 import dimensions from 'Styles/Variables/dimensions';
 import HealthStatus from 'System/Status/Health/HealthStatus';
@@ -257,7 +256,6 @@ interface PageSidebarProps {
 }
 
 function PageSidebar({ isSidebarVisible, isSmallScreen }: PageSidebarProps) {
-  const dispatch = useDispatch();
   const location = useLocation();
   const sidebarRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number | null>(null);
@@ -362,15 +360,15 @@ function PageSidebar({ isSidebarVisible, isSmallScreen }: PageSidebarProps) {
       ) {
         event.preventDefault();
         event.stopPropagation();
-        dispatch(setIsSidebarVisible({ isSidebarVisible: false }));
+        setIsSidebarVisible({ isSidebarVisible: false });
       }
     },
-    [isSidebarVisible, dispatch]
+    [isSidebarVisible]
   );
 
   const handleItemPress = useCallback(() => {
-    dispatch(setIsSidebarVisible({ isSidebarVisible: false }));
-  }, [dispatch]);
+    setIsSidebarVisible({ isSidebarVisible: false });
+  }, []);
 
   const handleWindowScroll = useCallback(() => {
     const windowScroll =
@@ -504,14 +502,14 @@ function PageSidebar({ isSidebarVisible, isSmallScreen }: PageSidebarProps) {
         transform: isSidebarVisible ? 0 : SIDEBAR_WIDTH * -1,
       });
     } else if (sidebarTransform.transform === 0 && !isSidebarVisible) {
-      dispatch(setIsSidebarVisible({ isSidebarVisible: true }));
+      setIsSidebarVisible({ isSidebarVisible: true });
     } else if (
       sidebarTransform.transform === -SIDEBAR_WIDTH &&
       isSidebarVisible
     ) {
-      dispatch(setIsSidebarVisible({ isSidebarVisible: false }));
+      setIsSidebarVisible({ isSidebarVisible: false });
     }
-  }, [sidebarTransform, isSidebarVisible, wasSidebarVisible, dispatch]);
+  }, [sidebarTransform, isSidebarVisible, wasSidebarVisible]);
 
   const containerStyle = useMemo(() => {
     if (!isSmallScreen) {

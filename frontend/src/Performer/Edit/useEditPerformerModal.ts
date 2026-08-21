@@ -1,10 +1,10 @@
 import { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useAppDimensions } from 'App/appStore';
 import { queryClient } from 'App/queryClient';
 import AppState from 'App/State/AppState';
 import useApiMutation from 'Helpers/Hooks/useApiMutation';
 import { setPerformerValue } from 'Store/Actions/performerActions';
-import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import selectSettings from 'Store/Selectors/selectSettings';
 import { PendingSection } from 'typings/pending';
 import Performer from '../Performer';
@@ -44,7 +44,7 @@ export default function useEditPerformerModal(
   const safeForWorkMode = useSelector(
     (state: AppState) => state.settings.safeForWorkMode
   );
-  const dimensions = useSelector(createDimensionsSelector());
+  const dimensions = useAppDimensions();
 
   const { saveError, pendingChanges } = performersState;
 

@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { createSelector } from 'reselect';
+import { useAppValue } from 'App/appStore';
 import AppState from 'App/State/AppState';
 import * as commandNames from 'Commands/commandNames';
 import { useCommandExecuting, useExecuteCommand } from 'Commands/useCommands';
@@ -44,7 +45,7 @@ function createGeneralSettingsSelector() {
 }
 
 function Updates() {
-  const currentVersion = useSelector((state: AppState) => state.app.version);
+  const currentVersion = useAppValue('version');
   const { packageUpdateMechanismMessage } = useSystemStatusData();
   const { shortDateFormat, longDateFormat, timeFormat } = useSelector(
     createUISettingsSelector()

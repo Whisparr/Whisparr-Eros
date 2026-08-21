@@ -1,9 +1,9 @@
 import { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useAppDimensions } from 'App/appStore';
 import AppState from 'App/State/AppState';
 import Movie from 'Movie/Movie';
 import { setMovieValue } from 'Store/Actions/movieActions';
-import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import selectSettings from 'Store/Selectors/selectSettings';
 import { PendingSection } from 'typings/pending';
 
@@ -33,7 +33,7 @@ export default function useEditMovieModal(
   const safeForWorkMode = useSelector(
     (state: AppState) => state.settings.safeForWorkMode
   );
-  const dimensions = useSelector(createDimensionsSelector());
+  const dimensions = useAppDimensions();
 
   const { saveError, pendingChanges } = moviesState;
 
