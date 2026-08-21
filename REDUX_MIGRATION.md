@@ -11,7 +11,7 @@ Counts are file-level `react-redux` imports across the frontend source tree.
 Every commit reference below links to the Sonarr commit it names; all were
 verified to resolve against the public repo.
 
-**Status: Phase A complete, Phase B started.** See §11 for the running log.
+**Status: Phases A, B and C complete. Phase D next.** See §11 for the running log.
 
 ---
 
@@ -19,12 +19,12 @@ verified to resolve against the public repo.
 
 | Metric | At assessment | Now |
 | --- | --- | --- |
-| Files importing `react-redux` | 327 of 1,255 | **259** of 1,236 |
-| Lines under `frontend/src/Store/` | 15,374 across 138 files | **11,426** across 109 |
-| Redux slices registered in `Store/Actions/index.js` | 35 | **17** |
+| Files importing `react-redux` | 327 of 1,255 | **248** of 1,238 |
+| Lines under `frontend/src/Store/` | 15,374 across 138 files | **11,166** across 107 |
+| Redux slices registered in `Store/Actions/index.js` | 35 | **16** |
 | Remaining `*Connector` files | 66 | **56** |
-| Files touching React Query | 35 | **62** |
-| zustand stores | 0 (not installed) | **installed, 3 primitives + 8 option stores** |
+| Files touching React Query | 35 | **64** |
+| zustand stores | 0 (not installed) | **installed, 13 files** |
 
 > **Recomputed in #464.** Three rows previously carried figures that no command
 > reproduced — `react-redux` read 316 where the same command that yields the
@@ -78,9 +78,12 @@ all still Redux. The clearest tell is that the new hooks themselves call `useSel
 
 | File | Redux it still depends on |
 | --- | --- |
-| `Movie/Index/useMovieIndexQuery.ts` | `state.movieIndex.selectedFilterKey`, `createCustomFiltersSelector`, `movieActions.filters` |
-| `Movie/Index/useMovieIndex.ts` | 8 × `movieIndexActions` dispatches (`setMovieTableOption`, `setMoviePosterOption`, …) |
-| `Scene/Index/useSceneIndexQuery.ts` | `sceneIndexActions`, `state.sceneIndex` |
+| `Movie/Index/useMovieIndexQuery.ts` | `state.movieIndex.selectedFilterKey`, `movieActions.filters` |
+| `Movie/Index/useMovieIndex.ts` | 12 × `movieIndexActions` dispatches (`setMovieTableOption`, `setMoviePosterOption`, …) |
+| `Scene/Index/useSceneIndexQuery.ts` | `state.sceneIndex.selectedFilterKey` |
+
+Custom filters are no longer among those dependencies: `createCustomFiltersSelector` was
+retired in #484 and both query hooks read `useCustomFiltersList` now.
 
 ### The ordering problem
 
@@ -88,13 +91,17 @@ Eros went domain-first (Movie, Scene, Performer, Studio). Sonarr went the other 
 peripheral pages first, then shared plumbing, and only reached Series in month four.
 
 That wasn't arbitrary. A domain index page sits on top of five shared systems: persisted
-view options, row selection, custom filters, command dispatch, and paging. In Eros **none
-of those five exist off Redux yet.** So each domain gets ~80% converted and then stalls
-against the same missing floor — which is exactly the hybrid state above.
+view options, row selection, custom filters, command dispatch, and paging. At assessment
+**none of those five existed off Redux**, so each domain got ~80% converted and then
+stalled against the same missing floor — which is exactly the hybrid state above.
 
-**Recommendation:** pause domain work, build the foundation (phase A), then close
+**All five now exist**: `createOptionsStore`, `useSelectStore`, `useCustomFilters`,
+`useCommands` and `usePage`. That was the point of Phases A and C, and it is why the
+domains are now unblocked — the recommendation below has been carried out.
+
+**Recommendation (done):** pause domain work, build the foundation (phase A), then close
 Movie/Scene/Performer/Studio in one pass each. The high-value instinct was right; the
-sequencing is what's costing you.
+sequencing is what was costing you.
 
 ---
 
@@ -141,16 +148,17 @@ primitive is expected to replace as the pages convert.
 
 ### Also fix while you're in here
 
-Eros's `useApiQuery` has drifted from Sonarr's. Ours `JSON.stringify`s query params and
-bodies into the cache key and hardcodes `placeholderData: (prev) => prev` as a default.
-Sonarr passes params as a structural key and leaves placeholder behaviour to the caller.
-The stringify keys work, but they make cache invalidation by prefix impossible — which
-you will want the moment SignalR starts driving invalidations. Align it now while there
-are only 13 callers.
+**Still outstanding.** Eros's `useApiQuery` has drifted from Sonarr's. Ours
+`JSON.stringify`s query params and bodies into the cache key and hardcodes
+`placeholderData: (prev) => prev` as a default. Sonarr passes params as a structural key
+and leaves placeholder behaviour to the caller. The stringify keys work, but they make
+cache invalidation by prefix impossible — which is why `useProviderOptions` (#490) and
+`useTranslations` (#493) both reach past the helper to a raw `useQuery`. The window for
+doing this cheaply has closed somewhat: **39 callers today**, against the 13 this line was
+written for.
 
-Same for the ad-hoc `apiPut`/`apiPatch` helpers and the two `// TODO: Move to
-useApiMutation` markers in `Movie/useMovie.ts` — fold those in before the pattern gets
-copied into three more domains.
+~~Same for the ad-hoc `apiPut`/`apiPatch` helpers and the two `// TODO: Move to
+useApiMutation` markers in `Movie/useMovie.ts`.~~ **Done** — both are gone.
 
 ---
 
@@ -164,7 +172,7 @@ a whole state slice. Take them roughly in Sonarr's order.
 | ~~**Queue**~~ — **done, #472 / #473 / #474.** Biggest leaf, 14 importers, SignalR-driven, drives sidebar badge. Split three ways rather than Sonarr's single commit | ~~`queueActions` (539 loc), `QueueAppState`~~ | [Sonarr/Sonarr@ae201f52](https://github.com/Sonarr/Sonarr/commit/ae201f52) (58 files) |
 | ~~**Blocklist** — the page~~ — **done, #477.** `movieBlocklistActions` stays: it feeds one selector in `InteractiveSearchRow` jointly with `movieHistory`, so it converts with History | ~~`blocklistActions`, `BlocklistAppState`~~ | [Sonarr/Sonarr@a4f21085](https://github.com/Sonarr/Sonarr/commit/a4f21085) |
 | ~~**History**~~ — **done, #478.** Was a hybrid: React Query fetched, redux still held the options. Took `movieBlocklistActions` with it, as planned | ~~`historyActions`, `movieHistoryActions`, `movieBlocklistActions`, `HistoryAppState`, `MovieBlocklistAppState`, `HistoryDetailsConnector` ×2~~ | [Sonarr/Sonarr@a45b0776](https://github.com/Sonarr/Sonarr/commit/a45b0776), [Sonarr/Sonarr@6b479a5a](https://github.com/Sonarr/Sonarr/commit/6b479a5a) |
-| ~~**System: Status / Health**~~ — **done, #461 / #463 / #464 / #465.** Health had the sidebar dependency, so it went last | `systemActions` (391 loc after #461), `createHealthCheckSelector.js`, `createSystemStatusSelector.ts` | [Sonarr/Sonarr@49c52c2e](https://github.com/Sonarr/Sonarr/commit/49c52c2e), [Sonarr/Sonarr@0552a811](https://github.com/Sonarr/Sonarr/commit/0552a811), ~~[Sonarr/Sonarr@871ae955](https://github.com/Sonarr/Sonarr/commit/871ae955)~~ |
+| ~~**System: Status / Health**~~ — **done, #461 / #463 / #464 / #465.** Health had the sidebar dependency, so it went last | `systemActions` (59 loc today, from 391 after #461), ~~`createHealthCheckSelector.js`~~, ~~`createSystemStatusSelector.ts`~~ | [Sonarr/Sonarr@49c52c2e](https://github.com/Sonarr/Sonarr/commit/49c52c2e), [Sonarr/Sonarr@0552a811](https://github.com/Sonarr/Sonarr/commit/0552a811), ~~[Sonarr/Sonarr@871ae955](https://github.com/Sonarr/Sonarr/commit/871ae955)~~ |
 | ~~**System: Tasks / Backups / Events**~~ — **done, #462 / #466 / #467 / #468 / #469.** | `BackupsConnector.js`, `RestoreBackupModal*Connector.js`, `LogsTableConnector.js` | [Sonarr/Sonarr@3091f40c](https://github.com/Sonarr/Sonarr/commit/3091f40c), [Sonarr/Sonarr@c295e24f](https://github.com/Sonarr/Sonarr/commit/c295e24f), [Sonarr/Sonarr@ff5e7327](https://github.com/Sonarr/Sonarr/commit/ff5e7327) |
 | ~~**Calendar**~~ — **done, #481.** 12 files. Range derivation ported unchanged; the visible range lives in a second, non-persisted store beside the options one | ~~`calendarActions` (443 loc), `CalendarAppState`~~ | [Sonarr/Sonarr@ccb7f07c](https://github.com/Sonarr/Sonarr/commit/ccb7f07c) (28 files) |
 | ~~**Parse**~~ — **done, #458.** 14 files, +77/−337 | ~~`parseActions.ts`, `ParseAppState`~~ | [Sonarr/Sonarr@263f4839](https://github.com/Sonarr/Sonarr/commit/263f4839) |
@@ -186,7 +194,7 @@ commands commit touched 51 files, custom filters 44. Ship them alone.
 | ~~**Root folders**~~ — 17 consumers across Settings, Add flows, edit modals. **Done, #488.** | ~~`rootFolderActions`~~, ~~`createRootFoldersSelector.ts`~~, ~~`RootFolderAppState`~~ | [Sonarr/Sonarr@7a5157df](https://github.com/Sonarr/Sonarr/commit/7a5157df) |
 | ~~**Paths + file browser**~~ *(hybrid)* — `usePaths` existed; `PathInput` and `FileBrowserModalContent` finished. **Done, #489.** | ~~`pathActions`~~, ~~`PathsAppState`~~, ~~`createPathsSelector.ts`~~ | [Sonarr/Sonarr@91b24290](https://github.com/Sonarr/Sonarr/commit/91b24290), [Sonarr/Sonarr@9a0e23a9](https://github.com/Sonarr/Sonarr/commit/9a0e23a9) |
 | ~~**Provider options + captcha**~~ — feeds every provider settings form. **Done, #490.** | ~~`providerOptionActions`~~, ~~`captchaActions`~~, ~~`oAuthActions`~~, ~~`ProviderOptionsAppState`~~, ~~`CaptchaAppState`~~, ~~`OAuthAppState`~~ | [Sonarr/Sonarr@cd7adba1](https://github.com/Sonarr/Sonarr/commit/cd7adba1), [Sonarr/Sonarr@3c77c4b9](https://github.com/Sonarr/Sonarr/commit/3c77c4b9), [Sonarr/Sonarr@8a68c860](https://github.com/Sonarr/Sonarr/commit/8a68c860) |
-| **SignalR → query invalidation** — mostly landed already; the row was written against a `SignalRConnector.js` that no longer exists. **Wanted handlers fixed in #491**; the 9 remaining dispatches are blocked downstream, see below. | nothing on its own — the last dispatches leave with the app shell, Collection and Settings | [Sonarr/Sonarr@SignalRListener](https://github.com/Sonarr/Sonarr/blob/v5-develop/frontend/src/Components/SignalRListener.tsx) |
+| ~~**SignalR → query invalidation**~~ — mostly landed already; the row was written against a `SignalRConnector.js` that no longer exists. **Done, #491**, which fixed the dead `wanted/*` handlers and retired `pagePopulator`'s reason mechanism. | nothing on its own — the 11 dispatches left in the listener all target Phase D (`movieCollections`) and Phase E (`settings.*`) slices | [Sonarr/Sonarr@SignalRListener](https://github.com/Sonarr/Sonarr/blob/v5-develop/frontend/src/Components/SignalRListener.tsx) |
 | ~~**App shell**~~ — messages, dimensions, connection state, version, sidebar, translations, advanced settings. Three PRs. **Done, #492, #493 and #494.** | ~~`createDimensionsSelector.ts`~~, ~~`MessagesAppState`~~, ~~`appActions`~~, ~~the `app` slice~~, ~~`settings.advancedSettings`~~ | [Sonarr/Sonarr@878f879c](https://github.com/Sonarr/Sonarr/commit/878f879c), [Sonarr/Sonarr@7e702380](https://github.com/Sonarr/Sonarr/commit/7e702380) |
 
 ---
@@ -199,13 +207,13 @@ shape: convert one properly, then the other three are largely mechanical.
 
 | Domain | Remaining work | Sonarr ref |
 | --- | --- | --- |
-| **Movie** *(hybrid)* — do first, set the template. 39 redux files. | Index options → `movieOptionsStore`; filters → `FILTERS`/`FILTER_BUILDER` in `useMovie`; select footer; Edit/Delete/Tags/Organize modals. Retires `movieActions`, `movieIndexActions`, `movieTitlesActions`. | [Sonarr/Sonarr@0521a6c3](https://github.com/Sonarr/Sonarr/commit/0521a6c3) (91 files) |
-| **Scene** *(hybrid)* — 24 redux files. Shares the `Movie` model, so hooks can share a generic base. | `sceneIndexActions`, `createAllScenesSelector.ts`, `DeleteSceneModalContentConnector.js` | — |
-| **Performer** *(hybrid)* — 23 redux files. Details, scenes tab, add flow, edit modal. | `performerActions` (676 loc), `performerScenesActions`, `addPerformerActions`, `EditPerformerModalContentConnector.js` | — |
-| **Studio** *(hybrid)* — 22 redux files. Same shape as Performer. | `studioActions` (510 loc), `studioMoviesActions`, `studioScenesActions`, `DeleteStudioModalConnector.js` | — |
-| **Collection** — untouched, fully connector-based. 7 of the 66 connectors live here. | `movieCollectionActions` (572 loc), `Collection*Connector.js` ×7, `createCollectionSelector.ts` | — |
+| **Movie** *(hybrid)* — do first, set the template. 29 redux files, 2 connectors. | Index options → `movieOptionsStore`; filters → `FILTERS`/`FILTER_BUILDER` in `useMovie`; select footer; Edit/Delete/Tags/Organize modals. Retires `movieActions`, `movieIndexActions`, `movieTitlesActions`. | [Sonarr/Sonarr@0521a6c3](https://github.com/Sonarr/Sonarr/commit/0521a6c3) (91 files) |
+| **Scene** *(hybrid)* — 21 redux files. Shares the `Movie` model, so hooks can share a generic base. | `sceneIndexActions`, `createAllScenesSelector.ts`, `DeleteSceneModalContentConnector.js` | — |
+| **Performer** *(hybrid)* — 20 redux files. Details, scenes tab, add flow, edit modal. | `performerActions` (675 loc), `performerScenesActions`, `addPerformerActions`, `EditPerformerModalContentConnector.js` | — |
+| **Studio** *(hybrid)* — 20 redux files. Same shape as Performer. | `studioActions` (509 loc), `studioMoviesActions`, `studioScenesActions`, `DeleteStudioModalConnector.js` | — |
+| **Collection** — untouched, fully connector-based. 7 of the 56 connectors live here, and 5 of those now take `isSmallScreen` through the #492 wrapper. | `movieCollectionActions` (571 loc), `Collection*Connector.js` ×7, `createCollectionSelector.ts` | — |
 | **Movie files + credits** *(hybrid)* — `useMovieFile` covers most; credits and titles still redux | `movieFileActions`, `movieCreditsActions`, `MovieCreditPosterConnector.tsx` | [Sonarr/Sonarr@44fc1e0e](https://github.com/Sonarr/Sonarr/commit/44fc1e0e) |
-| **Interactive search** — release list, override match, download client picker | `releaseActions` (365 loc), `ReleasesAppState` | [Sonarr/Sonarr@8f95849e](https://github.com/Sonarr/Sonarr/commit/8f95849e) (41 files) |
+| **Interactive search** — release list, override match, download client picker | `releaseActions` (364 loc), `ReleasesAppState` | [Sonarr/Sonarr@8f95849e](https://github.com/Sonarr/Sonarr/commit/8f95849e) (41 files) |
 | **Interactive import** — folder picker, quality/language selects, row grid | `interactiveImportActions` (366 loc), `InteractiveImportAppState` | [Sonarr/Sonarr@ec44e1c5](https://github.com/Sonarr/Sonarr/commit/ec44e1c5) |
 | **Add / Import Movie** *(hybrid)* — `useAddNewMovie` and `useImportMutation` exist; finish folder-select and import-list flows | `addMovieActions` | [Sonarr/Sonarr@ad57cf4b](https://github.com/Sonarr/Sonarr/commit/ad57cf4b) |
 
@@ -213,8 +221,8 @@ shape: convert one properly, then the other three are largely mechanical.
 
 ## 7. Phase E — Settings
 
-~14 PRs, 87 files. The long grind. `settingsActions` has 77 live consumers, and 37 of the
-66 remaining connectors are in here. Sonarr spent six months at roughly one section per
+~14 PRs, 87 files. The long grind. `settingsActions` has 76 live consumers, and 37 of the
+56 remaining connectors are in here. Sonarr spent six months at roughly one section per
 fortnight and never batched two together. Do the same.
 
 **Prerequisite:** the three pending-changes stores (`usePendingChangesStore`,
@@ -227,7 +235,7 @@ their own PR before section one.
 | 1 | **UI settings** — smallest, 32 files read it. Good pathfinder. | `Settings/ui.js`, `UISettingsConnector.js`, `createUISettingsSelector.ts` | [Sonarr/Sonarr@74e6ce43](https://github.com/Sonarr/Sonarr/commit/74e6ce43) |
 | 2 | Remote path mappings · Release profiles | `Settings/remotePathMappings.js`, `Settings/releaseProfiles.js` | [Sonarr/Sonarr@8fcab2d3](https://github.com/Sonarr/Sonarr/commit/8fcab2d3), [Sonarr/Sonarr@4713615b](https://github.com/Sonarr/Sonarr/commit/4713615b) |
 | 3 | Quality profiles · Quality definitions (4 connectors incl. reset modal) | `Settings/qualityProfiles.js`, `Settings/qualityDefinitions.js`, `Quality*Connector.js` ×4 | [Sonarr/Sonarr@21ca65a0](https://github.com/Sonarr/Sonarr/commit/21ca65a0), [Sonarr/Sonarr@cf593b1f](https://github.com/Sonarr/Sonarr/commit/cf593b1f) |
-| 4 | Connections (Notifications) | `Settings/notifications.js`, `DeviceInput.tsx` | [Sonarr/Sonarr@6d49b41d](https://github.com/Sonarr/Sonarr/commit/6d49b41d) |
+| 4 | Connections (Notifications) | `Settings/notifications.js` (~~`DeviceInput.tsx`~~ — converted in #490) | [Sonarr/Sonarr@6d49b41d](https://github.com/Sonarr/Sonarr/commit/6d49b41d) |
 | 5 | Naming · Media Management · Metadata | `Settings/naming.js`, `Settings/namingExamples.js`, `Settings/mediaManagement.js`, `Settings/metadata.js` | [Sonarr/Sonarr@677c588a](https://github.com/Sonarr/Sonarr/commit/677c588a), [Sonarr/Sonarr@bbb4c671](https://github.com/Sonarr/Sonarr/commit/bbb4c671), [Sonarr/Sonarr@c0a56586](https://github.com/Sonarr/Sonarr/commit/c0a56586) |
 | 6 | Languages · General (partial `useGeneralSettings` exists) | `Settings/languages.js`, `Settings/general.js`, `GeneralSettingsConnector.js` | [Sonarr/Sonarr@5bac016f](https://github.com/Sonarr/Sonarr/commit/5bac016f), [Sonarr/Sonarr@6764cf1c](https://github.com/Sonarr/Sonarr/commit/6764cf1c) |
 | 7 | Indexers · Indexer Options · Indexer Flags (11 files, three commits) | `Settings/indexers.js`, `Settings/indexerOptions.js`, `Settings/indexerFlags.js`, `IndexerFilterBuilderRowValueConnector.js` | [Sonarr/Sonarr@c4c0ec25](https://github.com/Sonarr/Sonarr/commit/c4c0ec25), [Sonarr/Sonarr@7a455dd0](https://github.com/Sonarr/Sonarr/commit/7a455dd0), [Sonarr/Sonarr@fbb70519](https://github.com/Sonarr/Sonarr/commit/fbb70519) |
@@ -249,15 +257,18 @@ under React Query a cached object is shared across every component reading that 
 in-place edits corrupt other views silently. Sonarr's sweep hit 37 files ([Sonarr/Sonarr@9bed77c6](https://github.com/Sonarr/Sonarr/commit/9bed77c6)). Do
 this **before** the delete, while the old code is still there to compare against.
 
-Sonarr also switched `useApiQuery`'s generic to `Readonly<T>` so the compiler catches it —
-Eros's copy has not.
+Sonarr also switched `useApiQuery`'s generic to `Readonly<T>` so the compiler catches it.
+~~Eros's copy has not.~~ **Done in #455** — `useApiQuery` returns `Readonly<T>` today, so
+this sweep starts from the same footing Sonarr's did.
 
 ### F2 — Goodbye Redux
 
 Sonarr's final commit ([Sonarr/Sonarr@0460281f](https://github.com/Sonarr/Sonarr/commit/0460281f)) removed 1,996 lines across 51 files. The Eros equivalent:
 
-- Delete `frontend/src/Store/` — 138 files, 15,374 lines.
-- Delete surviving `App/State/*AppState.ts` slices (33 today; most disappear with their phase).
+- Delete `frontend/src/Store/` — 107 files, 11,166 lines today, from 138 files and 15,374
+  lines at assessment.
+- Delete surviving `App/State/*AppState.ts` slices (13 today, from 33; most disappear with
+  their phase).
 - Drop `<Provider>` from `frontend/src/bootstrap.tsx`.
 - Remove from `package.json`: `react-redux`, `redux`, `redux-actions`,
   `redux-batched-actions`, `redux-localstorage`, `redux-thunk`, `@types/redux-actions`.
@@ -268,7 +279,7 @@ Sonarr's final commit ([Sonarr/Sonarr@0460281f](https://github.com/Sonarr/Sonarr
 
 ## 9. Where Eros diverges from Sonarr
 
-Five places where you cannot just copy their commit.
+Six places where you cannot just copy their commit.
 
 1. **Four domains, not one.** Sonarr had Series; Eros has Movie, Scene, Performer and
    Studio, each with its own index, details, edit, delete and select-footer stack. Biggest
@@ -283,14 +294,18 @@ Five places where you cannot just copy their commit.
 3. **Collection has no Sonarr analogue** and is the least-migrated area in the tree — 7
    connectors and a 572-line action file. Needs designing rather than porting.
 4. **Safe-for-work mode.** `SafeForWorkContext` and `SafeForWorkButtonConnector.js` are
-   Eros-specific global UI state. Belongs in the app zustand store alongside theme and
-   advanced-settings, but there is no Sonarr commit to follow.
+   Eros-specific global UI state, still on `settings.safeForWorkMode` and still persisted
+   through `redux-localstorage`. It is the last piece of app-level UI state on Redux now
+   that dimensions, messages and advanced settings have moved, and it belongs beside
+   `App/appStore` and `Settings/advancedSettingsStore` — but there is no Sonarr commit to
+   follow, and it rides with Settings in Phase E because its flag lives in that slice.
 5. **The SignalR container, and the cache helpers inside it.** Two separate things, and it
    is worth not conflating them:
 
-   *The container is converted as of #470; what follows is why it was safe to do early.* Ours is `SignalRConnector.js` — a `connect()`ed
-   class with a `createMapStateToProps` and 15 dispatch props. Sonarr's is
-   `SignalRListener.tsx`, a function component on `useQueryClient()`. Sonarr made that
+   *The container converted in #470 and the handlers in #491; what follows is why it was
+   safe to do early.* Ours **was** `SignalRConnector.js` — a `connect()`ed class with a
+   `createMapStateToProps` and 15 dispatch props. Sonarr's is `SignalRListener.tsx`, a
+   function component on `useQueryClient()`. Sonarr made that
    change in [c3f9cd12](https://github.com/Sonarr/Sonarr/commit/c3f9cd12)
    "Convert signalR to TypeScript" on **2025-01-18 — eight months before their React Query
    migration started — and kept redux**, 37 `dispatch()` calls still in the new file.
@@ -302,12 +317,14 @@ Five places where you cannot just copy their commit.
    before the rewrite has to touch it.
 
    *The helpers are genuinely ours.* Sonarr keeps three generic helpers keyed on
-   `id` — `updateQueryClientItem`, `removeQueryClientItem`, `updatePagedItem`. Eros has six
-   bespoke ones because the cache shape differs: keys are slug/foreignId
+   `id` — `updateQueryClientItem`, `removeQueryClientItem`, `updatePagedItem`. Eros has
+   fourteen, because the cache shape differs: keys are slug/foreignId
    (`/movie/{titleSlug}`, `/performer/{foreignId}`), movies are nested inside
    `/performer/{id}/works`, and the paged invalidators scan the cache by key prefix. Those
-   cannot collapse into Sonarr's helpers without changing the key scheme. Revisit when the
-   container converts; do not treat it as drift to be tidied away.
+   cannot collapse into Sonarr's without changing the key scheme. Only `updatePagedItem`
+   ported across unchanged, in #491. Do not treat the rest as drift to be tidied away —
+   though they should shrink as each domain converts and the bespoke key handling moves
+   into that domain's hooks.
 
    Common domains have neither problem. `/health` is a flat list on a plain key, so the
    handler is Sonarr's line verbatim.
@@ -322,11 +339,13 @@ Five places where you cannot just copy their commit.
 
 ## 10. What to do next
 
-Phases A and B are done. Parse, Disk Space, Log Files, System Status, Health, Tasks,
-Backups, Updates, Events, the SignalR container, Organize preview + Unmapped Files, Queue,
-Wanted, Blocklist, History and Calendar are all converted. Phase C — the shared plumbing —
-is next, and it is a step up in blast radius: every item in it has consumers spread across
-the whole app rather than one page.
+Phases A, B and C are done. Every leaf page is converted, and so is every piece of shared
+plumbing: custom filters, commands, tags, root folders, paths, provider options, SignalR
+and the app shell. **Phase D is next** — the four domains, Collection, interactive search
+and interactive import. It is a step up again: a domain index page sits on top of all five
+shared systems at once, and Phase D is where the connector count finally starts to move,
+since 12 of the 56 live in these areas (Collection 7, Movie 2, and one each for Scene,
+Performer and Studio); Settings holds 37 of the rest.
 
 1. ~~**Queue**, in three PRs.~~ **Done.** Sonarr shipped it as one 58-file commit, but the slice already
    has three independent sub-sections and splitting along them gives three merge points
@@ -452,12 +471,13 @@ when the row came up:
 - `redux-batched-actions` is imported by 22 files under `Store/`, all of them slice
   handlers belonging to Phases D and E.
 
-Nine `dispatch` calls remain in the listener and not one of them can move here. Four
+At the time of #491, nine `dispatch` calls remained in the listener and not one could move there. Four
 settings sections (`downloadclient`, `importlist`, `indexer`, `notification`) plus
 `qualitydefinition` need query hooks that do not exist yet — Sonarr's listener writes to
 `useDownloadClients`/`useIndexers`/`useConnections`, which are Phase E deliverables.
-`collection` waits on Phase D. `setVersion` and the five `setAppValue` calls wait on the
-app shell's zustand store, which is the other remaining Phase C item.
+`collection` waits on Phase D. `setVersion` and the five `setAppValue` calls waited on the
+app shell's zustand store and left in #492, so eleven `dispatch` statements remain, all of
+them Phase D or Phase E.
 
 **What was actually broken.** Two handlers were dispatching into thin air. `wanted/cutoff`
 and `wanted/missing` still called `updateItem({ section: 'wanted.cutoffUnmet' | 'wanted.missing' })`,
@@ -593,8 +613,11 @@ custom-filter support, none of which the Eros pages have ever had — they pass
 `customFilters={[]}` and no `filterModalConnectorComponent`, so the filter menu offers
 Monitored and Unmonitored and nothing else. #475 converted the plumbing and left the
 filter surface exactly where it was. Adding custom filters here is a feature, and it
-wants the shared filter-builder work in Phase C behind it rather than a drive-by inside
-a slice retirement.
+wants the shared filter-builder work behind it rather than a drive-by inside a slice
+retirement. Phase C converted custom filters but not the filter *builder* — the four
+`*FilterBuilderRowValueConnector.js` files under `Components/Filter/Builder` are still
+`connect()`ed, and three of them belong to Settings sections. So this waits on Phase D for
+`MovieFilterBuilderRowValue` and Phase E for the rest.
 
 One thing did have to change. `PropertyFilter['value']` in `Filters/Filter.ts` has no
 scalar boolean, so the redux filters' `value: false` becomes `value: [false]` — the same
@@ -620,7 +643,7 @@ per-row remove work, and it repairs the queue's per-row remove at the same time 
 return `new { }` explicitly and were never affected, which is why the bug survived
 review: the toolbar button worked and only the row button did not.
 
-### `VirtualTable` blocks two connector removals
+### `VirtualTable` blocks one connector removal, and paging would beat porting it
 
 `UnmappedFilesTableConnector.tsx` survived #471 even though the slice under it did not.
 Its own state moved to zustand, but it still dispatches `executeCommand` ×2,
@@ -629,8 +652,24 @@ needs that table converted class → function. That conversion is entangled with
 `VirtualTable` itself: Eros still has the old `scroller`-prop API, which depends on the
 parent having already rendered so `scrollerRef.current` is populated — a pattern that does
 not survive a function component without extra state. Sonarr replaced it with a
-react-window API (`itemCount` / `itemData` / `Header`), so the fix is to port
-`VirtualTable` in Phase C and let the tables above it convert afterwards.
+react-window API (`itemCount` / `itemData` / `Header`). This was filed against Phase C and
+did not happen there — `VirtualTable.tsx` still takes a `scroller` prop.
+
+**But porting it is probably the wrong fix.** `Components/Table/VirtualTable` has exactly
+**one** importer, `UnmappedFilesTable.tsx`. The Movie and Scene index tables do not
+virtualise at all — they are a plain `Scroller` plus rows — and the other
+`react-virtualized` users (`StudioDetails`, `CollectionOverviews`) use `List`/`AutoSizer`
+directly. So this blocks nothing outside Unmapped Files, and in particular it does **not**
+block the Movie index.
+
+The reason Unmapped Files is the only virtualised list is that it is the only list page
+that fetches an unbounded set client-side: `GET /moviefile?unmapped=true` returns a plain
+`List<MovieFileResource>` with no paging, where every other list page is server-side paged
+through `usePagedApiQuery`. Virtualisation is compensating for that. Paging the endpoint
+would let `VirtualTable` be **deleted** rather than ported, and would make the page look
+like every other one — at the cost of a backend change, which is why it belongs with Movie
+files in Phase D rather than as a standalone frontend port. Note `react-virtualized` cannot
+be dropped either way while `StudioDetails` and `CollectionOverviews` still use it.
 
 ### A class component does not block the conversion below it
 
@@ -685,7 +724,9 @@ Worth repeating verbatim on each page:
 
 **A component can convert halfway, and often should.** Log Files (#462) moved its data
 fetching to React Query but kept `useDispatch` and `createCommandExecutingSelector` for
-the delete-logs command, because commands are Phase C. Sonarr's version of that page uses
+the delete-logs command, because commands were Phase C. The other half closed in #486 and
+the page has no `useDispatch` left — which is the point: the half-converted state was a
+staging post, not a debt. Sonarr's version of that page uses
 their `Commands/useCommands` hooks, which do not exist here yet — porting it wholesale
 would have dragged the 44-consumer commands slice into a four-file PR. Convert the concern
 the PR is about and leave the rest; the file will be visited again.
@@ -815,7 +856,8 @@ If a JS test runner is ever added, remove that line and set
   filter on the wire and stopped there.
 - **Retired slices warn on upgrade** — `redux-localstorage` persists whatever the slice
   declared in `persistState`, so a browser that used the app before a conversion still
-  has e.g. `blocklist` in its persisted blob. `createStore` then logs
+  has e.g. `blocklist` in its persisted blob. #494 added `settings.advancedSettings` to the
+  list of keys this applies to. `createStore` then logs
   `Unexpected key "blocklist" found in preloadedState`. Cosmetic — redux drops the key —
   but it fires once per retired slice per user, and every conversion so far has added one.
   `Store/Migrators/migrate.js` is where a sweep would go, and it wants doing once at the
@@ -853,9 +895,11 @@ If a JS test runner is ever added, remove that line and set
   under *All*. Pre-existing; #478 copied the list over verbatim rather than change what the
   page filters on, and filed it. One entry in `FILTERS` fixes it.
 - **Two `Filter` type definitions** — `App/State/AppState.ts` and `Filters/Filter.ts`
-  differ in how strictly `type` and `value` are typed. 21 files import from the former.
-  `History.tsx` carries a cast and a TODO. Collapse them with the custom filters work in
-  Phase C.
+  differ in how strictly `type` and `value` are typed. 15 files import from the former.
+  This was filed to be collapsed "with the custom filters work in Phase C"; that work
+  landed in #483/#484 and did not touch it, and `History.tsx` has since lost the cast and
+  TODO that made it visible. It now wants doing on its own, or with the first domain that
+  trips over it — the index filter modals in Phase D are the likely candidate.
 - **Two live "toggle movie monitored" implementations** — the React Query hook serves
   movie/scene details and the studio and performer scene rows; the Collection overview
   connectors still dispatch the redux thunk. They do not share cache invalidation.
@@ -866,8 +910,14 @@ If a JS test runner is ever added, remove that line and set
 - **The queue Movie filter mixes scenes and movies** — `MovieFilterBuilderRowValue` lists
   every record in the movie table by title, with no `itemType` distinction, so the queue's
   `movieIds` filter cannot tell a scene from a movie. Shared filter-builder plumbing backed
-  by `state.movies`, so it belongs with custom filters in Phase C, not with a slice
-  retirement. Carried over unchanged by #474.
+  by `state.movies`, so it was filed against Phase C — but custom filters converted without
+  touching `MovieFilterBuilderRowValue`, which still reads the movies slice. It moves with
+  Movie in Phase D. Carried over unchanged by #474.
+- **Unmapped Files fetches an unbounded list** — `GET /moviefile?unmapped=true` returns a
+  plain `List<MovieFileResource>`, so the page is the only one in the app that pages
+  client-side, and the only consumer of `VirtualTable`. Paging the endpoint would delete
+  `VirtualTable` outright and align the page with every other list. Backend change, so it
+  goes with Movie files in Phase D. See the `VirtualTable` note above.
 - **Unmapped Files' delete state is inert** — `UnmappedFilesTableConnector` hardcodes
   `isDeleting = false`, so the Delete Selected spinner never spins and the
   deselect-after-delete branch never fires. Pre-existing; #471 left it alone rather than
