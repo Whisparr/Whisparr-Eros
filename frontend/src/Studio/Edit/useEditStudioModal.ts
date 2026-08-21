@@ -1,9 +1,9 @@
 import { useCallback, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useAppDimensions } from 'App/appStore';
 import AppState from 'App/State/AppState';
 import useApiMutation from 'Helpers/Hooks/useApiMutation';
 import { setStudioValue } from 'Store/Actions/studioActions';
-import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import selectSettings from 'Store/Selectors/selectSettings';
 import { useGeneralSettings } from 'Studio/Index/useStudioIndex';
 import Studio from 'Studio/Studio';
@@ -41,7 +41,7 @@ export default function useEditStudioModal(
 ): UseEditStudioModalResult {
   const dispatch = useDispatch();
   const studiosState = useSelector((state: AppState) => state.studios);
-  const dimensions = useSelector(createDimensionsSelector());
+  const dimensions = useAppDimensions();
 
   const { saveError, pendingChanges } = studiosState;
 

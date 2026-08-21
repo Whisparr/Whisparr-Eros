@@ -2,11 +2,11 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
+import { useAppDimension } from 'App/appStore';
 import {
   savePerformer,
   setPerformerValue,
 } from 'Store/Actions/performerActions';
-import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import createPerformerSelector from 'Store/Selectors/createPerformerSelector';
 import selectSettings from 'Store/Selectors/selectSettings';
 import EditPerformerModalContent from './EditPerformerModalContent';
@@ -32,15 +32,8 @@ function createMapStateToProps() {
     (state) => state.performers,
     createPerformerSelector(),
     createIsPathChangingSelector(),
-    createDimensionsSelector(),
     (state) => state.settings.safeForWorkMode,
-    (
-      performersState,
-      performer,
-      isPathChanging,
-      dimensions,
-      safeForWorkMode
-    ) => {
+    (performersState, performer, isPathChanging, safeForWorkMode) => {
       const { isSaving, saveError, pendingChanges } = performersState;
 
       const movieSettings = {
@@ -64,7 +57,6 @@ function createMapStateToProps() {
         isPathChanging,
         originalPath: performer.path,
         item: settings.settings,
-        isSmallScreen: dimensions.isSmallScreen,
         safeForWorkMode,
         ...settings,
       };
@@ -77,7 +69,7 @@ const mapDispatchToProps = {
   dispatchSavePerformer: savePerformer,
 };
 
-class EditPerformerModalContentConnector extends Component {
+class EditPerformerModalContentBase extends Component {
   //
   // Lifecycle
 
@@ -114,7 +106,7 @@ class EditPerformerModalContentConnector extends Component {
   }
 }
 
-EditPerformerModalContentConnector.propTypes = {
+EditPerformerModalContentBase.propTypes = {
   performerId: PropTypes.number,
   isSaving: PropTypes.bool.isRequired,
   saveError: PropTypes.object,
@@ -123,7 +115,20 @@ EditPerformerModalContentConnector.propTypes = {
   onModalClose: PropTypes.func.isRequired,
 };
 
-export default connect(
+const ConnectedEditPerformerModalContent = connect(
   createMapStateToProps,
   mapDispatchToProps
-)(EditPerformerModalContentConnector);
+)(EditPerformerModalContentBase);
+
+// Dimensions come from a zustand store now, which a selector cannot read, so a
+// small function component subscribes and passes the breakpoint down as an own
+// prop. `connect` forwards own props to the wrapped component untouched.
+function EditPerformerModalContentConnector(props) {
+  const isSmallScreen = useAppDimension('isSmallScreen');
+
+  return (
+    <ConnectedEditPerformerModalContent {...props} isSmallScreen={isSmallScreen} />
+  );
+}
+
+export default EditPerformerModalContentConnector;

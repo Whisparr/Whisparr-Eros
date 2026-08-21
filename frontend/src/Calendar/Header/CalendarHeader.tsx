@@ -1,6 +1,7 @@
 import moment from 'moment';
 import React, { useCallback, useMemo } from 'react';
 import { useSelector } from 'react-redux';
+import { useAppDimension } from 'App/appStore';
 import Icon from 'Components/Icon';
 import Button from 'Components/Link/Button';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
@@ -9,7 +10,6 @@ import MenuButton from 'Components/Menu/MenuButton';
 import MenuContent from 'Components/Menu/MenuContent';
 import ViewMenuItem from 'Components/Menu/ViewMenuItem';
 import { align, icons } from 'Helpers/Props';
-import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
 import translate from 'Utilities/String/translate';
 import { setCalendarOption, useCalendarOption } from '../calendarOptionsStore';
@@ -31,9 +31,8 @@ function CalendarHeader() {
   const time = useCalendarTime();
   const { start, end } = useCalendarRange();
 
-  const { isSmallScreen, isLargeScreen } = useSelector(
-    createDimensionsSelector()
-  );
+  const isSmallScreen = useAppDimension('isSmallScreen');
+  const isLargeScreen = useAppDimension('isLargeScreen');
 
   const { longDateFormat } = useSelector(createUISettingsSelector());
 

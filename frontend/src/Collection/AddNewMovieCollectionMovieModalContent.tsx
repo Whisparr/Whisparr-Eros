@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useAppDimension } from 'App/appStore';
 import AppState from 'App/State/AppState';
 import useMovieCollection from 'Collection/useMovieCollection';
 import CheckInput from 'Components/Form/CheckInput';
@@ -20,7 +21,6 @@ import {
   addMovie,
   setMovieCollectionValue,
 } from 'Store/Actions/movieCollectionActions';
-import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import selectSettings from 'Store/Selectors/selectSettings';
 import { useIsWindows } from 'System/Status/useSystemStatus';
 import { InputChanged } from 'typings/inputs';
@@ -52,7 +52,7 @@ function AddNewMovieCollectionMovieModalContent({
 
   const collection = useMovieCollection(collectionId)!;
 
-  const { isSmallScreen } = useSelector(createDimensionsSelector());
+  const isSmallScreen = useAppDimension('isSmallScreen');
   const isWindows = useIsWindows();
 
   const { isAdding, addError, pendingChanges } = useSelector(

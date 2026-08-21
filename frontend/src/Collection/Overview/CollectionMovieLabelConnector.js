@@ -2,18 +2,16 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
+import { useAppDimension } from 'App/appStore';
 import { toggleMovieMonitored } from 'Store/Actions/movieActions';
 import createCollectionExistingMovieSelector from 'Store/Selectors/createCollectionExistingMovieSelector';
-import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import CollectionMovieLabel from './CollectionMovieLabel';
 
 function createMapStateToProps() {
   return createSelector(
-    createDimensionsSelector(),
     createCollectionExistingMovieSelector(),
-    (dimensions, existingMovie) => {
+    (existingMovie) => {
       return {
-        isSmallScreen: dimensions.isSmallScreen,
         isExistingMovie: !!existingMovie,
         ...existingMovie,
       };
@@ -25,7 +23,7 @@ const mapDispatchToProps = {
   toggleMovieMonitored,
 };
 
-class CollectionMovieLabelConnector extends Component {
+class CollectionMovieLabelBase extends Component {
   //
   // Listeners
 
@@ -49,13 +47,24 @@ class CollectionMovieLabelConnector extends Component {
   }
 }
 
-CollectionMovieLabelConnector.propTypes = {
+CollectionMovieLabelBase.propTypes = {
   id: PropTypes.number,
   monitored: PropTypes.bool,
   toggleMovieMonitored: PropTypes.func.isRequired,
 };
 
-export default connect(
+const ConnectedCollectionMovieLabel = connect(
   createMapStateToProps,
   mapDispatchToProps
-)(CollectionMovieLabelConnector);
+)(CollectionMovieLabelBase);
+
+// Dimensions come from a zustand store now, which a selector cannot read, so a
+// small function component subscribes and passes the breakpoint down as an own
+// prop. `connect` forwards own props to the wrapped component untouched.
+function CollectionMovieLabelConnector(props) {
+  const isSmallScreen = useAppDimension('isSmallScreen');
+
+  return <ConnectedCollectionMovieLabel {...props} isSmallScreen={isSmallScreen} />;
+}
+
+export default CollectionMovieLabelConnector;

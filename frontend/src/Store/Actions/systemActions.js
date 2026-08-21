@@ -1,7 +1,6 @@
-import { setAppValue } from 'Store/Actions/appActions';
+import { pingServer, setAppValue } from 'App/appStore';
 import { createThunk, handleThunks } from 'Store/thunks';
 import createAjaxRequest from 'Utilities/createAjaxRequest';
-import { pingServer } from './appActions';
 import createHandleActions from './Creators/createHandleActions';
 
 //
@@ -41,8 +40,8 @@ export const actionHandlers = handleThunks({
     }).request;
 
     promise.done(() => {
-      dispatch(setAppValue({ isRestarting: true }));
-      dispatch(pingServer());
+      setAppValue({ isRestarting: true });
+      pingServer();
     });
   },
 

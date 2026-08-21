@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import { useAppValues } from 'App/appStore';
 import Button from 'Components/Link/Button';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import InlineMarkdown from 'Components/Markdown/InlineMarkdown';
@@ -14,7 +14,6 @@ import UpdateChanges from 'System/Updates/UpdateChanges';
 import useUpdates from 'System/Updates/useUpdates';
 import Update from 'typings/Update';
 import translate from 'Utilities/String/translate';
-import AppState from './State/AppState';
 import styles from './AppUpdatedModalContent.css';
 
 function mergeUpdates(
@@ -78,7 +77,7 @@ interface AppUpdatedModalContentProps {
 }
 
 function AppUpdatedModalContent(props: AppUpdatedModalContentProps) {
-  const { version, prevVersion } = useSelector((state: AppState) => state.app);
+  const { version, prevVersion } = useAppValues('version', 'prevVersion');
   const { data: items, isFetched: isPopulated, error, refetch } = useUpdates();
   const previousVersion = usePrevious(version);
 
