@@ -2,7 +2,6 @@ import React from 'react';
 import Modal from 'Components/Modal/Modal';
 import { sizes } from 'Helpers/Props';
 import DeleteMovieModalContent from './DeleteMovieModalContent';
-import { useDeleteMovieModal } from './useDeleteMovieModal';
 
 export interface DeleteMovieModalProps {
   isOpen: boolean;
@@ -19,19 +18,13 @@ export function DeleteMovieModal({
   onDeletePress,
   ...otherProps
 }: DeleteMovieModalProps) {
-  const { onModalClose: enhancedOnModalClose } =
-    useDeleteMovieModal(onModalClose);
   return (
-    <Modal
-      isOpen={isOpen}
-      size={sizes.MEDIUM}
-      onModalClose={enhancedOnModalClose}
-    >
+    <Modal isOpen={isOpen} size={sizes.MEDIUM} onModalClose={onModalClose}>
       <DeleteMovieModalContent
         {...otherProps}
         movieIds={movieIds}
         onDeletePress={onDeletePress}
-        onModalClose={enhancedOnModalClose}
+        onModalClose={onModalClose}
       />
     </Modal>
   );

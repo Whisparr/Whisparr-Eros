@@ -1,7 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import AppState from 'App/State/AppState';
 import FormGroup from 'Components/Form/FormGroup';
 import FormInputGroup from 'Components/Form/FormInputGroup';
 import FormLabel from 'Components/Form/FormLabel';
@@ -14,10 +12,14 @@ import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { icons, inputTypes, kinds } from 'Helpers/Props';
 import Movie from 'Movie/Movie';
-import { deleteMovie, setDeleteOption } from 'Store/Actions/movieActions';
+import {
+  setMovieDeleteOption,
+  useMovieDeleteOptions,
+} from 'Movie/movieDeleteOptionsStore';
 import { CheckInputChanged } from 'typings/inputs';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
+import { useDeleteMovieMutation } from './useDeleteMovieMutation';
 import styles from './DeleteMovieModalContent.css';
 
 export interface DeleteMovieModalContentProps {
@@ -29,10 +31,10 @@ function DeleteMovieModalContent({
   movie,
   onModalClose,
 }: Readonly<DeleteMovieModalContentProps>) {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { addImportExclusion } = useSelector(
-    (state: AppState) => state.movies.deleteOptions
+  const { addImportExclusion } = useMovieDeleteOptions();
+  const { mutate: deleteMovie } = useDeleteMovieMutation(
+    movie.collection?.tmdbId
   );
 
   const { movieFileCount = 0, sizeOnDisk = 0 } = movie.statistics || {};
@@ -47,22 +49,20 @@ function DeleteMovieModalContent({
   );
 
   const handleDeleteMovieConfirmed = useCallback(() => {
-    dispatch(
-      deleteMovie({
-        id: movie.id,
-        collectionTmdbId: movie.collection?.tmdbId,
-        deleteFiles,
-        addImportExclusion,
-      })
-    );
+    deleteMovie({
+      id: movie.id,
+      deleteFiles,
+      addImportExclusion,
+    });
+
     navigate(movie.itemType === 'movie' ? '/movies' : '/scenes');
-  }, [movie, addImportExclusion, deleteFiles, navigate, dispatch]);
+  }, [movie, addImportExclusion, deleteFiles, navigate, deleteMovie]);
 
   const handleDeleteOptionChange = useCallback(
     ({ name, value }: CheckInputChanged) => {
-      dispatch(setDeleteOption({ [name]: value }));
+      setMovieDeleteOption(name as 'addImportExclusion', value);
     },
-    [dispatch]
+    []
   );
 
   return (

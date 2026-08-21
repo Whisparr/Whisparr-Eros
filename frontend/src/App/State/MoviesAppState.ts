@@ -59,8 +59,6 @@ interface MoviesAppState
   deleteOptions: {
     addImportExclusion: boolean;
   };
-
-  pendingChanges: Partial<Movie>;
 }
 
 export default MoviesAppState;

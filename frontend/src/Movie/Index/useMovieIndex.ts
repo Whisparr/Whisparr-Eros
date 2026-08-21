@@ -2,7 +2,7 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import type Column from 'Components/Table/Column';
 import { useCustomFiltersList } from 'Filters/useCustomFilters';
 import usePage from 'Helpers/Hooks/usePage';
-import { filters as movieIndexFilters } from 'Store/Actions/movieActions';
+import { MOVIE_INDEX_FILTERS } from 'Movie/Index/movieIndexFilters';
 import {
   MovieIndexOverviewOptions,
   MovieIndexPosterOptions,
@@ -140,7 +140,7 @@ export function useMovieIndex() {
     sortDirection,
     view,
     columns,
-    filters: movieIndexFilters,
+    filters: MOVIE_INDEX_FILTERS,
     customFilters,
     selectedFilterKey,
     indexMode,

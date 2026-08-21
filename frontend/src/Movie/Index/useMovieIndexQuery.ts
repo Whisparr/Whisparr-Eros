@@ -2,9 +2,9 @@ import { CustomFilter, Filter, PropertyFilter } from 'App/State/AppState';
 import { useCustomFiltersList } from 'Filters/useCustomFilters';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import { SortDirection } from 'Helpers/Props/sortDirections';
+import { MOVIE_INDEX_FILTERS } from 'Movie/Index/movieIndexFilters';
 import Movie from 'Movie/Movie';
 import { PagingResource } from 'Movie/Movie.types';
-import { filters as movieIndexFilters } from 'Store/Actions/movieActions';
 import { useMovieIndexOption } from './movieIndexOptionsStore';
 
 export interface MovieIndexQueryParams {
@@ -34,7 +34,7 @@ export function useMovieIndexQuery(params: MovieIndexQueryParams) {
     filters = filterDef && filterDef.filters ? filterDef.filters : [];
   } else {
     // String key indicates a predefined filter
-    filterDef = movieIndexFilters.find((f) => f.key === selectedFilterKey);
+    filterDef = MOVIE_INDEX_FILTERS.find((f) => f.key === selectedFilterKey);
     filters = filterDef && filterDef.filters ? filterDef.filters : [];
   }
 
