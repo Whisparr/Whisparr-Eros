@@ -186,7 +186,7 @@ commands commit touched 51 files, custom filters 44. Ship them alone.
 | ~~**Root folders**~~ — 17 consumers across Settings, Add flows, edit modals. **Done, #488.** | ~~`rootFolderActions`~~, ~~`createRootFoldersSelector.ts`~~, ~~`RootFolderAppState`~~ | [Sonarr/Sonarr@7a5157df](https://github.com/Sonarr/Sonarr/commit/7a5157df) |
 | ~~**Paths + file browser**~~ *(hybrid)* — `usePaths` existed; `PathInput` and `FileBrowserModalContent` finished. **Done, #489.** | ~~`pathActions`~~, ~~`PathsAppState`~~, ~~`createPathsSelector.ts`~~ | [Sonarr/Sonarr@91b24290](https://github.com/Sonarr/Sonarr/commit/91b24290), [Sonarr/Sonarr@9a0e23a9](https://github.com/Sonarr/Sonarr/commit/9a0e23a9) |
 | ~~**Provider options + captcha**~~ — feeds every provider settings form. **Done, #490.** | ~~`providerOptionActions`~~, ~~`captchaActions`~~, ~~`oAuthActions`~~, ~~`ProviderOptionsAppState`~~, ~~`CaptchaAppState`~~, ~~`OAuthAppState`~~ | [Sonarr/Sonarr@cd7adba1](https://github.com/Sonarr/Sonarr/commit/cd7adba1), [Sonarr/Sonarr@3c77c4b9](https://github.com/Sonarr/Sonarr/commit/3c77c4b9), [Sonarr/Sonarr@8a68c860](https://github.com/Sonarr/Sonarr/commit/8a68c860) |
-| **SignalR → query invalidation** — the pivot: `SignalRConnector.js` dispatches actions today; becomes a listener that invalidates query keys | `Components/SignalRConnector.js`, `Store/thunks.ts`, `redux-batched-actions` | `Components/SignalRListener.tsx` |
+| **SignalR → query invalidation** — mostly landed already; the row was written against a `SignalRConnector.js` that no longer exists. **Wanted handlers fixed in #491**; the 9 remaining dispatches are blocked downstream, see below. | nothing on its own — the last dispatches leave with the app shell, Collection and Settings | [Sonarr/Sonarr@SignalRListener](https://github.com/Sonarr/Sonarr/blob/v5-develop/frontend/src/Components/SignalRListener.tsx) |
 | **App shell** — messages, dimensions, theme, advanced settings. zustand, not React Query. 34 files import `baseActions`. | `appActions`, `MessagesAppState`, `createDimensionsSelector.ts` | [Sonarr/Sonarr@878f879c](https://github.com/Sonarr/Sonarr/commit/878f879c), [Sonarr/Sonarr@7e702380](https://github.com/Sonarr/Sonarr/commit/7e702380) |
 
 ---
@@ -350,9 +350,75 @@ the whole app rather than one page.
    mutation boundary, not the hook boundary* below.
 7. ~~**Commands.**~~ **Done, #486.** ~~**Tags.**~~ **Done, #487.** ~~**Root folders.**~~
    **Done, #488.** ~~**Paths + file browser.**~~ **Done, #489.** ~~**Provider options +
-   captcha.**~~ **Done, #490.**
+   captcha.**~~ **Done, #490.** ~~**SignalR.**~~ **Done, #491**, in the only sense it can
+   be — see *The SignalR row was already spent* below.
 
-   Two of Phase C's eight remain: the SignalR pivot and the app shell.
+   One of Phase C's eight remains: the app shell.
+
+### The SignalR row was already spent
+
+§5 described the pivot as converting `Components/SignalRConnector.js`, retiring
+`Store/thunks.ts` and `redux-batched-actions` along with it. None of that was still true
+when the row came up:
+
+- `SignalRConnector.js` does not exist. `SignalRListener.tsx` landed during Phase B and
+  already handles calendar, command, moviefile, health, movie, performer, studio, queue
+  ×3, system/task, rootfolder and tag through the query cache.
+- `Store/thunks.ts` has 40+ consumers, every one of them under `Store/Actions/Settings/`.
+  It is Phase E's to retire, not this row's.
+- `redux-batched-actions` is imported by 22 files under `Store/`, all of them slice
+  handlers belonging to Phases D and E.
+
+Nine `dispatch` calls remain in the listener and not one of them can move here. Four
+settings sections (`downloadclient`, `importlist`, `indexer`, `notification`) plus
+`qualitydefinition` need query hooks that do not exist yet — Sonarr's listener writes to
+`useDownloadClients`/`useIndexers`/`useConnections`, which are Phase E deliverables.
+`collection` waits on Phase D. `setVersion` and the five `setAppValue` calls wait on the
+app shell's zustand store, which is the other remaining Phase C item.
+
+**What was actually broken.** Two handlers were dispatching into thin air. `wanted/cutoff`
+and `wanted/missing` still called `updateItem({ section: 'wanted.cutoffUnmet' | 'wanted.missing' })`,
+but #475 retired that slice — there is no `wanted` section in `Store/Actions/index.js` and
+no reducer for one. Both pages have been on `usePagedApiQuery` since, so the push updates
+had been going nowhere. They now patch the paged cache in place through `updatePagedItem`,
+a port of Sonarr's helper: the paged query key is `[path, ...paging]`, so a prefix match
+reaches every cached page and sort without refetching any of them.
+
+**`pagePopulator` was the same bug from the other end, and the mechanism is now
+redundant.** Calendar registers a populator for `movieFileUpdated`/`movieFileDeleted`, and
+both Wanted pages register for those plus `movieUpdated` — reasons that mirror Sonarr's
+exactly. Nothing in the listener had emitted any of them since the conversion; the only
+call was the bare `repopulatePage()` on reconnect, so a file import left those pages stale
+until navigation.
+
+Sonarr fixes this by firing `repopulatePage(reason)` from its `episodefile` and `series`
+handlers, and that was the first shape of this PR. It is the wrong fix here. All three
+reason-registering pages are plain React Query `refetch()`, so the listener can invalidate
+`['/wanted/missing']`, `['/wanted/cutoff']` and `['/calendar']` directly and the whole
+`reasons` mechanism disappears. Four more pages — Blocklist, History, Queue, Unmapped Files
+— registered without reasons and so only ever fired on reconnect; they are React Query too,
+and a blanket `invalidateQueries()` on reconnect covers them and is more honest besides,
+since a dropped connection can have missed *any* message, not the four keys that list
+happened to name.
+
+Invalidation is strictly better than the callback, not merely equivalent:
+
+- `currentPopulator` is a single module-level slot. A second registration silently evicts
+  the first, and the loser gets no updates with no error. Query keys have no such limit.
+- `refetch()` refreshes only the page the user is looking at. Invalidation stales every
+  cached page of a paged list, so flipping to page 2 after an import is not stale.
+- Invalidation costs nothing when nobody is looking. Measured: with Missing cached but the
+  user on Calendar, a `moviefile` push fires no request at all, and returning to Missing
+  well inside the 60s `staleTime` refetches once — the invalidation survived the
+  navigation. The populator could do neither half of that.
+
+`pagePopulator` itself survives, reduced to a single slot with no reasons, for exactly one
+caller: Import List Exclusions still fetches through a redux thunk, which no query key can
+reach. It leaves with Phase E.
+
+The lesson for the rest of the plan: a row written at assessment time describes the code as
+it was, and Phase B moved several of these files underneath it. Read the file before
+budgeting the row.
 
 ### Custom filters split at the mutation boundary, not the hook boundary
 
@@ -634,6 +700,7 @@ If a JS test runner is ever added, remove that line and set
 | 2026-08-18 | #471 | **Organize preview + Unmapped Files.** Two slices retired. First conversion where a page's table prefs move to a zustand options store rather than to React Query. |
 | 2026-08-20 | #487 | **Tags.** `useTags`/`useTagDetails` replace `tagActions`, both tag selectors and `TagsAppState`; the `Tags/useTags.ts` shim that had been a selector wearing a hook's name is now the real query. `TagFilterBuilderRowValueConnector` was a `connect()` whose whole job was reshaping the list, so it became a plain component and the connector count dropped with it. `useAppPage` gates on the query for the same reason it gates on custom filters. Delete writes the removal into the cache but leaves the refetch to SignalR — invalidating `/tag/detail` here as well fetched it twice, measured. `useSortedTagList` copies before sorting: `MovieTagInput` had been sorting the shared list in place, which was harmless against a slice that handed out a fresh array per fetch and is not against a query cache. |
 | 2026-08-20 | #490 | **Provider options + captcha.** `providerOptionActions`, `captchaActions`, `oAuthActions` and their three `AppState` files deleted for `Settings/useProviderOptions.ts`, `Components/Form/useCaptcha.ts` and `OAuth/useOAuth.ts`. `useProviderOptions` does not use `useApiQuery`: that helper keys a POST on the whole body, and the body here is the entire provider form, so every keystroke would be a new cache entry and a new request. It keys on `baseUrl`/`apiPath`/`apiKey`/`authToken` instead, which is what the old slice's `lastActions` de-duplication was approximating — measured, typing in *Name* now fires nothing where the four important fields fire one request each. Two deliberate departures from Sonarr's commits. Sonarr's `DeviceInput` rewrite reads the options as `{value, name}`, but the backend projects `{id, name}` in both apps, so this keeps `.id` — with `.value` the selected device renders as *Unknown (…)*, verified against a stubbed response. And `OAuthInput` keeps dispatching `set({section, saveError})`: Sonarr routes that through a `FormInputGroupContext` Eros does not have, and without it the pop-up-blocked message stops reaching the field. Converting `CaptchaInput` also fixes it — `refreshing`, `siteKey` and `secretToken` were declared as props and never passed by anything, so the ReCAPTCHA widget could not render; no provider in this build declares a `captcha` field, so that path is types-and-lint only. |
+| 2026-08-20 | #491 | **SignalR.** The row assumed a `SignalRConnector.js` that Phase B had already replaced. What was actually left was two handlers dispatching into a slice that no longer exists — `wanted/cutoff` and `wanted/missing` still wrote to `wanted.cutoffUnmet`/`wanted.missing`, retired in #475 — plus `pagePopulator`, whose emit side had gone missing entirely. The wanted handlers now patch the paged cache through `updatePagedItem`, ported from Sonarr. `pagePopulator` was not restored but retired: all seven React Query registrants came out in favour of invalidating their query keys from the listener, and reconnect now invalidates the whole cache rather than four hand-picked keys. It survives, reasons removed, for Import List Exclusions alone, which still fetches through a redux thunk. The nine remaining dispatches cannot move here: five settings sections and `qualitydefinition` need Phase E's query hooks, `collection` needs Phase D, and `setVersion` plus the five `setAppValue` calls need the app shell. |
 | 2026-08-20 | #489 | **Paths + file browser.** `pathActions`, `PathsAppState` and `createPathsSelector` deleted; `PathInput` and `FileBrowserModalContent` finished onto the `usePaths` query that had been sitting unused since Phase A. The slice was a single shared listing that every path input on the page wrote to and read from; each component now owns a `currentPath` and the query follows it, which is why `PathInputInternal`'s Tab-complete and suggestion handlers had to stop calling their own dispatch and go through the `onFetchPaths` prop — inside the browser modal that prop is what moves the modal's path. Dropped `usePaths`' `enabled: path.trim().length > 0` guard, following Sonarr's own follow-up: the browser opens on an empty path and the endpoint answers that with the root listing, so the guard left the modal blank whenever the field it was opened from was empty. Costs one `GET /filesystem` on mount per page carrying a path field — Media Management and General, one each, both behind *Show Advanced*. |
 | 2026-08-20 | #488 | **Root folders.** `RootFolder/useRootFolders.ts` replaces `rootFolderActions`, `createRootFoldersSelector` and `RootFolderAppState`. Eight components dispatched `fetchRootFolders()` purely to prime the slice for a select they might never mount; the query fetches when `RootFolderSelectInput` actually mounts, so those effects are gone rather than rewritten. Whisparr has a `refresh` mutation Sonarr does not — it rescans one folder and returns it, so `useRefreshRootFolder` takes the id in the payload and writes the result into both the list and the by-id cache. `ImportMovie` read a single folder out of the list via a by-id fetch that `updateItem` merged back in; it now reads `/rootFolder/{id}` directly, and drops the `timeout`/`getMovieFolder` query params, which `GetResourceById` never bound. Add and delete write the cache; the server broadcasts `rootfolder` on create but **not** on delete, verified over the websocket, so the delete's cache write is what removes the row — same as the slice's remove handler. |
 | 2026-08-20 | #486 | **Commands.** `useCommands` and friends replace `commandActions` and its three selectors across 58 files; SignalR now writes the command cache instead of dispatching. Two behaviours changed on purpose, both following Sonarr: the per-command five-minute removal timer is gone in favour of a five-minute `refetchInterval`, and the `commands.handlers` table went with it — it was initialised, read once in `FINISH_COMMAND`, and never written to by anything. Toasts still dispatch `showMessage` to the redux app slice; commands are its only producer, and it converts with the rest of the app shell. |

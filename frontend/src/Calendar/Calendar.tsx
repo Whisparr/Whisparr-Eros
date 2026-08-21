@@ -6,10 +6,6 @@ import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import useCurrentPage from 'Helpers/Hooks/useCurrentPage';
 import usePrevious from 'Helpers/Hooks/usePrevious';
 import { kinds } from 'Helpers/Props';
-import {
-  registerPagePopulator,
-  unregisterPagePopulator,
-} from 'Utilities/pagePopulator';
 import translate from 'Utilities/String/translate';
 import Agenda from './Agenda/Agenda';
 import { useCalendarOption } from './calendarOptionsStore';
@@ -60,14 +56,6 @@ function Calendar() {
       goToToday();
     }
   }, [requestCurrentPage]);
-
-  useEffect(() => {
-    registerPagePopulator(refetch, ['movieFileUpdated', 'movieFileDeleted']);
-
-    return () => {
-      unregisterPagePopulator(refetch);
-    };
-  }, [refetch]);
 
   useEffect(() => {
     handleScheduleUpdate();

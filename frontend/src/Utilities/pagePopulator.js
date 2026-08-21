@@ -1,28 +1,21 @@
+// Import List Exclusions is the only page left that fetches through a redux
+// thunk, so a SignalR reconnect cannot reach it by invalidating a query key.
+// Every other page is on React Query and is refreshed by invalidation instead.
+// This goes away with Phase E.
 let currentPopulator = null;
-let currentReasons = [];
 
-export function registerPagePopulator(populator, reasons = []) {
+export function registerPagePopulator(populator) {
   currentPopulator = populator;
-  currentReasons = reasons;
 }
 
 export function unregisterPagePopulator(populator) {
   if (currentPopulator === populator) {
     currentPopulator = null;
-    currentReasons = [];
   }
 }
 
-export function repopulatePage(reason) {
-  if (!currentPopulator) {
-    return;
-  }
-
-  if (!reason) {
-    currentPopulator();
-  }
-
-  if (reason && currentReasons.includes(reason)) {
+export function repopulatePage() {
+  if (currentPopulator) {
     currentPopulator();
   }
 }

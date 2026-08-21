@@ -5,6 +5,7 @@ import { useDispatch } from 'react-redux';
 import { queryClient } from 'App/queryClient';
 import Command from 'Commands/Command';
 import { COMMANDS_QUERY_KEY, useUpdateCommand } from 'Commands/useCommands';
+import { PagedQueryResponse } from 'Helpers/Hooks/usePagedApiQuery';
 import { ROOT_FOLDERS_QUERY_KEY } from 'RootFolder/useRootFolders';
 import { setAppValue, setVersion } from 'Store/Actions/appActions';
 import { removeItem, updateItem } from 'Store/Actions/baseActions';
@@ -200,6 +201,46 @@ function invalidateStudioPagedQueryCache() {
   });
 }
 
+// Both Wanted lists are derived: a movie's monitored state or file status decides
+// whether it belongs on them at all, so a changed movie means refetching rather
+// than patching. Invalidating stales every cached page, not just the visible one.
+function invalidateWantedQueries() {
+  queryClient.invalidateQueries({ queryKey: ['/wanted/missing'] });
+  queryClient.invalidateQueries({ queryKey: ['/wanted/cutoff'] });
+}
+
+function invalidateFileDependentQueries() {
+  invalidateWantedQueries();
+  queryClient.invalidateQueries({ queryKey: ['/calendar'] });
+}
+
+// Patches one record across every cached page of a `usePagedApiQuery` list. The
+// paged key is `[path, ...paging]`, so a prefix match hits every page and sort
+// currently in the cache without refetching any of them.
+function updatePagedItem(queryKey: string, updatedItem: MovieResource) {
+  queryClient.setQueriesData(
+    { queryKey: [queryKey] },
+    (oldData: PagedQueryResponse<MovieResource> | undefined) => {
+      if (!oldData?.records) {
+        return oldData;
+      }
+
+      const index = oldData.records.findIndex(
+        (record) => record.id === updatedItem.id
+      );
+
+      if (index === -1) {
+        return oldData;
+      }
+
+      const records = [...oldData.records];
+      records[index] = { ...records[index], ...updatedItem };
+
+      return { ...oldData, records };
+    }
+  );
+}
+
 // The calendar is a plain list keyed by its fetched range. Patch the movie in
 // place across every cached range rather than refetching -- matching the redux
 // `updateOnly` behaviour this replaces, which never added unseen movies.
@@ -268,6 +309,10 @@ function SignalRListener() {
     if (name === 'moviefile') {
       if (body.action === 'updated' || body.action === 'deleted') {
         queryClient.invalidateQueries({ queryKey: ['/moviefile'] });
+
+        // Gaining or losing a file moves a movie on and off both Wanted lists
+        // and changes its calendar row.
+        invalidateFileDependentQueries();
       }
 
       return;
@@ -339,6 +384,11 @@ function SignalRListener() {
         }
 
         invalidateMoviePagedQueryCache();
+
+        if (body.action === 'updated') {
+          invalidateWantedQueries();
+        }
+
         return;
       }
 
@@ -352,6 +402,11 @@ function SignalRListener() {
       }
 
       invalidateMoviePagedQueryCache();
+
+      if (body.action === 'updated') {
+        invalidateWantedQueries();
+      }
+
       return;
     }
 
@@ -443,28 +498,16 @@ function SignalRListener() {
     }
 
     if (name === 'wanted/cutoff') {
-      if (body.action === 'updated') {
-        dispatch(
-          updateItem({
-            section: 'wanted.cutoffUnmet',
-            updateOnly: true,
-            ...body.resource,
-          })
-        );
+      if (body.action === 'updated' && body.resource) {
+        updatePagedItem('/wanted/cutoff', body.resource);
       }
 
       return;
     }
 
     if (name === 'wanted/missing') {
-      if (body.action === 'updated') {
-        dispatch(
-          updateItem({
-            section: 'wanted.missing',
-            updateOnly: true,
-            ...body.resource,
-          })
-        );
+      if (body.action === 'updated' && body.resource) {
+        updatePagedItem('/wanted/missing', body.resource);
       }
 
       return;
@@ -539,15 +582,13 @@ function SignalRListener() {
       })
     );
 
-    // Repopulate the page (if a repopulator is set) to ensure things
-    // are in sync after reconnecting.
-    queryClient.invalidateQueries({ queryKey: ['/movie/paged'] });
-    queryClient.invalidateQueries({ queryKey: ['/movie/stats'] });
-    // The sidebar badge misses every queue/status message while the connection
-    // is down. QueueStatus used to refetch itself on reconnect; now that it is
-    // a query, the refresh belongs here with the others.
-    queryClient.invalidateQueries({ queryKey: ['/queue/status'] });
-    queryClient.invalidateQueries({ queryKey: COMMANDS_QUERY_KEY });
+    // Any message at all could have been missed while the connection was down,
+    // so stale the whole cache rather than guess at a list of keys. Only the
+    // mounted page's queries have observers, so only those refetch now.
+    queryClient.invalidateQueries();
+
+    // Import List Exclusions is the last page still fetching through a redux
+    // thunk, so it cannot be reached by invalidation. It leaves with Phase E.
     repopulatePage();
   });
 
