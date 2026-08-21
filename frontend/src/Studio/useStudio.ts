@@ -1,5 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { queryClient } from 'App/queryClient';
+import useApiMutation from 'Helpers/Hooks/useApiMutation';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import fetchJson from 'Utilities/Fetch/fetchJson';
 import getQueryPath from 'Utilities/Fetch/getQueryPath';
@@ -14,6 +15,19 @@ export function useStudio(foreignId: string | undefined) {
   return useApiQuery<Studio>({
     path: `/studio/${foreignId}`,
     queryOptions: { enabled: !!foreignId },
+  });
+}
+
+export function useSaveStudio() {
+  return useApiMutation<Studio, Studio>({
+    method: 'PUT',
+    path: ({ id }) => `/studio/${id}`,
+    mutationOptions: {
+      onSuccess: (data) => {
+        queryClient.setQueryData([`/studio/${data.foreignId}`], data);
+        queryClient.invalidateQueries({ queryKey: ['/studio/paged'] });
+      },
+    },
   });
 }
 

@@ -64,9 +64,6 @@ interface SearchResource {
 
 function useAddNewStudio() {
   const uiSettings = useSelector(createUISettingsSelector());
-  const existingStudiosCount = useSelector(
-    (state: AppState) => state.studios.items.length
-  );
   const [term, setTerm] = useState('');
   const [debouncedTerm, setDebouncedTerm] = useState('');
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -122,7 +119,6 @@ function useAddNewStudio() {
     })),
     term,
     colorImpairedMode: uiSettings.enableColorImpairedMode,
-    hasExistingStudios: existingStudiosCount > 0,
     onStudioLookupChange,
     onClearStudioLookupPress,
   };
