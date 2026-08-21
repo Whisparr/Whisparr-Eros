@@ -15,7 +15,7 @@ import Scroller from 'Components/Scroller/Scroller';
 import usePrevious from 'Helpers/Hooks/usePrevious';
 import { icons } from 'Helpers/Props';
 import { VERTICAL } from 'Helpers/Props/scrollDirections';
-import { useGeneralSettings } from 'Studio/Details/useStudioDetails';
+import { useGeneralSettings } from 'Settings/General/useGeneralSettings';
 import dimensions from 'Styles/Variables/dimensions';
 import HealthStatus from 'System/Status/Health/HealthStatus';
 import translate from 'Utilities/String/translate';

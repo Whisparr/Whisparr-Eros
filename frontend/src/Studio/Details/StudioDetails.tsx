@@ -6,7 +6,6 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import {
   AutoSizer,
@@ -34,7 +33,6 @@ import Tooltip from 'Components/Tooltip/Tooltip';
 import { useShowMovieMonitorToggleButton } from 'Helpers/Hooks/useShowMovieMonitorToggleButton';
 import { icons, kinds, sizes, tooltipPositions } from 'Helpers/Props';
 import QualityProfileName from 'Settings/Profiles/Quality/QualityProfileName';
-import { setStudioScenesExpanded } from 'Store/Actions/studioScenesActions';
 import DeleteStudioModal from 'Studio/Delete/DeleteStudioModal';
 import EditStudioModal from 'Studio/Edit/EditStudioModal';
 import { type Image } from 'Studio/Studio';
@@ -43,6 +41,7 @@ import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
 import StudioDetailsLinks from './StudioDetailsLinks';
 import StudioDetailsYear from './StudioDetailsYear';
+import { setStudioScenesExpanded } from './studioScenesOptionsStore';
 import StudioTags from './StudioTags';
 import {
   buildStudioWorksData,
@@ -59,7 +58,6 @@ function getFanartUrl(images: Image[]): string | undefined {
 
 function StudioDetails() {
   const { studioForeignId } = useParams() as { studioForeignId: string };
-  const dispatch = useDispatch();
 
   const { data: allWorks = [], isFetching: isWorksFetching } =
     useStudioDetailsWorks(studioForeignId as string);
@@ -134,9 +132,9 @@ function StudioDetails() {
     if (
       JSON.stringify(initialExpandedState) !== JSON.stringify(expandedState)
     ) {
-      dispatch(setStudioScenesExpanded(initialExpandedState));
+      setStudioScenesExpanded(initialExpandedState);
     }
-  }, [allWorks.length, dispatch, expandedState, initialExpandedState]);
+  }, [allWorks.length, expandedState, initialExpandedState]);
 
   const yearIndexMap = useMemo(() => {
     return new Map(worksByYear.map((entry, index) => [entry.year, index]));
@@ -147,8 +145,8 @@ function StudioDetails() {
     years.forEach((year) => {
       newExpandedState[year] = !allExpanded;
     });
-    dispatch(setStudioScenesExpanded(newExpandedState));
-  }, [allExpanded, dispatch, years]);
+    setStudioScenesExpanded(newExpandedState);
+  }, [allExpanded, years]);
 
   const handleVirtualizedExpandPress = useCallback(
     (year: number, expand: boolean) => {
