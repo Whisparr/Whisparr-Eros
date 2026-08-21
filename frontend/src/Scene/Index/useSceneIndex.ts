@@ -1,44 +1,52 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import AppState from 'App/State/AppState';
+import type Column from 'Components/Table/Column';
 import { useCustomFiltersList } from 'Filters/useCustomFilters';
+import usePage from 'Helpers/Hooks/usePage';
+import { MOVIE_INDEX_FILTERS } from 'Movie/Index/movieIndexFilters';
 import {
-  setSceneFilter,
-  setSceneIndexMode,
-  setSceneOverviewOption,
-  setScenePage,
-  setScenePosterOption,
-  setSceneSort,
-  setSceneTableOption,
-  setSceneView,
-} from 'Store/Actions/sceneIndexActions';
+  SceneIndexOverviewOptions,
+  SceneIndexPosterOptions,
+  SceneIndexTableOptions,
+  setSceneIndexFilter,
+  setSceneIndexOption,
+  setSceneIndexOverviewOption,
+  setSceneIndexPosterOption,
+  setSceneIndexSort,
+  setSceneIndexTableOption,
+  setSceneIndexView,
+  useSceneIndexOptions,
+} from './sceneIndexOptionsStore';
 import { useSceneIndexQuery } from './useSceneIndexQuery';
 
 export function useSceneIndex() {
-  const dispatch = useDispatch();
+  const {
+    sortKey,
+    sortDirection,
+    view,
+    selectedFilterKey,
+    columns,
+    indexMode,
+    posterOptions,
+    tableOptions,
+    overviewOptions,
+  } = useSceneIndexOptions();
 
-  const page = useSelector((state: AppState) => state.sceneIndex.page);
-  const sortKey = useSelector((state: AppState) => state.sceneIndex.sortKey);
-  const sortDirection = useSelector(
-    (state: AppState) => state.sceneIndex.sortDirection
-  );
-  const view = useSelector((state: AppState) => state.sceneIndex.view);
-  const selectedFilterKey = useSelector(
-    (state: AppState) => state.sceneIndex.selectedFilterKey
-  );
-  const columns = useSelector((state: AppState) => state.sceneIndex.columns);
-  const filters = useSelector((state: AppState) => state.sceneIndex.filters);
+  const { page, goToPage } = usePage('sceneIndex');
   const customFilters = useCustomFiltersList('sceneIndex');
-  const indexMode = useSelector(
-    (state: AppState) => state.sceneIndex.indexMode
-  );
 
-  const pageSize = useSelector((state: AppState) => {
-    if (state.sceneIndex.view === 'posters') {
-      return state.sceneIndex.posterOptions?.pageSize ?? 25;
+  // The overview case was missing here, so the Overview view paged at the table
+  // size and ignored its own Page Size setting -- Whisparr/Whisparr#1134.
+  function getPageSize() {
+    switch (view) {
+      case 'posters':
+        return posterOptions?.pageSize ?? 25;
+      case 'overview':
+        return overviewOptions?.pageSize ?? 25;
+      default:
+        return tableOptions?.pageSize ?? 25;
     }
-    return state.sceneIndex.tableOptions?.pageSize ?? 20;
-  });
+  }
+  const pageSize = getPageSize();
 
   const { data, isPending, isError } = useSceneIndexQuery({
     page,
@@ -54,79 +62,68 @@ export function useSceneIndex() {
   const [isSelectMode, setIsSelectMode] = useState(false);
 
   // Pagination handlers
-  const handleFirstPagePress = useCallback(
-    () => dispatch(setScenePage(1)),
-    [dispatch]
-  );
+  const handleFirstPagePress = useCallback(() => goToPage(1), [goToPage]);
   const handlePreviousPagePress = useCallback(
-    () => dispatch(setScenePage(Math.max(1, page - 1))),
-    [dispatch, page]
+    () => goToPage(Math.max(1, page - 1)),
+    [goToPage, page]
   );
   const handleNextPagePress = useCallback(
-    () => dispatch(setScenePage(Math.min(totalPages, page + 1))),
-    [dispatch, page, totalPages]
+    () => goToPage(Math.min(totalPages, page + 1)),
+    [goToPage, page, totalPages]
   );
   const handleLastPagePress = useCallback(
-    () => dispatch(setScenePage(totalPages)),
-    [dispatch, totalPages]
+    () => goToPage(totalPages),
+    [goToPage, totalPages]
   );
   const handlePageSelect = useCallback(
-    (newPage: number) => dispatch(setScenePage(newPage)),
-    [dispatch]
+    (newPage: number) => goToPage(newPage),
+    [goToPage]
   );
 
-  // Sort, filter, view handlers
-  const handleSortPress = useCallback(
-    (value: string) => {
-      dispatch(setSceneSort({ sortKey: value }));
-    },
-    [dispatch]
-  );
+  // Sort, filter, view handlers. Each resets the page, as the reducers did.
+  const handleSortPress = useCallback((value: string) => {
+    setSceneIndexSort(value);
+  }, []);
 
-  const handleFilterSelect = useCallback(
-    (value: string | number) => {
-      dispatch(setSceneFilter({ selectedFilterKey: value }));
-    },
-    [dispatch]
-  );
+  const handleFilterSelect = useCallback((value: string | number) => {
+    setSceneIndexFilter(value);
+  }, []);
 
-  const handleViewSelect = useCallback(
-    (value: string) => {
-      dispatch(setSceneView({ view: value }));
-      if (scrollerRef.current) {
-        scrollerRef.current.scrollTo(0, 0);
-      }
-    },
-    [dispatch, scrollerRef]
-  );
+  const handleViewSelect = useCallback((value: string) => {
+    setSceneIndexView(value);
+
+    if (scrollerRef.current) {
+      scrollerRef.current.scrollTo(0, 0);
+    }
+  }, []);
 
   const handleTableOptionChange = useCallback(
-    (payload: unknown) => {
-      dispatch(setSceneTableOption(payload));
+    (payload: {
+      columns?: Column[];
+      tableOptions?: SceneIndexTableOptions;
+    }) => {
+      setSceneIndexTableOption(payload);
     },
-    [dispatch]
+    []
   );
 
   const handlePosterOptionChange = useCallback(
-    (payload: unknown) => {
-      dispatch(setScenePosterOption(payload));
+    (payload: Partial<SceneIndexPosterOptions>) => {
+      setSceneIndexPosterOption(payload);
     },
-    [dispatch]
+    []
   );
 
   const handleOverviewOptionChange = useCallback(
-    (payload: unknown) => {
-      dispatch(setSceneOverviewOption(payload));
+    (payload: Partial<SceneIndexOverviewOptions>) => {
+      setSceneIndexOverviewOption(payload);
     },
-    [dispatch]
+    []
   );
 
-  const handleIndexModeChange = useCallback(
-    (value: string) => {
-      dispatch(setSceneIndexMode({ indexMode: value }));
-    },
-    [dispatch]
-  );
+  const handleIndexModeChange = useCallback((value: string) => {
+    setSceneIndexOption('indexMode', value);
+  }, []);
 
   const handleSelectModePress = useCallback(() => {
     setIsSelectMode((prev) => !prev);
@@ -145,7 +142,7 @@ export function useSceneIndex() {
     sortDirection,
     view,
     columns,
-    filters,
+    filters: MOVIE_INDEX_FILTERS,
     customFilters,
     selectedFilterKey,
     indexMode,

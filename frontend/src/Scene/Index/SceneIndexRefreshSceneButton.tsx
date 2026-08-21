@@ -10,7 +10,7 @@ import getSelectedIds from 'Utilities/Table/getSelectedIds';
 
 interface SceneIndexRefreshSceneButtonProps {
   isSelectMode: boolean;
-  selectedFilterKey: string;
+  selectedFilterKey: string | number;
   items: Movie[];
 }
 

@@ -21,8 +21,8 @@ import ScenePoster from 'Scene/ScenePoster';
 import dimensions from 'Styles/Variables/dimensions';
 import fonts from 'Styles/Variables/fonts';
 import translate from 'Utilities/String/translate';
+import { useSceneIndexOption } from '../sceneIndexOptionsStore';
 import SceneIndexOverviewInfo from './SceneIndexOverviewInfo';
-import selectOverviewOptions from './selectOverviewOptions';
 import styles from './SceneIndexOverview.css';
 
 const columnPadding = Number.parseInt(dimensions.movieIndexColumnPadding, 10);
@@ -35,7 +35,7 @@ const lineHeight = Number.parseFloat(fonts.lineHeight);
 
 // Hardcoded height beased on line-height of 32 + bottom margin of 10.
 // Less side-effecty than using react-measure.
-const titleRowHeight = 42;
+export const TITLE_ROW_HEIGHT = 42;
 
 interface SceneIndexOverviewProps {
   scene: Movie;
@@ -82,7 +82,7 @@ function SceneIndexOverview(props: SceneIndexOverviewProps) {
       command.name === MOVIE_SEARCH && command.body.movieId === sceneId
   );
 
-  const overviewOptions = useSelector(selectOverviewOptions);
+  const overviewOptions = useSceneIndexOption('overviewOptions');
 
   const {
     title,
@@ -150,7 +150,7 @@ function SceneIndexOverview(props: SceneIndexOverviewProps) {
     return rowHeight - padding;
   }, [rowHeight, isSmallScreen]);
 
-  const overviewHeight = contentHeight - titleRowHeight;
+  const overviewHeight = contentHeight - TITLE_ROW_HEIGHT;
 
   return (
     <div>

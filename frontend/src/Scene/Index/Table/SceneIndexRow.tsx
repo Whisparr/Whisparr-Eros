@@ -27,8 +27,8 @@ import formatRuntime from 'Utilities/Date/formatRuntime';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
 import SceneIndexProgressBar from '../ProgressBar/SceneIndexProgressBar';
+import { useSceneIndexOption } from '../sceneIndexOptionsStore';
 import SceneStatusCell from './SceneStatusCell';
-import selectTableOptions from './selectTableOptions';
 import styles from './SceneIndexRow.css';
 
 interface SceneIndexRowProps {
@@ -60,7 +60,7 @@ function SceneIndexRow(props: SceneIndexRowProps) {
       command.name === MOVIE_SEARCH && command.body.movieId === sceneId
   );
 
-  const { showSearchAction } = useSelector(selectTableOptions);
+  const { showSearchAction } = useSceneIndexOption('tableOptions');
 
   const { movieRuntimeFormat } = useSelector(createUISettingsSelector());
 
