@@ -12,6 +12,7 @@ interface PageStore {
   history: number;
   importListExclusion: number;
   missing: number;
+  movieIndex: number;
   queue: number;
 }
 
@@ -22,6 +23,7 @@ const pageStore = create<PageStore>(() => ({
   history: 1,
   importListExclusion: 1,
   missing: 1,
+  movieIndex: 1,
   queue: 1,
 }));
 

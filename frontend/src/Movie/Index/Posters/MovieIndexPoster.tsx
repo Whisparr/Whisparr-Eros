@@ -25,8 +25,8 @@ import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
 import formatDate from 'Utilities/Date/formatDate';
 import getRelativeDate from 'Utilities/Date/getRelativeDate';
 import translate from 'Utilities/String/translate';
+import { useMovieIndexOption } from '../movieIndexOptionsStore';
 import MovieIndexPosterInfo from './MovieIndexPosterInfo';
-import selectPosterOptions from './selectPosterOptions';
 import styles from './MovieIndexPoster.css';
 
 interface MovieIndexPosterProps {
@@ -72,7 +72,7 @@ function MovieIndexPoster(props: MovieIndexPosterProps) {
     showTmdbRating,
     showTags,
     showSearchAction,
-  } = useSelector(selectPosterOptions);
+  } = useMovieIndexOption('posterOptions');
 
   const { showRelativeDates, shortDateFormat, longDateFormat, timeFormat } =
     useSelector(createUISettingsSelector());
