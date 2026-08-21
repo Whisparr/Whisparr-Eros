@@ -187,7 +187,7 @@ commands commit touched 51 files, custom filters 44. Ship them alone.
 | ~~**Paths + file browser**~~ *(hybrid)* — `usePaths` existed; `PathInput` and `FileBrowserModalContent` finished. **Done, #489.** | ~~`pathActions`~~, ~~`PathsAppState`~~, ~~`createPathsSelector.ts`~~ | [Sonarr/Sonarr@91b24290](https://github.com/Sonarr/Sonarr/commit/91b24290), [Sonarr/Sonarr@9a0e23a9](https://github.com/Sonarr/Sonarr/commit/9a0e23a9) |
 | ~~**Provider options + captcha**~~ — feeds every provider settings form. **Done, #490.** | ~~`providerOptionActions`~~, ~~`captchaActions`~~, ~~`oAuthActions`~~, ~~`ProviderOptionsAppState`~~, ~~`CaptchaAppState`~~, ~~`OAuthAppState`~~ | [Sonarr/Sonarr@cd7adba1](https://github.com/Sonarr/Sonarr/commit/cd7adba1), [Sonarr/Sonarr@3c77c4b9](https://github.com/Sonarr/Sonarr/commit/3c77c4b9), [Sonarr/Sonarr@8a68c860](https://github.com/Sonarr/Sonarr/commit/8a68c860) |
 | **SignalR → query invalidation** — mostly landed already; the row was written against a `SignalRConnector.js` that no longer exists. **Wanted handlers fixed in #491**; the 9 remaining dispatches are blocked downstream, see below. | nothing on its own — the last dispatches leave with the app shell, Collection and Settings | [Sonarr/Sonarr@SignalRListener](https://github.com/Sonarr/Sonarr/blob/v5-develop/frontend/src/Components/SignalRListener.tsx) |
-| **App shell** — messages, dimensions, connection state, version, sidebar. zustand, not React Query. Three PRs; **part 1 done, #492**. | ~~`createDimensionsSelector.ts`~~, ~~`MessagesAppState`~~, `appActions` (translations only, part 2) | [Sonarr/Sonarr@878f879c](https://github.com/Sonarr/Sonarr/commit/878f879c), [Sonarr/Sonarr@7e702380](https://github.com/Sonarr/Sonarr/commit/7e702380) |
+| **App shell** — messages, dimensions, connection state, version, sidebar, translations. Three PRs; **#492 and #493 done**, advanced settings left. | ~~`createDimensionsSelector.ts`~~, ~~`MessagesAppState`~~, ~~`appActions`~~, ~~the `app` slice~~ | [Sonarr/Sonarr@878f879c](https://github.com/Sonarr/Sonarr/commit/878f879c), [Sonarr/Sonarr@7e702380](https://github.com/Sonarr/Sonarr/commit/7e702380) |
 
 ---
 
@@ -356,12 +356,47 @@ the whole app rather than one page.
    The app shell is the last of Phase C's eight, and it splits three ways:
    - ~~**Store + messages.**~~ **Done, #492.** Dimensions, connection state, version and
      sidebar visibility onto `App/appStore`; messages onto `App/messagesStore`.
-   - **Translations.** `fetchTranslations` and the boot gate in `useAppPage`. Held back
-     deliberately — see *Split a conversion when it reaches the boot path* above. Retires
-     `appActions` and the `app` slice.
+   - ~~**Translations.**~~ **Done, #493.** `App/useTranslations`, the boot gate in
+     `useAppPage`, and with them `appActions` and the `app` slice.
    - **Advanced settings.** `state.settings.advancedSettings` onto its own store, as Sonarr
      did in [7e702380](https://github.com/Sonarr/Sonarr/commit/7e702380). Carves cleanly out
      of `settingsActions` ahead of Phase E.
+
+### The localization endpoint changes shape with the Accept header
+
+`translate()` renders raw keys the moment its string table is wrong, and in English a raw
+key mostly still reads like a label — `AddConnection` where `Add Connection` belongs. So
+this conversion is quiet when it breaks, and it broke twice.
+
+First, Whisparr's `LocalizationController` preserves PascalCase, where Sonarr's serialises
+`strings`. Porting Sonarr's hook verbatim reads `data.strings`, gets `undefined`, and every
+lookup silently falls back to its key.
+
+Second, and less guessable: `GetLocalizationDictionary` returns a **pre-serialized JSON
+string**, not a resource. What arrives therefore depends on which formatter content
+negotiation picks. jQuery sent `Accept: application/json, text/javascript, */*; q=0.01`,
+which selects the text/plain formatter and returns the JSON untouched. `fetchJson` pins
+`Accept: application/json`, which selects the JSON formatter and serialises that string a
+second time — so `JSON.parse` yields a *string* and `.Strings` is `undefined`. The old path
+worked by accident of its Accept header. The hook now accepts either shape.
+
+The controller is the actual wart and it is worth fixing on its own — returning the
+resource rather than a hand-serialized string — but that changes the response casing, which
+is an API break and does not belong in a frontend migration PR.
+
+### Translations must land before the render that unblocks the app
+
+`translate()` reads a module-level record synchronously during render. Sonarr's hook fills
+that record from a `useEffect`, which is one paint too late: the render that first sees
+`isFetched` is the render that unblocks every gated component, and the effect has not run
+yet, so that paint emits raw keys and nothing re-renders to correct them. Filling the record
+inside the query function closes the gap, because it runs before the query resolves. That is
+also why this is a raw `useQuery` — `useApiQuery` owns the query function, the same reason
+`useProviderOptions` reaches past it.
+
+Verified by holding `/localization` open at the network layer: the app sits on the loading
+page for as long as the request is held, then paints translated, with no raw-key frame in
+between.
 
 ### A selector cannot read a zustand store, so connectors take an own prop
 
@@ -726,6 +761,7 @@ If a JS test runner is ever added, remove that line and set
 | 2026-08-18 | #471 | **Organize preview + Unmapped Files.** Two slices retired. First conversion where a page's table prefs move to a zustand options store rather than to React Query. |
 | 2026-08-20 | #487 | **Tags.** `useTags`/`useTagDetails` replace `tagActions`, both tag selectors and `TagsAppState`; the `Tags/useTags.ts` shim that had been a selector wearing a hook's name is now the real query. `TagFilterBuilderRowValueConnector` was a `connect()` whose whole job was reshaping the list, so it became a plain component and the connector count dropped with it. `useAppPage` gates on the query for the same reason it gates on custom filters. Delete writes the removal into the cache but leaves the refetch to SignalR — invalidating `/tag/detail` here as well fetched it twice, measured. `useSortedTagList` copies before sorting: `MovieTagInput` had been sorting the shared list in place, which was harmless against a slice that handed out a fresh array per fetch and is not against a query cache. |
 | 2026-08-20 | #490 | **Provider options + captcha.** `providerOptionActions`, `captchaActions`, `oAuthActions` and their three `AppState` files deleted for `Settings/useProviderOptions.ts`, `Components/Form/useCaptcha.ts` and `OAuth/useOAuth.ts`. `useProviderOptions` does not use `useApiQuery`: that helper keys a POST on the whole body, and the body here is the entire provider form, so every keystroke would be a new cache entry and a new request. It keys on `baseUrl`/`apiPath`/`apiKey`/`authToken` instead, which is what the old slice's `lastActions` de-duplication was approximating — measured, typing in *Name* now fires nothing where the four important fields fire one request each. Two deliberate departures from Sonarr's commits. Sonarr's `DeviceInput` rewrite reads the options as `{value, name}`, but the backend projects `{id, name}` in both apps, so this keeps `.id` — with `.value` the selected device renders as *Unknown (…)*, verified against a stubbed response. And `OAuthInput` keeps dispatching `set({section, saveError})`: Sonarr routes that through a `FormInputGroupContext` Eros does not have, and without it the pop-up-blocked message stops reaching the field. Converting `CaptchaInput` also fixes it — `refreshing`, `siteKey` and `secretToken` were declared as props and never passed by anything, so the ReCAPTCHA widget could not render; no provider in this build declares a `captcha` field, so that path is types-and-lint only. |
+| 2026-08-20 | #493 | **App shell, part 2.** `App/useTranslations` replaces the `fetchTranslations` thunk; `appActions` and the `app` slice are deleted and `AppState` loses its last app member. Slices 17 to 16. Two things made this less mechanical than it looks, both of them silent failures — the response is PascalCase where Sonarr's is camelCase, and it double-encodes under `fetchJson`'s Accept header. See above. The strings are written from inside the query function rather than an effect so they are in place before the render that unblocks the app. Verified live: translated labels render, holding the request open keeps the app on the loading page with no raw-key frame, and a 500 puts the message on `ErrorPage`. |
 | 2026-08-20 | #492 | **App shell, part 1.** `App/appStore.ts` and `App/messagesStore.ts` take dimensions, connection state, version, sidebar visibility and messages; `createDimensionsSelector.ts` and `MessagesAppState.ts` are deleted and `appActions` is down to translations. 33 files. Six `connect()` components could not call a hook, so they take `isSmallScreen` as an own prop from a small wrapper — see above. The SignalR listener loses its last six `dispatch` calls that were not blocked by another phase. Verified live: resizing across 768px adds and removes the sidebar's inline transform, the toggle moves it between 0 and -210px, a `command` push renders a message that clears itself after its `hideAfter`, and a `version` push opens the Whisparr Updated modal. |
 | 2026-08-20 | #491 | **SignalR.** The row assumed a `SignalRConnector.js` that Phase B had already replaced. What was actually left was two handlers dispatching into a slice that no longer exists — `wanted/cutoff` and `wanted/missing` still wrote to `wanted.cutoffUnmet`/`wanted.missing`, retired in #475 — plus `pagePopulator`, whose emit side had gone missing entirely. The wanted handlers now patch the paged cache through `updatePagedItem`, ported from Sonarr. `pagePopulator` was not restored but retired: all seven React Query registrants came out in favour of invalidating their query keys from the listener, and reconnect now invalidates the whole cache rather than four hand-picked keys. It survives, reasons removed, for Import List Exclusions alone, which still fetches through a redux thunk. The nine remaining dispatches cannot move here: five settings sections and `qualitydefinition` need Phase E's query hooks, `collection` needs Phase D, and `setVersion` plus the five `setAppValue` calls need the app shell. |
 | 2026-08-20 | #489 | **Paths + file browser.** `pathActions`, `PathsAppState` and `createPathsSelector` deleted; `PathInput` and `FileBrowserModalContent` finished onto the `usePaths` query that had been sitting unused since Phase A. The slice was a single shared listing that every path input on the page wrote to and read from; each component now owns a `currentPath` and the query follows it, which is why `PathInputInternal`'s Tab-complete and suggestion handlers had to stop calling their own dispatch and go through the `onFetchPaths` prop — inside the browser modal that prop is what moves the modal's path. Dropped `usePaths`' `enabled: path.trim().length > 0` guard, following Sonarr's own follow-up: the browser opens on an empty path and the endpoint answers that with the root listing, so the guard left the modal blank whenever the field it was opened from was empty. Costs one `GET /filesystem` on mount per page carrying a path field — Media Management and General, one each, both behind *Show Advanced*. |

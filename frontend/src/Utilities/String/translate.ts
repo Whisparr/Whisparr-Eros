@@ -1,26 +1,9 @@
-import createAjaxRequest from 'Utilities/createAjaxRequest';
-
-function getTranslations() {
-  return createAjaxRequest({
-    global: false,
-    dataType: 'json',
-    url: '/localization',
-  }).request;
-}
-
 let translations: Record<string, string> = {};
 
-export async function fetchTranslations(): Promise<boolean> {
-  return new Promise(async (resolve) => {
-    try {
-      const data = await getTranslations();
-      translations = data.Strings;
-
-      resolve(true);
-    } catch {
-      resolve(false);
-    }
-  });
+// Filled by `App/useTranslations` as soon as the localization query resolves,
+// before anything that waits on it renders.
+export function setTranslations(strings: Record<string, string>) {
+  translations = strings;
 }
 
 export default function translate(

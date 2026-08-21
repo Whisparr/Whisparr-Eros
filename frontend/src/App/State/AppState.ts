@@ -73,7 +73,6 @@ export interface AppSectionState {
 }
 
 interface AppState {
-  app: AppSectionState;
   extraFiles: ExtraFilesAppState;
   interactiveImport: InteractiveImportAppState;
   movieCollections: MovieCollectionAppState;

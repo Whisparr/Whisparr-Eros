@@ -2,9 +2,9 @@ import { useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { createSelector } from 'reselect';
 import AppState from 'App/State/AppState';
+import useTranslations from 'App/useTranslations';
 import useCommands from 'Commands/useCommands';
 import useCustomFilters from 'Filters/useCustomFilters';
-import { fetchTranslations } from 'Store/Actions/appActions';
 import {
   fetchImportLists,
   fetchIndexerFlags,
@@ -24,7 +24,6 @@ const createErrorsSelector = () =>
     (state: AppState) => state.settings.languages.error,
     (state: AppState) => state.settings.importLists.error,
     (state: AppState) => state.settings.indexerFlags.error,
-    (state: AppState) => state.app.translations.error,
     (
       performersError,
       studiosError,
@@ -32,8 +31,7 @@ const createErrorsSelector = () =>
       qualityProfilesError,
       languagesError,
       importListsError,
-      indexerFlagsError,
-      translationsError
+      indexerFlagsError
     ) => {
       const hasError = !!(
         performersError ||
@@ -42,8 +40,7 @@ const createErrorsSelector = () =>
         qualityProfilesError ||
         languagesError ||
         importListsError ||
-        indexerFlagsError ||
-        translationsError
+        indexerFlagsError
       );
 
       return {
@@ -56,7 +53,6 @@ const createErrorsSelector = () =>
           languagesError,
           importListsError,
           indexerFlagsError,
-          translationsError,
         },
       };
     }
@@ -84,6 +80,11 @@ const useAppPage = () => {
   // arrives shows a row of tagless inputs that fill in a moment later.
   const { isFetched: isTagsPopulated, error: tagsError } = useTags();
 
+  // `translate()` is called during render all over the app, so the whole page
+  // waits on the strings exactly as it did on the slice's `isPopulated`.
+  const { isFetched: isTranslationsPopulated, error: translationsError } =
+    useTranslations();
+
   // Keeps one observer on the command list for the whole session. SignalR pushes command
   // updates that drive global toasts, and the periodic refetch is what clears finished
   // commands now that the slice's per-command removal timer is gone. The app does not
@@ -96,15 +97,15 @@ const useAppPage = () => {
       state.settings.qualityProfiles.isPopulated &&
       state.settings.languages.isPopulated &&
       state.settings.importLists.isPopulated &&
-      state.settings.indexerFlags.isPopulated &&
-      state.app.translations.isPopulated
+      state.settings.indexerFlags.isPopulated
   );
 
   const isPopulated =
     isReduxPopulated &&
     isSystemStatusPopulated &&
     isCustomFiltersPopulated &&
-    isTagsPopulated;
+    isTagsPopulated &&
+    isTranslationsPopulated;
 
   const { hasError, errors: reduxErrors } = useSelector(createErrorsSelector());
 
@@ -113,9 +114,16 @@ const useAppPage = () => {
       ...reduxErrors,
       customFiltersError,
       tagsError,
+      translationsError,
       systemStatusError: systemStatusQueryError,
     };
-  }, [reduxErrors, customFiltersError, tagsError, systemStatusQueryError]);
+  }, [
+    reduxErrors,
+    customFiltersError,
+    tagsError,
+    translationsError,
+    systemStatusQueryError,
+  ]);
 
   const isLocalStorageSupported = useMemo(() => {
     const key = 'whisparrTest';
@@ -136,7 +144,6 @@ const useAppPage = () => {
     dispatch(fetchImportLists());
     dispatch(fetchIndexerFlags());
     dispatch(fetchUISettings());
-    dispatch(fetchTranslations());
   }, [dispatch]);
 
   return useMemo(() => {
@@ -146,6 +153,7 @@ const useAppPage = () => {
         hasError ||
         !!customFiltersError ||
         !!tagsError ||
+        !!translationsError ||
         !!systemStatusQueryError,
       isLocalStorageSupported,
       isPopulated,
@@ -155,6 +163,7 @@ const useAppPage = () => {
     hasError,
     customFiltersError,
     tagsError,
+    translationsError,
     systemStatusQueryError,
     isLocalStorageSupported,
     isPopulated,
