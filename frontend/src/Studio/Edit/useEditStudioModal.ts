@@ -3,9 +3,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useAppDimensions } from 'App/appStore';
 import AppState from 'App/State/AppState';
 import useApiMutation from 'Helpers/Hooks/useApiMutation';
+import { useGeneralSettings } from 'Settings/General/useGeneralSettings';
 import { setStudioValue } from 'Store/Actions/studioActions';
 import selectSettings from 'Store/Selectors/selectSettings';
-import { useGeneralSettings } from 'Studio/Index/useStudioIndex';
 import Studio from 'Studio/Studio';
 import type { PendingSection } from 'typings/pending';
 

@@ -1,5 +1,4 @@
 import React, { useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import Form from 'Components/Form/Form';
 import FormGroup from 'Components/Form/FormGroup';
 import FormInputGroup from 'Components/Form/FormInputGroup';
@@ -10,9 +9,12 @@ import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { inputTypes } from 'Helpers/Props';
-import { setStudioPosterOption } from 'Store/Actions/studioActions';
+import {
+  setStudioIndexPosterOption,
+  StudioIndexPosterOptions,
+  useStudioIndexOption,
+} from 'Studio/Index/studioIndexOptionsStore';
 import translate from 'Utilities/String/translate';
-import selectPosterOptions from '../selectPosterOptions';
 
 const posterSizeOptions = [
   {
@@ -44,17 +46,17 @@ function StudioIndexPosterOptionsModalContent(
 ) {
   const { onModalClose } = props;
 
-  const posterOptions = useSelector(selectPosterOptions);
+  const posterOptions = useStudioIndexOption('posterOptions');
 
   const { detailedProgressBar, pageSize, size, showTitle } = posterOptions;
 
-  const dispatch = useDispatch();
-
   const onPosterOptionChange = useCallback(
     ({ name, value }: { name: string; value: unknown }) => {
-      dispatch(setStudioPosterOption({ [name]: value }));
+      setStudioIndexPosterOption({
+        [name]: value,
+      } as Partial<StudioIndexPosterOptions>);
     },
-    [dispatch]
+    []
   );
 
   return (

@@ -15,6 +15,7 @@ interface PageStore {
   movieIndex: number;
   queue: number;
   sceneIndex: number;
+  studioIndex: number;
 }
 
 const pageStore = create<PageStore>(() => ({
@@ -27,6 +28,7 @@ const pageStore = create<PageStore>(() => ({
   movieIndex: 1,
   queue: 1,
   sceneIndex: 1,
+  studioIndex: 1,
 }));
 
 const usePage = (kind: keyof PageStore) => {

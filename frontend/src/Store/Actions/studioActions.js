@@ -1,25 +1,13 @@
 import _ from 'lodash';
 import { createAction } from 'redux-actions';
 import { batchActions } from 'redux-batched-actions';
-import {
-  filterBuilderTypes,
-  filterBuilderValueTypes,
-  filterTypes,
-  sortDirections,
-} from 'Helpers/Props';
 import { createThunk, handleThunks } from 'Store/thunks';
-import sortByProp from 'Utilities/Array/sortByProp';
 import createAjaxRequest from 'Utilities/createAjaxRequest';
-import camelCaseToString from 'Utilities/String/camelCaseToString';
-import translate from 'Utilities/String/translate';
 import { set, updateItem } from './baseActions';
 import createHandleActions from './Creators/createHandleActions';
 import createRemoveItemHandler from './Creators/createRemoveItemHandler';
 import createSaveProviderHandler from './Creators/createSaveProviderHandler';
-import createSetClientSideCollectionFilterReducer from './Creators/Reducers/createSetClientSideCollectionFilterReducer';
-import createSetClientSideCollectionSortReducer from './Creators/Reducers/createSetClientSideCollectionSortReducer';
 import createSetSettingValueReducer from './Creators/Reducers/createSetSettingValueReducer';
-import createSetTableOptionReducer from './Creators/Reducers/createSetTableOptionReducer';
 
 //
 // Variables
@@ -36,26 +24,7 @@ export const defaultState = {
   items: [],
   isSaving: false,
   saveError: null,
-  sortKey: 'sortTitle',
-  sortDirection: sortDirections.ASCENDING,
-  secondarySortKey: 'sortTitle',
-  secondarySortDirection: sortDirections.ASCENDING,
-  view: 'posters',
-  page: 1,
-  selectedFilterKey: 'all',
-  pageSize: 25,
   pendingChanges: {},
-
-  posterOptions: {
-    detailedProgressBar: false,
-    size: 'large',
-    showTitle: true,
-    pageSize: 25,
-  },
-
-  tableOptions: {
-    pageSize: 25,
-  },
 
   deleteOptions: {
     addImportExclusion: false,
@@ -68,249 +37,9 @@ export const defaultState = {
     searchForMovie: true,
     tags: [],
   },
-
-  columns: [
-    {
-      name: 'status',
-      columnLabel: () => translate('Monitored'),
-      isSortable: true,
-      isVisible: true,
-      isModifiable: false,
-    },
-    {
-      name: 'sortTitle',
-      label: () => translate('StudioTitle'),
-      isSortable: true,
-      isVisible: true,
-      isModifiable: false,
-    },
-    {
-      name: 'network',
-      label: () => translate('Network'),
-      isSortable: true,
-      isVisible: true,
-      isModifiable: true,
-    },
-    {
-      name: 'qualityProfileId',
-      label: () => translate('QualityProfile'),
-      isSortable: true,
-      isVisible: true,
-      isModifiable: true,
-    },
-    {
-      name: 'rootFolderPath',
-      label: () => translate('RootFolderPath'),
-      isSortable: true,
-      isVisible: true,
-      isModifiable: true,
-    },
-    {
-      name: 'aliases',
-      label: () => translate('Aliases'),
-      isSortable: false,
-      isVisible: true,
-      isModifiable: true,
-    },
-    {
-      name: 'tags',
-      label: () => translate('Tags'),
-      isSortable: false,
-      isVisible: true,
-      isModifiable: true,
-    },
-    {
-      name: 'totalMovieCount',
-      label: () => translate('Movies'),
-      isSortable: true,
-      isVisible: true,
-    },
-    {
-      name: 'totalSceneCount',
-      label: () => translate('Scenes'),
-      isSortable: true,
-      isVisible: true,
-    },
-    {
-      name: 'sizeOnDisk',
-      label: () => translate('SizeOnDisk'),
-      isSortable: true,
-      isVisible: true,
-      isModifiable: true,
-    },
-    {
-      name: 'actions',
-      columnLabel: () => translate('Actions'),
-      isVisible: true,
-      isModifiable: false,
-    },
-  ],
-
-  filters: [
-    {
-      key: 'all',
-      label: () => translate('All'),
-      filters: [],
-    },
-    {
-      key: 'monitoredscenes',
-      label: () => translate('MonitoredScenesOnly'),
-      filters: [
-        {
-          key: 'monitored',
-          value: true,
-          type: filterTypes.EQUAL,
-        },
-      ],
-    },
-    {
-      key: 'monitoredMovies',
-      label: () => translate('MonitoredMoviesOnly'),
-      filters: [
-        {
-          key: 'moviesMonitored',
-          value: true,
-          type: filterTypes.EQUAL,
-        },
-      ],
-    },
-    {
-      key: 'unmonitored',
-      label: () => translate('Unmonitored'),
-      filters: [
-        {
-          key: 'monitored',
-          value: false,
-          type: filterTypes.EQUAL,
-        },
-      ],
-    },
-    {
-      key: 'deleted',
-      label: () => translate('Deleted'),
-      filters: [
-        {
-          key: 'status',
-          value: 'deleted',
-          type: filterTypes.EQUAL,
-        },
-      ],
-    },
-  ],
-
-  filterBuilderProps: [
-    {
-      name: 'monitored',
-      label: () => translate('MonitoredScene'),
-      type: filterBuilderTypes.EXACT,
-      valueType: filterBuilderValueTypes.BOOL,
-    },
-    {
-      name: 'moviesMonitored',
-      label: () => translate('MonitoredMovie'),
-      type: filterBuilderTypes.EXACT,
-      valueType: filterBuilderValueTypes.BOOL,
-    },
-    {
-      name: 'qualityProfileId',
-      label: () => translate('QualityProfile'),
-      type: filterBuilderTypes.EXACT,
-      valueType: filterBuilderValueTypes.QUALITY_PROFILE,
-    },
-    {
-      name: 'title',
-      label: () => translate('Title'),
-      type: filterBuilderTypes.EXACT,
-      valueType: filterBuilderValueTypes.DEFAULT,
-    },
-    {
-      name: 'status',
-      label: () => translate('Status'),
-      type: filterBuilderTypes.EXACT,
-      optionsSelector: function (items) {
-        const tagList = ['active', 'deleted'];
-
-        const tags = tagList.map((tag) => {
-          return {
-            id: tag,
-            name: camelCaseToString(tag),
-          };
-        });
-
-        return tags.sort(sortByProp('name'));
-      },
-    },
-    {
-      name: 'sceneCount',
-      label: () => translate('SceneCount'),
-      type: filterBuilderTypes.NUMBER,
-      valueType: filterBuilderValueTypes.DEFAULT,
-    },
-    {
-      name: 'totalSceneCount',
-      label: () => translate('TotalSceneCount'),
-      type: filterBuilderTypes.NUMBER,
-      valueType: filterBuilderValueTypes.DEFAULT,
-    },
-    {
-      name: 'movieCount',
-      label: () => translate('MovieCount'),
-      type: filterBuilderTypes.NUMBER,
-      valueType: filterBuilderValueTypes.DEFAULT,
-    },
-    {
-      name: 'totalMovieCount',
-      label: () => translate('TotalMovieCount'),
-      type: filterBuilderTypes.NUMBER,
-      valueType: filterBuilderValueTypes.DEFAULT,
-    },
-    {
-      name: 'sizeOnDisk',
-      label: () => translate('SizeOnDisk'),
-      type: filterBuilderTypes.NUMBER,
-      valueType: filterBuilderValueTypes.DEFAULT,
-    },
-    {
-      name: 'network',
-      label: () => translate('Network'),
-      type: filterBuilderTypes.EXACT,
-      optionsSelector: function (items) {
-        const tagList = (items || []).reduce((acc, studio) => {
-          if (studio && studio.network) {
-            acc.push({
-              id: studio.network,
-              name: studio.network,
-            });
-          }
-
-          return acc;
-        }, []);
-
-        const tags = _.uniqBy(tagList, 'id');
-
-        return tags.sort(sortByProp('name'));
-      },
-    },
-    {
-      name: 'tags',
-      label: () => translate('Tags'),
-      type: filterBuilderTypes.ARRAY,
-      valueType: filterBuilderValueTypes.TAG,
-    },
-  ],
 };
 
-export const persistState = [
-  'studios.defaults',
-  'studios.sortKey',
-  'studios.sortDirection',
-  'studios.view',
-  'studios.page',
-  'studios.columns',
-  'studios.selectedFilterKey',
-  'studios.posterOptions',
-  'studios.tableOptions',
-];
+export const persistState = ['studios.defaults'];
 
 //
 // Actions Types
@@ -323,13 +52,6 @@ export const SET_STUDIO_VALUE = 'studios/setStudioValue';
 export const SET_DELETE_OPTION = 'studios/setDeleteOption';
 
 export const TOGGLE_STUDIO_MONITORED = 'studios/toggleStudioMonitored';
-
-export const SET_STUDIO_SORT = 'studios/setStudioSort';
-export const SET_STUDIO_FILTER = 'studios/setStudioFilter';
-export const SET_STUDIO_VIEW = 'studios/setStudioView';
-export const SET_STUDIO_TABLE_OPTION = 'studios/setStudioTableOption';
-export const SET_STUDIO_POSTER_OPTION = 'studios/setStudioPosterOption';
-export const SET_STUDIO_PAGE = 'studios/setStudioPage';
 
 //
 // Action Creators
@@ -350,16 +72,6 @@ export const deleteStudio = createThunk(DELETE_STUDIO, (payload) => {
 });
 
 export const setDeleteOption = createAction(SET_DELETE_OPTION);
-
-export const setStudioSort = createAction(SET_STUDIO_SORT);
-export const setStudioFilter = createAction(SET_STUDIO_FILTER);
-export const setStudioView = createAction(SET_STUDIO_VIEW);
-export const setStudioTableOption = createAction(SET_STUDIO_TABLE_OPTION);
-export const setStudioPosterOption = createAction(SET_STUDIO_POSTER_OPTION);
-export const setStudioPage = (page) => ({
-  type: SET_STUDIO_PAGE,
-  payload: { page },
-});
 
 export const setStudioValue = createAction(SET_STUDIO_VALUE, (payload) => {
   return {
@@ -469,17 +181,6 @@ export const actionHandlers = handleThunks({
 
 export const reducers = createHandleActions(
   {
-    [SET_STUDIO_PAGE]: (state, { payload }) => ({
-      ...state,
-      page: payload.page,
-    }),
-
-    [SET_STUDIO_SORT]: createSetClientSideCollectionSortReducer(section),
-    [SET_STUDIO_FILTER]: createSetClientSideCollectionFilterReducer(section),
-    [SET_STUDIO_VIEW]: (state, { payload }) => {
-      return Object.assign({}, state, { view: payload.view });
-    },
-    [SET_STUDIO_TABLE_OPTION]: createSetTableOptionReducer(section),
     [SET_STUDIO_VALUE]: createSetSettingValueReducer(section),
     [SET_DELETE_OPTION]: (state, { payload }) => {
       return {
@@ -489,21 +190,7 @@ export const reducers = createHandleActions(
         },
       };
     },
-
-    [SET_STUDIO_POSTER_OPTION]: function (state, { payload }) {
-      const posterOptions = state.posterOptions;
-
-      return {
-        ...state,
-        posterOptions: {
-          ...posterOptions,
-          ...payload,
-        },
-      };
-    },
   },
   defaultState,
   section
 );
-
-export const filters = defaultState.filters;
