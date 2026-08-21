@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
+import withAdvancedSettings from 'Components/withAdvancedSettings';
 import {
   fetchQualityDefinitions,
   saveQualityDefinitions,
@@ -12,8 +13,7 @@ import QualityDefinitions from './QualityDefinitions';
 function createMapStateToProps() {
   return createSelector(
     (state) => state.settings.qualityDefinitions,
-    (state) => state.settings.advancedSettings,
-    (qualityDefinitions, advancedSettings) => {
+    (qualityDefinitions) => {
       const items = qualityDefinitions.items.map((item) => {
         const pendingChanges = qualityDefinitions.pendingChanges[item.id] || {};
 
@@ -24,7 +24,6 @@ function createMapStateToProps() {
         ...qualityDefinitions,
         items,
         hasPendingChanges: !_.isEmpty(qualityDefinitions.pendingChanges),
-        advancedSettings,
       };
     }
   );
@@ -81,8 +80,10 @@ QualityDefinitionsConnector.propTypes = {
   onChildStateChange: PropTypes.func.isRequired,
 };
 
-export default connect(
-  createMapStateToProps,
-  mapDispatchToProps,
-  null
-)(QualityDefinitionsConnector);
+export default withAdvancedSettings(
+  connect(
+    createMapStateToProps,
+    mapDispatchToProps,
+    null
+  )(QualityDefinitionsConnector)
+);

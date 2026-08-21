@@ -62,7 +62,6 @@ export const section = 'settings';
 // State
 
 export const defaultState = {
-  advancedSettings: false,
   autoTaggingSpecifications: autoTaggingSpecifications.defaultState,
   autoTaggings: autoTaggings.defaultState,
   safeForWorkMode: false,
@@ -92,7 +91,6 @@ export const defaultState = {
 };
 
 export const persistState = [
-  'settings.advancedSettings',
   'settings.importListExclusions.pageSize',
   'settings.safeForWorkMode',
 ];
@@ -100,13 +98,11 @@ export const persistState = [
 //
 // Actions Types
 
-export const TOGGLE_ADVANCED_SETTINGS = 'settings/toggleAdvancedSettings';
 export const TOGGLE_SFW_MODE = 'settings/toggleSafeForWorkMode';
 
 //
 // Action Creators
 
-export const toggleAdvancedSettings = createAction(TOGGLE_ADVANCED_SETTINGS);
 export const toggleSafeForWorkMode = createAction(TOGGLE_SFW_MODE);
 
 //
@@ -145,12 +141,6 @@ export const actionHandlers = handleThunks({
 
 export const reducers = createHandleActions(
   {
-    [TOGGLE_ADVANCED_SETTINGS]: (state, { payload }) => {
-      return Object.assign({}, state, {
-        advancedSettings: !state.advancedSettings,
-      });
-    },
-
     [TOGGLE_SFW_MODE]: (state, { payload }) => {
       return Object.assign({}, state, {
         safeForWorkMode: !state.safeForWorkMode,

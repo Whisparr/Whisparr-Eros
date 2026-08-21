@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
+import withAdvancedSettings from 'Components/withAdvancedSettings';
 import { clearPendingChanges } from 'Store/Actions/baseActions';
 import {
   clearCustomFormatSpecificationPending,
@@ -20,12 +21,10 @@ import ImportCustomFormatModalContent from './ImportCustomFormatModalContent';
 
 function createMapStateToProps() {
   return createSelector(
-    (state) => state.settings.advancedSettings,
     createProviderSettingsSelector('customFormats'),
     (state) => state.settings.customFormatSpecifications,
-    (advancedSettings, customFormat, specifications) => {
+    (customFormat, specifications) => {
       return {
-        advancedSettings,
         ...customFormat,
         specificationsPopulated: specifications.isPopulated,
         specificationSchema: specifications.schema,
@@ -163,7 +162,9 @@ ImportCustomFormatModalContentConnector.propTypes = {
   onModalClose: PropTypes.func.isRequired,
 };
 
-export default connect(
+export default withAdvancedSettings(
+  connect(
   createMapStateToProps,
   mapDispatchToProps
-)(ImportCustomFormatModalContentConnector);
+)(ImportCustomFormatModalContentConnector)
+);

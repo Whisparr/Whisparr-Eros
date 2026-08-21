@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
 import * as commandNames from 'Commands/commandNames';
 import { useCommandExecuting, useExecuteCommand } from 'Commands/useCommands';
+import { useShowAdvancedSettings } from 'Settings/advancedSettingsStore';
 import { clearPendingChanges } from 'Store/Actions/baseActions';
 import {
   fetchGeneralSettings,
@@ -19,11 +20,9 @@ const SECTION = 'general';
 
 function createMapStateToProps() {
   return createSelector(
-    (state) => state.settings.advancedSettings,
     createSettingsSectionSelector(SECTION),
-    (advancedSettings, sectionSettings, isResettingApiKey) => {
+    (sectionSettings, isResettingApiKey) => {
       return {
-        advancedSettings,
         isResettingApiKey,
         ...sectionSettings,
       };
@@ -113,12 +112,14 @@ const ConnectedGeneralSettings = connect(
 // three status props now go straight to HostSettings and UpdateSettings, which
 // are function components and read the query themselves.
 export default function GeneralSettingsConnector() {
+  const advancedSettings = useShowAdvancedSettings();
   const isWindowsService = useIsWindowsService();
   const executeCommand = useExecuteCommand();
   const isResettingApiKey = useCommandExecuting(commandNames.RESET_API_KEY);
 
   return (
     <ConnectedGeneralSettings
+      advancedSettings={advancedSettings}
       isWindowsService={isWindowsService}
       isResettingApiKey={isResettingApiKey}
       executeCommand={executeCommand}

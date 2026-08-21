@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
+import withAdvancedSettings from 'Components/withAdvancedSettings';
 import {
   saveMetadata,
   setMetadataFieldValue,
@@ -13,10 +14,9 @@ import EditMetadataModalContent from './EditMetadataModalContent';
 
 function createMapStateToProps() {
   return createSelector(
-    (state) => state.settings.advancedSettings,
     (state, { id }) => id,
     (state) => state.settings.metadata,
-    (advancedSettings, id, metadata) => {
+    (id, metadata) => {
       const { isSaving, saveError, pendingChanges, items } = metadata;
 
       const settings = selectSettings(
@@ -26,7 +26,6 @@ function createMapStateToProps() {
       );
 
       return {
-        advancedSettings,
         id,
         isSaving,
         saveError,
@@ -94,7 +93,9 @@ EditMetadataModalContentConnector.propTypes = {
   onModalClose: PropTypes.func.isRequired,
 };
 
-export default connect(
+export default withAdvancedSettings(
+  connect(
   createMapStateToProps,
   mapDispatchToProps
-)(EditMetadataModalContentConnector);
+)(EditMetadataModalContentConnector)
+);

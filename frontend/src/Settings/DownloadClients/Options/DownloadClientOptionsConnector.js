@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
+import withAdvancedSettings from 'Components/withAdvancedSettings';
 import { clearPendingChanges } from 'Store/Actions/baseActions';
 import {
   fetchDownloadClientOptions,
@@ -15,11 +16,9 @@ const SECTION = 'downloadClientOptions';
 
 function createMapStateToProps() {
   return createSelector(
-    (state) => state.settings.advancedSettings,
     createSettingsSectionSelector(SECTION),
-    (advancedSettings, sectionSettings) => {
+    (sectionSettings) => {
       return {
-        advancedSettings,
         ...sectionSettings,
       };
     }
@@ -97,7 +96,9 @@ DownloadClientOptionsConnector.propTypes = {
   onChildStateChange: PropTypes.func.isRequired,
 };
 
-export default connect(
+export default withAdvancedSettings(
+  connect(
   createMapStateToProps,
   mapDispatchToProps
-)(DownloadClientOptionsConnector);
+)(DownloadClientOptionsConnector)
+);

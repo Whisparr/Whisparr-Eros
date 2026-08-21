@@ -187,7 +187,7 @@ commands commit touched 51 files, custom filters 44. Ship them alone.
 | ~~**Paths + file browser**~~ *(hybrid)* — `usePaths` existed; `PathInput` and `FileBrowserModalContent` finished. **Done, #489.** | ~~`pathActions`~~, ~~`PathsAppState`~~, ~~`createPathsSelector.ts`~~ | [Sonarr/Sonarr@91b24290](https://github.com/Sonarr/Sonarr/commit/91b24290), [Sonarr/Sonarr@9a0e23a9](https://github.com/Sonarr/Sonarr/commit/9a0e23a9) |
 | ~~**Provider options + captcha**~~ — feeds every provider settings form. **Done, #490.** | ~~`providerOptionActions`~~, ~~`captchaActions`~~, ~~`oAuthActions`~~, ~~`ProviderOptionsAppState`~~, ~~`CaptchaAppState`~~, ~~`OAuthAppState`~~ | [Sonarr/Sonarr@cd7adba1](https://github.com/Sonarr/Sonarr/commit/cd7adba1), [Sonarr/Sonarr@3c77c4b9](https://github.com/Sonarr/Sonarr/commit/3c77c4b9), [Sonarr/Sonarr@8a68c860](https://github.com/Sonarr/Sonarr/commit/8a68c860) |
 | **SignalR → query invalidation** — mostly landed already; the row was written against a `SignalRConnector.js` that no longer exists. **Wanted handlers fixed in #491**; the 9 remaining dispatches are blocked downstream, see below. | nothing on its own — the last dispatches leave with the app shell, Collection and Settings | [Sonarr/Sonarr@SignalRListener](https://github.com/Sonarr/Sonarr/blob/v5-develop/frontend/src/Components/SignalRListener.tsx) |
-| **App shell** — messages, dimensions, connection state, version, sidebar, translations. Three PRs; **#492 and #493 done**, advanced settings left. | ~~`createDimensionsSelector.ts`~~, ~~`MessagesAppState`~~, ~~`appActions`~~, ~~the `app` slice~~ | [Sonarr/Sonarr@878f879c](https://github.com/Sonarr/Sonarr/commit/878f879c), [Sonarr/Sonarr@7e702380](https://github.com/Sonarr/Sonarr/commit/7e702380) |
+| ~~**App shell**~~ — messages, dimensions, connection state, version, sidebar, translations, advanced settings. Three PRs. **Done, #492, #493 and #494.** | ~~`createDimensionsSelector.ts`~~, ~~`MessagesAppState`~~, ~~`appActions`~~, ~~the `app` slice~~, ~~`settings.advancedSettings`~~ | [Sonarr/Sonarr@878f879c](https://github.com/Sonarr/Sonarr/commit/878f879c), [Sonarr/Sonarr@7e702380](https://github.com/Sonarr/Sonarr/commit/7e702380) |
 
 ---
 
@@ -358,9 +358,31 @@ the whole app rather than one page.
      sidebar visibility onto `App/appStore`; messages onto `App/messagesStore`.
    - ~~**Translations.**~~ **Done, #493.** `App/useTranslations`, the boot gate in
      `useAppPage`, and with them `appActions` and the `app` slice.
-   - **Advanced settings.** `state.settings.advancedSettings` onto its own store, as Sonarr
-     did in [7e702380](https://github.com/Sonarr/Sonarr/commit/7e702380). Carves cleanly out
-     of `settingsActions` ahead of Phase E.
+   - ~~**Advanced settings.**~~ **Done, #494.** `Settings/advancedSettingsStore`, carved out
+     of `settingsActions` ahead of Phase E. **Phase C is complete.**
+
+### Advanced settings had eleven connectors, not three consumers
+
+§5 filed this as a boolean with a toggle. The boolean is read by eleven `connect()`
+components — five under Custom Formats and Download Clients, plus General, Metadata,
+Notifications, Quality Definitions and UI — none of which can call a hook, and by five TSX
+files through `useShowAdvancedSettings`.
+
+Two things kept it small anyway. `useShowAdvancedSettings` already existed as the single
+read for the TSX side, so re-pointing that one file at the store left all five importers
+untouched. And rather than eleven bespoke wrappers as in #492, the flag is injected by one
+`withAdvancedSettings` HOC, matching `withScrollPosition` — every wrapped component keeps
+the prop contract it already had, so the components themselves are unchanged and the diff
+stays in the connectors.
+
+The flag was persisted through `redux-localstorage` under the instance-name key; it is now
+persisted by `createPersist` under `<instance>_advanced_settings`. The keys differ, so the
+toggle resets to off once per browser. That matches every options store converted so far,
+none of which migrated their redux-persisted value either.
+
+Worth knowing when reading the row: **UI settings has no advanced fields at all.**
+`UISettings.js` contains zero `isAdvanced`, so its connector was passing a prop nothing
+consumed. The prop is left in place — removing it is a Phase E cleanup, not this row's.
 
 ### The localization endpoint changes shape with the Accept header
 
@@ -761,6 +783,7 @@ If a JS test runner is ever added, remove that line and set
 | 2026-08-18 | #471 | **Organize preview + Unmapped Files.** Two slices retired. First conversion where a page's table prefs move to a zustand options store rather than to React Query. |
 | 2026-08-20 | #487 | **Tags.** `useTags`/`useTagDetails` replace `tagActions`, both tag selectors and `TagsAppState`; the `Tags/useTags.ts` shim that had been a selector wearing a hook's name is now the real query. `TagFilterBuilderRowValueConnector` was a `connect()` whose whole job was reshaping the list, so it became a plain component and the connector count dropped with it. `useAppPage` gates on the query for the same reason it gates on custom filters. Delete writes the removal into the cache but leaves the refetch to SignalR — invalidating `/tag/detail` here as well fetched it twice, measured. `useSortedTagList` copies before sorting: `MovieTagInput` had been sorting the shared list in place, which was harmless against a slice that handed out a fresh array per fetch and is not against a query cache. |
 | 2026-08-20 | #490 | **Provider options + captcha.** `providerOptionActions`, `captchaActions`, `oAuthActions` and their three `AppState` files deleted for `Settings/useProviderOptions.ts`, `Components/Form/useCaptcha.ts` and `OAuth/useOAuth.ts`. `useProviderOptions` does not use `useApiQuery`: that helper keys a POST on the whole body, and the body here is the entire provider form, so every keystroke would be a new cache entry and a new request. It keys on `baseUrl`/`apiPath`/`apiKey`/`authToken` instead, which is what the old slice's `lastActions` de-duplication was approximating — measured, typing in *Name* now fires nothing where the four important fields fire one request each. Two deliberate departures from Sonarr's commits. Sonarr's `DeviceInput` rewrite reads the options as `{value, name}`, but the backend projects `{id, name}` in both apps, so this keeps `.id` — with `.value` the selected device renders as *Unknown (…)*, verified against a stubbed response. And `OAuthInput` keeps dispatching `set({section, saveError})`: Sonarr routes that through a `FormInputGroupContext` Eros does not have, and without it the pop-up-blocked message stops reaching the field. Converting `CaptchaInput` also fixes it — `refreshing`, `siteKey` and `secretToken` were declared as props and never passed by anything, so the ReCAPTCHA widget could not render; no provider in this build declares a `captcha` field, so that path is types-and-lint only. |
+| 2026-08-20 | #494 | **App shell, part 3, and the end of Phase C.** `Settings/advancedSettingsStore` replaces `state.settings.advancedSettings`, its toggle action and its reducer, carved out of `settingsActions` ahead of Phase E. Eleven `connect()` components read the flag, so it is injected by a single `withAdvancedSettings` HOC in the shape of `withScrollPosition`, leaving the wrapped components untouched. `useShowAdvancedSettings` keeps its path and now re-exports from the store, so its five TSX importers did not change. Verified live: the toggle expands General from 18 form groups to 38 and Media Management from 7 to 30, adds the Megabytes Per Minute column to Quality Definitions, survives a reload through `createPersist`, and through the HOC adds exactly the two fields the API marks advanced on Kodi. |
 | 2026-08-20 | #493 | **App shell, part 2.** `App/useTranslations` replaces the `fetchTranslations` thunk; `appActions` and the `app` slice are deleted and `AppState` loses its last app member. Slices 17 to 16. Two things made this less mechanical than it looks, both of them silent failures — the response is PascalCase where Sonarr's is camelCase, and it double-encodes under `fetchJson`'s Accept header. See above. The strings are written from inside the query function rather than an effect so they are in place before the render that unblocks the app. Verified live: translated labels render, holding the request open keeps the app on the loading page with no raw-key frame, and a 500 puts the message on `ErrorPage`. |
 | 2026-08-20 | #492 | **App shell, part 1.** `App/appStore.ts` and `App/messagesStore.ts` take dimensions, connection state, version, sidebar visibility and messages; `createDimensionsSelector.ts` and `MessagesAppState.ts` are deleted and `appActions` is down to translations. 33 files. Six `connect()` components could not call a hook, so they take `isSmallScreen` as an own prop from a small wrapper — see above. The SignalR listener loses its last six `dispatch` calls that were not blocked by another phase. Verified live: resizing across 768px adds and removes the sidebar's inline transform, the toggle moves it between 0 and -210px, a `command` push renders a message that clears itself after its `hideAfter`, and a `version` push opens the Whisparr Updated modal. |
 | 2026-08-20 | #491 | **SignalR.** The row assumed a `SignalRConnector.js` that Phase B had already replaced. What was actually left was two handlers dispatching into a slice that no longer exists — `wanted/cutoff` and `wanted/missing` still wrote to `wanted.cutoffUnmet`/`wanted.missing`, retired in #475 — plus `pagePopulator`, whose emit side had gone missing entirely. The wanted handlers now patch the paged cache through `updatePagedItem`, ported from Sonarr. `pagePopulator` was not restored but retired: all seven React Query registrants came out in favour of invalidating their query keys from the listener, and reconnect now invalidates the whole cache rather than four hand-picked keys. It survives, reasons removed, for Import List Exclusions alone, which still fetches through a redux thunk. The nine remaining dispatches cannot move here: five settings sections and `qualitydefinition` need Phase E's query hooks, `collection` needs Phase D, and `setVersion` plus the five `setAppValue` calls need the app shell. |

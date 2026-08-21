@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
+import withAdvancedSettings from 'Components/withAdvancedSettings';
 import { clearPendingChanges } from 'Store/Actions/baseActions';
 import {
   fetchUISettings,
@@ -39,12 +40,10 @@ function createFilteredLanguagesSelector() {
 
 function createMapStateToProps() {
   return createSelector(
-    (state) => state.settings.advancedSettings,
     createSettingsSectionSelector(SECTION),
     createFilteredLanguagesSelector(),
-    (advancedSettings, sectionSettings, languages) => {
+    (sectionSettings, languages) => {
       return {
-        advancedSettings,
         languages: languages.items,
         isLanguagesPopulated: languages.isPopulated,
         ...sectionSettings,
@@ -106,7 +105,6 @@ UISettingsConnector.propTypes = {
   clearPendingChanges: PropTypes.func.isRequired,
 };
 
-export default connect(
-  createMapStateToProps,
-  mapDispatchToProps
-)(UISettingsConnector);
+export default withAdvancedSettings(
+  connect(createMapStateToProps, mapDispatchToProps)(UISettingsConnector)
+);
