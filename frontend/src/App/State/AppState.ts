@@ -78,7 +78,6 @@ interface AppState {
   movieCollections: MovieCollectionAppState;
   movieCredits: MovieCreditAppState;
   movieFiles: MovieFilesAppState;
-  movieIndex: MovieIndexAppState;
   sceneIndex: MovieIndexAppState;
   performers: PerformersAppState;
   studios: StudiosAppState;

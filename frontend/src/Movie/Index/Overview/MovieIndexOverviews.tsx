@@ -1,9 +1,8 @@
 import React, { RefObject, useMemo } from 'react';
-import { useSelector } from 'react-redux';
 import Movie from 'Movie/Movie';
 import dimensions from 'Styles/Variables/dimensions';
+import { useMovieIndexOption } from '../movieIndexOptionsStore';
 import MovieIndexOverview from './MovieIndexOverview';
-import selectOverviewOptions from './selectOverviewOptions';
 
 const columnPadding = Number.parseInt(dimensions.movieIndexColumnPadding, 10);
 const columnPaddingSmallScreen = Number.parseInt(
@@ -30,9 +29,8 @@ interface MovieIndexOverviewsProps {
 
 function MovieIndexOverviews(props: MovieIndexOverviewsProps) {
   const { items, sortKey, isSelectMode, isSmallScreen } = props;
-  const { size: posterSize, detailedProgressBar } = useSelector(
-    selectOverviewOptions
-  );
+  const { size: posterSize, detailedProgressBar } =
+    useMovieIndexOption('overviewOptions');
 
   const posterWidth = useMemo(() => {
     const maximumPosterWidth = isSmallScreen ? 152 : 162;

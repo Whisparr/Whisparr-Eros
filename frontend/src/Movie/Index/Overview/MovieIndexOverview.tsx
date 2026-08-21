@@ -22,8 +22,8 @@ import MoviePoster from 'Movie/MoviePoster';
 import dimensions from 'Styles/Variables/dimensions';
 import fonts from 'Styles/Variables/fonts';
 import translate from 'Utilities/String/translate';
+import { useMovieIndexOption } from '../movieIndexOptionsStore';
 import MovieIndexOverviewInfo from './MovieIndexOverviewInfo';
-import selectOverviewOptions from './selectOverviewOptions';
 import styles from './MovieIndexOverview.css';
 
 const columnPadding = Number.parseInt(dimensions.movieIndexColumnPadding, 10);
@@ -83,7 +83,7 @@ function MovieIndexOverview(props: MovieIndexOverviewProps) {
     (state: AppState) => state.settings.safeForWorkMode
   );
 
-  const overviewOptions = useSelector(selectOverviewOptions);
+  const overviewOptions = useMovieIndexOption('overviewOptions');
 
   const {
     title,

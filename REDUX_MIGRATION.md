@@ -207,7 +207,7 @@ shape: convert one properly, then the other three are largely mechanical.
 
 | Domain | Remaining work | Sonarr ref |
 | --- | --- | --- |
-| **Movie** *(hybrid)* — do first, set the template. 29 redux files, 2 connectors. | Index options → `movieOptionsStore`; filters → `FILTERS`/`FILTER_BUILDER` in `useMovie`; select footer; Edit/Delete/Tags/Organize modals. Retires `movieActions`, `movieIndexActions`, `movieTitlesActions`. | [Sonarr/Sonarr@0521a6c3](https://github.com/Sonarr/Sonarr/commit/0521a6c3) (91 files) |
+| **Movie** *(hybrid)* — do first, set the template. 29 redux files, 2 connectors. **Index options done, #496.** | ~~Index options → `movieIndexOptionsStore`~~; select footer; Edit/Delete/Tags/Organize modals. Retires `movieActions`, ~~`movieIndexActions`~~, `movieTitlesActions`. | [Sonarr/Sonarr@0521a6c3](https://github.com/Sonarr/Sonarr/commit/0521a6c3) (91 files) |
 | **Scene** *(hybrid)* — 21 redux files. Shares the `Movie` model, so hooks can share a generic base. | `sceneIndexActions`, `createAllScenesSelector.ts`, `DeleteSceneModalContentConnector.js` | — |
 | **Performer** *(hybrid)* — 20 redux files. Details, scenes tab, add flow, edit modal. | `performerActions` (675 loc), `performerScenesActions`, `addPerformerActions`, `EditPerformerModalContentConnector.js` | — |
 | **Studio** *(hybrid)* — 20 redux files. Same shape as Performer. | `studioActions` (509 loc), `studioMoviesActions`, `studioScenesActions`, `DeleteStudioModalConnector.js` | — |
@@ -456,6 +456,33 @@ redux while it waits for its own phase.
 `useAppDimension` subscribes to one breakpoint rather than the whole dimensions object, so
 dragging a window re-renders a consumer only when it actually crosses that breakpoint --
 where the redux selector handed back a new object on every resize event.
+
+### Twelve of Movie's twenty-nine files are gated on Phase E
+
+The Phase D row reads as one conversion, but the domain does not come apart that way. Of
+the 29 files under `Movie/` that import `react-redux`, **12 cannot move until Settings
+does**: six take `createUISettingsSelector`, five read `state.settings` for
+`safeForWorkMode`, and one takes `createIndexerFlagsSelector`. Two more belong to
+Collection and two to interactive search, both later Phase D items.
+
+What is actually available is the index view options (`movieIndexActions`, 8 files) and
+then the domain slice (`movieActions`, 4 files). #496 took the first. Expect the same shape
+for Scene, Performer and Studio: the view options come out cleanly, and a third of each
+domain waits on Phase E regardless.
+
+Two things the `.js` slice was hiding, both surfaced the moment its column definitions were
+moved into TypeScript:
+
+- Three columns (`select`, `status`, `actions`) declared only `columnLabel` where `Column`
+  requires `label`. Every converted options store already writes `label: ''` alongside
+  `columnLabel`; Movie now does too.
+- The `select` column carried `isHidden: true`, which is not part of `Column` and is read
+  nowhere for columns. Dropped, matching every other converted store.
+
+And one lie in a prop type: `MovieIndexSearchButton` and `MovieIndexRefreshMovieButton`
+declared `selectedFilterKey: string`, but a custom filter's key is its numeric id. Both only
+compare it against `'all'`, so the behaviour was always right and the type was always wrong.
+Widened to `string | number`.
 
 ### The SignalR row was already spent
 
@@ -823,6 +850,7 @@ If a JS test runner is ever added, remove that line and set
 | 2026-08-18 | #470 | **SignalR container.** Class + `connect()` → function component, as Sonarr did in Jan 2025. Redux stays inside. |
 | 2026-08-18 | #471 | **Organize preview + Unmapped Files.** Two slices retired. First conversion where a page's table prefs move to a zustand options store rather than to React Query. |
 | 2026-08-20 | #487 | **Tags.** `useTags`/`useTagDetails` replace `tagActions`, both tag selectors and `TagsAppState`; the `Tags/useTags.ts` shim that had been a selector wearing a hook's name is now the real query. `TagFilterBuilderRowValueConnector` was a `connect()` whose whole job was reshaping the list, so it became a plain component and the connector count dropped with it. `useAppPage` gates on the query for the same reason it gates on custom filters. Delete writes the removal into the cache but leaves the refetch to SignalR — invalidating `/tag/detail` here as well fetched it twice, measured. `useSortedTagList` copies before sorting: `MovieTagInput` had been sorting the shared list in place, which was harmless against a slice that handed out a fresh array per fetch and is not against a query cache. |
+| 2026-08-21 | #496 | **Movie index view options.** `movieIndexActions` (391 loc) retired for `Movie/Index/movieIndexOptionsStore.ts`; the three pass-through `select*Options.ts` selectors deleted; `filterBuilderProps` lifted out of slice state into `movieIndexFilterBuilderProps.ts`, since they are static definitions rather than user state. Page number moves to `usePage('movieIndex')`, which is where the sort/filter/view resets now land — the reducers they replace each reset it. `MovieIndexFilterModal` converts halfway: its `sectionItems` still reads the movies slice and goes with `movieActions`. Verified live: view and sort persist across a reload, filter and sort each refetch once, the table renders 20 rows against `tableOptions.pageSize`, and the initial load fires exactly one `/movie/paged`. |
 | 2026-08-20 | #490 | **Provider options + captcha.** `providerOptionActions`, `captchaActions`, `oAuthActions` and their three `AppState` files deleted for `Settings/useProviderOptions.ts`, `Components/Form/useCaptcha.ts` and `OAuth/useOAuth.ts`. `useProviderOptions` does not use `useApiQuery`: that helper keys a POST on the whole body, and the body here is the entire provider form, so every keystroke would be a new cache entry and a new request. It keys on `baseUrl`/`apiPath`/`apiKey`/`authToken` instead, which is what the old slice's `lastActions` de-duplication was approximating — measured, typing in *Name* now fires nothing where the four important fields fire one request each. Two deliberate departures from Sonarr's commits. Sonarr's `DeviceInput` rewrite reads the options as `{value, name}`, but the backend projects `{id, name}` in both apps, so this keeps `.id` — with `.value` the selected device renders as *Unknown (…)*, verified against a stubbed response. And `OAuthInput` keeps dispatching `set({section, saveError})`: Sonarr routes that through a `FormInputGroupContext` Eros does not have, and without it the pop-up-blocked message stops reaching the field. Converting `CaptchaInput` also fixes it — `refreshing`, `siteKey` and `secretToken` were declared as props and never passed by anything, so the ReCAPTCHA widget could not render; no provider in this build declares a `captcha` field, so that path is types-and-lint only. |
 | 2026-08-20 | #494 | **App shell, part 3, and the end of Phase C.** `Settings/advancedSettingsStore` replaces `state.settings.advancedSettings`, its toggle action and its reducer, carved out of `settingsActions` ahead of Phase E. Eleven `connect()` components read the flag, so it is injected by a single `withAdvancedSettings` HOC in the shape of `withScrollPosition`, leaving the wrapped components untouched. `useShowAdvancedSettings` keeps its path and now re-exports from the store, so its five TSX importers did not change. Verified live: the toggle expands General from 18 form groups to 38 and Media Management from 7 to 30, adds the Megabytes Per Minute column to Quality Definitions, survives a reload through `createPersist`, and through the HOC adds exactly the two fields the API marks advanced on Kodi. |
 | 2026-08-20 | #493 | **App shell, part 2.** `App/useTranslations` replaces the `fetchTranslations` thunk; `appActions` and the `app` slice are deleted and `AppState` loses its last app member. Slices 17 to 16. Two things made this less mechanical than it looks, both of them silent failures — the response is PascalCase where Sonarr's is camelCase, and it double-encodes under `fetchJson`'s Accept header. See above. The strings are written from inside the query function rather than an effect so they are in place before the render that unblocks the app. Verified live: translated labels render, holding the request open keeps the app on the loading page with no raw-key frame, and a 500 puts the message on `ErrorPage`. |

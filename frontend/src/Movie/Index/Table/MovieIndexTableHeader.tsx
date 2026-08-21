@@ -1,6 +1,5 @@
 import classNames from 'classnames';
 import React, { useCallback } from 'react';
-import { useDispatch } from 'react-redux';
 import { useSelect } from 'App/SelectContext';
 import IconButton from 'Components/Link/IconButton';
 import Column from 'Components/Table/Column';
@@ -10,11 +9,12 @@ import VirtualTableHeaderCell from 'Components/Table/VirtualTableHeaderCell';
 import VirtualTableSelectAllHeaderCell from 'Components/Table/VirtualTableSelectAllHeaderCell';
 import { icons } from 'Helpers/Props';
 import { SortDirection } from 'Helpers/Props/sortDirections';
-import {
-  setMovieSort,
-  setMovieTableOption,
-} from 'Store/Actions/movieIndexActions';
 import { CheckInputChanged } from 'typings/inputs';
+import {
+  MovieIndexTableOptions as MovieIndexTableOptionsState,
+  setMovieIndexSort,
+  setMovieIndexTableOption,
+} from '../movieIndexOptionsStore';
 import MovieIndexTableOptions from './MovieIndexTableOptions';
 import styles from './MovieIndexTableHeader.css';
 
@@ -27,21 +27,20 @@ interface MovieIndexTableHeaderProps {
 
 function MovieIndexTableHeader(props: MovieIndexTableHeaderProps) {
   const { columns, sortKey, sortDirection, isSelectMode } = props;
-  const dispatch = useDispatch();
   const [selectState, selectDispatch] = useSelect();
 
-  const onSortPress = useCallback(
-    (value: string) => {
-      dispatch(setMovieSort({ sortKey: value }));
-    },
-    [dispatch]
-  );
+  const onSortPress = useCallback((value: string) => {
+    setMovieIndexSort(value);
+  }, []);
 
   const onTableOptionChange = useCallback(
-    (payload: unknown) => {
-      dispatch(setMovieTableOption(payload));
+    (payload: {
+      columns?: Column[];
+      tableOptions?: MovieIndexTableOptionsState;
+    }) => {
+      setMovieIndexTableOption(payload);
     },
-    [dispatch]
+    []
   );
 
   const onSelectAllChange = useCallback(

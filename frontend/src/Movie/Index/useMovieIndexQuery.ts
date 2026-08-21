@@ -1,15 +1,11 @@
-import { useSelector } from 'react-redux';
-import AppState, {
-  CustomFilter,
-  Filter,
-  PropertyFilter,
-} from 'App/State/AppState';
+import { CustomFilter, Filter, PropertyFilter } from 'App/State/AppState';
 import { useCustomFiltersList } from 'Filters/useCustomFilters';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import { SortDirection } from 'Helpers/Props/sortDirections';
 import Movie from 'Movie/Movie';
 import { PagingResource } from 'Movie/Movie.types';
 import { filters as movieIndexFilters } from 'Store/Actions/movieActions';
+import { useMovieIndexOption } from './movieIndexOptionsStore';
 
 export interface MovieIndexQueryParams {
   page: number;
@@ -19,9 +15,7 @@ export interface MovieIndexQueryParams {
 }
 
 export function useMovieIndexQuery(params: MovieIndexQueryParams) {
-  const selectedFilterKey = useSelector(
-    (state: AppState) => state.movieIndex.selectedFilterKey
-  );
+  const selectedFilterKey = useMovieIndexOption('selectedFilterKey');
 
   const customFilters = useCustomFiltersList('movieIndex');
 

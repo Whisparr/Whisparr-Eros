@@ -1,5 +1,4 @@
 import React, { useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import Form from 'Components/Form/Form';
 import FormGroup from 'Components/Form/FormGroup';
 import FormInputGroup from 'Components/Form/FormInputGroup';
@@ -10,9 +9,11 @@ import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { inputTypes } from 'Helpers/Props';
-import { setMoviePosterOption } from 'Store/Actions/movieIndexActions';
 import translate from 'Utilities/String/translate';
-import selectPosterOptions from '../selectPosterOptions';
+import {
+  setMovieIndexPosterOption,
+  useMovieIndexOption,
+} from '../../movieIndexOptionsStore';
 
 const posterSizeOptions = [
   {
@@ -44,7 +45,7 @@ function MovieIndexPosterOptionsModalContent(
 ) {
   const { onModalClose } = props;
 
-  const posterOptions = useSelector(selectPosterOptions);
+  const posterOptions = useMovieIndexOption('posterOptions');
 
   const {
     detailedProgressBar,
@@ -59,13 +60,11 @@ function MovieIndexPosterOptionsModalContent(
     showSearchAction,
   } = posterOptions;
 
-  const dispatch = useDispatch();
-
   const onPosterOptionChange = useCallback(
     ({ name, value }: { name: string; value: unknown }) => {
-      dispatch(setMoviePosterOption({ [name]: value }));
+      setMovieIndexPosterOption({ [name]: value });
     },
-    [dispatch]
+    []
   );
 
   return (

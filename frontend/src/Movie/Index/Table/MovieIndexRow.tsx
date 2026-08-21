@@ -25,9 +25,9 @@ import { SelectStateInputProps } from 'typings/props';
 import formatRuntime from 'Utilities/Date/formatRuntime';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
+import { useMovieIndexOption } from '../movieIndexOptionsStore';
 import MovieIndexProgressBar from '../ProgressBar/MovieIndexProgressBar';
 import MovieStatusCell from './MovieStatusCell';
-import selectTableOptions from './selectTableOptions';
 import styles from './MovieIndexRow.css';
 
 interface MovieIndexRowProps {
@@ -53,7 +53,7 @@ function MovieIndexRow(props: MovieIndexRowProps) {
       command.name === MOVIE_SEARCH && command.body.movieId === movieId
   );
 
-  const { showSearchAction } = useSelector(selectTableOptions);
+  const { showSearchAction } = useMovieIndexOption('tableOptions');
 
   const { movieRuntimeFormat } = useSelector(createUISettingsSelector());
 

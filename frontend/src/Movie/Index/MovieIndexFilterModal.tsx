@@ -1,24 +1,18 @@
 import React, { useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { createSelector } from 'reselect';
 import AppState from 'App/State/AppState';
 import FilterModal from 'Components/Filter/FilterModal';
-import { setMovieFilter, setMoviePage } from 'Store/Actions/movieIndexActions';
+import { MOVIE_INDEX_FILTER_BUILDER_PROPS } from './movieIndexFilterBuilderProps';
+import { setMovieIndexFilter } from './movieIndexOptionsStore';
 
+// `sectionItems` still comes from the movies slice; it converts with
+// `movieActions` rather than with the index view options.
 function createMovieSelector() {
   return createSelector(
     (state: AppState) => state.movies.items,
     (movies) => {
       return movies;
-    }
-  );
-}
-
-function createFilterBuilderPropsSelector() {
-  return createSelector(
-    (state: AppState) => state.movieIndex.filterBuilderProps,
-    (filterBuilderProps) => {
-      return filterBuilderProps;
     }
   );
 }
@@ -31,17 +25,14 @@ export default function MovieIndexFilterModal(
   props: MovieIndexFilterModalProps
 ) {
   const sectionItems = useSelector(createMovieSelector());
-  const filterBuilderProps = useSelector(createFilterBuilderPropsSelector());
   const customFilterType = 'movieIndex';
 
-  const dispatch = useDispatch();
-
+  // Setting the filter resets the page, so no separate page dispatch is needed.
   const dispatchSetFilter = useCallback(
-    (payload: unknown) => {
-      dispatch(setMovieFilter(payload));
-      dispatch(setMoviePage(1));
+    ({ selectedFilterKey }: { selectedFilterKey: string | number }) => {
+      setMovieIndexFilter(selectedFilterKey);
     },
-    [dispatch]
+    []
   );
 
   return (
@@ -49,7 +40,7 @@ export default function MovieIndexFilterModal(
       // TODO: Don't spread all the props
       {...props}
       sectionItems={sectionItems}
-      filterBuilderProps={filterBuilderProps}
+      filterBuilderProps={MOVIE_INDEX_FILTER_BUILDER_PROPS}
       customFilterType={customFilterType}
       dispatchSetFilter={dispatchSetFilter}
     />
