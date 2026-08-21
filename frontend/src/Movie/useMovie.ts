@@ -53,6 +53,21 @@ export function useSaveMovie(moveFiles = false) {
   });
 }
 
+// `monitored` is a query param rather than part of the body -- the body is the
+// bare id array -- so it is fixed per instance, as `useSaveMovie`'s `moveFiles`
+// is. Callers that toggle take one of each.
+//
+// Deliberately invalidates nothing. `SignalRListener` already patches every
+// cached view of a changed movie -- the paged lists, the calendar, and the
+// performer and studio works lists -- and does so without a refetch by design.
+// The thunk this replaces left the caches to SignalR in the same way.
+export function useBulkMonitorMovies(monitored: boolean) {
+  return useApiMutation<unknown, number[]>({
+    method: 'PATCH',
+    path: `/movie/bulk/monitor?monitored=${monitored}`,
+  });
+}
+
 export function useSearchMovie(query: string, limit: number = 10) {
   return useApiQuery<Movie[]>({
     path: `/movie/search`,

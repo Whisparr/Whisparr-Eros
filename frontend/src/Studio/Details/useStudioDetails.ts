@@ -5,9 +5,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { queryClient } from 'App/queryClient';
-import AppState from 'App/State/AppState';
 import { SafeForWorkModeContext } from 'App/State/SafeForWorkContext';
 import * as commandNames from 'Commands/commandNames';
 import useCommands, { useExecuteCommand } from 'Commands/useCommands';
@@ -15,29 +13,15 @@ import type { IconName } from 'Components/Icon';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import { icons } from 'Helpers/Props';
 import Movie from 'Movie/Movie';
-import { fetchGeneralSettings } from 'Store/Actions/Settings/general';
-import { toggleStudioScenesExpanded } from 'Store/Actions/studioScenesActions';
 import Studio, { type CoverType, type Image } from 'Studio/Studio';
 import { useToggleStudioMonitored } from 'Studio/useStudio';
 import { useTagList } from 'Tags/useTags';
+import {
+  toggleStudioScenesExpanded,
+  useStudioScenesOption,
+} from './studioScenesOptionsStore';
 
 const PATH = 'studio';
-
-/**
- * Hook to fetch and manage general application settings.
- * Dispatches the fetchGeneralSettings action on mount and returns the general settings state.
- *
- * @returns {AppState['settings']['general']['item']} The general settings object
- */
-export function useGeneralSettings() {
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    dispatch(fetchGeneralSettings());
-  }, [dispatch]);
-
-  return useSelector((state: AppState) => state.settings.general.item);
-}
 
 /**
  * Return type for the useStudioDetails hook.
@@ -63,10 +47,6 @@ export interface UseStudioDetailsReturn {
   isDeleteMovieModalOpen: boolean;
   /** Tracks which years are expanded in the studio works list */
   expandedState: Record<number, boolean>;
-
-  // Derived data
-  /** Whether to show the movie monitor toggle based on metadata source settings */
-  showMovieMonitorToggle: boolean;
 
   // Handlers
   /** Toggles the monitored state of the studio and/or its movies */
@@ -116,7 +96,6 @@ export interface StudioWorksData {
  * @returns {UseStudioDetailsReturn} State, derived data, and handler functions
  */
 export const useStudioDetails = (foreignId: string): UseStudioDetailsReturn => {
-  const dispatch = useDispatch();
   const executeCommand = useExecuteCommand();
 
   // Local state
@@ -126,12 +105,7 @@ export const useStudioDetails = (foreignId: string): UseStudioDetailsReturn => {
   const [isDeleteMovieModalOpen, setIsDeleteMovieModalOpen] = useState(false);
   const prevStudioRef = useRef<Studio | undefined>(undefined);
 
-  // Redux selectors for expanded state
-  const expandedState = useSelector((state: AppState) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const studioScenes = (state as any).studioScenes;
-    return studioScenes?.expandedState ?? {};
-  });
+  const expandedState = useStudioScenesOption('expandedState');
 
   // API calls
   const {
@@ -155,7 +129,6 @@ export const useStudioDetails = (foreignId: string): UseStudioDetailsReturn => {
       (command as any).studioIds?.includes(studio?.id)
   );
 
-  const generalSettings = useGeneralSettings();
   const studioId = studio?.id;
 
   // Cache studio data
@@ -172,22 +145,6 @@ export const useStudioDetails = (foreignId: string): UseStudioDetailsReturn => {
     }
     prevStudioRef.current = studio;
   }, [studio, isManualRefresh]);
-
-  // Determine if we should show the monitor toggle
-  const showMovieMonitorToggle = useMemo(() => {
-    return !!(
-      (generalSettings?.whisparrMovieMetadataSource === 'tmdb' &&
-        studio?.tmdbId &&
-        studio.tmdbId > 0) ||
-      (generalSettings?.whisparrMovieMetadataSource === 'tpdb' &&
-        studio?.tpdbId &&
-        studio.tpdbId.length > 0)
-    );
-  }, [
-    generalSettings?.whisparrMovieMetadataSource,
-    studio?.tmdbId,
-    studio?.tpdbId,
-  ]);
 
   // Handler: Refresh studio
   const onRefreshPress = useCallback(() => {
@@ -273,12 +230,9 @@ export const useStudioDetails = (foreignId: string): UseStudioDetailsReturn => {
   );
 
   // Handler: Toggle expansion of a specific year
-  const handleExpandPress = useCallback(
-    (year: number) => {
-      dispatch(toggleStudioScenesExpanded({ year }));
-    },
-    [dispatch]
-  );
+  const handleExpandPress = useCallback((year: number) => {
+    toggleStudioScenesExpanded(year);
+  }, []);
 
   return {
     studio,
@@ -291,9 +245,6 @@ export const useStudioDetails = (foreignId: string): UseStudioDetailsReturn => {
     isEditMovieModalOpen,
     isDeleteMovieModalOpen,
     expandedState,
-
-    // Derived data
-    showMovieMonitorToggle,
 
     // Handlers
     onRefreshPress,
@@ -318,25 +269,6 @@ export const useStudioDetails = (foreignId: string): UseStudioDetailsReturn => {
 export function useStudioDetailsWorks(studioForeignId: string) {
   return useApiQuery<Movie[]>({
     path: `/${PATH}/${studioForeignId}/works`,
-  });
-}
-
-/**
- * Hook to fetch studio movies table configuration from Redux state.
- * Returns the configured columns, sort key, and sort direction for the movies list.
- *
- * @returns {{columns: any[], sortKey: string, sortDirection: string}} Table configuration
- */
-export function useStudioMoviesColumns() {
-  return useSelector((state: AppState) => {
-    // AppState isn't fully converted to TypeScript yet
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const studioScenes = (state as any).studioScenes;
-    return {
-      columns: studioScenes?.columns ?? [],
-      sortKey: studioScenes?.sortKey ?? 'releaseDate',
-      sortDirection: studioScenes?.sortDirection ?? 'DESC',
-    };
   });
 }
 
