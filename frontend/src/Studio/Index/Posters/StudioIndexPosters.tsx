@@ -1,12 +1,10 @@
 import { throttle } from 'lodash';
 import React, { RefObject, useEffect, useMemo, useRef, useState } from 'react';
-import { useSelector } from 'react-redux';
 import { FixedSizeGrid as Grid, GridChildComponentProps } from 'react-window';
-import { createSelector } from 'reselect';
-import AppState from 'App/State/AppState';
 import useMeasure from 'Helpers/Hooks/useMeasure';
 import { SortDirection } from 'Helpers/Props/sortDirections';
 import StudioIndexPoster from 'Studio/Index/Posters/StudioIndexPoster';
+import { useStudioIndexOption } from 'Studio/Index/studioIndexOptionsStore';
 import Studio from 'Studio/Studio';
 import dimensions from 'Styles/Variables/dimensions';
 
@@ -56,14 +54,6 @@ interface StudioIndexPostersProps {
   isSmallScreen: boolean;
 }
 
-const studioIndexSelector = createSelector(
-  (state: AppState) => state.studios.posterOptions,
-  (posterOptions) => {
-    return {
-      posterOptions,
-    };
-  }
-);
 function Cell({
   columnIndex,
   rowIndex,
@@ -107,7 +97,7 @@ function getWindowScrollTopPosition() {
 export default function StudioIndexPosters(props: StudioIndexPostersProps) {
   const { scrollerRef, items, sortKey, isSelectMode, isSmallScreen } = props;
 
-  const { posterOptions } = useSelector(studioIndexSelector);
+  const posterOptions = useStudioIndexOption('posterOptions');
   const ref = useRef<Grid>(null);
   const [measureRef, bounds] = useMeasure();
   const [size, setSize] = useState({ width: 0, height: 0 });

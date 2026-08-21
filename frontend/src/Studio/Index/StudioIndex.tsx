@@ -15,7 +15,6 @@ import MovieIndexSelectAllButton from 'Movie/Index/Select/MovieIndexSelectAllBut
 import MovieIndexSelectAllMenuItem from 'Movie/Index/Select/MovieIndexSelectAllMenuItem';
 import MovieIndexSelectModeButton from 'Movie/Index/Select/MovieIndexSelectModeButton';
 import MovieIndexSelectModeMenuItem from 'Movie/Index/Select/MovieIndexSelectModeMenuItem';
-import { defaultState } from 'Store/Actions/studioActions';
 import NoStudio from 'Studio/NoStudio';
 import translate from 'Utilities/String/translate';
 import StudioIndexFilterMenu from './Menus/StudioIndexFilterMenu';
@@ -24,6 +23,7 @@ import StudioIndexViewMenu from './Menus/StudioIndexViewMenu';
 import StudioIndexPosterOptionsModal from './Posters/Options/StudioIndexPosterOptionsModal';
 import StudioIndexPosters from './Posters/StudioIndexPosters';
 import StudioIndexSelectFooter from './Select/StudioIndexSelectFooter';
+import { STUDIO_INDEX_FILTERS } from './studioIndexFilters';
 import StudioIndexRefreshStudioButton from './StudioIndexRefreshStudioButton';
 import StudioIndexTable from './Table/StudioIndexTable';
 import StudioIndexTableOptions from './Table/StudioIndexTableOptions';
@@ -60,7 +60,6 @@ function StudioIndex(): React.JSX.Element {
     StudioSelectModeReinitializer,
   } = useStudioIndex();
 
-  const filters = defaultState.filters || [];
   const customFilters = useCustomFiltersList('studios');
   const hasNoStudio = items.length === 0;
   const isLoaded = !!items.length;
@@ -147,7 +146,7 @@ function StudioIndex(): React.JSX.Element {
 
             <StudioIndexFilterMenu
               selectedFilterKey={selectedFilterKey}
-              filters={filters}
+              filters={STUDIO_INDEX_FILTERS}
               customFilters={customFilters}
               isDisabled={false}
               onFilterSelect={onFilterSelect}

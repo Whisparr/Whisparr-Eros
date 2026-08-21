@@ -11,11 +11,11 @@ import MovieIndexPosterSelect from 'Movie/Index/Select/MovieIndexPosterSelect';
 import QualityProfileName from 'Settings/Profiles/Quality/QualityProfileName';
 import StudioDetailsLinks from 'Studio/Details/StudioDetailsLinks';
 import EditStudioModal from 'Studio/Edit/EditStudioModal';
+import { useStudioIndexOption } from 'Studio/Index/studioIndexOptionsStore';
 import Studio from 'Studio/Studio';
 import StudioLogo from 'Studio/StudioLogo';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
-import selectPosterOptions from './selectPosterOptions';
 import StudioIndexProgressBar from './StudioIndexProgressBar';
 import styles from './StudioIndexPoster.css';
 
@@ -35,7 +35,8 @@ function StudioIndexPoster(props: StudioIndexPosterProps) {
   const { studio, isSelectMode, posterWidth, posterHeight } = props;
   const { id: studioId } = studio;
 
-  const { showTitle, detailedProgressBar } = useSelector(selectPosterOptions);
+  const { showTitle, detailedProgressBar } =
+    useStudioIndexOption('posterOptions');
   const [isEditStudioModalOpen, setIsEditStudioModalOpen] = useState(false);
 
   const { title, images, foreignId, website, tmdbId, tpdbId } = studio;
