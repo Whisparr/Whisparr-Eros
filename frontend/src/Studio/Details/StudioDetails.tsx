@@ -570,7 +570,6 @@ function StudioDetails() {
               isOpen={isDeleteMovieModalOpen}
               studio={studio}
               onModalClose={handleDeleteMovieModalClose}
-              onDeleteMoviePress={handleDeleteMoviePress}
             />
           </>
         )}

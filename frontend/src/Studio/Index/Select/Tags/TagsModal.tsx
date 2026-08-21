@@ -1,10 +1,12 @@
 import React from 'react';
 import Modal from 'Components/Modal/Modal';
+import Studio from 'Studio/Studio';
 import TagsModalContent from './TagsModalContent';
 
 interface TagsModalProps {
   isOpen: boolean;
   studioIds: number[];
+  items: Studio[];
   onApplyTagsPress: (tags: number[], applyTags: string) => void;
   onModalClose: () => void;
 }
