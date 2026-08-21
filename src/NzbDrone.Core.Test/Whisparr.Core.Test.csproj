@@ -4,7 +4,7 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- Test data files to be copied to output directory during builds -->
-    <None Update="UpdateTests/TestData/GithubReleasesResponse.json">
+    <None Update="UpdateTests/TestData/*.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
