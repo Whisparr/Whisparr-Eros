@@ -1,6 +1,5 @@
 import classNames from 'classnames';
 import React, { useCallback } from 'react';
-import { useDispatch } from 'react-redux';
 import { useSelect } from 'App/SelectContext';
 import IconButton from 'Components/Link/IconButton';
 import Column from 'Components/Table/Column';
@@ -10,11 +9,12 @@ import VirtualTableHeaderCell from 'Components/Table/VirtualTableHeaderCell';
 import VirtualTableSelectAllHeaderCell from 'Components/Table/VirtualTableSelectAllHeaderCell';
 import { icons } from 'Helpers/Props';
 import { SortDirection } from 'Helpers/Props/sortDirections';
-import {
-  setSceneSort,
-  setSceneTableOption,
-} from 'Store/Actions/sceneIndexActions';
 import { CheckInputChanged } from 'typings/inputs';
+import {
+  SceneIndexTableOptions as SceneIndexTableOptionsState,
+  setSceneIndexSort,
+  setSceneIndexTableOption,
+} from '../sceneIndexOptionsStore';
 import SceneIndexTableOptions from './SceneIndexTableOptions';
 import styles from './SceneIndexTableHeader.css';
 
@@ -27,21 +27,20 @@ interface SceneIndexTableHeaderProps {
 
 function SceneIndexTableHeader(props: SceneIndexTableHeaderProps) {
   const { columns, sortKey, sortDirection, isSelectMode } = props;
-  const dispatch = useDispatch();
   const [selectState, selectDispatch] = useSelect();
 
-  const onSortPress = useCallback(
-    (value: string) => {
-      dispatch(setSceneSort({ sortKey: value }));
-    },
-    [dispatch]
-  );
+  const onSortPress = useCallback((value: string) => {
+    setSceneIndexSort(value);
+  }, []);
 
   const onTableOptionChange = useCallback(
-    (payload: unknown) => {
-      dispatch(setSceneTableOption(payload));
+    (payload: {
+      columns?: Column[];
+      tableOptions?: SceneIndexTableOptionsState;
+    }) => {
+      setSceneIndexTableOption(payload);
     },
-    [dispatch]
+    []
   );
 
   const onSelectAllChange = useCallback(

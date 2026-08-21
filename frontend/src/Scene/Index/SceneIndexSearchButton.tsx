@@ -11,7 +11,7 @@ import getSelectedIds from 'Utilities/Table/getSelectedIds';
 
 interface SceneIndexSearchButtonProps {
   isSelectMode: boolean;
-  selectedFilterKey: string;
+  selectedFilterKey: string | number;
   items: Movie[];
 }
 

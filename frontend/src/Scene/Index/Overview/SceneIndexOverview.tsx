@@ -21,8 +21,8 @@ import ScenePoster from 'Scene/ScenePoster';
 import dimensions from 'Styles/Variables/dimensions';
 import fonts from 'Styles/Variables/fonts';
 import translate from 'Utilities/String/translate';
+import { useSceneIndexOption } from '../sceneIndexOptionsStore';
 import SceneIndexOverviewInfo from './SceneIndexOverviewInfo';
-import selectOverviewOptions from './selectOverviewOptions';
 import styles from './SceneIndexOverview.css';
 
 const columnPadding = Number.parseInt(dimensions.movieIndexColumnPadding, 10);
@@ -82,7 +82,7 @@ function SceneIndexOverview(props: SceneIndexOverviewProps) {
       command.name === MOVIE_SEARCH && command.body.movieId === sceneId
   );
 
-  const overviewOptions = useSelector(selectOverviewOptions);
+  const overviewOptions = useSceneIndexOption('overviewOptions');
 
   const {
     title,

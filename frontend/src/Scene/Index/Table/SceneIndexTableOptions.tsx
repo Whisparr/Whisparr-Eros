@@ -1,11 +1,10 @@
 import React, { useCallback } from 'react';
-import { useSelector } from 'react-redux';
 import FormGroup from 'Components/Form/FormGroup';
 import FormInputGroup from 'Components/Form/FormInputGroup';
 import FormLabel from 'Components/Form/FormLabel';
 import { inputTypes } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import selectTableOptions from './selectTableOptions';
+import { useSceneIndexOption } from '../sceneIndexOptionsStore';
 
 interface SceneIndexTableOptionsProps {
   onTableOptionChange(...args: unknown[]): unknown;
@@ -19,7 +18,7 @@ interface TableOptionInput {
 function SceneIndexTableOptions(props: SceneIndexTableOptionsProps) {
   const { onTableOptionChange } = props;
 
-  const tableOptions = useSelector(selectTableOptions);
+  const tableOptions = useSceneIndexOption('tableOptions');
   const { showSearchAction } = tableOptions;
 
   const onTableOptionChangeWrapper = useCallback(

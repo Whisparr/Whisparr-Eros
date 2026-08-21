@@ -1,5 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import React, { useCallback, useState } from 'react';
 import { useAppDimension } from 'App/appStore';
 import { SelectProvider } from 'App/SelectContext';
 import { RSS_SYNC } from 'Commands/commandNames';
@@ -70,14 +69,11 @@ function SceneIndex() {
 
   const isRssSyncExecuting = useCommandExecuting(RSS_SYNC);
   const isSmallScreen = useAppDimension('isSmallScreen');
-  const dispatch = useDispatch();
   const executeCommand = useExecuteCommand();
 
   const [isOptionsModalOpen, setIsOptionsModalOpen] = useState(false);
   const [isInteractiveImportModalOpen, setIsInteractiveImportModalOpen] =
     useState(false);
-
-  useEffect(() => {}, [dispatch]);
 
   const handleRssSyncPress = useCallback(() => {
     executeCommand({ name: RSS_SYNC });

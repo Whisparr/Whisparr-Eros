@@ -21,8 +21,8 @@ import ScenePoster from 'Scene/ScenePoster';
 import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
 import getRelativeDate from 'Utilities/Date/getRelativeDate';
 import translate from 'Utilities/String/translate';
+import { useSceneIndexOption } from '../sceneIndexOptionsStore';
 import SceneIndexPosterInfo from './SceneIndexPosterInfo';
-import selectPosterOptions from './selectPosterOptions';
 import styles from './SceneIndexPoster.css';
 
 interface SceneIndexPosterProps {
@@ -66,7 +66,7 @@ function SceneIndexPoster(props: SceneIndexPosterProps) {
     showQualityProfile,
     showReleaseDate,
     showSearchAction,
-  } = useSelector(selectPosterOptions);
+  } = useSceneIndexOption('posterOptions');
 
   const { showRelativeDates, shortDateFormat, longDateFormat, timeFormat } =
     useSelector(createUISettingsSelector());

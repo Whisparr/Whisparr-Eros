@@ -5,7 +5,7 @@ import InteractiveImportAppState from './InteractiveImportAppState';
 import MovieCollectionAppState from './MovieCollectionAppState';
 import MovieCreditAppState from './MovieCreditAppState';
 import MovieFilesAppState from './MovieFilesAppState';
-import MoviesAppState, { MovieIndexAppState } from './MoviesAppState';
+import MoviesAppState from './MoviesAppState';
 import PerformersAppState from './PerformersAppState';
 import ReleasesAppState from './ReleasesAppState';
 import SettingsAppState from './SettingsAppState';
@@ -78,7 +78,6 @@ interface AppState {
   movieCollections: MovieCollectionAppState;
   movieCredits: MovieCreditAppState;
   movieFiles: MovieFilesAppState;
-  sceneIndex: MovieIndexAppState;
   performers: PerformersAppState;
   studios: StudiosAppState;
   movies: MoviesAppState;

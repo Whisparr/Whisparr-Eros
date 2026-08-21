@@ -8,7 +8,6 @@ import * as movieFiles from './movieFileActions';
 import * as performers from './performerActions';
 import * as performerScenes from './performerScenesActions';
 import * as releases from './releaseActions';
-import * as sceneIndex from './sceneIndexActions';
 import * as settings from './settingsActions';
 import * as studios from './studioActions';
 import * as studioScenes from './studioScenesActions';
@@ -25,7 +24,6 @@ export default [
   movieCredits,
   performers,
   performerScenes,
-  sceneIndex,
   settings,
   studios,
   studioScenes,
