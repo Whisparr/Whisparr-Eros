@@ -1,0 +1,79 @@
+{
+  "tag_name": "v3.2.0-release.1",
+  "body": "- Initial migration to new repo\r\n- Initial build process migration to native GitHub actions\r\n- Initial migration of client app to .NET 10\r\n",
+  "published_at": "2026-01-15T02:25:55Z",
+  "prerelease": false,
+  "draft": true,
+  "assets": [
+    {
+      "name": "Whisparr.eros.3.2.0-release.1.freebsd-x64.tar.gz",
+      "digest": "sha256:0b2f398d6efab42ee90e17bb04b907e27b63d4b0a37b04aa10f930b6ae83bf33",
+      "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-release.1/Whisparr.eros.3.2.0-release.1.freebsd-x64.tar.gz"
+    },
+    {
+      "name": "Whisparr.eros.3.2.0-release.1.linux-arm.tar.gz",
+      "digest": "sha256:c3d27e7e83c15e2f97433663c4a94b0040033905132195e660e3154f87d99c9e",
+      "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-release.1/Whisparr.eros.3.2.0-release.1.linux-arm.tar.gz"
+    },
+    {
+      "name": "Whisparr.eros.3.2.0-release.1.linux-arm64.tar.gz",
+      "digest": "sha256:27efabe0f733ae8c9d107a801710a5ebf17ed872e0ac314ac617bc9f6c680072",
+      "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-release.1/Whisparr.eros.3.2.0-release.1.linux-arm64.tar.gz"
+    },
+    {
+      "name": "Whisparr.eros.3.2.0-release.1.linux-musl-arm64.tar.gz",
+      "digest": "sha256:9371f20e9c08705ad1fdf7af1c19c6728cf239104536fe931cb64a72867b7a54",
+      "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-release.1/Whisparr.eros.3.2.0-release.1.linux-musl-arm64.tar.gz"
+    },
+    {
+      "name": "Whisparr.eros.3.2.0-release.1.linux-musl-x64.tar.gz",
+      "digest": "sha256:d07fc191395ad06173ce30708231e6a2664be7bb1416cfa87290ffb659a00d73",
+      "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-release.1/Whisparr.eros.3.2.0-release.1.linux-musl-x64.tar.gz"
+    },
+    {
+      "name": "Whisparr.eros.3.2.0-release.1.linux-x64.tar.gz",
+      "digest": "sha256:5e8d78c9e8f1321d78b2bb903be2a900a6206007c773126189fc01fc71054e97",
+      "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-release.1/Whisparr.eros.3.2.0-release.1.linux-x64.tar.gz"
+    },
+    {
+      "name": "Whisparr.eros.3.2.0-release.1.osx-arm64-app.zip",
+      "digest": "sha256:a21c769952845383f116f4edf4c9a0b62daab7f02f5822ecf32f456f2a6d9375",
+      "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-release.1/Whisparr.eros.3.2.0-release.1.osx-arm64-app.zip"
+    },
+    {
+      "name": "Whisparr.eros.3.2.0-release.1.osx-arm64.tar.gz",
+      "digest": "sha256:c2240173b4cd49b758355fccf78cd6b94db24dc3730914382b8a8e138596c419",
+      "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-release.1/Whisparr.eros.3.2.0-release.1.osx-arm64.tar.gz"
+    },
+    {
+      "name": "Whisparr.eros.3.2.0-release.1.osx-x64-app.zip",
+      "digest": "sha256:49d3738d92bf4a4ae5816d35709a989b131ba3111a04e79a789bbeb25d17a14b",
+      "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-release.1/Whisparr.eros.3.2.0-release.1.osx-x64-app.zip"
+    },
+    {
+      "name": "Whisparr.eros.3.2.0-release.1.osx-x64.tar.gz",
+      "digest": "sha256:ca2fa935252bf134036ac6da6f9cb69b2ad6b6aea4559bd60426cd317c29893b",
+      "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-release.1/Whisparr.eros.3.2.0-release.1.osx-x64.tar.gz"
+    },
+    {
+      "name": "Whisparr.eros.3.2.0-release.1.win-x64-installer.exe",
+      "digest": "sha256:c17d8b93ad9d2fa15c6c6107972ad058e2a81403c42952a21676c7302ba2ff73",
+      "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-release.1/Whisparr.eros.3.2.0-release.1.win-x64-installer.exe"
+    },
+    {
+      "name": "Whisparr.eros.3.2.0-release.1.win-x64.zip",
+      "digest": "sha256:2e926320ff48e5eb1c74a6f8d711ba3fdb436cb38bbdb37cfd9d4a9156b65471",
+      "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-release.1/Whisparr.eros.3.2.0-release.1.win-x64.zip"
+    },
+    {
+      "name": "Whisparr.eros.3.2.0-release.1.win-x86-installer.exe",
+      "digest": "sha256:e9cf5cefec5a4434f04d93479b8b752f1318ae05b8368292803d6f0e0ae32772",
+      "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-release.1/Whisparr.eros.3.2.0-release.1.win-x86-installer.exe"
+    },
+    {
+      "name": "Whisparr.eros.3.2.0-release.1.win-x86.zip",
+      "digest": "sha256:0e6acc3ccdd495a23cb8c87e896d3fb1c4745953fd1850d175f39509d493c0f9",
+      "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-release.1/Whisparr.eros.3.2.0-release.1.win-x86.zip"
+    }
+  ]
+}

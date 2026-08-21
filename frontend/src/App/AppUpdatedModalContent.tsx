@@ -16,6 +16,15 @@ import Update from 'typings/Update';
 import translate from 'Utilities/String/translate';
 import styles from './AppUpdatedModalContent.css';
 
+// A release with no `- New` or `- Fix` lines used to arrive as a single empty string
+// rather than an empty list, which counts as content and renders the "What's new?"
+// block blank instead of falling through to the maintenance-release line. The API no
+// longer sends that, but the modal should not depend on it -- `Updates.tsx` has always
+// filtered blank lines the same way. See Whisparr/Whisparr#1125.
+function hasContent(line: string) {
+  return typeof line === 'string' && line.trim() !== '';
+}
+
 function mergeUpdates(
   items: readonly Update[],
   version: string,
@@ -51,8 +60,10 @@ function mergeUpdates(
     const appliedChanges: Update['changes'] = { new: [], fixed: [] };
     appliedUpdates.forEach((u: Update) => {
       if (u.changes && typeof u.changes === 'object') {
-        appliedChanges.new.push(...u.changes.new);
-        appliedChanges.fixed.push(...u.changes.fixed);
+        appliedChanges.new.push(...(u.changes.new ?? []).filter(hasContent));
+        appliedChanges.fixed.push(
+          ...(u.changes.fixed ?? []).filter(hasContent)
+        );
       }
     });
     const mergedUpdate: Update = Object.assign({}, appliedUpdates[0], {
