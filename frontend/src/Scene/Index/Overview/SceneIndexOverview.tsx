@@ -258,7 +258,7 @@ function SceneIndexOverview(props: SceneIndexOverviewProps) {
 
       <DeleteSceneModal
         isOpen={isDeleteSceneModalOpen}
-        sceneId={sceneId}
+        scene={scene}
         onModalClose={onDeleteSceneModalClose}
       />
     </div>

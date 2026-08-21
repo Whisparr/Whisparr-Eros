@@ -370,7 +370,7 @@ function SceneIndexRow(props: SceneIndexRowProps) {
 
       <DeleteSceneModal
         isOpen={isDeleteSceneModalOpen}
-        sceneId={sceneId}
+        scene={scene}
         onModalClose={onDeleteSceneModalClose}
       />
     </>

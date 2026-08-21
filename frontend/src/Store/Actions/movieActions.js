@@ -1,16 +1,12 @@
 import _ from 'lodash';
 import moment from 'moment';
-import { createAction } from 'redux-actions';
-import { batchActions } from 'redux-batched-actions';
 import { filterTypePredicates, sortDirections } from 'Helpers/Props';
 import { createThunk, handleThunks } from 'Store/thunks';
-// import { batchActions } from 'redux-batched-actions';
 import createAjaxRequest from 'Utilities/createAjaxRequest';
 import dateFilterPredicate from 'Utilities/Date/dateFilterPredicate';
 import padNumber from 'Utilities/Number/padNumber';
-import { set, updateItem } from './baseActions';
+import { updateItem } from './baseActions';
 import createHandleActions from './Creators/createHandleActions';
-import createRemoveItemHandler from './Creators/createRemoveItemHandler';
 
 //
 // Variables
@@ -169,39 +165,19 @@ export const defaultState = {
   items: [],
   sortKey: 'sortTitle',
   sortDirection: sortDirections.ASCENDING,
-  deleteOptions: {
-    addImportExclusion: false,
-  },
 };
-
-export const persistState = ['movies.deleteOptions'];
 
 //
 // Actions Types
 
-export const DELETE_MOVIE = 'movies/deleteMovie';
-export const SAVE_MOVIE_EDITOR = 'movies/saveMovieEditor';
 export const BULK_MONITOR_MOVIE = 'movies/bulkMonitorMovie';
-
-export const SET_DELETE_OPTION = 'movies/setDeleteOption';
 
 export const TOGGLE_MOVIE_MONITORED = 'movies/toggleMovieMonitored';
 
 //
 // Action Creators
 
-export const deleteMovie = createThunk(DELETE_MOVIE, (payload) => {
-  return {
-    ...payload,
-    queryParams: {
-      deleteFiles: payload.deleteFiles,
-      addImportExclusion: payload.addImportExclusion,
-    },
-  };
-});
-
 export const toggleMovieMonitored = createThunk(TOGGLE_MOVIE_MONITORED);
-export const saveMovieEditor = createThunk(SAVE_MOVIE_EDITOR);
 
 export const bulkMonitorMovie = createThunk(
   BULK_MONITOR_MOVIE,
@@ -219,48 +195,10 @@ export const bulkMonitorMovie = createThunk(
   }
 );
 
-export const setDeleteOption = createAction(SET_DELETE_OPTION);
-
 //
 // Action Handlers
 
 export const actionHandlers = handleThunks({
-  [DELETE_MOVIE]: (getState, payload, dispatch) => {
-    createRemoveItemHandler(section, '/movie')(getState, payload, dispatch);
-
-    if (!payload.collectionTmdbId) {
-      return;
-    }
-
-    const collectionToUpdate = getState().movieCollections.items.find(
-      (collection) => collection.tmdbId === payload.collectionTmdbId
-    );
-
-    if (!collectionToUpdate) {
-      return;
-    }
-
-    // Skip updating if the last movie in the collection is being deleted
-    if (
-      collectionToUpdate.movies.length - collectionToUpdate.missingMovies ===
-      1
-    ) {
-      return;
-    }
-
-    const collectionData = {
-      ...collectionToUpdate,
-      missingMovies: collectionToUpdate.missingMovies + 1,
-    };
-
-    dispatch(
-      updateItem({
-        section: 'movieCollections',
-        ...collectionData,
-      })
-    );
-  },
-
   [TOGGLE_MOVIE_MONITORED]: (getState, payload, dispatch) => {
     const { movieId: id, monitored } = payload;
 
@@ -327,53 +265,6 @@ export const actionHandlers = handleThunks({
       });
     });
   },
-
-  [SAVE_MOVIE_EDITOR]: function (getState, payload, dispatch) {
-    dispatch(
-      set({
-        section,
-        isSaving: true,
-      })
-    );
-
-    const promise = createAjaxRequest({
-      url: '/movie/editor',
-      method: 'PUT',
-      data: JSON.stringify(payload),
-      dataType: 'json',
-    }).request;
-
-    promise.done((data) => {
-      dispatch(
-        batchActions([
-          ...data.map((movie) => {
-            return updateItem({
-              id: movie.id,
-              section: 'movies',
-              ...movie,
-            });
-          }),
-
-          set({
-            section,
-            isSaving: false,
-            saveError: null,
-          }),
-        ])
-      );
-    });
-
-    promise.fail((xhr) => {
-      dispatch(
-        set({
-          section,
-          isSaving: false,
-          saveError: xhr,
-        })
-      );
-    });
-  },
-
 });
 
 //
@@ -381,14 +272,6 @@ export const actionHandlers = handleThunks({
 
 export const reducers = createHandleActions(
   {
-    [SET_DELETE_OPTION]: (state, { payload }) => {
-      return {
-        ...state,
-        deleteOptions: {
-          ...payload,
-        },
-      };
-    },
     // Batch update handler: efficiently updates multiple items in one state edit
     UPDATE_ITEMS_BATCH: (state, { payload }) => {
       // payload: array of updated movie objects, each with an id

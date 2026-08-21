@@ -11,7 +11,7 @@ Counts are file-level `react-redux` imports across the frontend source tree.
 Every commit reference below links to the Sonarr commit it names; all were
 verified to resolve against the public repo.
 
-**Status: Phases A, B and C complete. Phase D in progress — Movie and the Scene index done.** See §11 for the running log.
+**Status: Phases A, B and C complete. Phase D in progress — Movie and Scene done.** See §11 for the running log.
 
 ---
 
@@ -19,10 +19,10 @@ verified to resolve against the public repo.
 
 | Metric | At assessment | Now |
 | --- | --- | --- |
-| Files importing `react-redux` | 327 of 1,255 | **224** of 1,234 |
-| Lines under `frontend/src/Store/` | 15,374 across 138 files | **10,157** across 104 |
+| Files importing `react-redux` | 327 of 1,255 | **219** of 1,231 |
+| Lines under `frontend/src/Store/` | 15,374 across 138 files | **10,027** across 103 |
 | Redux slices registered in `Store/Actions/index.js` | 35 | **14** |
-| Remaining `*Connector` files | 66 | **56** |
+| Remaining `*Connector` files | 66 | **55** |
 | Files touching React Query | 35 | **65** |
 | zustand stores | 0 (not installed) | **installed, 19 files** |
 
@@ -96,8 +96,9 @@ all still Redux. The clearest tell is that the new hooks themselves call `useSel
 
 Custom filters are no longer among those dependencies: `createCustomFiltersSelector` was
 retired in #484 and both query hooks read `useCustomFiltersList` now. As of #498 neither
-index hook calls `useSelector` at all; what is left in Movie and Scene is the editing half
-— select footers, bulk modals, and Scene's delete connector.
+index hook calls `useSelector` at all, and as of #499 neither domain's editing half does
+either. What is left under `Movie/` and `Scene/` is five files apiece reading
+`settings.safeForWorkMode` and `createUISettingsSelector`, which is Phase E.
 
 ### The ordering problem
 
@@ -222,7 +223,7 @@ shape: convert one properly, then the other three are largely mechanical.
 | Domain | Remaining work | Sonarr ref |
 | --- | --- | --- |
 | **Movie** *(hybrid)* — do first, set the template. 29 redux files, 2 connectors. **Index options done, #496; movie editing done, #497. 16 files left, 12 of them gated on Phase E.** | ~~Index options → `movieIndexOptionsStore`~~; ~~select footer~~; ~~Delete modal~~; ~~filter modal `sectionItems`~~. `movieActions` keeps only `toggleMovieMonitored` (Collection) and `bulkMonitorMovie` (Performer/Studio). Retires ~~`movieIndexActions`~~; `movieTitlesActions` was already dead. | [Sonarr/Sonarr@0521a6c3](https://github.com/Sonarr/Sonarr/commit/0521a6c3) (91 files) |
-| **Scene** *(hybrid)* — 21 redux files. Shares the `Movie` model, so hooks can share a generic base. **Index options done, #498, which also closed Whisparr/Whisparr#1134. 10 files left.** | ~~`sceneIndexActions`~~; select footer; Delete/Tags/Organize modals; `DeleteSceneModalContentConnector.js`, `createAllScenesSelector.ts` | — |
+| ~~**Scene** *(hybrid)* — 21 redux files.~~ **Done: #498 (index options, closing Whisparr/Whisparr#1134) and #499 (editing).** The five files left read `settings.safeForWorkMode` and `createUISettingsSelector` only, and are gated on Phase E. | ~~`sceneIndexActions`; select footer; Delete/Tags/Organize modals; `DeleteSceneModalContentConnector.js`, `createAllScenesSelector.ts`~~ | — |
 | **Performer** *(hybrid)* — 20 redux files. Details, scenes tab, add flow, edit modal. | `performerActions` (675 loc), `performerScenesActions`, `addPerformerActions`, `EditPerformerModalContentConnector.js` | — |
 | **Studio** *(hybrid)* — 20 redux files. Same shape as Performer. | `studioActions` (509 loc), `studioMoviesActions`, `studioScenesActions`, `DeleteStudioModalConnector.js` | — |
 | **Collection** — untouched, fully connector-based. 7 of the 56 connectors live here, and 5 of those now take `isSmallScreen` through the #492 wrapper. | `movieCollectionActions` (571 loc), `Collection*Connector.js` ×7, `createCollectionSelector.ts` | — |
@@ -522,7 +523,9 @@ Five more selectors still read that empty array —  `createAllMoviesSelector`,
 `createAllScenesSelector`, `createMovieSelector`, `createMultiMoviesSelector` and
 `createMovieClientSideCollectionItemsSelector` — behind the tag details modal, the Scene delete
 modal, the queued-task name cell and the index overflow search item. Each is a separate small
-bug and each belongs to the domain that owns it, not to this PR.
+bug and each belongs to the domain that owns it, not to this PR. #499 took the two Scene ones:
+`createAllScenesSelector` is deleted, and `createMovieSelector` lost the Scene delete
+connector, which was reading it with the wrong prop name anyway.
 
 ### The delete preference is briefly stored twice
 
@@ -533,6 +536,11 @@ two modals remember the setting separately. That is deliberate: Scene's delete p
 component behind `DeleteSceneModalContentConnector`, which reads `createMovieSelector()` — the
 empty array above — and so needs rewriting rather than repointing. Doing it here would have
 meant a Scene conversion inside a Movie PR.
+
+**Closed in #499**, which did that rewrite. Both modals now read
+`whisparr-dev_movie_delete_options`; verified by ticking the box in the scene modal and
+reading it back checked in the movie one. `movies.deleteOptions` and its `persistState`
+entry are gone.
 
 ### The SignalR row was already spent
 

@@ -1,10 +1,12 @@
 import React from 'react';
 import Modal from 'Components/Modal/Modal';
+import Movie from 'Movie/Movie';
 import OrganizeScenesModalContent from './OrganizeScenesModalContent';
 
 interface OrganizeScenesModalProps {
   isOpen: boolean;
   sceneIds: number[];
+  items: Movie[];
   onModalClose: () => void;
 }
 
