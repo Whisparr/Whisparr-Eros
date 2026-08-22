@@ -1,9 +1,9 @@
 import _ from 'lodash';
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import Flag from 'react-world-flags';
-import AppState from 'App/State/AppState';
+import { SafeForWorkModeContext } from 'App/State/SafeForWorkContext';
 import Alert from 'Components/Alert';
 import FieldSet from 'Components/FieldSet';
 import Icon from 'Components/Icon';
@@ -19,11 +19,6 @@ import PageToolbarSeparator from 'Components/Page/Toolbar/PageToolbarSeparator';
 import Tooltip from 'Components/Tooltip/Tooltip';
 import { useShowMovieMonitorToggleButton } from 'Helpers/Hooks/useShowMovieMonitorToggleButton';
 import { icons, kinds, sizes, tooltipPositions } from 'Helpers/Props';
-import {
-  ASCENDING,
-  DESCENDING,
-  SortDirection,
-} from 'Helpers/Props/sortDirections';
 import MovieHeadshot from 'Movie/MovieHeadshot';
 import DeletePerformerModal from 'Performer/Delete/DeletePerformerModal';
 import PerformerGenderIcon from 'Performer/PerformerGenderIcon';
@@ -42,7 +37,6 @@ import PerformerTags from './PerformerTags';
 import {
   usePerformerDetails,
   usePerformerDetailsMovies,
-  usePerformerScenesColumns,
 } from './usePerformerDetails';
 import { usePerformerTags } from './usePerformerTags';
 import styles from './PerformerDetails.css';
@@ -122,33 +116,7 @@ function PerformerDetails() {
     setExpandedYears(newExpanded);
   }
 
-  // Table columns for studios (from Redux, matches legacy connector)
-  const { columns } = usePerformerScenesColumns();
-  // Sorting state for all studios
-  const [sortKey, setSortKey] = useState('releaseDate');
-  const [sortDirection, setSortDirection] = useState<SortDirection>(DESCENDING);
-  function handleSortPress(name: string, direction: SortDirection) {
-    if (sortKey === name) {
-      // Toggle direction if same column
-      setSortDirection((prev: SortDirection) =>
-        prev === ASCENDING ? DESCENDING : ASCENDING
-      );
-    } else {
-      setSortKey(name);
-      // Use provided direction if available, otherwise default
-      if (direction !== undefined) {
-        setSortDirection(direction);
-      } else if (name === 'releaseDate') {
-        setSortDirection(DESCENDING);
-      } else {
-        setSortDirection(ASCENDING);
-      }
-    }
-  }
-
-  // SafeForWork mode from Redux global state
-  const safeForWorkMode =
-    useSelector((state: AppState) => state.settings.safeForWorkMode) ?? false;
+  const safeForWorkMode = useContext(SafeForWorkModeContext);
 
   // Always call hooks unconditionally
   const performerTags = usePerformerTags(performer?.tags ?? []);
@@ -533,15 +501,8 @@ function PerformerDetails() {
                 <PerformerDetailsYear
                   key={year}
                   year={year}
-                  performerId={performer.id}
-                  columns={columns}
                   movies={yearMovies}
-                  sortKey={sortKey}
-                  sortDirection={sortDirection}
                   isExpanded={!!expandedYears[year]}
-                  isSmallScreen={false} // or use your actual logic for small screen
-                  safeForWorkMode={safeForWorkMode}
-                  onSortPress={handleSortPress}
                   onExpandPress={handleExpandYearPress}
                   onYearRefreshPress={onYearRefreshPress}
                 />

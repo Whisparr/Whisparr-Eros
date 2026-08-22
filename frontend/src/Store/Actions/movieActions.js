@@ -170,30 +170,12 @@ export const defaultState = {
 //
 // Actions Types
 
-export const BULK_MONITOR_MOVIE = 'movies/bulkMonitorMovie';
-
 export const TOGGLE_MOVIE_MONITORED = 'movies/toggleMovieMonitored';
 
 //
 // Action Creators
 
 export const toggleMovieMonitored = createThunk(TOGGLE_MOVIE_MONITORED);
-
-export const bulkMonitorMovie = createThunk(
-  BULK_MONITOR_MOVIE,
-  ({ ids, monitored }) => {
-    return {
-      ids,
-      monitored,
-      url: `/movie/bulk/monitor?monitored=${monitored}`,
-      method: 'PATCH',
-      contentType: 'application/json',
-      dataType: 'json',
-      data: JSON.stringify(ids),
-      queryParams: { monitored },
-    };
-  }
-);
 
 //
 // Action Handlers
@@ -241,28 +223,6 @@ export const actionHandlers = handleThunks({
           isSaving: false,
         })
       );
-    });
-  },
-
-  [BULK_MONITOR_MOVIE]: (getState, payload, dispatch) => {
-    const { ids, monitored } = payload;
-
-    ids.forEach((id) => {
-      dispatch(updateItem({ id, section, isSaving: true, monitored }));
-    });
-
-    const promise = createAjaxRequest(payload).request; // reuse the request object
-
-    promise.done(() => {
-      ids.forEach((id) => {
-        dispatch(updateItem({ id, section, isSaving: false, monitored }));
-      });
-    });
-
-    promise.fail(() => {
-      ids.forEach((id) => {
-        dispatch(updateItem({ id, section, isSaving: false }));
-      });
     });
   },
 });

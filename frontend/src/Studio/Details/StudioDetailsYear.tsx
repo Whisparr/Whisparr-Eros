@@ -30,7 +30,6 @@ interface StudioDetailsYearProps {
   studioId: number;
   year: number;
   works: Movie[];
-  safeForWorkMode?: boolean;
   isExpanded?: boolean;
   onExpandPress: (year: number, expand: boolean) => void;
   onYearRefreshPress?: (ids: number[]) => void;
@@ -65,7 +64,6 @@ function StudioDetailsYear(props: StudioDetailsYearProps) {
     studioId,
     year,
     works,
-    safeForWorkMode,
     isExpanded,
     onExpandPress,
     onYearRefreshPress,
@@ -239,7 +237,6 @@ function StudioDetailsYear(props: StudioDetailsYearProps) {
                       movie={item}
                       columns={columns}
                       {...item}
-                      safeForWorkMode={safeForWorkMode}
                     />
                   ))}
                 </TableBody>

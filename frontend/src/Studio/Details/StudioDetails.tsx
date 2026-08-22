@@ -201,7 +201,6 @@ function StudioDetails() {
               studioId={studioId}
               year={entry.year}
               works={entry.works}
-              safeForWorkMode={safeForWorkMode}
               isExpanded={isExpanded}
               onExpandPress={handleVirtualizedExpandPress}
               onYearRefreshPress={onYearRefreshPress}
@@ -212,7 +211,6 @@ function StudioDetails() {
     },
     [
       expandedState,
-      safeForWorkMode,
       studioId,
       worksByYear,
       handleVirtualizedExpandPress,
