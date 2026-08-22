@@ -239,7 +239,7 @@ function PerformerIndex(_: Readonly<PerformerIndexProps>): React.JSX.Element {
           {/*
           FOOTER - SELECT MODE
           */}
-          {isSelectMode ? <PerformerIndexSelectFooter /> : null}
+          {isSelectMode ? <PerformerIndexSelectFooter items={items} /> : null}
 
           {/*
           MODALS
