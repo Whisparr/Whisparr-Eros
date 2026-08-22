@@ -1,6 +1,5 @@
 import classNames from 'classnames';
 import React, { useCallback } from 'react';
-import { useDispatch } from 'react-redux';
 import { useSelect } from 'App/SelectContext';
 import IconButton from 'Components/Link/IconButton';
 import Column from 'Components/Table/Column';
@@ -11,9 +10,10 @@ import VirtualTableSelectAllHeaderCell from 'Components/Table/VirtualTableSelect
 import { icons } from 'Helpers/Props';
 import { SortDirection } from 'Helpers/Props/sortDirections';
 import {
-  setPerformerSort,
-  setPerformerTableOption,
-} from 'Store/Actions/performerActions';
+  PerformerIndexOptions,
+  setPerformerIndexSort,
+  setPerformerIndexTableOption,
+} from 'Performer/Index/performerIndexOptionsStore';
 import { CheckInputChanged } from 'typings/inputs';
 import PerformerIndexTableOptions from './PerformerIndexTableOptions';
 import styles from './PerformerIndexTableHeader.css';
@@ -27,21 +27,23 @@ interface PerformerIndexTableHeaderProps {
 
 function PerformerIndexTableHeader(props: PerformerIndexTableHeaderProps) {
   const { columns, sortKey, sortDirection, isSelectMode } = props;
-  const dispatch = useDispatch();
   const [selectState, selectDispatch] = useSelect();
 
-  const onSortPress = useCallback(
-    (value: string) => {
-      dispatch(setPerformerSort({ sortKey: value }));
-    },
-    [dispatch]
-  );
+  // Sorting from a column header now resets to page one, as it already did
+  // from the toolbar's sort menu and as the movie, scene and studio headers
+  // do. Sorting while on page three otherwise left you on page three of a
+  // different ordering.
+  const onSortPress = useCallback((value: string) => {
+    setPerformerIndexSort(value);
+  }, []);
 
   const onTableOptionChange = useCallback(
-    (payload: unknown) => {
-      dispatch(setPerformerTableOption(payload));
+    (
+      payload: Partial<Pick<PerformerIndexOptions, 'columns' | 'tableOptions'>>
+    ) => {
+      setPerformerIndexTableOption(payload);
     },
-    [dispatch]
+    []
   );
 
   const onSelectAllChange = useCallback(

@@ -1,16 +1,14 @@
-import { useSelector } from 'react-redux';
-import AppState, {
-  CustomFilter,
-  Filter,
-  PropertyFilter,
-} from 'App/State/AppState';
+import { CustomFilter, Filter, PropertyFilter } from 'App/State/AppState';
 import { useCustomFiltersList } from 'Filters/useCustomFilters';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import { SortDirection } from 'Helpers/Props/sortDirections';
 import { PagingResource } from 'Movie/Movie.types';
 import Performer from 'Performer/Performer';
-import { filters as performerFilters } from 'Store/Actions/performerActions';
+import { PERFORMER_INDEX_FILTERS } from './performerIndexFilters';
+import { usePerformerIndexOption } from './performerIndexOptionsStore';
 
+// Only the paging and sort parameters are passed in. Filters are not among
+// them: this hook resolves the selected filter itself and appends it.
 export interface PerformerIndexQueryParams {
   page: number;
   pageSize: number;
@@ -19,9 +17,7 @@ export interface PerformerIndexQueryParams {
 }
 
 export function usePerformerIndexQuery(params: PerformerIndexQueryParams) {
-  const selectedFilterKey = useSelector(
-    (state: AppState) => state.performers.selectedFilterKey
-  );
+  const selectedFilterKey = usePerformerIndexOption('selectedFilterKey');
 
   const customFilters = useCustomFiltersList('performers');
 
@@ -38,7 +34,9 @@ export function usePerformerIndexQuery(params: PerformerIndexQueryParams) {
     );
     filters = filterDef?.filters ?? [];
   } else {
-    filterDef = performerFilters.find((f) => f.key === selectedFilterKey);
+    filterDef = PERFORMER_INDEX_FILTERS.find(
+      (f) => f.key === selectedFilterKey
+    );
     filters = filterDef?.filters ?? [];
   }
 

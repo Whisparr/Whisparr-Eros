@@ -1,11 +1,9 @@
 import { throttle } from 'lodash';
 import React, { RefObject, useEffect, useMemo, useRef, useState } from 'react';
-import { useSelector } from 'react-redux';
 import { FixedSizeGrid as Grid, GridChildComponentProps } from 'react-window';
-import { createSelector } from 'reselect';
-import AppState from 'App/State/AppState';
 import useMeasure from 'Helpers/Hooks/useMeasure';
 import { SortDirection } from 'Helpers/Props/sortDirections';
+import { usePerformerIndexOption } from 'Performer/Index/performerIndexOptionsStore';
 import PerformerIndexPoster from 'Performer/Index/Posters/PerformerIndexPoster';
 import Performer from 'Performer/Performer';
 import dimensions from 'Styles/Variables/dimensions';
@@ -60,15 +58,6 @@ interface PerformerIndexPostersProps {
   safeForWorkMode: boolean;
 }
 
-const performerIndexSelector = createSelector(
-  (state: AppState) => state.performers.posterOptions,
-  (posterOptions) => {
-    return {
-      posterOptions,
-    };
-  }
-);
-
 function Cell({
   columnIndex,
   rowIndex,
@@ -117,7 +106,7 @@ function PerformerIndexPosters({
   isSelectMode,
   isSmallScreen,
 }: PerformerIndexPostersProps) {
-  const { posterOptions } = useSelector(performerIndexSelector);
+  const posterOptions = usePerformerIndexOption('posterOptions');
   const ref = useRef<Grid>(null);
   const [measureRef, bounds] = useMeasure();
   const [size, setSize] = useState({ width: 0, height: 0 });

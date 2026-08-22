@@ -1,5 +1,4 @@
 import React, { useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import Form from 'Components/Form/Form';
 import FormGroup from 'Components/Form/FormGroup';
 import FormInputGroup from 'Components/Form/FormInputGroup';
@@ -10,9 +9,12 @@ import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { inputTypes } from 'Helpers/Props';
-import { setPerformerPosterOption } from 'Store/Actions/performerActions';
+import {
+  PerformerIndexPosterOptions,
+  setPerformerIndexPosterOption,
+  usePerformerIndexOption,
+} from 'Performer/Index/performerIndexOptionsStore';
 import translate from 'Utilities/String/translate';
-import selectPosterOptions from '../selectPosterOptions';
 
 const posterSizeOptions = [
   {
@@ -44,17 +46,16 @@ function PerformerIndexPosterOptionsModalContent(
 ) {
   const { onModalClose } = props;
 
-  const posterOptions = useSelector(selectPosterOptions);
-
-  const { detailedProgressBar, pageSize, size, showName } = posterOptions;
-
-  const dispatch = useDispatch();
+  const { detailedProgressBar, pageSize, size, showName } =
+    usePerformerIndexOption('posterOptions');
 
   const onPosterOptionChange = useCallback(
     ({ name, value }: { name: string; value: unknown }) => {
-      dispatch(setPerformerPosterOption({ [name]: value }));
+      setPerformerIndexPosterOption({
+        [name]: value,
+      } as Partial<PerformerIndexPosterOptions>);
     },
-    [dispatch]
+    []
   );
 
   return (

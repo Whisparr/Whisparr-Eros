@@ -13,6 +13,7 @@ interface PageStore {
   importListExclusion: number;
   missing: number;
   movieIndex: number;
+  performerIndex: number;
   queue: number;
   sceneIndex: number;
   studioIndex: number;
@@ -26,6 +27,7 @@ const pageStore = create<PageStore>(() => ({
   importListExclusion: 1,
   missing: 1,
   movieIndex: 1,
+  performerIndex: 1,
   queue: 1,
   sceneIndex: 1,
   studioIndex: 1,
