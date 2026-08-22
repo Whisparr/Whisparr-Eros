@@ -1,9 +1,12 @@
 import React, { useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import MonitorToggleButton from 'Components/MonitorToggleButton';
-import { toggleCollectionMonitored } from 'Store/Actions/movieCollectionActions';
-import { createCollectionSelectorForHook } from 'Store/Selectors/createCollectionSelector';
-import MovieCollection from 'typings/MovieCollection';
+import {
+  useMovieCollectionByTmdbId,
+  useToggleCollectionMonitored,
+} from 'Collection/useMovieCollections';
+import MonitorToggleButton, {
+  getToggledMonitored,
+  MonitorTogglePressValue,
+} from 'Components/MonitorToggleButton';
 import translate from 'Utilities/String/translate';
 import styles from './MovieCollectionLabel.css';
 
@@ -12,31 +15,26 @@ interface MovieCollectionLabelProps {
 }
 
 function MovieCollectionLabel({ tmdbId }: MovieCollectionLabelProps) {
-  const {
-    id,
-    monitored,
-    title,
-    isSaving = false,
-  } = useSelector(createCollectionSelectorForHook(tmdbId)) ||
-  ({} as MovieCollection);
+  // Was `state.movieCollections.items`, which only the collections page ever
+  // filled, so this label read an empty list here and always rendered
+  // "Unknown".
+  const collection = useMovieCollectionByTmdbId(tmdbId);
 
-  const dispatch = useDispatch();
+  const toggleMonitored = useToggleCollectionMonitored();
 
   const handleMonitorTogglePress = useCallback(
-    (
-      value: boolean | { monitored: boolean; moviesMonitored: boolean },
-      _options: { shiftKey: boolean }
-    ) => {
-      const { monitored } =
-        typeof value === 'object' && value !== null && 'monitored' in value
-          ? value
-          : { monitored: value as boolean };
-      dispatch(toggleCollectionMonitored({ collectionId: id, monitored }));
+    (value: MonitorTogglePressValue) => {
+      if (collection) {
+        toggleMonitored.mutate({
+          ...collection,
+          monitored: getToggledMonitored(value),
+        });
+      }
     },
-    [id, dispatch]
+    [collection, toggleMonitored]
   );
 
-  if (!id) {
+  if (!collection) {
     return translate('Unknown');
   }
 
@@ -44,12 +42,12 @@ function MovieCollectionLabel({ tmdbId }: MovieCollectionLabelProps) {
     <div>
       <MonitorToggleButton
         className={styles.monitorToggleButton}
-        monitored={monitored}
-        isSaving={isSaving}
+        monitored={collection.monitored}
+        isSaving={toggleMonitored.isPending}
         size={15}
         onPress={handleMonitorTogglePress}
       />
-      {title}
+      {collection.title}
     </div>
   );
 }

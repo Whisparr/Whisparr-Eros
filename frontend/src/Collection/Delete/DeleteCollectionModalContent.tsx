@@ -1,7 +1,9 @@
 import React, { useCallback, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { createSelector } from 'reselect';
-import AppState from 'App/State/AppState';
+import {
+  setCollectionDeleteOption,
+  useCollectionDeleteOption,
+} from 'Collection/collectionDeleteOptionsStore';
+import { useDeleteMovieCollection } from 'Collection/useMovieCollections';
 import FormGroup from 'Components/Form/FormGroup';
 import FormInputGroup from 'Components/Form/FormInputGroup';
 import FormLabel from 'Components/Form/FormLabel';
@@ -11,11 +13,7 @@ import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { inputTypes, kinds } from 'Helpers/Props';
-import {
-  deleteCollection,
-  setDeleteOption,
-} from 'Store/Actions/movieCollectionActions';
-import { InputChanged } from 'typings/inputs';
+import { CheckInputChanged, InputChanged } from 'typings/inputs';
 import translate from 'Utilities/String/translate';
 
 export interface DeleteCollectionModalContentProps {
@@ -23,51 +21,43 @@ export interface DeleteCollectionModalContentProps {
   onModalClose: () => void;
 }
 
-const selectDeleteOptions = createSelector(
-  (state: AppState) => state.movieCollections.deleteOptions,
-  (deleteOptions) => deleteOptions
-);
-
 function DeleteCollectionModalContent({
   collectionIds,
   onModalClose,
 }: DeleteCollectionModalContentProps) {
-  const dispatch = useDispatch();
-  const { addImportExclusion } = useSelector(selectDeleteOptions);
+  const addImportExclusion = useCollectionDeleteOption('addImportExclusion');
 
   const [deleteFiles, setDeleteFiles] = useState(false);
 
-  const onDeleteFilesChange = useCallback(
+  const deleteCollection = useDeleteMovieCollection();
+
+  const handleDeleteFilesChange = useCallback(
     ({ value }: InputChanged<boolean>) => {
       setDeleteFiles(value);
     },
-    [setDeleteFiles]
+    []
   );
 
-  const onDeleteOptionChange = useCallback(
-    ({ name, value }: { name: string; value: boolean }) => {
-      dispatch(
-        setDeleteOption({
-          [name]: value,
-        })
-      );
+  const handleDeleteOptionChange = useCallback(
+    ({ name, value }: CheckInputChanged) => {
+      setCollectionDeleteOption({ [name]: value });
     },
-    [dispatch]
+    []
   );
 
-  const handleDeleteCollectionConfirmed = useCallback(() => {
+  const handleDeleteConfirmed = useCallback(() => {
     collectionIds.forEach((id) => {
-      dispatch(
-        deleteCollection({
-          id,
-          deleteFiles,
-          addImportExclusion,
-        })
-      );
+      deleteCollection.mutate({ id, deleteFiles, addImportExclusion });
     });
 
     onModalClose();
-  }, [collectionIds, addImportExclusion, deleteFiles, dispatch, onModalClose]);
+  }, [
+    collectionIds,
+    addImportExclusion,
+    deleteFiles,
+    deleteCollection,
+    onModalClose,
+  ]);
 
   return (
     <ModalContent onModalClose={onModalClose}>
@@ -83,7 +73,7 @@ function DeleteCollectionModalContent({
             value={addImportExclusion}
             helpText={translate('AddListExclusionMovieHelpText')}
             kind={kinds.DANGER}
-            onChange={onDeleteOptionChange}
+            onChange={handleDeleteOptionChange}
           />
         </FormGroup>
 
@@ -96,7 +86,7 @@ function DeleteCollectionModalContent({
             value={deleteFiles}
             helpText={translate('DeleteMovieFilesHelpText')}
             kind={kinds.DANGER}
-            onChange={onDeleteFilesChange}
+            onChange={handleDeleteFilesChange}
           />
         </FormGroup>
       </ModalBody>
@@ -104,7 +94,7 @@ function DeleteCollectionModalContent({
       <ModalFooter>
         <Button onPress={onModalClose}>{translate('Close')}</Button>
 
-        <Button kind={kinds.DANGER} onPress={handleDeleteCollectionConfirmed}>
+        <Button kind={kinds.DANGER} onPress={handleDeleteConfirmed}>
           {translate('Delete')}
         </Button>
       </ModalFooter>

@@ -4,6 +4,10 @@ import { useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { setAppValue, setVersion } from 'App/appStore';
 import { queryClient } from 'App/queryClient';
+import {
+  COLLECTION_PATH,
+  EXISTING_MOVIES_PATH,
+} from 'Collection/useMovieCollections';
 import Command from 'Commands/Command';
 import { COMMANDS_QUERY_KEY, useUpdateCommand } from 'Commands/useCommands';
 import { PagedQueryResponse } from 'Helpers/Hooks/usePagedApiQuery';
@@ -54,6 +58,33 @@ function updateMovieDetailsQueryCache(updatedMovie: MovieResource) {
 
 // Helper to update a nested movie in performer.years[].movies[] in React Query cache
 // Update Performer React Query cache helper
+// The collections page asks `POST /movie/list` for the library movies behind the
+// collection posters. Patched rather than invalidated so toggling monitored on a
+// poster does not re-fetch every movie on the page.
+function updateMovieInCollectionListQueryCache(updatedMovie: MovieResource) {
+  queryClient
+    .getQueryCache()
+    .findAll({ queryKey: [EXISTING_MOVIES_PATH] })
+    .forEach(({ queryKey }) => {
+      queryClient.setQueryData(queryKey, (oldData: MovieResource[]) => {
+        if (!Array.isArray(oldData)) {
+          return oldData;
+        }
+
+        const idx = oldData.findIndex((movie) => movie.id === updatedMovie.id);
+
+        if (idx === -1) {
+          return oldData;
+        }
+
+        const newData = [...oldData];
+        newData[idx] = { ...oldData[idx], ...updatedMovie };
+
+        return newData;
+      });
+    });
+}
+
 function updateMovieInPerformerWorksQueryCache(updatedMovie: MovieResource) {
   // Find all queries for performer works
   const queryCache = queryClient.getQueryCache().findAll();
@@ -379,6 +410,7 @@ function SignalRListener() {
           body.resources.forEach(updateMovieInPerformerWorksQueryCache);
           body.resources.forEach(updateMovieInStudioWorksQueryCache);
           body.resources.forEach(updateMovieDetailsQueryCache);
+          body.resources.forEach(updateMovieInCollectionListQueryCache);
         } else if (body.action === 'deleted') {
           body.resources.forEach(removeMovieQueryCache);
         }
@@ -397,6 +429,7 @@ function SignalRListener() {
         updateMovieInPerformerWorksQueryCache(body.resource);
         updateMovieInStudioWorksQueryCache(body.resource);
         updateMovieDetailsQueryCache(body.resource);
+        updateMovieInCollectionListQueryCache(body.resource);
       } else if (body.action === 'deleted' && body.resource) {
         removeMovieQueryCache(body.resource);
       }
@@ -411,13 +444,10 @@ function SignalRListener() {
     }
 
     if (name === 'collection') {
-      const section = 'movieCollections';
-
-      if (body.action === 'updated') {
-        dispatch(updateItem({ section, ...body.resource }));
-      } else if (body.action === 'deleted') {
-        dispatch(removeItem({ section, id: body.resource?.id }));
-      }
+      // Both the full list and the single-collection `?tmdbId=` lookup live
+      // under this key, and `invalidateQueries` matches by prefix, so one call
+      // covers the collections page and the label on movie details.
+      queryClient.invalidateQueries({ queryKey: [COLLECTION_PATH] });
 
       return;
     }

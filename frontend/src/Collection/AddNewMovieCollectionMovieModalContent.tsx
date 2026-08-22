@@ -1,8 +1,9 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAppDimension } from 'App/appStore';
-import AppState from 'App/State/AppState';
-import useMovieCollection from 'Collection/useMovieCollection';
+import MovieCollection, {
+  MovieCollectionMovie,
+} from 'Collection/MovieCollection';
+import { useAddCollectionMovie } from 'Collection/useMovieCollections';
 import CheckInput from 'Components/Form/CheckInput';
 import Form from 'Components/Form/Form';
 import FormGroup from 'Components/Form/FormGroup';
@@ -13,90 +14,130 @@ import ModalBody from 'Components/Modal/ModalBody';
 import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
-import usePrevious from 'Helpers/Hooks/usePrevious';
 import { inputTypes, kinds } from 'Helpers/Props';
-import { Image } from 'Movie/Movie';
 import MoviePoster from 'Movie/MoviePoster';
-import {
-  addMovie,
-  setMovieCollectionValue,
-} from 'Store/Actions/movieCollectionActions';
 import selectSettings from 'Store/Selectors/selectSettings';
 import { useIsWindows } from 'System/Status/useSystemStatus';
 import { InputChanged } from 'typings/inputs';
+import getNewMovie from 'Utilities/Movie/getNewMovie';
 import translate from 'Utilities/String/translate';
 import styles from './AddNewMovieCollectionMovieModalContent.css';
 
 export interface AddNewMovieCollectionMovieModalContentProps {
-  foreignId: number;
-  title: string;
-  year: number;
-  overview?: string;
-  images: Image[];
-  collectionId: number;
-  folder: string;
+  movie: MovieCollectionMovie;
+  collection: MovieCollection;
   onModalClose: () => void;
 }
 
 function AddNewMovieCollectionMovieModalContent({
-  foreignId,
-  title,
-  year,
-  overview,
-  images,
-  collectionId,
-  folder,
+  movie,
+  collection,
   onModalClose,
 }: AddNewMovieCollectionMovieModalContentProps) {
-  const dispatch = useDispatch();
-
-  const collection = useMovieCollection(collectionId)!;
+  const { foreignId, title, year, overview, images, folder } = movie;
 
   const isSmallScreen = useAppDimension('isSmallScreen');
   const isWindows = useIsWindows();
 
-  const { isAdding, addError, pendingChanges } = useSelector(
-    (state: AppState) => state.movieCollections
+  const [rootFolderPath, setRootFolderPath] = useState(
+    collection.rootFolderPath
   );
+  const [monitored, setMonitored] = useState(collection.monitored);
+  const [qualityProfileId, setQualityProfileId] = useState(
+    collection.qualityProfileId
+  );
+  const [searchForMovie, setSearchForMovie] = useState(collection.searchOnAdd);
+  const [tags, setTags] = useState(collection.tags ?? []);
 
-  const wasAdding = usePrevious(isAdding);
+  const addMovie = useAddCollectionMovie();
+
+  // Only the fields the user has actually touched, so `selectSettings` marks
+  // exactly those pending -- `movieCollections.pendingChanges` held the same.
+  const pendingChanges = useMemo(() => {
+    const changes: Record<string, unknown> = {};
+
+    if (rootFolderPath !== collection.rootFolderPath) {
+      changes.rootFolderPath = rootFolderPath;
+    }
+
+    if (monitored !== collection.monitored) {
+      changes.monitored = monitored;
+    }
+
+    if (qualityProfileId !== collection.qualityProfileId) {
+      changes.qualityProfileId = qualityProfileId;
+    }
+
+    if (searchForMovie !== collection.searchOnAdd) {
+      changes.searchForMovie = searchForMovie;
+    }
+
+    if (JSON.stringify(tags) !== JSON.stringify(collection.tags ?? [])) {
+      changes.tags = tags;
+    }
+
+    return changes;
+  }, [
+    collection,
+    rootFolderPath,
+    monitored,
+    qualityProfileId,
+    searchForMovie,
+    tags,
+  ]);
 
   const { settings, validationErrors, validationWarnings } = useMemo(() => {
-    const options = {
-      rootFolderPath: collection.rootFolderPath,
-      monitored: collection.monitored,
-      qualityProfileId: collection.qualityProfileId,
-      searchForMovie: collection.searchOnAdd,
-      tags: collection.tags || [],
-    };
+    return selectSettings(
+      {
+        rootFolderPath: collection.rootFolderPath,
+        monitored: collection.monitored,
+        qualityProfileId: collection.qualityProfileId,
+        searchForMovie: collection.searchOnAdd,
+        tags: collection.tags ?? [],
+      },
+      pendingChanges,
+      addMovie.error
+    );
+  }, [collection, pendingChanges, addMovie.error]);
 
-    return selectSettings(options, pendingChanges, addError);
-  }, [collection, pendingChanges, addError]);
-
-  const { monitored, qualityProfileId, rootFolderPath, searchForMovie, tags } =
-    settings;
-
-  const handleInputChange = useCallback(
-    ({ name, value }: InputChanged) => {
-      // @ts-expect-error actions aren't typed
-      dispatch(setMovieCollectionValue({ name, value }));
-    },
-    [dispatch]
-  );
+  const handleInputChange = useCallback(({ name, value }: InputChanged) => {
+    switch (name) {
+      case 'rootFolderPath':
+        setRootFolderPath(value as string);
+        break;
+      case 'monitored':
+        setMonitored(value as boolean);
+        break;
+      case 'qualityProfileId':
+        setQualityProfileId(value as number);
+        break;
+      case 'searchForMovie':
+        setSearchForMovie(value as boolean);
+        break;
+      case 'tags':
+        setTags(value as number[]);
+        break;
+      default:
+        break;
+    }
+  }, []);
 
   const handleAddMoviePress = useCallback(() => {
-    dispatch(
-      addMovie({
-        foreignId,
-        title,
-        rootFolderPath: rootFolderPath.value,
-        monitored: monitored.value,
-        qualityProfileId: qualityProfileId.value,
-        searchForMovie: searchForMovie.value,
-        tags: tags.value,
-      })
-    );
+    addMovie.mutate({
+      ...getNewMovie(
+        { foreignId, title },
+        {
+          rootFolderPath,
+          monitored,
+          qualityProfileId,
+          searchForMovie,
+          tags,
+        }
+      ),
+      id: 0,
+    });
   }, [
+    addMovie,
     foreignId,
     title,
     rootFolderPath,
@@ -104,14 +145,13 @@ function AddNewMovieCollectionMovieModalContent({
     qualityProfileId,
     searchForMovie,
     tags,
-    dispatch,
   ]);
 
   useEffect(() => {
-    if (!isAdding && wasAdding && !addError) {
+    if (addMovie.isSuccess) {
       onModalClose();
     }
-  }, [isAdding, wasAdding, addError, onModalClose]);
+  }, [addMovie.isSuccess, onModalClose]);
 
   return (
     <ModalContent onModalClose={onModalClose}>
@@ -161,7 +201,7 @@ function AddNewMovieCollectionMovieModalContent({
                   helpText={translate('AddNewMovieRootFolderHelpText', {
                     folder,
                   })}
-                  {...rootFolderPath}
+                  {...settings.rootFolderPath}
                   onChange={handleInputChange}
                 />
               </FormGroup>
@@ -173,7 +213,7 @@ function AddNewMovieCollectionMovieModalContent({
                   type={inputTypes.CHECK}
                   name="monitored"
                   helpText={translate('MonitoredMovieHelpText')}
-                  {...monitored}
+                  {...settings.monitored}
                   onChange={handleInputChange}
                 />
               </FormGroup>
@@ -184,7 +224,7 @@ function AddNewMovieCollectionMovieModalContent({
                 <FormInputGroup
                   type={inputTypes.QUALITY_PROFILE_SELECT}
                   name="qualityProfileId"
-                  {...qualityProfileId}
+                  {...settings.qualityProfileId}
                   onChange={handleInputChange}
                 />
               </FormGroup>
@@ -195,7 +235,7 @@ function AddNewMovieCollectionMovieModalContent({
                 <FormInputGroup
                   type={inputTypes.TAG}
                   name="tags"
-                  {...tags}
+                  {...settings.tags}
                   onChange={handleInputChange}
                 />
               </FormGroup>
@@ -214,7 +254,7 @@ function AddNewMovieCollectionMovieModalContent({
             containerClassName={styles.searchForMissingMovieContainer}
             className={styles.searchForMissingMovieInput}
             name="searchForMovie"
-            {...searchForMovie}
+            {...settings.searchForMovie}
             onChange={handleInputChange}
           />
         </label>
@@ -222,7 +262,7 @@ function AddNewMovieCollectionMovieModalContent({
         <SpinnerButton
           className={styles.addButton}
           kind={kinds.SUCCESS}
-          isSpinning={isAdding}
+          isSpinning={addMovie.isPending}
           onPress={handleAddMoviePress}
         >
           {translate('AddMovie')}
