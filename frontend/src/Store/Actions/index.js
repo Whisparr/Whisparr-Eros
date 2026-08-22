@@ -1,5 +1,4 @@
 import * as addMovie from './addMovieActions';
-import * as interactiveImportActions from './interactiveImportActions';
 import * as movies from './movieActions';
 import * as movieCredits from './movieCreditsActions';
 import * as movieFiles from './movieFileActions';
@@ -10,7 +9,6 @@ import * as system from './systemActions';
 export default [
   addMovie,
   movieFiles,
-  interactiveImportActions,
   releases,
   movies,
   movieCredits,

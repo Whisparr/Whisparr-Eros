@@ -29,9 +29,11 @@ interface InteractiveImport extends ModelBase {
   movie?: Movie;
   qualityWeight: number;
   customFormats: CustomFormat[];
+  customFormatScore: number;
   indexerFlags: number;
   rejections: Rejection[];
   movieFileId?: number;
+  downloadId?: string;
 }
 
 export default InteractiveImport;

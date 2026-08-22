@@ -1,7 +1,4 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { createSelector } from 'reselect';
-import AppState from 'App/State/AppState';
 import * as commandNames from 'Commands/commandNames';
 import { useExecuteCommand } from 'Commands/useCommands';
 import PathInput from 'Components/Form/PathInput';
@@ -15,7 +12,11 @@ import Column from 'Components/Table/Column';
 import Table from 'Components/Table/Table';
 import TableBody from 'Components/Table/TableBody';
 import { icons, kinds, sizes } from 'Helpers/Props';
-import { addRecentFolder } from 'Store/Actions/interactiveImportActions';
+import {
+  addRecentFolder,
+  useFavoriteFolders,
+  useRecentFolders,
+} from 'InteractiveImport/interactiveImportFoldersStore';
 import translate from 'Utilities/String/translate';
 import FavoriteFolderRow from './FavoriteFolderRow';
 import RecentFolderRow from './RecentFolderRow';
@@ -63,19 +64,9 @@ function InteractiveImportSelectFolderModalContent(
 ) {
   const { modalTitle, onFolderSelect, onModalClose } = props;
   const [folder, setFolder] = useState('');
-  const dispatch = useDispatch();
   const executeCommand = useExecuteCommand();
-  const { favoriteFolders, recentFolders } = useSelector(
-    createSelector(
-      (state: AppState) => state.interactiveImport,
-      (interactiveImport) => {
-        return {
-          favoriteFolders: interactiveImport.favoriteFolders,
-          recentFolders: interactiveImport.recentFolders,
-        };
-      }
-    )
-  );
+  const favoriteFolders = useFavoriteFolders();
+  const recentFolders = useRecentFolders();
 
   const favoriteFolderMap = useMemo(() => {
     return new Map(favoriteFolders.map((f) => [f.folder, f]));
@@ -96,7 +87,7 @@ function InteractiveImportSelectFolderModalContent(
   );
 
   const onQuickImportPress = useCallback(() => {
-    dispatch(addRecentFolder({ folder }));
+    addRecentFolder(folder);
 
     executeCommand({
       name: commandNames.DOWNLOADED_MOVIES_SCAN,
@@ -104,12 +95,12 @@ function InteractiveImportSelectFolderModalContent(
     });
 
     onModalClose();
-  }, [folder, onModalClose, dispatch, executeCommand]);
+  }, [folder, onModalClose, executeCommand]);
 
   const onInteractiveImportPress = useCallback(() => {
-    dispatch(addRecentFolder({ folder }));
+    addRecentFolder(folder);
     onFolderSelect(folder);
-  }, [folder, onFolderSelect, dispatch]);
+  }, [folder, onFolderSelect]);
 
   return (
     <ModalContent onModalClose={onModalClose}>
