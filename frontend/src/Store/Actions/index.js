@@ -1,5 +1,4 @@
 import * as addMovie from './addMovieActions';
-import * as addPerformer from './addPerformerActions';
 import * as interactiveImportActions from './interactiveImportActions';
 import * as movies from './movieActions';
 import * as movieCollections from './movieCollectionActions';
@@ -11,7 +10,6 @@ import * as system from './systemActions';
 
 export default [
   addMovie,
-  addPerformer,
   movieFiles,
   interactiveImportActions,
   releases,

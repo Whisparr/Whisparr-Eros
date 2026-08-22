@@ -1,22 +1,22 @@
-import React, { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useAppDimension, useAppDimensions } from 'App/appStore';
-import { Error as AppError } from 'App/State/AppSectionState';
-import AppState from 'App/State/AppState';
-import { ValidationMessage } from 'Components/Form/FormInputGroup';
+import { queryClient } from 'App/queryClient';
+import { SafeForWorkModeContext } from 'App/State/SafeForWorkContext';
+import useApiMutation from 'Helpers/Hooks/useApiMutation';
+import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import Performer from 'Performer/Performer';
-import {
-  addPerformer,
-  clearAddPerformer,
-  lookupPerformer,
-  setAddPerformerDefault,
-  setPerformersWithStatus,
-} from 'Store/Actions/addPerformerActions';
-import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
 import selectSettings from 'Store/Selectors/selectSettings';
 import { useSystemStatusData } from 'System/Status/useSystemStatus';
 import { InputChanged } from 'typings/inputs';
-import createAjaxRequest from 'Utilities/createAjaxRequest';
+import getNewPerformer from 'Utilities/Performer/getNewPerformer';
+import {
+  AddPerformerDefaults,
+  setAddPerformerDefault,
+  useAddPerformerDefaults,
+} from './addPerformerDefaultsStore';
+
+const LOOKUP_DEBOUNCE_MS = 300;
+const EXISTING_PATH = '/performer/list';
 
 export interface PerformerWithExistingStatus {
   performer: Performer;
@@ -26,234 +26,157 @@ export interface PerformerWithExistingStatus {
 interface LookupPerformerItem {
   foreignId: string;
   performer: Performer;
-  id: string;
-  internalId: number;
 }
 
-interface PerformerDefaults {
-  rootFolderPath: string;
-  monitored: boolean;
-  moviesMonitored: boolean;
-  qualityProfileId: number;
-  searchForMovie: boolean;
-  tags: number[];
+function useDebouncedTerm(term: string) {
+  const [debounced, setDebounced] = useState(term);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => setDebounced(term), LOOKUP_DEBOUNCE_MS);
+
+    return () => clearTimeout(timeout);
+  }, [term]);
+
+  // Clearing the box empties the results immediately rather than after the
+  // debounce, as dispatching `clearAddPerformer` did.
+  return term.trim() === '' ? '' : debounced;
 }
-
-interface SettingValue<T> {
-  value: T;
-  errors?: ValidationMessage[];
-  warnings?: ValidationMessage[];
-  pending?: boolean;
-  previousValue?: T;
-}
-
-interface AddPerformerSettings {
-  rootFolderPath: SettingValue<string>;
-  monitored: SettingValue<boolean>;
-  moviesMonitored: SettingValue<boolean>;
-  qualityProfileId: SettingValue<number>;
-  searchForMovie: SettingValue<boolean>;
-  tags: SettingValue<number[]>;
-}
-
-interface AddPerformerState {
-  isPopulated: boolean;
-  error: AppError | null;
-  isAdding: boolean;
-  isFetching: boolean;
-  isAdded: boolean;
-  addError: AppError | null;
-  items: LookupPerformerItem[];
-  performersWithStatus: PerformerWithExistingStatus[];
-  performerDefaults: PerformerDefaults;
-}
-
-type RootState = AppState & {
-  addPerformer: AddPerformerState;
-};
-
-const defaultPerformerDefaults: PerformerDefaults = {
-  rootFolderPath: '',
-  monitored: true,
-  moviesMonitored: false,
-  qualityProfileId: 0,
-  searchForMovie: false,
-  tags: [],
-};
 
 function useAddNewPerformer() {
-  const dispatch = useDispatch();
-  const addPerformer = useSelector((state: RootState) => state.addPerformer);
-  const uiSettings = useSelector(createUISettingsSelector());
   const [term, setTerm] = useState('');
+  const lookupTerm = useDebouncedTerm(term);
 
-  const performerLookupTimeout = React.useRef<ReturnType<
-    typeof setTimeout
-  > | null>(null);
+  // React Query passes an abort signal, so an in-flight lookup is cancelled
+  // when the term moves on. That replaces the module-level `abortCurrentRequest`
+  // the thunk kept.
+  const {
+    data: items,
+    error,
+    isFetching,
+    isSuccess,
+  } = useApiQuery<LookupPerformerItem[]>({
+    path: '/lookup/performer',
+    queryParams: { term: lookupTerm },
+    queryOptions: { enabled: lookupTerm !== '' },
+  });
 
-  React.useEffect(() => {
-    return () => {
-      if (performerLookupTimeout.current) {
-        clearTimeout(performerLookupTimeout.current);
-      }
-      dispatch(clearAddPerformer());
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // When lookup results change, check which performers already exist
-  React.useEffect(() => {
-    if (addPerformer?.items && addPerformer.items.length > 0) {
-      const foreignIds = addPerformer.items
-        .map((item: LookupPerformerItem) => item.performer.foreignId)
-        .filter((id: string | undefined) => id);
-
-      if (foreignIds.length > 0) {
-        const { request } = createAjaxRequest({
-          url: '/performer/list',
-          method: 'POST',
-          contentType: 'application/json',
-          data: JSON.stringify(foreignIds),
-        });
-
-        request.done((existingPerformers: Performer[]) => {
-          // Create a map of foreignId to full performer object
-          const existingPerformerMap = new Map(
-            existingPerformers.map((p) => [p.foreignId, p])
-          );
-
-          // Map over lookup items, using full performer data if available
-          const mapped = addPerformer.items.map((item: LookupPerformerItem) => {
-            const fullPerformer = existingPerformerMap.get(
-              item.performer.foreignId
-            );
-            return {
-              performer: fullPerformer || item.performer,
-              isExistingPerformer: !!fullPerformer,
-            };
-          });
-
-          dispatch(setPerformersWithStatus(mapped));
-        });
-
-        request.fail(() => {
-          // If the request fails, assume none exist
-          const mapped = addPerformer.items.map(
-            (item: LookupPerformerItem) => ({
-              performer: item.performer,
-              isExistingPerformer: false,
-            })
-          );
-
-          dispatch(setPerformersWithStatus(mapped));
-        });
-      }
-    } else {
-      dispatch(setPerformersWithStatus([]));
-    }
-  }, [addPerformer?.items, addPerformer?.isAdding, dispatch]);
-
-  const onPerformerLookupChange = React.useCallback(
-    (value: string) => {
-      setTerm(value);
-      if (performerLookupTimeout.current) {
-        clearTimeout(performerLookupTimeout.current);
-      }
-      if (value.trim() === '') {
-        dispatch(clearAddPerformer());
-      } else {
-        performerLookupTimeout.current = setTimeout(() => {
-          dispatch(lookupPerformer({ term: value }));
-        }, 300);
-      }
-    },
-    [dispatch]
+  const lookupItems = useMemo(
+    () => (lookupTerm === '' ? [] : (items ?? [])),
+    [items, lookupTerm]
   );
 
-  const onClearPerformerLookupPress = React.useCallback(() => {
+  const foreignIds = useMemo(
+    () => lookupItems.map((item) => item.performer.foreignId).filter(Boolean),
+    [lookupItems]
+  );
+
+  // `/lookup/performer` answers `isExisting: false` for every result -- unlike
+  // the movie and studio lookups, `SearchController` never maps performers
+  // against the library -- so existence is asked for separately, as the effect
+  // this replaces did.
+  const { data: existingPerformers } = useApiQuery<Performer[]>({
+    path: EXISTING_PATH,
+    method: 'POST',
+    body: foreignIds,
+    queryOptions: { enabled: foreignIds.length > 0 },
+  });
+
+  const performersWithStatus = useMemo((): PerformerWithExistingStatus[] => {
+    const existing = new Map(
+      (existingPerformers ?? []).map((performer) => [
+        performer.foreignId,
+        performer,
+      ])
+    );
+
+    return lookupItems.map((item) => {
+      const found = existing.get(item.performer.foreignId);
+
+      return {
+        performer: found ?? item.performer,
+        isExistingPerformer: !!found,
+      };
+    });
+  }, [lookupItems, existingPerformers]);
+
+  const onPerformerLookupChange = useCallback((value: string) => {
+    setTerm(value);
+  }, []);
+
+  const onClearPerformerLookupPress = useCallback(() => {
     setTerm('');
-    dispatch(clearAddPerformer());
-  }, [dispatch]);
+  }, []);
 
   return {
-    isPopulated: addPerformer?.isPopulated || false,
-    error: addPerformer?.error,
-    isAdding: addPerformer?.isAdding || false,
-    isFetching: addPerformer?.isFetching || false,
-    isAdded: addPerformer?.isAdded || false,
-    addError: addPerformer?.addError,
-    items: addPerformer?.items || [],
-    performersWithStatus: addPerformer?.performersWithStatus || [],
+    isPopulated: isSuccess,
+    error,
+    isFetching,
+    items: lookupItems,
+    performersWithStatus,
     term,
-    colorImpairedMode: uiSettings.enableColorImpairedMode,
     onPerformerLookupChange,
     onClearPerformerLookupPress,
   };
 }
 
 export function useAddNewPerformerSearchResult() {
-  const dimensions = useAppDimensions();
-  const safeForWorkMode = useSelector(
-    (state: AppState) => state.settings.safeForWorkMode
-  );
+  const { isSmallScreen } = useAppDimensions();
+  const safeForWorkMode = useContext(SafeForWorkModeContext);
 
-  return {
-    isSmallScreen: dimensions.isSmallScreen,
-    safeForWorkMode,
-  };
+  return { isSmallScreen, safeForWorkMode };
 }
 
-export function useAddNewPerformerModalContent(foreignId: string) {
-  const dispatch = useDispatch();
+export function useAddNewPerformerModalContent(
+  performer: Performer,
+  onModalClose: () => void
+) {
   const isSmallScreen = useAppDimension('isSmallScreen');
   const systemStatus = useSystemStatusData();
-  const safeForWorkMode = useSelector(
-    (state: AppState) => state.settings.safeForWorkMode
-  );
-  const addPerformerState = useSelector(
-    (state: RootState) => state.addPerformer
-  );
+  const safeForWorkMode = useContext(SafeForWorkModeContext);
+  const defaults = useAddPerformerDefaults();
 
-  const {
-    isAdding = false,
-    addError,
-    performerDefaults = defaultPerformerDefaults,
-  } = addPerformerState || {};
-
-  const { settings, validationErrors, validationWarnings } = selectSettings(
-    performerDefaults,
-    {},
-    addError
-  ) as {
-    settings: AddPerformerSettings;
-    validationErrors: unknown[];
-    validationWarnings: unknown[];
-  };
-
-  const onInputChange = React.useCallback(
-    (change: InputChanged) => {
-      dispatch(setAddPerformerDefault({ [change.name]: change.value }));
+  const addPerformer = useApiMutation<Performer, Performer>({
+    method: 'POST',
+    path: '/performer',
+    mutationOptions: {
+      onSuccess: () => {
+        // Re-asks which of the results are in the library. The search result
+        // this was opened from switches to its "already in your library" state
+        // off the answer, which is also what closed the modal before.
+        queryClient.invalidateQueries({ queryKey: [EXISTING_PATH] });
+        queryClient.invalidateQueries({ queryKey: ['/performer/paged'] });
+      },
     },
-    [dispatch]
+  });
+
+  const { settings, validationErrors, validationWarnings } = useMemo(
+    () => selectSettings(defaults, {}, addPerformer.error),
+    [defaults, addPerformer.error]
   );
 
-  const onAddPerformerPress = React.useCallback(() => {
-    dispatch(
-      addPerformer({
-        foreignId,
-        rootFolderPath: settings.rootFolderPath.value,
-        monitored: settings.monitored.value === true,
-        moviesMonitored: settings.moviesMonitored.value === true,
-        qualityProfileId: settings.qualityProfileId.value,
-        searchForMovie: settings.searchForMovie.value,
-        tags: settings.tags.value,
-      })
+  const onInputChange = useCallback(({ name, value }: InputChanged) => {
+    setAddPerformerDefault(
+      name as keyof AddPerformerDefaults,
+      value as AddPerformerDefaults[keyof AddPerformerDefaults]
     );
-  }, [dispatch, foreignId, settings]);
+  }, []);
+
+  const onAddPerformerPress = useCallback(() => {
+    addPerformer.mutate({
+      ...getNewPerformer(structuredClone(performer), defaults),
+      id: 0,
+    });
+  }, [addPerformer, performer, defaults]);
+
+  useEffect(() => {
+    if (addPerformer.isSuccess) {
+      onModalClose();
+    }
+  }, [addPerformer.isSuccess, onModalClose]);
 
   return {
-    addError,
-    isAdding,
+    addError: addPerformer.error,
+    isAdding: addPerformer.isPending,
     isSmallScreen,
     isWindows: systemStatus.isWindows,
     safeForWorkMode,

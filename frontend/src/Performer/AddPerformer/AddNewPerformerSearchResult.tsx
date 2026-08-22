@@ -138,9 +138,7 @@ function AddNewPerformerSearchResult({
       </div>
       <AddNewPerformerModal
         isOpen={isNewAddPerformerModalOpen && !isExistingPerformer}
-        foreignId={foreignId}
-        fullName={fullName}
-        images={images || []}
+        performer={performer}
         onModalClose={onAddPerformerModalClose}
       />
     </div>
