@@ -1,5 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { queryClient } from 'App/queryClient';
+import useApiMutation from 'Helpers/Hooks/useApiMutation';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import fetchJson from 'Utilities/Fetch/fetchJson';
 import getQueryPath from 'Utilities/Fetch/getQueryPath';
@@ -14,6 +15,16 @@ export function usePerformer(foreignId: string | undefined) {
   return useApiQuery<Performer>({
     path: `/performer/${foreignId}`,
     queryOptions: { enabled: !!foreignId },
+  });
+}
+
+// Deliberately invalidates nothing. `SignalRListener` already patches
+// `/performer/{foreignId}` and invalidates the paged lists when the server
+// broadcasts the update, so a second refetch here would be redundant.
+export function useSavePerformer() {
+  return useApiMutation<Performer, Performer>({
+    method: 'PUT',
+    path: ({ id }) => `/performer/${id}`,
   });
 }
 
