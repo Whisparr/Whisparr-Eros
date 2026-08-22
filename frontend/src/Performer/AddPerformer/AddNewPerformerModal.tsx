@@ -1,29 +1,23 @@
 import React from 'react';
 import Modal from 'Components/Modal/Modal';
-import { Image } from 'Movie/Movie';
+import Performer from 'Performer/Performer';
 import AddNewPerformerModalContent from './AddNewPerformerModalContent';
 
 interface AddNewPerformerModalProps {
   isOpen: boolean;
+  performer: Performer;
   onModalClose: () => void;
-  foreignId: string;
-  fullName: string;
-  images: Image[];
 }
 
 function AddNewPerformerModal({
   isOpen,
+  performer,
   onModalClose,
-  foreignId,
-  fullName,
-  images,
-}: AddNewPerformerModalProps) {
+}: Readonly<AddNewPerformerModalProps>) {
   return (
     <Modal isOpen={isOpen} onModalClose={onModalClose}>
       <AddNewPerformerModalContent
-        foreignId={foreignId}
-        fullName={fullName}
-        images={images}
+        performer={performer}
         onModalClose={onModalClose}
       />
     </Modal>
