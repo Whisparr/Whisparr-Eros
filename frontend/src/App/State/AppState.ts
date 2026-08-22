@@ -6,7 +6,6 @@ import MovieCollectionAppState from './MovieCollectionAppState';
 import MovieCreditAppState from './MovieCreditAppState';
 import MovieFilesAppState from './MovieFilesAppState';
 import MoviesAppState from './MoviesAppState';
-import PerformersAppState from './PerformersAppState';
 import ReleasesAppState from './ReleasesAppState';
 import SettingsAppState from './SettingsAppState';
 
@@ -77,7 +76,6 @@ interface AppState {
   movieCollections: MovieCollectionAppState;
   movieCredits: MovieCreditAppState;
   movieFiles: MovieFilesAppState;
-  performers: PerformersAppState;
   movies: MoviesAppState;
   releases: ReleasesAppState;
   settings: SettingsAppState;

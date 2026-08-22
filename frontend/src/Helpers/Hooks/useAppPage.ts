@@ -17,14 +17,12 @@ import useTags from 'Tags/useTags';
 
 const createErrorsSelector = () =>
   createSelector(
-    (state: AppState) => state.performers.error,
     (state: AppState) => state.settings.ui.error,
     (state: AppState) => state.settings.qualityProfiles.error,
     (state: AppState) => state.settings.languages.error,
     (state: AppState) => state.settings.importLists.error,
     (state: AppState) => state.settings.indexerFlags.error,
     (
-      performersError,
       uiSettingsError,
       qualityProfilesError,
       languagesError,
@@ -32,7 +30,6 @@ const createErrorsSelector = () =>
       indexerFlagsError
     ) => {
       const hasError = !!(
-        performersError ||
         uiSettingsError ||
         qualityProfilesError ||
         languagesError ||
@@ -43,7 +40,6 @@ const createErrorsSelector = () =>
       return {
         hasError,
         errors: {
-          performersError,
           uiSettingsError,
           qualityProfilesError,
           languagesError,

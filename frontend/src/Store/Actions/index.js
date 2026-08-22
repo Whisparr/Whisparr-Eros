@@ -5,7 +5,6 @@ import * as movies from './movieActions';
 import * as movieCollections from './movieCollectionActions';
 import * as movieCredits from './movieCreditsActions';
 import * as movieFiles from './movieFileActions';
-import * as performers from './performerActions';
 import * as performerScenes from './performerScenesActions';
 import * as releases from './releaseActions';
 import * as settings from './settingsActions';
@@ -20,7 +19,6 @@ export default [
   movies,
   movieCollections,
   movieCredits,
-  performers,
   performerScenes,
   settings,
   system,

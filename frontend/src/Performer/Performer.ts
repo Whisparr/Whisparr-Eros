@@ -25,6 +25,7 @@ interface Performer extends ModelBase {
   qualityProfileId: number;
   rootFolderPath: string;
   sceneCount: number;
+  searchOnAdd: boolean;
   sizeOnDisk: number;
   sortTitle: string;
   status: string;
