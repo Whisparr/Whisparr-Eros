@@ -1,11 +1,10 @@
 import React, { useCallback } from 'react';
-import { useSelector } from 'react-redux';
 import FormGroup from 'Components/Form/FormGroup';
 import FormInputGroup from 'Components/Form/FormInputGroup';
 import FormLabel from 'Components/Form/FormLabel';
 import { inputTypes } from 'Helpers/Props';
+import { usePerformerIndexOption } from 'Performer/Index/performerIndexOptionsStore';
 import translate from 'Utilities/String/translate';
-import selectTableOptions from './selectTableOptions';
 
 interface PerformerIndexTableOptionsProps {
   onTableOptionChange(...args: unknown[]): unknown;
@@ -19,7 +18,7 @@ interface TableOptionInput {
 function PerformerIndexTableOptions(props: PerformerIndexTableOptionsProps) {
   const { onTableOptionChange } = props;
 
-  const tableOptions = useSelector(selectTableOptions);
+  const tableOptions = usePerformerIndexOption('tableOptions');
   const { showSearchAction } = tableOptions;
 
   const onTableOptionChangeWrapper = useCallback(

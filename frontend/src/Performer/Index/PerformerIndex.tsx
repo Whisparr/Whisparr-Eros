@@ -16,7 +16,6 @@ import MovieIndexSelectAllMenuItem from 'Movie/Index/Select/MovieIndexSelectAllM
 import MovieIndexSelectModeButton from 'Movie/Index/Select/MovieIndexSelectModeButton';
 import MovieIndexSelectModeMenuItem from 'Movie/Index/Select/MovieIndexSelectModeMenuItem';
 import NoPerformer from 'Performer/NoPerformer';
-import { defaultState } from 'Store/Actions/performerActions';
 import translate from 'Utilities/String/translate';
 import PerformerIndexFilterMenu from './Menus/PerformerIndexFilterMenu';
 import PerformerIndexSortMenu from './Menus/PerformerIndexSortMenu';
@@ -60,6 +59,7 @@ function PerformerIndex(_: Readonly<PerformerIndexProps>): React.JSX.Element {
     totalPages,
     sortKey,
     columns,
+    filters,
     isLoading,
     isOptionsModalOpen,
     isSelectMode,
@@ -82,7 +82,6 @@ function PerformerIndex(_: Readonly<PerformerIndexProps>): React.JSX.Element {
     handleViewSelect,
   } = usePerformerIndex();
 
-  const filters = defaultState.filters || [];
   const customFilters = useCustomFiltersList('performers');
   const hasNoPerformer = items.length === 0;
   const isLoaded = !!items.length;
