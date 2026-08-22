@@ -1,8 +1,8 @@
 import React, { useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import AppState from 'App/State/AppState';
 import FilterModal from 'Components/Filter/FilterModal';
-import { setMovieCollectionsFilter } from 'Store/Actions/movieCollectionActions';
+import { COLLECTION_FILTER_BUILDER_PROPS } from './collectionFilters';
+import { setCollectionFilter } from './collectionOptionsStore';
+import { useMovieCollections } from './useMovieCollections';
 
 interface MovieCollectionFilterModalProps {
   isOpen: boolean;
@@ -11,27 +11,21 @@ interface MovieCollectionFilterModalProps {
 export default function MovieCollectionFilterModal(
   props: MovieCollectionFilterModalProps
 ) {
-  const sectionItems = useSelector(
-    (state: AppState) => state.movieCollections.items
-  );
-  const filterBuilderProps = useSelector(
-    (state: AppState) => state.movieCollections.filterBuilderProps
-  );
-
-  const dispatch = useDispatch();
+  const { collections } = useMovieCollections();
 
   const dispatchSetFilter = useCallback(
-    (payload: { selectedFilterKey: string | number }) => {
-      dispatch(setMovieCollectionsFilter(payload));
+    ({ selectedFilterKey }: { selectedFilterKey: string | number }) => {
+      setCollectionFilter(selectedFilterKey);
     },
-    [dispatch]
+    []
   );
 
   return (
     <FilterModal
+      // TODO: Don't spread all the props
       {...props}
-      sectionItems={sectionItems}
-      filterBuilderProps={filterBuilderProps}
+      sectionItems={collections}
+      filterBuilderProps={COLLECTION_FILTER_BUILDER_PROPS}
       customFilterType="movieCollections"
       dispatchSetFilter={dispatchSetFilter}
     />

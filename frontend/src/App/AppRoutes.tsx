@@ -7,7 +7,7 @@ import AddNewMovie from 'AddMovie/AddNewMovie/AddNewMovie';
 import AddNewScene from 'AddMovie/AddNewMovie/AddNewScene';
 import ImportMovies from 'AddMovie/ImportMovie/ImportMovies';
 import CalendarPage from 'Calendar/CalendarPage';
-import CollectionConnector from 'Collection/CollectionConnector';
+import Collection from 'Collection/Collection';
 import NotFound from 'Components/NotFound';
 import MovieDetails from 'Movie/Details/MovieDetails';
 import MovieIndex from 'Movie/Index/MovieIndex';
@@ -52,7 +52,7 @@ function AppRoutes() {
 
       <Route path="/movies" element={<MovieIndex />} />
 
-      <Route path="/collections" element={<CollectionConnector />} />
+      <Route path="/collections" element={<Collection />} />
 
       <Route path="/scenes" element={<SceneIndex />} />
 

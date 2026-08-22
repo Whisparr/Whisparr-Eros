@@ -1,8 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Error } from 'App/State/AppSectionState';
 import DeleteCollectionModal from 'Collection/Delete/DeleteCollectionModal';
+import {
+  MovieCollectionUpdatePayload,
+  useSaveMovieCollections,
+} from 'Collection/useMovieCollections';
 import FormInputGroup from 'Components/Form/FormInputGroup';
 import { EnhancedSelectInputValue } from 'Components/Form/Select/EnhancedSelectInput';
+import Button from 'Components/Link/Button';
 import SpinnerButton from 'Components/Link/SpinnerButton';
 import PageContentFooter from 'Components/Page/PageContentFooter';
 import usePrevious from 'Helpers/Hooks/usePrevious';
@@ -12,21 +16,8 @@ import translate from 'Utilities/String/translate';
 import CollectionFooterLabel from './CollectionFooterLabel';
 import styles from './CollectionFooter.css';
 
-interface SavePayload {
-  monitored?: boolean;
-  monitor?: string;
-  qualityProfileId?: number;
-  rootFolderPath?: string;
-  searchOnAdd?: boolean;
-}
-
 interface CollectionFooterProps {
   selectedIds: number[];
-  isAdding: boolean;
-  isSaving: boolean;
-  isDeleteCollectionModalOpen: boolean;
-  saveError: Error;
-  onUpdateSelectedPress(payload: object): void;
 }
 
 const NO_CHANGE = 'noChange';
@@ -73,12 +64,10 @@ const searchOnAddOptions: EnhancedSelectInputValue<string>[] = [
   },
 ];
 
-function CollectionFooter({
-  selectedIds,
-  isSaving,
-  saveError,
-  onUpdateSelectedPress,
-}: CollectionFooterProps) {
+function CollectionFooter({ selectedIds }: CollectionFooterProps) {
+  const saveCollections = useSaveMovieCollections();
+  const { isPending: isSaving, error: saveError } = saveCollections;
+
   const [monitored, setMonitored] = useState(NO_CHANGE);
   const [monitor, setMonitor] = useState(NO_CHANGE);
   const [qualityProfileId, setQualityProfileId] = useState<string | number>(
@@ -87,14 +76,15 @@ function CollectionFooter({
   const [rootFolderPath, setRootFolderPath] = useState(NO_CHANGE);
   const [searchOnAdd, setSearchOnAdd] = useState(NO_CHANGE);
 
-  const [isDeleting, setIsDeleting] = useState(false);
   const [isCollectionModalOpen, setIsCollectionModalOpen] = useState(false);
 
   const wasSaving = usePrevious(isSaving);
 
   const handleSavePress = useCallback(() => {
     let hasChanges = false;
-    const payload: SavePayload = {};
+    const payload: MovieCollectionUpdatePayload = {
+      collectionIds: selectedIds,
+    };
 
     if (monitored !== NO_CHANGE) {
       hasChanges = true;
@@ -103,7 +93,7 @@ function CollectionFooter({
 
     if (monitor !== NO_CHANGE) {
       hasChanges = true;
-      payload.monitor = monitor;
+      payload.monitorMovies = monitor === 'monitored';
     }
 
     if (qualityProfileId !== NO_CHANGE) {
@@ -122,7 +112,7 @@ function CollectionFooter({
     }
 
     if (hasChanges) {
-      onUpdateSelectedPress(payload);
+      saveCollections.mutate(payload);
     }
   }, [
     monitor,
@@ -130,7 +120,8 @@ function CollectionFooter({
     qualityProfileId,
     rootFolderPath,
     searchOnAdd,
-    onUpdateSelectedPress,
+    selectedIds,
+    saveCollections,
   ]);
 
   const handleInputChange = useCallback(({ name, value }: InputChanged) => {
@@ -170,7 +161,6 @@ function CollectionFooter({
       setQualityProfileId(NO_CHANGE);
       setRootFolderPath(NO_CHANGE);
       setSearchOnAdd(NO_CHANGE);
-      setIsDeleting(false);
     }
   }, [
     isSaving,
@@ -181,7 +171,6 @@ function CollectionFooter({
     setQualityProfileId,
     setRootFolderPath,
     setSearchOnAdd,
-    setIsDeleting,
   ]);
 
   const selectedCount = selectedIds.length;
@@ -288,20 +277,19 @@ function CollectionFooter({
 
           <div className={styles.buttons}>
             <div>
-              <SpinnerButton
+              <Button
                 className={styles.addSelectedButton}
                 kind={kinds.DANGER}
-                isSpinning={isSaving && isDeleting}
                 isDisabled={!selectedCount || isSaving}
                 onPress={onDeletePress}
               >
                 {translate('Delete')}
-              </SpinnerButton>
+              </Button>
 
               <SpinnerButton
                 className={styles.addSelectedButton}
                 kind={kinds.PRIMARY}
-                isSpinning={isSaving && !isDeleting}
+                isSpinning={isSaving}
                 isDisabled={!selectedCount || isSaving}
                 onPress={handleSavePress}
               >

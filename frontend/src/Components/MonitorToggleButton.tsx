@@ -15,9 +15,18 @@ interface MonitorToggleButtonProps {
   tooltip?: string;
   isSaving?: boolean;
   onPress: (
-    value: boolean | { monitored: boolean; moviesMonitored: boolean },
+    value: MonitorTogglePressValue,
     options: { shiftKey: boolean }
   ) => unknown;
+}
+
+// `onPress` is handed an object only when `type` selects one of the two-state
+// movie/scene toggles; every other caller gets a bare boolean.
+export type MonitorTogglePressValue =
+  boolean | { monitored: boolean; moviesMonitored: boolean };
+
+export function getToggledMonitored(value: MonitorTogglePressValue) {
+  return typeof value === 'boolean' ? value : value.monitored;
 }
 
 function getTooltip(

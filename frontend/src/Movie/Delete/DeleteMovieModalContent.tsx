@@ -33,9 +33,7 @@ function DeleteMovieModalContent({
 }: Readonly<DeleteMovieModalContentProps>) {
   const navigate = useNavigate();
   const { addImportExclusion } = useMovieDeleteOptions();
-  const { mutate: deleteMovie } = useDeleteMovieMutation(
-    movie.collection?.tmdbId
-  );
+  const { mutate: deleteMovie } = useDeleteMovieMutation();
 
   const { movieFileCount = 0, sizeOnDisk = 0 } = movie.statistics || {};
 

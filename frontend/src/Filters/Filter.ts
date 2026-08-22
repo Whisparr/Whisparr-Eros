@@ -17,7 +17,19 @@ export interface FilterBuilderProp<T> {
 
 export interface PropertyFilter {
   key: string;
-  value: string | string[] | number[] | boolean[] | DateFilterValue;
+  // Preset filters carry scalar numbers and booleans -- the collection page's
+  // `missingMovies` presets are `0`, the index's `monitored` presets are
+  // `true`/`false`. Custom filters from the API add the array and date forms.
+  // `App/State/AppState`'s copy of this type already allowed both; this one had
+  // drifted.
+  value:
+    | boolean
+    | string
+    | number
+    | string[]
+    | number[]
+    | boolean[]
+    | DateFilterValue;
   type: FilterType;
 }
 

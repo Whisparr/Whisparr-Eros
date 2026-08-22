@@ -1,9 +1,6 @@
-import { useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { queryClient } from 'App/queryClient';
-import AppState from 'App/State/AppState';
+import { COLLECTION_PATH } from 'Collection/useMovieCollections';
 import useApiMutation from 'Helpers/Hooks/useApiMutation';
-import { updateItem } from 'Store/Actions/baseActions';
 
 interface DeleteMoviePayload {
   id: number;
@@ -11,37 +8,7 @@ interface DeleteMoviePayload {
   addImportExclusion: boolean;
 }
 
-export function useDeleteMovieMutation(collectionTmdbId?: number) {
-  const dispatch = useDispatch();
-
-  // Collections are still Redux, so the missing-movie count they show has to be
-  // nudged by hand -- there is no query to invalidate. This goes away with the
-  // Collection conversion; it is the only reason this hook touches the store.
-  const collection = useSelector((state: AppState) =>
-    collectionTmdbId == null
-      ? undefined
-      : state.movieCollections.items.find((c) => c.tmdbId === collectionTmdbId)
-  );
-
-  const bumpCollectionMissingCount = useCallback(() => {
-    if (!collection) {
-      return;
-    }
-
-    // Skip updating if the last movie in the collection is being deleted
-    if (collection.movies.length - collection.missingMovies === 1) {
-      return;
-    }
-
-    dispatch(
-      updateItem({
-        section: 'movieCollections',
-        ...collection,
-        missingMovies: collection.missingMovies + 1,
-      })
-    );
-  }, [collection, dispatch]);
-
+export function useDeleteMovieMutation() {
   return useApiMutation<unknown, DeleteMoviePayload>({
     method: 'DELETE',
     path: ({ id, deleteFiles, addImportExclusion }) =>
@@ -50,7 +17,11 @@ export function useDeleteMovieMutation(collectionTmdbId?: number) {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['/movie/paged'] });
 
-        bumpCollectionMissingCount();
+        // The collections a deleted movie belonged to now show one more missing
+        // movie. This used to be patched into the store by hand, guessing the
+        // new count, and only worked at all once the collections page had been
+        // visited; the server recomputes it.
+        queryClient.invalidateQueries({ queryKey: [COLLECTION_PATH] });
       },
     },
   });
