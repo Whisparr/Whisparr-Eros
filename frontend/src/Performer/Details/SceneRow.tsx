@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
+import { SafeForWorkModeContext } from 'App/State/SafeForWorkContext';
 import Icon from 'Components/Icon';
 import MonitorToggleButton from 'Components/MonitorToggleButton';
 import RelativeDateCell from 'Components/Table/Cells/RelativeDateCell';
@@ -23,12 +24,12 @@ import styles from './SceneRow.css';
 interface SceneRowProps {
   movie: Movie;
   isSaving?: boolean;
-  safeForWorkMode?: boolean;
   columns: Column[];
 }
 
 export default function SceneRow(props: SceneRowProps) {
   const { movieRuntimeFormat } = useSelector(createUISettingsSelector());
+  const safeForWorkMode = useContext(SafeForWorkModeContext);
 
   const { isSaving, columns, movie } = props;
   const {
@@ -164,7 +165,7 @@ export default function SceneRow(props: SceneRowProps) {
           return path ? (
             <TableRowCell
               key={name}
-              className={props.safeForWorkMode ? styles.blurred : styles.path}
+              className={safeForWorkMode ? styles.blurred : styles.path}
             >
               {path}
             </TableRowCell>

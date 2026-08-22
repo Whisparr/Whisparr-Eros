@@ -4,53 +4,47 @@ import Label from 'Components/Label';
 import Link from 'Components/Link/Link';
 import SpinnerIconButton from 'Components/Link/SpinnerIconButton';
 import MonitorToggleButton from 'Components/MonitorToggleButton';
-import Column from 'Components/Table/Column';
 import Table from 'Components/Table/Table';
 import TableBody from 'Components/Table/TableBody';
 import Popover from 'Components/Tooltip/Popover';
 import { icons, kinds, sizes, tooltipPositions } from 'Helpers/Props';
-import { ASCENDING, SortDirection } from 'Helpers/Props/sortDirections';
+import { SortDirection } from 'Helpers/Props/sortDirections';
 import Movie from 'Movie/Movie';
 import YearInfo from 'Studio/Details/YearInfo';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
 import SceneRow from './SceneRow';
-import { usePerformerDetailsYearActions } from './usePerformerDetailsYear';
+import {
+  usePerformerDetailsYearActions,
+  usePerformerDetailsYearData,
+} from './usePerformerDetailsYear';
 import styles from './PerformerDetailsYear.css';
 
 interface PerformerDetailsYearProps {
-  performerId: number;
-  columns: Column[];
   year: number;
   movies: Movie[];
-  sortDirection: SortDirection;
-  sortKey: string;
-  isSmallScreen: boolean;
   isExpanded?: boolean;
-  safeForWorkMode?: boolean;
   onYearRefreshPress?: (ids: number[]) => void;
   onExpandPress: (year: number, expand: boolean) => void;
-  onSortPress?: (name: string, direction: SortDirection) => void;
-  bulkMonitorMovie?: (args: { ids: number[]; monitored: boolean }) => void;
 }
 
 function PerformerDetailsYear(props: PerformerDetailsYearProps) {
+  const { movies, year, isExpanded, onExpandPress, onYearRefreshPress } = props;
+
   const {
-    movies,
-    year,
+    items: sortedMovies,
+    isSmallScreen,
     columns,
     sortKey,
     sortDirection,
-    isSmallScreen,
-    isExpanded,
-    safeForWorkMode,
-    onExpandPress,
-    onYearRefreshPress,
-    onSortPress: propOnSortPress,
-  } = props;
+  } = usePerformerDetailsYearData(movies);
 
-  const { searchMonitoredMovies, bulkMonitor, tableOptionChange, sortPress } =
-    usePerformerDetailsYearActions();
+  const {
+    onMonitorYearPress,
+    onTableOptionChange,
+    onSortPress,
+    onSearchPress,
+  } = usePerformerDetailsYearActions(movies);
 
   function handleExpandPress() {
     onExpandPress(year, !isExpanded);
@@ -68,20 +62,6 @@ function PerformerDetailsYear(props: PerformerDetailsYearProps) {
     }
     return total;
   }, 0);
-
-  // Sort movies by sortKey and sortDirection
-  const moviesCopy = [...movies];
-  moviesCopy.sort((a, b) => {
-    const aValue = a[sortKey as keyof Movie] as string | number | undefined;
-    const bValue = b[sortKey as keyof Movie] as string | number | undefined;
-    if (aValue == null && bValue == null) return 0;
-    if (aValue == null) return 1;
-    if (bValue == null) return -1;
-    if (aValue < bValue) return sortDirection === ASCENDING ? -1 : 1;
-    if (aValue > bValue) return sortDirection === ASCENDING ? 1 : -1;
-    return 0;
-  });
-  const sortedMovies = moviesCopy;
 
   // Determine movie count background color
   function getMovieCountKind() {
@@ -104,14 +84,6 @@ function PerformerDetailsYear(props: PerformerDetailsYearProps) {
   }
   const yearKind = getMovieCountKind();
 
-  function handleBulkMonitorPress() {
-    bulkMonitor(movies);
-  }
-
-  function handleSearchPress() {
-    searchMonitoredMovies(movies);
-  }
-
   function handleRefreshClick() {
     if (onYearRefreshPress) {
       const ids = movies.map((m) => m.id);
@@ -120,13 +92,7 @@ function PerformerDetailsYear(props: PerformerDetailsYearProps) {
   }
 
   function handleSortPress(name: string, direction?: SortDirection) {
-    sortPress(
-      name,
-      direction ?? sortDirection,
-      sortKey,
-      sortDirection,
-      propOnSortPress
-    );
+    onSortPress(name, direction, sortKey, sortDirection);
   }
 
   return (
@@ -139,7 +105,7 @@ function PerformerDetailsYear(props: PerformerDetailsYearProps) {
             tooltip={translate('PerformerYearMonitorTooltip')}
             isSaving={false}
             size={24}
-            onPress={handleBulkMonitorPress}
+            onPress={onMonitorYearPress}
           />
           <span className={styles.yearNumber}>{year}</span>
           <Popover
@@ -202,7 +168,7 @@ function PerformerDetailsYear(props: PerformerDetailsYearProps) {
               size={24}
               isSpinning={false}
               isDisabled={false}
-              onPress={handleSearchPress}
+              onPress={onSearchPress}
             />
           </div>
         </div>
@@ -216,7 +182,7 @@ function PerformerDetailsYear(props: PerformerDetailsYearProps) {
                 sortKey={sortKey}
                 sortDirection={sortDirection}
                 onSortPress={handleSortPress}
-                onTableOptionChange={tableOptionChange}
+                onTableOptionChange={onTableOptionChange}
               >
                 <TableBody>
                   {sortedMovies.map((movie) => {
@@ -224,7 +190,6 @@ function PerformerDetailsYear(props: PerformerDetailsYearProps) {
                       <SceneRow
                         key={movie.id}
                         movie={movie}
-                        safeForWorkMode={safeForWorkMode}
                         columns={columns}
                       />
                     );

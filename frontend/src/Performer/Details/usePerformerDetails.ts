@@ -1,7 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useSelector } from 'react-redux';
 import { queryClient } from 'App/queryClient';
-import AppState from 'App/State/AppState';
 import * as commandNames from 'Commands/commandNames';
 import { useExecuteCommand } from 'Commands/useCommands';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
@@ -120,18 +118,5 @@ export const usePerformerDetails = (foreignId: string) => {
 export function usePerformerDetailsMovies(performerForeignId: string) {
   return useApiQuery<Movie[]>({
     path: `/${PATH}/${performerForeignId}/works`,
-  });
-}
-
-export function usePerformerScenesColumns() {
-  return useSelector((state: AppState) => {
-    // AppState isn't fully converted to TypeScript yet
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const performerScenes = (state as any).performerScenes;
-    return {
-      columns: performerScenes?.columns ?? [],
-      sortKey: performerScenes?.sortKey ?? 'releaseDate',
-      sortDirection: performerScenes?.sortDirection ?? 'DESC',
-    };
   });
 }
