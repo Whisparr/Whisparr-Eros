@@ -42,6 +42,22 @@ export function useMovieFilesByIds(movieFileIds: number[] | undefined) {
   });
 }
 
+// Used when an interactive import matches a file that is already in the library:
+// the file stays where it is and only its metadata is rewritten, so there is
+// nothing to import.
+export function useUpdateMovieFiles() {
+  const queryClient = useQueryClient();
+  return useApiMutation<MovieFile[], Partial<MovieFile>[]>({
+    path: `${PATH}/bulk`,
+    method: 'PUT',
+    mutationOptions: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: [PATH] });
+      },
+    },
+  });
+}
+
 export function useDeleteMovieFiles() {
   const queryClient = useQueryClient();
   return useApiMutation<void, { movieFileIds: number[] }>({

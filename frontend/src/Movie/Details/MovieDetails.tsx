@@ -521,7 +521,6 @@ function MovieDetails(props: Readonly<Partial<Props>>) {
         />
         <InteractiveImportModal
           isOpen={isInteractiveImportModalOpen}
-          movie={movie}
           movieId={movieId}
           title={title}
           folder={path}
