@@ -1,6 +1,5 @@
 import { uniq } from 'lodash';
 import React, { useCallback, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
 import Form from 'Components/Form/Form';
 import FormGroup from 'Components/Form/FormGroup';
 import FormInputGroup from 'Components/Form/FormInputGroup';
@@ -13,29 +12,28 @@ import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { inputTypes, kinds, sizes } from 'Helpers/Props';
 import Performer from 'Performer/Performer';
-import createAllPerformersSelector from 'Store/Selectors/createAllPerformersSelector';
 import { useTagList } from 'Tags/useTags';
 import translate from 'Utilities/String/translate';
 import styles from './TagsModalContent.css';
 
 interface TagsModalContentProps {
   performerIds: number[];
+  items: Performer[];
   onApplyTagsPress: (tags: number[], applyTags: string) => void;
   onModalClose: () => void;
 }
 
 function TagsModalContent(props: TagsModalContentProps) {
-  const { performerIds, onModalClose, onApplyTagsPress } = props;
+  const { performerIds, items, onModalClose, onApplyTagsPress } = props;
 
-  const allPerformers: Performer[] = useSelector(createAllPerformersSelector());
   const tagList = useTagList();
 
   const [tags, setTags] = useState<number[]>([]);
   const [applyTags, setApplyTags] = useState('add');
 
-  const sceneTags = useMemo(() => {
+  const performerTags = useMemo(() => {
     const tags = performerIds.reduce((acc: number[], id) => {
-      const s = allPerformers.find((s) => s.id === id);
+      const s = items.find((s) => s.id === id);
 
       if (s) {
         acc.push(...s.tags);
@@ -45,7 +43,7 @@ function TagsModalContent(props: TagsModalContentProps) {
     }, []);
 
     return uniq(tags);
-  }, [performerIds, allPerformers]);
+  }, [performerIds, items]);
 
   const onTagsChange = useCallback(
     ({ value }: { value: number[] }) => {
@@ -110,7 +108,7 @@ function TagsModalContent(props: TagsModalContentProps) {
             <FormLabel>{translate('Result')}</FormLabel>
 
             <div className={styles.result}>
-              {sceneTags.map((id) => {
+              {performerTags.map((id) => {
                 const tag = tagList.find((t) => t.id === id);
 
                 if (!tag) {
@@ -145,7 +143,7 @@ function TagsModalContent(props: TagsModalContentProps) {
                     return null;
                   }
 
-                  if (sceneTags.indexOf(id) > -1) {
+                  if (performerTags.indexOf(id) > -1) {
                     return null;
                   }
 

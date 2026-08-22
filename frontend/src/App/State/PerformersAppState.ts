@@ -3,10 +3,6 @@ import AppSectionState, { AppSectionSaveState } from './AppSectionState';
 
 interface PerformersAppState
   extends AppSectionSaveState, AppSectionState<Performer> {
-  deleteOptions: {
-    addImportExclusion: boolean;
-  };
-
   pendingChanges: Partial<Performer>;
 }
 

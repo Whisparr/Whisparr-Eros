@@ -2,7 +2,6 @@ import React from 'react';
 import Modal from 'Components/Modal/Modal';
 import { sizes } from 'Helpers/Props';
 import DeletePerformerModalContent from './DeletePerformerModalContent';
-import { useDeletePerformerModal } from './useDeletePerformerModal';
 
 export interface DeletePerformerModalProps {
   isOpen: boolean;
@@ -19,19 +18,13 @@ export function DeletePerformerModal({
   onDeletePress,
   ...otherProps
 }: DeletePerformerModalProps) {
-  const { onModalClose: enhancedOnModalClose } =
-    useDeletePerformerModal(onModalClose);
   return (
-    <Modal
-      isOpen={isOpen}
-      size={sizes.MEDIUM}
-      onModalClose={enhancedOnModalClose}
-    >
+    <Modal isOpen={isOpen} size={sizes.MEDIUM} onModalClose={onModalClose}>
       <DeletePerformerModalContent
         {...otherProps}
         performerIds={performerIds}
         onDeletePress={onDeletePress}
-        onModalClose={enhancedOnModalClose}
+        onModalClose={onModalClose}
       />
     </Modal>
   );

@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useCallback, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import FormGroup from 'Components/Form/FormGroup';
 import FormInputGroup from 'Components/Form/FormInputGroup';
 import FormLabel from 'Components/Form/FormLabel';
@@ -10,42 +11,63 @@ import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { inputTypes, kinds, sizes } from 'Helpers/Props';
 import Performer from 'Performer/Performer';
+import {
+  setPerformerDeleteOption,
+  usePerformerDeleteOptions,
+} from 'Performer/performerDeleteOptionsStore';
 import translate from 'Utilities/String/translate';
-import { useDeletePerformerModalContent } from './useDeletePerformerModalContent';
+import { useDeletePerformerMutation } from './useDeletePerformerMutation';
 import styles from './DeletePerformerModal.css';
 
 export interface DeletePerformerModalContentProps {
   performer: Performer;
-  onModalClose: (deleted: boolean) => void;
+  onModalClose: () => void;
 }
 
 function DeletePerformerModalContent({
   performer,
   onModalClose,
-}: DeletePerformerModalContentProps) {
-  const [deleteFiles, setDeleteFiles] = React.useState(false);
-  const { fullName, deleteOptions, onDeleteOptionChange, onDeletePress } =
-    useDeletePerformerModalContent({ performer, onModalClose });
+}: Readonly<DeletePerformerModalContentProps>) {
+  const { fullName } = performer;
 
-  const addImportExclusion = deleteOptions?.addImportExclusion ?? false;
+  const { addImportExclusion } = usePerformerDeleteOptions();
+  const { mutate: deletePerformer } = useDeletePerformerMutation();
+  const navigate = useNavigate();
 
-  function handleDeleteFilesChange({ value }: { value: boolean }) {
-    setDeleteFiles(value);
-  }
+  const [deleteFiles, setDeleteFiles] = useState(false);
 
-  // Ensure the handler matches the () => void signature expected by ModalContent
-  const handleModalClose = () => {
-    onModalClose(false);
-  };
+  const handleDeleteOptionChange = useCallback(
+    ({ value }: { value: boolean }) => {
+      setPerformerDeleteOption('addImportExclusion', value);
+    },
+    []
+  );
 
-  function handleDeletePerformerConfirmed() {
-    onDeletePress(deleteFiles, addImportExclusion);
+  const handleDeleteFilesChange = useCallback(
+    ({ value }: { value: boolean }) => {
+      setDeleteFiles(value);
+    },
+    []
+  );
+
+  // This modal is only opened from performer details, and that route is gone
+  // once the performer is, so it navigates away -- as the thunk it replaces did.
+  const handleDeletePerformerConfirmed = useCallback(() => {
+    deletePerformer({ id: performer.id, deleteFiles, addImportExclusion });
     setDeleteFiles(false);
-  }
+    onModalClose();
+    navigate('/performers');
+  }, [
+    performer.id,
+    deleteFiles,
+    addImportExclusion,
+    deletePerformer,
+    onModalClose,
+    navigate,
+  ]);
 
   return (
-    // eslint-disable-next-line react/jsx-no-bind
-    <ModalContent onModalClose={handleModalClose}>
+    <ModalContent onModalClose={onModalClose}>
       <ModalHeader>{translate('DeleteHeader', { name: fullName })}</ModalHeader>
 
       <ModalBody>
@@ -54,6 +76,7 @@ function DeletePerformerModalContent({
             {translate('DeletePerformerModalWarning', { name: fullName })}
           </InfoLabel>
         </FormGroup>
+
         <FormGroup>
           <FormLabel>{translate('AddListExclusion')}</FormLabel>
           <FormInputGroup
@@ -62,9 +85,10 @@ function DeletePerformerModalContent({
             value={addImportExclusion}
             helpText={translate('AddImportExclusionHelpText')}
             kind={kinds.DANGER}
-            onChange={onDeleteOptionChange}
+            onChange={handleDeleteOptionChange}
           />
         </FormGroup>
+
         <FormGroup>
           <FormLabel>
             {translate('DeleteFiles', { name: translate('All') })}
@@ -79,9 +103,10 @@ function DeletePerformerModalContent({
           />
         </FormGroup>
       </ModalBody>
+
       <ModalFooter>
-        {/* eslint-disable-next-line react/jsx-no-bind */}
-        <Button onPress={handleModalClose}>{translate('Close')}</Button>
+        <Button onPress={onModalClose}>{translate('Close')}</Button>
+
         <Button kind={kinds.DANGER} onPress={handleDeletePerformerConfirmed}>
           {translate('Delete')}
         </Button>
