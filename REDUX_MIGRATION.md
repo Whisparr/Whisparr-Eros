@@ -11,7 +11,7 @@ Counts are file-level `react-redux` imports across the frontend source tree.
 Every commit reference below links to the Sonarr commit it names; all were
 verified to resolve against the public repo.
 
-**Status: Phases A, B, C and D complete; Phase E is under way, two and a half of eleven sections done. Phase E is the whole of what is left, plus the teardown.** See §11 for the running log.
+**Status: Phases A, B, C and D complete; Phase E is under way, three of eleven sections done. Phase E is the whole of what is left, plus the teardown.** See §11 for the running log.
 
 ---
 
@@ -19,11 +19,11 @@ verified to resolve against the public repo.
 
 | Metric | At assessment | Now |
 | --- | --- | --- |
-| Files importing `react-redux` | 327 of 1,255 | **111** of 1,193 |
-| Lines under `frontend/src/Store/` | 15,374 across 138 files | **4,943** across 70 |
+| Files importing `react-redux` | 327 of 1,255 | **98** of 1,188 |
+| Lines under `frontend/src/Store/` | 15,374 across 138 files | **4,771** across 67 |
 | Redux slices registered in `Store/Actions/index.js` | 35 | **2** |
-| Remaining `*Connector` files | 66 | **35** |
-| Files touching React Query | 35 | **73** |
+| Remaining `*Connector` files | 66 | **31** |
+| Files touching React Query | 35 | **74** |
 | zustand stores | 0 (not installed) | **installed, 38 files** |
 
 > **Recomputed in #464.** Three rows previously carried figures that no command
@@ -263,7 +263,7 @@ is-it-a-change question* below.
 | --- | --- | --- | --- |
 | 1 | ~~**UI settings** — smallest, 32 files read it. Good pathfinder.~~ **Done, #517.** ~~Safe-for-work mode was split out and landed first in #514~~; the `/config/ui` half followed. It was the pathfinder in both senses — it took `useSettings` with it, and it moved `react-redux` further than any single PR of the migration so far. | ~~`Settings/ui.js`, `UISettingsConnector.js`, `createUISettingsSelector.ts`~~; ~~`settings.safeForWorkMode`, `TOGGLE_SFW_MODE`, `SafeForWorkButtonConnector.js`, `SafeForWorkContext.tsx`~~ | [Sonarr/Sonarr@74e6ce43](https://github.com/Sonarr/Sonarr/commit/74e6ce43) |
 | 2 | ~~**Remote path mappings · Release profiles** — two small CRUD lists, taken together because they are the same shape.~~ **Done, #518.** It took `Settings/useProviderSettings.ts` with it, and the three remote path mapping connectors: 42 to 39. | ~~`Settings/remotePathMappings.js`, `Settings/releaseProfiles.js`~~; ~~`ReleaseProfilesAppState`, `RemotePathMappings*Connector.js` ×3~~ | [Sonarr/Sonarr@8fcab2d3](https://github.com/Sonarr/Sonarr/commit/8fcab2d3), [Sonarr/Sonarr@4713615b](https://github.com/Sonarr/Sonarr/commit/4713615b) |
-| 3 | **Quality definitions** — ~~done, #519~~; the four connectors the row predicted were all on this half, 39 to 35. **Quality profiles** still to come: it is the bigger half, and it is where the `useAppPage` boot gate loses a term. | ~~`Settings/qualityDefinitions.js`, `Quality*Connector.js` ×4~~; `Settings/qualityProfiles.js` | [Sonarr/Sonarr@21ca65a0](https://github.com/Sonarr/Sonarr/commit/21ca65a0), [Sonarr/Sonarr@cf593b1f](https://github.com/Sonarr/Sonarr/commit/cf593b1f) |
+| 3 | ~~**Quality definitions · Quality profiles**~~ — **done, #519 (definitions) and #520 (profiles).** Split in two; between them they took eight connectors, 39 to 31, and the boot gate lost its quality-profile term as predicted. | ~~`Settings/qualityDefinitions.js`, `Quality*Connector.js` ×4~~; ~~`Settings/qualityProfiles.js`, `QualityProfile*Connector.js` ×3, `QualityFilterBuilderRowValueConnector.js`, `createQualityProfileSelector.ts`, `createProfileInUseSelector.ts`~~ | [Sonarr/Sonarr@21ca65a0](https://github.com/Sonarr/Sonarr/commit/21ca65a0), [Sonarr/Sonarr@cf593b1f](https://github.com/Sonarr/Sonarr/commit/cf593b1f) |
 | 4 | Connections (Notifications) | `Settings/notifications.js` (~~`DeviceInput.tsx`~~ — converted in #490) | [Sonarr/Sonarr@6d49b41d](https://github.com/Sonarr/Sonarr/commit/6d49b41d) |
 | 5 | Naming · Media Management · Metadata | `Settings/naming.js`, `Settings/namingExamples.js`, `Settings/mediaManagement.js`, `Settings/metadata.js` | [Sonarr/Sonarr@677c588a](https://github.com/Sonarr/Sonarr/commit/677c588a), [Sonarr/Sonarr@bbb4c671](https://github.com/Sonarr/Sonarr/commit/bbb4c671), [Sonarr/Sonarr@c0a56586](https://github.com/Sonarr/Sonarr/commit/c0a56586) |
 | 6 | Languages · General (partial `useGeneralSettings` exists) | `Settings/languages.js`, `Settings/general.js`, `GeneralSettingsConnector.js` | [Sonarr/Sonarr@5bac016f](https://github.com/Sonarr/Sonarr/commit/5bac016f), [Sonarr/Sonarr@6764cf1c](https://github.com/Sonarr/Sonarr/commit/6764cf1c) |
@@ -404,13 +404,18 @@ the two halves share a name and nothing else. ~~The definitions half~~ **done, #
 is the first real use of `usePendingItemsStore`, and it turned out to own all four of the
 connectors the section-3 row predicted, so the count moved 39 to 35 on the smaller half.
 
-**Next: section 3b** — quality profiles. The bigger half by some way: the edit modal is a
-544-line class component with drag-and-drop grouping, twelve files outside the settings
-page read `state.settings.qualityProfiles.items`, and quality profiles are one of the four boot
-fetches `useAppPage` still dispatches, so the `isReduxPopulated` gate has to lose a term.
-The stale *"Quality profile in use" only checks import lists* thread under §11 belongs
-with it — Sonarr answers it with a `useQualityProfileInUse` hook, which is the shape to
-copy.
+~~**Next: section 3b** — quality profiles.~~ **Done, #520**, and it was the bigger half as
+expected: the 544-line connector, its 373-line content component and both other connectors
+collapse into one `EditQualityProfileModalContent.tsx`, twelve consumers outside the page
+move to the list query, and the boot gate lost its quality-profile term. The
+*"Quality profile in use"* thread does **not** close with it — Sonarr's
+`useQualityProfileInUse` counts series client-side, which here means the whole-library
+fetch the thread above rejects, so the hook arrived with the import-list half only and the
+`GET /qualityprofile/{id}/inuse` endpoint is still the answer.
+
+**Next: section 4** — Connections (Notifications). A provider list section like section 2,
+so it calls `useProviderSettings`, but the first one whose rows edit `fields`, which is
+where `usePendingFieldsStore` finally gets a consumer.
 
 1. ~~**Queue**, in three PRs.~~ **Done.** Sonarr shipped it as one 58-file commit, but the slice already
    has three independent sub-sections and splitting along them gives three merge points
@@ -1051,6 +1056,7 @@ covers the reset, so the component has no reset-awareness at all and takes no
 
 | Date | PR | What |
 | --- | --- | --- |
+| 2026-08-23 | #520 | **Quality profiles.** Section 3b, and the end of section 3. `settings.qualityProfiles` is deleted, along with `QualityProfilesAppState`, `createQualityProfileSelector`, `createProfileInUseSelector` and `Utilities/Quality/getQualities`; `Settings/Profiles/Quality/useQualityProfiles.ts` replaces them on `useProviderSettings`. Four connectors go — 35 to **31** — and `react-redux` 111 to **98**, on twelve consumers outside the settings page plus the boot gate, which now waits on the list query rather than dispatching `fetchQualityProfiles`. The 544-line `EditQualityProfileModalContentConnector`, the 373-line content component and `EditQualityProfileModalConnector` collapse into one 760-line TSX file; the connector's `clearPendingChanges` on close goes with it, since the store is per-instance and `Modal` unmounts its children when closed. **Three things changed on purpose.** (1) *Cloning.* `CLONE_QUALITY_PROFILE` was a reducer that copied a profile into the section's `pendingChanges` and relied on the add modal reading the same bag; the source profile is the new profile's default now, passed down as `cloneId`, so a clone nobody edits still saves as a copy — the old shape saved an empty profile if the reducer's write lost a race with the modal opening. (2) *`ensureCutoff` is an effect.* It was called at the end of five handlers and forgotten by none of them only by inspection; as an effect on `items`/`cutoff` it cannot be forgotten. Where nothing at all is allowed it now leaves the stale cutoff instead of setting it to null — the server refuses the save either way (`ValidCutoffValidator`), and null does not survive the `int` binding. (3) *No `cloneDeep`.* The handlers rebuilt the profile by deep-cloning it and mutating; the copy came out of the redux slice then and would come out of the React Query cache now, which is the §8 F1 hazard, so each handler builds a new list instead. `getQualities` is retired rather than ported: all three callers read the schema out of the slice first, so the fetch and the flattening travel together in `useQualities`, and the schema is fetched only where it is used — the edit modal skips it entirely for an edit or a clone, where the connector fetched it on every mount that had no id. The connector's `createFormatsSelector` was dead — computed, destructured, never passed on — and is not carried over. `createProfileInUseSelector` becomes `useQualityProfileInUse`, still import-lists-only and still reading the Redux slice until section 9; see the open thread. Verified live against the running instance: the page listing 13 profiles off one `GET /qualityprofile`; editing VR (toggle a quality → one `PUT`, modal closes, card updates off the cache write, no refetch) and reverting it; cloning VR (`VR - Copy` prefilled, **no** schema fetch, `POST`, list updates); adding from scratch (the one place `GET /qualityprofile/schema` fires); deleting the clone through the confirm modal; creating and dissolving a group in *Edit Groups* mode; and the cutoff following the allowed set as *Upgrade Until* moved VR → SDTV when VR was unticked. Nine pages swept for console errors, all clean, each fetching `/qualityprofile` exactly once. Not exercised in the browser, for want of a route to them on this instance: the two filter-builder row values (the toolbar renders no buttons headlessly), `FileEditModal` and `SelectQualityModalContent` (no movie files), and `ManageImportListsModalRow` and the in-use delete guard (no import lists). Props of the components touched are marked `Readonly<T>` per SonarQube `typescript:S6759`. |
 | 2026-08-23 | #519 | **Quality definitions.** Section 3a. `qualityDefinitions` slice retired and the first use of `usePendingItemsStore`. Four connectors go — 39 to 35 — two of which had already lost their `react-redux` import and were connectors in name only. Seven files to TSX, and `react-slider` gets a hand-written declaration rather than a new dependency. |
 | 2026-08-16 | #452 | zustand, `createPersist`, `createOptionsStore`, `useSelectStore`. Foundation only, no consumers. |
 | 2026-08-16 | #453 | `sonar.coverage.exclusions=frontend/**`, plus linking the commit references in this file. |
@@ -1129,7 +1135,12 @@ covers the reset, so the component has no reset-awareness at all and takes no
   dropped the dead term rather than leave it reading a retired slice. Deleting a profile that
   movies use is still guarded server-side, so this only affects whether the modal warns
   first. Answering it client-side would mean the same whole-library fetch as the thread
-  above; a `GET /qualityprofile/{id}/inuse` is the better shape. Belongs with §7 section 3.
+  above; a `GET /qualityprofile/{id}/inuse` is the better shape. **Still open after #520**,
+  which was where §7 put it: the selector became `useQualityProfileInUse` and kept the
+  import-list half verbatim, because Sonarr's version of that hook answers the other half by
+  fetching every series. The server refuses the delete on movies, performers, studios,
+  import lists or the fallback flag, so the endpoint would want to return all five counts;
+  it is a backend PR, not a frontend one.
 
 - **Blocklist's two API filters 500** — `BlocklistController` builds
   `movieIds.Contains(b.MovieId)` and `protocols.Contains(b.Protocol)`, and
