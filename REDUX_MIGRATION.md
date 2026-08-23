@@ -1140,7 +1140,10 @@ covers the reset, so the component has no reset-awareness at all and takes no
   import-list half verbatim, because Sonarr's version of that hook answers the other half by
   fetching every series. The server refuses the delete on movies, performers, studios,
   import lists or the fallback flag, so the endpoint would want to return all five counts;
-  it is a backend PR, not a frontend one.
+  it is a backend PR, not a frontend one. **Filed as
+  [Whisparr/Whisparr#1138](https://github.com/Whisparr/Whisparr/issues/1138)** — deferred
+  rather than dropped, and the divergence from Sonarr is deliberate: their hook fetches
+  every series, which here is the 46MB library read.
 
 - **Blocklist's two API filters 500** — `BlocklistController` builds
   `movieIds.Contains(b.MovieId)` and `protocols.Contains(b.Protocol)`, and
