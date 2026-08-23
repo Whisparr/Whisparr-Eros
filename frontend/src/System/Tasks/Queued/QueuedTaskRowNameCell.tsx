@@ -1,8 +1,7 @@
-import React from 'react';
-import { useSelector } from 'react-redux';
+import React, { useMemo } from 'react';
 import { CommandBody } from 'Commands/Command';
 import TableRowCell from 'Components/Table/Cells/TableRowCell';
-import createMultiMoviesSelector from 'Store/Selectors/createMultiMoviesSelector';
+import { useMoviesByIds } from 'Movie/useMovie';
 import sortByProp from 'Utilities/Array/sortByProp';
 import translate from 'Utilities/String/translate';
 import styles from './QueuedTaskRowNameCell.css';
@@ -14,17 +13,28 @@ export interface QueuedTaskRowNameCellProps {
 }
 
 export default function QueuedTaskRowNameCell(
-  props: QueuedTaskRowNameCellProps
+  props: Readonly<QueuedTaskRowNameCellProps>
 ) {
   const { commandName, body, clientUserAgent } = props;
-  const movieIds = [...(body.movieIds ?? [])];
 
-  if (body.movieId) {
-    movieIds.push(body.movieId);
-  }
+  const movieIds = useMemo(() => {
+    const ids = [...(body.movieIds ?? [])];
 
-  const movies = useSelector(createMultiMoviesSelector(movieIds));
-  const sortedMovies = movies.sort(sortByProp('sortTitle'));
+    if (body.movieId) {
+      ids.push(body.movieId);
+    }
+
+    return ids;
+  }, [body.movieIds, body.movieId]);
+
+  const { movies } = useMoviesByIds(movieIds);
+
+  // `movies` is React Query's cached array; sorting in place would reorder it
+  // for every other reader of the same key.
+  const sortedMovies = useMemo(
+    () => [...movies].sort(sortByProp('sortTitle')),
+    [movies]
+  );
 
   return (
     <TableRowCell>
