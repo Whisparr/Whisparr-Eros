@@ -17,7 +17,7 @@ import IndexerFilterBuilderRowValueConnector from './IndexerFilterBuilderRowValu
 import LanguageFilterBuilderRowValue from './LanguageFilterBuilderRowValue';
 import MovieFilterBuilderRowValue from './MovieFilterBuilderRowValue';
 import ProtocolFilterBuilderRowValue from './ProtocolFilterBuilderRowValue';
-import QualityFilterBuilderRowValueConnector from './QualityFilterBuilderRowValueConnector';
+import QualityFilterBuilderRowValue from './QualityFilterBuilderRowValue';
 import QualityProfileFilterBuilderRowValue from './QualityProfileFilterBuilderRowValue';
 import QueueStatusFilterBuilderRowValue from './QueueStatusFilterBuilderRowValue';
 import ReleaseStatusFilterBuilderRowValue from './ReleaseStatusFilterBuilderRowValue';
@@ -84,7 +84,7 @@ function getRowValueConnector(selectedFilterBuilderProp) {
       return ProtocolFilterBuilderRowValue;
 
     case filterBuilderValueTypes.QUALITY:
-      return QualityFilterBuilderRowValueConnector;
+      return QualityFilterBuilderRowValue;
 
     case filterBuilderValueTypes.QUALITY_PROFILE:
       return QualityProfileFilterBuilderRowValue;

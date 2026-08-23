@@ -1,60 +1,12 @@
-import React, { useCallback, useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { createSelector } from 'reselect';
-import { QualityProfilesAppState } from 'App/State/SettingsAppState';
-import createSortedSectionSelector from 'Store/Selectors/createSortedSectionSelector';
+import React, { useCallback, useEffect, useMemo } from 'react';
+import { useQualityProfiles } from 'Settings/Profiles/Quality/useQualityProfiles';
 import { EnhancedSelectInputChanged } from 'typings/inputs';
-import QualityProfile from 'typings/QualityProfile';
 import sortByProp from 'Utilities/Array/sortByProp';
 import translate from 'Utilities/String/translate';
 import EnhancedSelectInput, {
   EnhancedSelectInputProps,
   EnhancedSelectInputValue,
 } from './EnhancedSelectInput';
-
-function createQualityProfilesSelector(
-  includeNoChange: boolean,
-  includeNoChangeDisabled: boolean,
-  includeMixed: boolean
-) {
-  return createSelector(
-    createSortedSectionSelector<QualityProfile, QualityProfilesAppState>(
-      'settings.qualityProfiles',
-      sortByProp<QualityProfile, 'name'>('name')
-    ),
-    (qualityProfiles: QualityProfilesAppState) => {
-      const values: EnhancedSelectInputValue<number | string>[] =
-        qualityProfiles.items.map((qualityProfile) => {
-          return {
-            key: qualityProfile.id,
-            value: qualityProfile.name,
-          };
-        });
-
-      if (includeNoChange) {
-        values.unshift({
-          key: 'noChange',
-          get value() {
-            return translate('NoChange');
-          },
-          isDisabled: includeNoChangeDisabled,
-        });
-      }
-
-      if (includeMixed) {
-        values.unshift({
-          key: 'mixed',
-          get value() {
-            return `(${translate('Mixed')})`;
-          },
-          isDisabled: true,
-        });
-      }
-
-      return values;
-    }
-  );
-}
 
 export interface QualityProfileSelectInputProps extends Omit<
   EnhancedSelectInputProps<
@@ -77,14 +29,41 @@ function QualityProfileSelectInput({
   includeMixed = false,
   onChange,
   ...otherProps
-}: QualityProfileSelectInputProps) {
-  const values = useSelector(
-    createQualityProfilesSelector(
-      includeNoChange,
-      includeNoChangeDisabled,
-      includeMixed
-    )
-  );
+}: Readonly<QualityProfileSelectInputProps>) {
+  const { data } = useQualityProfiles();
+
+  const values = useMemo(() => {
+    const options: EnhancedSelectInputValue<number | string>[] = [...data]
+      .sort(sortByProp('name'))
+      .map((qualityProfile) => {
+        return {
+          key: qualityProfile.id,
+          value: qualityProfile.name,
+        };
+      });
+
+    if (includeNoChange) {
+      options.unshift({
+        key: 'noChange',
+        get value() {
+          return translate('NoChange');
+        },
+        isDisabled: includeNoChangeDisabled,
+      });
+    }
+
+    if (includeMixed) {
+      options.unshift({
+        key: 'mixed',
+        get value() {
+          return `(${translate('Mixed')})`;
+        },
+        isDisabled: true,
+      });
+    }
+
+    return options;
+  }, [data, includeNoChange, includeNoChangeDisabled, includeMixed]);
 
   const handleChange = useCallback(
     ({ value }: EnhancedSelectInputChanged<string | number>) => {

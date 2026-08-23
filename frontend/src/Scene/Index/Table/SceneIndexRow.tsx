@@ -1,7 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { useSelector } from 'react-redux';
 import { useSelect } from 'App/SelectContext';
-import AppState from 'App/State/AppState';
 import Command from 'Commands/Command';
 import { MOVIE_SEARCH, REFRESH_MOVIE } from 'Commands/commandNames';
 import { useExecuteCommand, useExecutingCommands } from 'Commands/useCommands';
@@ -21,6 +19,7 @@ import DeleteSceneModal from 'Scene/Delete/DeleteSceneModal';
 import SceneDetailsLinks from 'Scene/Details/SceneDetailsLinks';
 import SceneStudioTitleLink from 'Scene/SceneStudioTitleLink';
 import SceneTitleLink from 'Scene/SceneTitleLink';
+import { useQualityProfile } from 'Settings/Profiles/Quality/useQualityProfiles';
 import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import { SelectStateInputProps } from 'typings/props';
 import formatRuntime from 'Utilities/Date/formatRuntime';
@@ -38,15 +37,11 @@ interface SceneIndexRowProps {
   isSelectMode: boolean;
 }
 
-function SceneIndexRow(props: SceneIndexRowProps) {
+function SceneIndexRow(props: Readonly<SceneIndexRowProps>) {
   const { scene, columns, isSelectMode } = props;
   const sceneId = scene.id;
 
-  const qualityProfile = useSelector((state: AppState) =>
-    state.settings.qualityProfiles.items.find(
-      (p) => p.id === scene.qualityProfileId
-    )
-  );
+  const qualityProfile = useQualityProfile(scene.qualityProfileId);
 
   const executingCommands = useExecutingCommands();
 

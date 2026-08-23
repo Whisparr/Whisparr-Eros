@@ -1,8 +1,6 @@
 import React, { SyntheticEvent, useCallback, useState } from 'react';
-import { useSelector } from 'react-redux';
 import { useSafeForWorkMode } from 'App/safeForWorkStore';
 import { useSelect } from 'App/SelectContext';
-import AppState from 'App/State/AppState';
 import Command from 'Commands/Command';
 import { MOVIE_SEARCH, REFRESH_MOVIE } from 'Commands/commandNames';
 import { useExecuteCommand, useExecutingCommands } from 'Commands/useCommands';
@@ -22,6 +20,7 @@ import MovieIndexProgressBar from 'Movie/Index/ProgressBar/MovieIndexProgressBar
 import MovieIndexPosterSelect from 'Movie/Index/Select/MovieIndexPosterSelect';
 import Movie, { Statistics } from 'Movie/Movie';
 import MoviePoster from 'Movie/MoviePoster';
+import { useQualityProfile } from 'Settings/Profiles/Quality/useQualityProfiles';
 import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import formatDate from 'Utilities/Date/formatDate';
 import getRelativeDate from 'Utilities/Date/getRelativeDate';
@@ -42,11 +41,7 @@ function MovieIndexPoster(props: Readonly<MovieIndexPosterProps>) {
   const { movie, sortKey, isSelectMode, posterWidth, posterHeight } = props;
   const movieId = movie.id;
 
-  const qualityProfile = useSelector((state: AppState) =>
-    state.settings.qualityProfiles.items.find(
-      (p) => p.id === movie.qualityProfileId
-    )
-  );
+  const qualityProfile = useQualityProfile(movie.qualityProfileId);
 
   const executingCommands = useExecutingCommands();
 
