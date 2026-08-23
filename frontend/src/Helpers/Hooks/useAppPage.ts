@@ -5,30 +5,23 @@ import AppState from 'App/State/AppState';
 import useTranslations from 'App/useTranslations';
 import useCommands from 'Commands/useCommands';
 import useCustomFilters from 'Filters/useCustomFilters';
+import { useQualityProfiles } from 'Settings/Profiles/Quality/useQualityProfiles';
 import { useUiSettings } from 'Settings/UI/useUiSettings';
 import {
   fetchImportLists,
   fetchIndexerFlags,
   fetchLanguages,
-  fetchQualityProfiles,
 } from 'Store/Actions/settingsActions';
 import useSystemStatus from 'System/Status/useSystemStatus';
 import useTags from 'Tags/useTags';
 
 const createErrorsSelector = () =>
   createSelector(
-    (state: AppState) => state.settings.qualityProfiles.error,
     (state: AppState) => state.settings.languages.error,
     (state: AppState) => state.settings.importLists.error,
     (state: AppState) => state.settings.indexerFlags.error,
-    (
-      qualityProfilesError,
-      languagesError,
-      importListsError,
-      indexerFlagsError
-    ) => {
+    (languagesError, importListsError, indexerFlagsError) => {
       const hasError = !!(
-        qualityProfilesError ||
         languagesError ||
         importListsError ||
         indexerFlagsError
@@ -37,7 +30,6 @@ const createErrorsSelector = () =>
       return {
         hasError,
         errors: {
-          qualityProfilesError,
           languagesError,
           importListsError,
           indexerFlagsError,
@@ -79,6 +71,13 @@ const useAppPage = () => {
   const { isFetched: isUiSettingsPopulated, error: uiSettingsError } =
     useUiSettings();
 
+  // Every index row, filter row and profile select resolves a
+  // `qualityProfileId` against this query, so the app waits on it exactly as it
+  // waited on the slice's `isPopulated` -- otherwise the first paint of an
+  // index shows rows with no profile label.
+  const { isFetched: isQualityProfilesPopulated, error: qualityProfilesError } =
+    useQualityProfiles();
+
   // Keeps one observer on the command list for the whole session. SignalR pushes command
   // updates that drive global toasts, and the periodic refetch is what clears finished
   // commands now that the slice's per-command removal timer is gone. The app does not
@@ -87,7 +86,6 @@ const useAppPage = () => {
 
   const isReduxPopulated = useSelector(
     (state: AppState) =>
-      state.settings.qualityProfiles.isPopulated &&
       state.settings.languages.isPopulated &&
       state.settings.importLists.isPopulated &&
       state.settings.indexerFlags.isPopulated
@@ -95,6 +93,7 @@ const useAppPage = () => {
 
   const isPopulated =
     isReduxPopulated &&
+    isQualityProfilesPopulated &&
     isSystemStatusPopulated &&
     isCustomFiltersPopulated &&
     isTagsPopulated &&
@@ -106,6 +105,7 @@ const useAppPage = () => {
   const errors = useMemo(() => {
     return {
       ...reduxErrors,
+      qualityProfilesError,
       uiSettingsError,
       customFiltersError,
       tagsError,
@@ -114,6 +114,7 @@ const useAppPage = () => {
     };
   }, [
     reduxErrors,
+    qualityProfilesError,
     uiSettingsError,
     customFiltersError,
     tagsError,
@@ -135,7 +136,6 @@ const useAppPage = () => {
   }, []);
 
   useEffect(() => {
-    dispatch(fetchQualityProfiles());
     dispatch(fetchLanguages());
     dispatch(fetchImportLists());
     dispatch(fetchIndexerFlags());
@@ -146,6 +146,7 @@ const useAppPage = () => {
       errors,
       hasError:
         hasError ||
+        !!qualityProfilesError ||
         !!uiSettingsError ||
         !!customFiltersError ||
         !!tagsError ||
@@ -157,6 +158,7 @@ const useAppPage = () => {
   }, [
     errors,
     hasError,
+    qualityProfilesError,
     uiSettingsError,
     customFiltersError,
     tagsError,

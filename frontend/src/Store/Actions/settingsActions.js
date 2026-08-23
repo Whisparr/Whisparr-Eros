@@ -20,7 +20,6 @@ import metadata from './Settings/metadata';
 import naming from './Settings/naming';
 import namingExamples from './Settings/namingExamples';
 import notifications from './Settings/notifications';
-import qualityProfiles from './Settings/qualityProfiles';
 
 export * from './Settings/autoTaggingSpecifications';
 export * from './Settings/autoTaggings';
@@ -42,7 +41,6 @@ export * from './Settings/metadata';
 export * from './Settings/naming';
 export * from './Settings/namingExamples';
 export * from './Settings/notifications';
-export * from './Settings/qualityProfiles';
 
 //
 // Variables
@@ -73,7 +71,6 @@ export const defaultState = {
   naming: naming.defaultState,
   namingExamples: namingExamples.defaultState,
   notifications: notifications.defaultState,
-  qualityProfiles: qualityProfiles.defaultState,
 };
 
 export const persistState = ['settings.importListExclusions.pageSize'];
@@ -102,7 +99,6 @@ export const actionHandlers = handleThunks({
   ...naming.actionHandlers,
   ...namingExamples.actionHandlers,
   ...notifications.actionHandlers,
-  ...qualityProfiles.actionHandlers,
 });
 
 //
@@ -130,7 +126,6 @@ export const reducers = createHandleActions(
     ...naming.reducers,
     ...namingExamples.reducers,
     ...notifications.reducers,
-    ...qualityProfiles.reducers,
   },
   defaultState,
   section

@@ -6,7 +6,6 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { useSelector } from 'react-redux';
 import { useMatch, useParams } from 'react-router-dom';
 import Alert from 'Components/Alert';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
@@ -14,6 +13,7 @@ import PageContent from 'Components/Page/PageContent';
 import PageContentBody from 'Components/Page/PageContentBody';
 import { kinds } from 'Helpers/Props';
 import { useRootFolder } from 'RootFolder/useRootFolders';
+import { useQualityProfiles } from 'Settings/Profiles/Quality/useQualityProfiles';
 import ImportFile from 'typings/ImportFile';
 import { SelectStateInputProps } from 'typings/props';
 import { ApiError } from 'Utilities/Fetch/fetchJson';
@@ -74,10 +74,7 @@ function ImportMovie() {
   } = useRootFolder(rootFolderId);
 
   const movieDefaults = useAddMovieDefaults();
-  const qualityProfiles = useSelector(
-    (state: { settings: { qualityProfiles: { items: { id: number }[] } } }) =>
-      state.settings.qualityProfiles.items
-  );
+  const { data: qualityProfiles } = useQualityProfiles();
 
   const defaultMonitor = movieDefaults.monitor ?? 'movieOnly';
   const defaultQualityProfileId = movieDefaults.qualityProfileId;

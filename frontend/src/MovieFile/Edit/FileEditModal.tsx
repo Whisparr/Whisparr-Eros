@@ -1,11 +1,10 @@
-import React, { useCallback, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useCallback } from 'react';
+import { useSelector } from 'react-redux';
 import AppState from 'App/State/AppState';
 import Modal from 'Components/Modal/Modal';
 import Language from 'Language/Language';
 import { QualityModel } from 'Quality/Quality';
-import { fetchQualityProfileSchema } from 'Store/Actions/settingsActions';
-import getQualities from 'Utilities/Quality/getQualities';
+import { useQualities } from 'Settings/Profiles/Quality/useQualityProfiles';
 import { MovieFile } from '../MovieFile';
 import { useUpdateMovieFiles } from '../useMovieFile';
 import FileEditModalContent from './FileEditModalContent';
@@ -20,12 +19,16 @@ function FileEditModal({
   isOpen,
   movieFile,
   onModalClose,
-}: FileEditModalProps) {
-  const dispatch = useDispatch();
+}: Readonly<FileEditModalProps>) {
   const { mutate: updateMovieFiles } = useUpdateMovieFiles();
-  const qualityProfiles = useSelector(
-    (state: AppState) => state.settings.qualityProfiles
-  );
+  const {
+    qualities,
+    isFetching: isQualitiesFetching,
+    isFetched: isQualitiesFetched,
+    error: qualitiesError,
+  } = useQualities();
+
+  // Languages are still a Redux slice -- they convert in section 6.
   const languagesState = useSelector(
     (state: AppState) => state.settings.languages
   );
@@ -47,19 +50,9 @@ function FileEditModal({
   const edition = movieFile.edition ?? '';
   const relativePath = movieFile.relativePath ?? '';
 
-  const qualities = getQualities(qualityProfiles.schema.items);
-
-  const isFetching =
-    qualityProfiles.isSchemaFetching || languagesState.isFetching;
-  const isPopulated =
-    qualityProfiles.isSchemaPopulated && languagesState.isPopulated;
-  const error = qualityProfiles.error || languagesState.error;
-
-  useEffect(() => {
-    if (!isPopulated) {
-      dispatch(fetchQualityProfileSchema());
-    }
-  }, [isPopulated, dispatch]);
+  const isFetching = isQualitiesFetching || languagesState.isFetching;
+  const isPopulated = isQualitiesFetched && languagesState.isPopulated;
+  const error = qualitiesError || languagesState.error;
 
   const handleSaveInputs = useCallback(
     (payload: {
@@ -73,8 +66,12 @@ function FileEditModal({
     }) => {
       const qualityIdNum = Number.parseInt(payload.qualityId, 10);
       const selectedQuality = qualities.find(
-        (item: { id: number }) => item.id === qualityIdNum
+        (item) => item.id === qualityIdNum
       );
+
+      if (!selectedQuality) {
+        return;
+      }
       const langs: Language[] = payload.languageIds
         .map((languageId) => {
           const id =

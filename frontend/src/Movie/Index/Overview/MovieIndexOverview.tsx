@@ -1,8 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
 import TextTruncate from 'react-text-truncate';
 import { useSafeForWorkMode } from 'App/safeForWorkStore';
-import AppState from 'App/State/AppState';
 import Command from 'Commands/Command';
 import { MOVIE_SEARCH, REFRESH_MOVIE } from 'Commands/commandNames';
 import { useExecuteCommand, useExecutingCommands } from 'Commands/useCommands';
@@ -20,6 +18,7 @@ import MovieIndexProgressBar from 'Movie/Index/ProgressBar/MovieIndexProgressBar
 import MovieIndexPosterSelect from 'Movie/Index/Select/MovieIndexPosterSelect';
 import Movie, { Statistics } from 'Movie/Movie';
 import MoviePoster from 'Movie/MoviePoster';
+import { useQualityProfile } from 'Settings/Profiles/Quality/useQualityProfiles';
 import dimensions from 'Styles/Variables/dimensions';
 import fonts from 'Styles/Variables/fonts';
 import translate from 'Utilities/String/translate';
@@ -62,11 +61,7 @@ function MovieIndexOverview(props: Readonly<MovieIndexOverviewProps>) {
 
   const movieId = movie.id;
 
-  const qualityProfile = useSelector((state: AppState) =>
-    state.settings.qualityProfiles.items.find(
-      (p) => p.id === movie.qualityProfileId
-    )
-  );
+  const qualityProfile = useQualityProfile(movie.qualityProfileId);
 
   const executingCommands = useExecutingCommands();
 
