@@ -1,6 +1,6 @@
 import classNames from 'classnames';
-import React, { useCallback, useContext, useState } from 'react';
-import { SafeForWorkModeContext } from 'App/State/SafeForWorkContext';
+import React, { useCallback, useState } from 'react';
+import { useSafeForWorkMode } from 'App/safeForWorkStore';
 import Link from 'Components/Link/Link';
 import MonitorToggleButton from 'Components/MonitorToggleButton';
 import MovieHeadshot from 'Movie/MovieHeadshot';
@@ -15,7 +15,7 @@ interface Props {
 }
 
 function MovieCastPoster({ credit, posterWidth, posterHeight }: Props) {
-  const safeForWorkMode = useContext(SafeForWorkModeContext);
+  const safeForWorkMode = useSafeForWorkMode();
   const togglePerformerMonitored = useTogglePerformerMonitored();
 
   // Adapter for MonitorToggleButton signature

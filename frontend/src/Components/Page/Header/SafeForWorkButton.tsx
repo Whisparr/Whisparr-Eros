@@ -1,6 +1,8 @@
-import React, { useCallback, useContext } from 'react';
-import { toggleSafeForWorkMode } from 'App/safeForWorkStore';
-import { SafeForWorkModeContext } from 'App/State/SafeForWorkContext';
+import React, { useCallback } from 'react';
+import {
+  toggleSafeForWorkMode,
+  useSafeForWorkMode,
+} from 'App/safeForWorkStore';
 import Icon from 'Components/Icon';
 import Link from 'Components/Link/Link';
 import { icons } from 'Helpers/Props';
@@ -8,7 +10,7 @@ import translate from 'Utilities/String/translate';
 import styles from './SafeForWorkButton.css';
 
 function SafeForWorkButton() {
-  const safeForWorkMode = useContext(SafeForWorkModeContext);
+  const safeForWorkMode = useSafeForWorkMode();
 
   const handlePress = useCallback(() => {
     toggleSafeForWorkMode();

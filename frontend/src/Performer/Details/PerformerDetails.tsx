@@ -1,9 +1,9 @@
 import _ from 'lodash';
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import Flag from 'react-world-flags';
-import { SafeForWorkModeContext } from 'App/State/SafeForWorkContext';
+import { useSafeForWorkMode } from 'App/safeForWorkStore';
 import Alert from 'Components/Alert';
 import FieldSet from 'Components/FieldSet';
 import Icon from 'Components/Icon';
@@ -116,7 +116,7 @@ function PerformerDetails() {
     setExpandedYears(newExpanded);
   }
 
-  const safeForWorkMode = useContext(SafeForWorkModeContext);
+  const safeForWorkMode = useSafeForWorkMode();
 
   // Always call hooks unconditionally
   const performerTags = usePerformerTags(performer?.tags ?? []);

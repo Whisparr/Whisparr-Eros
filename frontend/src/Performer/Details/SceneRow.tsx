@@ -1,7 +1,7 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { SafeForWorkModeContext } from 'App/State/SafeForWorkContext';
+import { useSafeForWorkMode } from 'App/safeForWorkStore';
 import Icon from 'Components/Icon';
 import MonitorToggleButton from 'Components/MonitorToggleButton';
 import RelativeDateCell from 'Components/Table/Cells/RelativeDateCell';
@@ -29,7 +29,7 @@ interface SceneRowProps {
 
 export default function SceneRow(props: SceneRowProps) {
   const { movieRuntimeFormat } = useSelector(createUISettingsSelector());
-  const safeForWorkMode = useContext(SafeForWorkModeContext);
+  const safeForWorkMode = useSafeForWorkMode();
 
   const { isSaving, columns, movie } = props;
   const {

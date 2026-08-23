@@ -1,12 +1,6 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { queryClient } from 'App/queryClient';
-import { SafeForWorkModeContext } from 'App/State/SafeForWorkContext';
+import { useSafeForWorkMode } from 'App/safeForWorkStore';
 import * as commandNames from 'Commands/commandNames';
 import useCommands, { useExecuteCommand } from 'Commands/useCommands';
 import type { IconName } from 'Components/Icon';
@@ -99,7 +93,7 @@ export const useStudioDetails = (foreignId: string): UseStudioDetailsReturn => {
   const executeCommand = useExecuteCommand();
 
   // Local state
-  const safeForWorkMode = React.useContext(SafeForWorkModeContext);
+  const safeForWorkMode = useSafeForWorkMode();
   const [isManualRefresh, setIsManualRefresh] = useState(false);
   const [isEditMovieModalOpen, setIsEditMovieModalOpen] = useState(false);
   const [isDeleteMovieModalOpen, setIsDeleteMovieModalOpen] = useState(false);

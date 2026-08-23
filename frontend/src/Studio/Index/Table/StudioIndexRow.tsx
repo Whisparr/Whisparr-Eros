@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
+import { useSafeForWorkMode } from 'App/safeForWorkStore';
 import { useSelect } from 'App/SelectContext';
-import { SafeForWorkModeContext } from 'App/State/SafeForWorkContext';
 import CheckInput from 'Components/Form/CheckInput';
 import Icon from 'Components/Icon';
 import IconButton from 'Components/Link/IconButton';
@@ -51,7 +51,7 @@ function StudioIndexRow(props: StudioIndexRowProps) {
     website,
   } = studio;
 
-  const safeForWorkMode = React.useContext(SafeForWorkModeContext);
+  const safeForWorkMode = useSafeForWorkMode();
   const [isEditStudioModalOpen, setIsEditStudioModalOpen] = useState(false);
   const [selectState, selectDispatch] = useSelect();
   const showMovieMonitorToggle = useShowMovieMonitorToggleButton(

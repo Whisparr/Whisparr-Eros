@@ -4,8 +4,6 @@ import { saveDimensions, useAppDimension, useAppValues } from 'App/appStore';
 import AppUpdatedModal from 'App/AppUpdatedModal';
 import ColorImpairedContext from 'App/ColorImpairedContext';
 import ConnectionLostModal from 'App/ConnectionLostModal';
-import { useSafeForWorkMode } from 'App/safeForWorkStore';
-import { SafeForWorkModeContext } from 'App/State/SafeForWorkContext';
 import SignalRListener from 'Components/SignalRListener';
 import AuthenticationRequiredModal from 'FirstRun/AuthenticationRequiredModal';
 import useAppPage from 'Helpers/Hooks/useAppPage';
@@ -28,7 +26,6 @@ function Page({ children }: Readonly<PageProps>) {
   const [isConnectionLostModalOpen, setIsConnectionLostModalOpen] =
     useState(false);
 
-  const safeForWorkMode = useSafeForWorkMode();
   const { enableColorImpairedMode } = useSelector(createUISettingsSelector());
   const isSmallScreen = useAppDimension('isSmallScreen');
   const { authentication } = useSystemStatusData();
@@ -86,33 +83,31 @@ function Page({ children }: Readonly<PageProps>) {
   }
 
   return (
-    <SafeForWorkModeContext.Provider value={safeForWorkMode}>
-      <ColorImpairedContext.Provider value={enableColorImpairedMode}>
-        <div className={styles.page}>
-          <SignalRListener />
+    <ColorImpairedContext.Provider value={enableColorImpairedMode}>
+      <div className={styles.page}>
+        <SignalRListener />
 
-          <PageHeader isSmallScreen={isSmallScreen} />
+        <PageHeader isSmallScreen={isSmallScreen} />
 
-          <div className={styles.main}>
-            <PageSidebar
-              isSmallScreen={isSmallScreen}
-              isSidebarVisible={!!isSidebarVisible}
-            />
-
-            {children}
-          </div>
-
-          <AppUpdatedModal
-            isOpen={isUpdatedModalOpen}
-            onModalClose={handleUpdatedModalClose}
+        <div className={styles.main}>
+          <PageSidebar
+            isSmallScreen={isSmallScreen}
+            isSidebarVisible={!!isSidebarVisible}
           />
 
-          <ConnectionLostModal isOpen={isConnectionLostModalOpen} />
-
-          <AuthenticationRequiredModal isOpen={!authenticationEnabled} />
+          {children}
         </div>
-      </ColorImpairedContext.Provider>
-    </SafeForWorkModeContext.Provider>
+
+        <AppUpdatedModal
+          isOpen={isUpdatedModalOpen}
+          onModalClose={handleUpdatedModalClose}
+        />
+
+        <ConnectionLostModal isOpen={isConnectionLostModalOpen} />
+
+        <AuthenticationRequiredModal isOpen={!authenticationEnabled} />
+      </div>
+    </ColorImpairedContext.Provider>
   );
 }
 

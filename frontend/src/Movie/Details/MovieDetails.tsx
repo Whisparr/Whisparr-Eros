@@ -1,9 +1,9 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import TextTruncate from 'react-text-truncate';
 import { useQueueItemForMovie } from 'Activity/Queue/Details/useQueueDetails';
 import { useAppDimension } from 'App/appStore';
-import { SafeForWorkModeContext } from 'App/State/SafeForWorkContext';
+import { useSafeForWorkMode } from 'App/safeForWorkStore';
 import { MOVIE_SEARCH, REFRESH_MOVIE } from 'Commands/commandNames';
 import { useExecuteCommand } from 'Commands/useCommands';
 import Alert from 'Components/Alert';
@@ -88,7 +88,7 @@ function MovieDetails(props: Readonly<Partial<Props>>) {
   // Get id from route params and fetch movie data
   const { id } = useParams();
   const executeCommand = useExecuteCommand();
-  const safeForWorkMode = useContext(SafeForWorkModeContext);
+  const safeForWorkMode = useSafeForWorkMode();
 
   const { data: movie, isLoading, isError, error } = useMovie(id);
   const statusDetails = getMovieStatusDetails(movie?.status);

@@ -55,7 +55,6 @@ interface PerformerIndexPostersProps {
   scrollerRef: RefObject<HTMLElement | null>;
   isSelectMode: boolean;
   isSmallScreen: boolean;
-  safeForWorkMode: boolean;
 }
 
 function Cell({

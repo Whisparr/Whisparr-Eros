@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { SafeForWorkModeContext } from 'App/State/SafeForWorkContext';
+import { useSafeForWorkMode } from 'App/safeForWorkStore';
 import Icon from 'Components/Icon';
 import Label from 'Components/Label';
 import IconButton from 'Components/Link/IconButton';
@@ -31,7 +31,7 @@ interface PerformerIndexPosterProps {
 function PerformerIndexPoster(props: PerformerIndexPosterProps) {
   const { isSelectMode, posterWidth, posterHeight, performer, sortKey } = props;
 
-  const safeForWorkMode = React.useContext(SafeForWorkModeContext);
+  const safeForWorkMode = useSafeForWorkMode();
 
   const [isEditPerformerModalOpen, setIsEditPerformerModalOpen] =
     useState(false);
