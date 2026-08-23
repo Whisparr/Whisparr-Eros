@@ -27,6 +27,7 @@ import translate from 'Utilities/String/translate';
 import InteractiveSearchPayload from './InteractiveSearchPayload';
 import OverrideMatchModal from './OverrideMatch/OverrideMatchModal';
 import Peers from './Peers';
+import { useGrabRelease } from './useReleases';
 import styles from './InteractiveSearchRow.css';
 
 function getDownloadIcon(
@@ -114,7 +115,6 @@ function useReleaseHistory(guid: string, movieId: number) {
 
 interface InteractiveSearchRowProps extends Release {
   searchPayload: InteractiveSearchPayload;
-  onGrabPress(...args: unknown[]): void;
 }
 
 function InteractiveSearchRow(props: InteractiveSearchRowProps) {
@@ -140,12 +140,12 @@ function InteractiveSearchRow(props: InteractiveSearchRowProps) {
     indexerFlags = [],
     rejections = [],
     downloadAllowed,
-    isGrabbing = false,
-    isGrabbed = false,
-    grabError,
     searchPayload,
-    onGrabPress,
   } = props;
+
+  // One grab per row. The override modal below is handed this same instance, so
+  // whichever button starts the grab, both report it.
+  const { grabRelease, isGrabbing, isGrabbed, grabError } = useGrabRelease();
 
   const { longDateFormat, timeFormat } = useSelector(
     createUISettingsSelector()
@@ -159,7 +159,7 @@ function InteractiveSearchRow(props: InteractiveSearchRowProps) {
 
   const onGrabPressWrapper = useCallback(() => {
     if (downloadAllowed) {
-      onGrabPress({
+      grabRelease({
         guid,
         indexerId,
       });
@@ -172,19 +172,19 @@ function InteractiveSearchRow(props: InteractiveSearchRowProps) {
     guid,
     indexerId,
     downloadAllowed,
-    onGrabPress,
+    grabRelease,
     setIsConfirmGrabModalOpen,
   ]);
 
   const onGrabConfirm = useCallback(() => {
     setIsConfirmGrabModalOpen(false);
 
-    onGrabPress({
+    grabRelease({
       guid,
       indexerId,
       ...searchPayload,
     });
-  }, [guid, indexerId, searchPayload, onGrabPress, setIsConfirmGrabModalOpen]);
+  }, [guid, indexerId, searchPayload, grabRelease, setIsConfirmGrabModalOpen]);
 
   const onGrabCancel = useCallback(() => {
     setIsConfirmGrabModalOpen(false);
@@ -387,6 +387,7 @@ function InteractiveSearchRow(props: InteractiveSearchRowProps) {
         protocol={protocol}
         isGrabbing={isGrabbing}
         grabError={grabError}
+        onGrabRelease={grabRelease}
         onModalClose={onOverrideModalClose}
       />
     </TableRow>

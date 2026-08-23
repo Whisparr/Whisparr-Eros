@@ -4,7 +4,6 @@ import ExtraFilesAppState from './ExtraFilesAppState';
 import MovieCreditAppState from './MovieCreditAppState';
 import MovieFilesAppState from './MovieFilesAppState';
 import MoviesAppState from './MoviesAppState';
-import ReleasesAppState from './ReleasesAppState';
 import SettingsAppState from './SettingsAppState';
 
 interface FilterBuilderPropOption {
@@ -73,7 +72,6 @@ interface AppState {
   movieCredits: MovieCreditAppState;
   movieFiles: MovieFilesAppState;
   movies: MoviesAppState;
-  releases: ReleasesAppState;
   settings: SettingsAppState;
 }
 

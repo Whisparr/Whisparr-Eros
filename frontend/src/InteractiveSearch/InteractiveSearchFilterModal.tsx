@@ -1,53 +1,36 @@
 import React, { useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { createSelector } from 'reselect';
-import AppState from 'App/State/AppState';
 import FilterModal from 'Components/Filter/FilterModal';
-import { setReleasesFilter } from 'Store/Actions/releaseActions';
-
-function createReleasesSelector() {
-  return createSelector(
-    (state: AppState) => state.releases.items,
-    (releases) => {
-      return releases;
-    }
-  );
-}
-
-function createFilterBuilderPropsSelector() {
-  return createSelector(
-    (state: AppState) => state.releases.filterBuilderProps,
-    (filterBuilderProps) => {
-      return filterBuilderProps;
-    }
-  );
-}
+import InteractiveSearchPayload from './InteractiveSearchPayload';
+import { RELEASE_FILTER_BUILDER_PROPS } from './releaseFilters';
+import { setReleasesFilter } from './releaseOptionsStore';
+import { useReleases } from './useReleases';
 
 interface InteractiveSearchFilterModalProps {
   isOpen: boolean;
+  searchPayload: InteractiveSearchPayload;
 }
 
 export default function InteractiveSearchFilterModal({
+  searchPayload,
   ...otherProps
 }: InteractiveSearchFilterModalProps) {
-  const sectionItems = useSelector(createReleasesSelector());
-  const filterBuilderProps = useSelector(createFilterBuilderPropsSelector());
-
-  const dispatch = useDispatch();
+  // Same query key as the table behind it, so the builder's value suggestions
+  // come from the releases already on screen rather than a second search.
+  const { releases } = useReleases(searchPayload);
 
   const dispatchSetFilter = useCallback(
-    (payload: unknown) => {
-      dispatch(setReleasesFilter(payload));
+    ({ selectedFilterKey }: { selectedFilterKey: string | number }) => {
+      setReleasesFilter(selectedFilterKey);
     },
-    [dispatch]
+    []
   );
 
   return (
     <FilterModal
       // TODO: Don't spread all the props
       {...otherProps}
-      sectionItems={sectionItems}
-      filterBuilderProps={filterBuilderProps}
+      sectionItems={releases}
+      filterBuilderProps={RELEASE_FILTER_BUILDER_PROPS}
       customFilterType="releases"
       dispatchSetFilter={dispatchSetFilter}
     />
