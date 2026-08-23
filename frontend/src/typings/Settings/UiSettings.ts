@@ -8,4 +8,5 @@ export default interface UiSettings {
   enableColorImpairedMode: boolean;
   calendarWeekColumnHeader: string;
   movieRuntimeFormat: string;
+  uiLanguage: number;
 }

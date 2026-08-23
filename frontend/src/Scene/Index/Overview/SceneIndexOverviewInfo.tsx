@@ -1,8 +1,7 @@
 import { IconDefinition } from '@fortawesome/free-regular-svg-icons';
 import React, { useMemo } from 'react';
-import { useSelector } from 'react-redux';
 import { icons } from 'Helpers/Props';
-import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
+import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import dimensions from 'Styles/Variables/dimensions';
 import QualityProfile from 'typings/QualityProfile';
 import UiSettings from 'typings/Settings/UiSettings';
@@ -172,7 +171,7 @@ function getInfoRowProps(
 function SceneIndexOverviewInfo(props: SceneIndexOverviewInfoProps) {
   const height = props.height;
 
-  const uiSettings = useSelector(createUISettingsSelector());
+  const uiSettings = useUiSettingsValues();
 
   // Starts at 0: starting at 1 dropped the last row that actually fitted.
   let shownRows = 0;

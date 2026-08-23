@@ -19,7 +19,7 @@ import DeleteSceneModal from 'Scene/Delete/DeleteSceneModal';
 import SceneDetailsLinks from 'Scene/Details/SceneDetailsLinks';
 import SceneIndexProgressBar from 'Scene/Index/ProgressBar/SceneIndexProgressBar';
 import ScenePoster from 'Scene/ScenePoster';
-import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
+import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import getRelativeDate from 'Utilities/Date/getRelativeDate';
 import translate from 'Utilities/String/translate';
 import { useSceneIndexOption } from '../sceneIndexOptionsStore';
@@ -68,7 +68,7 @@ function SceneIndexPoster(props: Readonly<SceneIndexPosterProps>) {
   } = useSceneIndexOption('posterOptions');
 
   const { showRelativeDates, shortDateFormat, longDateFormat, timeFormat } =
-    useSelector(createUISettingsSelector());
+    useUiSettingsValues();
 
   const {
     title,

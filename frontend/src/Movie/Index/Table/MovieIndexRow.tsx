@@ -1,5 +1,4 @@
 import React, { useCallback, useState } from 'react';
-import { useSelector } from 'react-redux';
 import { useSelect } from 'App/SelectContext';
 import Command from 'Commands/Command';
 import { MOVIE_SEARCH, REFRESH_MOVIE } from 'Commands/commandNames';
@@ -20,7 +19,7 @@ import EditMovieModal from 'Movie/Edit/EditMovieModal';
 import Movie, { Statistics } from 'Movie/Movie';
 import MovieTitleLink from 'Movie/MovieTitleLink';
 import QualityProfileName from 'Settings/Profiles/Quality/QualityProfileName';
-import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
+import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import { SelectStateInputProps } from 'typings/props';
 import formatRuntime from 'Utilities/Date/formatRuntime';
 import formatBytes from 'Utilities/Number/formatBytes';
@@ -55,7 +54,7 @@ function MovieIndexRow(props: MovieIndexRowProps) {
 
   const { showSearchAction } = useMovieIndexOption('tableOptions');
 
-  const { movieRuntimeFormat } = useSelector(createUISettingsSelector());
+  const { movieRuntimeFormat } = useUiSettingsValues();
 
   const {
     monitored,

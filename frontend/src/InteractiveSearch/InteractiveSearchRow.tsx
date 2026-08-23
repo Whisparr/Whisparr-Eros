@@ -1,5 +1,4 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
 import {
   useMovieBlocklist,
   useMovieHistory,
@@ -17,7 +16,7 @@ import { icons, kinds, tooltipPositions } from 'Helpers/Props';
 import MovieFormats from 'Movie/MovieFormats';
 import MovieLanguages from 'Movie/MovieLanguages';
 import MovieQuality from 'Movie/MovieQuality';
-import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
+import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import Release from 'typings/Release';
 import formatDateTime from 'Utilities/Date/formatDateTime';
 import formatAge from 'Utilities/Number/formatAge';
@@ -147,9 +146,7 @@ function InteractiveSearchRow(props: InteractiveSearchRowProps) {
   // whichever button starts the grab, both report it.
   const { grabRelease, isGrabbing, isGrabbed, grabError } = useGrabRelease();
 
-  const { longDateFormat, timeFormat } = useSelector(
-    createUISettingsSelector()
-  );
+  const { longDateFormat, timeFormat } = useUiSettingsValues();
 
   const { historyGrabbedData, historyFailedData, blocklistedData } =
     useReleaseHistory(guid, searchPayload.movieId);

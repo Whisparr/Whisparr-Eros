@@ -27,7 +27,7 @@ import Profiles from 'Settings/Profiles/Profiles';
 import QualityConnector from 'Settings/Quality/QualityConnector';
 import Settings from 'Settings/Settings';
 import TagSettings from 'Settings/Tags/TagSettings';
-import UISettingsConnector from 'Settings/UI/UISettingsConnector';
+import UISettings from 'Settings/UI/UISettings';
 import AddNewStudio from 'Studio/AddNewStudio/AddNewStudio';
 import StudioDetails from 'Studio/Details/StudioDetails';
 import StudioIndex from 'Studio/Index/StudioIndex';
@@ -139,7 +139,7 @@ function AppRoutes() {
 
       <Route path="/settings/general" element={<GeneralSettingsConnector />} />
 
-      <Route path="/settings/ui" element={<UISettingsConnector />} />
+      <Route path="/settings/ui" element={<UISettings />} />
 
       {/*
         System

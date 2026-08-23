@@ -7,7 +7,6 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import { useAppDimension, useAppDimensions } from 'App/appStore';
 import { queryClient } from 'App/queryClient';
@@ -16,7 +15,7 @@ import { ValidationMessage } from 'Components/Form/FormInputGroup';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import { MovieStats } from 'Movie/Index/useMovieStats';
 import Movie, { Image, Ratings } from 'Movie/Movie';
-import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
+import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import selectSettings from 'Store/Selectors/selectSettings';
 import { useSystemStatusData } from 'System/Status/useSystemStatus';
 import { InputChanged } from 'typings/inputs';
@@ -101,7 +100,7 @@ function apiPost<T, TBody>(path: string, body: TBody): Promise<T> {
 // Hook for the AddNewMovie and AddNewScene pages
 export function useAddNewMovie(itemType: 'movie' | 'scene') {
   const location = useLocation();
-  const uiSettings = useSelector(createUISettingsSelector());
+  const uiSettings = useUiSettingsValues();
 
   // Initialise term from URL query param (e.g. ?term=foo) on first render
   const initialTerm = React.useMemo(() => {
@@ -174,7 +173,7 @@ export function useAddNewMovie(itemType: 'movie' | 'scene') {
 export function useAddNewMovieSearchResult() {
   const dimensions = useAppDimensions();
   const safeForWorkMode = useSafeForWorkMode();
-  const uiSettings = useSelector(createUISettingsSelector());
+  const uiSettings = useUiSettingsValues();
 
   return {
     isSmallScreen: dimensions.isSmallScreen,

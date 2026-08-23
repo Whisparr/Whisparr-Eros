@@ -1,9 +1,8 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
 import Icon from 'Components/Icon';
 import InlineMarkdown from 'Components/Markdown/InlineMarkdown';
 import { icons } from 'Helpers/Props';
-import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
+import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import getRelativeDate from 'Utilities/Date/getRelativeDate';
 import translate from 'Utilities/String/translate';
 import Movie from '../Movie';
@@ -19,9 +18,8 @@ function MovieReleaseDates({
   itemType,
   releaseDate,
 }: MovieReleaseDatesProps) {
-  const { showRelativeDates, shortDateFormat, timeFormat } = useSelector(
-    createUISettingsSelector()
-  );
+  const { showRelativeDates, shortDateFormat, timeFormat } =
+    useUiSettingsValues();
 
   let urlFragment = 'https://stashdb.org/scenes/';
   if (itemType === 'movie') {

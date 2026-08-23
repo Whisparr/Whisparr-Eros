@@ -15,8 +15,8 @@ import ConfirmModal from 'Components/Modal/ConfirmModal';
 import PageContent from 'Components/Page/PageContent';
 import PageContentBody from 'Components/Page/PageContentBody';
 import { icons, kinds } from 'Helpers/Props';
+import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import { fetchGeneralSettings } from 'Store/Actions/settingsActions';
-import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
 import { useSystemStatusData } from 'System/Status/useSystemStatus';
 import { UpdateMechanism } from 'typings/Settings/General';
 import formatDate from 'Utilities/Date/formatDate';
@@ -47,9 +47,7 @@ function createGeneralSettingsSelector() {
 function Updates() {
   const currentVersion = useAppValue('version');
   const { packageUpdateMechanismMessage } = useSystemStatusData();
-  const { shortDateFormat, longDateFormat, timeFormat } = useSelector(
-    createUISettingsSelector()
-  );
+  const { shortDateFormat, longDateFormat, timeFormat } = useUiSettingsValues();
   const isInstallingUpdate = useCommandExecuting(
     commandNames.APPLICATION_UPDATE
   );

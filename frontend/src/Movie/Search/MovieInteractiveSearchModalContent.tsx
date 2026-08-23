@@ -1,5 +1,4 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
 import Button from 'Components/Link/Button';
 import ModalBody from 'Components/Modal/ModalBody';
 import ModalContent from 'Components/Modal/ModalContent';
@@ -8,7 +7,7 @@ import ModalHeader from 'Components/Modal/ModalHeader';
 import { BOTH } from 'Helpers/Props/scrollDirections';
 import InteractiveSearch from 'InteractiveSearch/InteractiveSearch';
 import { useMovie } from 'Movie/useMovie';
-import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
+import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import getRelativeDate from 'Utilities/Date/getRelativeDate';
 import translate from 'Utilities/String/translate';
 
@@ -23,9 +22,7 @@ function MovieInteractiveSearchModalContent({
 }: MovieInteractiveSearchModalContentProps) {
   const movie = useMovie(movieId).data;
 
-  const { showRelativeDates, shortDateFormat } = useSelector(
-    createUISettingsSelector()
-  );
+  const { showRelativeDates, shortDateFormat } = useUiSettingsValues();
 
   if (!movie) {
     return null;

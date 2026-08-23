@@ -5,32 +5,29 @@ import AppState from 'App/State/AppState';
 import useTranslations from 'App/useTranslations';
 import useCommands from 'Commands/useCommands';
 import useCustomFilters from 'Filters/useCustomFilters';
+import { useUiSettings } from 'Settings/UI/useUiSettings';
 import {
   fetchImportLists,
   fetchIndexerFlags,
   fetchLanguages,
   fetchQualityProfiles,
-  fetchUISettings,
 } from 'Store/Actions/settingsActions';
 import useSystemStatus from 'System/Status/useSystemStatus';
 import useTags from 'Tags/useTags';
 
 const createErrorsSelector = () =>
   createSelector(
-    (state: AppState) => state.settings.ui.error,
     (state: AppState) => state.settings.qualityProfiles.error,
     (state: AppState) => state.settings.languages.error,
     (state: AppState) => state.settings.importLists.error,
     (state: AppState) => state.settings.indexerFlags.error,
     (
-      uiSettingsError,
       qualityProfilesError,
       languagesError,
       importListsError,
       indexerFlagsError
     ) => {
       const hasError = !!(
-        uiSettingsError ||
         qualityProfilesError ||
         languagesError ||
         importListsError ||
@@ -40,7 +37,6 @@ const createErrorsSelector = () =>
       return {
         hasError,
         errors: {
-          uiSettingsError,
           qualityProfilesError,
           languagesError,
           importListsError,
@@ -77,6 +73,12 @@ const useAppPage = () => {
   const { isFetched: isTranslationsPopulated, error: translationsError } =
     useTranslations();
 
+  // Thirty-odd components call `formatDate` and friends during render, reading
+  // the format strings straight out of these settings, so the app waits on the
+  // query exactly as it waited on the slice's `isPopulated`.
+  const { isFetched: isUiSettingsPopulated, error: uiSettingsError } =
+    useUiSettings();
+
   // Keeps one observer on the command list for the whole session. SignalR pushes command
   // updates that drive global toasts, and the periodic refetch is what clears finished
   // commands now that the slice's per-command removal timer is gone. The app does not
@@ -85,7 +87,6 @@ const useAppPage = () => {
 
   const isReduxPopulated = useSelector(
     (state: AppState) =>
-      state.settings.ui.isPopulated &&
       state.settings.qualityProfiles.isPopulated &&
       state.settings.languages.isPopulated &&
       state.settings.importLists.isPopulated &&
@@ -97,13 +98,15 @@ const useAppPage = () => {
     isSystemStatusPopulated &&
     isCustomFiltersPopulated &&
     isTagsPopulated &&
-    isTranslationsPopulated;
+    isTranslationsPopulated &&
+    isUiSettingsPopulated;
 
   const { hasError, errors: reduxErrors } = useSelector(createErrorsSelector());
 
   const errors = useMemo(() => {
     return {
       ...reduxErrors,
+      uiSettingsError,
       customFiltersError,
       tagsError,
       translationsError,
@@ -111,6 +114,7 @@ const useAppPage = () => {
     };
   }, [
     reduxErrors,
+    uiSettingsError,
     customFiltersError,
     tagsError,
     translationsError,
@@ -135,7 +139,6 @@ const useAppPage = () => {
     dispatch(fetchLanguages());
     dispatch(fetchImportLists());
     dispatch(fetchIndexerFlags());
-    dispatch(fetchUISettings());
   }, [dispatch]);
 
   return useMemo(() => {
@@ -143,6 +146,7 @@ const useAppPage = () => {
       errors,
       hasError:
         hasError ||
+        !!uiSettingsError ||
         !!customFiltersError ||
         !!tagsError ||
         !!translationsError ||
@@ -153,6 +157,7 @@ const useAppPage = () => {
   }, [
     errors,
     hasError,
+    uiSettingsError,
     customFiltersError,
     tagsError,
     translationsError,

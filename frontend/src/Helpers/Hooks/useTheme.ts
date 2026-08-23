@@ -1,18 +1,11 @@
 import { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { createSelector } from 'reselect';
-import AppState from 'App/State/AppState';
+import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import themes from 'Styles/Themes';
 
-function createThemeSelector() {
-  return createSelector(
-    (state: AppState) => state.settings.ui.item.theme || window.Whisparr.theme,
-    (theme) => theme
-  );
-}
-
 const useTheme = () => {
-  const selectedTheme = useSelector(createThemeSelector());
+  // `theme` is undefined until `/config/ui` resolves, and the server hands the
+  // page its own copy in `window.Whisparr.theme` for exactly that window.
+  const selectedTheme = useUiSettingsValues().theme || window.Whisparr.theme;
   const [resolvedTheme, setResolvedTheme] = useState(selectedTheme);
 
   useEffect(() => {

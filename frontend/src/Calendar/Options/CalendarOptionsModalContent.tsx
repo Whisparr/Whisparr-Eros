@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import FieldSet from 'Components/FieldSet';
 import Form from 'Components/Form/Form';
 import FormGroup from 'Components/Form/FormGroup';
@@ -16,8 +15,10 @@ import {
   timeFormatOptions,
   weekColumnOptions,
 } from 'Settings/UI/UISettings';
-import { saveUISettings } from 'Store/Actions/settingsActions';
-import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
+import {
+  useSaveUiSettings,
+  useUiSettingsValues,
+} from 'Settings/UI/useUiSettings';
 import { InputChanged } from 'typings/inputs';
 import UiSettings from 'typings/Settings/UiSettings';
 import translate from 'Utilities/String/translate';
@@ -34,12 +35,11 @@ interface CalendarOptionsModalContentProps {
 function CalendarOptionsModalContent({
   onModalClose,
 }: CalendarOptionsModalContentProps) {
-  const dispatch = useDispatch();
-
   const { showMovieInformation, showCutoffUnmetIcon, fullColorEvents } =
     useCalendarOptions();
 
-  const uiSettings = useSelector(createUISettingsSelector());
+  const uiSettings = useUiSettingsValues();
+  const saveUiSettings = useSaveUiSettings();
 
   const [state, setState] = useState<Partial<UiSettings>>({
     firstDayOfWeek: uiSettings.firstDayOfWeek,
@@ -69,9 +69,9 @@ function CalendarOptionsModalContent({
     ({ name, value }: InputChanged) => {
       setState((prevState) => ({ ...prevState, [name]: value }));
 
-      dispatch(saveUISettings({ [name]: value }));
+      saveUiSettings({ [name]: value });
     },
-    [dispatch]
+    [saveUiSettings]
   );
 
   useEffect(() => {

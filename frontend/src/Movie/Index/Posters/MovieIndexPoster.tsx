@@ -22,7 +22,7 @@ import MovieIndexProgressBar from 'Movie/Index/ProgressBar/MovieIndexProgressBar
 import MovieIndexPosterSelect from 'Movie/Index/Select/MovieIndexPosterSelect';
 import Movie, { Statistics } from 'Movie/Movie';
 import MoviePoster from 'Movie/MoviePoster';
-import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
+import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import formatDate from 'Utilities/Date/formatDate';
 import getRelativeDate from 'Utilities/Date/getRelativeDate';
 import translate from 'Utilities/String/translate';
@@ -74,7 +74,7 @@ function MovieIndexPoster(props: Readonly<MovieIndexPosterProps>) {
   } = useMovieIndexOption('posterOptions');
 
   const { showRelativeDates, shortDateFormat, longDateFormat, timeFormat } =
-    useSelector(createUISettingsSelector());
+    useUiSettingsValues();
 
   const {
     title,

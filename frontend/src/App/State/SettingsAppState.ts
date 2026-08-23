@@ -24,7 +24,6 @@ import MediaManagement from 'typings/Settings/MediaManagement';
 import NamingConfig from 'typings/Settings/NamingConfig';
 import NamingExample from 'typings/Settings/NamingExample';
 import ReleaseProfile from 'typings/Settings/ReleaseProfile';
-import UiSettings from 'typings/Settings/UiSettings';
 import MetadataAppState from './MetadataAppState';
 
 type Presets<T> = T & {
@@ -123,7 +122,6 @@ export interface ImportListExclusionsSettingsAppState
 
 export type IndexerFlagSettingsAppState = AppSectionState<IndexerFlag>;
 export type LanguageSettingsAppState = AppSectionState<Language>;
-export type UiSettingsAppState = AppSectionItemState<UiSettings>;
 
 interface SettingsAppState {
   autoTaggings: AutoTaggingAppState;
@@ -146,7 +144,6 @@ interface SettingsAppState {
   notifications: NotificationAppState;
   qualityProfiles: QualityProfilesAppState;
   releaseProfiles: ReleaseProfilesAppState;
-  ui: UiSettingsAppState;
 }
 
 export default SettingsAppState;
