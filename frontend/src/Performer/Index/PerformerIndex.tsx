@@ -63,7 +63,6 @@ function PerformerIndex(_: Readonly<PerformerIndexProps>): React.JSX.Element {
     isLoading,
     isOptionsModalOpen,
     isSelectMode,
-    safeForWorkMode,
     selectedFilterKey,
     sortDirection,
     view,
@@ -213,7 +212,6 @@ function PerformerIndex(_: Readonly<PerformerIndexProps>): React.JSX.Element {
                 scrollerRef={scrollerRef}
                 isSmallScreen={false}
                 isSelectMode={isSelectMode}
-                safeForWorkMode={safeForWorkMode}
                 sortKey={sortKey}
                 sortDirection={sortDirection}
               />

@@ -1,7 +1,7 @@
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAppDimension, useAppDimensions } from 'App/appStore';
 import { queryClient } from 'App/queryClient';
-import { SafeForWorkModeContext } from 'App/State/SafeForWorkContext';
+import { useSafeForWorkMode } from 'App/safeForWorkStore';
 import useApiMutation from 'Helpers/Hooks/useApiMutation';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import Performer from 'Performer/Performer';
@@ -121,7 +121,7 @@ function useAddNewPerformer() {
 
 export function useAddNewPerformerSearchResult() {
   const { isSmallScreen } = useAppDimensions();
-  const safeForWorkMode = useContext(SafeForWorkModeContext);
+  const safeForWorkMode = useSafeForWorkMode();
 
   return { isSmallScreen, safeForWorkMode };
 }
@@ -132,7 +132,7 @@ export function useAddNewPerformerModalContent(
 ) {
   const isSmallScreen = useAppDimension('isSmallScreen');
   const systemStatus = useSystemStatusData();
-  const safeForWorkMode = useContext(SafeForWorkModeContext);
+  const safeForWorkMode = useSafeForWorkMode();
   const defaults = useAddPerformerDefaults();
 
   const addPerformer = useApiMutation<Performer, Performer>({

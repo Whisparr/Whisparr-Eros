@@ -8,14 +8,14 @@ import translate from 'Utilities/String/translate';
 import KeyboardShortcutsModal from './KeyboardShortcutsModal';
 import MovieSearchInput from './MovieSearchInput';
 import PageHeaderActionsMenu from './PageHeaderActionsMenu';
-import SafeForWorkButtonConnector from './SafeForWorkButtonConnector';
+import SafeForWorkButton from './SafeForWorkButton';
 import styles from './PageHeader.css';
 
 interface PageHeaderProps {
   isSmallScreen: boolean;
 }
 
-function PageHeader({ isSmallScreen }: PageHeaderProps) {
+function PageHeader({ isSmallScreen }: Readonly<PageHeaderProps>) {
   const isSidebarVisible = useAppValue('isSidebarVisible');
 
   const [isKeyboardShortcutsModalOpen, setIsKeyboardShortcutsModalOpen] =
@@ -73,7 +73,7 @@ function PageHeader({ isSmallScreen }: PageHeaderProps) {
       <MovieSearchInput />
 
       <div className={styles.right}>
-        <SafeForWorkButtonConnector />
+        <SafeForWorkButton />
 
         <IconButton
           className={styles.donate}

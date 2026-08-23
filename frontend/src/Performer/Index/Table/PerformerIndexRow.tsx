@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
+import { useSafeForWorkMode } from 'App/safeForWorkStore';
 import { useSelect } from 'App/SelectContext';
-import { SafeForWorkModeContext } from 'App/State/SafeForWorkContext';
 import CheckInput from 'Components/Form/CheckInput';
 import Icon from 'Components/Icon';
 import IconButton from 'Components/Link/IconButton';
@@ -65,7 +65,7 @@ function PerformerIndexRow(props: PerformerIndexRowProps) {
   const [isEditPerformerModalOpen, setIsEditPerformerModalOpen] =
     useState(false);
   const [selectState, selectDispatch] = useSelect();
-  const safeForWorkMode = React.useContext(SafeForWorkModeContext);
+  const safeForWorkMode = useSafeForWorkMode();
 
   const onEditPerformerPress = useCallback(() => {
     setIsEditPerformerModalOpen(true);

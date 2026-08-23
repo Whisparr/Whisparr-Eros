@@ -11,7 +11,7 @@ import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import { useAppDimension, useAppDimensions } from 'App/appStore';
 import { queryClient } from 'App/queryClient';
-import AppState from 'App/State/AppState';
+import { useSafeForWorkMode } from 'App/safeForWorkStore';
 import { ValidationMessage } from 'Components/Form/FormInputGroup';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import { MovieStats } from 'Movie/Index/useMovieStats';
@@ -173,9 +173,7 @@ export function useAddNewMovie(itemType: 'movie' | 'scene') {
 // Hook for AddNewMovieSearchResult card (display settings)
 export function useAddNewMovieSearchResult() {
   const dimensions = useAppDimensions();
-  const safeForWorkMode = useSelector(
-    (state: AppState) => state.settings.safeForWorkMode
-  );
+  const safeForWorkMode = useSafeForWorkMode();
   const uiSettings = useSelector(createUISettingsSelector());
 
   return {
@@ -194,9 +192,7 @@ export function useAddMovieMutation(
 ) {
   const isSmallScreen = useAppDimension('isSmallScreen');
   const systemStatus = useSystemStatusData();
-  const safeForWorkMode = useSelector(
-    (state: AppState) => state.settings.safeForWorkMode
-  );
+  const safeForWorkMode = useSafeForWorkMode();
 
   const defaults = useAddMovieDefaults();
 

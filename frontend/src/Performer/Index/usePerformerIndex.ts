@@ -1,6 +1,5 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SafeForWorkModeContext } from 'App/State/SafeForWorkContext';
 import { useCustomFiltersList } from 'Filters/useCustomFilters';
 import usePage from 'Helpers/Hooks/usePage';
 import { PERFORMER_INDEX_FILTERS } from './performerIndexFilters';
@@ -16,7 +15,6 @@ import { usePerformerIndexQuery } from './usePerformerIndexQuery';
 
 export function usePerformerIndex() {
   const navigate = useNavigate();
-  const safeForWorkMode = React.useContext(SafeForWorkModeContext);
 
   const {
     sortKey,
@@ -136,7 +134,6 @@ export function usePerformerIndex() {
     isOptionsModalOpen,
     isSelectMode,
     jumpToCharacter,
-    safeForWorkMode,
     scrollerRef,
     handleFirstPagePress,
     handlePreviousPagePress,
