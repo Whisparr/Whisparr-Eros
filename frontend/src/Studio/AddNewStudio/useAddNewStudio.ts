@@ -1,33 +1,27 @@
 import { cloneDeep } from 'lodash';
 import React, { useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useAppDimension, useAppDimensions } from 'App/appStore';
 import { queryClient } from 'App/queryClient';
 import AppState from 'App/State/AppState';
 import { ValidationMessage } from 'Components/Form/FormInputGroup';
 import useApiMutation from 'Helpers/Hooks/useApiMutation';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
-import { setAddStudioDefault } from 'Store/Actions/addMovieActions';
 import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
 import selectSettings from 'Store/Selectors/selectSettings';
 import Studio from 'Studio/Studio';
 import { useSystemStatusData } from 'System/Status/useSystemStatus';
 import { InputChanged } from 'typings/inputs';
-import { ApiError } from 'Utilities/Fetch/fetchJson';
 import getNewStudio from 'Utilities/Studio/getNewStudio';
+import {
+  AddStudioDefaults,
+  setAddStudioDefault,
+  useAddStudioDefaults,
+} from './addStudioDefaultsStore';
 
 export interface StudioWithExistingStatus {
   studio: Studio;
   isExistingStudio: boolean;
-}
-
-interface StudioDefaults {
-  rootFolderPath: string;
-  monitored: boolean;
-  moviesMonitored: boolean;
-  qualityProfileId: number;
-  searchForMovie: boolean;
-  tags: number[];
 }
 
 interface SettingValue<T> {
@@ -46,15 +40,6 @@ interface AddStudioSettings {
   searchForMovie: SettingValue<boolean>;
   tags: SettingValue<number[]>;
 }
-
-const defaultStudioDefaults: StudioDefaults = {
-  rootFolderPath: '',
-  monitored: true,
-  moviesMonitored: false,
-  qualityProfileId: 0,
-  searchForMovie: false,
-  tags: [],
-};
 
 interface SearchResource {
   foreignId: string;
@@ -137,22 +122,13 @@ export function useAddNewStudioSearchResult() {
 }
 
 export function useAddNewStudioModalContent(studio: Studio) {
-  const dispatch = useDispatch();
   const isSmallScreen = useAppDimension('isSmallScreen');
   const systemStatus = useSystemStatusData();
   const safeForWorkMode = useSelector(
     (state: AppState) => state.settings.safeForWorkMode
   );
 
-  const addMovieState = useSelector(
-    (
-      state: AppState & {
-        addMovie: { studioDefaults: StudioDefaults; addError?: ApiError };
-      }
-    ) => state.addMovie
-  );
-
-  const { studioDefaults = defaultStudioDefaults } = addMovieState || {};
+  const studioDefaults = useAddStudioDefaults();
 
   const mutation = useApiMutation<Studio, Studio>({
     method: 'POST',
@@ -175,12 +151,12 @@ export function useAddNewStudioModalContent(studio: Studio) {
     validationWarnings: unknown[];
   };
 
-  const onInputChange = React.useCallback(
-    (change: InputChanged) => {
-      dispatch(setAddStudioDefault({ [change.name]: change.value }));
-    },
-    [dispatch]
-  );
+  const onInputChange = React.useCallback(({ name, value }: InputChanged) => {
+    setAddStudioDefault(
+      name as keyof AddStudioDefaults,
+      value as AddStudioDefaults[keyof AddStudioDefaults]
+    );
+  }, []);
 
   const onAddStudioPress = React.useCallback(() => {
     const studioToAdd = getNewStudio(cloneDeep(studio) as object, {
