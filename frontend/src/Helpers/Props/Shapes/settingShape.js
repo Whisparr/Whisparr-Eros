@@ -21,11 +21,6 @@ export const numberSettingShape = {
   value: PropTypes.number.isRequired,
 };
 
-export const stringSettingShape = {
-  ...settingShape,
-  value: PropTypes.string,
-};
-
 export const tagSettingShape = {
   ...settingShape,
   value: PropTypes.arrayOf(PropTypes.number).isRequired,

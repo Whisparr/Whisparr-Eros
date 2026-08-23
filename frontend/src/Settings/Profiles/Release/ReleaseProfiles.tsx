@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import AppState from 'App/State/AppState';
-import { ReleaseProfilesAppState } from 'App/State/SettingsAppState';
 import Card from 'Components/Card';
 import FieldSet from 'Components/FieldSet';
 import Icon from 'Components/Icon';
@@ -9,17 +8,15 @@ import PageSectionContent from 'Components/Page/PageSectionContent';
 import useModalOpenState from 'Helpers/Hooks/useModalOpenState';
 import { icons } from 'Helpers/Props';
 import { fetchIndexers } from 'Store/Actions/Settings/indexers';
-import { fetchReleaseProfiles } from 'Store/Actions/Settings/releaseProfiles';
-import createClientSideCollectionSelector from 'Store/Selectors/createClientSideCollectionSelector';
 import { useTagList } from 'Tags/useTags';
 import translate from 'Utilities/String/translate';
 import EditReleaseProfileModal from './EditReleaseProfileModal';
 import ReleaseProfileItem from './ReleaseProfileItem';
+import { useReleaseProfiles } from './useReleaseProfiles';
 import styles from './ReleaseProfiles.css';
 
 function ReleaseProfiles() {
-  const { items, isFetching, isPopulated, error }: ReleaseProfilesAppState =
-    useSelector(createClientSideCollectionSelector('settings.releaseProfiles'));
+  const { data, isFetching, isFetched, error } = useReleaseProfiles();
 
   const tagList = useTagList();
   const indexerList = useSelector(
@@ -34,8 +31,9 @@ function ReleaseProfiles() {
     setAddReleaseProfileModalClosed,
   ] = useModalOpenState(false);
 
+  // Indexers are still a Redux slice -- they convert in section 7, along with
+  // the boot gate that fetches the indexer flags beside them.
   useEffect(() => {
-    dispatch(fetchReleaseProfiles());
     dispatch(fetchIndexers());
   }, [dispatch]);
 
@@ -44,8 +42,8 @@ function ReleaseProfiles() {
       <PageSectionContent
         errorMessage={translate('ReleaseProfilesLoadError')}
         isFetching={isFetching}
-        isPopulated={isPopulated}
-        error={error}
+        isPopulated={isFetched}
+        error={error ?? undefined}
       >
         <div className={styles.releaseProfiles}>
           <Card
@@ -57,7 +55,7 @@ function ReleaseProfiles() {
             </div>
           </Card>
 
-          {items.map((item) => {
+          {data.map((item) => {
             return (
               <ReleaseProfileItem
                 key={item.id}

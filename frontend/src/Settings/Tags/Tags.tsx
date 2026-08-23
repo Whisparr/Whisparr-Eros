@@ -10,7 +10,6 @@ import {
   fetchImportLists,
   fetchIndexers,
   fetchNotifications,
-  fetchReleaseProfiles,
 } from 'Store/Actions/settingsActions';
 import useTagDetails from 'Tags/useTagDetails';
 import useTags, { useSortedTagList } from 'Tags/useTags';
@@ -33,7 +32,6 @@ function Tags() {
     dispatch(fetchDelayProfiles());
     dispatch(fetchImportLists());
     dispatch(fetchNotifications());
-    dispatch(fetchReleaseProfiles());
     dispatch(fetchIndexers());
     dispatch(fetchDownloadClients());
   }, [dispatch]);

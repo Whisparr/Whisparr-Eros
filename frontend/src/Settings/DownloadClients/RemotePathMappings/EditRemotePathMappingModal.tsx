@@ -1,23 +1,23 @@
 import React from 'react';
 import Modal from 'Components/Modal/Modal';
 import { sizes } from 'Helpers/Props';
-import EditReleaseProfileModalContent from './EditReleaseProfileModalContent';
+import EditRemotePathMappingModalContent from './EditRemotePathMappingModalContent';
 
-interface EditReleaseProfileModalProps {
+interface EditRemotePathMappingModalProps {
   id?: number;
   isOpen: boolean;
   onModalClose: () => void;
-  onDeleteReleaseProfilePress?: () => void;
+  onDeleteRemotePathMappingPress?: () => void;
 }
 
-function EditReleaseProfileModal({
+function EditRemotePathMappingModal({
   isOpen,
   onModalClose,
   ...otherProps
-}: Readonly<EditReleaseProfileModalProps>) {
+}: Readonly<EditRemotePathMappingModalProps>) {
   return (
     <Modal size={sizes.MEDIUM} isOpen={isOpen} onModalClose={onModalClose}>
-      <EditReleaseProfileModalContent
+      <EditRemotePathMappingModalContent
         {...otherProps}
         onModalClose={onModalClose}
       />
@@ -25,4 +25,4 @@ function EditReleaseProfileModal({
   );
 }
 
-export default EditReleaseProfileModal;
+export default EditRemotePathMappingModal;
