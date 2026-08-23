@@ -19,10 +19,10 @@ import MovieLanguages from 'Movie/MovieLanguages';
 import MovieQuality from 'Movie/MovieQuality';
 import { useMovie } from 'Movie/useMovie';
 import { QualityModel } from 'Quality/Quality';
-import { grabRelease } from 'Store/Actions/releaseActions';
 import { fetchDownloadClients } from 'Store/Actions/settingsActions';
 import createEnabledDownloadClientsSelector from 'Store/Selectors/createEnabledDownloadClientsSelector';
 import translate from 'Utilities/String/translate';
+import { GrabReleasePayload } from '../useReleases';
 import SelectDownloadClientModal from './DownloadClient/SelectDownloadClientModal';
 import OverrideMatchData from './OverrideMatchData';
 import styles from './OverrideMatchModalContent.css';
@@ -40,6 +40,7 @@ interface OverrideMatchModalContentProps {
   protocol: DownloadProtocol;
   isGrabbing: boolean;
   grabError?: string;
+  onGrabRelease(payload: GrabReleasePayload): void;
   onModalClose(): void;
 }
 
@@ -54,6 +55,7 @@ function OverrideMatchModalContent(
     protocol,
     isGrabbing,
     grabError,
+    onGrabRelease,
     onModalClose,
   } = props;
 
@@ -146,17 +148,15 @@ function OverrideMatchModalContent(
       return;
     }
 
-    dispatch(
-      grabRelease({
-        indexerId,
-        guid,
-        movieId,
-        quality,
-        languages,
-        downloadClientId,
-        shouldOverride: true,
-      })
-    );
+    onGrabRelease({
+      indexerId,
+      guid,
+      movieId,
+      quality,
+      languages,
+      downloadClientId,
+      shouldOverride: true,
+    });
   }, [
     indexerId,
     guid,
@@ -165,7 +165,7 @@ function OverrideMatchModalContent(
     languages,
     downloadClientId,
     setError,
-    dispatch,
+    onGrabRelease,
   ]);
 
   useEffect(() => {
