@@ -10,7 +10,7 @@ import translate from 'Utilities/String/translate';
 import DownloadClientsConnector from './DownloadClients/DownloadClientsConnector';
 import ManageDownloadClientsModal from './DownloadClients/Manage/ManageDownloadClientsModal';
 import DownloadClientOptionsConnector from './Options/DownloadClientOptionsConnector';
-import RemotePathMappingsConnector from './RemotePathMappings/RemotePathMappingsConnector';
+import RemotePathMappings from './RemotePathMappings/RemotePathMappings';
 
 class DownloadClientSettings extends Component {
   //
@@ -96,7 +96,7 @@ class DownloadClientSettings extends Component {
             onChildStateChange={this.onChildStateChange}
           />
 
-          <RemotePathMappingsConnector />
+          <RemotePathMappings />
 
           <ManageDownloadClientsModal
             isOpen={isManageDownloadClientsOpen}
