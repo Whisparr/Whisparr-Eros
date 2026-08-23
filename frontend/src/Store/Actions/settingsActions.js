@@ -1,4 +1,3 @@
-import { createAction } from 'redux-actions';
 import { handleThunks } from 'Store/thunks';
 import createHandleActions from './Creators/createHandleActions';
 import autoTaggings from './Settings/autoTaggings';
@@ -64,7 +63,6 @@ export const section = 'settings';
 export const defaultState = {
   autoTaggingSpecifications: autoTaggingSpecifications.defaultState,
   autoTaggings: autoTaggings.defaultState,
-  safeForWorkMode: false,
   customFormatSpecifications: customFormatSpecifications.defaultState,
   customFormats: customFormats.defaultState,
   delayProfiles: delayProfiles.defaultState,
@@ -90,20 +88,7 @@ export const defaultState = {
   ui: ui.defaultState,
 };
 
-export const persistState = [
-  'settings.importListExclusions.pageSize',
-  'settings.safeForWorkMode',
-];
-
-//
-// Actions Types
-
-export const TOGGLE_SFW_MODE = 'settings/toggleSafeForWorkMode';
-
-//
-// Action Creators
-
-export const toggleSafeForWorkMode = createAction(TOGGLE_SFW_MODE);
+export const persistState = ['settings.importListExclusions.pageSize'];
 
 //
 // Action Handlers
@@ -141,12 +126,6 @@ export const actionHandlers = handleThunks({
 
 export const reducers = createHandleActions(
   {
-    [TOGGLE_SFW_MODE]: (state, { payload }) => {
-      return Object.assign({}, state, {
-        safeForWorkMode: !state.safeForWorkMode,
-      });
-    },
-
     ...autoTaggingSpecifications.reducers,
     ...autoTaggings.reducers,
     ...customFormatSpecifications.reducers,

@@ -4,7 +4,7 @@ import { saveDimensions, useAppDimension, useAppValues } from 'App/appStore';
 import AppUpdatedModal from 'App/AppUpdatedModal';
 import ColorImpairedContext from 'App/ColorImpairedContext';
 import ConnectionLostModal from 'App/ConnectionLostModal';
-import AppState from 'App/State/AppState';
+import { useSafeForWorkMode } from 'App/safeForWorkStore';
 import { SafeForWorkModeContext } from 'App/State/SafeForWorkContext';
 import SignalRListener from 'Components/SignalRListener';
 import AuthenticationRequiredModal from 'FirstRun/AuthenticationRequiredModal';
@@ -21,16 +21,14 @@ interface PageProps {
   children: React.ReactNode;
 }
 
-function Page({ children }: PageProps) {
+function Page({ children }: Readonly<PageProps>) {
   const { hasError, errors, isPopulated, isLocalStorageSupported } =
     useAppPage();
   const [isUpdatedModalOpen, setIsUpdatedModalOpen] = useState(false);
   const [isConnectionLostModalOpen, setIsConnectionLostModalOpen] =
     useState(false);
 
-  const safeForWorkMode = useSelector(
-    (state: AppState) => state.settings.safeForWorkMode
-  );
+  const safeForWorkMode = useSafeForWorkMode();
   const { enableColorImpairedMode } = useSelector(createUISettingsSelector());
   const isSmallScreen = useAppDimension('isSmallScreen');
   const { authentication } = useSystemStatusData();

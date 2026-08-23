@@ -1,4 +1,5 @@
-import React, { useContext } from 'react';
+import React, { useCallback, useContext } from 'react';
+import { toggleSafeForWorkMode } from 'App/safeForWorkStore';
 import { SafeForWorkModeContext } from 'App/State/SafeForWorkContext';
 import Icon from 'Components/Icon';
 import Link from 'Components/Link/Link';
@@ -6,12 +7,12 @@ import { icons } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import styles from './SafeForWorkButton.css';
 
-export interface SafeForWorkButtonProps {
-  onSafeForWorkModePress: () => void;
-}
-
-function SafeForWorkButton({ onSafeForWorkModePress }: SafeForWorkButtonProps) {
+function SafeForWorkButton() {
   const safeForWorkMode = useContext(SafeForWorkModeContext);
+
+  const handlePress = useCallback(() => {
+    toggleSafeForWorkMode();
+  }, []);
 
   return (
     <Link
@@ -21,7 +22,7 @@ function SafeForWorkButton({ onSafeForWorkModePress }: SafeForWorkButtonProps) {
           ? translate('HiddenClickToShow')
           : translate('ShownClickToHide')
       }
-      onPress={onSafeForWorkModePress}
+      onPress={handlePress}
     >
       <Icon name={safeForWorkMode ? icons.SFW : icons.NSFW} size={21} />
     </Link>

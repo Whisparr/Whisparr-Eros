@@ -147,7 +147,6 @@ interface SettingsAppState {
   qualityProfiles: QualityProfilesAppState;
   releaseProfiles: ReleaseProfilesAppState;
   ui: UiSettingsAppState;
-  safeForWorkMode: boolean;
 }
 
 export default SettingsAppState;

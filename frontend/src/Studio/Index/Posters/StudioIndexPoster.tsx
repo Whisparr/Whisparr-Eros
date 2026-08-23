@@ -1,6 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { useSelector } from 'react-redux';
-import AppState from 'App/State/AppState';
+import { useSafeForWorkMode } from 'App/safeForWorkStore';
 import Icon from 'Components/Icon';
 import Label from 'Components/Label';
 import IconButton from 'Components/Link/IconButton';
@@ -27,10 +26,8 @@ interface StudioIndexPosterProps {
   posterHeight: number;
 }
 
-function StudioIndexPoster(props: StudioIndexPosterProps) {
-  const safeForWorkMode = useSelector(
-    (state: AppState) => state.settings.safeForWorkMode
-  );
+function StudioIndexPoster(props: Readonly<StudioIndexPosterProps>) {
+  const safeForWorkMode = useSafeForWorkMode();
 
   const { studio, isSelectMode, posterWidth, posterHeight } = props;
   const { id: studioId } = studio;

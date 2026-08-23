@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { useSafeForWorkMode } from 'App/safeForWorkStore';
 import AppState from 'App/State/AppState';
 import Command from 'Commands/Command';
 import { MOVIE_SEARCH, REFRESH_MOVIE } from 'Commands/commandNames';
@@ -33,7 +34,7 @@ interface SceneIndexPosterProps {
   posterHeight: number;
 }
 
-function SceneIndexPoster(props: SceneIndexPosterProps) {
+function SceneIndexPoster(props: Readonly<SceneIndexPosterProps>) {
   const { scene, sortKey, isSelectMode, posterWidth, posterHeight } = props;
   const sceneId = scene.id;
 
@@ -55,9 +56,7 @@ function SceneIndexPoster(props: SceneIndexPosterProps) {
       command.name === MOVIE_SEARCH && command.body.movieId === sceneId
   );
 
-  const safeForWorkMode = useSelector(
-    (state: AppState) => state.settings.safeForWorkMode
-  );
+  const safeForWorkMode = useSafeForWorkMode();
 
   const {
     detailedProgressBar,

@@ -1,6 +1,5 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
-import AppState from 'App/State/AppState';
+import { useSafeForWorkMode } from 'App/safeForWorkStore';
 import posterPlaceholder from 'Components/posterPlaceholder';
 import MovieImage, { MovieImageProps } from './MovieImage';
 
@@ -12,10 +11,11 @@ interface MoviePosterProps extends Omit<
   safeForWorkMode?: boolean;
 }
 
-function MoviePoster({ size = 250, ...otherProps }: MoviePosterProps) {
-  const safeForWorkMode = useSelector(
-    (state: AppState) => state.settings.safeForWorkMode
-  );
+function MoviePoster({
+  size = 250,
+  ...otherProps
+}: Readonly<MoviePosterProps>) {
+  const safeForWorkMode = useSafeForWorkMode();
   return (
     <MovieImage
       {...otherProps}

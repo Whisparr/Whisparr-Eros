@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import TextTruncate from 'react-text-truncate';
+import { useSafeForWorkMode } from 'App/safeForWorkStore';
 import AppState from 'App/State/AppState';
 import Command from 'Commands/Command';
 import { MOVIE_SEARCH, REFRESH_MOVIE } from 'Commands/commandNames';
@@ -48,7 +49,7 @@ interface MovieIndexOverviewProps {
   isSmallScreen: boolean;
 }
 
-function MovieIndexOverview(props: MovieIndexOverviewProps) {
+function MovieIndexOverview(props: Readonly<MovieIndexOverviewProps>) {
   const {
     movie,
     sortKey,
@@ -79,9 +80,7 @@ function MovieIndexOverview(props: MovieIndexOverviewProps) {
       command.name === MOVIE_SEARCH && command.body.movieId === movieId
   );
 
-  const safeForWorkMode = useSelector(
-    (state: AppState) => state.settings.safeForWorkMode
-  );
+  const safeForWorkMode = useSafeForWorkMode();
 
   const overviewOptions = useMovieIndexOption('overviewOptions');
 

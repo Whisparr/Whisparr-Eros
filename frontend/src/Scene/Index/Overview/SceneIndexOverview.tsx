@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import TextTruncate from 'react-text-truncate';
+import { useSafeForWorkMode } from 'App/safeForWorkStore';
 import AppState from 'App/State/AppState';
 import Command from 'Commands/Command';
 import { MOVIE_SEARCH, REFRESH_MOVIE } from 'Commands/commandNames';
@@ -47,7 +48,7 @@ interface SceneIndexOverviewProps {
   isSmallScreen: boolean;
 }
 
-function SceneIndexOverview(props: SceneIndexOverviewProps) {
+function SceneIndexOverview(props: Readonly<SceneIndexOverviewProps>) {
   const {
     scene,
     sortKey,
@@ -60,9 +61,7 @@ function SceneIndexOverview(props: SceneIndexOverviewProps) {
 
   const sceneId = scene.id;
 
-  const safeForWorkMode = useSelector(
-    (state: AppState) => state.settings.safeForWorkMode
-  );
+  const safeForWorkMode = useSafeForWorkMode();
 
   const qualityProfile = useSelector((state: AppState) =>
     state.settings.qualityProfiles.items.find(

@@ -3,7 +3,7 @@ import React, { useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useAppDimension, useAppDimensions } from 'App/appStore';
 import { queryClient } from 'App/queryClient';
-import AppState from 'App/State/AppState';
+import { useSafeForWorkMode } from 'App/safeForWorkStore';
 import { ValidationMessage } from 'Components/Form/FormInputGroup';
 import useApiMutation from 'Helpers/Hooks/useApiMutation';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
@@ -111,9 +111,7 @@ function useAddNewStudio() {
 
 export function useAddNewStudioSearchResult() {
   const dimensions = useAppDimensions();
-  const safeForWorkMode = useSelector(
-    (state: AppState) => state.settings.safeForWorkMode
-  );
+  const safeForWorkMode = useSafeForWorkMode();
 
   return {
     isSmallScreen: dimensions.isSmallScreen,
@@ -124,9 +122,7 @@ export function useAddNewStudioSearchResult() {
 export function useAddNewStudioModalContent(studio: Studio) {
   const isSmallScreen = useAppDimension('isSmallScreen');
   const systemStatus = useSystemStatusData();
-  const safeForWorkMode = useSelector(
-    (state: AppState) => state.settings.safeForWorkMode
-  );
+  const safeForWorkMode = useSafeForWorkMode();
 
   const studioDefaults = useAddStudioDefaults();
 
