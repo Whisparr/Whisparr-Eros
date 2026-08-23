@@ -1,13 +1,12 @@
 import { cloneDeep } from 'lodash';
 import React, { useRef, useState } from 'react';
-import { useSelector } from 'react-redux';
 import { useAppDimension, useAppDimensions } from 'App/appStore';
 import { queryClient } from 'App/queryClient';
 import { useSafeForWorkMode } from 'App/safeForWorkStore';
 import { ValidationMessage } from 'Components/Form/FormInputGroup';
 import useApiMutation from 'Helpers/Hooks/useApiMutation';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
-import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
+import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import selectSettings from 'Store/Selectors/selectSettings';
 import Studio from 'Studio/Studio';
 import { useSystemStatusData } from 'System/Status/useSystemStatus';
@@ -48,7 +47,7 @@ interface SearchResource {
 }
 
 function useAddNewStudio() {
-  const uiSettings = useSelector(createUISettingsSelector());
+  const uiSettings = useUiSettingsValues();
   const [term, setTerm] = useState('');
   const [debouncedTerm, setDebouncedTerm] = useState('');
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);

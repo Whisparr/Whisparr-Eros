@@ -1,13 +1,13 @@
 import React, { useCallback, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import Card from 'Components/Card';
 import Label from 'Components/Label';
 import IconButton from 'Components/Link/IconButton';
 import ConfirmModal from 'Components/Modal/ConfirmModal';
 import TagList from 'Components/TagList';
 import { icons, kinds } from 'Helpers/Props';
+import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import { deleteImportList } from 'Store/Actions/settingsActions';
-import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
 import { useTagList } from 'Tags/useTags';
 import formatShortTimeSpan from 'Utilities/Date/formatShortTimeSpan';
 import getRelativeDate from 'Utilities/Date/getRelativeDate';
@@ -39,9 +39,7 @@ function ImportList({
   const dispatch = useDispatch();
   const tagList = useTagList();
 
-  const { shortDateFormat, timeFormat } = useSelector(
-    createUISettingsSelector()
-  );
+  const { shortDateFormat, timeFormat } = useUiSettingsValues();
 
   const [isEditImportListModalOpen, setIsEditImportListModalOpen] =
     useState(false);

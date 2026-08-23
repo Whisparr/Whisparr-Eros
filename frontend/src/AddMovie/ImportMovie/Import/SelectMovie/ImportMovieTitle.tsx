@@ -1,8 +1,7 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
 import Label from 'Components/Label';
 import { kinds } from 'Helpers/Props';
-import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
+import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import getRelativeDate from 'Utilities/Date/getRelativeDate';
 import translate from 'Utilities/String/translate';
 import styles from './ImportMovieTitle.css';
@@ -24,9 +23,7 @@ function ImportMovieTitle({
   studioTitle,
   isExistingMovie,
 }: Readonly<ImportMovieTitleProps>) {
-  const { shortDateFormat, showRelativeDates } = useSelector(
-    createUISettingsSelector()
-  );
+  const { shortDateFormat, showRelativeDates } = useUiSettingsValues();
 
   let itemDescr = title;
   if (itemType === 'movie' && year) {

@@ -1,6 +1,5 @@
 import _ from 'lodash';
 import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import Flag from 'react-world-flags';
 import { useSafeForWorkMode } from 'App/safeForWorkStore';
@@ -24,7 +23,7 @@ import DeletePerformerModal from 'Performer/Delete/DeletePerformerModal';
 import PerformerGenderIcon from 'Performer/PerformerGenderIcon';
 import { getPerformerStatusDetails } from 'Performer/PerformerStatus';
 import QualityProfileName from 'Settings/Profiles/Quality/QualityProfileName';
-import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
+import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import formatDate from 'Utilities/Date/formatDate';
 import formatBytes from 'Utilities/Number/formatBytes';
 import countryCode from 'Utilities/String/countryCode';
@@ -50,7 +49,7 @@ function getFanartUrl(
 function PerformerDetails() {
   const { performerForeignId } = useParams() as { performerForeignId: string };
 
-  const { shortDateFormat } = useSelector(createUISettingsSelector());
+  const { shortDateFormat } = useUiSettingsValues();
 
   const {
     performer,

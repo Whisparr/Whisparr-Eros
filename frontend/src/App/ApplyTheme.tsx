@@ -1,20 +1,11 @@
 import { useCallback, useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { createSelector } from 'reselect';
+import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import themes from 'Styles/Themes';
-import AppState from './State/AppState';
-
-function createThemeSelector() {
-  return createSelector(
-    (state: AppState) => state.settings.ui.item.theme || window.Whisparr.theme,
-    (theme) => {
-      return theme;
-    }
-  );
-}
 
 function ApplyTheme() {
-  const theme = useSelector(createThemeSelector());
+  // Mounted above the boot gate, so this renders before `/config/ui` resolves
+  // and falls back to the theme the server rendered the page with.
+  const theme = useUiSettingsValues().theme || window.Whisparr.theme;
 
   const updateCSSVariables = useCallback(() => {
     Object.entries(themes[theme]).forEach(([key, value]) => {

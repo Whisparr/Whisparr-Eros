@@ -76,10 +76,20 @@ function FileEditModalContent(props: FileEditModalContentProps) {
     []
   );
 
-  // Handler for language select (multi value)
+  // Handler for language select (multi value). The input's value type covers
+  // the UI settings page too, which picks a single language, so the array is
+  // narrowed here rather than assumed.
   const handleLanguageChange = React.useCallback(
-    (change: import('typings/inputs').EnhancedSelectInputChanged<number[]>) => {
-      setState((prev) => ({ ...prev, languageIds: change.value.map(String) }));
+    (
+      change: import('typings/inputs').EnhancedSelectInputChanged<
+        number | number[]
+      >
+    ) => {
+      const languageIds = Array.isArray(change.value)
+        ? change.value
+        : [change.value];
+
+      setState((prev) => ({ ...prev, languageIds: languageIds.map(String) }));
     },
     []
   );

@@ -11,7 +11,7 @@ Counts are file-level `react-redux` imports across the frontend source tree.
 Every commit reference below links to the Sonarr commit it names; all were
 verified to resolve against the public repo.
 
-**Status: Phases A, B, C and D complete, and Phase E has its prerequisite. Phase E is the whole of what is left, plus the teardown.** See §11 for the running log.
+**Status: Phases A, B, C and D complete; Phase E is under way, one of eleven sections done. Phase E is the whole of what is left, plus the teardown.** See §11 for the running log.
 
 ---
 
@@ -19,11 +19,11 @@ verified to resolve against the public repo.
 
 | Metric | At assessment | Now |
 | --- | --- | --- |
-| Files importing `react-redux` | 327 of 1,255 | **147** of 1,200 |
-| Lines under `frontend/src/Store/` | 15,374 across 138 files | **5,498** across 76 |
+| Files importing `react-redux` | 327 of 1,255 | **118** of 1,198 |
+| Lines under `frontend/src/Store/` | 15,374 across 138 files | **5,277** across 73 |
 | Redux slices registered in `Store/Actions/index.js` | 35 | **2** |
-| Remaining `*Connector` files | 66 | **43** |
-| Files touching React Query | 35 | **70** |
+| Remaining `*Connector` files | 66 | **42** |
+| Files touching React Query | 35 | **71** |
 | zustand stores | 0 (not installed) | **installed, 38 files** |
 
 > **Recomputed in #464.** Three rows previously carried figures that no command
@@ -241,6 +241,12 @@ shape: convert one properly, then the other three are largely mechanical.
 56 remaining connectors are in here. Sonarr spent six months at roughly one section per
 fortnight and never batched two together. Do the same.
 
+`Settings/useSettings.ts` landed with section one and is the shape the other ten use:
+`useSettings` reads, `useSaveSettings` PUTs and writes the response into the cache, and
+`useManageSettings` puts a `usePendingChangesStore` beside the query and runs both through
+`selectSettings`. A section that edits a list of rows reaches for `usePendingItemsStore`
+instead, and a provider section for `usePendingFieldsStore`.
+
 ~~**Prerequisite:** the three pending-changes stores (`usePendingChangesStore`,
 `usePendingFieldsStore`, `usePendingItemsStore`), which replace the dirty-form tracking in
 `createSetSettingValueReducer` and `createSetProviderFieldValueReducer`. Land those in
@@ -251,7 +257,7 @@ is-it-a-change question* below.
 
 | Order | Section | Retires | Sonarr ref |
 | --- | --- | --- | --- |
-| 1 | **UI settings** — smallest, 32 files read it. Good pathfinder. ~~Safe-for-work mode was split out and landed first in #514~~; what is left is the `/config/ui` half, which needs the pending-changes stores for the form. | `Settings/ui.js`, `UISettingsConnector.js`, `createUISettingsSelector.ts`; ~~`settings.safeForWorkMode`, `TOGGLE_SFW_MODE`, `SafeForWorkButtonConnector.js`, `SafeForWorkContext.tsx`~~ | [Sonarr/Sonarr@74e6ce43](https://github.com/Sonarr/Sonarr/commit/74e6ce43) |
+| 1 | ~~**UI settings** — smallest, 32 files read it. Good pathfinder.~~ **Done, #517.** ~~Safe-for-work mode was split out and landed first in #514~~; the `/config/ui` half followed. It was the pathfinder in both senses — it took `useSettings` with it, and it moved `react-redux` further than any single PR of the migration so far. | ~~`Settings/ui.js`, `UISettingsConnector.js`, `createUISettingsSelector.ts`~~; ~~`settings.safeForWorkMode`, `TOGGLE_SFW_MODE`, `SafeForWorkButtonConnector.js`, `SafeForWorkContext.tsx`~~ | [Sonarr/Sonarr@74e6ce43](https://github.com/Sonarr/Sonarr/commit/74e6ce43) |
 | 2 | Remote path mappings · Release profiles | `Settings/remotePathMappings.js`, `Settings/releaseProfiles.js` | [Sonarr/Sonarr@8fcab2d3](https://github.com/Sonarr/Sonarr/commit/8fcab2d3), [Sonarr/Sonarr@4713615b](https://github.com/Sonarr/Sonarr/commit/4713615b) |
 | 3 | Quality profiles · Quality definitions (4 connectors incl. reset modal) | `Settings/qualityProfiles.js`, `Settings/qualityDefinitions.js`, `Quality*Connector.js` ×4 | [Sonarr/Sonarr@21ca65a0](https://github.com/Sonarr/Sonarr/commit/21ca65a0), [Sonarr/Sonarr@cf593b1f](https://github.com/Sonarr/Sonarr/commit/cf593b1f) |
 | 4 | Connections (Notifications) | `Settings/notifications.js` (~~`DeviceInput.tsx`~~ — converted in #490) | [Sonarr/Sonarr@6d49b41d](https://github.com/Sonarr/Sonarr/commit/6d49b41d) |
@@ -376,11 +382,16 @@ alongside it: 46 to 44. #513 moved neither that number nor the `react-redux` cou
 `addMovie` slice had no connectors, and all three of its consumers keep a `useSelector` for
 a Phase E read — which is the §5 point about the headline number lagging the work.
 
-**Next: Phase E.** ~~The pending-changes stores first — nothing in §7 can start without
-them, because every section left is a settings form.~~ **Done, #516**, foundation only and
-with no consumers, the same shape #452 took. Section one — the `/config/ui` half of UI
-settings, the rest of that row having gone out as #514 — is what starts the grind, and it
-is the first thing that will hold a settings form's dirty state outside Redux.
+**Phase E is under way.** ~~The pending-changes stores first — nothing in §7 can start
+without them, because every section left is a settings form.~~ **Done, #516**, foundation
+only and with no consumers, the same shape #452 took. ~~Section one — the `/config/ui`
+half of UI settings, the rest of that row having gone out as #514.~~ **Done, #517**, and it
+took `Settings/useSettings.ts` with it, so the ten sections left start from a written-down
+shape rather than inventing one each.
+
+**Next: section 2** — remote path mappings and release profiles. Both are list sections
+rather than single-object forms, so they are the first call on `usePendingItemsStore`, and
+neither has a boot-gate entanglement the way UI settings did.
 
 1. ~~**Queue**, in three PRs.~~ **Done.** Sonarr shipped it as one 58-file commit, but the slice already
    has three independent sub-sections and splitting along them gives three merge points
@@ -912,6 +923,26 @@ If a JS test runner is ever added, remove that line and set
 
 ---
 
+### UI settings kept its languages on Redux
+
+The page needs the language list for its **UI Language** picker, and `Settings/languages`
+is section 6's job, not section one's. Converting it early would have meant either
+pre-empting that section or running `GET /language` twice — once into the slice at boot,
+once into a query — for the five sections in between. So `UISettings.tsx` keeps a single
+`useSelector(createLanguagesSelector())` and converts only the `/config/ui` half, which is
+the partial-component conversion #462 established.
+
+That is why this PR does not take `UISettings.tsx` off `react-redux` even though it takes
+everything else off it: the file still imports the hook for one list. The number moved 147
+to 118 anyway, because the thirty-one selector consumers had nothing else holding them.
+
+`useAppPage` still dispatches four boot fetches — quality profiles, languages, import
+lists and indexer flags — and its `isReduxPopulated` selector waits on all four. Those come
+off one section at a time (3, 6, 9 and 7 respectively); the selector goes with the last of
+them.
+
+---
+
 ### The pending stores do not own the is-it-a-change question
 
 `createSetSettingValueReducer` did two jobs. It recorded the edit, and it decided whether
@@ -957,6 +988,7 @@ produced the string, not a `parseInt` back inside the store.
 | 2026-08-18 | #470 | **SignalR container.** Class + `connect()` → function component, as Sonarr did in Jan 2025. Redux stays inside. |
 | 2026-08-18 | #471 | **Organize preview + Unmapped Files.** Two slices retired. First conversion where a page's table prefs move to a zustand options store rather than to React Query. |
 | 2026-08-20 | #487 | **Tags.** `useTags`/`useTagDetails` replace `tagActions`, both tag selectors and `TagsAppState`; the `Tags/useTags.ts` shim that had been a selector wearing a hook's name is now the real query. `TagFilterBuilderRowValueConnector` was a `connect()` whose whole job was reshaping the list, so it became a plain component and the connector count dropped with it. `useAppPage` gates on the query for the same reason it gates on custom filters. Delete writes the removal into the cache but leaves the refetch to SignalR — invalidating `/tag/detail` here as well fetched it twice, measured. `useSortedTagList` copies before sorting: `MovieTagInput` had been sorting the shared list in place, which was harmless against a slice that handed out a fresh array per fetch and is not against a query cache. |
+| 2026-08-23 | #517 | **UI settings — Phase E section one.** `Settings/ui.js` is deleted and `Settings/useSettings.ts` arrives with it: `useSettings`, `useSaveSettings` and `useManageSettings`, the last of which holds a `usePendingChangesStore` beside the query and runs the pair through `selectSettings`. That is the shape the other ten sections will use. `UISettings.js` + `UISettingsConnector.js` become one `UISettings.tsx`; the connector's `clearPendingChanges` on unmount goes with it, because the store lives inside the component now and unmounting is the clear. `withAdvancedSettings` goes too — the page has no advanced fields. **This is the largest single drop in `react-redux` importers of the migration: 147 to 118**, on thirty-one `createUISettingsSelector` consumers plus four direct slice readers (`useTheme`, `ApplyTheme`, `useCalendar` — which comes off `react-redux` entirely — and the boot gate). The gate matters more here than in most sections: thirty-odd components call `formatDate` during render, so rendering before the format strings land formats every date with `undefined`. **Two things are deliberately not copied from the reducer.** The form renders on `isFetched` rather than `!isFetching`, because a query sets `isFetching` on every background refetch and gating on it would blank a half-edited form on window focus, which the once-on-mount thunk never did. And `createSetSettingValueReducer`'s `Number.parseInt` coercion before the is-it-a-change comparison does not come across — `useManageSettings` compares `===` against typed query data, verified live by changing a select and changing it back to reach *No Changes*. Riding along, all disclosed: `CalendarOptionsModalContent` was the second writer of `/config/ui` and moves to `useSaveUiSettings`, which merges over the whole resource as `createSaveHandler` did; `LanguageSelectInput` widens from `number[]` to `number | number[]`, a mismatch UI settings had been feeding it invisibly for as long as that page was JavaScript; `ErrorPage`'s `uiSettingsError` widens to match `translationsError`; and `Store/Selectors/selectSettings.js` is deleted as unreachable — webpack resolves `.ts` first, so all 17 extensionless importers have been getting the TypeScript copy. `useSettings` also returns one shared object rather than a fresh `{}` before the fetch resolves, so the settings never change identity in a dependency array; Sonarr's copy builds a new one per render. No `Unexpected key` warning: `ui.js` declared no `persistState`. Verified live: all six fieldsets populated, edit/revert/save round-trip with a single merged PUT, `/system/updates` rendering `2026-08-15` under the new short format, the *Unsaved Changes* modal still blocking navigation, the calendar options modal writing through the new hook, and a cold boot fetching `/config/ui` exactly once. |
 | 2026-08-23 | #516 | **The pending-changes stores.** `usePendingChangesStore`, `usePendingFieldsStore` and `usePendingItemsStore`, copied from Sonarr's `v5-develop` unchanged. Foundation only, no consumers — the same shape #452 took, and the prerequisite §7 names for every section of Phase E, since each one is a settings form and each needs somewhere to hold dirty state that is not `createSetSettingValueReducer` or `createSetProviderFieldValueReducer`. Each store is created per-instance inside `useState`, matching `useSelectStore`, so two mounted forms hold separate dirty state instead of sharing the one Redux section's pending bag. The stores record edits and nothing more — the is-it-a-change comparison the reducers did stays with the caller, see the note above. `typings/pending.ts` and `PendingChangesModal.tsx` were already here and already matched Sonarr's, so nothing else was needed; the reducers themselves stay until their last consumer goes. Metrics move only where a foundation PR can move them: zustand 35 to 38 and the denominator 1,197 to 1,200; `react-redux`, slices and connectors are untouched at 147, 2 and 43. |
 | 2026-08-23 | #515 | **The `movies` slice — the last of Phase D.** `movieActions` (252 loc) is deleted, taking the slice count to **2**: `settings` and `system` are all that remain in `Store/Actions/index.js`. It had no importers left at all — the preset filters moved to `movieIndexFilters` in #496 and `toggleMovieMonitored` was the last thunk standing, superseded by `useToggleMovieMonitored` — so the whole file was reachable only through its own registration. **The four components still reading the slice were each silently dead**, because nothing has populated `state.movies.items` since the indexes went paged, and every one of them was reading an array that is always empty. (1) *The filter builder's Movie picker offered no values*, so the `movieIds` filter on History, Blocklist and Queue could not be built at all — the one place in the app that genuinely wants the whole movie table, since the filter is over the whole library. (2) *Tag Details never rendered its Movies fieldset*, however many movies carried the tag. (3) *Queued task rows dropped the titles after the command name*, so a movie search read `Movies Search` and nothing else. (4) *The Movie index's overflow **Search All** was permanently disabled*, since `isDisabled={!items.length}` was reading the same empty list; it takes `items` from the toolbar button it mirrors now, which `PageToolbarSection` was already handing it — the props it renders the overflow component with are the button's own, so the fix was to read the prop that had been there all along instead of running a client-side collection selector beside it. `useMoviesByIds` (`POST /movie/bulk`) covers the two by-id cases and `useAllMovies` (`GET /movie`) the picker. **`createProfileInUseSelector` asked the same empty slice** whether any movie used a quality profile, so only the import-list half of that answer has been real for some time; the dead term is dropped rather than left reading a slice that no longer exists, and answering it properly wants a server-side question — see the open thread below. `MovieIndex` also held a `useDispatch` it never dispatched with, kept alive by an `useEffect(() => {}, [dispatch])`. Removed as dead with the slice: `MoviesAppState` (`AppState` is down to `settings` alone), `ClientSideCollectionAppState`, `createMoviesFetchingSelector`, `movieEntities`, and the four movie selectors. **`GET /movie` is a heavy way to fill a title picker** — full resources, one per row, measured at 46MB of JSON for this instance's 16,917 records and 19.7MB on the wire — so it carries a five-minute stale time and `SignalRListener` deliberately does *not* invalidate it: a library scan emits a movie event per record, and each one would re-download the list for as long as a filter row happened to be open. `/movie/bulk` is invalidated, being small and keyed on the ids asked for. Verified live: the Movie picker returning 45 suggestions for `ashley` off one 825ms fetch, Tag Details listing both movies on the `anewone` tag from a single 2.7KB `POST /movie/bulk`, a queued Movies Search rendering **Movies Search - 035 Angela White X Mick Blue, Consumed by Desire 3** sorted by `sortTitle`, and the overflow **Search All** — forced into the menu at a 360px viewport — dispatching `MoviesSearch` with the page's 25 ids. Props of the components touched are marked `Readonly<T>` per SonarQube `typescript:S6759`. |
 | 2026-08-23 | #514 | **Safe-for-work mode — Phase E opens.** Split out of section 1 and landed first because it is not what section 1 is about: `safeForWorkMode` is not part of `/config/ui` and never was. It is a hand-rolled key on the `settings` root with its own `TOGGLE_SFW_MODE`, kept in the redux `persistState` blob — client state with persistence, so it becomes `App/safeForWorkStore.ts`, a `createPersist` store beside `App/appStore`, rather than going to React Query with the real UI settings. Ten files swap `useSelector((state: AppState) => state.settings.safeForWorkMode)` for `useSafeForWorkMode()`, and `SafeForWorkButtonConnector.js` is deleted outright since it only wired the toggle — 44 connectors to **43**. **`SafeForWorkModeContext` goes too.** With the mode in a global store the context was a broadcast channel with one publisher and no subscribers that needed it: `Page` held the only provider, wrapping the whole app, and nothing overrode it anywhere in the tree. Its eleven consumers read the store directly now. That is also marginally cheaper — the provider sat in `Page`'s render, so `Page` re-rendered its entire subtree on every toggle, where now only the eleven components that read the mode do. `ColorImpairedContext`, its sibling in the same two lines of `Page`, deliberately stays: it broadcasts `enableColorImpairedMode` from `/config/ui`, which is server state and upstream Sonarr's own shape, so it belongs to the `/config/ui` half of section 1. **The persisted value is migrated rather than dropped**, unlike every previous conversion — the default here is *unblurred*, so letting it fall back would silently un-hide a library on upgrade. The store seeds itself from the redux blob at module scope, which is safe because `bootstrap.tsx` imports `App`, which reaches the store through `Page`, and ES imports evaluate before `createAppStore()` runs — so the read happens before redux rewrites the blob without the path. **It then writes the value straight back, and that second half is load-bearing:** `persist` only writes on a state change, so a migrated value nobody touches never claims the zustand key while redux has already dropped it, and the mode reverts on the *next* reload. Caught by reloading twice — the first load honoured the migrated value and the second did not — and the same trap applies to any future store migrating a persisted redux value. Drops a dead prop chain found on the way: `PerformerIndexPosters` declared `safeForWorkMode` and never read it, `PerformerIndex` passed it, and `usePerformerIndex` returned it only to feed that. Verified live in both states: posters blurring and unblurring across the movie, scene, studio, performer and collection indexes, the movie, performer and studio details pages and both add-new search flows; the header toggle switching it with the blur following (24 blurred posters to 0 and back) and surviving a reload; the migration holding across three reloads; and table-view row blur, checked by enabling the hidden Root Folder Path column — 25 blurred cells with the mode on, 0 with it off. No console errors on any page. Props of the components touched are marked `Readonly<T>` per SonarQube `typescript:S6759`. |

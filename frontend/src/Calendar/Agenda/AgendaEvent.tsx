@@ -1,7 +1,6 @@
 import classNames from 'classnames';
 import moment from 'moment';
 import React, { useMemo } from 'react';
-import { useSelector } from 'react-redux';
 import { useQueueItemForMovie } from 'Activity/Queue/Details/useQueueDetails';
 import { useCalendarOptions } from 'Calendar/calendarOptionsStore';
 import CalendarEventQueueDetails from 'Calendar/Events/CalendarEventQueueDetails';
@@ -10,7 +9,7 @@ import Icon from 'Components/Icon';
 import Link from 'Components/Link/Link';
 import { icons, kinds } from 'Helpers/Props';
 import { useSingleMovieFile } from 'MovieFile/useMovieFile';
-import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
+import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import translate from 'Utilities/String/translate';
 import styles from './AgendaEvent.css';
 
@@ -49,9 +48,7 @@ function AgendaEvent({
 }: AgendaEventProps) {
   const { data: movieFile } = useSingleMovieFile(movieFileId);
   const queueItem = useQueueItemForMovie(id);
-  const { longDateFormat, enableColorImpairedMode } = useSelector(
-    createUISettingsSelector()
-  );
+  const { longDateFormat, enableColorImpairedMode } = useUiSettingsValues();
 
   const { showMovieInformation, showCutoffUnmetIcon } = useCalendarOptions();
 

@@ -21,7 +21,7 @@ import DeleteSceneModal from 'Scene/Delete/DeleteSceneModal';
 import SceneDetailsLinks from 'Scene/Details/SceneDetailsLinks';
 import SceneStudioTitleLink from 'Scene/SceneStudioTitleLink';
 import SceneTitleLink from 'Scene/SceneTitleLink';
-import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
+import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import { SelectStateInputProps } from 'typings/props';
 import formatRuntime from 'Utilities/Date/formatRuntime';
 import formatBytes from 'Utilities/Number/formatBytes';
@@ -62,7 +62,7 @@ function SceneIndexRow(props: SceneIndexRowProps) {
 
   const { showSearchAction } = useSceneIndexOption('tableOptions');
 
-  const { movieRuntimeFormat } = useSelector(createUISettingsSelector());
+  const { movieRuntimeFormat } = useUiSettingsValues();
 
   const {
     monitored,

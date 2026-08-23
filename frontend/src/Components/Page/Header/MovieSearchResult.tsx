@@ -1,11 +1,10 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
 import Icon from 'Components/Icon';
 import Label from 'Components/Label';
 import { icons, kinds, sizes } from 'Helpers/Props';
 import MoviePoster from 'Movie/MoviePoster';
 import ScenePoster from 'Scene/ScenePoster';
-import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
+import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import formatRuntime from 'Utilities/Date/formatRuntime';
 import getRelativeDate from 'Utilities/Date/getRelativeDate';
 import firstCharToUpper from 'Utilities/String/firstCharToUpper';
@@ -25,9 +24,8 @@ function MovieSearchResult(props: MovieSearchResultProps) {
   const { title, year, images, itemType, studioTitle, runtime, releaseDate } =
     props;
 
-  const { showRelativeDates, shortDateFormat, timeFormat } = useSelector(
-    createUISettingsSelector()
-  );
+  const { showRelativeDates, shortDateFormat, timeFormat } =
+    useUiSettingsValues();
 
   let releaseText = '';
 

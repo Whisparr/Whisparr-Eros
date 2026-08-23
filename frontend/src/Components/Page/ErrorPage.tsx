@@ -13,7 +13,7 @@ interface ErrorPageProps {
   tagsError?: ApiError | null;
   qualityProfilesError?: Error;
   languagesError?: Error;
-  uiSettingsError?: Error;
+  uiSettingsError?: Error | ApiError | null;
   systemStatusError?: ApiError | null;
 }
 

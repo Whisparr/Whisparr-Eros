@@ -1,5 +1,4 @@
 import React, { useCallback, useState } from 'react';
-import { useSelector } from 'react-redux';
 import ProtocolLabel from 'Activity/Queue/ProtocolLabel';
 import IconButton from 'Components/Link/IconButton';
 import SpinnerIconButton from 'Components/Link/SpinnerIconButton';
@@ -20,7 +19,7 @@ import MovieQuality from 'Movie/MovieQuality';
 import MovieTitleLink from 'Movie/MovieTitleLink';
 import useMovie from 'Movie/useMovie';
 import { QualityModel } from 'Quality/Quality';
-import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
+import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import CustomFormat from 'typings/CustomFormat';
 import { SelectStateInputProps } from 'typings/props';
 import {
@@ -101,9 +100,8 @@ function QueueRow(props: QueueRowProps) {
   const { grabQueueItem, isGrabbing, grabError } = useGrabQueueItem(id);
   const { removeQueueItem, isRemoving } = useRemoveQueueItem();
   const { data: movie } = useMovie(movieId);
-  const { showRelativeDates, shortDateFormat, timeFormat } = useSelector(
-    createUISettingsSelector()
-  );
+  const { showRelativeDates, shortDateFormat, timeFormat } =
+    useUiSettingsValues();
 
   const [isRemoveQueueItemModalOpen, setIsRemoveQueueItemModalOpen] =
     useState(false);
