@@ -15,7 +15,6 @@ import ImportListExclusion from 'typings/ImportListExclusion';
 import ImportListOptionsSettings from 'typings/ImportListOptionsSettings';
 import Indexer from 'typings/Indexer';
 import IndexerFlag from 'typings/IndexerFlag';
-import Notification from 'typings/Notification';
 import General from 'typings/Settings/General';
 import IndexerOptions from 'typings/Settings/IndexerOptions';
 import MediaManagement from 'typings/Settings/MediaManagement';
@@ -86,9 +85,6 @@ export interface IndexerAppState
   isTestingAll: boolean;
 }
 
-export interface NotificationAppState
-  extends AppSectionState<Notification>, AppSectionDeleteState {}
-
 export interface CustomFormatAppState
   extends
     AppSectionState<CustomFormat>,
@@ -128,7 +124,6 @@ interface SettingsAppState {
   metadata: MetadataAppState;
   naming: NamingAppState;
   namingExamples: NamingExamplesAppState;
-  notifications: NotificationAppState;
 }
 
 export default SettingsAppState;

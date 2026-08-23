@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { Error as AppError } from 'App/State/AppSectionState';
 import FormGroup from 'Components/Form/FormGroup';
 import FormInputGroup from 'Components/Form/FormInputGroup';
 import FormLabel from 'Components/Form/FormLabel';
@@ -21,6 +22,12 @@ interface ProviderFieldFormGroupProps<T> {
   isDisabled?: boolean;
   provider?: string;
   providerData?: object;
+  // Forwarded to the inputs that talk to the API on their own -- an OAuth
+  // field reports a failed authorization back to the form through one of
+  // these, depending on whether the section still keeps its save error in
+  // Redux.
+  section?: string;
+  onSaveError?: (error: AppError | null) => void;
   pending: boolean;
   errors: Failure[];
   warnings: Failure[];

@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
+import { Error as AppError } from 'App/State/AppSectionState';
 import SpinnerErrorButton from 'Components/Link/SpinnerErrorButton';
 import { kinds } from 'Helpers/Props';
 import useOAuth from 'OAuth/useOAuth';
@@ -11,7 +12,11 @@ export interface OAuthInputProps {
   name: string;
   provider: string;
   providerData: Record<string, unknown>;
-  section: string;
+  // A section for the forms still on Redux; `onSaveError` for the ones that
+  // have moved and keep their save error in the hook instead. Exactly one of
+  // the two is set.
+  section?: string;
+  onSaveError?: (error: AppError | null) => void;
   onChange: InputOnChange<unknown>;
 }
 
@@ -21,25 +26,37 @@ function OAuthInput({
   provider,
   providerData,
   section,
+  onSaveError,
   onChange,
 }: OAuthInputProps) {
   const dispatch = useDispatch();
   const { authorizing, error, result, startOAuth, resetOAuth } = useOAuth();
 
+  // The provider form reads validation errors off whatever holds its save
+  // error, so a failed authorization has to be reported there rather than just
+  // shown on the button.
+  const reportSaveError = useCallback(
+    (saveError: AppError | null) => {
+      if (onSaveError) {
+        onSaveError(saveError);
+      } else if (section) {
+        dispatch(set({ section, saveError }));
+      }
+    },
+    [dispatch, onSaveError, section]
+  );
+
   const handlePress = useCallback(() => {
     startOAuth({ name, provider, providerData })
       .then(() => {
-        // Clear any previously set save error.
-        dispatch(set({ section, saveError: null }));
+        reportSaveError(null);
       })
       .catch((error) => {
-        // The provider form reads validation errors off the section's save
-        // error, so it still has to go through Redux until settings moves.
         if (error?.status === 400) {
-          dispatch(set({ section, saveError: error }));
+          reportSaveError(error);
         }
       });
-  }, [name, provider, providerData, section, startOAuth, dispatch]);
+  }, [name, provider, providerData, startOAuth, reportSaveError]);
 
   useEffect(() => {
     if (!result) {
