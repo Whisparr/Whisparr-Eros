@@ -208,6 +208,18 @@ function invalidateMoviePagedQueryCache() {
   });
 }
 
+// The by-id list behind the tag details modal and the queued task rows. It is
+// keyed on the requested ids, so a deleted movie changes which records come
+// back, not just their contents, and patching in place would not cover it.
+//
+// `useAllMovies`'s `/movie` is left alone on purpose. It is the whole library in
+// one response, and a scan emits a movie event per record -- invalidating it
+// here would re-download the list once per event for as long as a filter row was
+// open. It carries a stale time instead.
+function invalidateMovieBulkQueryCache() {
+  queryClient.invalidateQueries({ queryKey: ['/movie/bulk'] });
+}
+
 function invalidatePerformerPagedQueryCache() {
   queryClient.invalidateQueries({
     predicate: (query) => {
@@ -416,6 +428,7 @@ function SignalRListener() {
         }
 
         invalidateMoviePagedQueryCache();
+        invalidateMovieBulkQueryCache();
 
         if (body.action === 'updated') {
           invalidateWantedQueries();
@@ -435,6 +448,7 @@ function SignalRListener() {
       }
 
       invalidateMoviePagedQueryCache();
+      invalidateMovieBulkQueryCache();
 
       if (body.action === 'updated') {
         invalidateWantedQueries();

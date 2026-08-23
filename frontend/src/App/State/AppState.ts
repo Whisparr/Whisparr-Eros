@@ -1,6 +1,5 @@
 import { DateFilterValue } from 'Helpers/Props/filterTypes';
 import { Error } from './AppSectionState';
-import MoviesAppState from './MoviesAppState';
 import SettingsAppState from './SettingsAppState';
 
 interface FilterBuilderPropOption {
@@ -65,7 +64,6 @@ export interface AppSectionState {
 }
 
 interface AppState {
-  movies: MoviesAppState;
   settings: SettingsAppState;
 }
 

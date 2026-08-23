@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { createSelector } from 'reselect';
 import ModelBase from 'App/ModelBase';
@@ -11,7 +11,8 @@ import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { kinds } from 'Helpers/Props';
-import createAllMoviesSelector from 'Store/Selectors/createAllMoviesSelector';
+import { useMoviesByIds } from 'Movie/useMovie';
+import sortByProp from 'Utilities/Array/sortByProp';
 import translate from 'Utilities/String/translate';
 import TagDetailsDelayProfile from './TagDetailsDelayProfile';
 import styles from './TagDetailsModalContent.css';
@@ -20,32 +21,6 @@ function findMatchingItems<T extends ModelBase>(ids: number[], items: T[]) {
   return items.filter((s) => {
     return ids.includes(s.id);
   });
-}
-
-function createUnorderedMatchingMoviesSelector(movieIds: number[]) {
-  return createSelector(createAllMoviesSelector(), (movies) =>
-    findMatchingItems(movieIds, movies)
-  );
-}
-
-function createMatchingMoviesSelector(movieIds: number[]) {
-  return createSelector(
-    createUnorderedMatchingMoviesSelector(movieIds),
-    (movies) => {
-      return movies.sort((movieA, movieB) => {
-        const sortTitleA = movieA.sortTitle;
-        const sortTitleB = movieB.sortTitle;
-
-        if (sortTitleA > sortTitleB) {
-          return 1;
-        } else if (sortTitleA < sortTitleB) {
-          return -1;
-        }
-
-        return 0;
-      });
-    }
-  );
 }
 
 function createMatchingItemSelector<T extends ModelBase>(
@@ -83,8 +58,16 @@ function TagDetailsModalContent({
   movieIds = [],
   onModalClose,
   onDeleteTagPress,
-}: TagDetailsModalContentProps) {
-  const movies = useSelector(createMatchingMoviesSelector(movieIds));
+}: Readonly<TagDetailsModalContentProps>) {
+  // The tag resource names the movies by id only. This read the `movies` slice,
+  // which nothing has populated since the indexes went paged, so the Movies
+  // fieldset never rendered however many movies carried the tag.
+  const { movies: taggedMovies } = useMoviesByIds(movieIds);
+
+  const movies = useMemo(
+    () => [...taggedMovies].sort(sortByProp('sortTitle')),
+    [taggedMovies]
+  );
 
   const delayProfiles = useSelector(
     createMatchingItemSelector(

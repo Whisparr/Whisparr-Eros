@@ -1,43 +1,32 @@
 import React, { useCallback, useMemo } from 'react';
-import { useSelector } from 'react-redux';
 import { useSelect } from 'App/SelectContext';
-import AppState from 'App/State/AppState';
-import ClientSideCollectionAppState from 'App/State/ClientSideCollectionAppState';
-import MoviesAppState, { MovieIndexAppState } from 'App/State/MoviesAppState';
 import { MOVIE_SEARCH } from 'Commands/commandNames';
 import { useCommandExecuting, useExecuteCommand } from 'Commands/useCommands';
 import PageToolbarOverflowMenuItem from 'Components/Page/Toolbar/PageToolbarOverflowMenuItem';
-import { useCustomFiltersList } from 'Filters/useCustomFilters';
 import { icons } from 'Helpers/Props';
-import createMovieClientSideCollectionItemsSelector from 'Store/Selectors/createMovieClientSideCollectionItemsSelector';
+import Movie from 'Movie/Movie';
 import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
 
+// The overflow twin of `MovieIndexSearchButton`. `PageToolbarSection` renders it
+// with the button's own props, so `items` is the page the index is showing --
+// the same list the button searches. It used to run its own client-side
+// collection selector over the `movies` slice instead, which nothing has
+// populated since the index went paged, so the menu item was always disabled.
 interface MovieIndexSearchMenuItemProps {
   isSelectMode: boolean;
-  selectedFilterKey: string;
+  selectedFilterKey: string | number;
+  items: Movie[];
 }
 
-const selectMovieIndexItems =
-  createMovieClientSideCollectionItemsSelector('movieIndex');
+function MovieIndexSearchMenuItem(
+  props: Readonly<MovieIndexSearchMenuItemProps>
+) {
+  const { isSelectMode, selectedFilterKey, items } = props;
 
-function MovieIndexSearchMenuItem(props: MovieIndexSearchMenuItemProps) {
   const isSearching = useCommandExecuting(MOVIE_SEARCH);
-  const customFilters = useCustomFiltersList('movies', 'movieIndex');
-
-  const {
-    items,
-  }: MoviesAppState & MovieIndexAppState & ClientSideCollectionAppState =
-    useSelector(
-      useCallback(
-        (state: AppState) => selectMovieIndexItems(state, { customFilters }),
-        [customFilters]
-      )
-    );
-
   const executeCommand = useExecuteCommand();
 
-  const { isSelectMode, selectedFilterKey } = props;
   const [selectState] = useSelect();
   const { selectedState } = selectState;
 
