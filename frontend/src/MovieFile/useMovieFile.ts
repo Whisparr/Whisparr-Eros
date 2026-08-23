@@ -1,4 +1,3 @@
-import { useQueryClient } from '@tanstack/react-query';
 import useApiMutation from 'Helpers/Hooks/useApiMutation';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import { UnmappedFile } from '../UnmappedFiles/UnmappedFilesTable';
@@ -42,32 +41,33 @@ export function useMovieFilesByIds(movieFileIds: number[] | undefined) {
   });
 }
 
+// All three mutations below leave the refetch to SignalR. Every write path here
+// raises MovieFileUpdatedEvent or MovieFileDeletedEvent, which MovieFileController
+// broadcasts, and SignalRListener already invalidates `/moviefile` plus the
+// queries that gaining or losing a file changes. Invalidating here as well
+// fetched the list twice, measured on each of the three.
+
 // Used when an interactive import matches a file that is already in the library:
 // the file stays where it is and only its metadata is rewritten, so there is
 // nothing to import.
 export function useUpdateMovieFiles() {
-  const queryClient = useQueryClient();
   return useApiMutation<MovieFile[], Partial<MovieFile>[]>({
     path: `${PATH}/bulk`,
     method: 'PUT',
-    mutationOptions: {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: [PATH] });
-      },
-    },
+  });
+}
+
+export function useDeleteMovieFile() {
+  return useApiMutation<void, { id: number }>({
+    path: ({ id }) => `${PATH}/${id}`,
+    method: 'DELETE',
   });
 }
 
 export function useDeleteMovieFiles() {
-  const queryClient = useQueryClient();
   return useApiMutation<void, { movieFileIds: number[] }>({
     path: `${PATH}/bulk`,
     method: 'DELETE',
-    mutationOptions: {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: [PATH] });
-      },
-    },
   });
 }
 

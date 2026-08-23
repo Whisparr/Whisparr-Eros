@@ -11,10 +11,7 @@ interface Props {
   isSmallScreen: boolean;
 }
 
-function MovieCastPostersConnector({
-  movieId,
-  isSmallScreen,
-}: Readonly<Props>) {
+function MovieCastPosters({ movieId, isSmallScreen }: Readonly<Props>) {
   const {
     data: castCredits = [],
     isLoading,
@@ -45,4 +42,4 @@ function MovieCastPostersConnector({
   ) : null;
 }
 
-export default MovieCastPostersConnector;
+export default MovieCastPosters;

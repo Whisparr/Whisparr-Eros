@@ -52,7 +52,7 @@ import fonts from 'Styles/Variables/fonts';
 import formatRuntime from 'Utilities/Date/formatRuntime';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
-import MovieCastPostersConnector from './Credits/Cast/MovieCastPostersConnector';
+import MovieCastPosters from './Credits/Cast/MovieCastPosters';
 import MovieDetailsLinks from './MovieDetailsLinks';
 import MovieStatusLabel from './MovieStatusLabel';
 import MovieStudioLink from './MovieStudioLink';
@@ -70,9 +70,6 @@ interface Props {
   isPopulated: boolean;
   isSmallScreen: boolean;
   isSidebarVisible: boolean;
-  movieFilesError?: unknown;
-  extraFilesError?: unknown;
-  movieCreditsError?: unknown;
   onRefreshPress: () => void;
   onSearchPress: () => void;
   onGoToMovie: () => void;
@@ -482,7 +479,7 @@ function MovieDetails(props: Readonly<Partial<Props>>) {
           </FieldSet>
 
           <FieldSet legend={translate('Cast')}>
-            <MovieCastPostersConnector
+            <MovieCastPosters
               movieId={Number(movieId)}
               isSmallScreen={isSmallScreen}
             />

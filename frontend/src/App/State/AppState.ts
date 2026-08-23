@@ -1,8 +1,5 @@
 import { DateFilterValue } from 'Helpers/Props/filterTypes';
 import { Error } from './AppSectionState';
-import ExtraFilesAppState from './ExtraFilesAppState';
-import MovieCreditAppState from './MovieCreditAppState';
-import MovieFilesAppState from './MovieFilesAppState';
 import MoviesAppState from './MoviesAppState';
 import SettingsAppState from './SettingsAppState';
 
@@ -68,9 +65,6 @@ export interface AppSectionState {
 }
 
 interface AppState {
-  extraFiles: ExtraFilesAppState;
-  movieCredits: MovieCreditAppState;
-  movieFiles: MovieFilesAppState;
   movies: MoviesAppState;
   settings: SettingsAppState;
 }
