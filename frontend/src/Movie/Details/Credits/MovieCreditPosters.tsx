@@ -4,7 +4,6 @@ import { Navigation } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import dimensions from 'Styles/Variables/dimensions';
 import MovieCredit from 'typings/MovieCredit';
-import MovieCreditPosterConnector from './MovieCreditPosterConnector';
 import styles from './MovieCreditPosters.css';
 
 import 'swiper/css';
@@ -37,7 +36,11 @@ interface Props {
   isSmallScreen: boolean;
 }
 
-function MovieCreditPosters({ items, itemComponent, isSmallScreen }: Props) {
+function MovieCreditPosters({
+  items,
+  itemComponent: ItemComponent,
+  isSmallScreen,
+}: Props) {
   const { posterWidth, posterHeight, rowHeight } = useMemo(() => {
     const posterWidth = 162;
     const posterHeight = 238;
@@ -73,8 +76,7 @@ function MovieCreditPosters({ items, itemComponent, isSmallScreen }: Props) {
               key={slideKey}
               style={{ width: posterWidth, height: rowHeight }}
             >
-              <MovieCreditPosterConnector
-                component={itemComponent}
+              <ItemComponent
                 posterWidth={posterWidth}
                 posterHeight={posterHeight}
                 credit={credit}

@@ -1,14 +1,13 @@
 import React, { useCallback, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
 import * as commandNames from 'Commands/commandNames';
 import { useCommandExecuting, useExecuteCommand } from 'Commands/useCommands';
 import withCurrentPage from 'Components/withCurrentPage';
-import {
-  deleteMovieFile,
-  deleteMovieFiles,
-} from 'Store/Actions/movieFileActions';
 import { TableOptionsChangePayload } from 'typings/Table';
-import { useUnmappedMovieFiles } from '../MovieFile/useMovieFile';
+import {
+  useDeleteMovieFile,
+  useDeleteMovieFiles,
+  useUnmappedMovieFiles,
+} from '../MovieFile/useMovieFile';
 import {
   setUnmappedFilesOptions,
   setUnmappedFilesSort,
@@ -17,7 +16,6 @@ import {
 import UnmappedFilesTable from './UnmappedFilesTable';
 
 function UnmappedFilesTableConnector() {
-  const dispatch = useDispatch();
   const executeCommand = useExecuteCommand();
   const {
     data: items = [],
@@ -26,6 +24,16 @@ function UnmappedFilesTableConnector() {
     refetch,
   } = useUnmappedMovieFiles();
   const { columns, sortKey, sortDirection } = useUnmappedFilesOptions();
+  const {
+    mutate: deleteMovieFile,
+    isPending: isDeletingFile,
+    error: deleteFileError,
+  } = useDeleteMovieFile();
+  const {
+    mutate: deleteMovieFiles,
+    isPending: isDeletingFiles,
+    error: deleteFilesError,
+  } = useDeleteMovieFiles();
   const isScanningFolders = useCommandExecuting(commandNames.RESCAN_SCENES);
   const isCleaningUnmappedFiles = useCommandExecuting(
     commandNames.CLEAN_UNMAPPED_FILES
@@ -42,15 +50,15 @@ function UnmappedFilesTableConnector() {
   // Stable callbacks for props
   const handleDeleteUnmappedFile = useCallback(
     (id: number) => {
-      dispatch(deleteMovieFile(id));
+      deleteMovieFile({ id });
     },
-    [dispatch]
+    [deleteMovieFile]
   );
   const handleDeleteUnmappedFiles = useCallback(
-    (ids: number[]) => {
-      dispatch(deleteMovieFiles(ids));
+    (movieFileIds: number[]) => {
+      deleteMovieFiles({ movieFileIds });
     },
-    [dispatch]
+    [deleteMovieFiles]
   );
   const handleTableOptionChange = useCallback(
     (payload: TableOptionsChangePayload) => {
@@ -69,7 +77,11 @@ function UnmappedFilesTableConnector() {
   }, [executeCommand]);
 
   const isPopulated = isSuccess;
-  const isDeleting = false;
+  // The table deselects its rows once a delete finishes cleanly, so it needs
+  // both halves: `isDeleting` was hardcoded false, which left the spinner dead
+  // and that branch unreachable.
+  const isDeleting = isDeletingFile || isDeletingFiles;
+  const deleteError = deleteFileError ?? deleteFilesError ?? undefined;
   const fetchUnmappedFiles = useCallback(() => {
     refetch();
   }, [refetch]);
@@ -85,6 +97,7 @@ function UnmappedFilesTableConnector() {
       isCleaningUnmappedFiles={isCleaningUnmappedFiles}
       isPopulated={isPopulated}
       isDeleting={isDeleting}
+      deleteError={deleteError}
       fetchUnmappedFiles={fetchUnmappedFiles}
       deleteUnmappedFile={handleDeleteUnmappedFile}
       deleteUnmappedFiles={handleDeleteUnmappedFiles}

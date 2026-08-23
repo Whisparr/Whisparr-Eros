@@ -3,10 +3,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import AppState from 'App/State/AppState';
 import Modal from 'Components/Modal/Modal';
 import Language from 'Language/Language';
-import { updateMovieFiles } from 'Store/Actions/movieFileActions';
+import { QualityModel } from 'Quality/Quality';
 import { fetchQualityProfileSchema } from 'Store/Actions/settingsActions';
 import getQualities from 'Utilities/Quality/getQualities';
 import { MovieFile } from '../MovieFile';
+import { useUpdateMovieFiles } from '../useMovieFile';
 import FileEditModalContent from './FileEditModalContent';
 
 interface FileEditModalProps {
@@ -21,6 +22,7 @@ function FileEditModal({
   onModalClose,
 }: FileEditModalProps) {
   const dispatch = useDispatch();
+  const { mutate: updateMovieFiles } = useUpdateMovieFiles();
   const qualityProfiles = useSelector(
     (state: AppState) => state.settings.qualityProfiles
   );
@@ -33,15 +35,16 @@ function FileEditModal({
     (lang: Language) => !filterItems.includes(lang.name)
   );
 
-  const quality = movieFile.quality;
-  const qualityId = quality ? quality.quality.id : 0;
-  const real = quality ? quality.revision.real > 0 : false;
-  const proper = quality ? quality.revision.version > 1 : false;
+  const currentQuality = movieFile.quality;
+  const qualityId = currentQuality ? currentQuality.quality.id : 0;
+  const real = currentQuality ? currentQuality.revision.real > 0 : false;
+  const proper = currentQuality ? currentQuality.revision.version > 1 : false;
   const languageIds = movieFile.languages
     ? movieFile.languages.map((l: Language) => l.id)
     : [];
   const indexerFlags = movieFile.indexerFlags ?? 0;
   const releaseGroup = movieFile.releaseGroup ?? '';
+  const edition = movieFile.edition ?? '';
   const relativePath = movieFile.relativePath ?? '';
 
   const qualities = getQualities(qualityProfiles.schema.items);
@@ -69,7 +72,7 @@ function FileEditModal({
       indexerFlags: number;
     }) => {
       const qualityIdNum = Number.parseInt(payload.qualityId, 10);
-      const quality = qualities.find(
+      const selectedQuality = qualities.find(
         (item: { id: number }) => item.id === qualityIdNum
       );
       const langs: Language[] = payload.languageIds
@@ -81,27 +84,30 @@ function FileEditModal({
           return filteredLanguages.find((item) => item.id === id);
         })
         .filter((lang): lang is Language => !!lang);
+      // `isRepack` is not offered by this modal and was never sent, so the
+      // server binds it to false and a repack saves as a plain proper. That is
+      // Radarr's shape too; sending the same false keeps it verbatim rather
+      // than changing behaviour here.
       const revision = {
         version: payload.proper ? 2 : 1,
         real: payload.real ? 1 : 0,
+        isRepack: false,
       };
-      dispatch(
-        updateMovieFiles({
-          files: [
-            {
-              id: movieFile.id,
-              languages: langs,
-              indexerFlags: payload.indexerFlags,
-              edition: payload.edition,
-              releaseGroup: payload.releaseGroup,
-              quality: { quality, revision },
-            },
-          ],
-        })
-      );
+      const quality: QualityModel = { quality: selectedQuality, revision };
+
+      updateMovieFiles([
+        {
+          id: movieFile.id,
+          languages: langs,
+          indexerFlags: payload.indexerFlags,
+          edition: payload.edition,
+          releaseGroup: payload.releaseGroup,
+          quality,
+        },
+      ]);
       onModalClose(true);
     },
-    [movieFile.id, qualities, filteredLanguages, dispatch, onModalClose]
+    [movieFile.id, qualities, filteredLanguages, updateMovieFiles, onModalClose]
   );
 
   return (
@@ -111,7 +117,7 @@ function FileEditModal({
         proper={proper}
         real={real}
         relativePath={relativePath}
-        edition=""
+        edition={edition}
         releaseGroup={releaseGroup}
         languageIds={languageIds}
         languages={filteredLanguages}
