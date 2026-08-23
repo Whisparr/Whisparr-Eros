@@ -12,8 +12,8 @@ import Command from 'Commands/Command';
 import { COMMANDS_QUERY_KEY, useUpdateCommand } from 'Commands/useCommands';
 import { PagedQueryResponse } from 'Helpers/Hooks/usePagedApiQuery';
 import { ROOT_FOLDERS_QUERY_KEY } from 'RootFolder/useRootFolders';
+import { QUALITY_DEFINITIONS_PATH } from 'Settings/Quality/Definition/useQualityDefinitions';
 import { removeItem, updateItem } from 'Store/Actions/baseActions';
-import { fetchQualityDefinitions } from 'Store/Actions/settingsActions';
 import { TAG_DETAILS_QUERY_KEY } from 'Tags/useTagDetails';
 import { TAGS_QUERY_KEY } from 'Tags/useTags';
 import { repopulatePage } from 'Utilities/pagePopulator';
@@ -494,7 +494,9 @@ function SignalRListener() {
     }
 
     if (name === 'qualitydefinition') {
-      dispatch(fetchQualityDefinitions());
+      queryClient.invalidateQueries({
+        queryKey: [QUALITY_DEFINITIONS_PATH],
+      });
       return;
     }
 

@@ -24,7 +24,7 @@ import MediaManagement from 'Settings/MediaManagement/MediaManagement';
 import MetadataSettings from 'Settings/Metadata/MetadataSettings';
 import NotificationSettings from 'Settings/Notifications/NotificationSettings';
 import Profiles from 'Settings/Profiles/Profiles';
-import QualityConnector from 'Settings/Quality/QualityConnector';
+import Quality from 'Settings/Quality/Quality';
 import Settings from 'Settings/Settings';
 import TagSettings from 'Settings/Tags/TagSettings';
 import UISettings from 'Settings/UI/UISettings';
@@ -115,7 +115,7 @@ function AppRoutes() {
 
       <Route path="/settings/profiles" element={<Profiles />} />
 
-      <Route path="/settings/quality" element={<QualityConnector />} />
+      <Route path="/settings/quality" element={<Quality />} />
 
       <Route
         path="/settings/customformats"

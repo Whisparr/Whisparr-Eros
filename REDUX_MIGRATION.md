@@ -11,7 +11,7 @@ Counts are file-level `react-redux` imports across the frontend source tree.
 Every commit reference below links to the Sonarr commit it names; all were
 verified to resolve against the public repo.
 
-**Status: Phases A, B, C and D complete; Phase E is under way, two of eleven sections done. Phase E is the whole of what is left, plus the teardown.** See §11 for the running log.
+**Status: Phases A, B, C and D complete; Phase E is under way, two and a half of eleven sections done. Phase E is the whole of what is left, plus the teardown.** See §11 for the running log.
 
 ---
 
@@ -19,11 +19,11 @@ verified to resolve against the public repo.
 
 | Metric | At assessment | Now |
 | --- | --- | --- |
-| Files importing `react-redux` | 327 of 1,255 | **113** of 1,196 |
-| Lines under `frontend/src/Store/` | 15,374 across 138 files | **5,102** across 71 |
+| Files importing `react-redux` | 327 of 1,255 | **111** of 1,193 |
+| Lines under `frontend/src/Store/` | 15,374 across 138 files | **4,943** across 70 |
 | Redux slices registered in `Store/Actions/index.js` | 35 | **2** |
-| Remaining `*Connector` files | 66 | **39** |
-| Files touching React Query | 35 | **72** |
+| Remaining `*Connector` files | 66 | **35** |
+| Files touching React Query | 35 | **73** |
 | zustand stores | 0 (not installed) | **installed, 38 files** |
 
 > **Recomputed in #464.** Three rows previously carried figures that no command
@@ -263,7 +263,7 @@ is-it-a-change question* below.
 | --- | --- | --- | --- |
 | 1 | ~~**UI settings** — smallest, 32 files read it. Good pathfinder.~~ **Done, #517.** ~~Safe-for-work mode was split out and landed first in #514~~; the `/config/ui` half followed. It was the pathfinder in both senses — it took `useSettings` with it, and it moved `react-redux` further than any single PR of the migration so far. | ~~`Settings/ui.js`, `UISettingsConnector.js`, `createUISettingsSelector.ts`~~; ~~`settings.safeForWorkMode`, `TOGGLE_SFW_MODE`, `SafeForWorkButtonConnector.js`, `SafeForWorkContext.tsx`~~ | [Sonarr/Sonarr@74e6ce43](https://github.com/Sonarr/Sonarr/commit/74e6ce43) |
 | 2 | ~~**Remote path mappings · Release profiles** — two small CRUD lists, taken together because they are the same shape.~~ **Done, #518.** It took `Settings/useProviderSettings.ts` with it, and the three remote path mapping connectors: 42 to 39. | ~~`Settings/remotePathMappings.js`, `Settings/releaseProfiles.js`~~; ~~`ReleaseProfilesAppState`, `RemotePathMappings*Connector.js` ×3~~ | [Sonarr/Sonarr@8fcab2d3](https://github.com/Sonarr/Sonarr/commit/8fcab2d3), [Sonarr/Sonarr@4713615b](https://github.com/Sonarr/Sonarr/commit/4713615b) |
-| 3 | Quality profiles · Quality definitions (4 connectors incl. reset modal) | `Settings/qualityProfiles.js`, `Settings/qualityDefinitions.js`, `Quality*Connector.js` ×4 | [Sonarr/Sonarr@21ca65a0](https://github.com/Sonarr/Sonarr/commit/21ca65a0), [Sonarr/Sonarr@cf593b1f](https://github.com/Sonarr/Sonarr/commit/cf593b1f) |
+| 3 | **Quality definitions** — ~~done, #519~~; the four connectors the row predicted were all on this half, 39 to 35. **Quality profiles** still to come: it is the bigger half, and it is where the `useAppPage` boot gate loses a term. | ~~`Settings/qualityDefinitions.js`, `Quality*Connector.js` ×4~~; `Settings/qualityProfiles.js` | [Sonarr/Sonarr@21ca65a0](https://github.com/Sonarr/Sonarr/commit/21ca65a0), [Sonarr/Sonarr@cf593b1f](https://github.com/Sonarr/Sonarr/commit/cf593b1f) |
 | 4 | Connections (Notifications) | `Settings/notifications.js` (~~`DeviceInput.tsx`~~ — converted in #490) | [Sonarr/Sonarr@6d49b41d](https://github.com/Sonarr/Sonarr/commit/6d49b41d) |
 | 5 | Naming · Media Management · Metadata | `Settings/naming.js`, `Settings/namingExamples.js`, `Settings/mediaManagement.js`, `Settings/metadata.js` | [Sonarr/Sonarr@677c588a](https://github.com/Sonarr/Sonarr/commit/677c588a), [Sonarr/Sonarr@bbb4c671](https://github.com/Sonarr/Sonarr/commit/bbb4c671), [Sonarr/Sonarr@c0a56586](https://github.com/Sonarr/Sonarr/commit/c0a56586) |
 | 6 | Languages · General (partial `useGeneralSettings` exists) | `Settings/languages.js`, `Settings/general.js`, `GeneralSettingsConnector.js` | [Sonarr/Sonarr@5bac016f](https://github.com/Sonarr/Sonarr/commit/5bac016f), [Sonarr/Sonarr@6764cf1c](https://github.com/Sonarr/Sonarr/commit/6764cf1c) |
@@ -399,12 +399,18 @@ shape rather than inventing one each.
 and it is worth recording: these were called the first use of `usePendingItemsStore`, and
 they are not — see *A list section is still a form, one row at a time* below.
 
-**Next: section 3** — quality profiles and quality definitions. Bigger than either of the
-first two: four connectors including the reset modal, quality definitions edit several
-rows at once in a table (which *is* `usePendingItemsStore`), and quality profiles are one
-of the four boot fetches `useAppPage` still dispatches, so the `isReduxPopulated` gate has
-to lose a term. The stale *"Quality profile in use" only checks import lists* thread under
-§11 belongs with it.
+~~**Next: section 3** — quality profiles and quality definitions.~~ Split in two, because
+the two halves share a name and nothing else. ~~The definitions half~~ **done, #519**: it
+is the first real use of `usePendingItemsStore`, and it turned out to own all four of the
+connectors the section-3 row predicted, so the count moved 39 to 35 on the smaller half.
+
+**Next: section 3b** — quality profiles. The bigger half by some way: the edit modal is a
+544-line class component with drag-and-drop grouping, twelve files outside the settings
+page read `state.settings.qualityProfiles.items`, and quality profiles are one of the four boot
+fetches `useAppPage` still dispatches, so the `isReduxPopulated` gate has to lose a term.
+The stale *"Quality profile in use" only checks import lists* thread under §11 belongs
+with it — Sonarr answers it with a `useQualityProfileInUse` hook, which is the shape to
+copy.
 
 1. ~~**Queue**, in three PRs.~~ **Done.** Sonarr shipped it as one 58-file commit, but the slice already
    has three independent sub-sections and splitting along them gives three merge points
@@ -995,7 +1001,8 @@ picking that row out of the list query, which is what `useProvider` does. That i
 `usePendingItemsStore` is for the sections that edit several rows *in place* and save them
 together — quality definitions and delay profiles, where the table itself is the form and
 there is no per-row modal. Its `Map<number, Partial<T>>` shape only earns its keep there.
-Section 3 is the first of those.
+Section 3a was the first of those, and it held: #519 is the only consumer of that store so
+far, and delay profiles in section 11 will be the second.
 
 The practical consequence for the sections left: 3, 4, 7, 8, 9, 10 and 11 are all
 `useProviderSettings` sections, and the per-row half of each is already written.
@@ -1019,10 +1026,32 @@ the reducer that built the list.
 
 ---
 
+### Quality definitions save to a path the query is not keyed on
+
+`useSettings`/`useProviderSettings` both assume the save goes back to the path the query
+reads, which is what lets `useSaveSettings` write the response straight into the cache
+under `[path]`. Quality definitions do not: Whisparr has a dedicated bulk endpoint,
+`PUT /qualitydefinition/update`, which takes an array and answers with the whole list,
+where Sonarr PUTs the array to the collection path itself and reuses `useSaveSettings`
+unchanged. So `useSaveQualityDefinitions` is written out rather than composed — a mutation
+on `/qualitydefinition/update` whose `onSuccess` seeds `['/qualitydefinition']`. Expect the
+same wherever Eros kept a `/update` sibling.
+
+The reset command needed no equivalent. Sonarr's `QualityDefinitions.tsx` watches
+`isResettingQualityDefinitions` with `usePrevious` and invalidates the query when it goes
+false; here `QualityDefinitionController` already broadcasts a SignalR sync on
+`ResetQualityDefinitions`, and the listener's `qualitydefinition` branch — which used to
+dispatch `fetchQualityDefinitions` — now invalidates the query key instead. One handler
+covers the reset, so the component has no reset-awareness at all and takes no
+`isResettingQualityDefinitions` prop.
+
+---
+
 ## 11. Log
 
 | Date | PR | What |
 | --- | --- | --- |
+| 2026-08-23 | #519 | **Quality definitions.** Section 3a. `qualityDefinitions` slice retired and the first use of `usePendingItemsStore`. Four connectors go — 39 to 35 — two of which had already lost their `react-redux` import and were connectors in name only. Seven files to TSX, and `react-slider` gets a hand-written declaration rather than a new dependency. |
 | 2026-08-16 | #452 | zustand, `createPersist`, `createOptionsStore`, `useSelectStore`. Foundation only, no consumers. |
 | 2026-08-16 | #453 | `sonar.coverage.exclusions=frontend/**`, plus linking the commit references in this file. |
 | 2026-08-16 | #454 | `usePagedApiQuery`, `clientSideFilterAndSort`, `getFilterTypePredicate`, `findSelectedFilters` to TypeScript. |
