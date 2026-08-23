@@ -1,11 +1,16 @@
-import PropTypes from 'prop-types';
 import React from 'react';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
 
-function QualityDefinitionLimits(props) {
-  const { bytes, message } = props;
+interface QualityDefinitionLimitsProps {
+  bytes: number | null;
+  message: string;
+}
 
+function QualityDefinitionLimits({
+  bytes,
+  message,
+}: Readonly<QualityDefinitionLimitsProps>) {
   if (!bytes) {
     return <div>{message}</div>;
   }
@@ -22,10 +27,5 @@ function QualityDefinitionLimits(props) {
     </div>
   );
 }
-
-QualityDefinitionLimits.propTypes = {
-  bytes: PropTypes.number,
-  message: PropTypes.string.isRequired,
-};
 
 export default QualityDefinitionLimits;
