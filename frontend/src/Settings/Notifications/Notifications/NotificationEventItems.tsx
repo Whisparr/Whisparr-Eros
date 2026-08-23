@@ -1,16 +1,24 @@
-import PropTypes from 'prop-types';
 import React from 'react';
 import FormGroup from 'Components/Form/FormGroup';
 import FormInputGroup from 'Components/Form/FormInputGroup';
 import FormInputHelpText from 'Components/Form/FormInputHelpText';
 import FormLabel from 'Components/Form/FormLabel';
 import { inputTypes } from 'Helpers/Props';
+import { InputChanged } from 'typings/inputs';
+import Notification from 'typings/Notification';
+import { PendingSection } from 'typings/pending';
 import translate from 'Utilities/String/translate';
 import styles from './NotificationEventItems.css';
 
-function NotificationEventItems(props) {
-  const { item, onInputChange } = props;
+interface NotificationEventItemsProps {
+  item: PendingSection<Notification>;
+  onInputChange: (change: InputChanged) => void;
+}
 
+function NotificationEventItems({
+  item,
+  onInputChange,
+}: Readonly<NotificationEventItemsProps>) {
   const {
     onGrab,
     onDownload,
@@ -201,10 +209,5 @@ function NotificationEventItems(props) {
     </FormGroup>
   );
 }
-
-NotificationEventItems.propTypes = {
-  item: PropTypes.object.isRequired,
-  onInputChange: PropTypes.func.isRequired,
-};
 
 export default NotificationEventItems;

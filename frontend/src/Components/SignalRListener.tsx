@@ -12,6 +12,7 @@ import Command from 'Commands/Command';
 import { COMMANDS_QUERY_KEY, useUpdateCommand } from 'Commands/useCommands';
 import { PagedQueryResponse } from 'Helpers/Hooks/usePagedApiQuery';
 import { ROOT_FOLDERS_QUERY_KEY } from 'RootFolder/useRootFolders';
+import { NOTIFICATIONS_PATH } from 'Settings/Notifications/useNotifications';
 import { QUALITY_DEFINITIONS_PATH } from 'Settings/Quality/Definition/useQualityDefinitions';
 import { removeItem, updateItem } from 'Store/Actions/baseActions';
 import { TAG_DETAILS_QUERY_KEY } from 'Tags/useTagDetails';
@@ -403,14 +404,7 @@ function SignalRListener() {
     }
 
     if (name === 'notification') {
-      const section = 'settings.notifications';
-
-      if (body.action === 'created' || body.action === 'updated') {
-        dispatch(updateItem({ section, ...body.resource }));
-      } else if (body.action === 'deleted') {
-        dispatch(removeItem({ section, id: body.resource?.id }));
-      }
-
+      queryClient.invalidateQueries({ queryKey: [NOTIFICATIONS_PATH] });
       return;
     }
 

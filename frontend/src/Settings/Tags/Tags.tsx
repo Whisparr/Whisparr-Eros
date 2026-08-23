@@ -9,7 +9,6 @@ import {
   fetchDownloadClients,
   fetchImportLists,
   fetchIndexers,
-  fetchNotifications,
 } from 'Store/Actions/settingsActions';
 import useTagDetails from 'Tags/useTagDetails';
 import useTags, { useSortedTagList } from 'Tags/useTags';
@@ -31,7 +30,6 @@ function Tags() {
   useEffect(() => {
     dispatch(fetchDelayProfiles());
     dispatch(fetchImportLists());
-    dispatch(fetchNotifications());
     dispatch(fetchIndexers());
     dispatch(fetchDownloadClients());
   }, [dispatch]);

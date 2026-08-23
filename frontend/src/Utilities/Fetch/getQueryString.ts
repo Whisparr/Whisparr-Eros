@@ -45,6 +45,12 @@ const getQueryString = (queryParams?: QueryParams) => {
 
   const paramsString = searchParams.toString();
 
+  // A caller that decides its params per-call can legitimately end up with
+  // none of them set, and a bare `?` on the path is noise in the request log.
+  if (!paramsString) {
+    return '';
+  }
+
   return `?${paramsString}`;
 };
 
