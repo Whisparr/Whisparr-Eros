@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Flag from 'react-world-flags';
 import { useSafeForWorkMode } from 'App/safeForWorkStore';
@@ -20,6 +20,7 @@ import { useShowMovieMonitorToggleButton } from 'Helpers/Hooks/useShowMovieMonit
 import { icons, kinds, sizes, tooltipPositions } from 'Helpers/Props';
 import MovieHeadshot from 'Movie/MovieHeadshot';
 import DeletePerformerModal from 'Performer/Delete/DeletePerformerModal';
+import PerformerIndexViewMenu from 'Performer/Index/Menus/PerformerIndexViewMenu';
 import PerformerGenderIcon from 'Performer/PerformerGenderIcon';
 import { getPerformerStatusDetails } from 'Performer/PerformerStatus';
 import QualityProfileName from 'Settings/Profiles/Quality/QualityProfileName';
@@ -31,6 +32,7 @@ import firstCharToUpper from 'Utilities/String/firstCharToUpper';
 import translate from 'Utilities/String/translate';
 import EditPerformerModal from '../Edit/EditPerformerModal';
 import PerformerDetailsLinks from './PerformerDetailsLinks';
+import PerformerDetailsPosters from './PerformerDetailsPosters';
 import PerformerDetailsYear from './PerformerDetailsYear';
 import PerformerTags from './PerformerTags';
 import {
@@ -75,6 +77,19 @@ function PerformerDetails() {
   const [isEditMovieModalOpen, setIsEditMovieModalOpen] = useState(false);
   const [isDeleteMovieModalOpen, setIsDeleteMovieModalOpen] = useState(false);
   const [allExpandedYears, setAllExpandedYears] = useState<boolean>(false);
+  const [worksView, setWorksView] = useState<'table' | 'posters'>('table');
+  const handleWorksViewSelect = useCallback((view: string) => {
+    setWorksView(view === 'posters' ? 'posters' : 'table');
+  }, []);
+
+  React.useEffect(() => {
+    setWorksView('table');
+  }, [performerForeignId]);
+  const [scrollContainer, setScrollContainer] = useState<Element | null>(null);
+
+  const contentBodyRef = useCallback((element: HTMLDivElement | null) => {
+    setScrollContainer(element);
+  }, []);
 
   // Initialize expandedYears so current year is expanded by default
   const [expandedYears, setExpandedYears] = useState<Record<number, boolean>>(
@@ -245,14 +260,24 @@ function PerformerDetails() {
           onPress={handleDeleteMoviePress}
         />
         <PageToolbarSection alignContent="right">
-          <PageToolbarButton
-            label="Expand All"
-            iconName={expandIcon}
-            onPress={handleExpandAllPress}
+          <PerformerIndexViewMenu
+            view={worksView}
+            isDisabled={false}
+            onViewSelect={handleWorksViewSelect}
           />
+          {worksView === 'table' ? (
+            <PageToolbarButton
+              label="Expand All"
+              iconName={expandIcon}
+              onPress={handleExpandAllPress}
+            />
+          ) : null}
         </PageToolbarSection>
       </PageToolbar>
-      <PageContentBody innerClassName={styles.innerContentBody}>
+      <PageContentBody
+        ref={contentBodyRef}
+        innerClassName={styles.innerContentBody}
+      >
         <div className={styles.header}>
           <div
             className={styles.backdrop}
@@ -496,16 +521,24 @@ function PerformerDetails() {
           {/* Studios section (delayed render for each studio) */}
           {movies.length > 0 && (
             <FieldSet legend={translate('Works')}>
-              {moviesByYear.map(({ year, movies: yearMovies }) => (
-                <PerformerDetailsYear
-                  key={year}
-                  year={year}
-                  movies={yearMovies}
-                  isExpanded={!!expandedYears[year]}
-                  onExpandPress={handleExpandYearPress}
-                  onYearRefreshPress={onYearRefreshPress}
+              {worksView === 'table' ? (
+                moviesByYear.map(({ year, movies: yearMovies }) => (
+                  <PerformerDetailsYear
+                    key={year}
+                    year={year}
+                    movies={yearMovies}
+                    isExpanded={!!expandedYears[year]}
+                    onExpandPress={handleExpandYearPress}
+                    onYearRefreshPress={onYearRefreshPress}
+                  />
+                ))
+              ) : (
+                <PerformerDetailsPosters
+                  movies={movies}
+                  safeForWorkMode={safeForWorkMode}
+                  scrollContainer={scrollContainer}
                 />
-              ))}
+              )}
             </FieldSet>
           )}
         </div>
