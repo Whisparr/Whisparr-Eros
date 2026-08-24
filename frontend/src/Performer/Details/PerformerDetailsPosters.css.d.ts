@@ -1,13 +1,6 @@
 declare namespace PerformerDetailsPostersCssNamespace {
   export interface IPerformerDetailsPostersCss {
-    link: string;
-    movieCard: string;
-    overlayTitle: string;
-    poster: string;
-    posterContainer: string;
     row: string;
-    sceneCard: string;
-    title: string;
   }
 }
 

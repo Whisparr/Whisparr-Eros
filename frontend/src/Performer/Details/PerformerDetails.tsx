@@ -535,7 +535,6 @@ function PerformerDetails() {
               ) : (
                 <PerformerDetailsPosters
                   movies={movies}
-                  safeForWorkMode={safeForWorkMode}
                   scrollContainer={scrollContainer}
                 />
               )}
