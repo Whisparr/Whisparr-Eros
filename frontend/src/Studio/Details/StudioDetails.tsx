@@ -21,6 +21,9 @@ import Icon from 'Components/Icon';
 import Label from 'Components/Label';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import Measure from 'Components/Measure';
+import MenuContent from 'Components/Menu/MenuContent';
+import ViewMenu from 'Components/Menu/ViewMenu';
+import ViewMenuItem from 'Components/Menu/ViewMenuItem';
 import MonitorToggleButton from 'Components/MonitorToggleButton';
 import PageContent from 'Components/Page/PageContent';
 import PageContentBody from 'Components/Page/PageContentBody';
@@ -31,7 +34,7 @@ import PageToolbarSeparator from 'Components/Page/Toolbar/PageToolbarSeparator';
 import posterPlaceholder from 'Components/posterPlaceholder';
 import Tooltip from 'Components/Tooltip/Tooltip';
 import { useShowMovieMonitorToggleButton } from 'Helpers/Hooks/useShowMovieMonitorToggleButton';
-import { icons, kinds, sizes, tooltipPositions } from 'Helpers/Props';
+import { align, icons, kinds, sizes, tooltipPositions } from 'Helpers/Props';
 import QualityProfileName from 'Settings/Profiles/Quality/QualityProfileName';
 import DeleteStudioModal from 'Studio/Delete/DeleteStudioModal';
 import EditStudioModal from 'Studio/Edit/EditStudioModal';
@@ -40,6 +43,7 @@ import StudioLogo from 'Studio/StudioLogo';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
 import StudioDetailsLinks from './StudioDetailsLinks';
+import StudioDetailsPosters from './StudioDetailsPosters';
 import StudioDetailsYear from './StudioDetailsYear';
 import { setStudioScenesExpanded } from './studioScenesOptionsStore';
 import StudioTags from './StudioTags';
@@ -63,6 +67,14 @@ function StudioDetails() {
     useStudioDetailsWorks(studioForeignId as string);
 
   const [scrollContainer, setScrollContainer] = useState<Element | null>(null);
+  const [worksView, setWorksView] = useState<'table' | 'posters'>('table');
+  const handleWorksViewSelect = useCallback((view: string) => {
+    setWorksView(view === 'posters' ? 'posters' : 'table');
+  }, []);
+
+  useEffect(() => {
+    setWorksView('table');
+  }, [studioForeignId]);
   const contentBodyRef = useCallback((el: HTMLDivElement | null) => {
     setScrollContainer(el);
   }, []);
@@ -122,6 +134,10 @@ function StudioDetails() {
   );
 
   const isPopulated = worksByYear.length > 0;
+  const posterWorks = useMemo(
+    () => worksByYear.flatMap((entry) => entry.works),
+    [worksByYear]
+  );
   const moviesError = studioDetailsError;
 
   useEffect(() => {
@@ -275,11 +291,32 @@ function StudioDetails() {
         </PageToolbarSection>
 
         <PageToolbarSection alignContent="right">
-          <PageToolbarButton
-            label={allExpanded ? 'Collapse All' : 'Expand All'}
-            iconName={expandIcon}
-            onPress={handleExpandAllPress}
-          />
+          <ViewMenu alignMenu={align.RIGHT}>
+            <MenuContent>
+              <ViewMenuItem
+                name="table"
+                selectedView={worksView}
+                onPress={handleWorksViewSelect}
+              >
+                {translate('Table')}
+              </ViewMenuItem>
+              <ViewMenuItem
+                name="posters"
+                selectedView={worksView}
+                onPress={handleWorksViewSelect}
+              >
+                {translate('Posters')}
+              </ViewMenuItem>
+            </MenuContent>
+          </ViewMenu>
+
+          {worksView === 'table' ? (
+            <PageToolbarButton
+              label={allExpanded ? 'Collapse All' : 'Expand All'}
+              iconName={expandIcon}
+              onPress={handleExpandAllPress}
+            />
+          ) : null}
         </PageToolbarSection>
       </PageToolbar>
 
@@ -504,51 +541,59 @@ function StudioDetails() {
           {/* WORKS BY YEAR */}
           {isPopulated && (studio.hasMovies || studio.hasScenes) && (
             <FieldSet legend={translate('Works')}>
-              <WindowScroller scrollElement={scrollContainer ?? undefined}>
-                {({
-                  height,
-                  isScrolling,
-                  onChildScroll,
-                  scrollTop,
-                  registerChild,
-                }) => {
-                  if (!height) {
-                    return null;
-                  }
+              {worksView === 'table' ? (
+                <WindowScroller scrollElement={scrollContainer ?? undefined}>
+                  {({
+                    height,
+                    isScrolling,
+                    onChildScroll,
+                    scrollTop,
+                    registerChild,
+                  }) => {
+                    if (!height) {
+                      return null;
+                    }
 
-                  return (
-                    <div
-                      ref={(element) => {
-                        (
-                          registerChild as unknown as (
-                            el: Element | null
-                          ) => void
-                        )(element);
-                      }}
-                    >
-                      <AutoSizer disableHeight={true}>
-                        {({ width }) => (
-                          <List
-                            ref={listRef}
-                            autoHeight={true}
-                            height={height}
-                            width={width}
-                            rowCount={worksByYear.length}
-                            rowHeight={cacheRef.current.rowHeight}
-                            estimatedRowSize={80}
-                            deferredMeasurementCache={cacheRef.current}
-                            overscanRowCount={6}
-                            scrollTop={scrollTop}
-                            isScrolling={isScrolling}
-                            rowRenderer={rowRenderer}
-                            onScroll={onChildScroll}
-                          />
-                        )}
-                      </AutoSizer>
-                    </div>
-                  );
-                }}
-              </WindowScroller>
+                    return (
+                      <div
+                        ref={(element) => {
+                          (
+                            registerChild as unknown as (
+                              el: Element | null
+                            ) => void
+                          )(element);
+                        }}
+                      >
+                        <AutoSizer disableHeight={true}>
+                          {({ width }) => (
+                            <List
+                              ref={listRef}
+                              autoHeight={true}
+                              height={height}
+                              width={width}
+                              rowCount={worksByYear.length}
+                              rowHeight={cacheRef.current.rowHeight}
+                              estimatedRowSize={80}
+                              deferredMeasurementCache={cacheRef.current}
+                              overscanRowCount={6}
+                              scrollTop={scrollTop}
+                              isScrolling={isScrolling}
+                              rowRenderer={rowRenderer}
+                              onScroll={onChildScroll}
+                            />
+                          )}
+                        </AutoSizer>
+                      </div>
+                    );
+                  }}
+                </WindowScroller>
+              ) : (
+                <StudioDetailsPosters
+                  works={posterWorks}
+                  safeForWorkMode={safeForWorkMode}
+                  scrollContainer={scrollContainer}
+                />
+              )}
             </FieldSet>
           )}
         </div>
