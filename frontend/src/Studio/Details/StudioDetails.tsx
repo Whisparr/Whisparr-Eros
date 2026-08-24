@@ -590,7 +590,6 @@ function StudioDetails() {
               ) : (
                 <StudioDetailsPosters
                   works={posterWorks}
-                  safeForWorkMode={safeForWorkMode}
                   scrollContainer={scrollContainer}
                 />
               )}
