@@ -32,6 +32,11 @@ import firstCharToUpper from 'Utilities/String/firstCharToUpper';
 import translate from 'Utilities/String/translate';
 import EditPerformerModal from '../Edit/EditPerformerModal';
 import PerformerDetailsLinks from './PerformerDetailsLinks';
+import {
+  setPerformerDetailsView,
+  usePerformerDetailsOption,
+} from './performerDetailsOptionsStore';
+import PerformerDetailsPosterOptionsModal from './PerformerDetailsPosterOptionsModal';
 import PerformerDetailsPosters from './PerformerDetailsPosters';
 import PerformerDetailsYear from './PerformerDetailsYear';
 import PerformerTags from './PerformerTags';
@@ -76,15 +81,19 @@ function PerformerDetails() {
 
   const [isEditMovieModalOpen, setIsEditMovieModalOpen] = useState(false);
   const [isDeleteMovieModalOpen, setIsDeleteMovieModalOpen] = useState(false);
+  const [isPosterOptionsModalOpen, setIsPosterOptionsModalOpen] =
+    useState(false);
   const [allExpandedYears, setAllExpandedYears] = useState<boolean>(false);
-  const [worksView, setWorksView] = useState<'table' | 'posters'>('table');
+  const worksView = usePerformerDetailsOption('view');
   const handleWorksViewSelect = useCallback((view: string) => {
-    setWorksView(view === 'posters' ? 'posters' : 'table');
+    setPerformerDetailsView(view);
   }, []);
-
-  React.useEffect(() => {
-    setWorksView('table');
-  }, [performerForeignId]);
+  const handlePosterOptionsPress = useCallback(() => {
+    setIsPosterOptionsModalOpen(true);
+  }, []);
+  const handlePosterOptionsModalClose = useCallback(() => {
+    setIsPosterOptionsModalOpen(false);
+  }, []);
   const [scrollContainer, setScrollContainer] = useState<Element | null>(null);
 
   const contentBodyRef = useCallback((element: HTMLDivElement | null) => {
@@ -260,6 +269,16 @@ function PerformerDetails() {
           onPress={handleDeleteMoviePress}
         />
         <PageToolbarSection alignContent="right">
+          {worksView === 'posters' ? (
+            <>
+              <PageToolbarButton
+                label={translate('Options')}
+                iconName={icons.POSTER}
+                onPress={handlePosterOptionsPress}
+              />
+              <PageToolbarSeparator />
+            </>
+          ) : null}
           <PerformerIndexViewMenu
             view={worksView}
             isDisabled={false}
@@ -541,6 +560,10 @@ function PerformerDetails() {
             </FieldSet>
           )}
         </div>
+        <PerformerDetailsPosterOptionsModal
+          isOpen={isPosterOptionsModalOpen}
+          onModalClose={handlePosterOptionsModalClose}
+        />
         <DeletePerformerModal
           isOpen={isDeleteMovieModalOpen}
           performer={performer}
