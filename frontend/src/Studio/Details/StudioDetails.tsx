@@ -16,6 +16,8 @@ import {
   WindowScroller,
 } from 'react-virtualized';
 import Alert from 'Components/Alert';
+import DetailsPosterOptionsModal from 'Components/DetailsPosterOptionsModal';
+import DetailsPosters from 'Components/DetailsPosters';
 import FieldSet from 'Components/FieldSet';
 import Icon from 'Components/Icon';
 import Label from 'Components/Label';
@@ -31,6 +33,7 @@ import PageToolbar from 'Components/Page/Toolbar/PageToolbar';
 import PageToolbarButton from 'Components/Page/Toolbar/PageToolbarButton';
 import PageToolbarSection from 'Components/Page/Toolbar/PageToolbarSection';
 import PageToolbarSeparator from 'Components/Page/Toolbar/PageToolbarSeparator';
+import { PosterOptionChange } from 'Components/PosterOptionsForm';
 import posterPlaceholder from 'Components/posterPlaceholder';
 import Tooltip from 'Components/Tooltip/Tooltip';
 import { useShowMovieMonitorToggleButton } from 'Helpers/Hooks/useShowMovieMonitorToggleButton';
@@ -44,11 +47,10 @@ import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
 import StudioDetailsLinks from './StudioDetailsLinks';
 import {
+  setStudioDetailsPosterOption,
   setStudioDetailsView,
   useStudioDetailsOption,
 } from './studioDetailsOptionsStore';
-import StudioDetailsPosterOptionsModal from './StudioDetailsPosterOptionsModal';
-import StudioDetailsPosters from './StudioDetailsPosters';
 import StudioDetailsYear from './StudioDetailsYear';
 import { setStudioScenesExpanded } from './studioScenesOptionsStore';
 import StudioTags from './StudioTags';
@@ -75,6 +77,7 @@ function StudioDetails() {
   const [isPosterOptionsModalOpen, setIsPosterOptionsModalOpen] =
     useState(false);
   const worksView = useStudioDetailsOption('view');
+  const posterOptions = useStudioDetailsOption('posterOptions');
   const handleWorksViewSelect = useCallback((view: string) => {
     setStudioDetailsView(view);
   }, []);
@@ -84,6 +87,12 @@ function StudioDetails() {
   const handlePosterOptionsModalClose = useCallback(() => {
     setIsPosterOptionsModalOpen(false);
   }, []);
+  const handlePosterOptionChange = useCallback(
+    ({ name, value }: PosterOptionChange) => {
+      setStudioDetailsPosterOption({ [name]: value });
+    },
+    []
+  );
   const contentBodyRef = useCallback((el: HTMLDivElement | null) => {
     setScrollContainer(el);
   }, []);
@@ -607,9 +616,11 @@ function StudioDetails() {
                   }}
                 </WindowScroller>
               ) : (
-                <StudioDetailsPosters
-                  works={posterWorks}
+                <DetailsPosters
+                  items={posterWorks}
+                  posterOptions={posterOptions}
                   scrollContainer={scrollContainer}
+                  sortKey="releaseDate"
                 />
               )}
             </FieldSet>
@@ -617,9 +628,11 @@ function StudioDetails() {
         </div>
 
         {/* MODALS */}
-        <StudioDetailsPosterOptionsModal
+        <DetailsPosterOptionsModal
           isOpen={isPosterOptionsModalOpen}
+          posterOptions={posterOptions}
           onModalClose={handlePosterOptionsModalClose}
+          onPosterOptionChange={handlePosterOptionChange}
         />
         {studio && (
           <>

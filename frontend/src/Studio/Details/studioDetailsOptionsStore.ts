@@ -1,34 +1,9 @@
-import { createOptionsStore } from 'Helpers/Hooks/useOptionsStore';
+import { createDetailsOptionsStore } from 'Components/detailsOptionsStore';
 
-export type StudioDetailsWorksView = 'table' | 'posters';
-
-export interface StudioDetailsPosterOptions {
-  info: string;
-  size: string;
-}
-
-interface StudioDetailsOptions {
-  view: StudioDetailsWorksView;
-  posterOptions: StudioDetailsPosterOptions;
-}
-
-const { useOption, getOptions, setOption } =
-  createOptionsStore<StudioDetailsOptions>('studio_details_options', () => ({
-    view: 'table',
-    posterOptions: {
-      info: 'studio',
-      size: 'large',
-    },
-  }));
+const { useOption, setView, setPosterOption } = createDetailsOptionsStore(
+  'studio_details_options'
+);
 
 export const useStudioDetailsOption = useOption;
-
-export const setStudioDetailsView = (view: string) => {
-  setOption('view', view === 'posters' ? 'posters' : 'table');
-};
-
-export const setStudioDetailsPosterOption = (
-  payload: Partial<StudioDetailsPosterOptions>
-) => {
-  setOption('posterOptions', { ...getOptions().posterOptions, ...payload });
-};
+export const setStudioDetailsView = setView;
+export const setStudioDetailsPosterOption = setPosterOption;

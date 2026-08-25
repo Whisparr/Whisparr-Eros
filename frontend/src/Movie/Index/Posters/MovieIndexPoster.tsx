@@ -10,6 +10,7 @@ import IconButton from 'Components/Link/IconButton';
 import Link from 'Components/Link/Link';
 import SpinnerIconButton from 'Components/Link/SpinnerIconButton';
 import MovieTagList from 'Components/MovieTagList';
+import { CommonPosterOptions } from 'Components/PosterOptionsForm';
 import TmdbRating from 'Components/TmdbRating';
 import Popover from 'Components/Tooltip/Popover';
 import { icons } from 'Helpers/Props';
@@ -35,10 +36,18 @@ interface MovieIndexPosterProps {
   isSelectMode: boolean;
   posterWidth: number;
   posterHeight: number;
+  posterOptions?: CommonPosterOptions;
 }
 
 function MovieIndexPoster(props: Readonly<MovieIndexPosterProps>) {
-  const { movie, sortKey, isSelectMode, posterWidth, posterHeight } = props;
+  const {
+    movie,
+    sortKey,
+    isSelectMode,
+    posterWidth,
+    posterHeight,
+    posterOptions,
+  } = props;
   const movieId = movie.id;
 
   const qualityProfile = useQualityProfile(movie.qualityProfileId);
@@ -57,16 +66,19 @@ function MovieIndexPoster(props: Readonly<MovieIndexPosterProps>) {
 
   const safeForWorkMode = useSafeForWorkMode();
 
+  const indexPosterOptions = useMovieIndexOption('posterOptions');
   const {
     detailedProgressBar,
     showTitle,
     showMonitored,
     showQualityProfile,
     showReleaseDate,
-    showTmdbRating,
-    showTags,
     showSearchAction,
-  } = useMovieIndexOption('posterOptions');
+  } = posterOptions ?? indexPosterOptions;
+  const showTmdbRating = posterOptions
+    ? false
+    : indexPosterOptions.showTmdbRating;
+  const showTags = posterOptions ? false : indexPosterOptions.showTags;
 
   const { showRelativeDates, shortDateFormat, longDateFormat, timeFormat } =
     useUiSettingsValues();
