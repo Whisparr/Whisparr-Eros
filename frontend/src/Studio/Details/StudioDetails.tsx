@@ -43,6 +43,11 @@ import StudioLogo from 'Studio/StudioLogo';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
 import StudioDetailsLinks from './StudioDetailsLinks';
+import {
+  setStudioDetailsView,
+  useStudioDetailsOption,
+} from './studioDetailsOptionsStore';
+import StudioDetailsPosterOptionsModal from './StudioDetailsPosterOptionsModal';
 import StudioDetailsPosters from './StudioDetailsPosters';
 import StudioDetailsYear from './StudioDetailsYear';
 import { setStudioScenesExpanded } from './studioScenesOptionsStore';
@@ -67,14 +72,18 @@ function StudioDetails() {
     useStudioDetailsWorks(studioForeignId as string);
 
   const [scrollContainer, setScrollContainer] = useState<Element | null>(null);
-  const [worksView, setWorksView] = useState<'table' | 'posters'>('table');
+  const [isPosterOptionsModalOpen, setIsPosterOptionsModalOpen] =
+    useState(false);
+  const worksView = useStudioDetailsOption('view');
   const handleWorksViewSelect = useCallback((view: string) => {
-    setWorksView(view === 'posters' ? 'posters' : 'table');
+    setStudioDetailsView(view);
   }, []);
-
-  useEffect(() => {
-    setWorksView('table');
-  }, [studioForeignId]);
+  const handlePosterOptionsPress = useCallback(() => {
+    setIsPosterOptionsModalOpen(true);
+  }, []);
+  const handlePosterOptionsModalClose = useCallback(() => {
+    setIsPosterOptionsModalOpen(false);
+  }, []);
   const contentBodyRef = useCallback((el: HTMLDivElement | null) => {
     setScrollContainer(el);
   }, []);
@@ -291,6 +300,16 @@ function StudioDetails() {
         </PageToolbarSection>
 
         <PageToolbarSection alignContent="right">
+          {worksView === 'posters' ? (
+            <>
+              <PageToolbarButton
+                label={translate('Options')}
+                iconName={icons.POSTER}
+                onPress={handlePosterOptionsPress}
+              />
+              <PageToolbarSeparator />
+            </>
+          ) : null}
           <ViewMenu alignMenu={align.RIGHT}>
             <MenuContent>
               <ViewMenuItem
@@ -598,6 +617,10 @@ function StudioDetails() {
         </div>
 
         {/* MODALS */}
+        <StudioDetailsPosterOptionsModal
+          isOpen={isPosterOptionsModalOpen}
+          onModalClose={handlePosterOptionsModalClose}
+        />
         {studio && (
           <>
             <EditStudioModal

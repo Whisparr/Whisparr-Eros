@@ -159,6 +159,11 @@ namespace Whisparr.Api.V3.Studios
                 }
             }
 
+            var coverFileInfos = _coverMapper.GetMovieCoverFileInfos();
+            _coverMapper.ConvertToLocalUrls(
+                movieResources.Select(x => Tuple.Create(x.Id, x.Images.AsEnumerable())),
+                coverFileInfos);
+
             return movieResources;
         }
 

@@ -7,23 +7,39 @@ import {
   type ListRowProps,
   WindowScroller,
 } from 'react-virtualized';
+import { useAppDimension } from 'App/appStore';
 import { SelectProvider } from 'App/SelectContext';
 import MovieIndexPoster from 'Movie/Index/Posters/MovieIndexPoster';
 import Movie from 'Movie/Movie';
 import SceneIndexPoster from 'Scene/Index/Posters/SceneIndexPoster';
+import dimensions from 'Styles/Variables/dimensions';
+import { useStudioDetailsOption } from './studioDetailsOptionsStore';
 import styles from './StudioDetailsPosters.css';
 
-const MOVIE_COLUMN_WIDTH = 182;
-const MOVIE_POSTER_WIDTH = MOVIE_COLUMN_WIDTH - 20;
-const MOVIE_POSTER_HEIGHT = Math.ceil((250 / 170) * MOVIE_POSTER_WIDTH);
-const SCENE_COLUMN_WIDTH = 310;
-const SCENE_POSTER_WIDTH = SCENE_COLUMN_WIDTH - 20;
-const SCENE_POSTER_HEIGHT = Math.ceil((170 / 300) * SCENE_POSTER_WIDTH);
-const COLUMN_PADDING = 10;
+const MOVIE_MAX_COLUMN_WIDTH = 182;
+const SCENE_MAX_COLUMN_WIDTH = 310;
+const COLUMN_PADDING = Number.parseInt(dimensions.movieIndexColumnPadding, 10);
+const COLUMN_PADDING_SMALL_SCREEN = Number.parseInt(
+  dimensions.movieIndexColumnPaddingSmallScreen,
+  10
+);
+
+const ADDITIONAL_COLUMN_COUNT: Record<string, number> = {
+  small: 3,
+  medium: 2,
+  large: 1,
+};
 
 interface StudioDetailsPostersProps {
   works: Movie[];
   scrollContainer: Element | null;
+}
+
+interface PosterCell {
+  item: Movie;
+  columnWidth: number;
+  posterWidth: number;
+  posterHeight: number;
 }
 
 interface StudioDetailsPosterListProps {
@@ -35,8 +51,44 @@ interface StudioDetailsPosterListProps {
   onChildScroll: (params: { scrollTop: number }) => void;
 }
 
-function getColumnWidth(movie: Movie) {
-  return movie.itemType === 'scene' ? SCENE_COLUMN_WIDTH : MOVIE_COLUMN_WIDTH;
+function getColumnWidth(
+  width: number,
+  maximumColumnWidth: number,
+  size: string
+) {
+  if (!width) {
+    return maximumColumnWidth;
+  }
+
+  const columns = Math.floor(width / maximumColumnWidth);
+  const remainder = width % maximumColumnWidth;
+  const additionalColumns = ADDITIONAL_COLUMN_COUNT[size] ?? 1;
+
+  return remainder === 0
+    ? maximumColumnWidth
+    : Math.floor(width / (columns + additionalColumns));
+}
+
+function getPosterCell(
+  item: Movie,
+  width: number,
+  isSmallScreen: boolean,
+  size: string
+): PosterCell {
+  const isScene = item.itemType === 'scene';
+  let maximumColumnWidth = isSmallScreen ? 172 : MOVIE_MAX_COLUMN_WIDTH;
+
+  if (isScene) {
+    maximumColumnWidth = isSmallScreen ? 300 : SCENE_MAX_COLUMN_WIDTH;
+  }
+  const padding = isSmallScreen ? COLUMN_PADDING_SMALL_SCREEN : COLUMN_PADDING;
+  const columnWidth = getColumnWidth(width, maximumColumnWidth, size);
+  const posterWidth = Math.max(columnWidth - padding * 2, 1);
+  const posterHeight = Math.ceil(
+    (isScene ? 170 / 300 : 250 / 170) * posterWidth
+  );
+
+  return { item, columnWidth, posterWidth, posterHeight };
 }
 
 function StudioDetailsPosterList({
@@ -47,31 +99,39 @@ function StudioDetailsPosterList({
   scrollTop,
   onChildScroll,
 }: StudioDetailsPosterListProps) {
+  const isSmallScreen = useAppDimension('isSmallScreen');
+  const posterOptions = useStudioDetailsOption('posterOptions');
   const listRef = useRef<List>(null);
   const cacheRef = useRef(
     new CellMeasurerCache({
       fixedWidth: true,
-      defaultHeight: MOVIE_POSTER_HEIGHT + 80,
-      minHeight: SCENE_POSTER_HEIGHT + 40,
+      defaultHeight:
+        Math.ceil((250 / 170) * (MOVIE_MAX_COLUMN_WIDTH - 20)) + 80,
+      minHeight: Math.ceil((170 / 300) * (SCENE_MAX_COLUMN_WIDTH - 20)) + 40,
     })
   );
 
   const rows = useMemo(() => {
-    const result: Movie[][] = [];
-    let row: Movie[] = [];
+    const result: PosterCell[][] = [];
+    let row: PosterCell[] = [];
     let rowWidth = 0;
 
-    works.forEach((movie) => {
-      const columnWidth = getColumnWidth(movie);
+    works.forEach((item) => {
+      const cell = getPosterCell(
+        item,
+        width,
+        isSmallScreen,
+        posterOptions.size
+      );
 
-      if (row.length && rowWidth + columnWidth > width) {
+      if (row.length && rowWidth + cell.columnWidth > width) {
         result.push(row);
         row = [];
         rowWidth = 0;
       }
 
-      row.push(movie);
-      rowWidth += columnWidth;
+      row.push(cell);
+      rowWidth += cell.columnWidth;
     });
 
     if (row.length) {
@@ -79,12 +139,12 @@ function StudioDetailsPosterList({
     }
 
     return result;
-  }, [works, width]);
+  }, [works, width, isSmallScreen, posterOptions.size]);
 
   useEffect(() => {
     cacheRef.current.clearAll();
     listRef.current?.recomputeRowHeights();
-  }, [rows]);
+  }, [rows, posterOptions.info]);
 
   const rowRenderer = useCallback(
     ({ index, key, parent, style }: ListRowProps) => {
@@ -103,33 +163,36 @@ function StudioDetailsPosterList({
           parent={parent}
         >
           <div className={styles.row} style={style}>
-            {row.map((movie) => {
-              const isScene = movie.itemType === 'scene';
+            {row.map((cell) => {
+              const isScene = cell.item.itemType === 'scene';
+              const padding = isSmallScreen
+                ? COLUMN_PADDING_SMALL_SCREEN
+                : COLUMN_PADDING;
 
               return (
                 <div
-                  key={movie.id}
+                  key={cell.item.id}
                   style={{
-                    width: isScene ? SCENE_COLUMN_WIDTH : MOVIE_COLUMN_WIDTH,
-                    padding: COLUMN_PADDING,
+                    width: cell.columnWidth,
+                    padding,
                     boxSizing: 'border-box',
                   }}
                 >
                   {isScene ? (
                     <SceneIndexPoster
-                      scene={movie}
-                      sortKey="sortTitle"
+                      scene={cell.item}
+                      sortKey={posterOptions.info}
                       isSelectMode={false}
-                      posterWidth={SCENE_POSTER_WIDTH}
-                      posterHeight={SCENE_POSTER_HEIGHT}
+                      posterWidth={cell.posterWidth}
+                      posterHeight={cell.posterHeight}
                     />
                   ) : (
                     <MovieIndexPoster
-                      movie={movie}
-                      sortKey="cleanTitle"
+                      movie={cell.item}
+                      sortKey={posterOptions.info}
                       isSelectMode={false}
-                      posterWidth={MOVIE_POSTER_WIDTH}
-                      posterHeight={MOVIE_POSTER_HEIGHT}
+                      posterWidth={cell.posterWidth}
+                      posterHeight={cell.posterHeight}
                     />
                   )}
                 </div>
@@ -139,7 +202,7 @@ function StudioDetailsPosterList({
         </CellMeasurer>
       );
     },
-    [rows]
+    [isSmallScreen, posterOptions.info, rows]
   );
 
   return (
@@ -150,7 +213,9 @@ function StudioDetailsPosterList({
       width={width}
       rowCount={rows.length}
       rowHeight={cacheRef.current.rowHeight}
-      estimatedRowSize={MOVIE_POSTER_HEIGHT + 80}
+      estimatedRowSize={
+        Math.ceil((250 / 170) * (MOVIE_MAX_COLUMN_WIDTH - 20)) + 80
+      }
       deferredMeasurementCache={cacheRef.current}
       overscanRowCount={4}
       scrollTop={scrollTop}
