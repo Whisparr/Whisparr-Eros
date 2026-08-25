@@ -13,14 +13,18 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
             RuleFor(c => c.Port).InclusiveBetween(1, 65535);
             RuleFor(c => c.UrlBase).ValidUrlBase().When(c => c.UrlBase.IsNotNullOrWhiteSpace());
 
-            RuleFor(c => c.MovieCategory).Matches(@"^([^\\\/](\/?[^\\\/])*)?$").WithMessage(@"Can not contain '\', '//', or start/end with '/'");
-            RuleFor(c => c.MovieImportedCategory).Matches(@"^([^\\\/](\/?[^\\\/])*)?$").WithMessage(@"Can not contain '\', '//', or start/end with '/'");
+            RuleFor(c => c.Username).Empty()
+                .WithMessage("Username must be empty when using API Key.")
+                .When(c => c.ApiKey.IsNotNullOrWhiteSpace());
+            RuleFor(c => c.Password).Empty()
+                .WithMessage("Password must be empty when using API Key.")
+                .When(c => c.ApiKey.IsNotNullOrWhiteSpace());
         }
     }
 
     public class QBittorrentSettings : DownloadClientSettingsBase<QBittorrentSettings>
     {
-        private static readonly QBittorrentSettingsValidator Validator = new ();
+        private static readonly QBittorrentSettingsValidator Validator = new();
 
         public QBittorrentSettings()
         {
@@ -43,10 +47,13 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
         [FieldToken(TokenField.HelpText, "UrlBase", "url", "http://[host]:[port]/[urlBase]/api")]
         public string UrlBase { get; set; }
 
-        [FieldDefinition(4, Label = "Username", Type = FieldType.Textbox, Privacy = PrivacyLevel.UserName)]
+        [FieldDefinition(4, Label = "ApiKey", Type = FieldType.Textbox, Privacy = PrivacyLevel.ApiKey)]
+        public string ApiKey { get; set; }
+
+        [FieldDefinition(5, Label = "Username", Type = FieldType.Textbox, Privacy = PrivacyLevel.UserName)]
         public string Username { get; set; }
 
-        [FieldDefinition(5, Label = "Password", Type = FieldType.Password, Privacy = PrivacyLevel.Password)]
+        [FieldDefinition(6, Label = "Password", Type = FieldType.Password, Privacy = PrivacyLevel.Password)]
         public string Password { get; set; }
 
         [FieldDefinition(6, Label = "Category", Type = FieldType.Textbox, HelpText = "DownloadClientSettingsCategoryHelpText")]
@@ -61,17 +68,20 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
         [FieldDefinition(9, Label = "DownloadClientSettingsOlderPriority", Type = FieldType.Select, SelectOptions = typeof(QBittorrentPriority), HelpText = "DownloadClientSettingsOlderPriorityMovieHelpText")]
         public int OlderMoviePriority { get; set; }
 
-        [FieldDefinition(10, Label = "DownloadClientSettingsInitialState", Type = FieldType.Select, SelectOptions = typeof(QBittorrentState), HelpText = "DownloadClientQbittorrentSettingsInitialStateHelpText")]
+        [FieldDefinition(11, Label = "DownloadClientSettingsInitialState", Type = FieldType.Select, SelectOptions = typeof(QBittorrentState), HelpText = "DownloadClientQbittorrentSettingsInitialStateHelpText")]
         public int InitialState { get; set; }
 
-        [FieldDefinition(11, Label = "DownloadClientQbittorrentSettingsSequentialOrder", Type = FieldType.Checkbox, HelpText = "DownloadClientQbittorrentSettingsSequentialOrderHelpText")]
+        [FieldDefinition(12, Label = "DownloadClientQbittorrentSettingsSequentialOrder", Type = FieldType.Checkbox, HelpText = "DownloadClientQbittorrentSettingsSequentialOrderHelpText")]
         public bool SequentialOrder { get; set; }
 
-        [FieldDefinition(12, Label = "DownloadClientQbittorrentSettingsFirstAndLastFirst", Type = FieldType.Checkbox, HelpText = "DownloadClientQbittorrentSettingsFirstAndLastFirstHelpText")]
+        [FieldDefinition(13, Label = "DownloadClientQbittorrentSettingsFirstAndLastFirst", Type = FieldType.Checkbox, HelpText = "DownloadClientQbittorrentSettingsFirstAndLastFirstHelpText")]
         public bool FirstAndLast { get; set; }
 
-        [FieldDefinition(13, Label = "DownloadClientQbittorrentSettingsContentLayout", Type = FieldType.Select, SelectOptions = typeof(QBittorrentContentLayout), HelpText = "DownloadClientQbittorrentSettingsContentLayoutHelpText")]
+        [FieldDefinition(14, Label = "DownloadClientQbittorrentSettingsContentLayout", Type = FieldType.Select, SelectOptions = typeof(QBittorrentContentLayout), HelpText = "DownloadClientQbittorrentSettingsContentLayoutHelpText")]
         public int ContentLayout { get; set; }
+
+        [FieldDefinition(15, Label = "DownloadClientQbittorrentSettingsAddSeriesTags", Type = FieldType.Checkbox, HelpText = "DownloadClientQbittorrentSettingsAddSeriesTagsHelpText")]
+        public bool AddSeriesTags { get; set; }
 
         public override NzbDroneValidationResult Validate()
         {
