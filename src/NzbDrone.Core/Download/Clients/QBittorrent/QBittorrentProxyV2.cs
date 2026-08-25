@@ -347,13 +347,31 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
             ProcessRequest(request, settings);
         }
 
-        private HttpRequestBuilder BuildRequest(QBittorrentSettings settings)
+        public void AddTags(string hash, IEnumerable<string> tags, QBittorrentSettings settings)
+        {
+            var request = BuildRequest(settings).Resource("/api/v2/torrents/addTags")
+                .Post()
+                .AddFormParameter("hashes", hash)
+                .AddFormParameter("tags", string.Join(",", tags));
+            ProcessRequest(request, settings);
+        }
+
+        private static HttpRequestBuilder BuildRequest(QBittorrentSettings settings)
         {
             var requestBuilder = new HttpRequestBuilder(settings.UseSsl, settings.Host, settings.Port, settings.UrlBase)
             {
-                LogResponseContent = true,
-                NetworkCredential = new BasicNetworkCredential(settings.Username, settings.Password)
+                LogResponseContent = true
             };
+
+            if (settings.ApiKey.IsNotNullOrWhiteSpace())
+            {
+                requestBuilder.Headers["Authorization"] = $"Bearer {settings.ApiKey}";
+            }
+            else if (settings.Username.IsNotNullOrWhiteSpace() || settings.Password.IsNotNullOrWhiteSpace())
+            {
+                requestBuilder.NetworkCredential = new BasicNetworkCredential(settings.Username, settings.Password);
+            }
+
             return requestBuilder;
         }
 
@@ -367,16 +385,41 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
 
         private string ProcessRequest(HttpRequestBuilder requestBuilder, QBittorrentSettings settings)
         {
-            AuthenticateClient(requestBuilder, settings);
-
             var request = requestBuilder.Build();
             request.LogResponseContent = true;
-            request.SuppressHttpErrorStatusCodes = new[] { HttpStatusCode.Forbidden };
 
-            HttpResponse response;
+            if (settings.ApiKey.IsNotNullOrWhiteSpace())
+            {
+                try
+                {
+                    return _httpClient.Execute(request).Content;
+                }
+                catch (HttpException ex)
+                {
+                    if (ex.Response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
+                    {
+                        _logger.Debug(ex, "qbitTorrent authentication failed.");
+
+                        throw new DownloadClientAuthenticationException("Failed to authenticate with qBittorrent.", ex);
+                    }
+
+                    throw new DownloadClientException("Failed to connect to qBittorrent, check your settings.", ex);
+                }
+                catch (Exception ex)
+                {
+                    throw new DownloadClientException("Failed to connect to qBittorrent, please check your settings.", ex);
+                }
+            }
+
+            AuthenticateClient(requestBuilder, settings);
+
+#pragma warning disable SA1010 // Opening square brackets should be spaced correctly
+            request.SuppressHttpErrorStatusCodes = [HttpStatusCode.Forbidden];
+#pragma warning restore SA1010 // Opening square brackets should be spaced correctly
+
             try
             {
-                response = _httpClient.Execute(request);
+                var response = _httpClient.Execute(request);
 
                 if (response.StatusCode == HttpStatusCode.Forbidden)
                 {
@@ -388,17 +431,17 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
 
                     response = _httpClient.Execute(request);
                 }
+
+                return response.Content;
             }
             catch (HttpException ex)
             {
                 throw new DownloadClientException("Failed to connect to qBittorrent, check your settings.", ex);
             }
-            catch (WebException ex)
+            catch (Exception ex)
             {
                 throw new DownloadClientException("Failed to connect to qBittorrent, please check your settings.", ex);
             }
-
-            return response.Content;
         }
 
         private void AuthenticateClient(HttpRequestBuilder requestBuilder, QBittorrentSettings settings, bool reauthenticate = false)
