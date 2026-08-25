@@ -9,12 +9,12 @@ import {
 } from 'react-virtualized';
 import { useAppDimension } from 'App/appStore';
 import { SelectProvider } from 'App/SelectContext';
+import { CommonPosterOptions } from 'Components/PosterOptionsForm';
 import MovieIndexPoster from 'Movie/Index/Posters/MovieIndexPoster';
 import Movie from 'Movie/Movie';
 import SceneIndexPoster from 'Scene/Index/Posters/SceneIndexPoster';
 import dimensions from 'Styles/Variables/dimensions';
-import { usePerformerDetailsOption } from './performerDetailsOptionsStore';
-import styles from './PerformerDetailsPosters.css';
+import styles from './DetailsPosters.css';
 
 const MOVIE_MAX_COLUMN_WIDTH = 182;
 const SCENE_MAX_COLUMN_WIDTH = 310;
@@ -30,9 +30,11 @@ const ADDITIONAL_COLUMN_COUNT: Record<string, number> = {
   large: 1,
 };
 
-interface PerformerDetailsPostersProps {
-  movies: readonly Movie[];
+interface DetailsPostersProps {
+  items: readonly Movie[];
+  posterOptions: CommonPosterOptions;
   scrollContainer: Element | null;
+  sortKey: string;
 }
 
 interface PosterCell {
@@ -42,8 +44,7 @@ interface PosterCell {
   posterHeight: number;
 }
 
-interface PerformerDetailsPosterListProps {
-  movies: readonly Movie[];
+interface DetailsPosterListProps extends DetailsPostersProps {
   width: number;
   height: number;
   isScrolling: boolean;
@@ -81,6 +82,7 @@ function getPosterCell(
   if (isScene) {
     maximumColumnWidth = isSmallScreen ? 300 : SCENE_MAX_COLUMN_WIDTH;
   }
+
   const padding = isSmallScreen ? COLUMN_PADDING_SMALL_SCREEN : COLUMN_PADDING;
   const columnWidth = getColumnWidth(width, maximumColumnWidth, size);
   const posterWidth = Math.max(columnWidth - padding * 2, 1);
@@ -91,16 +93,17 @@ function getPosterCell(
   return { item, columnWidth, posterWidth, posterHeight };
 }
 
-function PerformerDetailsPosterList({
-  movies,
+function DetailsPosterList({
+  items,
+  posterOptions,
+  sortKey,
   width,
   height,
   isScrolling,
   scrollTop,
   onChildScroll,
-}: PerformerDetailsPosterListProps) {
+}: Readonly<DetailsPosterListProps>) {
   const isSmallScreen = useAppDimension('isSmallScreen');
-  const posterOptions = usePerformerDetailsOption('posterOptions');
   const listRef = useRef<List>(null);
   const cacheRef = useRef(
     new CellMeasurerCache({
@@ -116,7 +119,7 @@ function PerformerDetailsPosterList({
     let row: PosterCell[] = [];
     let rowWidth = 0;
 
-    movies.forEach((item) => {
+    items.forEach((item) => {
       const cell = getPosterCell(
         item,
         width,
@@ -139,12 +142,12 @@ function PerformerDetailsPosterList({
     }
 
     return result;
-  }, [movies, width, isSmallScreen, posterOptions.size]);
+  }, [items, width, isSmallScreen, posterOptions.size]);
 
   useEffect(() => {
     cacheRef.current.clearAll();
     listRef.current?.recomputeRowHeights();
-  }, [rows, posterOptions.info]);
+  }, [rows, posterOptions]);
 
   const rowRenderer = useCallback(
     ({ index, key, parent, style }: ListRowProps) => {
@@ -181,16 +184,18 @@ function PerformerDetailsPosterList({
                   {isScene ? (
                     <SceneIndexPoster
                       scene={cell.item}
-                      sortKey={posterOptions.info}
+                      sortKey={sortKey}
                       isSelectMode={false}
+                      posterOptions={posterOptions}
                       posterWidth={cell.posterWidth}
                       posterHeight={cell.posterHeight}
                     />
                   ) : (
                     <MovieIndexPoster
                       movie={cell.item}
-                      sortKey={posterOptions.info}
+                      sortKey={sortKey}
                       isSelectMode={false}
+                      posterOptions={posterOptions}
                       posterWidth={cell.posterWidth}
                       posterHeight={cell.posterHeight}
                     />
@@ -202,7 +207,7 @@ function PerformerDetailsPosterList({
         </CellMeasurer>
       );
     },
-    [isSmallScreen, posterOptions.info, rows]
+    [isSmallScreen, posterOptions, rows, sortKey]
   );
 
   return (
@@ -226,12 +231,14 @@ function PerformerDetailsPosterList({
   );
 }
 
-function PerformerDetailsPosters({
-  movies,
+function DetailsPosters({
+  items,
+  posterOptions,
   scrollContainer,
-}: PerformerDetailsPostersProps) {
+  sortKey,
+}: Readonly<DetailsPostersProps>) {
   return (
-    <SelectProvider items={movies as Movie[]}>
+    <SelectProvider items={items as Movie[]}>
       <WindowScroller scrollElement={scrollContainer ?? undefined}>
         {({ height, isScrolling, onChildScroll, scrollTop, registerChild }) => {
           if (!height) {
@@ -248,8 +255,11 @@ function PerformerDetailsPosters({
             >
               <AutoSizer disableHeight={true}>
                 {({ width }) => (
-                  <PerformerDetailsPosterList
-                    movies={movies}
+                  <DetailsPosterList
+                    items={items}
+                    posterOptions={posterOptions}
+                    scrollContainer={scrollContainer}
+                    sortKey={sortKey}
                     width={width}
                     height={height}
                     isScrolling={isScrolling}
@@ -266,4 +276,4 @@ function PerformerDetailsPosters({
   );
 }
 
-export default PerformerDetailsPosters;
+export default DetailsPosters;

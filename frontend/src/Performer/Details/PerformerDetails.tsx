@@ -4,6 +4,8 @@ import { useParams } from 'react-router-dom';
 import Flag from 'react-world-flags';
 import { useSafeForWorkMode } from 'App/safeForWorkStore';
 import Alert from 'Components/Alert';
+import DetailsPosterOptionsModal from 'Components/DetailsPosterOptionsModal';
+import DetailsPosters from 'Components/DetailsPosters';
 import FieldSet from 'Components/FieldSet';
 import Icon from 'Components/Icon';
 import Label from 'Components/Label';
@@ -15,6 +17,7 @@ import PageToolbar from 'Components/Page/Toolbar/PageToolbar';
 import PageToolbarButton from 'Components/Page/Toolbar/PageToolbarButton';
 import PageToolbarSection from 'Components/Page/Toolbar/PageToolbarSection';
 import PageToolbarSeparator from 'Components/Page/Toolbar/PageToolbarSeparator';
+import { PosterOptionChange } from 'Components/PosterOptionsForm';
 import Tooltip from 'Components/Tooltip/Tooltip';
 import { useShowMovieMonitorToggleButton } from 'Helpers/Hooks/useShowMovieMonitorToggleButton';
 import { icons, kinds, sizes, tooltipPositions } from 'Helpers/Props';
@@ -33,11 +36,10 @@ import translate from 'Utilities/String/translate';
 import EditPerformerModal from '../Edit/EditPerformerModal';
 import PerformerDetailsLinks from './PerformerDetailsLinks';
 import {
+  setPerformerDetailsPosterOption,
   setPerformerDetailsView,
   usePerformerDetailsOption,
 } from './performerDetailsOptionsStore';
-import PerformerDetailsPosterOptionsModal from './PerformerDetailsPosterOptionsModal';
-import PerformerDetailsPosters from './PerformerDetailsPosters';
 import PerformerDetailsYear from './PerformerDetailsYear';
 import PerformerTags from './PerformerTags';
 import {
@@ -85,6 +87,7 @@ function PerformerDetails() {
     useState(false);
   const [allExpandedYears, setAllExpandedYears] = useState<boolean>(false);
   const worksView = usePerformerDetailsOption('view');
+  const posterOptions = usePerformerDetailsOption('posterOptions');
   const handleWorksViewSelect = useCallback((view: string) => {
     setPerformerDetailsView(view);
   }, []);
@@ -94,6 +97,12 @@ function PerformerDetails() {
   const handlePosterOptionsModalClose = useCallback(() => {
     setIsPosterOptionsModalOpen(false);
   }, []);
+  const handlePosterOptionChange = useCallback(
+    ({ name, value }: PosterOptionChange) => {
+      setPerformerDetailsPosterOption({ [name]: value });
+    },
+    []
+  );
   const [scrollContainer, setScrollContainer] = useState<Element | null>(null);
 
   const contentBodyRef = useCallback((element: HTMLDivElement | null) => {
@@ -552,17 +561,21 @@ function PerformerDetails() {
                   />
                 ))
               ) : (
-                <PerformerDetailsPosters
-                  movies={movies}
+                <DetailsPosters
+                  items={movies}
+                  posterOptions={posterOptions}
                   scrollContainer={scrollContainer}
+                  sortKey="studio"
                 />
               )}
             </FieldSet>
           )}
         </div>
-        <PerformerDetailsPosterOptionsModal
+        <DetailsPosterOptionsModal
           isOpen={isPosterOptionsModalOpen}
+          posterOptions={posterOptions}
           onModalClose={handlePosterOptionsModalClose}
+          onPosterOptionChange={handlePosterOptionChange}
         />
         <DeletePerformerModal
           isOpen={isDeleteMovieModalOpen}
