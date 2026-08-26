@@ -195,6 +195,7 @@ const sceneTokens = [
   },
 
   { token: '{Release Date}', example: '2009-02-04' },
+  { token: '{Release Year}', example: '2009' },
   { token: '{Release ShortDate}', example: '09 02 04' },
   { token: '{Scene Code}', example: '12345' },
 ];
@@ -346,7 +347,7 @@ function NamingModal(props: NamingModalProps) {
   return (
     <Modal isOpen={isOpen} onModalClose={onModalClose}>
       <ModalContent onModalClose={onModalClose}>
-        <ModalHeader>{translate('movieFileNameTokens')}</ModalHeader>
+        <ModalHeader>{translate('FileNameTokens')}</ModalHeader>
 
         <ModalBody>
           <div className={styles.namingSelectContainer}>
