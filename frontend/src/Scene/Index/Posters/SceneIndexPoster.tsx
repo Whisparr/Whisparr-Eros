@@ -8,6 +8,7 @@ import Label from 'Components/Label';
 import IconButton from 'Components/Link/IconButton';
 import Link from 'Components/Link/Link';
 import SpinnerIconButton from 'Components/Link/SpinnerIconButton';
+import { CommonPosterOptions } from 'Components/PosterOptionsForm';
 import Popover from 'Components/Tooltip/Popover';
 import { icons } from 'Helpers/Props';
 import EditMovieModal from 'Movie/Edit/EditMovieModal';
@@ -31,10 +32,18 @@ interface SceneIndexPosterProps {
   isSelectMode: boolean;
   posterWidth: number;
   posterHeight: number;
+  posterOptions?: CommonPosterOptions;
 }
 
 function SceneIndexPoster(props: Readonly<SceneIndexPosterProps>) {
-  const { scene, sortKey, isSelectMode, posterWidth, posterHeight } = props;
+  const {
+    scene,
+    sortKey,
+    isSelectMode,
+    posterWidth,
+    posterHeight,
+    posterOptions,
+  } = props;
   const sceneId = scene.id;
 
   const qualityProfile = useQualityProfile(scene.qualityProfileId);
@@ -53,6 +62,7 @@ function SceneIndexPoster(props: Readonly<SceneIndexPosterProps>) {
 
   const safeForWorkMode = useSafeForWorkMode();
 
+  const indexPosterOptions = useSceneIndexOption('posterOptions');
   const {
     detailedProgressBar,
     showTitle,
@@ -60,7 +70,7 @@ function SceneIndexPoster(props: Readonly<SceneIndexPosterProps>) {
     showQualityProfile,
     showReleaseDate,
     showSearchAction,
-  } = useSceneIndexOption('posterOptions');
+  } = posterOptions ?? indexPosterOptions;
 
   const { showRelativeDates, shortDateFormat, longDateFormat, timeFormat } =
     useUiSettingsValues();
