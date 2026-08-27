@@ -13,7 +13,6 @@ import ImportList from 'typings/ImportList';
 import ImportListExclusion from 'typings/ImportListExclusion';
 import ImportListOptionsSettings from 'typings/ImportListOptionsSettings';
 import Indexer from 'typings/Indexer';
-import IndexerOptions from 'typings/Settings/IndexerOptions';
 
 type Presets<T> = T & {
   presets: T[];
@@ -55,9 +54,6 @@ export interface ImportListAppState
   isTestingAll: boolean;
 }
 
-export interface IndexerOptionsAppState
-  extends AppSectionItemState<IndexerOptions>, AppSectionSaveState {}
-
 export interface IndexerAppState
   extends
     AppSectionState<Indexer>,
@@ -94,7 +90,6 @@ interface SettingsAppState {
   importListExclusions: ImportListExclusionsSettingsAppState;
   importListOptions: ImportListOptionsSettingsAppState;
   importLists: ImportListAppState;
-  indexerOptions: IndexerOptionsAppState;
   indexers: IndexerAppState;
 }
 
