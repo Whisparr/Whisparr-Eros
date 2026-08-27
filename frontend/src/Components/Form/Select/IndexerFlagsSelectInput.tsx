@@ -1,34 +1,10 @@
-import React, { useCallback } from 'react';
-import { useSelector } from 'react-redux';
-import { createSelector } from 'reselect';
-import AppState from 'App/State/AppState';
+import React, { useCallback, useMemo } from 'react';
+import {
+  useIndexerFlags,
+  useSelectedIndexerFlags,
+} from 'Settings/Indexers/useIndexerFlags';
 import { EnhancedSelectInputChanged } from 'typings/inputs';
 import EnhancedSelectInput from './EnhancedSelectInput';
-
-const selectIndexerFlagsValues = (selectedFlags: number) =>
-  createSelector(
-    (state: AppState) => state.settings.indexerFlags,
-    (indexerFlags) => {
-      const value = indexerFlags.items.reduce((acc: number[], { id }) => {
-        // eslint-disable-next-line no-bitwise
-        if ((selectedFlags & id) === id) {
-          acc.push(id);
-        }
-
-        return acc;
-      }, []);
-
-      const values = indexerFlags.items.map(({ id, name }) => ({
-        key: id,
-        value: name,
-      }));
-
-      return {
-        value,
-        values,
-      };
-    }
-  );
 
 export interface IndexerFlagsSelectInputProps {
   name: string;
@@ -41,17 +17,29 @@ function IndexerFlagsSelectInput({
   indexerFlags,
   onChange,
   ...otherProps
-}: IndexerFlagsSelectInputProps) {
-  const { value, values } = useSelector(selectIndexerFlagsValues(indexerFlags));
+}: Readonly<IndexerFlagsSelectInputProps>) {
+  const { data: allIndexerFlags } = useIndexerFlags();
+  const { data: selectedFlags } = useSelectedIndexerFlags(indexerFlags);
+
+  const value = useMemo(() => {
+    return selectedFlags.map(({ id }) => id);
+  }, [selectedFlags]);
+
+  const values = useMemo(() => {
+    return allIndexerFlags.map(({ id, name: flagName }) => ({
+      key: id,
+      value: flagName,
+    }));
+  }, [allIndexerFlags]);
 
   const handleChange = useCallback(
     (change: EnhancedSelectInputChanged<number[]>) => {
-      const indexerFlags = change.value.reduce(
+      const newIndexerFlags = change.value.reduce(
         (acc, flagId) => acc + flagId,
         0
       );
 
-      onChange({ name, value: indexerFlags });
+      onChange({ name, value: newIndexerFlags });
     },
     [name, onChange]
   );

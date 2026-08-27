@@ -1,23 +1,17 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
-import createIndexerFlagsSelector from 'Store/Selectors/createIndexerFlagsSelector';
+import { useSelectedIndexerFlags } from 'Settings/Indexers/useIndexerFlags';
 
 interface IndexerFlagsProps {
   indexerFlags: number;
 }
 
-function IndexerFlags({ indexerFlags = 0 }: IndexerFlagsProps) {
-  const allIndexerFlags = useSelector(createIndexerFlagsSelector);
-
-  const flags = allIndexerFlags.items.filter(
-    // eslint-disable-next-line no-bitwise
-    (item) => (indexerFlags & item.id) === item.id
-  );
+function IndexerFlags({ indexerFlags = 0 }: Readonly<IndexerFlagsProps>) {
+  const { data: flags } = useSelectedIndexerFlags(indexerFlags);
 
   return flags.length ? (
     <ul>
-      {flags.map((flag, index) => {
-        return <li key={index}>{flag.name}</li>;
+      {flags.map((flag) => {
+        return <li key={flag.id}>{flag.name}</li>;
       })}
     </ul>
   ) : null;

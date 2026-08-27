@@ -13,7 +13,6 @@ import ImportList from 'typings/ImportList';
 import ImportListExclusion from 'typings/ImportListExclusion';
 import ImportListOptionsSettings from 'typings/ImportListOptionsSettings';
 import Indexer from 'typings/Indexer';
-import IndexerFlag from 'typings/IndexerFlag';
 import IndexerOptions from 'typings/Settings/IndexerOptions';
 
 type Presets<T> = T & {
@@ -86,7 +85,6 @@ export interface ImportListExclusionsSettingsAppState
   pendingChanges: Partial<ImportListExclusion>;
 }
 
-export type IndexerFlagSettingsAppState = AppSectionState<IndexerFlag>;
 interface SettingsAppState {
   autoTaggings: AutoTaggingAppState;
   autoTaggingSpecifications: AutoTaggingSpecificationAppState;
@@ -96,7 +94,6 @@ interface SettingsAppState {
   importListExclusions: ImportListExclusionsSettingsAppState;
   importListOptions: ImportListOptionsSettingsAppState;
   importLists: ImportListAppState;
-  indexerFlags: IndexerFlagSettingsAppState;
   indexerOptions: IndexerOptionsAppState;
   indexers: IndexerAppState;
 }
