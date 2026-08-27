@@ -11,9 +11,9 @@ import {
   saveGeneralSettings,
   setGeneralSettingsValue,
 } from 'Store/Actions/settingsActions';
-import { restart } from 'Store/Actions/systemActions';
 import createSettingsSectionSelector from 'Store/Selectors/createSettingsSectionSelector';
 import { useIsWindowsService } from 'System/Status/useSystemStatus';
+import { useRestart } from 'System/useSystem';
 import GeneralSettings from './GeneralSettings';
 
 const SECTION = 'general';
@@ -34,7 +34,6 @@ const mapDispatchToProps = {
   setGeneralSettingsValue,
   saveGeneralSettings,
   fetchGeneralSettings,
-  restart,
   clearPendingChanges,
 };
 
@@ -116,6 +115,7 @@ export default function GeneralSettingsConnector() {
   const isWindowsService = useIsWindowsService();
   const executeCommand = useExecuteCommand();
   const isResettingApiKey = useCommandExecuting(commandNames.RESET_API_KEY);
+  const { mutate: restart } = useRestart();
 
   return (
     <ConnectedGeneralSettings
@@ -123,6 +123,7 @@ export default function GeneralSettingsConnector() {
       isWindowsService={isWindowsService}
       isResettingApiKey={isResettingApiKey}
       executeCommand={executeCommand}
+      restart={restart}
     />
   );
 }

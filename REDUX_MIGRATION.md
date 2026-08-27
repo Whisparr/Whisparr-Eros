@@ -19,11 +19,11 @@ verified to resolve against the public repo.
 
 | Metric | At assessment | Now |
 | --- | --- | --- |
-| Files importing `react-redux` | 327 of 1,255 | **80** of 1,185 |
-| Lines under `frontend/src/Store/` | 15,374 across 138 files | **4,208** across 60 |
-| Redux slices registered in `Store/Actions/index.js` | 35 | **2** |
+| Files importing `react-redux` | 327 of 1,255 | **78** of 1,185 |
+| Lines under `frontend/src/Store/` | 15,374 across 138 files | **4,145** across 59 |
+| Redux slices registered in `Store/Actions/index.js` | 35 | **1** |
 | Remaining `*Connector` files | 66 | **24** |
-| Files touching React Query | 35 | **77** |
+| Files touching React Query | 35 | **78** |
 | zustand stores | 0 (not installed) | **installed, 39 files** |
 
 > **Recomputed in #464.** Three rows previously carried figures that no command
@@ -294,10 +294,10 @@ this sweep starts from the same footing Sonarr's did.
 
 Sonarr's final commit ([Sonarr/Sonarr@0460281f](https://github.com/Sonarr/Sonarr/commit/0460281f)) removed 1,996 lines across 51 files. The Eros equivalent:
 
-- Delete `frontend/src/Store/` — 62 files, 4,282 lines today, from 138 files and 15,374
+- Delete `frontend/src/Store/` — 59 files, 4,145 lines today, from 138 files and 15,374
   lines at assessment.
-- Delete surviving `App/State/*AppState.ts` slices (2 today, from 33; most disappear with
-  their phase).
+- Delete surviving `App/State/*AppState.ts` slices (1 today — `SettingsAppState` — from 33;
+  most disappear with their phase).
 - Drop `<Provider>` from `frontend/src/bootstrap.tsx`.
 - Remove from `package.json`: `react-redux`, `redux`, `redux-actions`,
   `redux-batched-actions`, `redux-localstorage`, `redux-thunk`, `@types/redux-actions`.
@@ -442,9 +442,16 @@ of Phase E that retires a slice without touching a form, and the second (after S
 move `react-redux` without moving the connector count. See *Sonarr's language filter
 excludes nothing* below.
 
-**Next: section 6b** — General. `useGeneralSettings` already exists in part, so this is the
-first section that starts from something rather than nothing — though what exists is a
-`useSelector` over the slice, not a query.
+~~**Next: section 6b** — General.~~ It needs one thing first. General is the only page that
+restarts the app from a Save, and `restart` was a `systemActions` thunk, so the page could
+not come off `react-redux` while that stood. ~~**`System/useSystem.ts`**~~ **done, #534**,
+split out the way #516 split the pending stores out of section one: both thunks become
+mutations, `systemActions.js` goes, and `Store/Actions/index.js` is down to **one**
+registered slice — `settings`, which is now the whole of what is left. 80 to **78**.
+
+**Next: section 6b** — General, for real this time. `useGeneralSettings` already exists in
+part, so this is the first section that starts from something rather than nothing — though
+what exists is a `useSelector` over the slice, not a query.
 
 1. ~~**Queue**, in three PRs.~~ **Done.** Sonarr shipped it as one 58-file commit, but the slice already
    has three independent sub-sections and splitting along them gives three merge points
@@ -1163,6 +1170,7 @@ already had it.
 
 | Date | PR | What |
 | --- | --- | --- |
+| 2026-08-27 | #534 | **Restart and shutdown.** Not a section — the prerequisite section 6b could not start without, split out the way #516 was. `System/useSystem.ts` replaces both `systemActions` thunks with mutations; `react-redux` 80 to **78** and `Store/` 4,208 across 60 to **4,145** across 59. **`Store/Actions/index.js` is down to one slice.** The system slice had held an empty `defaultState` since #491, so neither thunk wrote to a reducer and there was nothing to port — `restart`'s `onSuccess` does what its `.done()` did, setting the app store's `isRestarting` and starting the ping loop that clears it, both of which have been zustand since #492. Three consumers move: the header actions menu, the restore-backup modal, and `GeneralSettingsConnector`, which takes `restart` as an own prop from its function wrapper until 6b deletes it. Verified on the running instance: **Restart** from the header menu sends `POST /api/v3/system/restart`, the app goes down and comes back reconnected. The response was probed separately — 200 with a 24-byte body in 6ms — because the whole chain hangs on it resolving before the server tears the connection down, and a `.done()` that never fires would have looked the same from outside. **Shutdown was not exercised**, for the obvious reason. Props of the components touched are marked `Readonly<T>` per SonarQube `typescript:S6759`. |
 | 2026-08-27 | #532 | **Languages.** Section 6, first half. `settings.languages`, `LanguageSettingsAppState` and `createLanguagesSelector` are deleted for `Language/useLanguages.ts`; `react-redux` 85 to **80** and `Store/` 4,282 across 62 to **4,208** across 60. No connectors, so 24 does not move — the section never had one. **It is the first Phase E section that retires a slice without touching a form**: nothing here writes, so there is no `useManageSettings`, no pending store and no `selectSettings`; the hook is a query plus a filter. The list is compiled into the server, so it is `staleTime: Infinity` / `gcTime: Infinity` and resolves once for the session, exactly as the slice's single boot fetch did — verified as one `GET /api/v3/language` per page load and none on client-side navigation, with five consumers mounted across the pages visited. The boot gate loses its languages term and its `fetchLanguages` dispatch, leaving `isReduxPopulated` waiting on two sections rather than four. **The one thing not copied from Sonarr is their filter**, which excludes nothing; it is its own note above. `ErrorPage.languagesError` widens from `Error` to `ApiError | null` and `FileEditModalContent.error` from `object` to `object | null`, both because a React Query error is nullable where a slice's was not. Verified on the running instance: the UI language select lists 57 languages with `Any`, `Unknown` and `Original` absent and opens on the saved value; the quality profile modal lists 59 with `Any` and `Original` present and `Unknown` absent; no console errors on either page. **Not exercised** — `FileEditModal` and `SelectLanguageModalContent`, because the instance has no movie files, and `LanguageFilterBuilderRowValue`, because `PageToolbar` renders empty in headless Chrome. Props of the components touched are marked `Readonly<T>` per SonarQube `typescript:S6759`. |
 | 2026-08-27 | #531 | **Metadata.** Section 5, second half, and the end of section 5. `settings.metadata` and `MetadataAppState` are deleted for `Settings/Metadata/useMetadata.ts`; the eight `.js` files under `Settings/Metadata` become five TSX ones and a hook. Three connectors go — 27 to **24** — and `react-redux` 89 to **85**, `Store/` 4,364 across 63 to **4,282** across 62. **The hook is thirty-one lines**, because a metadata consumer cannot be added, deleted or tested: the list is whatever implementations the server ships. So `useManageMetadata` is `useManageProviderSettings` with `useTestProvider` dropped and nothing seeded — no `useProviderSchema`, no `id === 0` branch, and therefore no default provider, since `useProvider` only reaches for one when the id is zero. Section 4 had already grown the shared hook everything here needs, so nothing was added to it. **The two dead things are the story** — a shadowed `Metadatas.tsx` the connector could not reach, and a Save button nothing was wired to; both are their own note above. `EditMetadataModalConnector` existed only to dispatch `clearPendingChanges` on close, which `Modal` unmounting its children now does for free, the same retirement #521 made. **`field.section` is always undefined here.** `Metadata.js` split fields into a *Metadata* group and an *Images* group on `field.section === 'metadata'`, and the API sends no `section` on metadata fields at all, so every field has always landed under *Images* and the *Metadata* header has never rendered. Carried over unchanged rather than fixed — it is a server-side omission and not this PR's to decide. Verified on the running instance: five cards sorted by name with the toolbar down to *Show Advanced*; toggling **Enable** un-disables the field checkboxes; **Save** closes the modal and the card flips to *Enabled* with its labels, off the cache write and with no refetch; **Cancel** discards the pending edit and reopening shows the saved value; a 400 injected over CDP puts its message on the field it names, keeps the modal open and keeps the edit. `/api/v3/metadata` diffs clean against its pre-test baseline. Props of the components touched are marked `Readonly<T>` per SonarQube `typescript:S6759`. |
 | 2026-08-27 | #530 | **Naming · Media Management.** Section 5, first half. `settings.naming`, `settings.namingExamples` and `settings.mediaManagement` are deleted for `Settings/MediaManagement/Naming/useNamingSettings.ts` and `Settings/MediaManagement/useMediaManagementSettings.ts`; `react-redux` 94 to **89** and `Store/` 4,606 across 66 to **4,364** across 63. No connectors here, so 27 does not move. **The page is two forms and one Save button**, and that is the whole shape of the PR — see *Two settings forms cannot share a pending bag* above; `SettingsStateChange` and `SetChildSave` were already in `typings/` from #519, so nothing new was invented for it. **`namingExamples` was never a settings section.** It was a slice with one action handler that read the *other* slice's `item` plus `pendingChanges` and posted them, which is a query keyed on unsaved form state — so it becomes `useNamingExamples(settings)`, and the hand-rolled one-second `setTimeout` that restarted on every keystroke becomes `useDebounce(settings, 300)`. Typing back to a format already asked about is now a cache hit rather than a request, which is why the shorter delay costs nothing. The `id` that has to go up with it is its own note above. **`ImportMovieSelectFolder`'s prefetch was not dead.** It dispatched `fetchNamingSettings` with no consumer in that file, but its sibling `ImportMovieRootFolderRow` read `createSettingsSectionSelector('naming')` — a call the grep for `Settings/naming` misses because it names the section, not the module. Both moved; the row fetches for itself and the prefetch goes. Verified on the running instance: examples update as the format is typed, one **Save** press persists both endpoints and returns the toolbar to *No Changes*, an invalid movie format comes back 400 and renders *Must contain movie title* on the field with the edit kept, and the Organize modal and import root-folder row both read the converted query. Nothing is added to the `persistState` warning list — neither slice declared one. |
