@@ -1,6 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import AppState from 'App/State/AppState';
+import React, { useCallback } from 'react';
 import * as commandNames from 'Commands/commandNames';
 import { useExecuteCommand } from 'Commands/useCommands';
 import Alert from 'Components/Alert';
@@ -15,7 +13,7 @@ import ModalHeader from 'Components/Modal/ModalHeader';
 import useSelectState from 'Helpers/Hooks/useSelectState';
 import { kinds } from 'Helpers/Props';
 import { useMovie } from 'Movie/useMovie';
-import { fetchNamingSettings } from 'Store/Actions/settingsActions';
+import { useNamingSettings } from 'Settings/MediaManagement/Naming/useNamingSettings';
 import { CheckInputChanged } from 'typings/inputs';
 import { SelectStateInputProps } from 'typings/props';
 import translate from 'Utilities/String/translate';
@@ -43,7 +41,6 @@ function OrganizePreviewModalContent({
   movieId,
   onModalClose,
 }: OrganizePreviewModalContentProps) {
-  const dispatch = useDispatch();
   const executeCommand = useExecuteCommand();
   const {
     items,
@@ -53,18 +50,18 @@ function OrganizePreviewModalContent({
   } = useOrganizePreview(movieId);
 
   const {
+    data: naming,
     isFetching: isNamingFetching,
-    isPopulated: isNamingPopulated,
+    isFetched: isNamingFetched,
     error: namingError,
-    item: naming,
-  } = useSelector((state: AppState) => state.settings.naming);
+  } = useNamingSettings();
 
   const movie = useMovie(movieId).data;
   const [selectState, setSelectState] = useSelectState();
 
   const { allSelected, allUnselected, selectedState } = selectState;
   const isFetching = isPreviewFetching || isNamingFetching;
-  const isPopulated = isPreviewFetched && isNamingPopulated;
+  const isPopulated = isPreviewFetched && isNamingFetched;
   const error = previewError || namingError;
   const { renameMovies, standardMovieFormat } = naming;
 
@@ -101,10 +98,6 @@ function OrganizePreviewModalContent({
 
     onModalClose();
   }, [movieId, selectedState, onModalClose, executeCommand]);
-
-  useEffect(() => {
-    dispatch(fetchNamingSettings());
-  }, [dispatch]);
 
   if (!movie) {
     return null;

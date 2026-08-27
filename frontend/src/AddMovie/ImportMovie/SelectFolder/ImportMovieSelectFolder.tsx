@@ -5,7 +5,6 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { useDispatch } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Alert from 'Components/Alert';
 import FieldSet from 'Components/FieldSet';
@@ -25,7 +24,6 @@ import useRootFolders, {
   useRefreshRootFolder,
   useSortedRootFolders,
 } from 'RootFolder/useRootFolders';
-import { fetchNamingSettings } from 'Store/Actions/Settings/naming';
 import translate from 'Utilities/String/translate';
 import ImportMovieRootFolderRow from './ImportMovieRootFolderRow';
 import styles from './ImportMovieSelectFolder.css';
@@ -42,7 +40,6 @@ const rootFolderColumns = [
 ];
 
 function ImportMovieSelectFolder() {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -66,10 +63,6 @@ function ImportMovieSelectFolder() {
   const isMovies = location.pathname === '/add/import/movies';
   const importTitle = isMovies ? 'ImportMovies' : 'ImportScenes';
   const hasRootFolders = items.length > 0;
-
-  useEffect(() => {
-    dispatch(fetchNamingSettings());
-  }, [dispatch]);
 
   // Refresh all root folders on initial load so importFiles counts are current
   const didInitialRefreshRef = useRef(false);
