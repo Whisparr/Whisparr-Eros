@@ -5,32 +5,26 @@ import AppState from 'App/State/AppState';
 import useTranslations from 'App/useTranslations';
 import useCommands from 'Commands/useCommands';
 import useCustomFilters from 'Filters/useCustomFilters';
+import { useLanguages } from 'Language/useLanguages';
 import { useQualityProfiles } from 'Settings/Profiles/Quality/useQualityProfiles';
 import { useUiSettings } from 'Settings/UI/useUiSettings';
 import {
   fetchImportLists,
   fetchIndexerFlags,
-  fetchLanguages,
 } from 'Store/Actions/settingsActions';
 import useSystemStatus from 'System/Status/useSystemStatus';
 import useTags from 'Tags/useTags';
 
 const createErrorsSelector = () =>
   createSelector(
-    (state: AppState) => state.settings.languages.error,
     (state: AppState) => state.settings.importLists.error,
     (state: AppState) => state.settings.indexerFlags.error,
-    (languagesError, importListsError, indexerFlagsError) => {
-      const hasError = !!(
-        languagesError ||
-        importListsError ||
-        indexerFlagsError
-      );
+    (importListsError, indexerFlagsError) => {
+      const hasError = !!(importListsError || indexerFlagsError);
 
       return {
         hasError,
         errors: {
-          languagesError,
           importListsError,
           indexerFlagsError,
         },
@@ -78,6 +72,12 @@ const useAppPage = () => {
   const { isFetched: isQualityProfilesPopulated, error: qualityProfilesError } =
     useQualityProfiles();
 
+  // Language ids are resolved against this list by every filter row, quality
+  // profile and file editor, so the app waits on it exactly as it waited on the
+  // slice's `isPopulated`.
+  const { isFetched: isLanguagesPopulated, error: languagesError } =
+    useLanguages();
+
   // Keeps one observer on the command list for the whole session. SignalR pushes command
   // updates that drive global toasts, and the periodic refetch is what clears finished
   // commands now that the slice's per-command removal timer is gone. The app does not
@@ -86,13 +86,13 @@ const useAppPage = () => {
 
   const isReduxPopulated = useSelector(
     (state: AppState) =>
-      state.settings.languages.isPopulated &&
       state.settings.importLists.isPopulated &&
       state.settings.indexerFlags.isPopulated
   );
 
   const isPopulated =
     isReduxPopulated &&
+    isLanguagesPopulated &&
     isQualityProfilesPopulated &&
     isSystemStatusPopulated &&
     isCustomFiltersPopulated &&
@@ -105,6 +105,7 @@ const useAppPage = () => {
   const errors = useMemo(() => {
     return {
       ...reduxErrors,
+      languagesError,
       qualityProfilesError,
       uiSettingsError,
       customFiltersError,
@@ -114,6 +115,7 @@ const useAppPage = () => {
     };
   }, [
     reduxErrors,
+    languagesError,
     qualityProfilesError,
     uiSettingsError,
     customFiltersError,
@@ -136,7 +138,6 @@ const useAppPage = () => {
   }, []);
 
   useEffect(() => {
-    dispatch(fetchLanguages());
     dispatch(fetchImportLists());
     dispatch(fetchIndexerFlags());
   }, [dispatch]);
@@ -146,6 +147,7 @@ const useAppPage = () => {
       errors,
       hasError:
         hasError ||
+        !!languagesError ||
         !!qualityProfilesError ||
         !!uiSettingsError ||
         !!customFiltersError ||
@@ -158,6 +160,7 @@ const useAppPage = () => {
   }, [
     errors,
     hasError,
+    languagesError,
     qualityProfilesError,
     uiSettingsError,
     customFiltersError,

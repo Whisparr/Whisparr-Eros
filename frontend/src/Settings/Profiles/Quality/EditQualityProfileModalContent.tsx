@@ -1,6 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
-import AppState from 'App/State/AppState';
 import Alert from 'Components/Alert';
 import Form from 'Components/Form/Form';
 import FormGroup from 'Components/Form/FormGroup';
@@ -16,6 +14,7 @@ import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import usePrevious from 'Helpers/Hooks/usePrevious';
 import { inputTypes, kinds, sizes } from 'Helpers/Props';
+import { useFilteredLanguages } from 'Language/useLanguages';
 import dimensions from 'Styles/Variables/dimensions';
 import { InputChanged } from 'typings/inputs';
 import QualityProfile, {
@@ -31,6 +30,11 @@ import { useManageQualityProfile } from './useQualityProfiles';
 import styles from './EditQualityProfileModalContent.css';
 
 const MODAL_BODY_PADDING = Number.parseInt(dimensions.modalBodyPadding, 10);
+
+// A profile's language is what a release must match, and `Unknown` is what the
+// parser reports when it could not tell -- matching on it is not a choice the
+// profile offers.
+const UNPROFILED_LANGUAGES = ['Unknown'];
 
 interface DragMoveOptions {
   dragQualityIndex: string;
@@ -118,16 +122,14 @@ function EditQualityProfileModalContent({
     formatItems,
   } = item;
 
-  // Languages are still a Redux slice -- they convert in section 6, along with
-  // the boot fetch that primes them.
-  const languages = useSelector((state: AppState) =>
-    state.settings.languages.items
-      .filter((languageItem) => languageItem.name !== 'Unknown')
-      .map((languageItem) => ({
-        key: languageItem.id,
-        value: languageItem.name,
-      }))
-  );
+  const { data: languageItems } = useFilteredLanguages(UNPROFILED_LANGUAGES);
+
+  const languages = useMemo(() => {
+    return languageItems.map((languageItem) => ({
+      key: languageItem.id,
+      value: languageItem.name,
+    }));
+  }, [languageItems]);
 
   const qualities = useMemo(() => {
     if (!items?.value) {

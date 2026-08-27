@@ -1,11 +1,16 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
-import createLanguagesSelector from 'Store/Selectors/createLanguagesSelector';
+import { useFilteredLanguages } from 'Language/useLanguages';
 import FilterBuilderRowValue from './FilterBuilderRowValue';
 import FilterBuilderRowValueProps from './FilterBuilderRowValueProps';
 
-function LanguageFilterBuilderRowValue(props: FilterBuilderRowValueProps) {
-  const { items } = useSelector(createLanguagesSelector());
+// `Any` is the wildcard the release parser reports, not something a file is
+// tagged with, so it was never offered as a filter value.
+const EXCLUDED_LANGUAGES = ['Any'];
+
+function LanguageFilterBuilderRowValue(
+  props: Readonly<FilterBuilderRowValueProps>
+) {
+  const { data: items } = useFilteredLanguages(EXCLUDED_LANGUAGES);
 
   return <FilterBuilderRowValue {...props} tagList={items} />;
 }

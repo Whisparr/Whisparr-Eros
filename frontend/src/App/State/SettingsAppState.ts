@@ -5,7 +5,6 @@ import AppSectionState, {
   AppSectionSchemaState,
   PagedAppSectionState,
 } from 'App/State/AppSectionState';
-import Language from 'Language/Language';
 import AutoTagging, { AutoTaggingSpecification } from 'typings/AutoTagging';
 import CustomFormat from 'typings/CustomFormat';
 import DelayProfile from 'typings/DelayProfile';
@@ -92,8 +91,6 @@ export interface ImportListExclusionsSettingsAppState
 }
 
 export type IndexerFlagSettingsAppState = AppSectionState<IndexerFlag>;
-export type LanguageSettingsAppState = AppSectionState<Language>;
-
 interface SettingsAppState {
   autoTaggings: AutoTaggingAppState;
   autoTaggingSpecifications: AutoTaggingSpecificationAppState;
@@ -107,7 +104,6 @@ interface SettingsAppState {
   indexerFlags: IndexerFlagSettingsAppState;
   indexerOptions: IndexerOptionsAppState;
   indexers: IndexerAppState;
-  languages: LanguageSettingsAppState;
 }
 
 export default SettingsAppState;
