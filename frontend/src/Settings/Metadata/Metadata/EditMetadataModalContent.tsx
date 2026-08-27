@@ -1,5 +1,4 @@
-import PropTypes from 'prop-types';
-import React from 'react';
+import React, { useCallback, useEffect } from 'react';
 import Form from 'Components/Form/Form';
 import FormGroup from 'Components/Form/FormGroup';
 import FormInputGroup from 'Components/Form/FormInputGroup';
@@ -11,23 +10,63 @@ import ModalBody from 'Components/Modal/ModalBody';
 import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
+import usePrevious from 'Helpers/Hooks/usePrevious';
 import { inputTypes } from 'Helpers/Props';
+import { useShowAdvancedSettings } from 'Settings/advancedSettingsStore';
+import { useManageMetadata } from 'Settings/Metadata/useMetadata';
+import { EnhancedSelectInputChanged, InputChanged } from 'typings/inputs';
+import Metadata from 'typings/Metadata';
 import translate from 'Utilities/String/translate';
 
-function EditMetadataModalContent(props) {
+interface EditMetadataModalContentProps {
+  id: number;
+  onModalClose: () => void;
+}
+
+function EditMetadataModalContent({
+  id,
+  onModalClose,
+}: Readonly<EditMetadataModalContentProps>) {
+  const showAdvancedSettings = useShowAdvancedSettings();
+
   const {
-    advancedSettings,
+    item,
     isSaving,
     saveError,
-    item,
-    onInputChange,
-    onFieldChange,
-    onModalClose,
-    onSavePress,
-    ...otherProps
-  } = props;
+    validationErrors,
+    validationWarnings,
+    updateValue,
+    updateFieldValue,
+    saveProvider,
+  } = useManageMetadata(id);
+
+  const wasSaving = usePrevious(isSaving);
 
   const { name, enable, fields } = item;
+
+  const handleInputChange = useCallback(
+    ({ name, value }: InputChanged) => {
+      updateValue(name as keyof Metadata, value as Metadata[keyof Metadata]);
+    },
+    [updateValue]
+  );
+
+  const handleFieldChange = useCallback(
+    ({ name, value }: EnhancedSelectInputChanged<unknown>) => {
+      updateFieldValue(name, value);
+    },
+    [updateFieldValue]
+  );
+
+  const handleSavePress = useCallback(() => {
+    saveProvider();
+  }, [saveProvider]);
+
+  useEffect(() => {
+    if (wasSaving && !isSaving && !saveError) {
+      onModalClose();
+    }
+  }, [wasSaving, isSaving, saveError, onModalClose]);
 
   return (
     <ModalContent onModalClose={onModalClose}>
@@ -36,7 +75,10 @@ function EditMetadataModalContent(props) {
       </ModalHeader>
 
       <ModalBody>
-        <Form {...otherProps}>
+        <Form
+          validationErrors={validationErrors}
+          validationWarnings={validationWarnings}
+        >
           <FormGroup>
             <FormLabel>{translate('Enable')}</FormLabel>
 
@@ -45,19 +87,19 @@ function EditMetadataModalContent(props) {
               name="enable"
               helpText={translate('EnableMetadataHelpText')}
               {...enable}
-              onChange={onInputChange}
+              onChange={handleInputChange}
             />
           </FormGroup>
 
-          {fields.map((field) => {
+          {fields?.map((field) => {
             return (
               <ProviderFieldFormGroup
                 key={field.name}
-                advancedSettings={advancedSettings}
-                provider="metadata"
                 {...field}
+                advancedSettings={showAdvancedSettings}
+                provider="metadata"
                 isDisabled={!enable.value}
-                onChange={onFieldChange}
+                onChange={handleFieldChange}
               />
             );
           })}
@@ -69,8 +111,8 @@ function EditMetadataModalContent(props) {
 
         <SpinnerErrorButton
           isSpinning={isSaving}
-          error={saveError}
-          onPress={onSavePress}
+          error={saveError ?? undefined}
+          onPress={handleSavePress}
         >
           {translate('Save')}
         </SpinnerErrorButton>
@@ -78,17 +120,5 @@ function EditMetadataModalContent(props) {
     </ModalContent>
   );
 }
-
-EditMetadataModalContent.propTypes = {
-  advancedSettings: PropTypes.bool.isRequired,
-  isSaving: PropTypes.bool.isRequired,
-  saveError: PropTypes.object,
-  item: PropTypes.object.isRequired,
-  onInputChange: PropTypes.func.isRequired,
-  onFieldChange: PropTypes.func.isRequired,
-  onModalClose: PropTypes.func.isRequired,
-  onSavePress: PropTypes.func.isRequired,
-  onDeleteMetadataPress: PropTypes.func,
-};
 
 export default EditMetadataModalContent;
