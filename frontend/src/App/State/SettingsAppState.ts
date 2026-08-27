@@ -17,7 +17,6 @@ import Indexer from 'typings/Indexer';
 import IndexerFlag from 'typings/IndexerFlag';
 import General from 'typings/Settings/General';
 import IndexerOptions from 'typings/Settings/IndexerOptions';
-import MetadataAppState from './MetadataAppState';
 
 type Presets<T> = T & {
   presets: T[];
@@ -109,7 +108,6 @@ interface SettingsAppState {
   indexerOptions: IndexerOptionsAppState;
   indexers: IndexerAppState;
   languages: LanguageSettingsAppState;
-  metadata: MetadataAppState;
 }
 
 export default SettingsAppState;

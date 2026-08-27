@@ -15,7 +15,6 @@ import indexerFlags from './Settings/indexerFlags';
 import indexerOptions from './Settings/indexerOptions';
 import indexers from './Settings/indexers';
 import languages from './Settings/languages';
-import metadata from './Settings/metadata';
 
 export * from './Settings/autoTaggingSpecifications';
 export * from './Settings/autoTaggings';
@@ -32,7 +31,6 @@ export * from './Settings/indexerFlags';
 export * from './Settings/indexerOptions';
 export * from './Settings/indexers';
 export * from './Settings/languages';
-export * from './Settings/metadata';
 
 //
 // Variables
@@ -58,7 +56,6 @@ export const defaultState = {
   indexerOptions: indexerOptions.defaultState,
   indexers: indexers.defaultState,
   languages: languages.defaultState,
-  metadata: metadata.defaultState,
 };
 
 export const persistState = ['settings.importListExclusions.pageSize'];
@@ -82,7 +79,6 @@ export const actionHandlers = handleThunks({
   ...indexerOptions.actionHandlers,
   ...indexers.actionHandlers,
   ...languages.actionHandlers,
-  ...metadata.actionHandlers,
 });
 
 //
@@ -105,8 +101,7 @@ export const reducers = createHandleActions(
     ...indexerOptions.reducers,
     ...indexers.reducers,
     ...languages.reducers,
-    ...metadata.reducers,
-    },
+  },
   defaultState,
   section
 );
