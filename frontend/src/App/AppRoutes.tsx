@@ -17,7 +17,7 @@ import PerformerIndex from 'Performer/Index/PerformerIndex';
 import SceneIndex from 'Scene/Index/SceneIndex';
 import CustomFormatSettingsPage from 'Settings/CustomFormats/CustomFormatSettingsPage';
 import DownloadClientSettingsConnector from 'Settings/DownloadClients/DownloadClientSettingsConnector';
-import GeneralSettingsConnector from 'Settings/General/GeneralSettingsConnector';
+import GeneralSettings from 'Settings/General/GeneralSettings';
 import ImportListSettings from 'Settings/ImportLists/ImportListSettings';
 import IndexerSettings from 'Settings/Indexers/IndexerSettings';
 import MediaManagement from 'Settings/MediaManagement/MediaManagement';
@@ -137,7 +137,7 @@ function AppRoutes() {
 
       <Route path="/settings/tags" element={<TagSettings />} />
 
-      <Route path="/settings/general" element={<GeneralSettingsConnector />} />
+      <Route path="/settings/general" element={<GeneralSettings />} />
 
       <Route path="/settings/ui" element={<UISettings />} />
 

@@ -274,7 +274,7 @@ function PageSidebar({ isSidebarVisible, isSmallScreen }: PageSidebarProps) {
     height: `${window.innerHeight - HEADER_HEIGHT}px`,
   });
 
-  const generalSettings = useGeneralSettings();
+  const { data: generalSettings } = useGeneralSettings();
 
   if (generalSettings.whisparrMovieMetadataSource?.toLowerCase() === 'none') {
     LINKS = LINKS.reduce((acc, link) => {

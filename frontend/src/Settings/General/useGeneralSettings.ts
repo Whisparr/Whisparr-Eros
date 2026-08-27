@@ -1,15 +1,12 @@
-import { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import AppState from 'App/State/AppState';
-import { fetchGeneralSettings } from 'Store/Actions/settingsActions';
+import { useManageSettings, useSettings } from 'Settings/useSettings';
+import General from 'typings/Settings/General';
 
-// Used to fetch general.whisparrMovieMetadataSource setting
-export function useGeneralSettings() {
-  const dispatch = useDispatch();
+const PATH = '/config/host';
 
-  useEffect(() => {
-    dispatch(fetchGeneralSettings());
-  }, [dispatch]);
+export const useGeneralSettings = () => {
+  return useSettings<General>(PATH);
+};
 
-  return useSelector((state: AppState) => state.settings.general.item);
-}
+export const useManageGeneralSettings = () => {
+  return useManageSettings<General>(PATH);
+};

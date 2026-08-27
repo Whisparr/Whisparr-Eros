@@ -1,15 +1,17 @@
-import PropTypes from 'prop-types';
 import React from 'react';
 import FieldSet from 'Components/FieldSet';
 import FormGroup from 'Components/Form/FormGroup';
 import FormInputGroup from 'Components/Form/FormInputGroup';
 import FormLabel from 'Components/Form/FormLabel';
+import { EnhancedSelectInputValue } from 'Components/Form/Select/EnhancedSelectInput';
 import { inputTypes, sizes } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
+import { GeneralSettingsSectionProps } from './GeneralSettingsProps';
 
-function ProxySettings(props) {
-  const { settings, onInputChange } = props;
-
+function ProxySettings({
+  settings,
+  onInputChange,
+}: Readonly<GeneralSettingsSectionProps>) {
   const {
     proxyEnabled,
     proxyType,
@@ -21,7 +23,7 @@ function ProxySettings(props) {
     proxyBypassLocalAddresses,
   } = settings;
 
-  const proxyTypeOptions = [
+  const proxyTypeOptions: EnhancedSelectInputValue<string>[] = [
     {
       key: 'http',
       value: translate('HttpHttps'),
@@ -138,10 +140,5 @@ function ProxySettings(props) {
     </FieldSet>
   );
 }
-
-ProxySettings.propTypes = {
-  settings: PropTypes.object.isRequired,
-  onInputChange: PropTypes.func.isRequired,
-};
 
 export default ProxySettings;

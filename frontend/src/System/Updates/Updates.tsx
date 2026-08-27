@@ -1,8 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { createSelector } from 'reselect';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useAppValue } from 'App/appStore';
-import AppState from 'App/State/AppState';
 import * as commandNames from 'Commands/commandNames';
 import { useCommandExecuting, useExecuteCommand } from 'Commands/useCommands';
 import Alert from 'Components/Alert';
@@ -15,8 +12,8 @@ import ConfirmModal from 'Components/Modal/ConfirmModal';
 import PageContent from 'Components/Page/PageContent';
 import PageContentBody from 'Components/Page/PageContentBody';
 import { icons, kinds } from 'Helpers/Props';
+import { useGeneralSettings } from 'Settings/General/useGeneralSettings';
 import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
-import { fetchGeneralSettings } from 'Store/Actions/settingsActions';
 import { useSystemStatusData } from 'System/Status/useSystemStatus';
 import { UpdateMechanism } from 'typings/Settings/General';
 import formatDate from 'Utilities/Date/formatDate';
@@ -27,22 +24,6 @@ import useUpdates from './useUpdates';
 import styles from './Updates.css';
 
 const VERSION_REGEX = /\d+\.\d+\.\d+\.\d+/i;
-
-// Updates come from React Query; general settings are still redux until they
-// convert in phase E, and they supply the update mechanism.
-function createGeneralSettingsSelector() {
-  return createSelector(
-    (state: AppState) => state.settings.general,
-    (generalSettings) => {
-      return {
-        isFetchingGeneralSettings: generalSettings.isFetching,
-        isGeneralSettingsPopulated: generalSettings.isPopulated,
-        generalSettingsError: generalSettings.error,
-        updateMechanism: generalSettings.item.updateMechanism,
-      };
-    }
-  );
-}
 
 function Updates() {
   const currentVersion = useAppValue('version');
@@ -59,17 +40,20 @@ function Updates() {
     error: updatesError,
   } = useUpdates();
 
+  // The update mechanism is a general setting, and it decides which of the
+  // external-updater messages this page shows.
   const {
-    isFetchingGeneralSettings,
-    isGeneralSettingsPopulated,
-    generalSettingsError,
-    updateMechanism,
-  } = useSelector(createGeneralSettingsSelector());
+    data: generalSettings,
+    isFetching: isFetchingGeneralSettings,
+    isFetched: isGeneralSettingsFetched,
+    error: generalSettingsError,
+  } = useGeneralSettings();
+
+  const updateMechanism = generalSettings.updateMechanism;
 
   const isFetching = isFetchingUpdates || isFetchingGeneralSettings;
-  const isPopulated = isUpdatesFetched && isGeneralSettingsPopulated;
+  const isPopulated = isUpdatesFetched && isGeneralSettingsFetched;
 
-  const dispatch = useDispatch();
   const executeCommand = useExecuteCommand();
   const [isMajorUpdateModalOpen, setIsMajorUpdateModalOpen] = useState(false);
   const hasError = !!(updatesError || generalSettingsError);
@@ -125,10 +109,6 @@ function Updates() {
   const handleCancelMajorVersionPress = useCallback(() => {
     setIsMajorUpdateModalOpen(false);
   }, [setIsMajorUpdateModalOpen]);
-
-  useEffect(() => {
-    dispatch(fetchGeneralSettings());
-  }, [dispatch]);
 
   return (
     <PageContent title={translate('Updates')}>

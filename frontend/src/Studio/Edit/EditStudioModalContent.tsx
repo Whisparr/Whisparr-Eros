@@ -30,7 +30,7 @@ function EditStudioModalContent({
   onModalClose,
 }: Readonly<EditStudioModalContentProps>) {
   const { isSmallScreen } = useAppDimensions();
-  const generalSettings = useGeneralSettings();
+  const { data: generalSettings } = useGeneralSettings();
 
   const [monitored, setMonitored] = useState(studio.monitored);
   const [moviesMonitored, setMoviesMonitored] = useState(

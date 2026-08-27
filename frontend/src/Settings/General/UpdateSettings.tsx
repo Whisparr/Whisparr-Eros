@@ -1,18 +1,23 @@
-import PropTypes from 'prop-types';
 import React from 'react';
 import FieldSet from 'Components/FieldSet';
 import FormGroup from 'Components/Form/FormGroup';
 import FormInputGroup from 'Components/Form/FormInputGroup';
 import FormLabel from 'Components/Form/FormLabel';
+import { EnhancedSelectInputValue } from 'Components/Form/Select/EnhancedSelectInput';
+import useShowAdvancedSettings from 'Helpers/Hooks/useShowAdvancedSettings';
 import { inputTypes, sizes } from 'Helpers/Props';
 import { useSystemStatusData } from 'System/Status/useSystemStatus';
 import titleCase from 'Utilities/String/titleCase';
 import translate from 'Utilities/String/translate';
+import { GeneralSettingsSectionProps } from './GeneralSettingsProps';
 
 const branchValues = ['master', 'develop', 'nightly'];
 
-function UpdateSettings(props) {
-  const { advancedSettings, settings, onInputChange } = props;
+function UpdateSettings({
+  settings,
+  onInputChange,
+}: Readonly<GeneralSettingsSectionProps>) {
+  const advancedSettings = useShowAdvancedSettings();
   const { packageUpdateMechanism } = useSystemStatusData();
 
   const { branch, updateAutomatically, updateMechanism, updateScriptPath } =
@@ -24,7 +29,7 @@ function UpdateSettings(props) {
 
   const usingExternalUpdateMechanism = packageUpdateMechanism !== 'builtIn';
 
-  const updateOptions = [];
+  const updateOptions: EnhancedSelectInputValue<string>[] = [];
 
   if (usingExternalUpdateMechanism) {
     updateOptions.push({
@@ -53,8 +58,8 @@ function UpdateSettings(props) {
           helpLink="https://wiki.servarr.com/whisparr/settings#updates"
           {...branch}
           values={branchValues}
-          onChange={onInputChange}
           readOnly={usingExternalUpdateMechanism}
+          onChange={onInputChange}
         />
       </FormGroup>
 
@@ -111,11 +116,5 @@ function UpdateSettings(props) {
     </FieldSet>
   );
 }
-
-UpdateSettings.propTypes = {
-  advancedSettings: PropTypes.bool.isRequired,
-  settings: PropTypes.object.isRequired,
-  onInputChange: PropTypes.func.isRequired,
-};
 
 export default UpdateSettings;
