@@ -1,13 +1,16 @@
 import React, { useCallback } from 'react';
-import { useSelector } from 'react-redux';
-import AppState from 'App/State/AppState';
 import Modal from 'Components/Modal/Modal';
 import Language from 'Language/Language';
+import { useFilteredLanguages } from 'Language/useLanguages';
 import { QualityModel } from 'Quality/Quality';
 import { useQualities } from 'Settings/Profiles/Quality/useQualityProfiles';
 import { MovieFile } from '../MovieFile';
 import { useUpdateMovieFiles } from '../useMovieFile';
 import FileEditModalContent from './FileEditModalContent';
+
+// `Any` is the wildcard and `Original` means "whatever the file says"; neither
+// is a language a file can be given.
+const UNSELECTABLE_LANGUAGES = ['Any', 'Original'];
 
 interface FileEditModalProps {
   isOpen: boolean;
@@ -28,15 +31,12 @@ function FileEditModal({
     error: qualitiesError,
   } = useQualities();
 
-  // Languages are still a Redux slice -- they convert in section 6.
-  const languagesState = useSelector(
-    (state: AppState) => state.settings.languages
-  );
-
-  const filterItems = ['Any', 'Original'];
-  const filteredLanguages: Language[] = languagesState.items.filter(
-    (lang: Language) => !filterItems.includes(lang.name)
-  );
+  const {
+    data: filteredLanguages,
+    isFetching: isLanguagesFetching,
+    isFetched: isLanguagesFetched,
+    error: languagesError,
+  } = useFilteredLanguages(UNSELECTABLE_LANGUAGES);
 
   const currentQuality = movieFile.quality;
   const qualityId = currentQuality ? currentQuality.quality.id : 0;
@@ -50,9 +50,9 @@ function FileEditModal({
   const edition = movieFile.edition ?? '';
   const relativePath = movieFile.relativePath ?? '';
 
-  const isFetching = isQualitiesFetching || languagesState.isFetching;
-  const isPopulated = isQualitiesFetched && languagesState.isPopulated;
-  const error = qualitiesError || languagesState.error;
+  const isFetching = isQualitiesFetching || isLanguagesFetching;
+  const isPopulated = isQualitiesFetched && isLanguagesFetched;
+  const error = qualitiesError || languagesError;
 
   const handleSaveInputs = useCallback(
     (payload: {

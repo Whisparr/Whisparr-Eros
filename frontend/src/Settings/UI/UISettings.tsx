@@ -1,5 +1,4 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
 import Alert from 'Components/Alert';
 import FieldSet from 'Components/FieldSet';
 import Form from 'Components/Form/Form';
@@ -12,8 +11,8 @@ import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import PageContent from 'Components/Page/PageContent';
 import PageContentBody from 'Components/Page/PageContentBody';
 import { inputTypes, kinds } from 'Helpers/Props';
+import { useFilteredLanguages } from 'Language/useLanguages';
 import SettingsToolbar from 'Settings/SettingsToolbar';
-import createLanguagesSelector from 'Store/Selectors/createLanguagesSelector';
 import themes from 'Styles/Themes';
 import { InputChanged } from 'typings/inputs';
 import UiSettings from 'typings/Settings/UiSettings';
@@ -86,16 +85,15 @@ function UISettings() {
     updateSetting,
   } = useManageUiSettings();
 
-  // Languages are still a Redux slice -- they convert with `Settings/languages`
-  // in section 6 of the migration, along with the boot gate that fetches them.
-  const { items: languageItems } = useSelector(createLanguagesSelector());
+  const { data: languageItems } = useFilteredLanguages(NON_UI_LANGUAGES);
 
   const [isClearingLocalData, setIsClearingLocalData] = useState(false);
 
   const languages = useMemo(() => {
-    return languageItems
-      .filter((language) => !NON_UI_LANGUAGES.includes(language.name))
-      .map((language) => ({ key: language.id, value: language.name }));
+    return languageItems.map((language) => ({
+      key: language.id,
+      value: language.name,
+    }));
   }, [languageItems]);
 
   const themeOptions = useMemo(() => {

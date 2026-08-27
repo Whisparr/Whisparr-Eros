@@ -45,7 +45,7 @@ interface FileEditModalContentProps {
   indexerFlags: number;
   isFetching: boolean;
   isPopulated: boolean;
-  error?: object;
+  error?: object | null;
   qualities: QualityOption[];
   onSaveInputs: (state: FileEditModalContentState) => void;
   onModalClose: () => void;
