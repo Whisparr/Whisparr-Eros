@@ -1,5 +1,4 @@
 import React, { useCallback } from 'react';
-import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import IconButton from 'Components/Link/IconButton';
 import Link from 'Components/Link/Link';
@@ -7,12 +6,10 @@ import TableRowCell from 'Components/Table/Cells/TableRowCell';
 import TableRow from 'Components/Table/TableRow';
 import { icons } from 'Helpers/Props';
 import { useRefreshRootFolder } from 'RootFolder/useRootFolders';
-import createSettingsSectionSelector from 'Store/Selectors/createSettingsSectionSelector';
+import { useNamingSettings } from 'Settings/MediaManagement/Naming/useNamingSettings';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
 import styles from './ImportMovieRootFolderRow.css';
-
-const namingSelector = createSettingsSectionSelector('naming');
 
 interface ImportFile {
   name: string;
@@ -33,7 +30,7 @@ function ImportMovieRootFolderRow({
 }: Readonly<ImportMovieRootFolderRowProps>) {
   const location = useLocation();
   const { refreshRootFolder } = useRefreshRootFolder();
-  const { settings } = useSelector(namingSelector);
+  const { data: naming } = useNamingSettings();
 
   const isMovies = location.pathname === '/add/import/movies';
   const linkTo = isMovies
@@ -46,7 +43,7 @@ function ImportMovieRootFolderRow({
   }, [refreshRootFolder, id]);
 
   const sep = path.includes('\\') ? '\\' : '/';
-  const importFormatValue = settings.sceneImportFolderFormat?.value;
+  const importFormatValue = naming.sceneImportFolderFormat;
   const importPath = importFormatValue ? sep + importFormatValue : undefined;
 
   return (
