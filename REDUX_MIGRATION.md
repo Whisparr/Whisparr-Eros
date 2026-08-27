@@ -11,7 +11,7 @@ Counts are file-level `react-redux` imports across the frontend source tree.
 Every commit reference below links to the Sonarr commit it names; all were
 verified to resolve against the public repo.
 
-**Status: Phases A, B, C and D complete; Phase E is under way, five and a half of eleven sections done. Phase E is the whole of what is left, plus the teardown.** See §11 for the running log.
+**Status: Phases A, B, C and D complete; Phase E is under way, six of eleven sections done. Phase E is the whole of what is left, plus the teardown.** See §11 for the running log.
 
 ---
 
@@ -19,10 +19,10 @@ verified to resolve against the public repo.
 
 | Metric | At assessment | Now |
 | --- | --- | --- |
-| Files importing `react-redux` | 327 of 1,255 | **78** of 1,185 |
-| Lines under `frontend/src/Store/` | 15,374 across 138 files | **4,145** across 59 |
+| Files importing `react-redux` | 327 of 1,255 | **74** of 1,183 |
+| Lines under `frontend/src/Store/` | 15,374 across 138 files | **4,052** across 57 |
 | Redux slices registered in `Store/Actions/index.js` | 35 | **1** |
-| Remaining `*Connector` files | 66 | **24** |
+| Remaining `*Connector` files | 66 | **23** |
 | Files touching React Query | 35 | **78** |
 | zustand stores | 0 (not installed) | **installed, 39 files** |
 
@@ -266,7 +266,7 @@ is-it-a-change question* below.
 | 3 | ~~**Quality definitions · Quality profiles**~~ — **done, #519 (definitions) and #520 (profiles).** Split in two; between them they took eight connectors, 39 to 31, and the boot gate lost its quality-profile term as predicted. | ~~`Settings/qualityDefinitions.js`, `Quality*Connector.js` ×4~~; ~~`Settings/qualityProfiles.js`, `QualityProfile*Connector.js` ×3, `QualityFilterBuilderRowValueConnector.js`, `createQualityProfileSelector.ts`, `createProfileInUseSelector.ts`~~ | [Sonarr/Sonarr@21ca65a0](https://github.com/Sonarr/Sonarr/commit/21ca65a0), [Sonarr/Sonarr@cf593b1f](https://github.com/Sonarr/Sonarr/commit/cf593b1f) |
 | 4 | ~~**Connections (Notifications)**~~ — **done, #521.** Four connectors, 31 to 27, and the first consumer of `usePendingFieldsStore`. `useProviderSettings` grew test and fields support here. | ~~`Settings/notifications.js`, `NotificationsConnector.js`, `EditNotificationModalConnector.js`, `EditNotificationModalContentConnector.js`, `AddNotificationModalContentConnector.js`~~. `DeviceInput.tsx` was on this list and came off it early, in #490. | [Sonarr/Sonarr@6d49b41d](https://github.com/Sonarr/Sonarr/commit/6d49b41d) |
 | 5 | ~~**Naming · Media Management · Metadata**~~ — **done, #530** (naming and media management) and **#531** (metadata). Split in two: the first two are one page with one toolbar over two endpoints, and Metadata is a provider list with nothing in common with them. #530 took no connectors; #531 took all three, 27 to **24**. | ~~`Settings/naming.js`, `Settings/namingExamples.js`, `Settings/mediaManagement.js`, `Settings/metadata.js`, `MetadatasConnector.js`, `EditMetadataModalConnector.js`, `EditMetadataModalContentConnector.js`~~ | [Sonarr/Sonarr@677c588a](https://github.com/Sonarr/Sonarr/commit/677c588a), [Sonarr/Sonarr@bbb4c671](https://github.com/Sonarr/Sonarr/commit/bbb4c671), [Sonarr/Sonarr@c0a56586](https://github.com/Sonarr/Sonarr/commit/c0a56586) |
-| 6 | **Languages · General** — split in two, because Languages is a read-only list five pages share and General is the largest single-object form in Settings. ~~The Languages half~~ **done, #532**: `Language/useLanguages.ts`, the boot gate off the slice, and no connectors, since the section never had any — 85 to **80**. **Next: General.** | ~~`Settings/languages.js`~~, `Settings/general.js`, `GeneralSettingsConnector.js` | [Sonarr/Sonarr@5bac016f](https://github.com/Sonarr/Sonarr/commit/5bac016f), [Sonarr/Sonarr@6764cf1c](https://github.com/Sonarr/Sonarr/commit/6764cf1c) |
+| 6 | ~~**Languages · General**~~ — **done, #532** (languages), **#534** (restart and shutdown, the prerequisite) and **#535** (general). Split three ways: Languages is a read-only list five pages share, General is the largest single-object form in Settings, and General could not start while `restart` was a thunk. Between them 85 to **74**, one connector, and `Store/Actions/index.js` down to one slice. | ~~`Settings/languages.js`, `Settings/general.js`, `GeneralSettingsConnector.js`~~; ~~`systemActions.js`, `actionTypes.js`~~ | [Sonarr/Sonarr@5bac016f](https://github.com/Sonarr/Sonarr/commit/5bac016f), [Sonarr/Sonarr@6764cf1c](https://github.com/Sonarr/Sonarr/commit/6764cf1c) |
 | 7 | Indexers · Indexer Options · Indexer Flags (11 files, three commits) | `Settings/indexers.js`, `Settings/indexerOptions.js`, `Settings/indexerFlags.js`, `IndexerFilterBuilderRowValueConnector.js` | [Sonarr/Sonarr@c4c0ec25](https://github.com/Sonarr/Sonarr/commit/c4c0ec25), [Sonarr/Sonarr@7a455dd0](https://github.com/Sonarr/Sonarr/commit/7a455dd0), [Sonarr/Sonarr@fbb70519](https://github.com/Sonarr/Sonarr/commit/fbb70519) |
 | 8 | Auto tagging · Import list exclusions | `Settings/autoTaggings.js`, `Settings/autoTaggingSpecifications.js`, `Settings/importListExclusions.js` | [Sonarr/Sonarr@0ebda892](https://github.com/Sonarr/Sonarr/commit/0ebda892), [Sonarr/Sonarr@b0fac152](https://github.com/Sonarr/Sonarr/commit/b0fac152) |
 | 9 | Import lists + options (16 files — largest subtree) | `Settings/importLists.js`, `Settings/importListOptions.js`, `ImportListFilterBuilderRowValueConnector.js` | [Sonarr/Sonarr@75d1a958](https://github.com/Sonarr/Sonarr/commit/75d1a958), [Sonarr/Sonarr@ba7b6b03](https://github.com/Sonarr/Sonarr/commit/ba7b6b03) |
@@ -294,7 +294,7 @@ this sweep starts from the same footing Sonarr's did.
 
 Sonarr's final commit ([Sonarr/Sonarr@0460281f](https://github.com/Sonarr/Sonarr/commit/0460281f)) removed 1,996 lines across 51 files. The Eros equivalent:
 
-- Delete `frontend/src/Store/` — 59 files, 4,145 lines today, from 138 files and 15,374
+- Delete `frontend/src/Store/` — 57 files, 4,052 lines today, from 138 files and 15,374
   lines at assessment.
 - Delete surviving `App/State/*AppState.ts` slices (1 today — `SettingsAppState` — from 33;
   most disappear with their phase).
@@ -449,9 +449,16 @@ split out the way #516 split the pending stores out of section one: both thunks 
 mutations, `systemActions.js` goes, and `Store/Actions/index.js` is down to **one**
 registered slice — `settings`, which is now the whole of what is left. 80 to **78**.
 
-**Next: section 6b** — General, for real this time. `useGeneralSettings` already exists in
-part, so this is the first section that starts from something rather than nothing — though
-what exists is a `useSelector` over the slice, not a query.
+~~**Next: section 6b** — General, for real this time.~~ **Done, #535**, and section 6 with
+it. The partial `useGeneralSettings` that already existed turned out to be worth less than
+it looked — it was a `useSelector` over the slice with a boot dispatch, so the three
+consumers reading it moved anyway; what it did buy was that they moved without touching
+their own logic. The restart-required check is the one thing that could not be ported, and
+it is its own note below.
+
+**Next: section 7** — Indexers, Indexer Options and Indexer Flags. It is the first section
+since 3 whose slices are read by the boot gate — `indexerFlags` is one of the two terms
+left in `isReduxPopulated`.
 
 1. ~~**Queue**, in three PRs.~~ **Done.** Sonarr shipped it as one 58-file commit, but the slice already
    has three independent sub-sections and splitting along them gives three merge points
@@ -1029,6 +1036,28 @@ excluding `Any` centrally and leaving each caller to filter the rest again.
 
 ---
 
+### The restart-required check could not be ported
+
+`GeneralSettings` opens a *Restart Whisparr* modal after a save that touched one of eight
+restart-sensitive keys. The class decided that in `componentDidUpdate` by walking those
+keys and comparing each setting's `previousValue` against its `value` — and
+`previousValue` is a thing `selectSettings` only writes for a key that has a pending
+change. That worked because the slice held the pending bag until the fetch after the save
+overwrote it, so for one render after `isSaving` fell the settings still carried both
+halves of every edit.
+
+`useSaveSettings` clears the pending bag in `onSuccess`, which is the right thing for a
+form and fatal for this check: by the time `isSaving` falls there are no pending changes
+left, so no `previousValue`, so the walk finds nothing and the modal never opens. The
+replacement watches `usePrevious(pendingChanges)` instead and asks which keys *were*
+pending on the render before the save landed — the same question, asked of the render that
+still has the answer.
+
+Verified both ways round: **Instance Name** opens the modal, and a Whisparr-tag field
+saved the same way does not.
+
+---
+
 ### The pending stores do not own the is-it-a-change question
 
 `createSetSettingValueReducer` did two jobs. It recorded the edit, and it decided whether
@@ -1170,6 +1199,7 @@ already had it.
 
 | Date | PR | What |
 | --- | --- | --- |
+| 2026-08-27 | #535 | **General.** Section 6, second half, and the end of section 6. `settings.general` and `GeneralAppState` are deleted for `Settings/General/useGeneralSettings.ts` on `useManageSettings`; the nine `.js` files under `Settings/General` become eight TSX ones plus a props type. One connector — 24 to **23** — and `react-redux` 78 to **74**, `Store/` 4,145 across 59 to **4,052** across 57. **The restart-required check is the story** and it is its own note above: it could not be ported, because it read a `previousValue` that only exists while the pending bag is still full. Two deliberate departures from Sonarr: the eight fieldsets take `settings` and `onInputChange` rather than the forty-odd individual field props Sonarr's take — every one comes from the same object and goes straight to a `FormInputGroup`, so per-field props are plumbing, not type safety — and `advancedSettings` is read by each fieldset through `useShowAdvancedSettings()` instead of being threaded down, as `MediaManagement.tsx` already does. `SecuritySettings` was the last class component in the folder and becomes a function; its two exported option lists still feed the first-run authentication modal, which comes off the slice here too. **`Store/Actions/actionTypes.js` had no importers at all** — its whole contents were this section's three action types plus a `FETCH_LANGUAGES` that #532 should have taken — so it goes with the slice. `typings/Settings/General.ts` gains the sixteen fields the interface never had (`logSizeLimit`, `trustCgnatIpAddresses` and the fourteen `whisparr*` ones); they round-tripped through the PUT regardless, since `useManageSettings` spreads the whole query object, but the form could not be typed without them. Verified on the running instance: eight fieldsets with Updates and Backups behind *Show Advanced*; **Instance Name** flips the toolbar to *Save Changes*, one `PUT /api/v3/config/host` saves it with no refetch and the restart modal opens; a non-restart key saves the same way and does not open it; clearing **Username** under forms auth comes back 400 and renders *'Username' must not be empty.* on that field with the edit kept. `/api/v3/config/host` diffs clean against its pre-test baseline, and Updates, Movies, Settings and System Status render with no console errors. **`/config/host` is fetched twice** on pages that mount a second observer, because the sidebar reads it too — unchanged from the slice, which had both the sidebar hook and the connector dispatching, and a `staleTime` on `useSettings` would reach every section, so it waits for the teardown. **Not exercised:** the first-run authentication modal, which only renders when authentication is off. Props of the components touched are marked `Readonly<T>` per SonarQube `typescript:S6759`. |
 | 2026-08-27 | #534 | **Restart and shutdown.** Not a section — the prerequisite section 6b could not start without, split out the way #516 was. `System/useSystem.ts` replaces both `systemActions` thunks with mutations; `react-redux` 80 to **78** and `Store/` 4,208 across 60 to **4,145** across 59. **`Store/Actions/index.js` is down to one slice.** The system slice had held an empty `defaultState` since #491, so neither thunk wrote to a reducer and there was nothing to port — `restart`'s `onSuccess` does what its `.done()` did, setting the app store's `isRestarting` and starting the ping loop that clears it, both of which have been zustand since #492. Three consumers move: the header actions menu, the restore-backup modal, and `GeneralSettingsConnector`, which takes `restart` as an own prop from its function wrapper until 6b deletes it. Verified on the running instance: **Restart** from the header menu sends `POST /api/v3/system/restart`, the app goes down and comes back reconnected. The response was probed separately — 200 with a 24-byte body in 6ms — because the whole chain hangs on it resolving before the server tears the connection down, and a `.done()` that never fires would have looked the same from outside. **Shutdown was not exercised**, for the obvious reason. Props of the components touched are marked `Readonly<T>` per SonarQube `typescript:S6759`. |
 | 2026-08-27 | #532 | **Languages.** Section 6, first half. `settings.languages`, `LanguageSettingsAppState` and `createLanguagesSelector` are deleted for `Language/useLanguages.ts`; `react-redux` 85 to **80** and `Store/` 4,282 across 62 to **4,208** across 60. No connectors, so 24 does not move — the section never had one. **It is the first Phase E section that retires a slice without touching a form**: nothing here writes, so there is no `useManageSettings`, no pending store and no `selectSettings`; the hook is a query plus a filter. The list is compiled into the server, so it is `staleTime: Infinity` / `gcTime: Infinity` and resolves once for the session, exactly as the slice's single boot fetch did — verified as one `GET /api/v3/language` per page load and none on client-side navigation, with five consumers mounted across the pages visited. The boot gate loses its languages term and its `fetchLanguages` dispatch, leaving `isReduxPopulated` waiting on two sections rather than four. **The one thing not copied from Sonarr is their filter**, which excludes nothing; it is its own note above. `ErrorPage.languagesError` widens from `Error` to `ApiError | null` and `FileEditModalContent.error` from `object` to `object | null`, both because a React Query error is nullable where a slice's was not. Verified on the running instance: the UI language select lists 57 languages with `Any`, `Unknown` and `Original` absent and opens on the saved value; the quality profile modal lists 59 with `Any` and `Original` present and `Unknown` absent; no console errors on either page. **Not exercised** — `FileEditModal` and `SelectLanguageModalContent`, because the instance has no movie files, and `LanguageFilterBuilderRowValue`, because `PageToolbar` renders empty in headless Chrome. Props of the components touched are marked `Readonly<T>` per SonarQube `typescript:S6759`. |
 | 2026-08-27 | #531 | **Metadata.** Section 5, second half, and the end of section 5. `settings.metadata` and `MetadataAppState` are deleted for `Settings/Metadata/useMetadata.ts`; the eight `.js` files under `Settings/Metadata` become five TSX ones and a hook. Three connectors go — 27 to **24** — and `react-redux` 89 to **85**, `Store/` 4,364 across 63 to **4,282** across 62. **The hook is thirty-one lines**, because a metadata consumer cannot be added, deleted or tested: the list is whatever implementations the server ships. So `useManageMetadata` is `useManageProviderSettings` with `useTestProvider` dropped and nothing seeded — no `useProviderSchema`, no `id === 0` branch, and therefore no default provider, since `useProvider` only reaches for one when the id is zero. Section 4 had already grown the shared hook everything here needs, so nothing was added to it. **The two dead things are the story** — a shadowed `Metadatas.tsx` the connector could not reach, and a Save button nothing was wired to; both are their own note above. `EditMetadataModalConnector` existed only to dispatch `clearPendingChanges` on close, which `Modal` unmounting its children now does for free, the same retirement #521 made. **`field.section` is always undefined here.** `Metadata.js` split fields into a *Metadata* group and an *Images* group on `field.section === 'metadata'`, and the API sends no `section` on metadata fields at all, so every field has always landed under *Images* and the *Metadata* header has never rendered. Carried over unchanged rather than fixed — it is a server-side omission and not this PR's to decide. Verified on the running instance: five cards sorted by name with the toolbar down to *Show Advanced*; toggling **Enable** un-disables the field checkboxes; **Save** closes the modal and the card flips to *Enabled* with its labels, off the cache write and with no refetch; **Cancel** discards the pending edit and reopening shows the saved value; a 400 injected over CDP puts its message on the field it names, keeps the modal open and keeps the edit. `/api/v3/metadata` diffs clean against its pre-test baseline. Props of the components touched are marked `Readonly<T>` per SonarQube `typescript:S6759`. |
