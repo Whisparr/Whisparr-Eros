@@ -6,27 +6,23 @@ import useTranslations from 'App/useTranslations';
 import useCommands from 'Commands/useCommands';
 import useCustomFilters from 'Filters/useCustomFilters';
 import { useLanguages } from 'Language/useLanguages';
+import { useIndexerFlags } from 'Settings/Indexers/useIndexerFlags';
 import { useQualityProfiles } from 'Settings/Profiles/Quality/useQualityProfiles';
 import { useUiSettings } from 'Settings/UI/useUiSettings';
-import {
-  fetchImportLists,
-  fetchIndexerFlags,
-} from 'Store/Actions/settingsActions';
+import { fetchImportLists } from 'Store/Actions/settingsActions';
 import useSystemStatus from 'System/Status/useSystemStatus';
 import useTags from 'Tags/useTags';
 
 const createErrorsSelector = () =>
   createSelector(
     (state: AppState) => state.settings.importLists.error,
-    (state: AppState) => state.settings.indexerFlags.error,
-    (importListsError, indexerFlagsError) => {
-      const hasError = !!(importListsError || indexerFlagsError);
+    (importListsError) => {
+      const hasError = !!importListsError;
 
       return {
         hasError,
         errors: {
           importListsError,
-          indexerFlagsError,
         },
       };
     }
@@ -78,6 +74,12 @@ const useAppPage = () => {
   const { isFetched: isLanguagesPopulated, error: languagesError } =
     useLanguages();
 
+  // Release rows, the movie detail page and the file editor all unpack a flag
+  // bitmask against this list, so the app waits on it exactly as it waited on
+  // the slice's `isPopulated`.
+  const { isFetched: isIndexerFlagsPopulated, error: indexerFlagsError } =
+    useIndexerFlags();
+
   // Keeps one observer on the command list for the whole session. SignalR pushes command
   // updates that drive global toasts, and the periodic refetch is what clears finished
   // commands now that the slice's per-command removal timer is gone. The app does not
@@ -85,13 +87,12 @@ const useAppPage = () => {
   useCommands();
 
   const isReduxPopulated = useSelector(
-    (state: AppState) =>
-      state.settings.importLists.isPopulated &&
-      state.settings.indexerFlags.isPopulated
+    (state: AppState) => state.settings.importLists.isPopulated
   );
 
   const isPopulated =
     isReduxPopulated &&
+    isIndexerFlagsPopulated &&
     isLanguagesPopulated &&
     isQualityProfilesPopulated &&
     isSystemStatusPopulated &&
@@ -105,6 +106,7 @@ const useAppPage = () => {
   const errors = useMemo(() => {
     return {
       ...reduxErrors,
+      indexerFlagsError,
       languagesError,
       qualityProfilesError,
       uiSettingsError,
@@ -115,6 +117,7 @@ const useAppPage = () => {
     };
   }, [
     reduxErrors,
+    indexerFlagsError,
     languagesError,
     qualityProfilesError,
     uiSettingsError,
@@ -139,7 +142,6 @@ const useAppPage = () => {
 
   useEffect(() => {
     dispatch(fetchImportLists());
-    dispatch(fetchIndexerFlags());
   }, [dispatch]);
 
   return useMemo(() => {
@@ -147,6 +149,7 @@ const useAppPage = () => {
       errors,
       hasError:
         hasError ||
+        !!indexerFlagsError ||
         !!languagesError ||
         !!qualityProfilesError ||
         !!uiSettingsError ||
@@ -160,6 +163,7 @@ const useAppPage = () => {
   }, [
     errors,
     hasError,
+    indexerFlagsError,
     languagesError,
     qualityProfilesError,
     uiSettingsError,
