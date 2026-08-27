@@ -11,7 +11,7 @@ Counts are file-level `react-redux` imports across the frontend source tree.
 Every commit reference below links to the Sonarr commit it names; all were
 verified to resolve against the public repo.
 
-**Status: Phases A, B, C and D complete; Phase E is under way, four of eleven sections done. Phase E is the whole of what is left, plus the teardown.** See §11 for the running log.
+**Status: Phases A, B, C and D complete; Phase E is under way, four and a half of eleven sections done. Phase E is the whole of what is left, plus the teardown.** See §11 for the running log.
 
 ---
 
@@ -19,12 +19,12 @@ verified to resolve against the public repo.
 
 | Metric | At assessment | Now |
 | --- | --- | --- |
-| Files importing `react-redux` | 327 of 1,255 | **94** of 1,185 |
-| Lines under `frontend/src/Store/` | 15,374 across 138 files | **4,606** across 66 |
+| Files importing `react-redux` | 327 of 1,255 | **89** of 1,191 |
+| Lines under `frontend/src/Store/` | 15,374 across 138 files | **4,364** across 63 |
 | Redux slices registered in `Store/Actions/index.js` | 35 | **2** |
 | Remaining `*Connector` files | 66 | **27** |
-| Files touching React Query | 35 | **75** |
-| zustand stores | 0 (not installed) | **installed, 38 files** |
+| Files touching React Query | 35 | **76** |
+| zustand stores | 0 (not installed) | **installed, 39 files** |
 
 > **Recomputed in #464.** Three rows previously carried figures that no command
 > reproduced — `react-redux` read 316 where the same command that yields the
@@ -265,7 +265,7 @@ is-it-a-change question* below.
 | 2 | ~~**Remote path mappings · Release profiles** — two small CRUD lists, taken together because they are the same shape.~~ **Done, #518.** It took `Settings/useProviderSettings.ts` with it, and the three remote path mapping connectors: 42 to 39. | ~~`Settings/remotePathMappings.js`, `Settings/releaseProfiles.js`~~; ~~`ReleaseProfilesAppState`, `RemotePathMappings*Connector.js` ×3~~ | [Sonarr/Sonarr@8fcab2d3](https://github.com/Sonarr/Sonarr/commit/8fcab2d3), [Sonarr/Sonarr@4713615b](https://github.com/Sonarr/Sonarr/commit/4713615b) |
 | 3 | ~~**Quality definitions · Quality profiles**~~ — **done, #519 (definitions) and #520 (profiles).** Split in two; between them they took eight connectors, 39 to 31, and the boot gate lost its quality-profile term as predicted. | ~~`Settings/qualityDefinitions.js`, `Quality*Connector.js` ×4~~; ~~`Settings/qualityProfiles.js`, `QualityProfile*Connector.js` ×3, `QualityFilterBuilderRowValueConnector.js`, `createQualityProfileSelector.ts`, `createProfileInUseSelector.ts`~~ | [Sonarr/Sonarr@21ca65a0](https://github.com/Sonarr/Sonarr/commit/21ca65a0), [Sonarr/Sonarr@cf593b1f](https://github.com/Sonarr/Sonarr/commit/cf593b1f) |
 | 4 | ~~**Connections (Notifications)**~~ — **done, #521.** Four connectors, 31 to 27, and the first consumer of `usePendingFieldsStore`. `useProviderSettings` grew test and fields support here. | ~~`Settings/notifications.js`, `NotificationsConnector.js`, `EditNotificationModalConnector.js`, `EditNotificationModalContentConnector.js`, `AddNotificationModalContentConnector.js`~~. `DeviceInput.tsx` was on this list and came off it early, in #490. | [Sonarr/Sonarr@6d49b41d](https://github.com/Sonarr/Sonarr/commit/6d49b41d) |
-| 5 | Naming · Media Management · Metadata | `Settings/naming.js`, `Settings/namingExamples.js`, `Settings/mediaManagement.js`, `Settings/metadata.js` | [Sonarr/Sonarr@677c588a](https://github.com/Sonarr/Sonarr/commit/677c588a), [Sonarr/Sonarr@bbb4c671](https://github.com/Sonarr/Sonarr/commit/bbb4c671), [Sonarr/Sonarr@c0a56586](https://github.com/Sonarr/Sonarr/commit/c0a56586) |
+| 5 | ~~**Naming · Media Management**~~ — **done, #522.** Split from Metadata: the two are one page with one toolbar over two endpoints, and Metadata is a provider list with nothing in common with them. No connectors, so the count stays at 27; `react-redux` 94 to **89**. · **Metadata** still to do. | ~~`Settings/naming.js`, `Settings/namingExamples.js`, `Settings/mediaManagement.js`~~, `Settings/metadata.js` | [Sonarr/Sonarr@677c588a](https://github.com/Sonarr/Sonarr/commit/677c588a), [Sonarr/Sonarr@bbb4c671](https://github.com/Sonarr/Sonarr/commit/bbb4c671), [Sonarr/Sonarr@c0a56586](https://github.com/Sonarr/Sonarr/commit/c0a56586) |
 | 6 | Languages · General (partial `useGeneralSettings` exists) | `Settings/languages.js`, `Settings/general.js`, `GeneralSettingsConnector.js` | [Sonarr/Sonarr@5bac016f](https://github.com/Sonarr/Sonarr/commit/5bac016f), [Sonarr/Sonarr@6764cf1c](https://github.com/Sonarr/Sonarr/commit/6764cf1c) |
 | 7 | Indexers · Indexer Options · Indexer Flags (11 files, three commits) | `Settings/indexers.js`, `Settings/indexerOptions.js`, `Settings/indexerFlags.js`, `IndexerFilterBuilderRowValueConnector.js` | [Sonarr/Sonarr@c4c0ec25](https://github.com/Sonarr/Sonarr/commit/c4c0ec25), [Sonarr/Sonarr@7a455dd0](https://github.com/Sonarr/Sonarr/commit/7a455dd0), [Sonarr/Sonarr@fbb70519](https://github.com/Sonarr/Sonarr/commit/fbb70519) |
 | 8 | Auto tagging · Import list exclusions | `Settings/autoTaggings.js`, `Settings/autoTaggingSpecifications.js`, `Settings/importListExclusions.js` | [Sonarr/Sonarr@0ebda892](https://github.com/Sonarr/Sonarr/commit/0ebda892), [Sonarr/Sonarr@b0fac152](https://github.com/Sonarr/Sonarr/commit/b0fac152) |
@@ -420,10 +420,17 @@ rather than the page: `useProviderSettings` had only ever needed to save, and a 
 with fields also needs to test, to fold pending fields into both bodies, and to put a
 failed test where a failed save goes.
 
-**Next: section 5** — Naming, Media Management and Metadata. Four slices: `naming` and
-`mediaManagement` are single-object sections on `useSettings`, `metadata` is a provider
-list whose rows edit `fields` but never test, and `namingExamples` is a debounced lookup
-rather than a settings section at all.
+~~**Next: section 5** — Naming, Media Management and Metadata.~~ Split in two, because the
+first two are one page and the third is a different shape entirely. ~~The Naming and Media
+Management half~~ **done, #522**: three slices for two endpoints, both single-object
+sections on `useSettings`, with `namingExamples` turning out not to be a settings section
+at all but a debounced lookup keyed on the unsaved form. It is the first page where two
+`useManageSettings` forms sit under one toolbar, and the reason that needs the
+`setChildSave` shape rather than a shared hook is recorded in *Two settings forms cannot
+share a pending bag* below.
+
+**Next: section 5b** — Metadata. A provider list whose rows edit `fields` but never test,
+so it is `useProviderSettings` as section 4 left it, minus `useTestProvider`.
 
 1. ~~**Queue**, in three PRs.~~ **Done.** Sonarr shipped it as one 58-file commit, but the slice already
    has three independent sub-sections and splitting along them gives three merge points
@@ -1058,12 +1065,42 @@ dispatch `fetchQualityDefinitions` — now invalidates the query key instead. On
 covers the reset, so the component has no reset-awareness at all and takes no
 `isResettingQualityDefinitions` prop.
 
+### Two settings forms cannot share a pending bag
+
+`usePendingChangesStore` builds its store inside `useState`, so every call site gets its
+own. Media Management is the first page where that matters: it is one toolbar over
+`/config/mediamanagement` and `/config/naming`, and the obvious shape — call
+`useManageNamingSettings()` in the parent for the dirty flag and again in `Naming` for the
+inputs — gives two independent bags. The parent's stays empty, so **Save** would PUT the
+saved naming config back over itself and the child's edits would never leave the page.
+
+So Naming owns the only naming form and hands its save callback and its
+`{ isSaving, hasPendingChanges }` upward, through the `setChildSave` /
+`onChildStateChange` pair that `typings/Settings/SettingsState.ts` already declared for
+Quality Definitions in #519. Under redux this problem did not exist: both components
+selected the same `settings.naming.pendingChanges` out of one store, which is exactly the
+global-state affordance the migration is removing. Sections 6 and 11 pair endpoints under
+one toolbar the same way and want the same shape.
+
+### The naming examples endpoint needs the id it is given
+
+`GET /config/naming/examples` model-binds a whole `NamingConfigResource` off the query
+string, and opens with `if (config.Id == 0) { config = GetNamingConfig(); }` — a body with
+no `id` is treated as no body at all and the *saved* config is sampled instead. The redux
+thunk sent `{...naming.item, ...naming.pendingChanges}`, so `id` rode along by accident.
+Keyed on `PendingSection<NamingConfig>` the same accident holds, but only because
+`selectSettings` walks the query data and the query data has `id` — so `NamingConfig` now
+declares it rather than leaving the guarantee to a field nobody named. Verified on the
+running instance: with `id` the supplied formats are sampled, without it they are silently
+ignored and the examples still look plausible, which is what makes it worth writing down.
+
 ---
 
 ## 11. Log
 
 | Date | PR | What |
 | --- | --- | --- |
+| 2026-08-27 | #522 | **Naming · Media Management.** Section 5, first half. `settings.naming`, `settings.namingExamples` and `settings.mediaManagement` are deleted for `Settings/MediaManagement/Naming/useNamingSettings.ts` and `Settings/MediaManagement/useMediaManagementSettings.ts`; `react-redux` 94 to **89** and `Store/` 4,606 across 66 to **4,364** across 63. No connectors here, so 27 does not move. **The page is two forms and one Save button**, and that is the whole shape of the PR — see *Two settings forms cannot share a pending bag* above; `SettingsStateChange` and `SetChildSave` were already in `typings/` from #519, so nothing new was invented for it. **`namingExamples` was never a settings section.** It was a slice with one action handler that read the *other* slice's `item` plus `pendingChanges` and posted them, which is a query keyed on unsaved form state — so it becomes `useNamingExamples(settings)`, and the hand-rolled one-second `setTimeout` that restarted on every keystroke becomes `useDebounce(settings, 300)`. Typing back to a format already asked about is now a cache hit rather than a request, which is why the shorter delay costs nothing. The `id` that has to go up with it is its own note above. **`ImportMovieSelectFolder`'s prefetch was not dead.** It dispatched `fetchNamingSettings` with no consumer in that file, but its sibling `ImportMovieRootFolderRow` read `createSettingsSectionSelector('naming')` — a call the grep for `Settings/naming` misses because it names the section, not the module. Both moved; the row fetches for itself and the prefetch goes. Verified on the running instance: examples update as the format is typed, one **Save** press persists both endpoints and returns the toolbar to *No Changes*, an invalid movie format comes back 400 and renders *Must contain movie title* on the field with the edit kept, and the Organize modal and import root-folder row both read the converted query. Nothing is added to the `persistState` warning list — neither slice declared one. |
 | 2026-08-23 | #521 | **Connections.** Section 4. `settings.notifications` and `NotificationAppState` are deleted; `Settings/Notifications/useNotifications.ts` replaces them, and the thirteen `.js` files under `Settings/Notifications` become nine TSX ones. Four connectors go — 31 to **27** — and `react-redux` 98 to **94**. **Most of the change is in the shared hook, not the page.** `useProviderSettings` had only ever had to save a provider that is a plain object; a connection has `fields`, and a connection can be tested, so it grew `useTestProvider`, `usePendingFieldsStore` integration, and one merged error state — React Query keeps an error per mutation, but a failed test and a failed save are the same validation against the same body and both have to reach `selectSettings` for the messages to land on the fields that caused them. `useProviderSchema` is new, adapted from Sonarr's: `useSelectedSchema` resolves an implementation (and optionally a preset) out of the schema query, which is what `SELECT_NOTIFICATION_SCHEMA` did through the slice. **The identical-retry semantics come from the redux handlers, not from Sonarr.** Sonarr sends `skipTesting` and `skipValidation`; neither exists here — `ProviderControllerBase` binds `forceSave` on create/update and `forceTest` on test, and `createSaveProviderHandler`/`createTestProviderHandler` set them when the body is byte-identical to the previous attempt. So pressing **Save** or **Test** a second time on an unchanged form is what drops warning-level validation (and, for save, skips the connectivity test), and that comparison now lives in the two mutation hooks rather than in a module-level `lastSaveData`. `getProviderPayload` carries over the two things `getProviderState` did that are easy to miss: `presets` is stripped, because a schema-derived body still has it and the server rejects it, and fields go up as bare name/value pairs. **`OAuthInput` gains `onSaveError`.** It reported a failed authorization by dispatching `set({ section, saveError })`, which a converted form has no section for; the callback is optional, so the sections still on Redux keep the dispatch and only the converted ones pass it. Without it, deleting the slice would have made the Plex and Trakt buttons dispatch into a section that no longer exists. Two consumers outside the page move: `TagDetailsModalContent` reads `useNotificationsWithIds`, and `Tags` drops its `fetchNotifications` boot dispatch. `SignalRListener` invalidates `[NOTIFICATIONS_PATH]` instead of dispatching `updateItem`/`removeItem`. `getQueryString` returns `''` rather than a bare `?` when nothing is set, which it now can be, since `useApiMutation` takes query params as a function of the body. Verified: `tsc`, `eslint` and `yarn build` clean from the repo root. Not exercised in the browser — the live check was skipped this round on the user's instruction. Props of the components touched are marked `Readonly<T>` per SonarQube `typescript:S6759`. |
 | 2026-08-23 | #520 | **Quality profiles.** Section 3b, and the end of section 3. `settings.qualityProfiles` is deleted, along with `QualityProfilesAppState`, `createQualityProfileSelector`, `createProfileInUseSelector` and `Utilities/Quality/getQualities`; `Settings/Profiles/Quality/useQualityProfiles.ts` replaces them on `useProviderSettings`. Four connectors go — 35 to **31** — and `react-redux` 111 to **98**, on twelve consumers outside the settings page plus the boot gate, which now waits on the list query rather than dispatching `fetchQualityProfiles`. The 544-line `EditQualityProfileModalContentConnector`, the 373-line content component and `EditQualityProfileModalConnector` collapse into one 760-line TSX file; the connector's `clearPendingChanges` on close goes with it, since the store is per-instance and `Modal` unmounts its children when closed. **Three things changed on purpose.** (1) *Cloning.* `CLONE_QUALITY_PROFILE` was a reducer that copied a profile into the section's `pendingChanges` and relied on the add modal reading the same bag; the source profile is the new profile's default now, passed down as `cloneId`, so a clone nobody edits still saves as a copy — the old shape saved an empty profile if the reducer's write lost a race with the modal opening. (2) *`ensureCutoff` is an effect.* It was called at the end of five handlers and forgotten by none of them only by inspection; as an effect on `items`/`cutoff` it cannot be forgotten. Where nothing at all is allowed it now leaves the stale cutoff instead of setting it to null — the server refuses the save either way (`ValidCutoffValidator`), and null does not survive the `int` binding. (3) *No `cloneDeep`.* The handlers rebuilt the profile by deep-cloning it and mutating; the copy came out of the redux slice then and would come out of the React Query cache now, which is the §8 F1 hazard, so each handler builds a new list instead. `getQualities` is retired rather than ported: all three callers read the schema out of the slice first, so the fetch and the flattening travel together in `useQualities`, and the schema is fetched only where it is used — the edit modal skips it entirely for an edit or a clone, where the connector fetched it on every mount that had no id. The connector's `createFormatsSelector` was dead — computed, destructured, never passed on — and is not carried over. `createProfileInUseSelector` becomes `useQualityProfileInUse`, still import-lists-only and still reading the Redux slice until section 9; see the open thread. Verified live against the running instance: the page listing 13 profiles off one `GET /qualityprofile`; editing VR (toggle a quality → one `PUT`, modal closes, card updates off the cache write, no refetch) and reverting it; cloning VR (`VR - Copy` prefilled, **no** schema fetch, `POST`, list updates); adding from scratch (the one place `GET /qualityprofile/schema` fires); deleting the clone through the confirm modal; creating and dissolving a group in *Edit Groups* mode; and the cutoff following the allowed set as *Upgrade Until* moved VR → SDTV when VR was unticked. Nine pages swept for console errors, all clean, each fetching `/qualityprofile` exactly once. Not exercised in the browser, for want of a route to them on this instance: the two filter-builder row values (the toolbar renders no buttons headlessly), `FileEditModal` and `SelectQualityModalContent` (no movie files), and `ManageImportListsModalRow` and the in-use delete guard (no import lists). Props of the components touched are marked `Readonly<T>` per SonarQube `typescript:S6759`. |
 | 2026-08-23 | #519 | **Quality definitions.** Section 3a. `qualityDefinitions` slice retired and the first use of `usePendingItemsStore`. Four connectors go — 39 to 35 — two of which had already lost their `react-redux` import and were connectors in name only. Seven files to TSX, and `react-slider` gets a hand-written declaration rather than a new dependency. |
