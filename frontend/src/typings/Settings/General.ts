@@ -14,6 +14,7 @@ export default interface General {
   password: string;
   passwordConfirmation: string;
   logLevel: string;
+  logSizeLimit: number;
   consoleLogLevel: string;
   branch: string;
   apiKey: string;
@@ -37,6 +38,21 @@ export default interface General {
   backupFolder: string;
   backupInterval: number;
   backupRetention: number;
+  trustCgnatIpAddresses: boolean;
   id: number;
+  whisparrAlwaysExcludeCollectionsTag: string;
+  whisparrAlwaysExcludePerformersTag: string;
+  whisparrAlwaysExcludeStudiosTag: string;
+  whisparrAlwaysExcludeStudiosAfterTag: string;
+  whisparrAlwaysExcludeTagsTag: string;
+  whisparrAutoMatchOnDate: boolean;
+  whisparrCacheExclusionAPI: boolean;
+  whisparrCacheMovieAPI: boolean;
+  whisparrCachePerformerAPI: boolean;
+  whisparrCacheStudioAPI: boolean;
+  whisparrCorruptFileDetection: boolean;
+  whisparrFuzzyTitleMatchingThreshold: number;
   whisparrMovieMetadataSource: string;
+  whisparrValidateRuntime: boolean;
+  whisparrValidateRuntimeLimit: number;
 }

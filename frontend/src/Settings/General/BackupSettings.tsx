@@ -1,14 +1,18 @@
-import PropTypes from 'prop-types';
 import React from 'react';
 import FieldSet from 'Components/FieldSet';
 import FormGroup from 'Components/Form/FormGroup';
 import FormInputGroup from 'Components/Form/FormInputGroup';
 import FormLabel from 'Components/Form/FormLabel';
+import useShowAdvancedSettings from 'Helpers/Hooks/useShowAdvancedSettings';
 import { inputTypes } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
+import { GeneralSettingsSectionProps } from './GeneralSettingsProps';
 
-function BackupSettings(props) {
-  const { advancedSettings, settings, onInputChange } = props;
+function BackupSettings({
+  settings,
+  onInputChange,
+}: Readonly<GeneralSettingsSectionProps>) {
+  const advancedSettings = useShowAdvancedSettings();
 
   const { backupFolder, backupInterval, backupRetention } = settings;
 
@@ -59,11 +63,5 @@ function BackupSettings(props) {
     </FieldSet>
   );
 }
-
-BackupSettings.propTypes = {
-  advancedSettings: PropTypes.bool.isRequired,
-  settings: PropTypes.object.isRequired,
-  onInputChange: PropTypes.func.isRequired,
-};
 
 export default BackupSettings;

@@ -1,15 +1,19 @@
-import PropTypes from 'prop-types';
 import React from 'react';
 import FieldSet from 'Components/FieldSet';
 import FormGroup from 'Components/Form/FormGroup';
 import FormInputGroup from 'Components/Form/FormInputGroup';
 import FormLabel from 'Components/Form/FormLabel';
+import useShowAdvancedSettings from 'Helpers/Hooks/useShowAdvancedSettings';
 import { inputTypes, sizes } from 'Helpers/Props';
 import { useSystemStatusData } from 'System/Status/useSystemStatus';
 import translate from 'Utilities/String/translate';
+import { GeneralSettingsSectionProps } from './GeneralSettingsProps';
 
-function HostSettings(props) {
-  const { advancedSettings, settings, onInputChange } = props;
+function HostSettings({
+  settings,
+  onInputChange,
+}: Readonly<GeneralSettingsSectionProps>) {
+  const advancedSettings = useShowAdvancedSettings();
   const { isWindows, mode } = useSystemStatusData();
 
   const {
@@ -171,11 +175,5 @@ function HostSettings(props) {
     </FieldSet>
   );
 }
-
-HostSettings.propTypes = {
-  advancedSettings: PropTypes.bool.isRequired,
-  settings: PropTypes.object.isRequired,
-  onInputChange: PropTypes.func.isRequired,
-};
 
 export default HostSettings;

@@ -1,14 +1,19 @@
-import PropTypes from 'prop-types';
 import React from 'react';
 import FieldSet from 'Components/FieldSet';
 import FormGroup from 'Components/Form/FormGroup';
 import FormInputGroup from 'Components/Form/FormInputGroup';
 import FormLabel from 'Components/Form/FormLabel';
+import { EnhancedSelectInputValue } from 'Components/Form/Select/EnhancedSelectInput';
+import useShowAdvancedSettings from 'Helpers/Hooks/useShowAdvancedSettings';
 import { inputTypes } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
+import { GeneralSettingsSectionProps } from './GeneralSettingsProps';
 
-function WhisparrSettings(props) {
-  const { advancedSettings, settings, onInputChange } = props;
+function WhisparrSettings({
+  settings,
+  onInputChange,
+}: Readonly<GeneralSettingsSectionProps>) {
+  const advancedSettings = useShowAdvancedSettings();
 
   const {
     whisparrAlwaysExcludeCollectionsTag,
@@ -28,7 +33,7 @@ function WhisparrSettings(props) {
     whisparrValidateRuntimeLimit,
   } = settings;
 
-  const movieMetadataTypes = [
+  const movieMetadataTypes: EnhancedSelectInputValue<string>[] = [
     {
       key: 'none',
       value: translate('None'),
@@ -234,11 +239,5 @@ function WhisparrSettings(props) {
     </FieldSet>
   );
 }
-
-WhisparrSettings.propTypes = {
-  advancedSettings: PropTypes.bool.isRequired,
-  settings: PropTypes.object.isRequired,
-  onInputChange: PropTypes.func.isRequired,
-};
 
 export default WhisparrSettings;

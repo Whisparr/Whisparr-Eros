@@ -1,10 +1,10 @@
-import { useGeneralSettings } from '../../Settings/General/useGeneralSettings';
+import { useGeneralSettings } from 'Settings/General/useGeneralSettings';
 
 export function useShowMovieMonitorToggleButton(
   tmdbid?: number,
   tpdbid?: string
 ) {
-  const generalSettings = useGeneralSettings();
+  const { data: generalSettings } = useGeneralSettings();
   const source = generalSettings.whisparrMovieMetadataSource;
 
   switch (true) {
