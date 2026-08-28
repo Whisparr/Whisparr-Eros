@@ -232,8 +232,13 @@ export const useManageProviderSettings = <T extends ModelBase>(
     setMutationError(null);
   }, []);
 
+  // `id`, not `provider.id`: no provider schema endpoint sends an `id`, so an
+  // add seeded from the schema has `provider.id === undefined`, which misses
+  // the `id === 0` branch below and sends `PUT /<path>/undefined`. The id this
+  // hook was called with is 0 for both add and clone and the real id for an
+  // edit, which is what the branch wants.
   const { save, isSaving } = useSaveProviderSettings<T>(
-    provider.id,
+    id,
     path,
     handleSaveSuccess,
     setMutationError

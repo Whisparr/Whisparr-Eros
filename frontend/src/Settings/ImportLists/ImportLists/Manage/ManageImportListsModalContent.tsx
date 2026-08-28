@@ -1,6 +1,4 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { ImportListAppState } from 'App/State/SettingsAppState';
 import Alert from 'Components/Alert';
 import Button from 'Components/Link/Button';
 import SpinnerButton from 'Components/Link/SpinnerButton';
@@ -10,19 +8,22 @@ import ModalBody from 'Components/Modal/ModalBody';
 import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
+import Column from 'Components/Table/Column';
 import Table from 'Components/Table/Table';
 import TableBody from 'Components/Table/TableBody';
 import useSelectState from 'Helpers/Hooks/useSelectState';
-import { kinds } from 'Helpers/Props';
-import {
-  bulkDeleteImportLists,
-  bulkEditImportLists,
-} from 'Store/Actions/settingsActions';
-import createClientSideCollectionSelector from 'Store/Selectors/createClientSideCollectionSelector';
+import { kinds, sortDirections } from 'Helpers/Props';
+import { SortDirection } from 'Helpers/Props/sortDirections';
 import { CheckInputChanged } from 'typings/inputs';
+import sortByProp from 'Utilities/Array/sortByProp';
 import getErrorMessage from 'Utilities/Object/getErrorMessage';
 import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
+import {
+  useBulkDeleteImportLists,
+  useBulkEditImportLists,
+  useImportLists,
+} from '../useImportLists';
 import ManageImportListsEditModal from './Edit/ManageImportListsEditModal';
 import ManageImportListsModalRow from './ManageImportListsModalRow';
 import TagsModal from './Tags/TagsModal';
@@ -33,7 +34,7 @@ type OnSelectedChangeCallback = React.ComponentProps<
   typeof ManageImportListsModalRow
 >['onSelectedChange'];
 
-const COLUMNS = [
+const COLUMNS: Column[] = [
   {
     name: 'name',
     label: () => translate('Name'),
@@ -89,26 +90,48 @@ interface ManageImportListsModalContentProps {
 }
 
 function ManageImportListsModalContent(
-  props: ManageImportListsModalContentProps
+  props: Readonly<ManageImportListsModalContentProps>
 ) {
   const { onModalClose } = props;
 
-  const {
-    isFetching,
-    isPopulated,
-    isDeleting,
-    isSaving,
-    error,
-    items,
-  }: ImportListAppState = useSelector(
-    createClientSideCollectionSelector('settings.importLists')
+  const { data, isFetching, isFetched, error } = useImportLists();
+
+  // `createClientSideCollectionSelector` read the sort off the slice, which
+  // nothing outside this modal ever set or read. It is modal-local now, the
+  // same as #538 left it for indexers; sections 10 and 11 have the same modal
+  // and a shared hook wants shaping once there is a third consumer.
+  const [sortKey, setSortKey] = useState('name');
+  const [sortDirection, setSortDirection] = useState<SortDirection>(
+    sortDirections.ASCENDING
   );
-  const dispatch = useDispatch();
+
+  const items = useMemo(() => {
+    const sorted = [...data].sort(
+      sortByProp(sortKey as keyof (typeof data)[0])
+    );
+
+    return sortDirection === sortDirections.ASCENDING
+      ? sorted
+      : sorted.reverse();
+  }, [data, sortKey, sortDirection]);
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isTagsModalOpen, setIsTagsModalOpen] = useState(false);
   const [isSavingTags, setIsSavingTags] = useState(false);
+
+  // The slice never reset this, so after one Set Tags save every later bulk
+  // edit spun the Set Tags button as well -- the same fault #538 found in the
+  // indexer copy of this modal. Clearing it when the mutation settles is what
+  // the flag always meant.
+  const handleBulkEditSettled = useCallback(() => {
+    setIsSavingTags(false);
+  }, []);
+
+  const { bulkEditImportLists, isSaving } = useBulkEditImportLists(
+    handleBulkEditSettled
+  );
+  const { bulkDeleteImportLists, isDeleting } = useBulkDeleteImportLists();
 
   const [selectState, setSelectState] = useSelectState();
 
@@ -119,6 +142,23 @@ function ManageImportListsModalContent(
   }, [selectedState]);
 
   const selectedCount = selectedIds.length;
+
+  const onSortPress = useCallback(
+    (value: string) => {
+      setSortDirection((currentDirection) => {
+        if (value !== sortKey) {
+          return sortDirections.ASCENDING;
+        }
+
+        return currentDirection === sortDirections.ASCENDING
+          ? sortDirections.DESCENDING
+          : sortDirections.ASCENDING;
+      });
+
+      setSortKey(value);
+    },
+    [sortKey]
+  );
 
   const onDeletePress = useCallback(() => {
     setIsDeleteModalOpen(true);
@@ -137,22 +177,20 @@ function ManageImportListsModalContent(
   }, [setIsEditModalOpen]);
 
   const onConfirmDelete = useCallback(() => {
-    dispatch(bulkDeleteImportLists({ ids: selectedIds }));
+    bulkDeleteImportLists(selectedIds);
     setIsDeleteModalOpen(false);
-  }, [selectedIds, dispatch]);
+  }, [selectedIds, bulkDeleteImportLists]);
 
   const onSavePress = useCallback(
     (payload: object) => {
       setIsEditModalOpen(false);
 
-      dispatch(
-        bulkEditImportLists({
-          ids: selectedIds,
-          ...payload,
-        })
-      );
+      bulkEditImportLists({
+        ids: selectedIds,
+        ...payload,
+      });
     },
-    [selectedIds, dispatch]
+    [selectedIds, bulkEditImportLists]
   );
 
   const onTagsPress = useCallback(() => {
@@ -168,15 +206,13 @@ function ManageImportListsModalContent(
       setIsSavingTags(true);
       setIsTagsModalOpen(false);
 
-      dispatch(
-        bulkEditImportLists({
-          ids: selectedIds,
-          tags,
-          applyTags,
-        })
-      );
+      bulkEditImportLists({
+        ids: selectedIds,
+        tags,
+        applyTags,
+      });
     },
-    [selectedIds, dispatch]
+    [selectedIds, bulkEditImportLists]
   );
 
   const onSelectAllChange = useCallback(
@@ -210,17 +246,20 @@ function ManageImportListsModalContent(
 
         {error ? <div>{errorMessage}</div> : null}
 
-        {isPopulated && !error && !items.length ? (
+        {isFetched && !error && !items.length ? (
           <Alert kind={kinds.INFO}>{translate('NoImportListsFound')}</Alert>
         ) : null}
 
-        {isPopulated && !!items.length && !isFetching && !isFetching ? (
+        {isFetched && !!items.length && !isFetching ? (
           <Table
             columns={COLUMNS}
             horizontalScroll={true}
             selectAll={true}
             allSelected={allSelected}
             allUnselected={allUnselected}
+            sortKey={sortKey}
+            sortDirection={sortDirection}
+            onSortPress={onSortPress}
             onSelectAllChange={onSelectAllChange}
           >
             <TableBody>

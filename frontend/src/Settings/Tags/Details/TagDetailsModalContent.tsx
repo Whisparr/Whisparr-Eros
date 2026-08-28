@@ -12,6 +12,7 @@ import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { kinds } from 'Helpers/Props';
 import { useMoviesByIds } from 'Movie/useMovie';
+import { useImportListsWithIds } from 'Settings/ImportLists/ImportLists/useImportLists';
 import { useIndexersWithIds } from 'Settings/Indexers/Indexers/useIndexers';
 import { useNotificationsWithIds } from 'Settings/Notifications/useNotifications';
 import { useReleaseProfilesWithIds } from 'Settings/Profiles/Release/useReleaseProfiles';
@@ -80,12 +81,7 @@ function TagDetailsModalContent({
     )
   );
 
-  const importLists = useSelector(
-    createMatchingItemSelector(
-      importListIds,
-      (state: AppState) => state.settings.importLists.items
-    )
-  );
+  const importLists = useImportListsWithIds(importListIds);
 
   const notifications = useNotificationsWithIds(notificationIds);
 

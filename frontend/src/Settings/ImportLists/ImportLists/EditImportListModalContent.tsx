@@ -1,6 +1,4 @@
 import React, { useCallback, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { ImportListAppState } from 'App/State/SettingsAppState';
 import Alert from 'Components/Alert';
 import Form from 'Components/Form/Form';
 import FormGroup from 'Components/Form/FormGroup';
@@ -18,48 +16,46 @@ import usePrevious from 'Helpers/Hooks/usePrevious';
 import useShowAdvancedSettings from 'Helpers/Hooks/useShowAdvancedSettings';
 import { inputTypes, kinds } from 'Helpers/Props';
 import AdvancedSettingsButton from 'Settings/AdvancedSettingsButton';
-import {
-  saveImportList,
-  setImportListFieldValue,
-  setImportListValue,
-  testImportList,
-} from 'Store/Actions/settingsActions';
-import { createProviderSettingsSelectorHook } from 'Store/Selectors/createProviderSettingsSelector';
+import { SelectedSchema } from 'Settings/useProviderSchema';
 import ImportList from 'typings/ImportList';
-import { InputChanged } from 'typings/inputs';
+import { EnhancedSelectInputChanged, InputChanged } from 'typings/inputs';
 import formatShortTimeSpan from 'Utilities/Date/formatShortTimeSpan';
 import translate from 'Utilities/String/translate';
+import { useManageImportList } from './useImportLists';
 import styles from './EditImportListModalContent.css';
 
-export interface EditImportListModalContentProps {
-  id?: number;
-  onModalClose: () => void;
+interface EditImportListModalContentProps {
+  id: number;
+  selectedSchema?: SelectedSchema;
+  cloneId?: number;
   onDeleteImportListPress?: () => void;
+  onModalClose: () => void;
 }
 
 function EditImportListModalContent({
   id,
-  onModalClose,
+  selectedSchema,
+  cloneId,
   onDeleteImportListPress,
-}: EditImportListModalContentProps) {
-  const dispatch = useDispatch();
+  onModalClose,
+}: Readonly<EditImportListModalContentProps>) {
   const showAdvancedSettings = useShowAdvancedSettings();
 
   const {
-    isFetching,
-    isSaving,
-    isTesting = false,
-    error,
-    saveError,
     item,
+    isFetching,
+    error,
+    isSaving,
+    saveError,
+    isTesting,
     validationErrors,
     validationWarnings,
-  } = useSelector(
-    createProviderSettingsSelectorHook<ImportList, ImportListAppState>(
-      'importLists',
-      id
-    )
-  );
+    updateValue,
+    updateFieldValue,
+    updateFieldValues,
+    saveProvider,
+    testProvider,
+  } = useManageImportList(id, selectedSchema, cloneId);
 
   const wasSaving = usePrevious(isSaving);
 
@@ -78,28 +74,45 @@ function EditImportListModalContent({
   } = item;
 
   const handleInputChange = useCallback(
-    (change: InputChanged) => {
-      // @ts-expect-error - actions are not typed
-      dispatch(setImportListValue(change));
+    ({ name, value }: InputChanged) => {
+      updateValue(
+        name as keyof ImportList,
+        value as ImportList[keyof ImportList]
+      );
     },
-    [dispatch]
+    [updateValue]
   );
 
+  // A field that answers with more than its own value goes up as a batch;
+  // anything else is a single edit, which can be reverted back to the saved
+  // value and dropped from the pending set.
   const handleFieldChange = useCallback(
-    (change: InputChanged) => {
-      // @ts-expect-error - actions are not typed
-      dispatch(setImportListFieldValue(change));
+    ({
+      name,
+      value,
+      additionalProperties,
+    }: EnhancedSelectInputChanged<unknown>) => {
+      if (additionalProperties) {
+        updateFieldValues({
+          ...(additionalProperties as Record<string, unknown>),
+          [name]: value,
+        });
+
+        return;
+      }
+
+      updateFieldValue(name, value);
     },
-    [dispatch]
+    [updateFieldValue, updateFieldValues]
   );
 
   const handleTestPress = useCallback(() => {
-    dispatch(testImportList({ id }));
-  }, [id, dispatch]);
+    testProvider();
+  }, [testProvider]);
 
   const handleSavePress = useCallback(() => {
-    dispatch(saveImportList({ id }));
-  }, [id, dispatch]);
+    saveProvider();
+  }, [saveProvider]);
 
   useEffect(() => {
     if (wasSaving && !isSaving && !saveError) {

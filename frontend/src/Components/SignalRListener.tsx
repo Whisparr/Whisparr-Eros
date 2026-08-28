@@ -12,6 +12,7 @@ import Command from 'Commands/Command';
 import { COMMANDS_QUERY_KEY, useUpdateCommand } from 'Commands/useCommands';
 import { PagedQueryResponse } from 'Helpers/Hooks/usePagedApiQuery';
 import { ROOT_FOLDERS_QUERY_KEY } from 'RootFolder/useRootFolders';
+import { IMPORT_LISTS_PATH } from 'Settings/ImportLists/ImportLists/useImportLists';
 import { INDEXERS_PATH } from 'Settings/Indexers/Indexers/useIndexers';
 import { NOTIFICATIONS_PATH } from 'Settings/Notifications/useNotifications';
 import { QUALITY_DEFINITIONS_PATH } from 'Settings/Quality/Definition/useQualityDefinitions';
@@ -380,14 +381,7 @@ function SignalRListener() {
     }
 
     if (name === 'importlist') {
-      const section = 'settings.importLists';
-
-      if (body.action === 'created' || body.action === 'updated') {
-        dispatch(updateItem({ section, ...body.resource }));
-      } else if (body.action === 'deleted') {
-        dispatch(removeItem({ section, id: body.resource?.id }));
-      }
-
+      queryClient.invalidateQueries({ queryKey: [IMPORT_LISTS_PATH] });
       return;
     }
 

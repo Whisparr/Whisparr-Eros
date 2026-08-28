@@ -1,36 +1,16 @@
-import { useEffect, useMemo } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { createSelector } from 'reselect';
-import AppState from 'App/State/AppState';
+import { useMemo } from 'react';
 import useTranslations from 'App/useTranslations';
 import useCommands from 'Commands/useCommands';
 import useCustomFilters from 'Filters/useCustomFilters';
 import { useLanguages } from 'Language/useLanguages';
+import { useImportLists } from 'Settings/ImportLists/ImportLists/useImportLists';
 import { useIndexerFlags } from 'Settings/Indexers/useIndexerFlags';
 import { useQualityProfiles } from 'Settings/Profiles/Quality/useQualityProfiles';
 import { useUiSettings } from 'Settings/UI/useUiSettings';
-import { fetchImportLists } from 'Store/Actions/settingsActions';
 import useSystemStatus from 'System/Status/useSystemStatus';
 import useTags from 'Tags/useTags';
 
-const createErrorsSelector = () =>
-  createSelector(
-    (state: AppState) => state.settings.importLists.error,
-    (importListsError) => {
-      const hasError = !!importListsError;
-
-      return {
-        hasError,
-        errors: {
-          importListsError,
-        },
-      };
-    }
-  );
-
 const useAppPage = () => {
-  const dispatch = useDispatch();
-
   // System status is read from React Query by every consumer now, so the app
   // waits on that query. Without this, components render once with an
   // undefined status -- Page.tsx would compute `authentication !== 'none'` as
@@ -80,18 +60,22 @@ const useAppPage = () => {
   const { isFetched: isIndexerFlagsPopulated, error: indexerFlagsError } =
     useIndexerFlags();
 
+  // The last term of the redux boot gate. The list itself gates nothing on
+  // screen -- the tag details modal, the filter builder and the quality profile
+  // in-use check all read it -- but the slice's `isPopulated` was in the gate
+  // and the fetch was dispatched from here, so both stay for now rather than
+  // change what the app waits for inside a conversion.
+  const { isFetched: isImportListsPopulated, error: importListsError } =
+    useImportLists();
+
   // Keeps one observer on the command list for the whole session. SignalR pushes command
   // updates that drive global toasts, and the periodic refetch is what clears finished
   // commands now that the slice's per-command removal timer is gone. The app does not
   // wait on this -- nothing renders differently for want of the command list.
   useCommands();
 
-  const isReduxPopulated = useSelector(
-    (state: AppState) => state.settings.importLists.isPopulated
-  );
-
   const isPopulated =
-    isReduxPopulated &&
+    isImportListsPopulated &&
     isIndexerFlagsPopulated &&
     isLanguagesPopulated &&
     isQualityProfilesPopulated &&
@@ -101,11 +85,9 @@ const useAppPage = () => {
     isTranslationsPopulated &&
     isUiSettingsPopulated;
 
-  const { hasError, errors: reduxErrors } = useSelector(createErrorsSelector());
-
   const errors = useMemo(() => {
     return {
-      ...reduxErrors,
+      importListsError,
       indexerFlagsError,
       languagesError,
       qualityProfilesError,
@@ -116,7 +98,7 @@ const useAppPage = () => {
       systemStatusError: systemStatusQueryError,
     };
   }, [
-    reduxErrors,
+    importListsError,
     indexerFlagsError,
     languagesError,
     qualityProfilesError,
@@ -140,15 +122,11 @@ const useAppPage = () => {
     }
   }, []);
 
-  useEffect(() => {
-    dispatch(fetchImportLists());
-  }, [dispatch]);
-
   return useMemo(() => {
     return {
       errors,
       hasError:
-        hasError ||
+        !!importListsError ||
         !!indexerFlagsError ||
         !!languagesError ||
         !!qualityProfilesError ||
@@ -162,7 +140,7 @@ const useAppPage = () => {
     };
   }, [
     errors,
-    hasError,
+    importListsError,
     indexerFlagsError,
     languagesError,
     qualityProfilesError,
