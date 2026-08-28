@@ -5,6 +5,7 @@ export type ListSyncLevel =
   | 'removeAndKeep'
   | 'removeAndDelete';
 
-export default interface ImportListOptionsSettings {
+export default interface ImportListOptions {
+  id: number;
   listSyncLevel: ListSyncLevel;
 }

@@ -8,7 +8,7 @@ import CustomFormat from 'typings/CustomFormat';
 import DelayProfile from 'typings/DelayProfile';
 import DownloadClient from 'typings/DownloadClient';
 import ImportList from 'typings/ImportList';
-import ImportListOptionsSettings from 'typings/ImportListOptionsSettings';
+import DownloadClientOptions from 'typings/Settings/DownloadClientOptions';
 
 type Presets<T> = T & {
   presets: T[];
@@ -37,20 +37,23 @@ export interface ImportListAppState
   isTestingAll: boolean;
 }
 
+// The slice has always been here; the typing never declared it, which went
+// unnoticed while `importListOptions` was the other item-section keeping
+// `createSettingsSectionSelector`'s generic inhabited. Goes with section 11.
+export interface DownloadClientOptionsAppState
+  extends AppSectionItemState<DownloadClientOptions>, AppSectionSaveState {}
+
 export interface CustomFormatAppState
   extends
     AppSectionState<CustomFormat>,
     AppSectionDeleteState,
     AppSectionSaveState {}
 
-export interface ImportListOptionsSettingsAppState
-  extends AppSectionItemState<ImportListOptionsSettings>, AppSectionSaveState {}
-
 interface SettingsAppState {
   customFormats: CustomFormatAppState;
   delayProfiles: DelayProfileAppState;
+  downloadClientOptions: DownloadClientOptionsAppState;
   downloadClients: DownloadClientAppState;
-  importListOptions: ImportListOptionsSettingsAppState;
   importLists: ImportListAppState;
 }
 

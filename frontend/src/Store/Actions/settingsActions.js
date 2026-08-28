@@ -5,7 +5,6 @@ import customFormatSpecifications from './Settings/customFormatSpecifications';
 import delayProfiles from './Settings/delayProfiles';
 import downloadClientOptions from './Settings/downloadClientOptions';
 import downloadClients from './Settings/downloadClients';
-import importListOptions from './Settings/importListOptions';
 import importLists from './Settings/importLists';
 
 export * from './Settings/customFormatSpecifications.js';
@@ -13,7 +12,6 @@ export * from './Settings/customFormats';
 export * from './Settings/delayProfiles';
 export * from './Settings/downloadClients';
 export * from './Settings/downloadClientOptions';
-export * from './Settings/importListOptions';
 export * from './Settings/importLists';
 
 //
@@ -31,7 +29,6 @@ export const defaultState = {
   downloadClients: downloadClients.defaultState,
   downloadClientOptions: downloadClientOptions.defaultState,
   importLists: importLists.defaultState,
-  importListOptions: importListOptions.defaultState,
 };
 
 //
@@ -44,7 +41,6 @@ export const actionHandlers = handleThunks({
   ...downloadClients.actionHandlers,
   ...downloadClientOptions.actionHandlers,
   ...importLists.actionHandlers,
-  ...importListOptions.actionHandlers,
 });
 
 //
@@ -58,7 +54,6 @@ export const reducers = createHandleActions(
     ...downloadClients.reducers,
     ...downloadClientOptions.reducers,
     ...importLists.reducers,
-      ...importListOptions.reducers,
   },
   defaultState,
   section

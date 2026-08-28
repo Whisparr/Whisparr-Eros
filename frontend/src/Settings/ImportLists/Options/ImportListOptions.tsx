@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import Alert from 'Components/Alert';
 import FieldSet from 'Components/FieldSet';
 import Form from 'Components/Form/Form';
@@ -10,16 +9,15 @@ import { EnhancedSelectInputValue } from 'Components/Form/Select/EnhancedSelectI
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import useShowAdvancedSettings from 'Helpers/Hooks/useShowAdvancedSettings';
 import { inputTypes, kinds } from 'Helpers/Props';
-import { clearPendingChanges } from 'Store/Actions/baseActions';
+import { InputChanged } from 'typings/inputs';
+import ImportListOptionsSettings from 'typings/Settings/ImportListOptions';
 import {
-  fetchImportListOptions,
-  saveImportListOptions,
-  setImportListOptionsValue,
-} from 'Store/Actions/settingsActions';
-import createSettingsSectionSelector from 'Store/Selectors/createSettingsSectionSelector';
+  OnChildStateChange,
+  SetChildSave,
+} from 'typings/Settings/SettingsState';
 import translate from 'Utilities/String/translate';
+import { useManageImportListOptions } from './useImportListOptions';
 
-const SECTION = 'importListOptions';
 const cleanLibraryLevelOptions: EnhancedSelectInputValue<string>[] = [
   {
     key: 'disabled',
@@ -54,52 +52,47 @@ const cleanLibraryLevelOptions: EnhancedSelectInputValue<string>[] = [
 ];
 
 interface ImportListOptionsProps {
-  setChildSave(saveCallback: () => void): void;
-  onChildStateChange(payload: unknown): void;
+  setChildSave: SetChildSave;
+  onChildStateChange: OnChildStateChange;
 }
 
 function ImportListOptions({
   setChildSave,
   onChildStateChange,
-}: ImportListOptionsProps) {
-  const dispatch = useDispatch();
+}: Readonly<ImportListOptionsProps>) {
   const showAdvancedSettings = useShowAdvancedSettings();
 
   const {
-    isSaving,
-    hasPendingChanges,
-    isFetching,
-    error,
     settings,
+    updateSetting,
+    saveSettings,
+    isFetching,
+    isSaving,
+    error,
     hasSettings,
-  } = useSelector(createSettingsSectionSelector(SECTION));
+    hasPendingChanges,
+  } = useManageImportListOptions();
 
-  const { listSyncLevel } = settings;
+  const handleInputChange = useCallback(
+    ({ name, value }: InputChanged) => {
+      const key = name as keyof ImportListOptionsSettings;
 
-  const onInputChange = useCallback(
-    ({ name, value }: { name: string; value: unknown }) => {
-      // @ts-expect-error 'setImportListOptionsValue' isn't typed yet
-      dispatch(setImportListOptionsValue({ name, value }));
+      updateSetting(key, value as ImportListOptionsSettings[typeof key]);
     },
-    [dispatch]
+    [updateSetting]
   );
 
   useEffect(() => {
-    dispatch(fetchImportListOptions());
-    setChildSave(() => dispatch(saveImportListOptions()));
-
-    return () => {
-      dispatch(clearPendingChanges({ section: `settings.${SECTION}` }));
-    };
-  }, [dispatch, setChildSave]);
+    setChildSave(saveSettings);
+  }, [saveSettings, setChildSave]);
 
   useEffect(() => {
-    onChildStateChange({
-      isSaving,
-      hasPendingChanges,
-    });
+    onChildStateChange({ isSaving, hasPendingChanges });
   }, [onChildStateChange, isSaving, hasPendingChanges]);
 
+  // The whole section is advanced-only, and it always has been. The hooks above
+  // still run, so the toolbar's Save keeps saving these options even while the
+  // fieldset is hidden -- which is what the slice's dispatches did too.
   if (!showAdvancedSettings) {
     return null;
   }
@@ -112,7 +105,7 @@ function ImportListOptions({
         <Alert kind={kinds.DANGER}>{translate('ListOptionsLoadError')}</Alert>
       ) : null}
 
-      {hasSettings && !isFetching && !error ? (
+      {hasSettings && !error ? (
         <Form>
           <FormGroup advancedSettings={showAdvancedSettings} isAdvanced={true}>
             <FormLabel>{translate('CleanLibraryLevel')}</FormLabel>
@@ -121,8 +114,8 @@ function ImportListOptions({
               name="listSyncLevel"
               values={cleanLibraryLevelOptions}
               helpText={translate('ListSyncLevelHelpText')}
-              onChange={onInputChange}
-              {...listSyncLevel}
+              onChange={handleInputChange}
+              {...settings.listSyncLevel}
             />
           </FormGroup>
         </Form>
