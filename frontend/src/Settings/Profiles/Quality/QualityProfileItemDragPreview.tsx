@@ -2,25 +2,30 @@ import React from 'react';
 import { useDragLayer } from 'react-dnd';
 import DragPreviewLayer from 'Components/DragPreviewLayer';
 import { QUALITY_PROFILE_ITEM } from 'Helpers/dragTypes';
-import dimensions from 'Styles/Variables/dimensions.js';
+import dimensions from 'Styles/Variables/dimensions';
 import QualityProfileItem from './QualityProfileItem';
+import { QualityProfileItemDragItem } from './QualityProfileItemDragSource';
 import styles from './QualityProfileItemDragPreview.css';
 
-const formGroupExtraSmallWidth = Number.parseInt(dimensions.formGroupExtraSmallWidth, 10);
+const formGroupExtraSmallWidth = Number.parseInt(
+  dimensions.formGroupExtraSmallWidth,
+  10
+);
 const formLabelSmallWidth = Number.parseInt(dimensions.formLabelSmallWidth, 10);
 const formLabelRightMarginWidth = Number.parseInt(
-  dimensions.formLabelRightMarginWidth
-, 10);
+  dimensions.formLabelRightMarginWidth,
+  10
+);
 const dragHandleWidth = Number.parseInt(dimensions.dragHandleWidth, 10);
 
 function QualityProfileItemDragPreview() {
   const { item, itemType, currentOffset } = useDragLayer((monitor) => ({
-    item: monitor.getItem(),
+    item: monitor.getItem<QualityProfileItemDragItem | null>(),
     itemType: monitor.getItemType(),
     currentOffset: monitor.getSourceClientOffset(),
   }));
 
-  if (!currentOffset || itemType !== QUALITY_PROFILE_ITEM) {
+  if (!currentOffset || itemType !== QUALITY_PROFILE_ITEM || !item) {
     return null;
   }
 
@@ -36,7 +41,7 @@ function QualityProfileItemDragPreview() {
   const transform = `translate3d(${x - handleOffset}px, ${y}px, 0)`;
 
   const style = {
-    position: 'absolute',
+    position: 'absolute' as const,
     WebkitTransform: transform,
     msTransform: transform,
     transform,
@@ -52,7 +57,9 @@ function QualityProfileItemDragPreview() {
         <QualityProfileItem
           editGroups={editGroups}
           isPreview={true}
-          qualityId={groupId || qualityId}
+          // A group is dragged by its own id; either way this only reaches the
+          // check input's change handler, which the preview does not connect.
+          qualityId={groupId ?? qualityId ?? 0}
           name={name}
           allowed={allowed}
           isDragging={false}

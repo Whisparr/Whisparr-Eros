@@ -24,6 +24,7 @@ import QualityProfile, {
 } from 'typings/QualityProfile';
 import translate from 'Utilities/String/translate';
 import QualityProfileFormatItems from './QualityProfileFormatItems';
+import { DragMoveOptions } from './QualityProfileItemDragSource';
 import QualityProfileItems from './QualityProfileItems';
 import useQualityProfileInUse from './useQualityProfileInUse';
 import { useManageQualityProfile } from './useQualityProfiles';
@@ -35,12 +36,6 @@ const MODAL_BODY_PADDING = Number.parseInt(dimensions.modalBodyPadding, 10);
 // parser reports when it could not tell -- matching on it is not a choice the
 // profile offers.
 const UNPROFILED_LANGUAGES = ['Unknown'];
-
-interface DragMoveOptions {
-  dragQualityIndex: string;
-  dropQualityIndex: string;
-  dropPosition: string;
-}
 
 interface DragState {
   dragQualityIndex: string | null;
@@ -690,7 +685,6 @@ function EditQualityProfileModalContent({
                   <div className={styles.formGroupWrapper}>
                     <QualityProfileItems
                       editGroups={editGroups}
-                      dragQualityIndex={dragState.dragQualityIndex}
                       dropQualityIndex={dragState.dropQualityIndex}
                       dropPosition={dragState.dropPosition}
                       qualityProfileItems={items.value}
