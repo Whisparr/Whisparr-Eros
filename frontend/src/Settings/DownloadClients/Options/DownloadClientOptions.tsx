@@ -1,5 +1,4 @@
-import PropTypes from 'prop-types';
-import React from 'react';
+import React, { useCallback, useEffect } from 'react';
 import Alert from 'Components/Alert';
 import FieldSet from 'Components/FieldSet';
 import Form from 'Components/Form/Form';
@@ -7,35 +6,72 @@ import FormGroup from 'Components/Form/FormGroup';
 import FormInputGroup from 'Components/Form/FormInputGroup';
 import FormLabel from 'Components/Form/FormLabel';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
+import useShowAdvancedSettings from 'Helpers/Hooks/useShowAdvancedSettings';
 import { inputTypes, kinds, sizes } from 'Helpers/Props';
+import { InputChanged } from 'typings/inputs';
+import DownloadClientOptionsSettings from 'typings/Settings/DownloadClientOptions';
+import {
+  OnChildStateChange,
+  SetChildSave,
+} from 'typings/Settings/SettingsState';
 import translate from 'Utilities/String/translate';
+import { useManageDownloadClientOptions } from './useDownloadClientOptions';
 
-function DownloadClientOptions(props) {
+interface DownloadClientOptionsProps {
+  setChildSave: SetChildSave;
+  onChildStateChange: OnChildStateChange;
+}
+
+function DownloadClientOptions({
+  setChildSave,
+  onChildStateChange,
+}: Readonly<DownloadClientOptionsProps>) {
   const {
-    advancedSettings,
-    isFetching,
-    error,
     settings,
+    updateSetting,
+    saveSettings,
+    isFetching,
+    isSaving,
+    error,
     hasSettings,
-    onInputChange,
-  } = props;
+    hasPendingChanges,
+  } = useManageDownloadClientOptions();
+
+  const showAdvancedSettings = useShowAdvancedSettings();
+
+  const handleInputChange = useCallback(
+    ({ name, value }: InputChanged) => {
+      const key = name as keyof DownloadClientOptionsSettings;
+
+      updateSetting(key, value as DownloadClientOptionsSettings[typeof key]);
+    },
+    [updateSetting]
+  );
+
+  useEffect(() => {
+    setChildSave(saveSettings);
+  }, [saveSettings, setChildSave]);
+
+  useEffect(() => {
+    onChildStateChange({ isSaving, hasPendingChanges });
+  }, [hasPendingChanges, isSaving, onChildStateChange]);
 
   return (
     <div>
-      {isFetching && <LoadingIndicator />}
+      {isFetching ? <LoadingIndicator /> : null}
 
-      {!isFetching && error && (
+      {!isFetching && error ? (
         <Alert kind={kinds.DANGER}>
           {translate('DownloadClientOptionsLoadError')}
         </Alert>
-      )}
+      ) : null}
 
-      {hasSettings && !isFetching && !error && advancedSettings && (
+      {hasSettings && !isFetching && !error && showAdvancedSettings ? (
         <div>
           <FieldSet legend={translate('CompletedDownloadHandling')}>
             <Form>
               <FormGroup
-                advancedSettings={advancedSettings}
+                advancedSettings={showAdvancedSettings}
                 isAdvanced={true}
                 size={sizes.MEDIUM}
               >
@@ -47,13 +83,13 @@ function DownloadClientOptions(props) {
                   helpText={translate(
                     'EnableCompletedDownloadHandlingHelpText'
                   )}
-                  onChange={onInputChange}
+                  onChange={handleInputChange}
                   {...settings.enableCompletedDownloadHandling}
                 />
               </FormGroup>
 
               <FormGroup
-                advancedSettings={advancedSettings}
+                advancedSettings={showAdvancedSettings}
                 isAdvanced={true}
                 size={sizes.MEDIUM}
               >
@@ -68,7 +104,7 @@ function DownloadClientOptions(props) {
                   max={120}
                   unit="minutes"
                   helpText={translate('RefreshMonitoredIntervalHelpText')}
-                  onChange={onInputChange}
+                  onChange={handleInputChange}
                   {...settings.checkForFinishedDownloadInterval}
                 />
               </FormGroup>
@@ -78,7 +114,7 @@ function DownloadClientOptions(props) {
           <FieldSet legend={translate('FailedDownloadHandling')}>
             <Form>
               <FormGroup
-                advancedSettings={advancedSettings}
+                advancedSettings={showAdvancedSettings}
                 isAdvanced={true}
                 size={sizes.MEDIUM}
               >
@@ -88,14 +124,14 @@ function DownloadClientOptions(props) {
                   type={inputTypes.CHECK}
                   name="autoRedownloadFailed"
                   helpText={translate('AutoRedownloadFailedHelpText')}
-                  onChange={onInputChange}
+                  onChange={handleInputChange}
                   {...settings.autoRedownloadFailed}
                 />
               </FormGroup>
 
               {settings.autoRedownloadFailed.value ? (
                 <FormGroup
-                  advancedSettings={advancedSettings}
+                  advancedSettings={showAdvancedSettings}
                   isAdvanced={true}
                   size={sizes.MEDIUM}
                 >
@@ -109,7 +145,7 @@ function DownloadClientOptions(props) {
                     helpText={translate(
                       'AutoRedownloadFailedFromInteractiveSearchHelpText'
                     )}
-                    onChange={onInputChange}
+                    onChange={handleInputChange}
                     {...settings.autoRedownloadFailedFromInteractiveSearch}
                   />
                 </FormGroup>
@@ -119,18 +155,9 @@ function DownloadClientOptions(props) {
             <Alert kind={kinds.INFO}>{translate('RemoveDownloadsAlert')}</Alert>
           </FieldSet>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
-
-DownloadClientOptions.propTypes = {
-  advancedSettings: PropTypes.bool.isRequired,
-  isFetching: PropTypes.bool.isRequired,
-  error: PropTypes.object,
-  settings: PropTypes.object.isRequired,
-  hasSettings: PropTypes.bool.isRequired,
-  onInputChange: PropTypes.func.isRequired,
-};
 
 export default DownloadClientOptions;

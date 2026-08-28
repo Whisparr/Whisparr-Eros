@@ -9,7 +9,7 @@ import SettingsToolbar from 'Settings/SettingsToolbar';
 import translate from 'Utilities/String/translate';
 import DownloadClientsConnector from './DownloadClients/DownloadClientsConnector';
 import ManageDownloadClientsModal from './DownloadClients/Manage/ManageDownloadClientsModal';
-import DownloadClientOptionsConnector from './Options/DownloadClientOptionsConnector';
+import DownloadClientOptions from './Options/DownloadClientOptions';
 import RemotePathMappings from './RemotePathMappings/RemotePathMappings';
 
 class DownloadClientSettings extends Component {
@@ -31,7 +31,7 @@ class DownloadClientSettings extends Component {
   //
   // Listeners
 
-  onChildMounted = (saveCallback) => {
+  setChildSave = (saveCallback) => {
     this._saveCallback = saveCallback;
   };
 
@@ -91,8 +91,8 @@ class DownloadClientSettings extends Component {
         <PageContentBody>
           <DownloadClientsConnector />
 
-          <DownloadClientOptionsConnector
-            onChildMounted={this.onChildMounted}
+          <DownloadClientOptions
+            setChildSave={this.setChildSave}
             onChildStateChange={this.onChildStateChange}
           />
 
