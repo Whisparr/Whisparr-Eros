@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect } from 'react';
-import { Error as AppError } from 'App/State/AppSectionState';
 import Alert from 'Components/Alert';
 import Form from 'Components/Form/Form';
 import FormGroup from 'Components/Form/FormGroup';
@@ -19,6 +18,7 @@ import AdvancedSettingsButton from 'Settings/AdvancedSettingsButton';
 import { useShowAdvancedSettings } from 'Settings/advancedSettingsStore';
 import { useManageNotification } from 'Settings/Notifications/useNotifications';
 import { SelectedSchema } from 'Settings/useProviderSchema';
+import AppError from 'typings/AppError';
 import { EnhancedSelectInputChanged, InputChanged } from 'typings/inputs';
 import Notification from 'typings/Notification';
 import translate from 'Utilities/String/translate';

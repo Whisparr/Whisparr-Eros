@@ -1,7 +1,7 @@
 import React from 'react';
-import { CustomFilter, Filter } from 'App/State/AppState';
 import MovieCollectionFilterModal from 'Collection/MovieCollectionFilterModal';
 import FilterMenu from 'Components/Menu/FilterMenu';
+import { CustomFilter, Filter } from 'Filters/Filter';
 
 interface MovieCollectionFilterMenuProps {
   selectedFilterKey: string | number;

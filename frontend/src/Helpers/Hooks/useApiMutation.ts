@@ -1,5 +1,5 @@
 import { useMutation, UseMutationOptions } from '@tanstack/react-query';
-import { ValidationFailures } from 'Store/Selectors/selectSettings';
+import { ValidationFailures } from 'Helpers/selectSettings';
 import {
   ValidationError,
   ValidationFailure,

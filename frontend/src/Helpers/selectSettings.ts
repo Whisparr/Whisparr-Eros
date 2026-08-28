@@ -1,6 +1,6 @@
 import { cloneDeep } from 'lodash';
-import { Error } from 'App/State/AppSectionState';
 import { getValidationFailures as getValidationFailuresFromApiError } from 'Helpers/Hooks/useApiMutation';
+import AppError from 'typings/AppError';
 import Field from 'typings/Field';
 import {
   Failure,
@@ -20,7 +20,7 @@ export interface ValidationFailures {
 }
 
 export function getValidationFailures(
-  saveError?: ApiError | Error | null
+  saveError?: ApiError | AppError | null
 ): ValidationFailures {
   if (!saveError) {
     return {
@@ -91,7 +91,7 @@ export interface ModelBaseSetting {
 function selectSettings<T extends ModelBaseSetting>(
   item: T,
   pendingChanges?: Partial<ModelBaseSetting>,
-  saveError?: ApiError | Error | null
+  saveError?: ApiError | AppError | null
 ) {
   const { errors, warnings } = getValidationFailures(saveError);
 

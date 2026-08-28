@@ -5,7 +5,6 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { Filter as AppStateFilter } from 'App/State/AppState';
 import * as commandNames from 'Commands/commandNames';
 import { useCommandExecuting, useExecuteCommand } from 'Commands/useCommands';
 import Alert from 'Components/Alert';
@@ -18,10 +17,11 @@ import PageToolbarButton from 'Components/Page/Toolbar/PageToolbarButton';
 import PageToolbarSection from 'Components/Page/Toolbar/PageToolbarSection';
 import PageToolbarSeparator from 'Components/Page/Toolbar/PageToolbarSeparator';
 import withScrollPosition from 'Components/withScrollPosition';
+import { Filter as AppStateFilter } from 'Filters/Filter';
 import useSelectState from 'Helpers/Hooks/useSelectState';
 import { align, icons, kinds, sortDirections } from 'Helpers/Props';
+import scrollPositions from 'Helpers/scrollPositions';
 import styles from 'Movie/Index/MovieIndex.css';
-import scrollPositions from 'Store/scrollPositions';
 import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
 import { COLLECTION_FILTERS } from './collectionFilters';

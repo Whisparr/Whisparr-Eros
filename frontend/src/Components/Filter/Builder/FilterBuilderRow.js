@@ -10,7 +10,7 @@ import {
 import sortByProp from 'Utilities/Array/sortByProp';
 import BoolFilterBuilderRowValue from './BoolFilterBuilderRowValue';
 import DateFilterBuilderRowValue from './DateFilterBuilderRowValue';
-import FilterBuilderRowValueConnector from './FilterBuilderRowValueConnector';
+import DefaultFilterBuilderRowValue from './DefaultFilterBuilderRowValue';
 import HistoryEventTypeFilterBuilderRowValue from './HistoryEventTypeFilterBuilderRowValue';
 import ImportListFilterBuilderRowValue from './ImportListFilterBuilderRowValue';
 import IndexerFilterBuilderRowValue from './IndexerFilterBuilderRowValue';
@@ -59,7 +59,7 @@ function getDefaultFilterValue(selectedFilterBuilderProp) {
 
 function getRowValueConnector(selectedFilterBuilderProp) {
   if (!selectedFilterBuilderProp) {
-    return FilterBuilderRowValueConnector;
+    return DefaultFilterBuilderRowValue;
   }
 
   const valueType = selectedFilterBuilderProp.valueType;
@@ -105,7 +105,7 @@ function getRowValueConnector(selectedFilterBuilderProp) {
       return ImportListFilterBuilderRowValue;
 
     default:
-      return FilterBuilderRowValueConnector;
+      return DefaultFilterBuilderRowValue;
   }
 }
 

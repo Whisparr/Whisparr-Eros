@@ -3,7 +3,7 @@ import useApiMutation from 'Helpers/Hooks/useApiMutation';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import { usePendingChangesStore } from 'Helpers/Hooks/usePendingChangesStore';
 import useQueryClient from 'Helpers/Hooks/useQueryClient';
-import selectSettings from 'Store/Selectors/selectSettings';
+import selectSettings from 'Helpers/selectSettings';
 
 // One shared object for the not-yet-fetched case. Sonarr's copy builds a fresh
 // `{}` on every render, which is a new identity for anything that puts the

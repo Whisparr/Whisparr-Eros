@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect } from 'react';
-import { Error as AppError } from 'App/State/AppSectionState';
 import SpinnerErrorButton from 'Components/Link/SpinnerErrorButton';
 import { kinds } from 'Helpers/Props';
 import useOAuth from 'OAuth/useOAuth';
+import AppError from 'typings/AppError';
 import { InputOnChange } from 'typings/inputs';
 
 export interface OAuthInputProps {

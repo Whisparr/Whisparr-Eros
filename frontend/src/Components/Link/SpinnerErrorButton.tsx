@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Error } from 'App/State/AppSectionState';
 import Icon, { IconKind, IconName } from 'Components/Icon';
 import SpinnerButton, {
   SpinnerButtonProps,
@@ -7,11 +6,12 @@ import SpinnerButton, {
 import { getValidationFailures } from 'Helpers/Hooks/useApiMutation';
 import usePrevious from 'Helpers/Hooks/usePrevious';
 import { icons } from 'Helpers/Props';
+import AppError from 'typings/AppError';
 import { ValidationFailure } from 'typings/pending';
 import { ApiError } from 'Utilities/Fetch/fetchJson';
 import styles from './SpinnerErrorButton.css';
 
-function getTestResult(error: ApiError | Error | string | undefined | null) {
+function getTestResult(error: ApiError | AppError | string | undefined | null) {
   if (!error) {
     return {
       wasSuccessful: true,
@@ -78,7 +78,7 @@ function getTestResult(error: ApiError | Error | string | undefined | null) {
 
 interface SpinnerErrorButtonProps extends SpinnerButtonProps {
   isSpinning: boolean;
-  error?: ApiError | Error | string | null;
+  error?: ApiError | AppError | string | null;
   children: React.ReactNode;
 }
 
