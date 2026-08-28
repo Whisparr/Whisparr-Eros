@@ -7,7 +7,6 @@ import { kinds } from 'Helpers/Props';
 import {
   fetchDelayProfiles,
   fetchDownloadClients,
-  fetchImportLists,
 } from 'Store/Actions/settingsActions';
 import useTagDetails from 'Tags/useTagDetails';
 import useTags, { useSortedTagList } from 'Tags/useTags';
@@ -28,7 +27,6 @@ function Tags() {
 
   useEffect(() => {
     dispatch(fetchDelayProfiles());
-    dispatch(fetchImportLists());
     dispatch(fetchDownloadClients());
   }, [dispatch]);
 

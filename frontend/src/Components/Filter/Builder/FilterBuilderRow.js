@@ -12,7 +12,7 @@ import BoolFilterBuilderRowValue from './BoolFilterBuilderRowValue';
 import DateFilterBuilderRowValue from './DateFilterBuilderRowValue';
 import FilterBuilderRowValueConnector from './FilterBuilderRowValueConnector';
 import HistoryEventTypeFilterBuilderRowValue from './HistoryEventTypeFilterBuilderRowValue';
-import ImportListFilterBuilderRowValueConnector from './ImportListFilterBuilderRowValueConnector';
+import ImportListFilterBuilderRowValue from './ImportListFilterBuilderRowValue';
 import IndexerFilterBuilderRowValue from './IndexerFilterBuilderRowValue';
 import LanguageFilterBuilderRowValue from './LanguageFilterBuilderRowValue';
 import MovieFilterBuilderRowValue from './MovieFilterBuilderRowValue';
@@ -102,7 +102,7 @@ function getRowValueConnector(selectedFilterBuilderProp) {
       return TagFilterBuilderRowValue;
 
     case filterBuilderValueTypes.IMPORTLIST:
-      return ImportListFilterBuilderRowValueConnector;
+      return ImportListFilterBuilderRowValue;
 
     default:
       return FilterBuilderRowValueConnector;

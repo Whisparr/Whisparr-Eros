@@ -1,6 +1,5 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
-import AppState from 'App/State/AppState';
+import { useImportLists } from 'Settings/ImportLists/ImportLists/useImportLists';
 import Label from './Label';
 import styles from './ImportListList.css';
 
@@ -8,10 +7,8 @@ interface ImportListListProps {
   lists: number[];
 }
 
-function ImportListList({ lists }: ImportListListProps) {
-  const allImportLists = useSelector(
-    (state: AppState) => state.settings.importLists.items
-  );
+function ImportListList({ lists }: Readonly<ImportListListProps>) {
+  const { data: allImportLists } = useImportLists();
 
   return (
     <div className={styles.lists}>
