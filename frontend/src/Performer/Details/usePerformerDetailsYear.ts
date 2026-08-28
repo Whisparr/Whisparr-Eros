@@ -100,7 +100,10 @@ export function usePerformerDetailsYearActions(
 
   const onTableOptionChange = useCallback(
     ({ columns }: TableOptionsChangePayload) => {
-      setPerformerScenesColumns(columns);
+      // This table has no page size, so the modal only ever sends columns.
+      if (columns) {
+        setPerformerScenesColumns(columns);
+      }
     },
     []
   );

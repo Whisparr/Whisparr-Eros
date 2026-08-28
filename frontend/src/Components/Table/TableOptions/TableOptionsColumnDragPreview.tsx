@@ -1,27 +1,34 @@
-import PropTypes from 'prop-types';
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useDragLayer } from 'react-dnd';
 import DragPreviewLayer from 'Components/DragPreviewLayer';
 import { TABLE_COLUMN } from 'Helpers/dragTypes';
-import dimensions from 'Styles/Variables/dimensions.js';
+import dimensions from 'Styles/Variables/dimensions';
 import TableOptionsColumn from './TableOptionsColumn';
+import { TableColumnDragItem } from './TableOptionsColumnDragSource';
 import styles from './TableOptionsColumnDragPreview.css';
 
 const formGroupSmallWidth = Number.parseInt(dimensions.formGroupSmallWidth, 10);
 const formLabelLargeWidth = Number.parseInt(dimensions.formLabelLargeWidth, 10);
 const formLabelRightMarginWidth = Number.parseInt(
-  dimensions.formLabelRightMarginWidth
-, 10);
+  dimensions.formLabelRightMarginWidth,
+  10
+);
 const dragHandleWidth = Number.parseInt(dimensions.dragHandleWidth, 10);
 
 function TableOptionsColumnDragPreview() {
   const { item, itemType, currentOffset } = useDragLayer((monitor) => ({
-    item: monitor.getItem(),
+    item: monitor.getItem<TableColumnDragItem | null>(),
     itemType: monitor.getItemType(),
     currentOffset: monitor.getSourceClientOffset(),
   }));
 
-  if (!currentOffset || itemType !== TABLE_COLUMN) {
+  // The preview sits in a `pointer-events: none` layer, so the check input it
+  // draws can never be changed; the class left the handler off entirely.
+  const handleVisibleChange = useCallback(() => {
+    // No-op.
+  }, []);
+
+  if (!currentOffset || itemType !== TABLE_COLUMN || !item) {
     return null;
   }
 
@@ -37,7 +44,7 @@ function TableOptionsColumnDragPreview() {
   const transform = `translate3d(${x - handleOffset}px, ${y}px, 0)`;
 
   const style = {
-    position: 'absolute',
+    position: 'absolute' as const,
     WebkitTransform: transform,
     msTransform: transform,
     transform,
@@ -46,19 +53,14 @@ function TableOptionsColumnDragPreview() {
   return (
     <DragPreviewLayer>
       <div className={styles.dragPreview} style={style}>
-        <TableOptionsColumn isDragging={false} {...item} />
+        <TableOptionsColumn
+          isDragging={false}
+          {...item}
+          onVisibleChange={handleVisibleChange}
+        />
       </div>
     </DragPreviewLayer>
   );
 }
-
-TableOptionsColumnDragPreview.propTypes = {
-  item: PropTypes.object,
-  itemType: PropTypes.string,
-  currentOffset: PropTypes.shape({
-    x: PropTypes.number.isRequired,
-    y: PropTypes.number.isRequired,
-  }),
-};
 
 export default TableOptionsColumnDragPreview;
