@@ -1,8 +1,17 @@
+import { IconDefinition } from '@fortawesome/free-solid-svg-icons';
 import { icons } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 
-export function getPerformerStatusDetails(status) {
-  let statusDetails = {
+export interface PerformerStatusDetails {
+  icon: IconDefinition;
+  title: string;
+  message: string;
+}
+
+export function getPerformerStatusDetails(
+  status: string
+): PerformerStatusDetails {
+  let statusDetails: PerformerStatusDetails = {
     icon: icons.MOVIE_CONTINUING,
     title: translate('Active'),
     message: translate('ActivePerformerDescription'),

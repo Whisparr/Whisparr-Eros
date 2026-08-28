@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React from 'react';
 import Button from 'Components/Link/Button';
 import Modal from 'Components/Modal/Modal';
@@ -10,17 +9,25 @@ import { kinds, sizes } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import styles from './MoveSceneModal.css';
 
-function MoveSceneModal(props) {
-  const {
-    originalPath,
-    destinationPath,
-    destinationRootFolder,
-    isOpen,
-    onModalClose,
-    onSavePress,
-    onMoveScenePress,
-  } = props;
+export interface MoveSceneModalProps {
+  originalPath?: string;
+  destinationPath?: string;
+  destinationRootFolder?: string;
+  isOpen: boolean;
+  onModalClose: () => void;
+  onSavePress: () => void;
+  onMoveScenePress: () => void;
+}
 
+function MoveSceneModal({
+  originalPath,
+  destinationPath,
+  destinationRootFolder,
+  isOpen,
+  onModalClose,
+  onSavePress,
+  onMoveScenePress,
+}: MoveSceneModalProps) {
   if (isOpen && !originalPath && !destinationPath && !destinationRootFolder) {
     console.error(
       'orginalPath and destinationPath OR destinationRootFolder must be provided'
@@ -42,9 +49,12 @@ function MoveSceneModal(props) {
             ? translate('MoveSceneFoldersToRootFolder', {
                 destinationRootFolder,
               })
-            : translate('MoveSceneFoldersToNewPath', {
-                originalPath,
-                destinationPath,
+            : // Only reachable through the `console.error` above, which is why
+              // neither path is required. `translate` leaves a token it is not
+              // given as the literal `{originalPath}`, so they are coalesced.
+              translate('MoveSceneFoldersToNewPath', {
+                originalPath: originalPath ?? '',
+                destinationPath: destinationPath ?? '',
               })}
           {destinationRootFolder ? (
             <div>{translate('MoveSceneFoldersRenameFolderWarning')}</div>
@@ -64,15 +74,5 @@ function MoveSceneModal(props) {
     </Modal>
   );
 }
-
-MoveSceneModal.propTypes = {
-  originalPath: PropTypes.string,
-  destinationPath: PropTypes.string,
-  destinationRootFolder: PropTypes.string,
-  isOpen: PropTypes.bool.isRequired,
-  onModalClose: PropTypes.func.isRequired,
-  onSavePress: PropTypes.func.isRequired,
-  onMoveScenePress: PropTypes.func.isRequired,
-};
 
 export default MoveSceneModal;

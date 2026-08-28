@@ -1,13 +1,14 @@
-import PropTypes from 'prop-types';
 import React from 'react';
 import Button from 'Components/Link/Button';
 import { kinds } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import styles from './NoScene.css';
 
-function NoScene(props) {
-  const { totalItems } = props;
+export interface NoSceneProps {
+  totalItems: number;
+}
 
+function NoScene({ totalItems }: NoSceneProps) {
   if (totalItems > 0) {
     return (
       <div>
@@ -36,9 +37,5 @@ function NoScene(props) {
     </div>
   );
 }
-
-NoScene.propTypes = {
-  totalItems: PropTypes.number.isRequired,
-};
 
 export default NoScene;
