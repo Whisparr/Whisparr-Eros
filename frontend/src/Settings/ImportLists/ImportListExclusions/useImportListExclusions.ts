@@ -4,7 +4,7 @@ import usePage from 'Helpers/Hooks/usePage';
 import usePagedApiQuery from 'Helpers/Hooks/usePagedApiQuery';
 import { usePendingChangesStore } from 'Helpers/Hooks/usePendingChangesStore';
 import useQueryClient from 'Helpers/Hooks/useQueryClient';
-import selectSettings from 'Store/Selectors/selectSettings';
+import selectSettings from 'Helpers/selectSettings';
 import ImportListExclusion from 'typings/ImportListExclusion';
 import { useImportListExclusionOptions } from './importListExclusionOptionsStore';
 

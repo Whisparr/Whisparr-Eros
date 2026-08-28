@@ -1,4 +1,4 @@
-import { Filter } from 'App/State/AppState';
+import { Filter } from 'Filters/Filter';
 import { filterTypes } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 

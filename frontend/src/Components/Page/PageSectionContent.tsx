@@ -1,8 +1,8 @@
 import React from 'react';
-import { Error } from 'App/State/AppSectionState';
 import Alert from 'Components/Alert';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import { kinds } from 'Helpers/Props';
+import AppError from 'typings/AppError';
 import { ApiError } from 'Utilities/Fetch/fetchJson';
 
 interface PageSectionContentProps {
@@ -10,7 +10,7 @@ interface PageSectionContentProps {
   isPopulated: boolean;
   // Sections still on redux hand over the slice's error shape; converted ones
   // hand over whatever the query threw. Only presence is read either way.
-  error?: Error | ApiError;
+  error?: AppError | ApiError;
   errorMessage: string;
   children: React.ReactNode;
 }

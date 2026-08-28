@@ -1,5 +1,4 @@
 import React, { useCallback } from 'react';
-import { Filter as AppStateFilter } from 'App/State/AppState';
 import * as commandNames from 'Commands/commandNames';
 import { useCommandExecuting, useExecuteCommand } from 'Commands/useCommands';
 import Alert from 'Components/Alert';
@@ -14,6 +13,7 @@ import Table from 'Components/Table/Table';
 import TableBody from 'Components/Table/TableBody';
 import TableOptionsModalWrapper from 'Components/Table/TableOptions/TableOptionsModalWrapper';
 import TablePager from 'Components/Table/TablePager';
+import { Filter as AppStateFilter } from 'Filters/Filter';
 import { align, icons, kinds } from 'Helpers/Props';
 import { SortDirection } from 'Helpers/Props/sortDirections';
 import { TableOptionsChangePayload } from 'typings/Table';

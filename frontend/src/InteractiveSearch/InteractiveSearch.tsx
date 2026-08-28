@@ -1,5 +1,4 @@
 import React, { useCallback } from 'react';
-import { Filter as AppStateFilter } from 'App/State/AppState';
 import Alert from 'Components/Alert';
 import Icon from 'Components/Icon';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
@@ -8,6 +7,7 @@ import PageMenuButton from 'Components/Menu/PageMenuButton';
 import Column from 'Components/Table/Column';
 import Table from 'Components/Table/Table';
 import TableBody from 'Components/Table/TableBody';
+import { Filter as AppStateFilter } from 'Filters/Filter';
 import { align, icons, kinds, sortDirections } from 'Helpers/Props';
 import { SortDirection } from 'Helpers/Props/sortDirections';
 import getErrorMessage from 'Utilities/Object/getErrorMessage';

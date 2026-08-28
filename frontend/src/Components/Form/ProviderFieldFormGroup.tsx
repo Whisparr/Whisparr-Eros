@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
-import { Error as AppError } from 'App/State/AppSectionState';
 import FormGroup from 'Components/Form/FormGroup';
 import FormInputGroup from 'Components/Form/FormInputGroup';
 import FormLabel from 'Components/Form/FormLabel';
+import AppError from 'typings/AppError';
 import { FieldSelectOption } from 'typings/Field';
 import { InputChanged } from 'typings/inputs';
 import { Failure } from 'typings/pending';

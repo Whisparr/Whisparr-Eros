@@ -1,4 +1,4 @@
-import { CustomFilter, Filter, PropertyFilter } from 'App/State/AppState';
+import { CustomFilter, Filter, PropertyFilter } from 'Filters/Filter';
 import { useCustomFiltersList } from 'Filters/useCustomFilters';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import { SortDirection } from 'Helpers/Props/sortDirections';

@@ -5,7 +5,7 @@ import useApiMutation, {
   getValidationFailures,
 } from 'Helpers/Hooks/useApiMutation';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
-import { ValidationFailures } from 'Store/Selectors/selectSettings';
+import { ValidationFailures } from 'Helpers/selectSettings';
 import sortByProp from 'Utilities/Array/sortByProp';
 
 export interface Tag extends ModelBase {

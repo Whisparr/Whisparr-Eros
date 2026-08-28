@@ -1,6 +1,6 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
-import { ModelBaseSetting } from 'Store/Selectors/selectSettings';
+import { ModelBaseSetting } from 'Helpers/selectSettings';
 import Field, { FieldSelectOption } from 'typings/Field';
 import fetchJson, { ApiError } from 'Utilities/Fetch/fetchJson';
 import getQueryPath from 'Utilities/Fetch/getQueryPath';

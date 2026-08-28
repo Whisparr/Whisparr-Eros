@@ -884,7 +884,7 @@
     "@babel/plugin-transform-modules-commonjs" "^7.29.7"
     "@babel/plugin-transform-typescript" "^7.29.7"
 
-"@babel/runtime@^7.0.0", "@babel/runtime@^7.12.1", "@babel/runtime@^7.12.13", "@babel/runtime@^7.7.2", "@babel/runtime@^7.8.7", "@babel/runtime@^7.9.2":
+"@babel/runtime@^7.0.0", "@babel/runtime@^7.12.13", "@babel/runtime@^7.7.2", "@babel/runtime@^7.8.7", "@babel/runtime@^7.9.2":
   version "7.27.1"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.27.1.tgz#9fce313d12c9a77507f264de74626e87fd0dc541"
   integrity sha512-1x3D2xEk2fRo3PAhwQwu5UubzgiVWSXTBfWpVd2Mx2AzRqJuDJCsgaDVZ7HB5iGzDW1Hl1sWN2mFyKjmR9uAog==
@@ -1465,14 +1465,6 @@
   dependencies:
     "@types/unist" "*"
 
-"@types/hoist-non-react-statics@^3.3.0":
-  version "3.3.5"
-  resolved "https://registry.yarnpkg.com/@types/hoist-non-react-statics/-/hoist-non-react-statics-3.3.5.tgz#dab7867ef789d87e2b4b0003c9d65c49cc44a494"
-  integrity sha512-SbcrWzkKBw2cdwRTwQAswfpB9g9LJWfjtUeW/jvNwbhC8cpmmNYVePa+ncbUe0rGTQ7G3Ff6mYUN2VMfLVr+Sg==
-  dependencies:
-    "@types/react" "*"
-    hoist-non-react-statics "^3.3.0"
-
 "@types/html-minifier-terser@^6.0.0":
   version "6.1.0"
   resolved "https://registry.yarnpkg.com/@types/html-minifier-terser/-/html-minifier-terser-6.1.0.tgz#4fc33a00c1d0c16987b1a20cf92d20614c55ac35"
@@ -1586,16 +1578,6 @@
   dependencies:
     "@types/react" "*"
 
-"@types/react-redux@^7.1.16":
-  version "7.1.34"
-  resolved "https://registry.yarnpkg.com/@types/react-redux/-/react-redux-7.1.34.tgz#83613e1957c481521e6776beeac4fd506d11bd0e"
-  integrity sha512-GdFaVjEbYv4Fthm2ZLvj1VSCedV7TqE5y1kNwnjSdBOTXuRSgowux6J8TAct15T3CKBr63UMk+2CO7ilRhyrAQ==
-  dependencies:
-    "@types/hoist-non-react-statics" "^3.3.0"
-    "@types/react" "*"
-    hoist-non-react-statics "^3.3.0"
-    redux "^4.0.0"
-
 "@types/react-text-truncate@0.19.0":
   version "0.19.0"
   resolved "https://registry.yarnpkg.com/@types/react-text-truncate/-/react-text-truncate-0.19.0.tgz#322dd718dcbe1267a9d1279f8ac4dc844c322a13"
@@ -1638,11 +1620,6 @@
   integrity sha512-raiuEPUYqXu+nvtY2Pe8s8FEmZ3x5yAH4VkLdihcPdalvsHltomrRC9BzuStrJ9yk06470hS0Crw0f1pXqD+Hg==
   dependencies:
     "@types/node" "*"
-
-"@types/redux-actions@2.6.5":
-  version "2.6.5"
-  resolved "https://registry.yarnpkg.com/@types/redux-actions/-/redux-actions-2.6.5.tgz#3728477ada6c4bc0fe54ffae11def23a65c0714b"
-  integrity sha512-RgXOigay5cNweP+xH1ru+Vaaj1xXYLpWIfSVO8cSA8Ii2xvR+HRfWYdLe1UVOA8X0kIklalGOa0DTDyld0obkg==
 
 "@types/source-list-map@*":
   version "0.1.6"
@@ -4963,11 +4940,6 @@ jsonfile@^6.0.1:
     object.assign "^4.1.4"
     object.values "^1.1.6"
 
-just-curry-it@5.3.0:
-  version "5.3.0"
-  resolved "https://registry.yarnpkg.com/just-curry-it/-/just-curry-it-5.3.0.tgz#1463602e932c5beb431a2a384dddcd48bb3c9c42"
-  integrity sha512-silMIRiFjUWlfaDhkgSzpuAyQ6EX/o09Eu8ZBfmFwQMbax7+LQzeIU2CBrICT6Ne4l86ITCGvUCBpCubWYy0Yw==
-
 keyv@^4.5.4:
   version "4.5.4"
   resolved "https://registry.yarnpkg.com/keyv/-/keyv-4.5.4.tgz#a879a99e29452f942439f2a405e3af8b31d4de93"
@@ -6432,18 +6404,6 @@ react-popper@2.3.0:
     react-fast-compare "^3.0.1"
     warning "^4.0.2"
 
-react-redux@7.2.4:
-  version "7.2.4"
-  resolved "https://registry.yarnpkg.com/react-redux/-/react-redux-7.2.4.tgz#1ebb474032b72d806de2e0519cd07761e222e225"
-  integrity sha512-hOQ5eOSkEJEXdpIKbnRyl04LhaWabkDPV+Ix97wqQX3T3d2NQ8DUblNXXtNMavc7DpswyQM6xfaN4HQDKNY2JA==
-  dependencies:
-    "@babel/runtime" "^7.12.1"
-    "@types/react-redux" "^7.1.16"
-    hoist-non-react-statics "^3.3.2"
-    loose-envify "^1.4.0"
-    prop-types "^15.7.2"
-    react-is "^16.13.1"
-
 react-router-dom@^7:
   version "7.18.2"
   resolved "https://registry.yarnpkg.com/react-router-dom/-/react-router-dom-7.18.2.tgz#00bf1d0ce8bf17a6d831949aacda72a6120e4926"
@@ -6577,35 +6537,7 @@ rechoir@^0.8.0:
   dependencies:
     resolve "^1.20.0"
 
-reduce-reducers@1.0.4:
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/reduce-reducers/-/reduce-reducers-1.0.4.tgz#fb77e751a9eb0201760ac5a605ca8c9c2d0537f8"
-  integrity sha512-Mb2WZ2bJF597exiqX7owBzrqJ74DHLK3yOQjCyPAaNifRncE8OD0wFIuoMhXxTnHK07+8zZ2SJEKy/qtiyR7vw==
-
-redux-actions@3.0.3:
-  version "3.0.3"
-  resolved "https://registry.yarnpkg.com/redux-actions/-/redux-actions-3.0.3.tgz#2d3ebce1f7ceed2825ee9ce9898ea509823b90ff"
-  integrity sha512-ca+ySXmXWrxDqtauRA6lQtjmRO8Z9Ruog3wbb8wDq4RVW9Y677Nl/AXoJPlxJqH0mpY9QGkg03NkAJwTcyN2pQ==
-  dependencies:
-    just-curry-it "5.3.0"
-    reduce-reducers "1.0.4"
-
-redux-batched-actions@0.5.0:
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/redux-batched-actions/-/redux-batched-actions-0.5.0.tgz#d3f0e359b2a95c7d80bab442df450bfafd57d122"
-  integrity sha512-6orZWyCnIQXMGY4DUGM0oj0L7oYnwTACsfsru/J7r94RM3P9eS7SORGpr3LCeRCMoIMQcpfKZ7X4NdyFHBS8Eg==
-
-redux-localstorage@0.4.1:
-  version "0.4.1"
-  resolved "https://registry.yarnpkg.com/redux-localstorage/-/redux-localstorage-0.4.1.tgz#faf6d719c581397294d811473ffcedee065c933c"
-  integrity sha512-dUha0YoH+BSZ2q15pakB+JWeqiuXUf3Ir4rObOpNrZ96HEdciGAjkL10k3KGdLI7qvQw/c096asw/SQ6TPjU/A==
-
-redux-thunk@2.4.2:
-  version "2.4.2"
-  resolved "https://registry.yarnpkg.com/redux-thunk/-/redux-thunk-2.4.2.tgz#b9d05d11994b99f7a91ea223e8b04cf0afa5ef3b"
-  integrity sha512-+P3TjtnP0k/FEjcBL5FZpoovtvrTNT/UXd4/sluaSyrURlSlhLSzEdfsTBW7WsKB6yPvgd7q/iZPICFjW4o57Q==
-
-redux@4.2.1, redux@^4.0.0, redux@^4.2.0:
+redux@^4.2.0:
   version "4.2.1"
   resolved "https://registry.yarnpkg.com/redux/-/redux-4.2.1.tgz#c08f4306826c49b5e9dc901dee0452ea8fce6197"
   integrity sha512-LAUYz4lc+Do8/g7aeRa8JkyDErK6ekstQaqWQrNRW//MY1TvCEpMtpTWvlQ+FPbWCx+Xixu/6SHt5N0HR+SB4w==
@@ -6751,11 +6683,6 @@ requires-port@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/requires-port/-/requires-port-1.0.0.tgz#925d2601d39ac485e091cf0da5c6e694dc3dcaff"
   integrity sha512-KigOCHcocU3XODJxsu8i/j8T9tzT4adHiecwORRQ0ZZFcp7ahwXuRU1m+yuO90C5ZUyGeGfocHDI14M3L3yDAQ==
-
-reselect@4.1.8:
-  version "4.1.8"
-  resolved "https://registry.yarnpkg.com/reselect/-/reselect-4.1.8.tgz#3f5dc671ea168dccdeb3e141236f69f02eaec524"
-  integrity sha512-ab9EmR80F/zQTMNeneUr4cv+jSwPJgIlvEmVwLerwrWVbpLlBuls9XHzIeTFy4cegU2NHBp3va0LKOzU5qFEYQ==
 
 reserved-words@^0.1.2:
   version "0.1.2"

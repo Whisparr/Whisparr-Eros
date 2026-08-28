@@ -1,8 +1,8 @@
-import { Error } from 'App/State/AppSectionState';
+import AppError from 'typings/AppError';
 import { ApiError } from 'Utilities/Fetch/fetchJson';
 
 function getErrorMessage(
-  error: Error | ApiError | undefined | null,
+  error: AppError | ApiError | undefined | null,
   fallbackErrorMessage = ''
 ) {
   if (!error) {

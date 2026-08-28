@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
-import { Filter } from 'App/State/AppState';
 import FilterModal from 'Components/Filter/FilterModal';
+import { Filter } from 'Filters/Filter';
 import { useCustomFiltersList } from 'Filters/useCustomFilters';
 import { PERFORMER_INDEX_FILTER_BUILDER_PROPS } from './performerIndexFilterBuilderProps';
 import { setPerformerIndexFilter } from './performerIndexOptionsStore';
