@@ -96,6 +96,7 @@
     "@teamsupercell/typings-for-css-modules-loader": "2.5.2",
     "@types/lodash": "4.17.25",
     "@types/mousetrap": "1.6.15",
+    "@types/qs": "6.15.1",
     "@types/react-autosuggest": "10.1.11",
     "@types/react-document-title": "2.0.10",
     "@types/react-google-recaptcha": "2.1.9",

@@ -103,10 +103,9 @@ export function useAddNewMovie(itemType: 'movie' | 'scene') {
 
   // Initialise term from URL query param (e.g. ?term=foo) on first render
   const initialTerm = React.useMemo(() => {
-    const parsed = parseUrl(location.search) as unknown as {
-      params: Record<string, string>;
-    };
-    return parsed.params.term || '';
+    const { term: parsedTerm } = parseUrl(location.search).params;
+
+    return typeof parsedTerm === 'string' ? parsedTerm : '';
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
