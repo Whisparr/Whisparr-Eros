@@ -42,7 +42,7 @@ function FilterMenuContent({
 
       {customFilters.length > 0 ? <MenuItemSeparator /> : null}
 
-      {customFilters.sort(sortByProp('label')).map((filter) => {
+      {[...customFilters].sort(sortByProp('label')).map((filter) => {
         return (
           <FilterMenuItem
             key={filter.id}

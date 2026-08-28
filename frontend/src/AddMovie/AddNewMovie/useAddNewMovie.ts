@@ -1,5 +1,4 @@
 import { useMutation } from '@tanstack/react-query';
-import { cloneDeep } from 'lodash';
 import React, {
   useCallback,
   useEffect,
@@ -227,15 +226,16 @@ export function useAddMovieMutation(
   }, []);
 
   const onAddMoviePress = useCallback(() => {
-    const movieToAdd = getNewMovie(cloneDeep(item) as object, {
-      rootFolderPath: settings.rootFolderPath.value,
-      monitored: settings.monitored.value === true,
-      qualityProfileId: settings.qualityProfileId.value,
-      searchForMovie: settings.searchForMovie.value,
-      tags: settings.tags.value,
-    }) as MovieLookupResult;
-    movieToAdd.id = 0;
-    mutation.mutate(movieToAdd);
+    mutation.mutate({
+      ...getNewMovie(item, {
+        rootFolderPath: settings.rootFolderPath.value,
+        monitored: settings.monitored.value === true,
+        qualityProfileId: settings.qualityProfileId.value,
+        searchForMovie: settings.searchForMovie.value,
+        tags: settings.tags.value,
+      }),
+      id: 0,
+    });
   }, [item, settings, mutation]);
 
   return {

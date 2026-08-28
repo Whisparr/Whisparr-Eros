@@ -163,7 +163,7 @@ export function useAddNewPerformerModalContent(
 
   const onAddPerformerPress = useCallback(() => {
     addPerformer.mutate({
-      ...getNewPerformer(structuredClone(performer), defaults),
+      ...getNewPerformer(performer, defaults),
       id: 0,
     });
   }, [addPerformer, performer, defaults]);
