@@ -11,7 +11,7 @@ Counts are file-level `react-redux` imports across the frontend source tree.
 Every commit reference below links to the Sonarr commit it names; all were
 verified to resolve against the public repo.
 
-**Status: Phases A, B, C and D complete; Phase E is under way, eight of eleven sections done. Phase E is the whole of what is left, plus the teardown.** See §11 for the running log.
+**Status: Phases A, B, C and D complete; Phase E is under way, ten of eleven sections done. Phase E is the whole of what is left, plus the teardown.** See §11 for the running log.
 
 ---
 
@@ -19,11 +19,11 @@ verified to resolve against the public repo.
 
 | Metric | At assessment | Now |
 | --- | --- | --- |
-| Files importing `react-redux` | 327 of 1,255 | **32** of 1,172 |
-| Lines under `frontend/src/Store/` | 15,374 across 138 files | **2,641** across 41 |
+| Files importing `react-redux` | 327 of 1,255 | **22** of 1,160 |
+| Lines under `frontend/src/Store/` | 15,374 across 138 files | **2,206** across 38 |
 | Redux slices registered in `Store/Actions/index.js` | 35 | **1** |
-| Remaining `*Connector` files | 66 | **21** |
-| Files touching React Query | 35 | **82** |
+| Remaining `*Connector` files | 66 | **12** |
+| Files touching React Query | 35 | **83** |
 | zustand stores | 0 (not installed) | **installed, 40 files** |
 
 > **Recomputed in #464.** Three rows previously carried figures that no command
@@ -274,7 +274,7 @@ is-it-a-change question* below.
 | 7 | ~~**Indexers · Indexer Options · Indexer Flags**~~ — **done**, split three ways as Sonarr did: **#536** (flags, a read-only list, the Languages shape again, and the last `react-redux` import out of `Movie/`), **#537** (options, a single-object form on `useManageSettings`, which corrected a wire type the interface had wrong) and **#538** (indexers, the provider list). The row said 11 files and it was 24. One connector — 23 to **22** — and `react-redux` 74 to **58** across the three. | ~~`Settings/indexers.js`, `IndexerFilterBuilderRowValueConnector.js`, `Settings/indexerFlags.js`, `createIndexerFlagsSelector.ts`, `IndexerFlagSettingsAppState`, `Settings/indexerOptions.js`, `IndexerOptionsAppState`, `IndexerAppState`~~ | [Sonarr/Sonarr@c4c0ec25](https://github.com/Sonarr/Sonarr/commit/c4c0ec25), [Sonarr/Sonarr@7a455dd0](https://github.com/Sonarr/Sonarr/commit/7a455dd0), [Sonarr/Sonarr@fbb70519](https://github.com/Sonarr/Sonarr/commit/fbb70519) |
 | 8 | ~~**Auto tagging · Import list exclusions**~~ — **done**, split in two as Sonarr shipped it: **#539** (auto tagging) and **#540** (import list exclusions, the only paged section in Settings). No connectors either side, so 22 does not move; between them `react-redux` 58 to **47**. | ~~`Settings/autoTaggings.js`, `Settings/autoTaggingSpecifications.js`, `Settings/importListExclusions.js`, `ImportListExclusionsSettingsAppState`~~ | [Sonarr/Sonarr@0ebda892](https://github.com/Sonarr/Sonarr/commit/0ebda892), [Sonarr/Sonarr@b0fac152](https://github.com/Sonarr/Sonarr/commit/b0fac152) |
 | 9 | ~~**Import lists + options**~~ — **done**, split in two as Sonarr shipped it: **#541** (options, a single-object form on `useManageSettings`) and **#542** (import lists, the provider list, and **the end of the boot gate**). One connector — 22 to **21** — and `react-redux` 47 to **32** across the two. | ~~`Settings/importListOptions.js`, `ImportListOptionsSettingsAppState`~~; ~~`Settings/importLists.js`, `ImportListFilterBuilderRowValueConnector.js`, `ImportListAppState`, `createImportListSelector.js`~~. `createProviderSettingsSelector.ts` was on this list and stays: custom formats and download clients still have five callers between them, so it goes with section 11. | [Sonarr/Sonarr@75d1a958](https://github.com/Sonarr/Sonarr/commit/75d1a958), [Sonarr/Sonarr@ba7b6b03](https://github.com/Sonarr/Sonarr/commit/ba7b6b03) |
-| 10 | Custom formats (10 files, 6 connectors, import/export modals) | `Settings/customFormats.js`, `Settings/customFormatSpecifications.js`, `CustomFormat*Connector.js` ×6 | [Sonarr/Sonarr@06aa7d57](https://github.com/Sonarr/Sonarr/commit/06aa7d57) (38 files) |
+| 10 | ~~**Custom formats**~~ — **done, #543.** The row said 10 files and 6 connectors; it was 24 files and **nine** connectors, the biggest single drop of the migration — 21 to **12** — because `CustomFormatSettingsConnector.js` was a stale duplicate of the page with no importers and the Specifications subtree held three more. #539's shape a second time, plus the two things auto tagging had no way to exercise: presets, and an export/import pair. | ~~`Settings/customFormats.js`, `Settings/customFormatSpecifications.js`, `CustomFormat*Connector.js` ×6~~; ~~`CustomFormatSettingsConnector.js`, `AddSpecificationModalContentConnector.js`, `EditSpecificationModal*Connector.js` ×2, `CustomFormatAppState`~~ | [Sonarr/Sonarr@06aa7d57](https://github.com/Sonarr/Sonarr/commit/06aa7d57) (38 files) |
 | 11 | Delay profiles · Download clients + options | `Settings/delayProfiles.js`, `Settings/downloadClients.js`, `Settings/downloadClientOptions.js`, `createEnabledDownloadClientsSelector.ts` | [Sonarr/Sonarr@ed1d92c5](https://github.com/Sonarr/Sonarr/commit/ed1d92c5), [Sonarr/Sonarr@7be32b0c](https://github.com/Sonarr/Sonarr/commit/7be32b0c), [Sonarr/Sonarr@d04e2996](https://github.com/Sonarr/Sonarr/commit/d04e2996) |
 
 ---
@@ -522,10 +522,22 @@ went exactly as predicted: `useAppPage` holds no `useSelector`, no `dispatch` an
 inert things the slice had been carrying, and one live bug in the shared provider hook.
 See *No provider schema sends an `id`, so every Add was a PUT to `/undefined`* below.
 
-**Next: section 10** — custom formats: ten files, six connectors and the import/export
-modals, plus the `customFormatSpecifications` pair that #539 established the shape for.
-`settings` is down to four sections, and after 10 only Download Clients, Delay Profiles
-and Download Client Options are left.
+~~**Next: section 10** — custom formats: ten files, six connectors and the import/export
+modals, plus the `customFormatSpecifications` pair that #539 established the shape for.~~
+**Done, #543**, and the row undercounted it twice over: 24 files, not ten, and **nine**
+connectors, not six — the biggest single drop of the migration, 21 to **12**. The
+`customFormatSpecifications` half went exactly as #539 predicted, a slice with no server
+that is really one pending change and three callbacks. What that section could not
+foretell is in the two things it has no equivalent of: presets, which auto tagging does
+not offer and which turn the pick into a two-level lookup, and the import/export pair,
+which both got materially smaller for coming off the slice. Both are their own notes
+below.
+
+**Next: section 11** — delay profiles, download clients and download client options, and
+the end of Phase E. `settings` is down to three sections and they are all in this row;
+`createProviderSettingsSelector`, `createSortedSectionSelector`,
+`createClientSideCollectionSelector`, `withAdvancedSettings` and the last of the provider
+handlers go with it, and `Store/Actions/index.js` loses its final slice.
 
 1. ~~**Queue**, in three PRs.~~ **Done.** Sonarr shipped it as one 58-file commit, but the slice already
    has three independent sub-sections and splitting along them gives three merge points
@@ -1486,10 +1498,79 @@ out.
 
 ---
 
+### A preset is a second lookup, and auto tagging had none
+
+#539 said custom formats were "this shape again", and the slice half of that is exactly
+right. The pick is not. `/autoTagging/schema` returns nine conditions and no presets at
+all — the controller has no `GetPresets` — so `AddSpecificationModalContent` could find
+the picked condition by `implementation` alone and be done. `/customformat/schema` hangs
+presets off the implementation they belong to: six built-in `ReleaseTitleSpecification`
+ones, plus **every condition of every custom format already saved**, named
+`"<format>: <condition>"`. So the pick carries a preset name as well, and the lookup is
+two levels: find the implementation, then find the preset inside it. That is what
+`selectProviderSchema`'s `presetName ? _.find(selectedImplementation.presets, {name}) :
+selectedImplementation` did, and `useSelectedSchema` already has the same two levels for
+provider sections.
+
+The corollary is the part that would have been a live bug. A schema entry carries its
+`presets` array, and the server rejects the key — which is why `getProviderState` ended
+in `delete result.presets`. Handing the picked entry straight to the edit modal would
+have put six presets inside the saved condition of every Release Title match. It is
+stripped at the hand-back. Auto tagging's copy has no need of either half: with no
+presets on the wire its `hasPresets` is always false, so the menu it renders is
+unreachable and the preset name its menu item drops was never carried.
+
+### Two modals got smaller for coming off the slice
+
+Neither Import nor Export is a settings form, and both were connected only because the
+value they needed lived in a slice.
+
+**Export** serialised `createProviderSettingsSelector`'s `item` — the pending-wrapped
+one, every value a `{value, errors, warnings}` bag — so it needed a `JSON.stringify`
+replacer to unwrap each value, drop `id`/`implementationName`/`infoLink` at any depth
+and collapse `fields` to a name/value map. Reading the format off the list query, the
+shape it was reconstructing can simply be written down. It also stops fetching: the
+connector dispatched `fetchCustomFormatSpecifications` on mount and gated the panel on
+`specificationsPopulated`, both to fill a slice from a format the page had already
+loaded. Verified byte-for-byte against the importer: export a format, import the JSON
+back, export the result — identical.
+
+**Import** was the other direction of the same thing. It replayed a parsed format as a
+sequence of dispatches — clear the format's pending changes, clear the condition's,
+delete every condition, then one `setCustomFormatValue`,
+`selectCustomFormatSpecificationSchema`, `setCustomFormatSpecificationValue`,
+`setCustomFormatSpecificationFieldValue` or `saveCustomFormatSpecification` per key, per
+condition — because the only way to hand a value to the form was to put it in the slice
+the form read. It is now a pure parse that returns a value, and the modal hands it to the
+parent as one `updateValue` per key plus one `setSpecifications`. What it must keep, and
+does, is rebuilding each condition from the schema rather than trusting the JSON: a
+format exported by an older version still arrives with every field the server now knows
+about, and an unknown implementation or option fails the parse instead of the save. Both
+error paths verified on the running instance.
+
+### Three things that were already dead
+
+**`CustomFormatSettingsConnector.js`** was a class-component copy of
+`CustomFormatSettingsPage.tsx` with no importers — `AppRoutes` renders the page. It
+imported `SettingsToolbarConnector` and `react-redux` either way, so it counted against
+both numbers while rendering nothing.
+
+**`EditCustomFormatModal`'s `onContentHeightChange`** existed to grow the modal to fit
+its content. `EditCustomFormatModalContent` took the prop, declared it required, and
+never called it — it went into `...otherProps` and onto a `Form`. The modal therefore
+kept `height: auto` from first render to last, which is what every other modal in
+Settings does anyway.
+
+**`customFormats.defaultState.schema`** declared `isSchemaFetching`, `isSchemaPopulated`,
+`schemaError` and a `schema: { includeCustomFormatWhenRenaming: false }`, with no
+`createFetchSchemaHandler` registered against the section and no reader. `/customformat/schema`
+is the *condition* schema and belongs to the other slice, which did fetch it.
+
 ## 11. Log
 
 | Date | PR | What |
 | --- | --- | --- |
+| 2026-08-28 | #543 | **Custom formats.** Section 10. `settings.customFormats`, `settings.customFormatSpecifications` and `CustomFormatAppState` are deleted for `Settings/CustomFormats/CustomFormats/useCustomFormats.ts` on the provider hooks; `react-redux` 32 to **22**, `Store/` 2,641 across 41 to **2,206** across 38, and **nine** connectors — 21 to **12**, the biggest single drop of the migration, beating #509's seven. The row predicted ten files and six connectors; it was 24 and nine, because `CustomFormatSettingsConnector.js` was a stale duplicate of the page with no importers and the Specifications subtree held three more. The slice pair is #539's shape exactly: `customFormatSpecifications` had 253 lines, no server and a FETCH handler that unpacked the *other* slice's item, so it becomes one `specifications` pending change plus three callbacks over an array. What #539 could not foretell is presets — auto tagging's schema has none, custom formats' hangs six built-ins plus every saved format's conditions off Release Title — and the import/export pair, both of which got materially smaller for coming off the slice. `createClearReducer` and `getNextId` lose their last consumers. Three already-dead things found and recorded rather than preserved. Verified on the running instance: one `GET /api/v3/customformat` on load and none from the manage modal; add seeded from an `x264` preset POSTs the format with its condition and no `presets` key; clone carries the conditions and names the copy; export produces the wiki-shaped JSON and re-importing it round-trips byte for byte; import rejects an unknown implementation and an unknown field option at the parse; server validation lands on the Name field; condition clone, condition delete, manage-modal sort both ways on both columns, bulk edit (`PUT /customformat/bulk`), row delete and bulk delete (`DELETE /customformat/bulk`) all confirmed, with no console errors. |
 | 2026-08-28 | #542 | **Import lists.** Section 9b, and the end of section 9. `settings.importLists` and `ImportListAppState` are deleted for `Settings/ImportLists/ImportLists/useImportLists.ts` on the provider hooks; `react-redux` 46 to **32**, `Store/` 2,857 across 43 to **2,641** across 41, one connector 22 to **21**, and `Store/Actions/Settings/` down to five files. It is #538's shape reused wholesale — provider list, schema-seeded add, clone that blanks secrets, manage modal with bulk edit, Set Tags and bulk delete, and the modal-local sort that replaces `createClientSideCollectionSelector` — so the section itself added nothing to the shared hook. **The boot gate goes with it:** `importLists.isPopulated` was the last term in `isReduxPopulated` and `fetchImportLists` the last `dispatch` in `useAppPage`, which now holds no `useSelector`, no `dispatch` and no `react-redux` import — the first point in the migration at which **nothing about booting the app runs through Redux**. SignalR's `importlist` handler invalidates the path instead of patching the slice. **One live regression found and fixed, disclosed because it is outside this section:** no provider schema endpoint sends an `id`, so a schema-seeded add reached `useSaveProviderSettings` with `provider.id === undefined`, missed the `id === 0` branch and sent `PUT /<path>/undefined` — a 404 on **every** Add since #521, across Connections, Metadata, Indexers, Auto Tagging and Import Lists. Confirmed on the running instance before this section was touched: adding a Newznab indexer sent `PUT /api/v3/indexer/undefined -> 404`. It is its own note above, including why four sections' verification missed it. Two inert things the slice was carrying are their own note too. Verified on the running instance: one `GET /api/v3/importlist` on load; the add dialog fetches `/importlist/schema` once and serves a reopen from cache, listing twelve implementations in four groups; picking **Custom** and picking the **IMDb List** preset both render the header as *Add Import List - RSS List* with the name seeded to the implementation and the preset respectively, and the preset's own 12-hour refresh in the banner. Saving with an empty **RSS Link** comes back 400 and renders *'Link' must not be empty.* and *must be valid URL that starts with http(s)://* on that field with the modal open and the edit kept; against a real feed served locally the save sends one `POST` (201), closes the modal and the card appears. Editing sends one `PUT` (202) carrying the edited name, **Test** sends one `POST /importlist/test` (200), and **Clone** opens *Add* prefilled with `- Copy` and the non-secret field intact, saving as a second `POST` (201). The footer's **Delete** button is present for an edit and absent for an add or a clone, and deleting sends one `DELETE`. The manage modal opens off the list query with no request of its own, sorts by Name and Implementation **client-side with no refetch**, disables all three actions with nothing selected, and sends one `PUT /importlist/bulk` for a bulk edit (`{ids,enabled:false}`), one for Set Tags (`{ids,tags,applyTags}`) and one `DELETE /importlist/bulk` for a bulk delete, clearing the selection each time — including the Set Tags spinner, which the slice never reset and which #538 fixed the same way. Tag Details renders its **Import Lists** section off `useImportListsWithIds`, and the quality profile modal's Delete button is disabled with the in-use title for a profile an import list uses and enabled for one it does not, which is `useQualityProfileInUse` off the query. A cold load of `/movies` renders with the gate gone. No console errors on any of it; the instance is back to its original single list. Props of the components touched are marked `Readonly<T>` per SonarQube `typescript:S6759`. |
 | 2026-08-27 | #541 | **Import list options.** Section 9a. `settings.importListOptions` and `ImportListOptionsSettingsAppState` are deleted for `Settings/ImportLists/Options/useImportListOptions.ts` on `useManageSettings`; `react-redux` 47 to **46** and `Store/` 2,936 across 44 to **2,857** across 43. No connectors, so 22 does not move, and `Store/Actions/Settings/` is down to six files. It is the plainest conversion Phase E has left — one endpoint, one form, one child under `ImportListSettings`' shared toolbar — and it added nothing to the shared hook, which is the point of having taken `useSettings` out in section one. The typing moves to `typings/Settings/ImportListOptions.ts` beside the other config resources and **gains the `id` the endpoint has always sent**: `ConfigController.GetConfig` stamps `Id = 1` on every config resource and the save spreads the query data, so the PUT body carried it all along — only the interface was missing it. **The one thing that broke was in a file the section does not touch:** `importListOptions` was the last section `SettingsAppState` declared as an `AppSectionItemState`, so removing it collapsed `createSettingsSectionSelector`'s generic to `never` — and its one remaining caller is Download Client Options, a section the store has always had and the typing never declared. Declaring it is the fix; both it and `typings/Settings/DownloadClientOptions.ts` go with section 11. See *The last declared item-section was holding up a selector for an undeclared one* above. Verified on the running instance: one `GET /api/v3/config/importlist` on load, rendering **Clean Library Level** at the server's `disabled`; picking *Log Only* touches the network **not at all** and moves the toolbar to *Save Changes*; picking *Disabled* back again returns it to *No Changes* with no request, which is `createSetSettingValueReducer`'s is-it-a-change comparison now living in `updateSetting`. Saving *Remove Movie and Keep Files* sends one `PUT` (202) whose body is `{"listSyncLevel":"removeAndKeep","id":1}`, and the toolbar returns to *No Changes* off the cache write with **no refetch**; navigating to Indexers and back renders from cache with no request, and a reload re-renders it off one `GET`. With **Show Advanced** off the fieldset is absent, as it always has been, but the query still fires and the toolbar still works — the hooks run above the early return, exactly where the slice's dispatches ran. No console errors on any of it; the instance is back to `listSyncLevel: disabled`. The section has no validator server-side, so there is no 400 path to exercise. Props of the component are marked `Readonly<T>` per SonarQube `typescript:S6759`. |
 | 2026-08-27 | #540 | **Import list exclusions.** Section 8b, and the end of section 8. `settings.importListExclusions` and `ImportListExclusionsSettingsAppState` are deleted for `Settings/ImportLists/ImportListExclusions/useImportListExclusions.ts` on **`usePagedApiQuery`**, not `useProviderSettings`; `react-redux` 52 to **47** and `Store/` 3,339 across 51 to **2,936** across 44. No connectors — the section never had one — so 22 does not move. **It is the only paged section in Settings**, so it is the Phase B shape (#474, #475) rather than the Settings one, and the slice's own 121 lines took eight more files with them: the five `createServerSideCollectionHandlers` creators, `serverSideCollectionHandlers`, `pages`, `createSetTableOptionReducer`, plus `Components/Table/usePaging.ts` and `Utilities/pagePopulator.js` — the last of which existed only because this page could not be reached by query invalidation, and whose retirement was already written into the SignalR note above. Page size and sort become `importListExclusionOptionsStore`, **the last entry in `persistState`**: `redux-localstorage` now persists an empty set, and the middleware only survives because `Store/Migrators/migrate.js` still runs on boot. The store defaults to id/descending, which is what the server defaulted to when the slice sent no sort at all, so the first page is unchanged; the persisted page size resets to 20 once, as it has for every converted table. **An edit sends the whole record, not the three fields the form shows** — `reason` would otherwise deserialise back to `Manual` — which is its own note above. **One bug fixed and disclosed:** the footer's Delete button was gated on `foreignId`, a pending-field object and so always truthy, so the *Add* form drew a Delete button with no handler; it is gated on the record now. Verified on the running instance against 486 real exclusions: one `GET /api/v3/exclusions/paged` on load at 20 rows over 25 pages; sorting by **Title** re-fetches once with `sortKey=movieTitle`; first/previous/next/last all page on the server, page 25 holding the remaining six records, and paging back to a page already fetched renders from cache with no request; setting page size to 5 rewrites the pager to 98 pages, resets to page 1 and survives a reload out of `localStorage`. Adding: no request when the dialog opens, an empty **Foreign Id** comes back 400 and renders *'Foreign Id' must not be empty.* on that field with the edit kept, and a valid save sends one `POST` (201) and one refetch, the row appearing at the top with `reason: manual`. Editing a probe row created with `reason: studioExclusion` and changing only its title sends one `PUT` and one refetch, and the server record comes back with **`studioExclusion` intact** — the regression this shape exists to avoid. **Cancel** discards the edit with no request and reopening shows the saved value. **Delete** from the edit modal sends one `DELETE`; selecting three rows and confirming sends one `DELETE /exclusions/bulk`, clears the selection and re-disables the button; select-all/unselect-all covers the visible page. Restarting the server with the page open refetched it on reconnect, which is `pagePopulator`'s replacement under test. No console errors on any of it; the instance is back to its original 486 records. Props of the components touched are marked `Readonly<T>` per SonarQube `typescript:S6759`. |

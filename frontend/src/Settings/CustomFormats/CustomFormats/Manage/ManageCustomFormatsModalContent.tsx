@@ -1,6 +1,4 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { CustomFormatAppState } from 'App/State/SettingsAppState';
 import Alert from 'Components/Alert';
 import Button from 'Components/Link/Button';
 import SpinnerButton from 'Components/Link/SpinnerButton';
@@ -14,17 +12,18 @@ import Column from 'Components/Table/Column';
 import Table from 'Components/Table/Table';
 import TableBody from 'Components/Table/TableBody';
 import useSelectState from 'Helpers/Hooks/useSelectState';
-import { kinds } from 'Helpers/Props';
-import {
-  bulkDeleteCustomFormats,
-  bulkEditCustomFormats,
-  setManageCustomFormatsSort,
-} from 'Store/Actions/settingsActions';
-import createClientSideCollectionSelector from 'Store/Selectors/createClientSideCollectionSelector';
+import { kinds, sortDirections } from 'Helpers/Props';
+import { SortDirection } from 'Helpers/Props/sortDirections';
 import { CheckInputChanged } from 'typings/inputs';
+import sortByProp from 'Utilities/Array/sortByProp';
 import getErrorMessage from 'Utilities/Object/getErrorMessage';
 import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
+import {
+  useBulkDeleteCustomFormats,
+  useBulkEditCustomFormats,
+  useCustomFormats,
+} from '../useCustomFormats';
 import ManageCustomFormatsEditModal from './Edit/ManageCustomFormatsEditModal';
 import ManageCustomFormatsModalRow from './ManageCustomFormatsModalRow';
 import styles from './ManageCustomFormatsModalContent.css';
@@ -59,26 +58,35 @@ interface ManageCustomFormatsModalContentProps {
 }
 
 function ManageCustomFormatsModalContent(
-  props: ManageCustomFormatsModalContentProps
+  props: Readonly<ManageCustomFormatsModalContentProps>
 ) {
   const { onModalClose } = props;
 
-  const {
-    isFetching,
-    isPopulated,
-    isDeleting,
-    isSaving,
-    error,
-    items,
-    sortKey,
-    sortDirection,
-  }: CustomFormatAppState = useSelector(
-    createClientSideCollectionSelector('settings.customFormats')
+  const { data, isFetching, isFetched, error } = useCustomFormats();
+
+  // `createClientSideCollectionSelector` read the sort off the slice, which
+  // nothing outside this modal ever set or read. It is modal-local now, as
+  // #538 and #542 left it for indexers and import lists.
+  const [sortKey, setSortKey] = useState('name');
+  const [sortDirection, setSortDirection] = useState<SortDirection>(
+    sortDirections.ASCENDING
   );
-  const dispatch = useDispatch();
+
+  const items = useMemo(() => {
+    const sorted = [...data].sort(
+      sortByProp(sortKey as keyof (typeof data)[0])
+    );
+
+    return sortDirection === sortDirections.ASCENDING
+      ? sorted
+      : sorted.reverse();
+  }, [data, sortKey, sortDirection]);
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  const { bulkEditCustomFormats, isSaving } = useBulkEditCustomFormats();
+  const { bulkDeleteCustomFormats, isDeleting } = useBulkDeleteCustomFormats();
 
   const [selectState, setSelectState] = useSelectState();
 
@@ -92,44 +100,52 @@ function ManageCustomFormatsModalContent(
 
   const onSortPress = useCallback(
     (value: string) => {
-      dispatch(setManageCustomFormatsSort({ sortKey: value }));
+      setSortDirection((currentDirection) => {
+        if (value !== sortKey) {
+          return sortDirections.ASCENDING;
+        }
+
+        return currentDirection === sortDirections.ASCENDING
+          ? sortDirections.DESCENDING
+          : sortDirections.ASCENDING;
+      });
+
+      setSortKey(value);
     },
-    [dispatch]
+    [sortKey]
   );
 
   const onDeletePress = useCallback(() => {
     setIsDeleteModalOpen(true);
-  }, [setIsDeleteModalOpen]);
+  }, []);
 
   const onDeleteModalClose = useCallback(() => {
     setIsDeleteModalOpen(false);
-  }, [setIsDeleteModalOpen]);
+  }, []);
 
   const onEditPress = useCallback(() => {
     setIsEditModalOpen(true);
-  }, [setIsEditModalOpen]);
+  }, []);
 
   const onEditModalClose = useCallback(() => {
     setIsEditModalOpen(false);
-  }, [setIsEditModalOpen]);
+  }, []);
 
   const onConfirmDelete = useCallback(() => {
-    dispatch(bulkDeleteCustomFormats({ ids: selectedIds }));
+    bulkDeleteCustomFormats(selectedIds);
     setIsDeleteModalOpen(false);
-  }, [selectedIds, dispatch]);
+  }, [selectedIds, bulkDeleteCustomFormats]);
 
   const onSavePress = useCallback(
     (payload: object) => {
       setIsEditModalOpen(false);
 
-      dispatch(
-        bulkEditCustomFormats({
-          ids: selectedIds,
-          ...payload,
-        })
-      );
+      bulkEditCustomFormats({
+        ids: selectedIds,
+        ...payload,
+      });
     },
-    [selectedIds, dispatch]
+    [selectedIds, bulkEditCustomFormats]
   );
 
   const onSelectAllChange = useCallback(
@@ -163,11 +179,11 @@ function ManageCustomFormatsModalContent(
 
         {error ? <div>{errorMessage}</div> : null}
 
-        {isPopulated && !error && !items.length ? (
+        {isFetched && !error && !items.length ? (
           <Alert kind={kinds.INFO}>{translate('NoCustomFormatsFound')}</Alert>
         ) : null}
 
-        {isPopulated && !!items.length && !isFetching && !isFetching ? (
+        {isFetched && !!items.length && !isFetching ? (
           <Table
             columns={COLUMNS}
             horizontalScroll={true}
