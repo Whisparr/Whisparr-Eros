@@ -14,3 +14,21 @@ export const MOVIE = 'movie';
 export const RELEASE_STATUS = 'releaseStatus';
 export const TAG = 'tag';
 export const IMPORTLIST = 'importList';
+
+export type FilterBuilderValueType =
+  | 'bool'
+  | 'bytes'
+  | 'date'
+  | 'default'
+  | 'folder'
+  | 'historyEventType'
+  | 'indexer'
+  | 'language'
+  | 'protocol'
+  | 'quality'
+  | 'qualityProfile'
+  | 'queueStatus'
+  | 'movie'
+  | 'releaseStatus'
+  | 'tag'
+  | 'importList';
