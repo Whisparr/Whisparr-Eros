@@ -11,7 +11,7 @@ Counts are file-level `react-redux` imports across the frontend source tree.
 Every commit reference below links to the Sonarr commit it names; all were
 verified to resolve against the public repo.
 
-**Status: Phases A, B, C and D complete; Phase E is under way, ten of eleven sections done and the eleventh started. Phase E is the whole of what is left, plus the teardown.** See §11 for the running log.
+**Status: Phases A, B, C, D and E complete. All that is left is Phase F — the mutation sweep and the teardown.** See §11 for the running log.
 
 ---
 
@@ -19,11 +19,11 @@ verified to resolve against the public repo.
 
 | Metric | At assessment | Now |
 | --- | --- | --- |
-| Files importing `react-redux` | 327 of 1,255 | **18** of 1,153 |
-| Lines under `frontend/src/Store/` | 15,374 across 138 files | **1,909** across 34 |
-| Redux slices registered in `Store/Actions/index.js` | 35 | **1** |
-| Remaining `*Connector` files | 66 | **8** |
-| Files touching React Query | 35 | **84** |
+| Files importing `react-redux` | 327 of 1,255 | **2** of 1,125 |
+| Lines under `frontend/src/Store/` | 15,374 across 138 files | **592** across 12 |
+| Redux slices registered in `Store/Actions/index.js` | 35 | **0** |
+| Remaining `*Connector` files | 66 | **3** |
+| Files touching React Query | 35 | **85** |
 | zustand stores | 0 (not installed) | **installed, 40 files** |
 
 > **Recomputed in #464.** Three rows previously carried figures that no command
@@ -275,7 +275,7 @@ is-it-a-change question* below.
 | 8 | ~~**Auto tagging · Import list exclusions**~~ — **done**, split in two as Sonarr shipped it: **#539** (auto tagging) and **#540** (import list exclusions, the only paged section in Settings). No connectors either side, so 22 does not move; between them `react-redux` 58 to **47**. | ~~`Settings/autoTaggings.js`, `Settings/autoTaggingSpecifications.js`, `Settings/importListExclusions.js`, `ImportListExclusionsSettingsAppState`~~ | [Sonarr/Sonarr@0ebda892](https://github.com/Sonarr/Sonarr/commit/0ebda892), [Sonarr/Sonarr@b0fac152](https://github.com/Sonarr/Sonarr/commit/b0fac152) |
 | 9 | ~~**Import lists + options**~~ — **done**, split in two as Sonarr shipped it: **#541** (options, a single-object form on `useManageSettings`) and **#542** (import lists, the provider list, and **the end of the boot gate**). One connector — 22 to **21** — and `react-redux` 47 to **32** across the two. | ~~`Settings/importListOptions.js`, `ImportListOptionsSettingsAppState`~~; ~~`Settings/importLists.js`, `ImportListFilterBuilderRowValueConnector.js`, `ImportListAppState`, `createImportListSelector.js`~~. `createProviderSettingsSelector.ts` was on this list and stays: custom formats and download clients still have five callers between them, so it goes with section 11. | [Sonarr/Sonarr@75d1a958](https://github.com/Sonarr/Sonarr/commit/75d1a958), [Sonarr/Sonarr@ba7b6b03](https://github.com/Sonarr/Sonarr/commit/ba7b6b03) |
 | 10 | ~~**Custom formats**~~ — **done, #543.** The row said 10 files and 6 connectors; it was 24 files and **nine** connectors, the biggest single drop of the migration — 21 to **12** — because `CustomFormatSettingsConnector.js` was a stale duplicate of the page with no importers and the Specifications subtree held three more. #539's shape a second time, plus the two things auto tagging had no way to exercise: presets, and an export/import pair. | ~~`Settings/customFormats.js`, `Settings/customFormatSpecifications.js`, `CustomFormat*Connector.js` ×6~~; ~~`CustomFormatSettingsConnector.js`, `AddSpecificationModalContentConnector.js`, `EditSpecificationModal*Connector.js` ×2, `CustomFormatAppState`~~ | [Sonarr/Sonarr@06aa7d57](https://github.com/Sonarr/Sonarr/commit/06aa7d57) (38 files) |
-| 11 | **Delay profiles** · **Download client options** · Download clients — split three ways, as Sonarr shipped it. ~~Delay profiles~~ **done, #544**: three connectors, 12 to **9**, and the first reorder of the migration — a mutation whose body the server never reads and whose response is the cache. Three dead things went with it. ~~Download client options~~ **done, #545**: #537's shape a third time, one connector — 9 to **8** — and it took `createSaveHandler` and `createSettingsSectionSelector` with it, both last-consumer. | ~~`Settings/delayProfiles.js`, `DelayProfileAppState`, `typings/DelayProfile.ts`~~, ~~`Settings/downloadClientOptions.js`, `DownloadClientOptionsAppState`~~, `Settings/downloadClients.js`, `createEnabledDownloadClientsSelector.ts` | [Sonarr/Sonarr@ed1d92c5](https://github.com/Sonarr/Sonarr/commit/ed1d92c5), [Sonarr/Sonarr@7be32b0c](https://github.com/Sonarr/Sonarr/commit/7be32b0c), [Sonarr/Sonarr@d04e2996](https://github.com/Sonarr/Sonarr/commit/d04e2996) |
+| 11 | ~~**Delay profiles** · **Download client options** · **Download clients**~~ — **done**, split three ways as Sonarr shipped it. **#544** (delay profiles): three connectors, 12 to **9**, and the first reorder of the migration. **#545** (options): #537's shape a third time, 9 to **8**, and it took `createSaveHandler` and `createSettingsSectionSelector` with it. **#546** (download clients): #538's shape plus five consumers outside Settings, and the last slice — `Store/Actions/index.js` registers nothing, `react-redux` 18 to **2**, `Store/` to **592** lines across 12. **Phase E is done.** | ~~`Settings/delayProfiles.js`, `DelayProfileAppState`, `typings/DelayProfile.ts`~~, ~~`Settings/downloadClientOptions.js`, `DownloadClientOptionsAppState`~~, ~~`Settings/downloadClients.js`, `createEnabledDownloadClientsSelector.ts`, `settingsActions.js`, `Store/Actions/Creators/` ×14, `SettingsAppState`~~ | [Sonarr/Sonarr@ed1d92c5](https://github.com/Sonarr/Sonarr/commit/ed1d92c5), [Sonarr/Sonarr@7be32b0c](https://github.com/Sonarr/Sonarr/commit/7be32b0c), [Sonarr/Sonarr@d04e2996](https://github.com/Sonarr/Sonarr/commit/d04e2996) |
 
 ---
 
@@ -550,11 +550,22 @@ was the last consumer of `createSaveHandler` *and* of `createSettingsSectionSele
 the #541 thread about a selector outliving its last declared section closes here. See
 *Two creators died with one section* below.
 
-**Next: section 11c** — download clients, the provider list with a manage modal (#538's
+~~**Next: section 11c** — download clients, the provider list with a manage modal (#538's
 shape) and the six files outside `Settings/` that read or fetch the slice today. It takes
 `settings` to nothing: `createProviderSettingsSelector`, `createSortedSectionSelector`,
 `createClientSideCollectionSelector`, `withAdvancedSettings` and the last of the provider
-handlers go with it, `Store/Actions/index.js` loses its final slice, and Phase E is done.
+handlers go with it, `Store/Actions/index.js` loses its final slice, and Phase E is done.~~
+**Done, #546**, and the row held except for `withAdvancedSettings`, which the options half
+had already reduced to one consumer and which goes with that consumer here. The prediction
+undercounted what sat *under* the slice rather than beside it: retiring it took all 14
+files in `Store/Actions/Creators/`, five selectors, `settingsActions.js` and
+`SettingsAppState`, so `Store/` finishes Phase E at **592 lines across 12 files** — from
+15,374 across 138. See *An empty store is not a valid store* below.
+
+**Next: Phase F**, §8, and it is the whole of what is left. F1 is the mutation sweep
+(Sonarr's 37 files), F2 is the delete: `Store/`, `<Provider>`, the last `connect()`, the
+seven redux packages in `package.json`, and a new home for the Sentry middleware. Two
+files still import `react-redux` and one of them is only `App.tsx`'s `<Provider>`.
 
 1. ~~**Queue**, in three PRs.~~ **Done.** Sonarr shipped it as one 58-file commit, but the slice already
    has three independent sub-sections and splitting along them gives three merge points

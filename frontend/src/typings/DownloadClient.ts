@@ -1,28 +1,16 @@
-import ModelBase from 'App/ModelBase';
+import DownloadProtocol from 'DownloadClient/DownloadProtocol';
+import Provider from './Provider';
 
-export interface Field {
-  order: number;
-  name: string;
-  label: string;
-  value: boolean | number | string;
-  type: string;
-  advanced: boolean;
-  privacy: string;
-}
-
-interface DownloadClient extends ModelBase {
+interface DownloadClient extends Provider {
   enable: boolean;
-  protocol: string;
+  protocol: DownloadProtocol;
   priority: number;
   removeCompletedDownloads: boolean;
   removeFailedDownloads: boolean;
-  name: string;
-  fields: Field[];
-  implementationName: string;
-  implementation: string;
-  configContract: string;
-  infoLink: string;
   tags: number[];
+
+  // Schema responses only: the canned configurations an implementation offers.
+  presets?: DownloadClient[];
 }
 
 export default DownloadClient;

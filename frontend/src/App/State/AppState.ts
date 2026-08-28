@@ -1,6 +1,5 @@
 import { DateFilterValue } from 'Helpers/Props/filterTypes';
 import { Error } from './AppSectionState';
-import SettingsAppState from './SettingsAppState';
 
 interface FilterBuilderPropOption {
   id: string;
@@ -63,8 +62,9 @@ export interface AppSectionState {
   isSidebarVisible?: boolean;
 }
 
-interface AppState {
-  settings: SettingsAppState;
-}
+// Nothing lives in the redux store any more. The type stays because the
+// filter types above are imported from here across the app; it goes with the
+// store in Phase F.
+type AppState = Record<string, never>;
 
 export default AppState;

@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import DescriptionList from 'Components/DescriptionList/DescriptionList';
 import DescriptionListItem from 'Components/DescriptionList/DescriptionListItem';
 import Button from 'Components/Link/Button';
@@ -19,8 +18,7 @@ import MovieLanguages from 'Movie/MovieLanguages';
 import MovieQuality from 'Movie/MovieQuality';
 import { useMovie } from 'Movie/useMovie';
 import { QualityModel } from 'Quality/Quality';
-import { fetchDownloadClients } from 'Store/Actions/settingsActions';
-import createEnabledDownloadClientsSelector from 'Store/Selectors/createEnabledDownloadClientsSelector';
+import { useEnabledDownloadClients } from 'Settings/DownloadClients/DownloadClients/useDownloadClients';
 import translate from 'Utilities/String/translate';
 import { GrabReleasePayload } from '../useReleases';
 import SelectDownloadClientModal from './DownloadClient/SelectDownloadClientModal';
@@ -69,8 +67,6 @@ function OverrideMatchModalContent(
   );
   const previousIsGrabbing = usePrevious(isGrabbing);
 
-  const dispatch = useDispatch();
-
   // The release's mapped movie is only known by id, fetch it until the user
   // picks a different one.
   const { data: mappedMovie } = useMovie(
@@ -80,9 +76,7 @@ function OverrideMatchModalContent(
   const movie = selectedMovie ?? mappedMovie;
   const movieId = movie?.id;
 
-  const { items: downloadClients } = useSelector(
-    createEnabledDownloadClientsSelector(protocol)
-  );
+  const { items: downloadClients } = useEnabledDownloadClients(protocol);
 
   const onSelectModalClose = useCallback(() => {
     setSelectModalOpen(null);
@@ -173,14 +167,6 @@ function OverrideMatchModalContent(
       onModalClose();
     }
   }, [isGrabbing, previousIsGrabbing, onModalClose]);
-
-  useEffect(
-    () => {
-      dispatch(fetchDownloadClients());
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
-  );
 
   return (
     <ModalContent onModalClose={onModalClose}>
