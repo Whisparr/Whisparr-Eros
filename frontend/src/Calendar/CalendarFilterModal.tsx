@@ -1,11 +1,11 @@
 import React, { useCallback } from 'react';
-import FilterModal from 'Components/Filter/FilterModal';
+import FilterModal, {
+  FilterModalPassthroughProps,
+} from 'Components/Filter/FilterModal';
 import { setCalendarOption } from './calendarOptionsStore';
 import useCalendar, { FILTER_BUILDER } from './useCalendar';
 
-interface CalendarFilterModalProps {
-  isOpen: boolean;
-}
+type CalendarFilterModalProps = FilterModalPassthroughProps;
 
 export default function CalendarFilterModal(props: CalendarFilterModalProps) {
   const { data: sectionItems } = useCalendar();

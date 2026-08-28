@@ -1,12 +1,12 @@
 import React, { useCallback } from 'react';
-import FilterModal from 'Components/Filter/FilterModal';
+import FilterModal, {
+  FilterModalPassthroughProps,
+} from 'Components/Filter/FilterModal';
 import { SCENE_INDEX_FILTER_BUILDER_PROPS } from './sceneIndexFilterBuilderProps';
 import { setSceneIndexFilter } from './sceneIndexOptionsStore';
 import { useSceneIndex } from './useSceneIndex';
 
-interface SceneIndexFilterModalProps {
-  isOpen: boolean;
-}
+type SceneIndexFilterModalProps = FilterModalPassthroughProps;
 
 export default function SceneIndexFilterModal(
   props: SceneIndexFilterModalProps

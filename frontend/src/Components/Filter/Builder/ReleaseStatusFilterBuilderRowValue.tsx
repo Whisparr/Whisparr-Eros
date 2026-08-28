@@ -1,6 +1,7 @@
 import React from 'react';
 import translate from 'Utilities/String/translate';
 import FilterBuilderRowValue from './FilterBuilderRowValue';
+import FilterBuilderRowValueProps from './FilterBuilderRowValueProps';
 
 const statusTagList = [
   {
@@ -29,7 +30,9 @@ const statusTagList = [
   },
 ];
 
-function ReleaseStatusFilterBuilderRowValue(props) {
+function ReleaseStatusFilterBuilderRowValue(
+  props: Readonly<FilterBuilderRowValueProps>
+) {
   return <FilterBuilderRowValue tagList={statusTagList} {...props} />;
 }
 

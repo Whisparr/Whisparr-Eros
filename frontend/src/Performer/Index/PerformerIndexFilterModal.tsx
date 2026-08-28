@@ -1,15 +1,15 @@
 import React, { useCallback } from 'react';
-import FilterModal from 'Components/Filter/FilterModal';
-import { Filter } from 'Filters/Filter';
+import FilterModal, {
+  FilterModalPassthroughProps,
+} from 'Components/Filter/FilterModal';
 import { useCustomFiltersList } from 'Filters/useCustomFilters';
 import { PERFORMER_INDEX_FILTER_BUILDER_PROPS } from './performerIndexFilterBuilderProps';
 import { setPerformerIndexFilter } from './performerIndexOptionsStore';
 import { usePerformerIndex } from './usePerformerIndex';
 
-interface PerformerIndexFilterModalProps {
-  isOpen: boolean;
-  customFilters: Filter[];
-}
+// The menu passes its own `customFilters` down like every other section's
+// wrapper does; this one has always overridden them with its own fetch below.
+type PerformerIndexFilterModalProps = FilterModalPassthroughProps;
 
 export default function PerformerIndexFilterModal(
   props: Readonly<PerformerIndexFilterModalProps>

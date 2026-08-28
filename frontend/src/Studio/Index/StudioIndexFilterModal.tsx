@@ -1,12 +1,12 @@
 import React, { useCallback } from 'react';
-import FilterModal from 'Components/Filter/FilterModal';
+import FilterModal, {
+  FilterModalPassthroughProps,
+} from 'Components/Filter/FilterModal';
 import { STUDIO_INDEX_FILTER_BUILDER_PROPS } from './studioIndexFilterBuilderProps';
 import { setStudioIndexFilter } from './studioIndexOptionsStore';
 import { useStudioIndex } from './useStudioIndex';
 
-interface StudioIndexFilterModalProps {
-  isOpen: boolean;
-}
+type StudioIndexFilterModalProps = FilterModalPassthroughProps;
 
 export default function StudioIndexFilterModal(
   props: StudioIndexFilterModalProps
