@@ -10,6 +10,7 @@ import { Tag } from 'Tags/useTags';
 import { AutoTaggingSpecification } from 'typings/AutoTagging';
 import translate from 'Utilities/String/translate';
 import EditAutoTaggingModal from './EditAutoTaggingModal';
+import { useDeleteAutoTagging } from './useAutoTaggings';
 import styles from './AutoTagging.css';
 
 interface AutoTaggingProps {
@@ -18,8 +19,6 @@ interface AutoTaggingProps {
   specifications: AutoTaggingSpecification[];
   tags: number[];
   tagList: readonly Tag[];
-  isDeleting: boolean;
-  onConfirmDeleteAutoTagging: (id: number) => void;
   onCloneAutoTaggingPress: (id: number) => void;
 }
 
@@ -29,10 +28,9 @@ export default function AutoTagging({
   tags,
   tagList,
   specifications,
-  isDeleting,
-  onConfirmDeleteAutoTagging,
   onCloneAutoTaggingPress,
-}: AutoTaggingProps) {
+}: Readonly<AutoTaggingProps>) {
+  const { deleteAutoTagging, isDeleting } = useDeleteAutoTagging(id);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
@@ -54,8 +52,8 @@ export default function AutoTagging({
   }, [setIsDeleteModalOpen]);
 
   const onConfirmDelete = useCallback(() => {
-    onConfirmDeleteAutoTagging(id);
-  }, [id, onConfirmDeleteAutoTagging]);
+    deleteAutoTagging();
+  }, [deleteAutoTagging]);
 
   const onClonePress = useCallback(() => {
     onCloneAutoTaggingPress(id);
