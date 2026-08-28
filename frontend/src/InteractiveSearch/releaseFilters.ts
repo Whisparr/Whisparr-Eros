@@ -30,11 +30,6 @@ export type ReleaseFilterPredicate = (
   type: FilterType
 ) => boolean;
 
-const predicates = filterTypePredicates as Record<
-  string,
-  (itemValue: unknown, filterValue: unknown) => boolean
->;
-
 // Only the four fields that are not plain properties of the release need one --
 // `clientSideFilterAndSort` falls back to the property of the same name for the
 // rest, which covers every other row in `RELEASE_FILTER_BUILDER_PROPS`.
@@ -55,16 +50,19 @@ export const RELEASE_FILTER_PREDICATES: Record<string, ReleaseFilterPredicate> =
     },
 
     languages: (item, filterValue, type) =>
-      predicates[type](
+      filterTypePredicates[type](
         item.languages.map((language) => language.name),
         filterValue
       ),
 
     peers: (item, filterValue, type) =>
-      predicates[type]((item.seeders || 0) + (item.leechers || 0), filterValue),
+      filterTypePredicates[type](
+        (item.seeders || 0) + (item.leechers || 0),
+        filterValue
+      ),
 
     rejectionCount: (item, filterValue, type) =>
-      predicates[type](item.rejections.length, filterValue),
+      filterTypePredicates[type](item.rejections.length, filterValue),
   };
 
 export const RELEASE_FILTER_BUILDER_PROPS: FilterBuilderProp<Release>[] = [
