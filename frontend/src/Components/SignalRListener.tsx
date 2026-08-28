@@ -18,7 +18,6 @@ import { QUALITY_DEFINITIONS_PATH } from 'Settings/Quality/Definition/useQuality
 import { removeItem, updateItem } from 'Store/Actions/baseActions';
 import { TAG_DETAILS_QUERY_KEY } from 'Tags/useTagDetails';
 import { TAGS_QUERY_KEY } from 'Tags/useTags';
-import { repopulatePage } from 'Utilities/pagePopulator';
 import SignalRLogger from 'Utilities/SignalRLogger';
 
 type SignalRAction = 'sync' | 'created' | 'updated' | 'deleted';
@@ -617,10 +616,6 @@ function SignalRListener() {
     // so stale the whole cache rather than guess at a list of keys. Only the
     // mounted page's queries have observers, so only those refetch now.
     queryClient.invalidateQueries();
-
-    // Import List Exclusions is the last page still fetching through a redux
-    // thunk, so it cannot be reached by invalidation. It leaves with Phase E.
-    repopulatePage();
   });
 
   const handleClose = useRef(() => {

@@ -23,12 +23,6 @@ export interface AppSectionSaveState {
   saveError: Error;
 }
 
-export interface PagedAppSectionState {
-  page: number;
-  pageSize: number;
-  totalPages: number;
-  totalRecords?: number;
-}
 export interface TableAppSectionState {
   columns: Column[];
 }

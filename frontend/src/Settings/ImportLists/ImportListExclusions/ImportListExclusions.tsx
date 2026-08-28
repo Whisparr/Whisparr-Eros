@@ -1,7 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { createSelector } from 'reselect';
-import AppState from 'App/State/AppState';
+import React, { useCallback, useMemo, useState } from 'react';
 import FieldSet from 'Components/FieldSet';
 import IconButton from 'Components/Link/IconButton';
 import SpinnerButton from 'Components/Link/SpinnerButton';
@@ -13,32 +10,25 @@ import Table from 'Components/Table/Table';
 import TableBody from 'Components/Table/TableBody';
 import TablePager from 'Components/Table/TablePager';
 import TableRow from 'Components/Table/TableRow';
-import usePaging from 'Components/Table/usePaging';
-import useCurrentPage from 'Helpers/Hooks/useCurrentPage';
 import useModalOpenState from 'Helpers/Hooks/useModalOpenState';
-import usePrevious from 'Helpers/Hooks/usePrevious';
 import useSelectState from 'Helpers/Hooks/useSelectState';
 import { icons, kinds } from 'Helpers/Props';
 import { SortDirection } from 'Helpers/Props/sortDirections';
-import {
-  bulkDeleteImportListExclusions,
-  clearImportListExclusions,
-  fetchImportListExclusions,
-  gotoImportListExclusionPage,
-  setImportListExclusionSort,
-  setImportListExclusionTableOption,
-} from 'Store/Actions/Settings/importListExclusions';
 import { CheckInputChanged } from 'typings/inputs';
 import { SelectStateInputProps } from 'typings/props';
 import { TableOptionsChangePayload } from 'typings/Table';
-import {
-  registerPagePopulator,
-  unregisterPagePopulator,
-} from 'Utilities/pagePopulator';
 import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
 import EditImportListExclusionModal from './EditImportListExclusionModal';
+import {
+  setImportListExclusionOption,
+  setImportListExclusionSort,
+  useImportListExclusionOptions,
+} from './importListExclusionOptionsStore';
 import ImportListExclusionRow from './ImportListExclusionRow';
+import useImportListExclusions, {
+  useDeleteImportListExclusions,
+} from './useImportListExclusions';
 import styles from './ImportListExclusions.css';
 
 const COLUMNS: Column[] = [
@@ -75,40 +65,22 @@ const COLUMNS: Column[] = [
   },
 ];
 
-function createImportListExclusionsSelector() {
-  return createSelector(
-    (state: AppState) => state.settings.importListExclusions,
-    (importListExclusions) => {
-      return {
-        ...importListExclusions,
-      };
-    }
-  );
-}
-
 function ImportListExclusions() {
-  const requestCurrentPage = useCurrentPage();
-
   const {
-    isFetching,
-    isPopulated,
-    items,
-    pageSize,
-    sortKey,
-    error,
-    sortDirection,
-    page,
+    records: items,
     totalPages,
     totalRecords,
-    isDeleting,
-    deleteError,
-  } = useSelector(createImportListExclusionsSelector());
+    isFetching,
+    isFetched,
+    error,
+    page,
+    goToPage,
+  } = useImportListExclusions();
 
-  const dispatch = useDispatch();
+  const { pageSize, sortKey, sortDirection } = useImportListExclusionOptions();
 
   const [isConfirmDeleteModalOpen, setIsConfirmDeleteModalOpen] =
     useState(false);
-  const previousIsDeleting = usePrevious(isDeleting);
 
   const [selectState, setSelectState] = useSelectState();
   const { allSelected, allUnselected, selectedState } = selectState;
@@ -116,6 +88,13 @@ function ImportListExclusions() {
   const selectedIds = useMemo(() => {
     return getSelectedIds(selectedState);
   }, [selectedState]);
+
+  const handleDeleteSelectedSuccess = useCallback(() => {
+    setSelectState({ type: 'unselectAll', items });
+  }, [items, setSelectState]);
+
+  const { deleteImportListExclusions, isDeleting } =
+    useDeleteImportListExclusions(handleDeleteSelectedSuccess);
 
   const handleSelectAllChange = useCallback(
     ({ value }: CheckInputChanged) => {
@@ -139,85 +118,51 @@ function ImportListExclusions() {
 
   const handleDeleteSelectedPress = useCallback(() => {
     setIsConfirmDeleteModalOpen(true);
-  }, [setIsConfirmDeleteModalOpen]);
+  }, []);
 
   const handleDeleteSelectedConfirmed = useCallback(() => {
-    dispatch(bulkDeleteImportListExclusions({ ids: selectedIds }));
+    deleteImportListExclusions(selectedIds);
     setIsConfirmDeleteModalOpen(false);
-  }, [selectedIds, setIsConfirmDeleteModalOpen, dispatch]);
+  }, [selectedIds, deleteImportListExclusions]);
 
   const handleConfirmDeleteModalClose = useCallback(() => {
     setIsConfirmDeleteModalOpen(false);
-  }, [setIsConfirmDeleteModalOpen]);
+  }, []);
 
-  const {
-    handleFirstPagePress,
-    handlePreviousPagePress,
-    handleNextPagePress,
-    handleLastPagePress,
-    handlePageSelect,
-  } = usePaging({
-    page,
-    totalPages,
-    gotoPage: gotoImportListExclusionPage,
-  });
+  const handleFirstPagePress = useCallback(() => {
+    goToPage(1);
+  }, [goToPage]);
+
+  const handlePreviousPagePress = useCallback(() => {
+    goToPage(Math.max(page - 1, 1));
+  }, [page, goToPage]);
+
+  const handleNextPagePress = useCallback(() => {
+    goToPage(Math.min(page + 1, totalPages));
+  }, [page, totalPages, goToPage]);
+
+  const handleLastPagePress = useCallback(() => {
+    goToPage(totalPages);
+  }, [totalPages, goToPage]);
 
   const handleSortPress = useCallback(
     (sortKey: string, sortDirection?: SortDirection) => {
-      dispatch(setImportListExclusionSort({ sortKey, sortDirection }));
+      setImportListExclusionSort({ sortKey, sortDirection });
     },
-    [dispatch]
+    []
   );
 
+  // The table cannot modify its columns, so a page size is the only option it
+  // can change -- and changing it invalidates which page the user is on.
   const handleTableOptionChange = useCallback(
-    (payload: TableOptionsChangePayload) => {
-      dispatch(setImportListExclusionTableOption(payload));
-
-      if (payload.pageSize) {
-        dispatch(gotoImportListExclusionPage({ page: 1 }));
+    ({ pageSize }: TableOptionsChangePayload) => {
+      if (pageSize) {
+        setImportListExclusionOption('pageSize', pageSize);
+        goToPage(1);
       }
     },
-    [dispatch]
+    [goToPage]
   );
-
-  useEffect(() => {
-    if (requestCurrentPage) {
-      dispatch(fetchImportListExclusions());
-    } else {
-      dispatch(gotoImportListExclusionPage({ page: 1 }));
-    }
-
-    return () => {
-      dispatch(clearImportListExclusions());
-    };
-  }, [requestCurrentPage, dispatch]);
-
-  useEffect(() => {
-    const repopulate = () => {
-      dispatch(fetchImportListExclusions());
-    };
-
-    registerPagePopulator(repopulate);
-
-    return () => {
-      unregisterPagePopulator(repopulate);
-    };
-  }, [dispatch]);
-
-  useEffect(() => {
-    if (previousIsDeleting && !isDeleting && !deleteError) {
-      setSelectState({ type: 'unselectAll', items });
-
-      dispatch(fetchImportListExclusions());
-    }
-  }, [
-    previousIsDeleting,
-    isDeleting,
-    deleteError,
-    items,
-    dispatch,
-    setSelectState,
-  ]);
 
   const [
     isAddImportListExclusionModalOpen,
@@ -225,15 +170,13 @@ function ImportListExclusions() {
     setAddImportListExclusionModalClosed,
   ] = useModalOpenState(false);
 
-  const isFetchingForFirstTime = isFetching && !isPopulated;
-
   return (
     <FieldSet legend={translate('ImportListExclusions')}>
       <PageSectionContent
         errorMessage={translate('ImportListExclusionsLoadError')}
-        isFetching={isFetchingForFirstTime}
-        isPopulated={isPopulated}
-        error={error}
+        isFetching={isFetching}
+        isPopulated={isFetched}
+        error={error ?? undefined}
       >
         <Table
           selectAll={true}
@@ -253,7 +196,7 @@ function ImportListExclusions() {
               return (
                 <ImportListExclusionRow
                   key={item.id}
-                  {...item}
+                  importListExclusion={item}
                   isSelected={selectedState[item.id] || false}
                   onSelectedChange={handleSelectedChange}
                 />
@@ -291,7 +234,7 @@ function ImportListExclusions() {
           onPreviousPagePress={handlePreviousPagePress}
           onNextPagePress={handleNextPagePress}
           onLastPagePress={handleLastPagePress}
-          onPageSelect={handlePageSelect}
+          onPageSelect={goToPage}
         />
 
         <EditImportListExclusionModal
