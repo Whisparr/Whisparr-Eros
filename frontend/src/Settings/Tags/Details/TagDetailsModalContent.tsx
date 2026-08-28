@@ -15,6 +15,7 @@ import { useMoviesByIds } from 'Movie/useMovie';
 import { useImportListsWithIds } from 'Settings/ImportLists/ImportLists/useImportLists';
 import { useIndexersWithIds } from 'Settings/Indexers/Indexers/useIndexers';
 import { useNotificationsWithIds } from 'Settings/Notifications/useNotifications';
+import { useDelayProfilesWithIds } from 'Settings/Profiles/Delay/useDelayProfiles';
 import { useReleaseProfilesWithIds } from 'Settings/Profiles/Release/useReleaseProfiles';
 import { useAutoTaggingsWithIds } from 'Settings/Tags/AutoTagging/useAutoTaggings';
 import sortByProp from 'Utilities/Array/sortByProp';
@@ -74,12 +75,7 @@ function TagDetailsModalContent({
     [taggedMovies]
   );
 
-  const delayProfiles = useSelector(
-    createMatchingItemSelector(
-      delayProfileIds,
-      (state: AppState) => state.settings.delayProfiles.items
-    )
-  );
+  const delayProfiles = useDelayProfilesWithIds(delayProfileIds);
 
   const importLists = useImportListsWithIds(importListIds);
 

@@ -1,22 +1,28 @@
-import PropTypes from 'prop-types';
 import React from 'react';
 import { useDragLayer } from 'react-dnd';
 import DragPreviewLayer from 'Components/DragPreviewLayer';
 import { DELAY_PROFILE } from 'Helpers/dragTypes';
-import dimensions from 'Styles/Variables/dimensions.js';
+import dimensions from 'Styles/Variables/dimensions';
 import DelayProfile from './DelayProfile';
+import { DelayProfileDragItem } from './DelayProfileDragSource';
 import styles from './DelayProfileDragPreview.css';
 
 const dragHandleWidth = Number.parseInt(dimensions.dragHandleWidth, 10);
 
-function DelayProfileDragPreview({ width }) {
+interface DelayProfileDragPreviewProps {
+  width: number;
+}
+
+function DelayProfileDragPreview({
+  width,
+}: Readonly<DelayProfileDragPreviewProps>) {
   const { item, itemType, currentOffset } = useDragLayer((monitor) => ({
-    item: monitor.getItem(),
+    item: monitor.getItem<DelayProfileDragItem | null>(),
     itemType: monitor.getItemType(),
     currentOffset: monitor.getSourceClientOffset(),
   }));
 
-  if (!currentOffset || itemType !== DELAY_PROFILE) {
+  if (!currentOffset || itemType !== DELAY_PROFILE || !item) {
     return null;
   }
 
@@ -29,7 +35,7 @@ function DelayProfileDragPreview({ width }) {
 
   const style = {
     width,
-    position: 'absolute',
+    position: 'absolute' as const,
     WebkitTransform: transform,
     msTransform: transform,
     transform,
@@ -38,14 +44,14 @@ function DelayProfileDragPreview({ width }) {
   return (
     <DragPreviewLayer>
       <div className={styles.dragPreview} style={style}>
-        <DelayProfile isDragging={false} {...item} />
+        <DelayProfile
+          delayProfile={item.delayProfile}
+          tagList={item.tagList}
+          isDragging={false}
+        />
       </div>
     </DragPreviewLayer>
   );
 }
-
-DelayProfileDragPreview.propTypes = {
-  width: PropTypes.number.isRequired,
-};
 
 export default DelayProfileDragPreview;
