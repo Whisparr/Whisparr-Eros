@@ -1,13 +1,11 @@
-import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import AppState from 'App/State/AppState';
+import React from 'react';
 import Card from 'Components/Card';
 import FieldSet from 'Components/FieldSet';
 import Icon from 'Components/Icon';
 import PageSectionContent from 'Components/Page/PageSectionContent';
 import useModalOpenState from 'Helpers/Hooks/useModalOpenState';
 import { icons } from 'Helpers/Props';
-import { fetchIndexers } from 'Store/Actions/Settings/indexers';
+import { useIndexers } from 'Settings/Indexers/Indexers/useIndexers';
 import { useTagList } from 'Tags/useTags';
 import translate from 'Utilities/String/translate';
 import EditReleaseProfileModal from './EditReleaseProfileModal';
@@ -19,23 +17,13 @@ function ReleaseProfiles() {
   const { data, isFetching, isFetched, error } = useReleaseProfiles();
 
   const tagList = useTagList();
-  const indexerList = useSelector(
-    (state: AppState) => state.settings.indexers.items
-  );
-
-  const dispatch = useDispatch();
+  const { data: indexerList } = useIndexers();
 
   const [
     isAddReleaseProfileModalOpen,
     setAddReleaseProfileModalOpen,
     setAddReleaseProfileModalClosed,
   ] = useModalOpenState(false);
-
-  // Indexers are still a Redux slice -- they convert in section 7, along with
-  // the boot gate that fetches the indexer flags beside them.
-  useEffect(() => {
-    dispatch(fetchIndexers());
-  }, [dispatch]);
 
   return (
     <FieldSet legend={translate('ReleaseProfiles')}>

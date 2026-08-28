@@ -1,6 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import AppState from 'App/State/AppState';
+import React, { useMemo } from 'react';
 import Alert from 'Components/Alert';
 import FieldSet from 'Components/FieldSet';
 import Button from 'Components/Link/Button';
@@ -10,25 +8,24 @@ import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { kinds } from 'Helpers/Props';
-import { fetchIndexerSchema } from 'Store/Actions/settingsActions';
+import { SelectedSchema } from 'Settings/useProviderSchema';
 import Indexer from 'typings/Indexer';
 import translate from 'Utilities/String/translate';
 import AddIndexerItem from './AddIndexerItem';
+import { useIndexerSchema } from './useIndexers';
 import styles from './AddIndexerModalContent.css';
 
 interface AddIndexerModalContentProps {
-  onIndexerSelect: () => void;
+  onIndexerSelect: (selectedSchema: SelectedSchema) => void;
   onModalClose: () => void;
 }
 
 function AddIndexerModalContent({
   onIndexerSelect,
   onModalClose,
-}: AddIndexerModalContentProps) {
-  const dispatch = useDispatch();
-
-  const { isSchemaFetching, isSchemaPopulated, schemaError, schema } =
-    useSelector((state: AppState) => state.settings.indexers);
+}: Readonly<AddIndexerModalContentProps>) {
+  const { isSchemaFetching, isSchemaFetched, schemaError, schema } =
+    useIndexerSchema();
 
   const { usenetIndexers, torrentIndexers } = useMemo(() => {
     return schema.reduce<{
@@ -51,10 +48,6 @@ function AddIndexerModalContent({
     );
   }, [schema]);
 
-  useEffect(() => {
-    dispatch(fetchIndexerSchema());
-  }, [dispatch]);
-
   return (
     <ModalContent onModalClose={onModalClose}>
       <ModalHeader>{translate('AddIndexer')}</ModalHeader>
@@ -66,7 +59,7 @@ function AddIndexerModalContent({
           <Alert kind={kinds.DANGER}>{translate('AddIndexerError')}</Alert>
         ) : null}
 
-        {isSchemaPopulated && !schemaError ? (
+        {isSchemaFetched && !schemaError ? (
           <div>
             <Alert kind={kinds.INFO}>
               <div>{translate('SupportedIndexers')}</div>
@@ -79,8 +72,10 @@ function AddIndexerModalContent({
                   return (
                     <AddIndexerItem
                       key={indexer.implementation}
-                      {...indexer}
                       implementation={indexer.implementation}
+                      implementationName={indexer.implementationName}
+                      infoLink={indexer.infoLink}
+                      presets={indexer.presets}
                       onIndexerSelect={onIndexerSelect}
                     />
                   );
@@ -94,8 +89,10 @@ function AddIndexerModalContent({
                   return (
                     <AddIndexerItem
                       key={indexer.implementation}
-                      {...indexer}
                       implementation={indexer.implementation}
+                      implementationName={indexer.implementationName}
+                      infoLink={indexer.infoLink}
+                      presets={indexer.presets}
                       onIndexerSelect={onIndexerSelect}
                     />
                   );

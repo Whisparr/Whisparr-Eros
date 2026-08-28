@@ -12,7 +12,6 @@ import DownloadClient from 'typings/DownloadClient';
 import ImportList from 'typings/ImportList';
 import ImportListExclusion from 'typings/ImportListExclusion';
 import ImportListOptionsSettings from 'typings/ImportListOptionsSettings';
-import Indexer from 'typings/Indexer';
 
 type Presets<T> = T & {
   presets: T[];
@@ -54,15 +53,6 @@ export interface ImportListAppState
   isTestingAll: boolean;
 }
 
-export interface IndexerAppState
-  extends
-    AppSectionState<Indexer>,
-    AppSectionDeleteState,
-    AppSectionSaveState,
-    AppSectionSchemaState<Presets<Indexer>> {
-  isTestingAll: boolean;
-}
-
 export interface CustomFormatAppState
   extends
     AppSectionState<CustomFormat>,
@@ -90,7 +80,6 @@ interface SettingsAppState {
   importListExclusions: ImportListExclusionsSettingsAppState;
   importListOptions: ImportListOptionsSettingsAppState;
   importLists: ImportListAppState;
-  indexers: IndexerAppState;
 }
 
 export default SettingsAppState;

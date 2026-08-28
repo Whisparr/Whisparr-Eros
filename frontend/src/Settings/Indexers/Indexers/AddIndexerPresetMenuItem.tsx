@@ -1,16 +1,15 @@
 import React, { useCallback } from 'react';
-import { useDispatch } from 'react-redux';
 import MenuItem, { MenuItemProps } from 'Components/Menu/MenuItem';
-import { selectIndexerSchema } from 'Store/Actions/settingsActions';
+import { SelectedSchema } from 'Settings/useProviderSchema';
 
 interface AddIndexerPresetMenuItemProps extends Omit<
   MenuItemProps,
-  'children'
+  'children' | 'onPress'
 > {
   name: string;
   implementation: string;
   implementationName: string;
-  onPress: () => void;
+  onPress: (selectedSchema: SelectedSchema) => void;
 }
 
 function AddIndexerPresetMenuItem({
@@ -19,20 +18,14 @@ function AddIndexerPresetMenuItem({
   implementationName,
   onPress,
   ...otherProps
-}: AddIndexerPresetMenuItemProps) {
-  const dispatch = useDispatch();
-
+}: Readonly<AddIndexerPresetMenuItemProps>) {
   const handlePress = useCallback(() => {
-    dispatch(
-      selectIndexerSchema({
-        implementation,
-        implementationName,
-        presetName: name,
-      })
-    );
-
-    onPress();
-  }, [name, implementation, implementationName, dispatch, onPress]);
+    onPress({
+      implementation,
+      implementationName,
+      presetName: name,
+    });
+  }, [name, implementation, implementationName, onPress]);
 
   return (
     <MenuItem {...otherProps} onPress={handlePress}>

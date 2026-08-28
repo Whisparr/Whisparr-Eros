@@ -1,6 +1,4 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { IndexerAppState } from 'App/State/SettingsAppState';
 import Alert from 'Components/Alert';
 import Button from 'Components/Link/Button';
 import SpinnerButton from 'Components/Link/SpinnerButton';
@@ -14,17 +12,18 @@ import Column from 'Components/Table/Column';
 import Table from 'Components/Table/Table';
 import TableBody from 'Components/Table/TableBody';
 import useSelectState from 'Helpers/Hooks/useSelectState';
-import { kinds } from 'Helpers/Props';
-import {
-  bulkDeleteIndexers,
-  bulkEditIndexers,
-  setManageIndexersSort,
-} from 'Store/Actions/settingsActions';
-import createClientSideCollectionSelector from 'Store/Selectors/createClientSideCollectionSelector';
+import { kinds, sortDirections } from 'Helpers/Props';
+import { SortDirection } from 'Helpers/Props/sortDirections';
 import { CheckInputChanged } from 'typings/inputs';
+import sortByProp from 'Utilities/Array/sortByProp';
 import getErrorMessage from 'Utilities/Object/getErrorMessage';
 import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
+import {
+  useBulkDeleteIndexers,
+  useBulkEditIndexers,
+  useIndexers,
+} from '../useIndexers';
 import ManageIndexersEditModal from './Edit/ManageIndexersEditModal';
 import ManageIndexersModalRow from './ManageIndexersModalRow';
 import TagsModal from './Tags/TagsModal';
@@ -84,27 +83,49 @@ interface ManageIndexersModalContentProps {
   onModalClose(): void;
 }
 
-function ManageIndexersModalContent(props: ManageIndexersModalContentProps) {
+function ManageIndexersModalContent(
+  props: Readonly<ManageIndexersModalContentProps>
+) {
   const { onModalClose } = props;
 
-  const {
-    isFetching,
-    isPopulated,
-    isDeleting,
-    isSaving,
-    error,
-    items,
-    sortKey,
-    sortDirection,
-  }: IndexerAppState = useSelector(
-    createClientSideCollectionSelector('settings.indexers')
+  const { isFetching, isFetched, error, data } = useIndexers();
+
+  // The slice held this sort in global state through
+  // `createSetClientSideCollectionSortReducer`, where nothing but this modal
+  // ever read it. It is modal-local now. Sections 9, 10 and 11 have the same
+  // manage modal and will want this lifted into a shared hook; it stays here
+  // until there is a second consumer to shape it.
+  const [sortKey, setSortKey] = useState('name');
+  const [sortDirection, setSortDirection] = useState<SortDirection>(
+    sortDirections.ASCENDING
   );
-  const dispatch = useDispatch();
+
+  const items = useMemo(() => {
+    const sorted = [...data].sort(
+      sortByProp(sortKey as keyof (typeof data)[0])
+    );
+
+    return sortDirection === sortDirections.ASCENDING
+      ? sorted
+      : sorted.reverse();
+  }, [data, sortKey, sortDirection]);
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isTagsModalOpen, setIsTagsModalOpen] = useState(false);
   const [isSavingTags, setIsSavingTags] = useState(false);
+
+  // The slice never reset this, so after one Set Tags save every later bulk
+  // edit spun the Set Tags button as well. Clearing it when the mutation
+  // settles is what the flag always meant.
+  const handleBulkEditSettled = useCallback(() => {
+    setIsSavingTags(false);
+  }, []);
+
+  const { bulkEditIndexers, isSaving } = useBulkEditIndexers(
+    handleBulkEditSettled
+  );
+  const { bulkDeleteIndexers, isDeleting } = useBulkDeleteIndexers();
 
   const [selectState, setSelectState] = useSelectState();
 
@@ -118,9 +139,19 @@ function ManageIndexersModalContent(props: ManageIndexersModalContentProps) {
 
   const onSortPress = useCallback(
     (value: string) => {
-      dispatch(setManageIndexersSort({ sortKey: value }));
+      setSortDirection((currentDirection) => {
+        if (value !== sortKey) {
+          return sortDirections.ASCENDING;
+        }
+
+        return currentDirection === sortDirections.ASCENDING
+          ? sortDirections.DESCENDING
+          : sortDirections.ASCENDING;
+      });
+
+      setSortKey(value);
     },
-    [dispatch]
+    [sortKey]
   );
 
   const onDeletePress = useCallback(() => {
@@ -140,22 +171,20 @@ function ManageIndexersModalContent(props: ManageIndexersModalContentProps) {
   }, [setIsEditModalOpen]);
 
   const onConfirmDelete = useCallback(() => {
-    dispatch(bulkDeleteIndexers({ ids: selectedIds }));
+    bulkDeleteIndexers(selectedIds);
     setIsDeleteModalOpen(false);
-  }, [selectedIds, dispatch]);
+  }, [selectedIds, bulkDeleteIndexers]);
 
   const onSavePress = useCallback(
     (payload: object) => {
       setIsEditModalOpen(false);
 
-      dispatch(
-        bulkEditIndexers({
-          ids: selectedIds,
-          ...payload,
-        })
-      );
+      bulkEditIndexers({
+        ids: selectedIds,
+        ...payload,
+      });
     },
-    [selectedIds, dispatch]
+    [selectedIds, bulkEditIndexers]
   );
 
   const onTagsPress = useCallback(() => {
@@ -171,15 +200,13 @@ function ManageIndexersModalContent(props: ManageIndexersModalContentProps) {
       setIsSavingTags(true);
       setIsTagsModalOpen(false);
 
-      dispatch(
-        bulkEditIndexers({
-          ids: selectedIds,
-          tags,
-          applyTags,
-        })
-      );
+      bulkEditIndexers({
+        ids: selectedIds,
+        tags,
+        applyTags,
+      });
     },
-    [selectedIds, dispatch]
+    [selectedIds, bulkEditIndexers]
   );
 
   const onSelectAllChange = useCallback(
@@ -213,11 +240,11 @@ function ManageIndexersModalContent(props: ManageIndexersModalContentProps) {
 
         {error ? <div>{errorMessage}</div> : null}
 
-        {isPopulated && !error && !items.length ? (
+        {isFetched && !error && !items.length ? (
           <Alert kind={kinds.INFO}>{translate('NoIndexersFound')}</Alert>
         ) : null}
 
-        {isPopulated && !!items.length && !isFetching && !isFetching ? (
+        {isFetched && !!items.length && !isFetching ? (
           <Table
             columns={COLUMNS}
             horizontalScroll={true}
