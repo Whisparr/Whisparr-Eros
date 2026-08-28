@@ -1,4 +1,3 @@
-import { cloneDeep } from 'lodash';
 import React, { useRef, useState } from 'react';
 import { useAppDimension, useAppDimensions } from 'App/appStore';
 import { queryClient } from 'App/queryClient';
@@ -154,16 +153,17 @@ export function useAddNewStudioModalContent(studio: Studio) {
   }, []);
 
   const onAddStudioPress = React.useCallback(() => {
-    const studioToAdd = getNewStudio(cloneDeep(studio) as object, {
-      rootFolderPath: settings.rootFolderPath.value,
-      monitored: settings.monitored.value === true,
-      moviesMonitored: settings.moviesMonitored.value === true,
-      qualityProfileId: settings.qualityProfileId.value,
-      searchForMovie: settings.searchForMovie.value,
-      tags: settings.tags.value,
-    }) as Studio;
-    studioToAdd.id = 0;
-    mutation.mutate(studioToAdd);
+    mutation.mutate({
+      ...getNewStudio(studio, {
+        rootFolderPath: settings.rootFolderPath.value,
+        monitored: settings.monitored.value === true,
+        moviesMonitored: settings.moviesMonitored.value === true,
+        qualityProfileId: settings.qualityProfileId.value,
+        searchForMovie: settings.searchForMovie.value,
+        tags: settings.tags.value,
+      }),
+      id: 0,
+    });
   }, [studio, settings, mutation]);
 
   return {

@@ -11,7 +11,7 @@ Counts are file-level `react-redux` imports across the frontend source tree.
 Every commit reference below links to the Sonarr commit it names; all were
 verified to resolve against the public repo.
 
-**Status: Phases A, B, C, D and E complete, and F2 with them — there is no Redux left in the frontend. All that is left is F1, the mutation sweep.** See §11 for the running log.
+**Status: complete. Phases A through F are done; there is no Redux left in the frontend.** What remains is a follow-on of its own — the 114 `.js` files that were never in scope here. See §11 for the running log.
 
 ---
 
@@ -287,8 +287,12 @@ Sonarr's ending was two commits: a correctness sweep, then the delete.
 
 Reducer habits produce code that mutates objects in place. Under Redux that was contained;
 under React Query a cached object is shared across every component reading that key, so
-in-place edits corrupt other views silently. Sonarr's sweep hit 37 files ([Sonarr/Sonarr@9bed77c6](https://github.com/Sonarr/Sonarr/commit/9bed77c6)). Do
-this **before** the delete, while the old code is still there to compare against.
+in-place edits corrupt other views silently. Sonarr's sweep hit 37 files ([Sonarr/Sonarr@9bed77c6](https://github.com/Sonarr/Sonarr/commit/9bed77c6)). ~~Do
+this **before** the delete, while the old code is still there to compare against.~~
+
+**Done, #550**, and it ran *after* F2 rather than before, which cost nothing: six files,
+not 37. See *The sweep that was mostly already done* below for what was surveyed and what
+came out of it.
 
 Sonarr also switched `useApiQuery`'s generic to `Readonly<T>` so the compiler catches it.
 ~~Eros's copy has not.~~ **Done in #455** — `useApiQuery` returns `Readonly<T>` today, so
@@ -1739,10 +1743,52 @@ Its fallback branch was dead: when a filter prop has no `optionsSelector` the se
 built options by reducing `sectionItems` itself — but the guard directly above returned
 `[]` for exactly that case, so the reduce could never run.
 
+### The sweep that was mostly already done
+
+F1 was budgeted against Sonarr's 37 files and came in at six, for the reason §10 predicted
+from the other end: `useApiQuery` has returned `Readonly<T>` since **#455**, before Phase B
+converted a single page, so the compiler rejected in-place edits on cached data throughout.
+Sonarr swept afterwards; Eros was swept continuously by the type checker.
+
+What was surveyed, so the number means something:
+
+- **All 20 `setQueryData` callbacks.** Every one builds a new array with `map` / `filter`.
+  No cache entry is edited in place anywhere.
+- **All 88 `.sort` / `.reverse` / `.splice` call sites.** All but two operate on an array
+  built moments earlier — `[...value]`, `.slice(0)`, `.map(…)`, `Array.from(new Set(…))`, a
+  `reduce` accumulator, or a `cloneDeep`.
+- **Every non-local property assignment and every `delete`.** All on local `changes`
+  objects, cloned models or per-field copies — including #543's import parse, which copies
+  each schema field before writing to it.
+
+The three findings:
+
+**The `getNew*` helpers wrote into the lookup cache.** `getNewMovie`, `getNewPerformer` and
+`getNewStudio` assigned `addOptions`, `monitored`, `qualityProfileId` and the rest onto the
+object they were passed and returned it — and that object is a search result from
+`/movie/lookup` or its siblings. Nothing was actually corrupted, because all four callers
+cloned first, but "safe as long as every caller remembers" is the shape of a bug rather
+than the absence of one. They return copies now, in `.ts`, and the callers dropped their
+clones.
+
+**Two components sorted a prop in place** — `FilterMenuContent`'s `customFilters` during
+render, `TagSelectInput`'s `values` inside a `useMemo`. Neither reached the cache, because
+an upstream `.filter()` / `.map()` had already copied, so both are hygiene rather than
+corruption.
+
+**And one wire-type mismatch the `.js` hid.** Typing the helpers made the compiler compare
+their output against `MovieAddOptions`, which declares `monitor: MovieMonitor`. No caller
+has ever sent that: the three helpers and `useImportMutation`'s body all send `monitored`,
+and the server's `AddMovieOptions` has neither field — it reads `SearchForMovie` and
+defaults `Monitor`, so the key is inert whichever name it carries. The type was corrected
+to describe what is sent; changing what is sent is a behaviour question, not a typing one,
+and belongs to whoever wants monitor modes to work.
+
 ## 11. Log
 
 | Date | PR | What |
 | --- | --- | --- |
+| 2026-08-28 | #550 | **The mutation sweep.** Phase F1, and **the end of the migration**. Six files against Sonarr's 37, because `useApiQuery` has returned `Readonly<T>` since #455 and the compiler swept continuously. `getNewMovie`, `getNewPerformer` and `getNewStudio` wrote the add-time settings onto the lookup result they were handed — cache data — and returned it; all four callers happened to clone first, so nothing was corrupted, but the safety lived at the call sites. They are `.ts` now and return copies, and the clones are gone. `FilterMenuContent` and `TagSelectInput` each sorted a prop in place; both sort a copy now. Typing the helpers surfaced `MovieAddOptions` declaring `monitor: MovieMonitor` where every caller sends `monitored` and the server reads neither — the type now says what is sent, and the behaviour question is left open. No payload changes: both add flows were driven end to end on the running instance and their POST bodies captured byte-identical to what the mutating helpers produced, with the search results behind them intact afterwards. |
 | 2026-08-28 | #549 | **Goodbye Redux.** Phase F2. `frontend/src/Store/` is deleted, `<Provider>` comes out of `App.tsx`, `createAppStore` out of `bootstrap.tsx`, and `react-redux`, `redux`, `redux-actions`, `redux-batched-actions`, `redux-localstorage`, `redux-thunk`, `@types/redux-actions` and `reselect` come out of `package.json`. **Zero files import `react-redux`**; the two `*Connector` files left are `.tsx` components that only kept the name. Four things moved rather than went: `selectSettings` and `scrollPositions` to `Helpers/`, `AppState`'s filter types to `Filters/Filter.ts` (where they were already duplicated), and `AppSectionState`'s `Error` to `typings/AppError.ts` — `App/State/` is gone with them. The last `connect()` turned out never to have read the store: `FilterBuilderRowValueConnector` memoized a transformation of its own props, so it is a `useMemo` in `DefaultFilterBuilderRowValue.tsx` now, minus a fallback branch the guard above it made unreachable. 763 deletions across 75 files, and another 20 KB off the bundle. Verified on the running instance: all 29 routes render with no error boundary and no console errors or warnings — the app boots and fetches with no store at all — and the converted filter-builder value component was exercised end to end on `/movies`, from switching a filter's key to *Studio* through the derived suggestion list to `POST /customFilter`. |
 | 2026-08-28 | #547 | **Sentry retired from the frontend.** Not a section — an F2 prerequisite cleared early. `createSentryMiddleware.js` was the one thing in §8's teardown list that needed a non-redux home before `Store/` could go, and the answer is that it needs none: we do not use Sentry. The middleware (114 lines, `init()` against `sentry.servarr.com`, one breadcrumb per redux action — and there are no actions left since #546), `ErrorBoundary`'s `captureException`, and both `@sentry/*` packages go; `@sentry/integrations` had no importers at all. `Shared/piwikCheck.js`, an unreferenced loader for `piwik.sonarr.tv`, goes with them. The built UI loses 91 KB of JavaScript. This is the client, not the feature: analytics stays and gets a replacement at some point, so the setting, `NzbDrone.Core.Analytics` and `initialize.json`'s `analytics` / `userHash` are untouched — and since nothing in the frontend has ever declared those two fields, let alone read them, the replacement starts from a clean seam. |
 | 2026-08-28 | #546 | **Download clients.** Section 11c, and **the end of Phase E**. `settings.downloadClients` and `SettingsAppState` are deleted for `Settings/DownloadClients/DownloadClients/useDownloadClients.ts` on the provider hooks — #538's shape, page, manage modal and all, plus the five files outside `Settings/` that read the slice. `Store/Actions/index.js` registers **nothing**: the slice took all 14 files in `Store/Actions/Creators/`, `settingsActions.js`, five selectors and `selectProviderSchema` with it. `react-redux` 18 to **2** — `App.tsx`'s `<Provider>` and one connector that reads only own props — connectors 8 to **3**, `Store/` 1,909 across 34 to **592** across 12, slices 1 to **0**. `combineReducers({})` warns on every dispatch, so `createReducers` falls back to a constant reducer until F2 removes the store. #538's two fixes applied to the copy here as well: the Set Tags spinner that never reset, and the manage sort moving from global state to modal-local. `typings/DownloadClient` extends `Provider` now instead of redeclaring six fields and a private `Field`. Five already-dead things removed and recorded, including `OAuthInput`'s Redux branch. Verified on the running instance: add (schema-seeded, Test, Save, and the forceSave retry), edit, row delete, manage-modal sort both ways, bulk edit, Set Tags and bulk delete, tag details, remote-path-mapping host options, the indexer modal's download-client select, and Test All from both the settings toolbar and the Health row — no console errors and no warnings, the empty store included. The override-grab modal was not exercised: it is only reachable through a toolbar that does not render headlessly. |
@@ -1826,6 +1872,15 @@ built options by reducing `sectionItems` itself — but the guard directly above
 | 2026-08-18 | #472 | **Queue, part 1 of 3 — status.** Sidebar badge onto React Query; `queue/status` SignalR handler onto `setQueryData`; the reconnect refetch moves from the component into `handleReconnected`. |
 
 ### Open threads
+
+- **114 `.js` files are still unchecked** — the migration converted what it touched and no
+  more, so what is left is the code no phase had a reason to open: `Utilities/` (53 files,
+  almost all pure functions), `Components/` (18), `Scene/` (11), the `QualityProfile*`
+  drag-and-drop group, and the filter-builder rows. None of it is Redux and none of it
+  blocks anything, but §10's argument still applies — every one of those files is a place
+  the compiler cannot see, and F1's survey had to be done by reading rather than by
+  `tsc`. **Wants scoping as a follow-on of its own**, probably by directory rather than by
+  feature.
 
 - **The Movie filter picker downloads the library** — `useAllMovies` asks `GET /movie` for
   full `MovieResource`s and reads two fields off each. On this instance that is 16,917
