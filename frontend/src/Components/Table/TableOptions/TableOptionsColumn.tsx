@@ -1,22 +1,33 @@
 import classNames from 'classnames';
-import PropTypes from 'prop-types';
 import React from 'react';
+import { ConnectDragSource } from 'react-dnd';
 import CheckInput from 'Components/Form/CheckInput';
 import Icon from 'Components/Icon';
+import Column from 'Components/Table/Column';
 import { icons } from 'Helpers/Props';
+import { CheckInputChanged } from 'typings/inputs';
 import styles from './TableOptionsColumn.css';
 
-function TableOptionsColumn(props) {
-  const {
-    name,
-    label,
-    isVisible,
-    isModifiable,
-    isDragging,
-    connectDragSource,
-    onVisibleChange,
-  } = props;
+export interface TableOptionsColumnProps {
+  name: string;
+  label: Column['label'];
+  isVisible: boolean;
+  isModifiable: boolean;
+  isDragging?: boolean;
+  // The drag preview renders the column without a drag handle to connect.
+  connectDragSource?: ConnectDragSource;
+  onVisibleChange: (change: CheckInputChanged) => void;
+}
 
+function TableOptionsColumn({
+  name,
+  label,
+  isVisible,
+  isModifiable,
+  isDragging,
+  connectDragSource,
+  onVisibleChange,
+}: Readonly<TableOptionsColumnProps>) {
   return (
     <div className={isModifiable ? undefined : styles.notDragable}>
       <div
@@ -43,16 +54,5 @@ function TableOptionsColumn(props) {
     </div>
   );
 }
-
-TableOptionsColumn.propTypes = {
-  name: PropTypes.string.isRequired,
-  label: PropTypes.oneOfType([PropTypes.string, PropTypes.func]).isRequired,
-  isVisible: PropTypes.bool.isRequired,
-  isModifiable: PropTypes.bool.isRequired,
-  index: PropTypes.number.isRequired,
-  isDragging: PropTypes.bool,
-  connectDragSource: PropTypes.func,
-  onVisibleChange: PropTypes.func.isRequired,
-};
 
 export default TableOptionsColumn;
