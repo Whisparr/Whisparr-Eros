@@ -10,7 +10,17 @@ export type MovieMonitor = 'monitor' | 'none';
 export type MovieStatus =
   'tba' | 'announced' | 'inCinemas' | 'released' | 'deleted';
 
-export type CoverType = 'poster' | 'fanart' | 'screenshot' | 'clearlogo';
+// Every member of `MediaCoverTypes` (src/NzbDrone.Core/MediaCover/MediaCover.cs),
+// which is what the API serialises. `banner`, `headshot` and `unknown` were
+// missing, and `MovieHeadshot` asks for `headshot`.
+export type CoverType =
+  | 'unknown'
+  | 'poster'
+  | 'banner'
+  | 'fanart'
+  | 'screenshot'
+  | 'headshot'
+  | 'clearlogo';
 
 export interface Image {
   coverType: CoverType;

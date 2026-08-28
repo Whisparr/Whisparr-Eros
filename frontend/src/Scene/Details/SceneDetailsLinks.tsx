@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React from 'react';
 import Label from 'Components/Label';
 import Link from 'Components/Link/Link';
@@ -6,9 +5,11 @@ import { kinds, sizes } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import styles from './SceneDetailsLinks.css';
 
-function SceneDetailsLinks(props) {
-  const { foreignId } = props;
+export interface SceneDetailsLinksProps {
+  foreignId: string;
+}
 
+function SceneDetailsLinks({ foreignId }: SceneDetailsLinksProps) {
   return (
     <div className={styles.links}>
       <Link
@@ -26,9 +27,5 @@ function SceneDetailsLinks(props) {
     </div>
   );
 }
-
-SceneDetailsLinks.propTypes = {
-  foreignId: PropTypes.string.isRequired,
-};
 
 export default SceneDetailsLinks;
