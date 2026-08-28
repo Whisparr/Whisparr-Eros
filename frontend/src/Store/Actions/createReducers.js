@@ -14,6 +14,14 @@ actions.forEach((action) => {
 
 export { defaultState };
 
+// `combineReducers({})` warns on every dispatch about a store with no valid
+// reducer, which is exactly what this is now that the last slice is gone. The
+// store exists only so `<Provider>` and the one remaining `connect()` have
+// something to hold; Phase F takes all three.
+const noReducers = () => defaultState;
+
 export default function () {
-  return enableBatching(combineReducers(reducers));
+  return enableBatching(
+    Object.keys(reducers).length ? combineReducers(reducers) : noReducers
+  );
 }

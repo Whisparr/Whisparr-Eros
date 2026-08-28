@@ -23,10 +23,7 @@ interface ProviderFieldFormGroupProps<T> {
   provider?: string;
   providerData?: object;
   // Forwarded to the inputs that talk to the API on their own -- an OAuth
-  // field reports a failed authorization back to the form through one of
-  // these, depending on whether the section still keeps its save error in
-  // Redux.
-  section?: string;
+  // field reports a failed authorization back to the form through this.
   onSaveError?: (error: AppError | null) => void;
   pending: boolean;
   errors: Failure[];

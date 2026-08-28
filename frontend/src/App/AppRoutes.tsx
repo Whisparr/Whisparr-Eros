@@ -16,7 +16,7 @@ import PerformerDetails from 'Performer/Details/PerformerDetails';
 import PerformerIndex from 'Performer/Index/PerformerIndex';
 import SceneIndex from 'Scene/Index/SceneIndex';
 import CustomFormatSettingsPage from 'Settings/CustomFormats/CustomFormatSettingsPage';
-import DownloadClientSettingsConnector from 'Settings/DownloadClients/DownloadClientSettingsConnector';
+import DownloadClientSettings from 'Settings/DownloadClients/DownloadClientSettings';
 import GeneralSettings from 'Settings/General/GeneralSettings';
 import ImportListSettings from 'Settings/ImportLists/ImportListSettings';
 import IndexerSettings from 'Settings/Indexers/IndexerSettings';
@@ -126,7 +126,7 @@ function AppRoutes() {
 
       <Route
         path="/settings/downloadclients"
-        element={<DownloadClientSettingsConnector />}
+        element={<DownloadClientSettings />}
       />
 
       <Route path="/settings/importlists" element={<ImportListSettings />} />

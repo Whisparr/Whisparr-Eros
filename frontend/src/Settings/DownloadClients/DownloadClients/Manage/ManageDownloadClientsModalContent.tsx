@@ -1,6 +1,4 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { DownloadClientAppState } from 'App/State/SettingsAppState';
 import Alert from 'Components/Alert';
 import Button from 'Components/Link/Button';
 import SpinnerButton from 'Components/Link/SpinnerButton';
@@ -14,17 +12,18 @@ import Column from 'Components/Table/Column';
 import Table from 'Components/Table/Table';
 import TableBody from 'Components/Table/TableBody';
 import useSelectState from 'Helpers/Hooks/useSelectState';
-import { kinds } from 'Helpers/Props';
-import {
-  bulkDeleteDownloadClients,
-  bulkEditDownloadClients,
-  setManageDownloadClientsSort,
-} from 'Store/Actions/settingsActions';
-import createClientSideCollectionSelector from 'Store/Selectors/createClientSideCollectionSelector';
+import { kinds, sortDirections } from 'Helpers/Props';
+import { SortDirection } from 'Helpers/Props/sortDirections';
 import { CheckInputChanged } from 'typings/inputs';
+import sortByProp from 'Utilities/Array/sortByProp';
 import getErrorMessage from 'Utilities/Object/getErrorMessage';
 import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
+import {
+  useBulkDeleteDownloadClients,
+  useBulkEditDownloadClients,
+  useDownloadClients,
+} from '../useDownloadClients';
 import ManageDownloadClientsEditModal from './Edit/ManageDownloadClientsEditModal';
 import ManageDownloadClientsModalRow from './ManageDownloadClientsModalRow';
 import TagsModal from './Tags/TagsModal';
@@ -85,28 +84,49 @@ interface ManageDownloadClientsModalContentProps {
 }
 
 function ManageDownloadClientsModalContent(
-  props: ManageDownloadClientsModalContentProps
+  props: Readonly<ManageDownloadClientsModalContentProps>
 ) {
   const { onModalClose } = props;
 
-  const {
-    isFetching,
-    isPopulated,
-    isDeleting,
-    isSaving,
-    error,
-    items,
-    sortKey,
-    sortDirection,
-  }: DownloadClientAppState = useSelector(
-    createClientSideCollectionSelector('settings.downloadClients')
+  const { isFetching, isFetched, error, data } = useDownloadClients();
+
+  // The slice held this sort in global state through
+  // `createSetClientSideCollectionSortReducer`, where nothing but this modal
+  // ever read it. It is modal-local now, the way #538 left it -- and with the
+  // fourth copy of the same block landing here, lifting it into a shared hook
+  // is the obvious follow-up.
+  const [sortKey, setSortKey] = useState('name');
+  const [sortDirection, setSortDirection] = useState<SortDirection>(
+    sortDirections.ASCENDING
   );
-  const dispatch = useDispatch();
+
+  const items = useMemo(() => {
+    const sorted = [...data].sort(
+      sortByProp(sortKey as keyof (typeof data)[0])
+    );
+
+    return sortDirection === sortDirections.ASCENDING
+      ? sorted
+      : sorted.reverse();
+  }, [data, sortKey, sortDirection]);
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isTagsModalOpen, setIsTagsModalOpen] = useState(false);
   const [isSavingTags, setIsSavingTags] = useState(false);
+
+  // The slice never reset this, so after one Set Tags save every later bulk
+  // edit spun the Set Tags button as well. Clearing it when the mutation
+  // settles is what the flag always meant.
+  const handleBulkEditSettled = useCallback(() => {
+    setIsSavingTags(false);
+  }, []);
+
+  const { bulkEditDownloadClients, isSaving } = useBulkEditDownloadClients(
+    handleBulkEditSettled
+  );
+  const { bulkDeleteDownloadClients, isDeleting } =
+    useBulkDeleteDownloadClients();
 
   const [selectState, setSelectState] = useSelectState();
 
@@ -120,9 +140,19 @@ function ManageDownloadClientsModalContent(
 
   const onSortPress = useCallback(
     (value: string) => {
-      dispatch(setManageDownloadClientsSort({ sortKey: value }));
+      setSortDirection((currentDirection) => {
+        if (value !== sortKey) {
+          return sortDirections.ASCENDING;
+        }
+
+        return currentDirection === sortDirections.ASCENDING
+          ? sortDirections.DESCENDING
+          : sortDirections.ASCENDING;
+      });
+
+      setSortKey(value);
     },
-    [dispatch]
+    [sortKey]
   );
 
   const onDeletePress = useCallback(() => {
@@ -142,22 +172,20 @@ function ManageDownloadClientsModalContent(
   }, [setIsEditModalOpen]);
 
   const onConfirmDelete = useCallback(() => {
-    dispatch(bulkDeleteDownloadClients({ ids: selectedIds }));
+    bulkDeleteDownloadClients(selectedIds);
     setIsDeleteModalOpen(false);
-  }, [selectedIds, dispatch]);
+  }, [selectedIds, bulkDeleteDownloadClients]);
 
   const onSavePress = useCallback(
     (payload: object) => {
       setIsEditModalOpen(false);
 
-      dispatch(
-        bulkEditDownloadClients({
-          ids: selectedIds,
-          ...payload,
-        })
-      );
+      bulkEditDownloadClients({
+        ids: selectedIds,
+        ...payload,
+      });
     },
-    [selectedIds, dispatch]
+    [selectedIds, bulkEditDownloadClients]
   );
 
   const onTagsPress = useCallback(() => {
@@ -173,15 +201,13 @@ function ManageDownloadClientsModalContent(
       setIsSavingTags(true);
       setIsTagsModalOpen(false);
 
-      dispatch(
-        bulkEditDownloadClients({
-          ids: selectedIds,
-          tags,
-          applyTags,
-        })
-      );
+      bulkEditDownloadClients({
+        ids: selectedIds,
+        tags,
+        applyTags,
+      });
     },
-    [selectedIds, dispatch]
+    [selectedIds, bulkEditDownloadClients]
   );
 
   const onSelectAllChange = useCallback(
@@ -218,11 +244,11 @@ function ManageDownloadClientsModalContent(
 
         {error ? <div>{errorMessage}</div> : null}
 
-        {isPopulated && !error && !items.length ? (
+        {isFetched && !error && !items.length ? (
           <Alert kind={kinds.INFO}>{translate('NoDownloadClientsFound')}</Alert>
         ) : null}
 
-        {isPopulated && !!items.length && !isFetching && !isFetching ? (
+        {isFetched && !!items.length && !isFetching ? (
           <Table
             columns={COLUMNS}
             horizontalScroll={true}

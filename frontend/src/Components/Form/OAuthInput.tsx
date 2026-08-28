@@ -1,10 +1,8 @@
 import React, { useCallback, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
 import { Error as AppError } from 'App/State/AppSectionState';
 import SpinnerErrorButton from 'Components/Link/SpinnerErrorButton';
 import { kinds } from 'Helpers/Props';
 import useOAuth from 'OAuth/useOAuth';
-import { set } from 'Store/Actions/baseActions';
 import { InputOnChange } from 'typings/inputs';
 
 export interface OAuthInputProps {
@@ -12,10 +10,6 @@ export interface OAuthInputProps {
   name: string;
   provider: string;
   providerData: Record<string, unknown>;
-  // A section for the forms still on Redux; `onSaveError` for the ones that
-  // have moved and keep their save error in the hook instead. Exactly one of
-  // the two is set.
-  section?: string;
   onSaveError?: (error: AppError | null) => void;
   onChange: InputOnChange<unknown>;
 }
@@ -25,11 +19,9 @@ function OAuthInput({
   name,
   provider,
   providerData,
-  section,
   onSaveError,
   onChange,
-}: OAuthInputProps) {
-  const dispatch = useDispatch();
+}: Readonly<OAuthInputProps>) {
   const { authorizing, error, result, startOAuth, resetOAuth } = useOAuth();
 
   // The provider form reads validation errors off whatever holds its save
@@ -37,13 +29,9 @@ function OAuthInput({
   // shown on the button.
   const reportSaveError = useCallback(
     (saveError: AppError | null) => {
-      if (onSaveError) {
-        onSaveError(saveError);
-      } else if (section) {
-        dispatch(set({ section, saveError }));
-      }
+      onSaveError?.(saveError);
     },
-    [dispatch, onSaveError, section]
+    [onSaveError]
   );
 
   const handlePress = useCallback(() => {

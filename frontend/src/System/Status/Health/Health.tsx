@@ -1,6 +1,4 @@
 import React, { useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import AppState from 'App/State/AppState';
 import Alert from 'Components/Alert';
 import FieldSet from 'Components/FieldSet';
 import Icon, { IconKind } from 'Components/Icon';
@@ -14,8 +12,8 @@ import Table from 'Components/Table/Table';
 import TableBody from 'Components/Table/TableBody';
 import TableRow from 'Components/Table/TableRow';
 import { icons, kinds } from 'Helpers/Props';
+import { useTestAllDownloadClients } from 'Settings/DownloadClients/DownloadClients/useDownloadClients';
 import { useTestAllIndexers } from 'Settings/Indexers/Indexers/useIndexers';
-import { testAllDownloadClients } from 'Store/Actions/settingsActions';
 import titleCase from 'Utilities/String/titleCase';
 import translate from 'Utilities/String/translate';
 import HealthItemLink from './HealthItemLink';
@@ -42,23 +40,22 @@ const columns: Column[] = [
 ];
 
 function Health() {
-  const dispatch = useDispatch();
   const { data, isFetched, isFetching, isLoading } = useHealth();
-  const isTestingAllDownloadClients = useSelector(
-    (state: AppState) => state.settings.downloadClients.isTestingAll
-  );
-  // Its own mutation instance, so the spinner here is independent of the one
-  // on the Indexers settings page -- the slice's `isTestingAll` was shared
-  // between them, and pressing Test All in one place spun the button in the
-  // other.
+
+  // Each of these is its own mutation instance, so the spinners here are
+  // independent of the ones on the settings pages -- the slices' `isTestingAll`
+  // was shared, and pressing Test All in one place spun the button in the
+  // other. Indexers stopped sharing in #538; download clients stop here.
+  const { testAllDownloadClients, isTestingAll: isTestingAllDownloadClients } =
+    useTestAllDownloadClients();
   const { testAllIndexers, isTestingAll: isTestingAllIndexers } =
     useTestAllIndexers();
 
   const healthIssues = !!data.length;
 
   const handleTestAllDownloadClientsPress = useCallback(() => {
-    dispatch(testAllDownloadClients());
-  }, [dispatch]);
+    testAllDownloadClients();
+  }, [testAllDownloadClients]);
 
   const handleTestAllIndexersPress = useCallback(() => {
     testAllIndexers();

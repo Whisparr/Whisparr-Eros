@@ -1,7 +1,6 @@
 // TODO: Standardize the "when" on React Query Key invalidation to avoid rapid-fire reloads during bulk operations.
 import * as signalR from '@microsoft/signalr';
 import { useEffect, useRef } from 'react';
-import { useDispatch } from 'react-redux';
 import { setAppValue, setVersion } from 'App/appStore';
 import { queryClient } from 'App/queryClient';
 import {
@@ -12,11 +11,11 @@ import Command from 'Commands/Command';
 import { COMMANDS_QUERY_KEY, useUpdateCommand } from 'Commands/useCommands';
 import { PagedQueryResponse } from 'Helpers/Hooks/usePagedApiQuery';
 import { ROOT_FOLDERS_QUERY_KEY } from 'RootFolder/useRootFolders';
+import { DOWNLOAD_CLIENTS_PATH } from 'Settings/DownloadClients/DownloadClients/useDownloadClients';
 import { IMPORT_LISTS_PATH } from 'Settings/ImportLists/ImportLists/useImportLists';
 import { INDEXERS_PATH } from 'Settings/Indexers/Indexers/useIndexers';
 import { NOTIFICATIONS_PATH } from 'Settings/Notifications/useNotifications';
 import { QUALITY_DEFINITIONS_PATH } from 'Settings/Quality/Definition/useQualityDefinitions';
-import { removeItem, updateItem } from 'Store/Actions/baseActions';
 import { TAG_DETAILS_QUERY_KEY } from 'Tags/useTagDetails';
 import { TAGS_QUERY_KEY } from 'Tags/useTags';
 import SignalRLogger from 'Utilities/SignalRLogger';
@@ -320,7 +319,6 @@ function updateCalendarQueryCache(updatedMovie: MovieResource) {
 }
 
 function SignalRListener() {
-  const dispatch = useDispatch();
   const updateCommand = useUpdateCommand();
   const connection = useRef<signalR.HubConnection | null>(null);
 
@@ -364,14 +362,7 @@ function SignalRListener() {
     }
 
     if (name === 'downloadclient') {
-      const section = 'settings.downloadClients';
-
-      if (body.action === 'created' || body.action === 'updated') {
-        dispatch(updateItem({ section, ...body.resource }));
-      } else if (body.action === 'deleted') {
-        dispatch(removeItem({ section, id: body.resource?.id }));
-      }
-
+      queryClient.invalidateQueries({ queryKey: [DOWNLOAD_CLIENTS_PATH] });
       return;
     }
 
