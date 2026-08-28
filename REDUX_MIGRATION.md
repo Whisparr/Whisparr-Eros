@@ -19,7 +19,7 @@ verified to resolve against the public repo.
 
 | Metric | At assessment | Now |
 | --- | --- | --- |
-| Files importing `react-redux` | 327 of 1,255 | **2** of 1,125 |
+| Files importing `react-redux` | 327 of 1,255 | **2** of 1,124 |
 | Lines under `frontend/src/Store/` | 15,374 across 138 files | **592** across 12 |
 | Redux slices registered in `Store/Actions/index.js` | 35 | **0** |
 | Remaining `*Connector` files | 66 | **3** |
@@ -1661,10 +1661,45 @@ rarely the file you expect, and it is worth grepping for it *before* writing the
 note — the row for section 11 predicted `createEnabledDownloadClientsSelector` and said
 nothing about either of these.
 
+### An empty store is not a valid store
+
+Retiring the last slice leaves `Store/Actions/index.js` exporting `[]`, and
+`createReducers` hands that to `combineReducers({})`. Redux does not treat that as an
+empty-but-fine store: `getUnexpectedStateShapeWarningMessage` fires *Store does not have a
+valid reducer* on every dispatch, which would have been the first console noise the
+migration has produced. The store cannot go yet — `<Provider>` is still in `App.tsx` and
+`FilterBuilderRowValueConnector` is still a `connect()` — so `createReducers` falls back to
+a constant reducer when there are no slices, and the whole arrangement goes in F2.
+
+That connector is worth a line of its own, because it is the last one and it never read
+the store. Its `mapStateToProps` is `createSelector` over three *own props*
+(`filterType`, `sectionItems`, `selectedFilterBuilderProp`), so `connect` was being used
+purely to memoize a prop transformation. It is a `useMemo` waiting to happen, and F2 is
+where it happens.
+
+### What the last section actually removed
+
+The section-11 row named four things that would go with download clients. The count was
+right about the direction and wrong about the size: retiring the slice took **14 files in
+`Store/Actions/Creators/`**, five selectors, `settingsActions.js`, `SettingsAppState` and
+`Utilities/State/selectProviderSchema`. Not because this section used all of them, but
+because it was the last section using *any* of them — the same effect #545 saw twice over,
+one PR earlier and two files at a time.
+
+Four of the deletions were already dead before this PR and are recorded here rather than
+carried forward: `createStudioClientSideCollectionItemsSelector` and
+`createDeepEqualSelector` had no importers at all, and neither did
+`createSetClientSideCollectionFilterReducer` or `createSetProviderFieldValuesReducer`.
+`OAuthInput`'s `section` prop belongs on that list too — it dispatched a failed OAuth
+authorization into `settings.<section>` for "the forms still on Redux", and the last form
+that passed it converted in #538, so the branch has been unreachable since. Its
+`onSaveError` half is what every provider form actually uses.
+
 ## 11. Log
 
 | Date | PR | What |
 | --- | --- | --- |
+| 2026-08-28 | #546 | **Download clients.** Section 11c, and **the end of Phase E**. `settings.downloadClients` and `SettingsAppState` are deleted for `Settings/DownloadClients/DownloadClients/useDownloadClients.ts` on the provider hooks — #538's shape, page, manage modal and all, plus the five files outside `Settings/` that read the slice. `Store/Actions/index.js` registers **nothing**: the slice took all 14 files in `Store/Actions/Creators/`, `settingsActions.js`, five selectors and `selectProviderSchema` with it. `react-redux` 18 to **2** — `App.tsx`'s `<Provider>` and one connector that reads only own props — connectors 8 to **3**, `Store/` 1,909 across 34 to **592** across 12, slices 1 to **0**. `combineReducers({})` warns on every dispatch, so `createReducers` falls back to a constant reducer until F2 removes the store. #538's two fixes applied to the copy here as well: the Set Tags spinner that never reset, and the manage sort moving from global state to modal-local. `typings/DownloadClient` extends `Provider` now instead of redeclaring six fields and a private `Field`. Five already-dead things removed and recorded, including `OAuthInput`'s Redux branch. Verified on the running instance: add (schema-seeded, Test, Save, and the forceSave retry), edit, row delete, manage-modal sort both ways, bulk edit, Set Tags and bulk delete, tag details, remote-path-mapping host options, the indexer modal's download-client select, and Test All from both the settings toolbar and the Health row — no console errors and no warnings, the empty store included. The override-grab modal was not exercised: it is only reachable through a toolbar that does not render headlessly. |
 | 2026-08-28 | #545 | **Download client options.** Section 11b. `settings.downloadClientOptions` and `DownloadClientOptionsAppState` are deleted for `Settings/DownloadClients/Options/useDownloadClientOptions.ts` on `useManageSettings`; `react-redux` 19 to **18**, `Store/` 2,090 across 37 to **1,909** across 34, one connector — 9 to **8**. #537's and #541's shape a third time: one endpoint, one child under the page's shared toolbar, nothing new asked of the shared hook, and `withAdvancedSettings` becomes `useShowAdvancedSettings()`. The section's own slice is 76 lines of the 181 that went — it was also the last consumer of `createSaveHandler` and of `createSettingsSectionSelector`, which closes the #541 thread about a selector outliving its last declared section. `SettingsAppState` is down to `downloadClients`. Verified on the running instance: one `GET /config/downloadclient` on load; *Show Advanced* reveals both fieldsets; editing the interval flips the toolbar to *Save Changes* and Save sends `PUT /config/downloadclient` and returns it to *No Changes* with the value surviving a reload; unchecking *Redownload Failed* hides the field under it and re-checking clears the pending change with no request. No console errors; both settings back where they started. |
 | 2026-08-28 | #544 | **Delay profiles.** Section 11a. `settings.delayProfiles`, `DelayProfileAppState` and `typings/DelayProfile.ts` are deleted for `Settings/Profiles/Delay/useDelayProfiles.ts` on the provider hooks; `react-redux` 22 to **19**, `Store/` 2,206 across 38 to **2,090** across 37, and all three connectors — 12 to **9**. The page is #518's shape plus the one thing no section before it had: a reorder that is a server call. `PUT /delayprofile/reorder/{id}?after=` reads nothing from its body and answers with the whole list, so the mutation's variables only build the path and the response is the cache; the thunk's no-op guard moved into the hook, where the list it compares against now lives, and the drag state became local `useState`. The default profile (order 2147483647, undeletable, skipped by the server's reorder) is now `DEFAULT_DELAY_PROFILE_ID` rather than a bare `1` in four places. Three dead things found and recorded rather than preserved: a schema thunk for an endpoint that does not exist, a `name` the resource has never had, and two class names that are in no revision of the stylesheet. Verified on the running instance: one `GET /delayprofile` on load; add (both protocols and *Only Torrent*), edit, delete, and a drag that sends `PUT /delayprofile/reorder/2?after=3` and comes back reordered with no refetch; a drop in place sends nothing; the default profile keeps its alert, its missing tags field and its missing Delete button; server validation lands on Tags; tag details reads its delay profile from the query. No console errors. |
 | 2026-08-28 | #543 | **Custom formats.** Section 10. `settings.customFormats`, `settings.customFormatSpecifications` and `CustomFormatAppState` are deleted for `Settings/CustomFormats/CustomFormats/useCustomFormats.ts` on the provider hooks; `react-redux` 32 to **22**, `Store/` 2,641 across 41 to **2,206** across 38, and **nine** connectors — 21 to **12**, the biggest single drop of the migration, beating #509's seven. The row predicted ten files and six connectors; it was 24 and nine, because `CustomFormatSettingsConnector.js` was a stale duplicate of the page with no importers and the Specifications subtree held three more. The slice pair is #539's shape exactly: `customFormatSpecifications` had 253 lines, no server and a FETCH handler that unpacked the *other* slice's item, so it becomes one `specifications` pending change plus three callbacks over an array. What #539 could not foretell is presets — auto tagging's schema has none, custom formats' hangs six built-ins plus every saved format's conditions off Release Title — and the import/export pair, both of which got materially smaller for coming off the slice. `createClearReducer` and `getNextId` lose their last consumers. Three already-dead things found and recorded rather than preserved. Verified on the running instance: one `GET /api/v3/customformat` on load and none from the manage modal; add seeded from an `x264` preset POSTs the format with its condition and no `presets` key; clone carries the conditions and names the copy; export produces the wiki-shaped JSON and re-importing it round-trips byte for byte; import rejects an unknown implementation and an unknown field option at the parse; server validation lands on the Name field; condition clone, condition delete, manage-modal sort both ways on both columns, bulk edit (`PUT /customformat/bulk`), row delete and bulk delete (`DELETE /customformat/bulk`) all confirmed, with no console errors. |
