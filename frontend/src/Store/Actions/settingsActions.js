@@ -1,10 +1,8 @@
 import { handleThunks } from 'Store/thunks';
 import createHandleActions from './Creators/createHandleActions';
-import downloadClientOptions from './Settings/downloadClientOptions';
 import downloadClients from './Settings/downloadClients';
 
 export * from './Settings/downloadClients';
-export * from './Settings/downloadClientOptions';
 
 //
 // Variables
@@ -16,7 +14,6 @@ export const section = 'settings';
 
 export const defaultState = {
   downloadClients: downloadClients.defaultState,
-  downloadClientOptions: downloadClientOptions.defaultState,
 };
 
 //
@@ -24,7 +21,6 @@ export const defaultState = {
 
 export const actionHandlers = handleThunks({
   ...downloadClients.actionHandlers,
-  ...downloadClientOptions.actionHandlers,
 });
 
 //
@@ -33,7 +29,6 @@ export const actionHandlers = handleThunks({
 export const reducers = createHandleActions(
   {
     ...downloadClients.reducers,
-    ...downloadClientOptions.reducers,
   },
   defaultState,
   section
