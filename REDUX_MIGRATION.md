@@ -11,7 +11,7 @@ Counts are file-level `react-redux` imports across the frontend source tree.
 Every commit reference below links to the Sonarr commit it names; all were
 verified to resolve against the public repo.
 
-**Status: Phases A, B, C and D complete; Phase E is under way, six of eleven sections done and a seventh started. Phase E is the whole of what is left, plus the teardown.** See §11 for the running log.
+**Status: Phases A, B, C and D complete; Phase E is under way, seven of eleven sections done. Phase E is the whole of what is left, plus the teardown.** See §11 for the running log.
 
 ---
 
@@ -19,11 +19,11 @@ verified to resolve against the public repo.
 
 | Metric | At assessment | Now |
 | --- | --- | --- |
-| Files importing `react-redux` | 327 of 1,255 | **71** of 1,182 |
-| Lines under `frontend/src/Store/` | 15,374 across 138 files | **3,921** across 54 |
+| Files importing `react-redux` | 327 of 1,255 | **58** of 1,182 |
+| Lines under `frontend/src/Store/` | 15,374 across 138 files | **3,723** across 53 |
 | Redux slices registered in `Store/Actions/index.js` | 35 | **1** |
-| Remaining `*Connector` files | 66 | **23** |
-| Files touching React Query | 35 | **79** |
+| Remaining `*Connector` files | 66 | **22** |
+| Files touching React Query | 35 | **80** |
 | zustand stores | 0 (not installed) | **installed, 39 files** |
 
 > **Recomputed in #464.** Three rows previously carried figures that no command
@@ -101,7 +101,7 @@ either. **As of #536 the domains are done**: `Movie/`, `Scene/`, `Performer/` an
 `Studio/` contain no `react-redux` import at all. The last one was
 `Movie/IndexerFlags.tsx` reading `createIndexerFlagsSelector`; the UI-settings and
 quality-profile reads that had been the bulk of the remainder went with sections 1 and 3.
-Everything still importing `react-redux` is now Settings (56 files), plus twelve
+Everything still importing `react-redux` is now Settings (45 files), plus thirteen
 scattered across `Components/`, `InteractiveSearch/`, `System/`, `Helpers/`,
 `DownloadClient/` and `App/`.
 
@@ -271,7 +271,7 @@ is-it-a-change question* below.
 | 4 | ~~**Connections (Notifications)**~~ — **done, #521.** Four connectors, 31 to 27, and the first consumer of `usePendingFieldsStore`. `useProviderSettings` grew test and fields support here. | ~~`Settings/notifications.js`, `NotificationsConnector.js`, `EditNotificationModalConnector.js`, `EditNotificationModalContentConnector.js`, `AddNotificationModalContentConnector.js`~~. `DeviceInput.tsx` was on this list and came off it early, in #490. | [Sonarr/Sonarr@6d49b41d](https://github.com/Sonarr/Sonarr/commit/6d49b41d) |
 | 5 | ~~**Naming · Media Management · Metadata**~~ — **done, #530** (naming and media management) and **#531** (metadata). Split in two: the first two are one page with one toolbar over two endpoints, and Metadata is a provider list with nothing in common with them. #530 took no connectors; #531 took all three, 27 to **24**. | ~~`Settings/naming.js`, `Settings/namingExamples.js`, `Settings/mediaManagement.js`, `Settings/metadata.js`, `MetadatasConnector.js`, `EditMetadataModalConnector.js`, `EditMetadataModalContentConnector.js`~~ | [Sonarr/Sonarr@677c588a](https://github.com/Sonarr/Sonarr/commit/677c588a), [Sonarr/Sonarr@bbb4c671](https://github.com/Sonarr/Sonarr/commit/bbb4c671), [Sonarr/Sonarr@c0a56586](https://github.com/Sonarr/Sonarr/commit/c0a56586) |
 | 6 | ~~**Languages · General**~~ — **done, #532** (languages), **#534** (restart and shutdown, the prerequisite) and **#535** (general). Split three ways: Languages is a read-only list five pages share, General is the largest single-object form in Settings, and General could not start while `restart` was a thunk. Between them 85 to **74**, one connector, and `Store/Actions/index.js` down to one slice. | ~~`Settings/languages.js`, `Settings/general.js`, `GeneralSettingsConnector.js`~~; ~~`systemActions.js`, `actionTypes.js`~~ | [Sonarr/Sonarr@5bac016f](https://github.com/Sonarr/Sonarr/commit/5bac016f), [Sonarr/Sonarr@6764cf1c](https://github.com/Sonarr/Sonarr/commit/6764cf1c) |
-| 7 | **Indexers · Indexer Options · Indexer Flags** (11 files, three commits). Split three ways, as Sonarr did. ~~Indexer Flags~~ **done, #536** — a read-only list, the Languages shape again, and it took the last `react-redux` import out of `Movie/`. ~~Indexer Options~~ **done, #537** — a single-object form on `useManageSettings`, and it corrected a wire type the interface had wrong. Indexers remains. | `Settings/indexers.js`, `IndexerFilterBuilderRowValueConnector.js`; ~~`Settings/indexerFlags.js`, `createIndexerFlagsSelector.ts`, `IndexerFlagSettingsAppState`, `Settings/indexerOptions.js`, `IndexerOptionsAppState`~~ | [Sonarr/Sonarr@c4c0ec25](https://github.com/Sonarr/Sonarr/commit/c4c0ec25), [Sonarr/Sonarr@7a455dd0](https://github.com/Sonarr/Sonarr/commit/7a455dd0), [Sonarr/Sonarr@fbb70519](https://github.com/Sonarr/Sonarr/commit/fbb70519) |
+| 7 | ~~**Indexers · Indexer Options · Indexer Flags**~~ — **done**, split three ways as Sonarr did: **#536** (flags, a read-only list, the Languages shape again, and the last `react-redux` import out of `Movie/`), **#537** (options, a single-object form on `useManageSettings`, which corrected a wire type the interface had wrong) and **#538** (indexers, the provider list). The row said 11 files and it was 24. One connector — 23 to **22** — and `react-redux` 74 to **58** across the three. | ~~`Settings/indexers.js`, `IndexerFilterBuilderRowValueConnector.js`, `Settings/indexerFlags.js`, `createIndexerFlagsSelector.ts`, `IndexerFlagSettingsAppState`, `Settings/indexerOptions.js`, `IndexerOptionsAppState`, `IndexerAppState`~~ | [Sonarr/Sonarr@c4c0ec25](https://github.com/Sonarr/Sonarr/commit/c4c0ec25), [Sonarr/Sonarr@7a455dd0](https://github.com/Sonarr/Sonarr/commit/7a455dd0), [Sonarr/Sonarr@fbb70519](https://github.com/Sonarr/Sonarr/commit/fbb70519) |
 | 8 | Auto tagging · Import list exclusions | `Settings/autoTaggings.js`, `Settings/autoTaggingSpecifications.js`, `Settings/importListExclusions.js` | [Sonarr/Sonarr@0ebda892](https://github.com/Sonarr/Sonarr/commit/0ebda892), [Sonarr/Sonarr@b0fac152](https://github.com/Sonarr/Sonarr/commit/b0fac152) |
 | 9 | Import lists + options (16 files — largest subtree) | `Settings/importLists.js`, `Settings/importListOptions.js`, `ImportListFilterBuilderRowValueConnector.js` | [Sonarr/Sonarr@75d1a958](https://github.com/Sonarr/Sonarr/commit/75d1a958), [Sonarr/Sonarr@ba7b6b03](https://github.com/Sonarr/Sonarr/commit/ba7b6b03) |
 | 10 | Custom formats (10 files, 6 connectors, import/export modals) | `Settings/customFormats.js`, `Settings/customFormatSpecifications.js`, `CustomFormat*Connector.js` ×6 | [Sonarr/Sonarr@06aa7d57](https://github.com/Sonarr/Sonarr/commit/06aa7d57) (38 files) |
@@ -475,10 +475,17 @@ child under `IndexerSettings`' shared toolbar, and nothing new added to the shar
 The one thing it did turn up was a wrong wire type — see *`whitelistedHardcodedSubs` is a
 string, not an array* below.
 
-**Next: section 7c** — Indexers, the provider list, and the end of section 7. It carries
-`IndexerFilterBuilderRowValueConnector.js` and the bulk-edit manage modal, so it is the
-larger half by some distance, and it is what finally takes `IndexerSettings.tsx` itself
-off `react-redux` — the page keeps one `useSelector` for `isTestingAll` until then.
+~~**Next: section 7c** — Indexers, the provider list, and the end of section 7.~~
+**Done, #538**, and it was the larger half by some distance: 13 files lose their
+`react-redux` import, six of them outside the settings page. It is the first section to
+convert a **manage modal** — bulk edit, bulk delete and Set Tags — and sections 9, 10 and
+11 each have the same one, so the shape it establishes is the shape they will copy. See
+*A manage modal is a table, three mutations and a sort nobody shared* below.
+
+**Next: section 8** — auto tagging and import list exclusions. Two list sections with no
+connectors between them, so it is a quieter row than 7 was; `autoTaggings` and
+`autoTaggingSpecifications` are the last two consumers of
+`createProviderSettingsSelectorHook` outside import lists.
 
 1. ~~**Queue**, in three PRs.~~ **Done.** Sonarr shipped it as one 58-file commit, but the slice already
    has three independent sub-sections and splitting along them gives three merge points
@@ -1233,12 +1240,69 @@ spreads the whole query object into the PUT, so it round-tripped regardless, but
 could not be typed without it. Same class of thing as General's sixteen missing fields in
 #535.
 
+### A manage modal is a table, three mutations and a sort nobody shared
+
+Indexers is the first of the four manage modals to convert — Import Lists, Custom Formats
+and Download Clients have the same one — so this is the shape sections 9, 10 and 11 will
+copy.
+
+`bulkEditIndexers` and `bulkDeleteIndexers` become `useApiMutation` against
+`/indexer/bulk`. The bulk edit gets its response back as the updated rows and writes them
+into the list cache; the bulk delete gets an empty body, so it filters by the ids it sent,
+exactly as `createBulkRemoveItemHandler` did. Neither refetches.
+
+**The sort was global state that only one component read.** `SET_MANAGE_INDEXERS_SORT`
+went through `createSetClientSideCollectionSortReducer` into the slice, and
+`ManageIndexersModalContent` was the only reader — so it is `useState` in that component
+now, with the ascending/descending toggle written out rather than inherited. It is
+deliberately **not** a shared hook yet: three more sections want the identical thing, and
+a shared abstraction with one consumer is a guess. Lift it when section 9 arrives and the
+second call site says what the shape actually is.
+
+**One carried-over bug is fixed.** `isSavingTags` was set to `true` when Set Tags was
+pressed and never set back, so after one tags save every later bulk edit spun the Set Tags
+button too. The mutation's `onSettled` clears it — settled rather than succeeded, because
+a failed bulk edit has to clear it as well. That is why `useBulkEditIndexers` takes
+`onSettled` and not `onSuccess`.
+
+**Health and the settings page no longer share a spinner.** `testAllIndexers` wrote
+`isTestingAll` into the slice, and both `IndexerSettings` and `Health` read it, so
+pressing *Test All* on one page spun the button on the other. Each holds its own mutation
+now.
+
+### Cloning an indexer, and the secrets that cannot be copied
+
+`CLONE_INDEXER` copied the source indexer into `selectedSchema`, deleted its `id` and
+`name`, blanked every field whose `privacy` is `apiKey` or `password`, and wrote the copy
+name into `pendingChanges`. The blanking is the part that matters and it is not cosmetic:
+the API returns secrets masked, so a clone that carried them over would send the mask back
+and store the mask.
+
+It follows quality profiles (#520) now — the source indexer is the new indexer's
+**default** rather than a write into a shared pending bag, so a clone nobody edits still
+saves as a copy. Verified on the running instance: cloning an indexer with `apiKey` set to
+`deadbeef` opens *Add Indexer* with the name `Test Torznab - Copy`, the API key empty, and
+no schema request, because a clone reads the list rather than the schema.
+
+### `typings/Indexer` was not a provider
+
+It declared its own `name`, `fields`, `implementationName`, `implementation`,
+`configContract` and `infoLink` — the whole of `Provider` minus `message` — plus a local
+`Field` interface missing `section` and `hidden`. Nothing caught it, because the slice was
+untyped and no call site needed the missing members.
+
+`useSelectedSchema<T extends Provider>` did. So `Indexer extends Provider` now, which
+deletes the duplicate `Field` and adds the `presets` that only `/indexer/schema` returns.
+This is the same finding as `whitelistedHardcodedSubs` one section earlier, from the same
+cause: a type that only has to satisfy a reducer is not checked against anything.
+
 ---
 
 ## 11. Log
 
 | Date | PR | What |
 | --- | --- | --- |
+| 2026-08-27 | #538 | **Indexers.** Section 7c, and the end of section 7. `settings.indexers` and `IndexerAppState` are deleted for `Settings/Indexers/Indexers/useIndexers.ts` on `useProviderSettings`; `react-redux` 71 to **58**, `Store/` 3,921 across 54 to **3,723** across 53, and one connector, 23 to **22**. **Thirteen files lose their `react-redux` import and six of them are outside the settings page** — the indexer select input, the release profile list and the row it feeds, the tag details modal, the Tags boot dispatch, Health's *Test All* button and `SignalRListener`, which invalidates `[INDEXERS_PATH]` instead of dispatching `updateItem`/`removeItem`. `IndexerFilterBuilderRowValueConnector.js` becomes `IndexerFilterBuilderRowValue.tsx`, the same collapse `QualityProfileFilterBuilderRowValue` made in #520; it was a class component whose whole job was a boot fetch the query now does on mount. **Nothing was added to `useProviderSettings`** — section 4 had already grown fields, testing and the merged error state, and an indexer needs exactly those. What is new is Indexers-only and lives in its own hook: `useTestAllIndexers`, `useBulkEditIndexers`, `useBulkDeleteIndexers`, and the clone. Three notes above carry the rest — the manage modal (and why its sort is deliberately not a shared hook yet), the clone and its masked secrets, and `typings/Indexer` not actually being a `Provider`. Verified on the running instance, which had no indexers, so one was built through the UI and torn down again: the Torznab **Jackett** preset seeds `name` from the preset and all three `enable*` from `supports*`; **Save** on an unreachable indexer comes back 400 and a second identical **Save** goes up as `POST /indexer?forceSave=true`, which is the redux `lastSaveData` comparison preserved; an indexer with nothing enabled saves 201 and the card appears off the cache write with no refetch; cloning blanks the API key and prefills *- Copy*; editing priority sends one `PUT /indexer/1` and the card re-renders off the cache; the manage modal sorts by Name (toggling) and by Priority (resetting to ascending), bulk-edits `{ids:[1,2],enableRss:true}`, applies `{tags:[8],applyTags:"add"}`, and bulk-deletes `{ids:[1]}` — each 202/200 with no refetch; the per-card delete sends `DELETE /indexer/2`; **Test All** sends `POST /indexer/testall`; and an external `PUT` from outside the browser refetched the list unprompted, which is the SignalR path. Release Profiles, Tags and the tag details modal all read the list off the query, and the release profile edit modal's indexer select renders `(Any)`. `/api/v3/indexer` is back to empty; five pages swept with no console errors. **Not exercised** — `IndexerFilterBuilderRowValue` (the toolbar renders no buttons headlessly, as in #520) and Health's *Test All Indexers* button, which only renders against a matching health issue. Props of the components touched are marked `Readonly<T>` per SonarQube `typescript:S6759`. |
 | 2026-08-27 | #537 | **Indexer options.** Section 7b. `settings.indexerOptions` and `IndexerOptionsAppState` are deleted for `Settings/Indexers/Options/useIndexerOptions.ts` on `useManageSettings`; `react-redux` 72 to **71** and `Store/` 3,994 across 55 to **3,921** across 54. No connectors, so 23 does not move. **It is the plainest form conversion of Phase E** — one endpoint (`/config/indexer`), one `useManageSettings`, one child under `IndexerSettings`' shared toolbar on the `setChildSave` / `onChildStateChange` shape #530 established, and nothing added to the shared hook. Three things fall out of the slice going: the `fetchIndexerOptions` boot effect (the query fetches on mount), the `clearPendingChanges` unmount effect (the pending store is per-instance and unmounts with the component, the same retirement #521 made), and the `isPopulated` term in the render guard, which `hasSettings` already covered. The second `setIndexerOptionsValue` dispatch for the subtitle tags stays as a second handler, because the join is still needed — **and the type it joins to was wrong**, which is its own note above. `IndexerSettings.tsx` keeps one `useSelector` for `isTestingAll` and its `testAllIndexers` dispatch; those are 7c's, and this is the partial-component conversion #462 established. Verified on the running instance: the Options fieldset renders off one `GET /api/v3/config/indexer`; editing **Minimum Age** flips the toolbar to *Save Changes* and typing the saved value back returns it to *No Changes*, which is `updateSetting`'s comparison doing what `createSetSettingValueReducer` did; **Save** sends one `PUT` and returns to *No Changes* off the cache write with no refetch; under *Show Advanced* the subtitle tag input splits the stored string into two tags and saves `"vostfr,hardsub"` back, and a reload renders both; and an out-of-range **RSS Sync Interval** comes back 400 and renders *Must be between 10 and 120 or 0 to disable* on that field with the edit kept. `/api/v3/config/indexer` diffs clean against its pre-test baseline; no console errors. Props of the component are marked `Readonly<T>` per SonarQube `typescript:S6759`. |
 | 2026-08-27 | #536 | **Indexer flags.** Section 7a. `settings.indexerFlags`, `IndexerFlagSettingsAppState` and `createIndexerFlagsSelector` are deleted for `Settings/Indexers/useIndexerFlags.ts`; `react-redux` 74 to **72** and `Store/` 4,052 across 57 to **3,994** across 55. No connectors — the section never had one — so 23 does not move. **It is the Languages shape a second time**: a read-only list the server compiles in, so `staleTime: Infinity` / `gcTime: Infinity` and one `GET /api/v3/indexerFlag` for the session, exactly as the slice's single boot fetch did. The boot gate swaps its `isPopulated` term for the query's `isFetched` and drops the `fetchIndexerFlags` dispatch, leaving `isReduxPopulated` waiting on `importLists` alone — the last term, and section 9's to take. **The bitmask unpacking is the only thing that needed a decision.** A release carries its flags as one integer, so both consumers had to test it against the flag list before rendering: `Movie/IndexerFlags` did it in a `filter` over `createIndexerFlagsSelector`, and `IndexerFlagsSelectInput` did the same walk again inside its own `createSelector` to build `value`. That is `useSelectedIndexerFlags` now, one memoised filter beside the query, and the select input's hand-rolled selector goes with it. **The domains are finished by this PR**: `Movie/IndexerFlags.tsx` was the last `react-redux` import under `Movie/`, `Scene/`, `Performer/` or `Studio/`, and everything still on Redux is Settings plus twelve scattered files. Verified on the running instance: the app boots with `#root` populated and no console errors; `GET /api/v3/indexerFlag` returns the ten flags; the **Set Indexer Flags** modal off Manage Files lists all ten off the query, and selecting `G_Freeleech` and `PTP_Golden` — 1 and 8 — round-trips the 9 back out as both, which is the unpacking under test. **Not exercised** — `Movie/IndexerFlags`' popover, which only renders on hover over a flagged row in the file editor. Props of the components touched are marked `Readonly<T>` per SonarQube `typescript:S6759`. |
 | 2026-08-27 | #535 | **General.** Section 6, second half, and the end of section 6. `settings.general` and `GeneralAppState` are deleted for `Settings/General/useGeneralSettings.ts` on `useManageSettings`; the nine `.js` files under `Settings/General` become eight TSX ones plus a props type. One connector — 24 to **23** — and `react-redux` 78 to **74**, `Store/` 4,145 across 59 to **4,052** across 57. **The restart-required check is the story** and it is its own note above: it could not be ported, because it read a `previousValue` that only exists while the pending bag is still full. Two deliberate departures from Sonarr: the eight fieldsets take `settings` and `onInputChange` rather than the forty-odd individual field props Sonarr's take — every one comes from the same object and goes straight to a `FormInputGroup`, so per-field props are plumbing, not type safety — and `advancedSettings` is read by each fieldset through `useShowAdvancedSettings()` instead of being threaded down, as `MediaManagement.tsx` already does. `SecuritySettings` was the last class component in the folder and becomes a function; its two exported option lists still feed the first-run authentication modal, which comes off the slice here too. **`Store/Actions/actionTypes.js` had no importers at all** — its whole contents were this section's three action types plus a `FETCH_LANGUAGES` that #532 should have taken — so it goes with the slice. `typings/Settings/General.ts` gains the sixteen fields the interface never had (`logSizeLimit`, `trustCgnatIpAddresses` and the fourteen `whisparr*` ones); they round-tripped through the PUT regardless, since `useManageSettings` spreads the whole query object, but the form could not be typed without them. Verified on the running instance: eight fieldsets with Updates and Backups behind *Show Advanced*; **Instance Name** flips the toolbar to *Save Changes*, one `PUT /api/v3/config/host` saves it with no refetch and the restart modal opens; a non-restart key saves the same way and does not open it; clearing **Username** under forms auth comes back 400 and renders *'Username' must not be empty.* on that field with the edit kept. `/api/v3/config/host` diffs clean against its pre-test baseline, and Updates, Movies, Settings and System Status render with no console errors. **`/config/host` is fetched twice** on pages that mount a second observer, because the sidebar reads it too — unchanged from the slice, which had both the sidebar hook and the connector dispatching, and a `staleTime` on `useSettings` would reach every section, so it waits for the teardown. **Not exercised:** the first-run authentication modal, which only renders when authentication is off. Props of the components touched are marked `Readonly<T>` per SonarQube `typescript:S6759`. |
