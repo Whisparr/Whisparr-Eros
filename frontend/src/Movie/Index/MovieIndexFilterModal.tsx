@@ -1,12 +1,12 @@
 import React, { useCallback } from 'react';
-import FilterModal from 'Components/Filter/FilterModal';
+import FilterModal, {
+  FilterModalPassthroughProps,
+} from 'Components/Filter/FilterModal';
 import { MOVIE_INDEX_FILTER_BUILDER_PROPS } from './movieIndexFilterBuilderProps';
 import { setMovieIndexFilter } from './movieIndexOptionsStore';
 import { useMovieIndex } from './useMovieIndex';
 
-interface MovieIndexFilterModalProps {
-  isOpen: boolean;
-}
+type MovieIndexFilterModalProps = FilterModalPassthroughProps;
 
 export default function MovieIndexFilterModal(
   props: MovieIndexFilterModalProps

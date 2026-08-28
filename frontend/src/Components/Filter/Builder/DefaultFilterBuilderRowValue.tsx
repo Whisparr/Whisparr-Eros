@@ -6,13 +6,6 @@ import * as filterTypes from 'Helpers/Props/filterTypes';
 import FilterBuilderRowValue from './FilterBuilderRowValue';
 import FilterBuilderRowValueProps from './FilterBuilderRowValueProps';
 
-interface DefaultFilterBuilderRowValueProps extends Omit<
-  FilterBuilderRowValueProps,
-  'sectionItem'
-> {
-  sectionItems: unknown[];
-}
-
 // The last `connect()` in the app, and it never read the store: its
 // `mapStateToProps` was `createSelector` over three own props, so all it bought
 // was memoizing a prop transformation. That is what `useMemo` is for.
@@ -21,7 +14,7 @@ function DefaultFilterBuilderRowValue({
   sectionItems,
   selectedFilterBuilderProp,
   ...otherProps
-}: Readonly<DefaultFilterBuilderRowValueProps>) {
+}: Readonly<FilterBuilderRowValueProps>) {
   const tagList = useMemo(() => {
     const { type, optionsSelector } = selectedFilterBuilderProp;
 
@@ -37,7 +30,12 @@ function DefaultFilterBuilderRowValue({
       return [];
     }
 
-    return uniqBy<FilterBuilderPropOption>(optionsSelector(sectionItems), 'id');
+    // The row holds the section's items read-only; the selectors only read
+    // them too, but they are declared over a plain array.
+    return uniqBy<FilterBuilderPropOption>(
+      optionsSelector(sectionItems as unknown[]),
+      'id'
+    );
   }, [filterType, sectionItems, selectedFilterBuilderProp]);
 
   return (

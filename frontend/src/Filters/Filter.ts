@@ -13,6 +13,9 @@ export interface FilterBuilderProp<T> {
   label: string | (() => string);
   type: FilterBuilderTypes;
   valueType?: FilterBuilderValueType;
+  // Read by `FilterBuilderRowValue` when it parses a typed-in number. No
+  // filter declares one, so every number filter rounds to a whole number.
+  numberFractionDigits?: number;
   optionsSelector?: (items: T[]) => FilterBuilderPropOption[];
 }
 
