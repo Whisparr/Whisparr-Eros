@@ -12,6 +12,7 @@ import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { kinds } from 'Helpers/Props';
 import { useMoviesByIds } from 'Movie/useMovie';
+import { useIndexersWithIds } from 'Settings/Indexers/Indexers/useIndexers';
 import { useNotificationsWithIds } from 'Settings/Notifications/useNotifications';
 import { useReleaseProfilesWithIds } from 'Settings/Profiles/Release/useReleaseProfiles';
 import sortByProp from 'Utilities/Array/sortByProp';
@@ -89,12 +90,7 @@ function TagDetailsModalContent({
 
   const releaseProfiles = useReleaseProfilesWithIds(releaseProfileIds);
 
-  const indexers = useSelector(
-    createMatchingItemSelector(
-      indexerIds,
-      (state: AppState) => state.settings.indexers.items
-    )
-  );
+  const indexers = useIndexersWithIds(indexerIds);
 
   const downloadClients = useSelector(
     createMatchingItemSelector(

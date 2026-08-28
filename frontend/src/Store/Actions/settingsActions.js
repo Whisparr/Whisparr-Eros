@@ -10,7 +10,6 @@ import downloadClients from './Settings/downloadClients';
 import importListExclusions from './Settings/importListExclusions';
 import importListOptions from './Settings/importListOptions';
 import importLists from './Settings/importLists';
-import indexers from './Settings/indexers';
 
 export * from './Settings/autoTaggingSpecifications';
 export * from './Settings/autoTaggings';
@@ -22,7 +21,6 @@ export * from './Settings/downloadClientOptions';
 export * from './Settings/importListOptions';
 export * from './Settings/importLists';
 export * from './Settings/importListExclusions';
-export * from './Settings/indexers';
 
 //
 // Variables
@@ -43,7 +41,6 @@ export const defaultState = {
   importLists: importLists.defaultState,
   importListExclusions: importListExclusions.defaultState,
   importListOptions: importListOptions.defaultState,
-  indexers: indexers.defaultState,
 };
 
 export const persistState = ['settings.importListExclusions.pageSize'];
@@ -62,7 +59,6 @@ export const actionHandlers = handleThunks({
   ...importLists.actionHandlers,
   ...importListExclusions.actionHandlers,
   ...importListOptions.actionHandlers,
-  ...indexers.actionHandlers,
 });
 
 //
@@ -80,7 +76,6 @@ export const reducers = createHandleActions(
     ...importLists.reducers,
     ...importListExclusions.reducers,
     ...importListOptions.reducers,
-    ...indexers.reducers,
   },
   defaultState,
   section
