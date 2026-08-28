@@ -1,37 +1,58 @@
 import classNames from 'classnames';
-import PropTypes from 'prop-types';
-import React, { useRef } from 'react';
+import React, { useCallback, useRef } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
 import { DELAY_PROFILE } from 'Helpers/dragTypes';
+import { Tag } from 'Tags/useTags';
 import DelayProfile from './DelayProfile';
+import { DelayProfile as DelayProfileModel } from './useDelayProfiles';
 import styles from './DelayProfileDragSource.css';
 
+export interface DelayProfileDragItem {
+  delayProfile: DelayProfileModel;
+  tagList: readonly Tag[];
+}
+
+interface DelayProfileDragSourceProps extends DelayProfileDragItem {
+  isDraggingUp: boolean;
+  isDraggingDown: boolean;
+  onDelayProfileDragMove: (dragIndex: number, dropIndex: number) => void;
+  onDelayProfileDragEnd: (id: number, didDrop: boolean) => void;
+}
+
 function DelayProfileDragSource({
-  id,
-  order,
+  delayProfile,
+  tagList,
   isDraggingUp,
   isDraggingDown,
   onDelayProfileDragMove,
   onDelayProfileDragEnd,
-  ...otherProps
-}) {
-  const ref = useRef(null);
+}: Readonly<DelayProfileDragSourceProps>) {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const { order } = delayProfile;
 
-  const [{ isDragging }, drag] = useDrag({
+  const [{ isDragging }, drag] = useDrag<
+    DelayProfileDragItem,
+    unknown,
+    { isDragging: boolean }
+  >({
     type: DELAY_PROFILE,
-    item: () => ({ id, order, isDraggingUp, isDraggingDown, ...otherProps }),
+    item: () => ({ delayProfile, tagList }),
     end: (item, monitor) => {
-      onDelayProfileDragEnd(item, monitor.didDrop());
+      onDelayProfileDragEnd(item.delayProfile.id, monitor.didDrop());
     },
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
   });
 
-  const [{ isOver }, drop] = useDrop({
+  const [{ isOver }, drop] = useDrop<
+    DelayProfileDragItem,
+    unknown,
+    { isOver: boolean }
+  >({
     accept: DELAY_PROFILE,
     hover: (item, monitor) => {
-      const dragIndex = item.order;
+      const dragIndex = item.delayProfile.order;
       const hoverIndex = order;
 
       if (!ref.current) {
@@ -42,6 +63,11 @@ function DelayProfileDragSource({
       const hoverMiddleY =
         (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
       const clientOffset = monitor.getClientOffset();
+
+      if (!clientOffset) {
+        return;
+      }
+
       const hoverClientY = clientOffset.y - hoverBoundingRect.top;
 
       if (dragIndex === hoverIndex) {
@@ -59,23 +85,19 @@ function DelayProfileDragSource({
     }),
   });
 
-  const connectRef = (node) => {
-    ref.current = node;
-    drop(node);
-  };
+  const connectRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      ref.current = node;
+      drop(node);
+    },
+    [drop]
+  );
 
   const isBefore = !isDragging && isDraggingUp && isOver;
   const isAfter = !isDragging && isDraggingDown && isOver;
 
   return (
-    <div
-      ref={connectRef}
-      className={classNames(
-        styles.delayProfileDragSource,
-        isBefore && styles.isDraggingUp,
-        isAfter && styles.isDraggingDown
-      )}
-    >
+    <div ref={connectRef} className={styles.delayProfileDragSource}>
       {isBefore && (
         <div
           className={classNames(
@@ -86,11 +108,9 @@ function DelayProfileDragSource({
       )}
 
       <DelayProfile
-        id={id}
-        order={order}
+        delayProfile={delayProfile}
+        tagList={tagList}
         isDragging={isDragging}
-        isOver={isOver}
-        {...otherProps}
         connectDragSource={drag}
       />
 
@@ -105,14 +125,5 @@ function DelayProfileDragSource({
     </div>
   );
 }
-
-DelayProfileDragSource.propTypes = {
-  id: PropTypes.number.isRequired,
-  order: PropTypes.number.isRequired,
-  isDraggingUp: PropTypes.bool,
-  isDraggingDown: PropTypes.bool,
-  onDelayProfileDragMove: PropTypes.func.isRequired,
-  onDelayProfileDragEnd: PropTypes.func.isRequired,
-};
 
 export default DelayProfileDragSource;

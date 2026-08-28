@@ -3,15 +3,8 @@ import AppSectionState, {
   AppSectionItemState,
   AppSectionSaveState,
 } from 'App/State/AppSectionState';
-import DelayProfile from 'typings/DelayProfile';
 import DownloadClient from 'typings/DownloadClient';
 import DownloadClientOptions from 'typings/Settings/DownloadClientOptions';
-
-export interface DelayProfileAppState
-  extends
-    AppSectionState<DelayProfile>,
-    AppSectionDeleteState,
-    AppSectionSaveState {}
 
 export interface DownloadClientAppState
   extends
@@ -28,7 +21,6 @@ export interface DownloadClientOptionsAppState
   extends AppSectionItemState<DownloadClientOptions>, AppSectionSaveState {}
 
 interface SettingsAppState {
-  delayProfiles: DelayProfileAppState;
   downloadClientOptions: DownloadClientOptionsAppState;
   downloadClients: DownloadClientAppState;
 }

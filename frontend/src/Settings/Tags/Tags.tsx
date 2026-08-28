@@ -4,10 +4,7 @@ import Alert from 'Components/Alert';
 import FieldSet from 'Components/FieldSet';
 import PageSectionContent from 'Components/Page/PageSectionContent';
 import { kinds } from 'Helpers/Props';
-import {
-  fetchDelayProfiles,
-  fetchDownloadClients,
-} from 'Store/Actions/settingsActions';
+import { fetchDownloadClients } from 'Store/Actions/settingsActions';
 import useTagDetails from 'Tags/useTagDetails';
 import useTags, { useSortedTagList } from 'Tags/useTags';
 import translate from 'Utilities/String/translate';
@@ -26,7 +23,6 @@ function Tags() {
   } = useTagDetails();
 
   useEffect(() => {
-    dispatch(fetchDelayProfiles());
     dispatch(fetchDownloadClients());
   }, [dispatch]);
 

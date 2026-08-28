@@ -1,10 +1,8 @@
 import { handleThunks } from 'Store/thunks';
 import createHandleActions from './Creators/createHandleActions';
-import delayProfiles from './Settings/delayProfiles';
 import downloadClientOptions from './Settings/downloadClientOptions';
 import downloadClients from './Settings/downloadClients';
 
-export * from './Settings/delayProfiles';
 export * from './Settings/downloadClients';
 export * from './Settings/downloadClientOptions';
 
@@ -17,7 +15,6 @@ export const section = 'settings';
 // State
 
 export const defaultState = {
-  delayProfiles: delayProfiles.defaultState,
   downloadClients: downloadClients.defaultState,
   downloadClientOptions: downloadClientOptions.defaultState,
 };
@@ -26,7 +23,6 @@ export const defaultState = {
 // Action Handlers
 
 export const actionHandlers = handleThunks({
-  ...delayProfiles.actionHandlers,
   ...downloadClients.actionHandlers,
   ...downloadClientOptions.actionHandlers,
 });
@@ -36,7 +32,6 @@ export const actionHandlers = handleThunks({
 
 export const reducers = createHandleActions(
   {
-    ...delayProfiles.reducers,
     ...downloadClients.reducers,
     ...downloadClientOptions.reducers,
   },
