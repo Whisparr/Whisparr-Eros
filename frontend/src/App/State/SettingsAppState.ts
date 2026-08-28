@@ -3,13 +3,11 @@ import AppSectionState, {
   AppSectionItemState,
   AppSectionSaveState,
   AppSectionSchemaState,
-  PagedAppSectionState,
 } from 'App/State/AppSectionState';
 import CustomFormat from 'typings/CustomFormat';
 import DelayProfile from 'typings/DelayProfile';
 import DownloadClient from 'typings/DownloadClient';
 import ImportList from 'typings/ImportList';
-import ImportListExclusion from 'typings/ImportListExclusion';
 import ImportListOptionsSettings from 'typings/ImportListOptionsSettings';
 
 type Presets<T> = T & {
@@ -48,20 +46,10 @@ export interface CustomFormatAppState
 export interface ImportListOptionsSettingsAppState
   extends AppSectionItemState<ImportListOptionsSettings>, AppSectionSaveState {}
 
-export interface ImportListExclusionsSettingsAppState
-  extends
-    AppSectionState<ImportListExclusion>,
-    AppSectionSaveState,
-    PagedAppSectionState,
-    AppSectionDeleteState {
-  pendingChanges: Partial<ImportListExclusion>;
-}
-
 interface SettingsAppState {
   customFormats: CustomFormatAppState;
   delayProfiles: DelayProfileAppState;
   downloadClients: DownloadClientAppState;
-  importListExclusions: ImportListExclusionsSettingsAppState;
   importListOptions: ImportListOptionsSettingsAppState;
   importLists: ImportListAppState;
 }
