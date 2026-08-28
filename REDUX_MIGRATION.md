@@ -11,7 +11,7 @@ Counts are file-level `react-redux` imports across the frontend source tree.
 Every commit reference below links to the Sonarr commit it names; all were
 verified to resolve against the public repo.
 
-**Status: Phases A, B, C, D and E complete. All that is left is Phase F — the mutation sweep and the teardown.** See §11 for the running log.
+**Status: Phases A, B, C, D and E complete, and F2 with them — there is no Redux left in the frontend. All that is left is F1, the mutation sweep.** See §11 for the running log.
 
 ---
 
@@ -19,10 +19,10 @@ verified to resolve against the public repo.
 
 | Metric | At assessment | Now |
 | --- | --- | --- |
-| Files importing `react-redux` | 327 of 1,255 | **2** of 1,124 |
-| Lines under `frontend/src/Store/` | 15,374 across 138 files | **592** across 12 |
-| Redux slices registered in `Store/Actions/index.js` | 35 | **0** |
-| Remaining `*Connector` files | 66 | **3** |
+| Files importing `react-redux` | 327 of 1,255 | **0** of 1,108 |
+| Lines under `frontend/src/Store/` | 15,374 across 138 files | **0** — the directory is gone |
+| Redux slices registered in `Store/Actions/index.js` | 35 | **0** — no such file |
+| Remaining `*Connector` files | 66 | **2**, neither of them a `connect()` |
 | Files touching React Query | 35 | **85** |
 | zustand stores | 0 (not installed) | **installed, 40 files** |
 
@@ -296,15 +296,19 @@ this sweep starts from the same footing Sonarr's did.
 
 ### F2 — Goodbye Redux
 
-Sonarr's final commit ([Sonarr/Sonarr@0460281f](https://github.com/Sonarr/Sonarr/commit/0460281f)) removed 1,996 lines across 51 files. The Eros equivalent:
+Sonarr's final commit ([Sonarr/Sonarr@0460281f](https://github.com/Sonarr/Sonarr/commit/0460281f)) removed 1,996 lines across 51 files. The Eros equivalent — **done, #549**, 763 deletions across 75 files, because the phases ahead of it had already taken the rest:
 
-- Delete `frontend/src/Store/` — 41 files, 2,641 lines today, from 138 files and 15,374
-  lines at assessment.
-- Delete surviving `App/State/*AppState.ts` slices (1 today — `SettingsAppState` — from 33;
-  most disappear with their phase).
-- Drop `<Provider>` from `frontend/src/bootstrap.tsx`.
-- Remove from `package.json`: `react-redux`, `redux`, `redux-actions`,
-  `redux-batched-actions`, `redux-localstorage`, `redux-thunk`, `@types/redux-actions`.
+- ~~Delete `frontend/src/Store/` — 41 files, 2,641 lines today, from 138 files and 15,374
+  lines at assessment.~~ Done; it was 11 files and 470 lines by the time F2 ran, and four
+  of them were not redux at all — see *What was in `Store/` that was not redux* below.
+- ~~Delete surviving `App/State/*AppState.ts` slices (1 today — `SettingsAppState` — from 33;
+  most disappear with their phase).~~ Done — `SettingsAppState` went with #546, and F2
+  took `AppState` and `AppSectionState` with it. `App/State/` no longer exists.
+- ~~Drop `<Provider>` from `frontend/src/bootstrap.tsx`.~~ Done — it was in `App.tsx`, and
+  `bootstrap.tsx` lost `createAppStore` with it.
+- ~~Remove from `package.json`: `react-redux`, `redux`, `redux-actions`,
+  `redux-batched-actions`, `redux-localstorage`, `redux-thunk`, `@types/redux-actions`.~~
+  Done, plus `reselect`, whose last consumer was the last `connect()`.
 - ~~Re-home the Sentry middleware — `createSentryMiddleware.js` is a redux middleware and
   needs a non-redux home before the store goes.~~ **Done, #547** — it needed no home.
   The Sentry *client* is retired from the frontend: the middleware, `ErrorBoundary`'s
@@ -1701,10 +1705,45 @@ authorization into `settings.<section>` for "the forms still on Redux", and the 
 that passed it converted in #538, so the branch has been unreachable since. Its
 `onSaveError` half is what every provider form actually uses.
 
+### What was in `Store/` that was not redux
+
+F2 was supposed to be a delete. Four of the eleven files left could not just go:
+
+- **`Selectors/selectSettings.ts`** — 183 lines and seventeen importers, none of them
+  redux. It turns an item plus its pending changes into the `{ value, previousValue,
+  pending, errors, warnings }` shape every settings form renders, and it is the thing
+  `useSettings`, `useProviderSettings` and half a dozen edit modals are built on. Now
+  `Helpers/selectSettings.ts`, beside the pending stores it pairs with.
+- **`scrollPositions.ts`** — a plain object keyed by page name, read by
+  `withScrollPosition`. Now `Helpers/scrollPositions.ts`.
+- **`App/State/AppState.ts`** — not under `Store/`, but the same story. Its filter types
+  were duplicates of the ones in `Filters/Filter.ts`, which is where `CustomFilter` moved
+  in Phase C; the 26 importers repoint and the file goes.
+- **`App/State/AppSectionState.ts`** — ten files imported `Error` from it and nothing
+  imported any of the eight slice-shape interfaces beside it. That one interface is
+  `typings/AppError.ts` now.
+
+The lesson is the one #545 and #546 kept teaching in the other direction: a directory
+named after a technology accumulates things that have nothing to do with it, and the last
+PR is where you find out.
+
+### The last connect() never read the store
+
+`FilterBuilderRowValueConnector` survived every phase because nothing about it looked like
+state. Its `mapStateToProps` is `createSelector` over `filterType`, `sectionItems` and
+`selectedFilterBuilderProp` — three **own props**. `connect()` was being used purely to
+memoize a prop transformation, which is `useMemo` with extra steps and a store dependency.
+It is `DefaultFilterBuilderRowValue.tsx` now, and `reselect` left with it.
+
+Its fallback branch was dead: when a filter prop has no `optionsSelector` the selector
+built options by reducing `sectionItems` itself — but the guard directly above returned
+`[]` for exactly that case, so the reduce could never run.
+
 ## 11. Log
 
 | Date | PR | What |
 | --- | --- | --- |
+| 2026-08-28 | #549 | **Goodbye Redux.** Phase F2. `frontend/src/Store/` is deleted, `<Provider>` comes out of `App.tsx`, `createAppStore` out of `bootstrap.tsx`, and `react-redux`, `redux`, `redux-actions`, `redux-batched-actions`, `redux-localstorage`, `redux-thunk`, `@types/redux-actions` and `reselect` come out of `package.json`. **Zero files import `react-redux`**; the two `*Connector` files left are `.tsx` components that only kept the name. Four things moved rather than went: `selectSettings` and `scrollPositions` to `Helpers/`, `AppState`'s filter types to `Filters/Filter.ts` (where they were already duplicated), and `AppSectionState`'s `Error` to `typings/AppError.ts` — `App/State/` is gone with them. The last `connect()` turned out never to have read the store: `FilterBuilderRowValueConnector` memoized a transformation of its own props, so it is a `useMemo` in `DefaultFilterBuilderRowValue.tsx` now, minus a fallback branch the guard above it made unreachable. 763 deletions across 75 files, and another 20 KB off the bundle. Verified on the running instance: all 29 routes render with no error boundary and no console errors or warnings — the app boots and fetches with no store at all — and the converted filter-builder value component was exercised end to end on `/movies`, from switching a filter's key to *Studio* through the derived suggestion list to `POST /customFilter`. |
 | 2026-08-28 | #547 | **Sentry retired from the frontend.** Not a section — an F2 prerequisite cleared early. `createSentryMiddleware.js` was the one thing in §8's teardown list that needed a non-redux home before `Store/` could go, and the answer is that it needs none: we do not use Sentry. The middleware (114 lines, `init()` against `sentry.servarr.com`, one breadcrumb per redux action — and there are no actions left since #546), `ErrorBoundary`'s `captureException`, and both `@sentry/*` packages go; `@sentry/integrations` had no importers at all. `Shared/piwikCheck.js`, an unreferenced loader for `piwik.sonarr.tv`, goes with them. The built UI loses 91 KB of JavaScript. This is the client, not the feature: analytics stays and gets a replacement at some point, so the setting, `NzbDrone.Core.Analytics` and `initialize.json`'s `analytics` / `userHash` are untouched — and since nothing in the frontend has ever declared those two fields, let alone read them, the replacement starts from a clean seam. |
 | 2026-08-28 | #546 | **Download clients.** Section 11c, and **the end of Phase E**. `settings.downloadClients` and `SettingsAppState` are deleted for `Settings/DownloadClients/DownloadClients/useDownloadClients.ts` on the provider hooks — #538's shape, page, manage modal and all, plus the five files outside `Settings/` that read the slice. `Store/Actions/index.js` registers **nothing**: the slice took all 14 files in `Store/Actions/Creators/`, `settingsActions.js`, five selectors and `selectProviderSchema` with it. `react-redux` 18 to **2** — `App.tsx`'s `<Provider>` and one connector that reads only own props — connectors 8 to **3**, `Store/` 1,909 across 34 to **592** across 12, slices 1 to **0**. `combineReducers({})` warns on every dispatch, so `createReducers` falls back to a constant reducer until F2 removes the store. #538's two fixes applied to the copy here as well: the Set Tags spinner that never reset, and the manage sort moving from global state to modal-local. `typings/DownloadClient` extends `Provider` now instead of redeclaring six fields and a private `Field`. Five already-dead things removed and recorded, including `OAuthInput`'s Redux branch. Verified on the running instance: add (schema-seeded, Test, Save, and the forceSave retry), edit, row delete, manage-modal sort both ways, bulk edit, Set Tags and bulk delete, tag details, remote-path-mapping host options, the indexer modal's download-client select, and Test All from both the settings toolbar and the Health row — no console errors and no warnings, the empty store included. The override-grab modal was not exercised: it is only reachable through a toolbar that does not render headlessly. |
 | 2026-08-28 | #545 | **Download client options.** Section 11b. `settings.downloadClientOptions` and `DownloadClientOptionsAppState` are deleted for `Settings/DownloadClients/Options/useDownloadClientOptions.ts` on `useManageSettings`; `react-redux` 19 to **18**, `Store/` 2,090 across 37 to **1,909** across 34, one connector — 9 to **8**. #537's and #541's shape a third time: one endpoint, one child under the page's shared toolbar, nothing new asked of the shared hook, and `withAdvancedSettings` becomes `useShowAdvancedSettings()`. The section's own slice is 76 lines of the 181 that went — it was also the last consumer of `createSaveHandler` and of `createSettingsSectionSelector`, which closes the #541 thread about a selector outliving its last declared section. `SettingsAppState` is down to `downloadClients`. Verified on the running instance: one `GET /config/downloadclient` on load; *Show Advanced* reveals both fieldsets; editing the interval flips the toolbar to *Save Changes* and Save sends `PUT /config/downloadclient` and returns it to *No Changes* with the value surviving a reload; unchecking *Redownload Failed* hides the field under it and re-checking clears the pending change with no request. No console errors; both settings back where they started. |
