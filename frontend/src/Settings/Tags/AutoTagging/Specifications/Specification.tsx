@@ -4,51 +4,45 @@ import Label from 'Components/Label';
 import IconButton from 'Components/Link/IconButton';
 import ConfirmModal from 'Components/Modal/ConfirmModal';
 import { icons, kinds } from 'Helpers/Props';
-import Field from 'typings/Field';
+import { AutoTaggingSpecification } from 'typings/AutoTagging';
 import translate from 'Utilities/String/translate';
 import EditSpecificationModal from './EditSpecificationModal';
 import styles from './Specification.css';
 
 interface SpecificationProps {
-  id: number;
-  implementation: string;
-  implementationName: string;
-  name: string;
-  negate: boolean;
-  required: boolean;
-  fields: Field[];
-  onConfirmDeleteSpecification: (specId: number) => void;
-  onCloneSpecificationPress: (specId: number) => void;
+  specification: AutoTaggingSpecification;
+  onSaveSpecification: (specification: AutoTaggingSpecification) => void;
+  onConfirmDeleteSpecification: (specificationId: number) => void;
+  onCloneSpecificationPress: (specificationId: number) => void;
 }
 
 export default function Specification({
-  id,
-  implementationName,
-  name,
-  required,
-  negate,
+  specification,
+  onSaveSpecification,
   onConfirmDeleteSpecification,
   onCloneSpecificationPress,
-}: SpecificationProps) {
+}: Readonly<SpecificationProps>) {
+  const { id, implementationName, name, negate, required } = specification;
+
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const onEditPress = useCallback(() => {
     setIsEditModalOpen(true);
-  }, [setIsEditModalOpen]);
+  }, []);
 
   const onEditModalClose = useCallback(() => {
     setIsEditModalOpen(false);
-  }, [setIsEditModalOpen]);
+  }, []);
 
   const onDeletePress = useCallback(() => {
     setIsEditModalOpen(false);
     setIsDeleteModalOpen(true);
-  }, [setIsEditModalOpen, setIsDeleteModalOpen]);
+  }, []);
 
   const onDeleteModalClose = useCallback(() => {
     setIsDeleteModalOpen(false);
-  }, [setIsDeleteModalOpen]);
+  }, []);
 
   const onConfirmDelete = useCallback(() => {
     onConfirmDeleteSpecification(id);
@@ -88,10 +82,11 @@ export default function Specification({
       </div>
 
       <EditSpecificationModal
-        id={id}
         isOpen={isEditModalOpen}
-        onModalClose={onEditModalClose}
+        specification={specification}
+        onSave={onSaveSpecification}
         onDeleteSpecificationPress={onDeletePress}
+        onModalClose={onEditModalClose}
       />
 
       <ConfirmModal

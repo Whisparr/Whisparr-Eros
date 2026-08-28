@@ -1,8 +1,6 @@
-import React, { useCallback } from 'react';
-import { useDispatch } from 'react-redux';
+import React from 'react';
 import Modal from 'Components/Modal/Modal';
 import { sizes } from 'Helpers/Props';
-import { clearPendingChanges } from 'Store/Actions/baseActions';
 import EditAutoTaggingModalContent, {
   EditAutoTaggingModalContentProps,
 } from './EditAutoTaggingModalContent';
@@ -16,19 +14,12 @@ export default function EditAutoTaggingModal({
   isOpen,
   onModalClose,
   ...otherProps
-}: EditAutoTaggingModalProps) {
-  const dispatch = useDispatch();
-
-  const handleModalClose = useCallback(() => {
-    dispatch(clearPendingChanges({ section: 'settings.autoTaggings' }));
-    onModalClose();
-  }, [dispatch, onModalClose]);
-
+}: Readonly<EditAutoTaggingModalProps>) {
   return (
-    <Modal isOpen={isOpen} size={sizes.LARGE} onModalClose={handleModalClose}>
+    <Modal isOpen={isOpen} size={sizes.LARGE} onModalClose={onModalClose}>
       <EditAutoTaggingModalContent
         {...otherProps}
-        onModalClose={handleModalClose}
+        onModalClose={onModalClose}
       />
     </Modal>
   );

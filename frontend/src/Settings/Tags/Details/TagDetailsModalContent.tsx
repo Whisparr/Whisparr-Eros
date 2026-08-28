@@ -15,6 +15,7 @@ import { useMoviesByIds } from 'Movie/useMovie';
 import { useIndexersWithIds } from 'Settings/Indexers/Indexers/useIndexers';
 import { useNotificationsWithIds } from 'Settings/Notifications/useNotifications';
 import { useReleaseProfilesWithIds } from 'Settings/Profiles/Release/useReleaseProfiles';
+import { useAutoTaggingsWithIds } from 'Settings/Tags/AutoTagging/useAutoTaggings';
 import sortByProp from 'Utilities/Array/sortByProp';
 import translate from 'Utilities/String/translate';
 import TagDetailsDelayProfile from './TagDetailsDelayProfile';
@@ -99,12 +100,7 @@ function TagDetailsModalContent({
     )
   );
 
-  const autoTags = useSelector(
-    createMatchingItemSelector(
-      autoTagIds,
-      (state: AppState) => state.settings.autoTaggings.items
-    )
-  );
+  const autoTags = useAutoTaggingsWithIds(autoTagIds);
 
   return (
     <ModalContent onModalClose={onModalClose}>

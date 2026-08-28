@@ -1,6 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import AppState from 'App/State/AppState';
+import React, { useCallback } from 'react';
 import Alert from 'Components/Alert';
 import Button from 'Components/Link/Button';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
@@ -9,49 +7,42 @@ import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { kinds } from 'Helpers/Props';
-import {
-  fetchAutoTaggingSpecificationSchema,
-  selectAutoTaggingSpecificationSchema,
-} from 'Store/Actions/settingsActions';
+import { useAutoTaggingSchema } from 'Settings/Tags/AutoTagging/useAutoTaggings';
+import { AutoTaggingSpecification } from 'typings/AutoTagging';
 import translate from 'Utilities/String/translate';
 import AddSpecificationItem from './AddSpecificationItem';
 import styles from './AddSpecificationModalContent.css';
 
 interface AddSpecificationModalContentProps {
-  onModalClose: (options?: { specificationSelected: boolean }) => void;
+  onModalClose: (selectedSpecification?: AutoTaggingSpecification) => void;
 }
 
 export default function AddSpecificationModalContent({
   onModalClose,
-}: AddSpecificationModalContentProps) {
-  const { isSchemaFetching, isSchemaPopulated, schemaError, schema } =
-    useSelector((state: AppState) => state.settings.autoTaggingSpecifications);
+}: Readonly<AddSpecificationModalContentProps>) {
+  const { schema, isSchemaFetching, isSchemaFetched, schemaError } =
+    useAutoTaggingSchema();
 
-  const dispatch = useDispatch();
-
-  const onSpecificationSelect = useCallback(
+  // The pick is handed straight back through `onModalClose` rather than parked
+  // in a `selectedSchema` for the next modal to read, which is the whole of
+  // what `SELECT_AUTO_TAGGING_SPECIFICATION_SCHEMA` did.
+  const handleSpecificationSelect = useCallback(
     ({ implementation }: { implementation: string }) => {
-      dispatch(
-        selectAutoTaggingSpecificationSchema({
-          implementation,
-          presetName: name,
-        })
-      );
-      onModalClose({ specificationSelected: true });
+      const selected = schema.find((s) => s.implementation === implementation);
+
+      if (selected) {
+        onModalClose(selected);
+      }
     },
-    [dispatch, onModalClose]
+    [schema, onModalClose]
   );
 
   const handleModalClose = useCallback(() => {
     onModalClose();
   }, [onModalClose]);
 
-  useEffect(() => {
-    dispatch(fetchAutoTaggingSpecificationSchema());
-  }, [dispatch]);
-
   return (
-    <ModalContent onModalClose={onModalClose}>
+    <ModalContent onModalClose={handleModalClose}>
       <ModalHeader>{translate('AddCondition')}</ModalHeader>
 
       <ModalBody>
@@ -61,7 +52,7 @@ export default function AddSpecificationModalContent({
           <Alert kind={kinds.DANGER}>{translate('AddConditionError')}</Alert>
         ) : null}
 
-        {isSchemaPopulated && !schemaError ? (
+        {isSchemaFetched && !schemaError ? (
           <div>
             <Alert kind={kinds.INFO}>
               <div>{translate('SupportedAutoTaggingProperties')}</div>
@@ -73,7 +64,7 @@ export default function AddSpecificationModalContent({
                   <AddSpecificationItem
                     key={specification.implementation}
                     {...specification}
-                    onSpecificationSelect={onSpecificationSelect}
+                    onSpecificationSelect={handleSpecificationSelect}
                   />
                 );
               })}
