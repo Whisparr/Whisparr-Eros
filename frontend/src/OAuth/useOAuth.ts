@@ -1,7 +1,8 @@
 import { useCallback, useState } from 'react';
-import type AppError from 'typings/AppError';
-import createAjaxRequest from 'Utilities/createAjaxRequest';
-import requestAction from 'Utilities/requestAction';
+import { ValidationFailure } from 'typings/pending';
+import fetchJson, { ApiError } from 'Utilities/Fetch/fetchJson';
+import { QueryParams } from 'Utilities/Fetch/getQueryString';
+import requestAction, { ProviderData } from 'Utilities/requestAction';
 import translate from 'Utilities/String/translate';
 
 const callbackUrl = `${window.location.origin}${window.Whisparr.urlBase}/oauth.html`;
@@ -13,22 +14,28 @@ interface OAuthResult {
 interface OAuthState {
   authorizing: boolean;
   result: OAuthResult | null;
-  error: AppError | null;
+  error: ApiError | null;
 }
 
 export interface StartOAuthParams {
   name: string;
-  provider?: string;
-  providerData?: Record<string, unknown>;
-  [key: string]: unknown;
+  provider: string;
+  providerData: ProviderData;
 }
 
+// What `startOAuth` answers with. Either an `oauthUrl` to send the user to, or
+// the options for an intermediate request to the provider -- Plex returns its
+// `plex.tv/api/v2/pins` url and the headers to call it with, and the pin it
+// answers becomes the query for `continueOAuth`.
 interface OAuthResponse {
   oauthUrl?: string;
+  url?: string;
+  method?: string;
+  headers?: Record<string, string>;
   [key: string]: unknown;
 }
 
-interface QueryParams {
+interface QueryParamsResult {
   [key: string]: string;
 }
 
@@ -45,7 +52,7 @@ const defaultState: OAuthState = {
 function showOAuthWindow(
   url: string,
   payload: StartOAuthParams
-): Promise<QueryParams> {
+): Promise<QueryParamsResult> {
   return new Promise((resolve, reject) => {
     const selfWindow = window as WindowWithOAuth;
     const newWindow = window.open(url);
@@ -55,20 +62,27 @@ function showOAuthWindow(
       newWindow.closed ||
       typeof newWindow.closed === 'undefined'
     ) {
-      // A fake validation error to mimic a 400 response from the API.
-      const error: AppError = {
-        status: 400,
-        responseJSON: [
-          {
-            isWarning: false,
-            severity: 'error',
-            propertyName: payload.name,
-            errorMessage: translate('OAuthPopupMessage'),
-          },
-        ],
-      };
+      // A fake validation error to mimic a 400 response from the API. The
+      // failures ride in `statusBody`, which is where `getValidationFailures`
+      // looks; the declared `ApiErrorResponse` shape is the other thing a 400
+      // can carry, so this needs the same cast every other failure reader uses.
+      const failures: ValidationFailure[] = [
+        {
+          isWarning: false,
+          severity: 'error',
+          propertyName: payload.name,
+          errorMessage: translate('OAuthPopupMessage'),
+        },
+      ];
 
-      return reject(error);
+      return reject(
+        new ApiError(
+          url,
+          400,
+          'Bad Request',
+          failures as unknown as ApiError['statusBody']
+        )
+      );
     }
 
     selfWindow.onCompleteOauth = function (
@@ -77,7 +91,7 @@ function showOAuthWindow(
     ) {
       delete selfWindow.onCompleteOauth;
 
-      const queryParams: QueryParams = {};
+      const queryParams: QueryParamsResult = {};
       const splitQuery = query.substring(1).split('&');
 
       splitQuery.forEach((param) => {
@@ -94,22 +108,31 @@ function showOAuthWindow(
   });
 }
 
-function executeIntermediateRequest(
-  payload: Record<string, unknown>,
-  ajaxOptions: Record<string, unknown>
+// The intermediate request goes to the provider, not to us, so it takes the
+// url and headers verbatim -- no api root and no api key. `createAjaxRequest`
+// made the same distinction with its `isRelative` check.
+async function executeIntermediateRequest(
+  payload: Pick<StartOAuthParams, 'provider' | 'providerData'>,
+  { url, method, headers }: OAuthResponse
 ): Promise<OAuthResponse> {
-  return createAjaxRequest(ajaxOptions).request.then(
-    (data: Record<string, unknown>) => {
-      return requestAction({
-        action: 'continueOAuth',
-        queryParams: {
-          ...data,
-          callbackUrl,
-        },
-        ...payload,
-      });
-    }
-  );
+  if (!url) {
+    throw new Error('No intermediate request URL received from startOAuth');
+  }
+
+  const data = await fetchJson<Record<string, unknown>, never>({
+    path: url,
+    method,
+    headers,
+  });
+
+  return requestAction<OAuthResponse>({
+    ...payload,
+    action: 'continueOAuth',
+    queryParams: {
+      ...(data as QueryParams),
+      callbackUrl,
+    },
+  });
 }
 
 function useOAuth() {
@@ -122,19 +145,17 @@ function useOAuth() {
   const startOAuth = useCallback(async (params: StartOAuthParams) => {
     const { name, ...otherPayload } = params;
 
-    const actionPayload = {
-      action: 'startOAuth',
-      queryParams: { callbackUrl },
-      ...otherPayload,
-    };
-
     setOAuthState((prevState) => ({ ...prevState, authorizing: true }));
 
     try {
-      const response = (await requestAction(actionPayload)) as OAuthResponse;
+      const response = await requestAction<OAuthResponse>({
+        ...otherPayload,
+        action: 'startOAuth',
+        queryParams: { callbackUrl },
+      });
 
       let startResponse = response;
-      let queryParams: QueryParams = {};
+      let queryParams: QueryParamsResult = {};
 
       if (response.oauthUrl) {
         queryParams = await showOAuthWindow(response.oauthUrl, params);
@@ -153,14 +174,14 @@ function useOAuth() {
         queryParams = await showOAuthWindow(startResponse.oauthUrl, params);
       }
 
-      const result = (await requestAction({
+      const result = await requestAction<OAuthResult>({
+        ...otherPayload,
         action: 'getOAuthToken',
         queryParams: {
-          ...startResponse,
+          ...(startResponse as QueryParams),
           ...queryParams,
         },
-        ...otherPayload,
-      })) as OAuthResult;
+      });
 
       setOAuthState({ authorizing: false, result, error: null });
 
@@ -169,7 +190,7 @@ function useOAuth() {
       setOAuthState({
         authorizing: false,
         result: null,
-        error: error as AppError,
+        error: error as ApiError,
       });
 
       throw error;

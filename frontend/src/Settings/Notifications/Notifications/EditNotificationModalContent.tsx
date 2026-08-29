@@ -18,9 +18,9 @@ import AdvancedSettingsButton from 'Settings/AdvancedSettingsButton';
 import { useShowAdvancedSettings } from 'Settings/advancedSettingsStore';
 import { useManageNotification } from 'Settings/Notifications/useNotifications';
 import { SelectedSchema } from 'Settings/useProviderSchema';
-import AppError from 'typings/AppError';
 import { EnhancedSelectInputChanged, InputChanged } from 'typings/inputs';
 import Notification from 'typings/Notification';
+import { ApiError } from 'Utilities/Fetch/fetchJson';
 import translate from 'Utilities/String/translate';
 import NotificationEventItems from './NotificationEventItems';
 import styles from './EditNotificationModalContent.css';
@@ -97,7 +97,7 @@ function EditNotificationModalContent({
   );
 
   const handleOAuthSaveError = useCallback(
-    (oAuthError: AppError | null) => {
+    (oAuthError: ApiError | null) => {
       setSaveError(oAuthError);
     },
     [setSaveError]

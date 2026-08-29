@@ -57,7 +57,12 @@ async function fetchJson<T, TData>({
     headers: {
       ...options.headers,
       Accept: 'application/json',
-      'Content-Type': 'application/json',
+      // Only when there is something to describe. `Content-Type:
+      // application/json` is not a CORS-safelisted request header, so setting
+      // it unconditionally makes every cross-origin GET preflight -- which the
+      // OAuth intermediate request to plex.tv is. Same-origin calls never
+      // noticed, and a body-less request has no content type to declare.
+      ...(body ? { 'Content-Type': 'application/json' } : {}),
     },
     signal: anySignal(abortController.signal, signal),
   });

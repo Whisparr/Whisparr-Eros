@@ -6,7 +6,6 @@ import { usePendingChangesStore } from 'Helpers/Hooks/usePendingChangesStore';
 import { usePendingFieldsStore } from 'Helpers/Hooks/usePendingFieldsStore';
 import useQueryClient from 'Helpers/Hooks/useQueryClient';
 import selectSettings from 'Helpers/selectSettings';
-import AppError from 'typings/AppError';
 import Field from 'typings/Field';
 import Provider from 'typings/Provider';
 import { ApiError } from 'Utilities/Fetch/fetchJson';
@@ -199,11 +198,9 @@ export const useManageProviderSettings = <T extends ModelBase>(
   // validation against the same body, and both have to reach `selectSettings`
   // so the messages land on the fields that caused them. React Query keeps an
   // error per mutation, so they are merged into one piece of state here, and
-  // whichever ran last owns it. `AppError` is in the union because an OAuth
-  // field reports its own 400 through the same channel.
-  const [mutationError, setMutationError] = useState<
-    ApiError | AppError | null
-  >(null);
+  // whichever ran last owns it. An OAuth field reports its own 400 through the
+  // same channel, and since #560 that is an `ApiError` like every other.
+  const [mutationError, setMutationError] = useState<ApiError | null>(null);
 
   const {
     pendingChanges,

@@ -6,12 +6,10 @@ import SpinnerButton, {
 import { getValidationFailures } from 'Helpers/Hooks/useApiMutation';
 import usePrevious from 'Helpers/Hooks/usePrevious';
 import { icons } from 'Helpers/Props';
-import AppError from 'typings/AppError';
-import { ValidationFailure } from 'typings/pending';
 import { ApiError } from 'Utilities/Fetch/fetchJson';
 import styles from './SpinnerErrorButton.css';
 
-function getTestResult(error: ApiError | AppError | string | undefined | null) {
+function getTestResult(error: ApiError | string | undefined | null) {
   if (!error) {
     return {
       wasSuccessful: true,
@@ -28,25 +26,7 @@ function getTestResult(error: ApiError | AppError | string | undefined | null) {
     };
   }
 
-  if (error instanceof ApiError) {
-    if (error.statusCode !== 400 || error.statusBody == null) {
-      return {
-        wasSuccessful: false,
-        hasWarning: false,
-        hasError: true,
-      };
-    }
-
-    const failures = getValidationFailures(error);
-
-    return {
-      wasSuccessful: false,
-      hasWarning: failures.warnings.length > 0,
-      hasError: failures.errors.length > 0,
-    };
-  }
-
-  if (error.status !== 400) {
+  if (error.statusCode !== 400 || error.statusBody == null) {
     return {
       wasSuccessful: false,
       hasWarning: false,
@@ -54,31 +34,18 @@ function getTestResult(error: ApiError | AppError | string | undefined | null) {
     };
   }
 
-  const failures = error.responseJSON as ValidationFailure[];
-
-  const { hasError, hasWarning } = failures.reduce(
-    (acc, failure) => {
-      if (failure.isWarning) {
-        acc.hasWarning = true;
-      } else {
-        acc.hasError = true;
-      }
-
-      return acc;
-    },
-    { hasWarning: false, hasError: false }
-  );
+  const failures = getValidationFailures(error);
 
   return {
     wasSuccessful: false,
-    hasWarning,
-    hasError,
+    hasWarning: failures.warnings.length > 0,
+    hasError: failures.errors.length > 0,
   };
 }
 
 interface SpinnerErrorButtonProps extends SpinnerButtonProps {
   isSpinning: boolean;
-  error?: ApiError | AppError | string | null;
+  error?: ApiError | string | null;
   children: React.ReactNode;
 }
 

@@ -1,6 +1,8 @@
 import { PropertyFilter } from 'Filters/Filter';
 
 export interface QueryParams {
+  // `null` is allowed because the reducer below already drops it: a provider
+  // action can be handed a value the form has not filled in yet.
   [key: string]:
     | string
     | number
@@ -8,6 +10,7 @@ export interface QueryParams {
     | PropertyFilter[]
     | number[]
     | string[]
+    | null
     | undefined;
 }
 
