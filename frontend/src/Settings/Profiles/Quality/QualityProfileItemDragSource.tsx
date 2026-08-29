@@ -1,11 +1,51 @@
 import classNames from 'classnames';
-import PropTypes from 'prop-types';
-import React, { useRef } from 'react';
+import React, { useCallback, useRef } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
 import { QUALITY_PROFILE_ITEM } from 'Helpers/dragTypes';
+import { QualityProfileQualityItem } from 'typings/QualityProfile';
 import QualityProfileItem from './QualityProfileItem';
 import QualityProfileItemGroup from './QualityProfileItemGroup';
 import styles from './QualityProfileItemDragSource.css';
+
+// What the drag carries, and what the preview renders. `qualityIndex` is the
+// `1`/`1.2` position string the modal parses back into a group and an item.
+export interface QualityProfileItemDragItem {
+  editGroups: boolean;
+  qualityIndex: string;
+  groupId?: number;
+  qualityId?: number;
+  isGroup: boolean;
+  name: string;
+  allowed: boolean;
+}
+
+export interface DragMoveOptions {
+  dragQualityIndex: string;
+  dropQualityIndex: string;
+  dropPosition: 'above' | 'below';
+}
+
+interface QualityProfileItemDragSourceProps {
+  editGroups: boolean;
+  groupId?: number;
+  qualityId?: number;
+  name: string;
+  allowed: boolean;
+  items?: QualityProfileQualityItem[];
+  qualityIndex: string;
+  isDraggingUp?: boolean;
+  isDraggingDown?: boolean;
+  onCreateGroupPress?: (qualityId: number) => void;
+  onDeleteGroupPress?: (groupId: number) => void;
+  onQualityProfileItemAllowedChange: (
+    qualityId: number,
+    allowed: boolean
+  ) => void;
+  onItemGroupAllowedChange?: (groupId: number, allowed: boolean) => void;
+  onItemGroupNameChange?: (groupId: number, name: string) => void;
+  onQualityProfileItemDragMove: (options: DragMoveOptions) => void;
+  onQualityProfileItemDragEnd: (didDrop: boolean) => void;
+}
 
 function QualityProfileItemDragSource({
   editGroups,
@@ -15,8 +55,8 @@ function QualityProfileItemDragSource({
   allowed,
   items,
   qualityIndex,
-  isDraggingUp,
-  isDraggingDown,
+  isDraggingUp = false,
+  isDraggingDown = false,
   onCreateGroupPress,
   onDeleteGroupPress,
   onQualityProfileItemAllowedChange,
@@ -24,15 +64,19 @@ function QualityProfileItemDragSource({
   onItemGroupNameChange,
   onQualityProfileItemDragMove,
   onQualityProfileItemDragEnd,
-}) {
-  const ref = useRef(null);
+}: Readonly<QualityProfileItemDragSourceProps>) {
+  const ref = useRef<HTMLDivElement | null>(null);
 
   // Refs to capture current values for use inside hover handler
   const isDraggingUpRef = useRef(isDraggingUp);
   const isOverCurrentRef = useRef(false);
   isDraggingUpRef.current = isDraggingUp;
 
-  const [{ isDragging }, drag] = useDrag({
+  const [{ isDragging }, drag] = useDrag<
+    QualityProfileItemDragItem,
+    unknown,
+    { isDragging: boolean }
+  >({
     type: QUALITY_PROFILE_ITEM,
     item: () => ({
       editGroups,
@@ -51,7 +95,11 @@ function QualityProfileItemDragSource({
     }),
   });
 
-  const [{ isOverCurrent }, drop] = useDrop({
+  const [{ isOverCurrent }, drop] = useDrop<
+    QualityProfileItemDragItem,
+    unknown,
+    { isOverCurrent: boolean }
+  >({
     accept: QUALITY_PROFILE_ITEM,
     hover: (item, monitor) => {
       const { qualityIndex: dragQualityIndex, isGroup: isDragGroup } = item;
@@ -77,6 +125,13 @@ function QualityProfileItemDragSource({
       const hoverMiddleY =
         (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
       const clientOffset = monitor.getClientOffset();
+
+      // `getClientOffset` is null once the pointer leaves the drag layer; the
+      // function read `.y` off it unguarded.
+      if (!clientOffset) {
+        return;
+      }
+
       const hoverClientY = clientOffset.y - hoverBoundingRect.top;
 
       // If we're hovering over a child don't trigger on the parent
@@ -92,13 +147,20 @@ function QualityProfileItemDragSource({
         return;
       }
 
-      let dropPosition = null;
+      const dropPosition = ((): DragMoveOptions['dropPosition'] | null => {
+        if (hoverClientY > hoverMiddleY) {
+          return 'below';
+        }
 
-      if (hoverClientY > hoverMiddleY) {
-        dropPosition = 'below';
-      } else if (hoverClientY < hoverMiddleY) {
-        dropPosition = 'above';
-      } else {
+        if (hoverClientY < hoverMiddleY) {
+          return 'above';
+        }
+
+        // Exactly on the middle: leave the current drop position alone.
+        return null;
+      })();
+
+      if (!dropPosition) {
         return;
       }
 
@@ -116,23 +178,22 @@ function QualityProfileItemDragSource({
   // Keep ref in sync with latest collected value
   isOverCurrentRef.current = isOverCurrent;
 
-  const connectRef = (node) => {
-    ref.current = node;
-    drop(node);
-  };
+  const connectRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      ref.current = node;
+      drop(node);
+    },
+    [drop]
+  );
 
   const isBefore = !isDragging && isDraggingUp && isOverCurrent;
   const isAfter = !isDragging && isDraggingDown && isOverCurrent;
 
   return (
-    <div
-      ref={connectRef}
-      className={classNames(
-        styles.qualityProfileItemDragSource,
-        isBefore && styles.isDraggingUp,
-        isAfter && styles.isDraggingDown
-      )}
-    >
+    // The class also applied `styles.isDraggingUp` / `isDraggingDown` here,
+    // neither of which this stylesheet has ever declared; the placeholder divs
+    // below are what actually draw the drop position.
+    <div ref={connectRef} className={styles.qualityProfileItemDragSource}>
       {isBefore && (
         <div
           className={classNames(
@@ -148,7 +209,9 @@ function QualityProfileItemDragSource({
           groupId={groupId}
           name={name}
           allowed={allowed}
-          items={items}
+          // A group always carries its qualities; the profile's own type leaves
+          // `items` optional because a plain quality has none.
+          items={items ?? []}
           qualityIndex={qualityIndex}
           isDragging={isDragging}
           isDraggingUp={isDraggingUp}
@@ -170,9 +233,7 @@ function QualityProfileItemDragSource({
           qualityId={qualityId}
           name={name}
           allowed={allowed}
-          qualityIndex={qualityIndex}
           isDragging={isDragging}
-          isOverCurrent={isOverCurrent}
           connectDragSource={drag}
           onCreateGroupPress={onCreateGroupPress}
           onQualityProfileItemAllowedChange={onQualityProfileItemAllowedChange}
@@ -190,24 +251,5 @@ function QualityProfileItemDragSource({
     </div>
   );
 }
-
-QualityProfileItemDragSource.propTypes = {
-  editGroups: PropTypes.bool.isRequired,
-  groupId: PropTypes.number,
-  qualityId: PropTypes.number,
-  name: PropTypes.string.isRequired,
-  allowed: PropTypes.bool.isRequired,
-  items: PropTypes.arrayOf(PropTypes.object),
-  qualityIndex: PropTypes.string.isRequired,
-  isDraggingUp: PropTypes.bool,
-  isDraggingDown: PropTypes.bool,
-  onCreateGroupPress: PropTypes.func,
-  onDeleteGroupPress: PropTypes.func,
-  onQualityProfileItemAllowedChange: PropTypes.func.isRequired,
-  onItemGroupAllowedChange: PropTypes.func,
-  onItemGroupNameChange: PropTypes.func,
-  onQualityProfileItemDragMove: PropTypes.func.isRequired,
-  onQualityProfileItemDragEnd: PropTypes.func.isRequired,
-};
 
 export default QualityProfileItemDragSource;
