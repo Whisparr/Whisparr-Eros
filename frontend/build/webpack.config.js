@@ -49,9 +49,6 @@ module.exports = (env) => {
         path.join(srcFolder, 'Shims'),
         'node_modules'
       ],
-      alias: {
-        jquery: 'jquery/dist/jquery.min'
-      },
       fallback: {
         buffer: false,
         http: false,

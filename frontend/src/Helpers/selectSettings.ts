@@ -1,6 +1,4 @@
-import { cloneDeep } from 'lodash';
 import { getValidationFailures as getValidationFailuresFromApiError } from 'Helpers/Hooks/useApiMutation';
-import AppError from 'typings/AppError';
 import Field from 'typings/Field';
 import {
   Failure,
@@ -19,42 +17,12 @@ export interface ValidationFailures {
   warnings: ValidationWarning[];
 }
 
+// Every save error is an `ApiError` now that the jQuery request path is gone;
+// this stays as the name the settings forms import.
 export function getValidationFailures(
-  saveError?: ApiError | AppError | null
+  saveError?: ApiError | null
 ): ValidationFailures {
-  if (!saveError) {
-    return {
-      errors: [],
-      warnings: [],
-    };
-  }
-
-  if (saveError instanceof ApiError) {
-    return getValidationFailuresFromApiError(saveError);
-  }
-
-  if (saveError.status !== 400) {
-    return {
-      errors: [],
-      warnings: [],
-    };
-  }
-
-  return cloneDeep(saveError.responseJSON as ValidationFailure[]).reduce(
-    (acc: ValidationFailures, failure: ValidationFailure) => {
-      if (failure.isWarning) {
-        acc.warnings.push(failure as ValidationWarning);
-      } else {
-        acc.errors.push(failure as ValidationError);
-      }
-
-      return acc;
-    },
-    {
-      errors: [],
-      warnings: [],
-    }
-  );
+  return getValidationFailuresFromApiError(saveError);
 }
 
 function mapFailure(failure: ValidationFailure): Failure {
@@ -91,7 +59,7 @@ export interface ModelBaseSetting {
 function selectSettings<T extends ModelBaseSetting>(
   item: T,
   pendingChanges?: Partial<ModelBaseSetting>,
-  saveError?: ApiError | AppError | null
+  saveError?: ApiError | null
 ) {
   const { errors, warnings } = getValidationFailures(saveError);
 

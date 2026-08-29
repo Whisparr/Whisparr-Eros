@@ -5,6 +5,7 @@ import Icon from 'Components/Icon';
 import usePrevious from 'Helpers/Hooks/usePrevious';
 import { icons } from 'Helpers/Props';
 import { InputChanged } from 'typings/inputs';
+import { ProviderData } from 'Utilities/requestAction';
 import FormInputButton from './FormInputButton';
 import TextInput from './TextInput';
 import useCaptcha from './useCaptcha';
@@ -15,7 +16,7 @@ export interface CaptchaInputProps {
   name: string;
   value?: string;
   provider: string;
-  providerData: object;
+  providerData: ProviderData;
   hasError?: boolean;
   hasWarning?: boolean;
   onChange: (change: InputChanged<string>) => unknown;

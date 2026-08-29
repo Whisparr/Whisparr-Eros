@@ -1,15 +1,17 @@
-import createAjaxRequest from 'Utilities/createAjaxRequest';
+import fetchJson from 'Utilities/Fetch/fetchJson';
+import getQueryPath from 'Utilities/Fetch/getQueryPath';
 
 interface LanguageResponse {
   identifier: string;
 }
 
 function getLanguage() {
-  return createAjaxRequest({
-    global: false,
-    dataType: 'json',
-    url: '/localization/language',
-  }).request;
+  return fetchJson<LanguageResponse, never>({
+    path: getQueryPath('/localization/language'),
+    headers: {
+      'X-Api-Key': window.Whisparr.apiKey,
+    },
+  });
 }
 
 function getDisplayName(code: string) {
@@ -20,13 +22,17 @@ function getDisplayName(code: string) {
 
 let languageNames = getDisplayName('en');
 
-getLanguage().then((data: LanguageResponse) => {
-  const names = getDisplayName(data.identifier);
+getLanguage()
+  .then((data) => {
+    const names = getDisplayName(data.identifier);
 
-  if (names) {
-    languageNames = names;
-  }
-});
+    if (names) {
+      languageNames = names;
+    }
+  })
+  // The jQuery version had no failure handler either; `languageNames` just
+  // stays on the English display names it was seeded with.
+  .catch(() => {});
 
 export default function getLanguageName(code: string) {
   if (!languageNames) {
