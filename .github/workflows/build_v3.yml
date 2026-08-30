@@ -6,15 +6,12 @@ on:
     branches:
       - eros-develop
       - eros
-    paths-ignore:
-      - "src/Whisparr.Api.*/openapi.json"
   pull_request:
     branches:
       - eros-develop
       - eros
     paths-ignore:
       - "src/NzbDrone.Core/Localization/Core/**"
-      - "src/Whisparr.Api.*/openapi.json"
 
 concurrency:
   # pull_request.number is empty on push, so keying on it alone put every push
