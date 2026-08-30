@@ -8,6 +8,7 @@ declare namespace TooltipCssNamespace {
     horizontalContainer: string;
     inverse: string;
     left: string;
+    reference: string;
     right: string;
     tooltip: string;
     tooltipContainer: string;

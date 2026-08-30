@@ -344,7 +344,9 @@ function MovieDetails(props: Readonly<Partial<Props>>) {
 
                   <span className={styles.links}>
                     <Tooltip
+                      accessibleLabel={translate('Links')}
                       anchor={<Icon name={icons.EXTERNAL_LINK} size={20} />}
+                      contentRole="dialog"
                       tooltip={
                         <MovieDetailsLinks
                           tmdbId={tmdbId}

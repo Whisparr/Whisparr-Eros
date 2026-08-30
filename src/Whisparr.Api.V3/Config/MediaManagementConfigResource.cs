@@ -22,6 +22,7 @@ namespace Whisparr.Api.V3.Config
         public string ChmodFolder { get; set; }
         public string ChownGroup { get; set; }
 
+        public bool SkipFreeSpaceCheckWhenGrabbing { get; set; }
         public bool SkipFreeSpaceCheckWhenImporting { get; set; }
         public int MinimumFreeSpaceWhenImporting { get; set; }
         public bool CopyUsingHardlinks { get; set; }
@@ -53,6 +54,7 @@ namespace Whisparr.Api.V3.Config
                 ChmodFolder = model.ChmodFolder,
                 ChownGroup = model.ChownGroup,
 
+                SkipFreeSpaceCheckWhenGrabbing = model.SkipFreeSpaceCheckWhenGrabbing,
                 SkipFreeSpaceCheckWhenImporting = model.SkipFreeSpaceCheckWhenImporting,
                 MinimumFreeSpaceWhenImporting = model.MinimumFreeSpaceWhenImporting,
 

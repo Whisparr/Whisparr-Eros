@@ -13,32 +13,13 @@ Caught up — nothing outstanding.
 
 ## sonarr — Sonarr/Sonarr `v5-develop`
 
-Owns: **frontend**. High-water mark: `7e627f6947`.
+Owns: **frontend**. High-water mark: `2933f1bfef`.
 
-**63 outstanding.**
+**48 outstanding.**
 
 | Month | Total | be | fe | be+fe | chore |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| 2026-07 | 15 | 6 | 6 | 2 | 1 |
 | 2026-08 | 48 | 33 | 5 | 7 | 3 |
-
-### 2026-07
-
-- `be   ` [`2fbeff438`](https://github.com/Sonarr/Sonarr/commit/2fbeff4383af3ced58aac72d2470b90572a27da0) Multiple Translations updated by Weblate — *Weblate*
-- `fe   ` [`8112b536a`](https://github.com/Sonarr/Sonarr/commit/8112b536a23b16c27900aca05437b5ff9661b5e9) Improve accessibility of series status indicators — *coopa11y*
-- `be+fe` [`650a452bf`](https://github.com/Sonarr/Sonarr/commit/650a452bf0aa7a1f93aec5a1528c8e08d19b29cf) New: Sorting Blocklist, History and Queue by Quality — *Mark McDowall*
-- `be+fe` [`34b201aaf`](https://github.com/Sonarr/Sonarr/commit/34b201aafadb579c7c48bea05ca6253c302db8ca) New: Option to skip free space check when grabbing — *Mark McDowall*
-- `fe   ` [`ae788519c`](https://github.com/Sonarr/Sonarr/commit/ae788519c875707e4313ceb5e0893dd057e1000d) Keyboard activation for check inputs — *coopa11y*
-- `be   ` [`208838d0f`](https://github.com/Sonarr/Sonarr/commit/208838d0f5b5f6e716efc0c71568c2f2dc6a76c5) Fallback to name tag in media info stream titles for mp4 — *Bogdan*
-- `be   ` [`cca615b8e`](https://github.com/Sonarr/Sonarr/commit/cca615b8e685e8a6d04382d8d37795dcbcb3366b) HTTP Basic Auth credentials with non-ASCII characters — *Bogdan*
-- `be   ` [`577519440`](https://github.com/Sonarr/Sonarr/commit/57751944090ada91c16421dbe730f74016d4f292) Multiple Translations updated by Weblate — *Weblate*
-- `be   ` [`8a019e17a`](https://github.com/Sonarr/Sonarr/commit/8a019e17a55a7d6f0e1ac2c7571ef65b42f47be4) Automated API Docs update — *Sonarr*
-- `fe   ` [`e876cd28e`](https://github.com/Sonarr/Sonarr/commit/e876cd28e77e7d5dc917be3e7aff25b55d33b6bd) Make tooltip and popover anchors keyboard accessible — *coopa11y*
-- `fe   ` [`7726ddf9b`](https://github.com/Sonarr/Sonarr/commit/7726ddf9b91a4697cbdac5893c0e605bd86f500a) Make manual import cells keyboard accessible — *coopa11y*
-- `fe   ` [`b0b16f1fe`](https://github.com/Sonarr/Sonarr/commit/b0b16f1fe7515f1ee0ee59dfb087f1502c3aaa2a) Don't refetch interactive search results when switching tabs — *Mark McDowall*
-- `fe   ` [`26d55458e`](https://github.com/Sonarr/Sonarr/commit/26d55458e78b8d48bc1472da0220347853284391) Close modal after saving provider — *Mark McDowall*
-- `be   ` [`fde8bb0ec`](https://github.com/Sonarr/Sonarr/commit/fde8bb0ecfc01e54f257ef931db656f97d4426bb) Fixed: Connecting to Jellyfin 12+ — *Mark McDowall*
-- `chore` [`2933f1bfe`](https://github.com/Sonarr/Sonarr/commit/2933f1bfefacbfb875c7344e2dbb9969b2da8d2a) Remove waiting-for-info label after correcting issues — *Mark McDowall*
 
 ### 2026-08
 
@@ -203,3 +184,23 @@ Commits reviewed and dispositioned. Skips carry their reason.
 | [`9910767f5`](https://github.com/Radarr/Radarr/commit/9910767f58b0d9beb3b7fa671ed4695487d917d3) | Fixed: Unexpected languages stored in DB will be treated as Unknown | `pick` | Identical converter here. A null language column made GetInt32 throw, so one bad row took down whatever was deserializing it instead of degrading to Unknown. |
 | [`45da623c7`](https://github.com/Radarr/Radarr/commit/45da623c777c2451bff5684718832952925f2be3) | Fixed: Re-grabbing a torrent that was already imported should re-import | `pick` | Same gap here: nothing evicted a tracked download on a new grab, so re-grabbing a release we had already imported kept the old terminal state and the new download was never imported. |
 | [`68b93db78`](https://github.com/Radarr/Radarr/commit/68b93db78cb7a648d61a486d94eae703242e1e36) | Fixed: Importing single files from Freebox | `pick` | Freebox drops a single-file torrent straight into the download root, so there is no folder to identify it by and the import matched the wrong thing. Now each task gets its own folder named for the release. Updated the three existing fixture assertions, which encoded the old paths - that path change is the fix, not a workaround. |
+
+### sonarr
+
+| Commit | Subject | Disposition | Reason |
+| --- | --- | --- | --- |
+| [`2fbeff438`](https://github.com/Sonarr/Sonarr/commit/2fbeff4383af3ced58aac72d2470b90572a27da0) | Multiple Translations updated by Weblate | `skip` | Weblate commit. Our translations come from Weblate directly, never from cherry-picks. |
+| [`8112b536a`](https://github.com/Sonarr/Sonarr/commit/8112b536a23b16c27900aca05437b5ff9661b5e9) | Improve accessibility of series status indicators | `adapt` | Applied to MovieStatusCell and SceneStatusCell, our equivalents of SeriesStatusCell. Also brought in Components/StatusIndicator, which upstream added in 71d9a5d57 (2026-07-12, behind our high-water mark) and we never ported. Verified on 6969: all 40 status icons on the movie table now carry announced text. |
+| [`650a452bf`](https://github.com/Sonarr/Sonarr/commit/650a452bf0aa7a1f93aec5a1528c8e08d19b29cf) | New: Sorting Blocklist, History and Queue by Quality | `skip` | Deferred to its own PR by decision on 2026-08-30, not skipped on merit. 21 files: a QualityProfileQualityRank table, repository and service, a DB migration (233 there, 242 here) and rank joins added to the Blocklist, History and Episode repositories. A schema change belongs in its own review, not in a 15-commit sync chunk. |
+| [`34b201aaf`](https://github.com/Sonarr/Sonarr/commit/34b201aafadb579c7c48bea05ca6253c302db8ca) | New: Option to skip free space check when grabbing | `pick` | Not a new setting so much as a split of a misused one: our SkipFreeSpaceCheckWhenImporting gated both the grab-time DecisionEngine specification and the import-time MovieImport one, so turning it on to work around an unreadable root folder silently disabled the grab check too. Grab-time now reads its own SkipFreeSpaceCheckWhenGrabbing. Own en.json keys, upstream's hunk not taken. Verified on 6969 through the live config API. |
+| [`ae788519c`](https://github.com/Sonarr/Sonarr/commit/ae788519c875707e4313ceb5e0893dd057e1000d) | Keyboard activation for check inputs | `skip` | Does not reproduce here. Upstream returns early when the click target is the input itself so `change` does the toggling; our handleClick calls preventDefault() first, which cancels the native toggle, so keyboard activation already toggles exactly once. Verified live on 6969 with and without the guard: Space on a focused checkbox flips both the DOM input and React's rendered tick, once, either way. |
+| [`208838d0f`](https://github.com/Sonarr/Sonarr/commit/208838d0f5b5f6e716efc0c71568c2f2dc6a76c5) | Fallback to name tag in media info stream titles for mp4 | `skip` | Not applicable. Upstream reads a per-stream title into a per-stream model; our MediaInfoModel has a single Title taken from the format tags and no per-stream titles at all, so there is no field for the fallback to fill. |
+| [`cca615b8e`](https://github.com/Sonarr/Sonarr/commit/cca615b8e685e8a6d04382d8d37795dcbcb3366b) | HTTP Basic Auth credentials with non-ASCII characters | `pick` | Identical ManagedHttpDispatcher here. ISO-8859-1 substitutes '?' for anything outside Latin-1, so a password with an accent or a non-Latin script was sent as a different string and the login failed silently. Tested with a loopback listener that reads the header off the wire rather than adding another httpbin.servarr.com test. |
+| [`577519440`](https://github.com/Sonarr/Sonarr/commit/57751944090ada91c16421dbe730f74016d4f292) | Multiple Translations updated by Weblate | `skip` | Weblate commit. Our translations come from Weblate directly, never from cherry-picks. |
+| [`8a019e17a`](https://github.com/Sonarr/Sonarr/commit/8a019e17a55a7d6f0e1ac2c7571ef65b42f47be4) | Automated API Docs update | `skip` | Regenerated openapi.json for Sonarr's own API surface. Ours is generated from our controllers by .github/workflows/api_docs.yml. |
+| [`e876cd28e`](https://github.com/Sonarr/Sonarr/commit/e876cd28e77e7d5dc917be3e7aff25b55d33b6bd) | Make tooltip and popover anchors keyboard accessible | `pick` | Our Tooltip.tsx was identical to upstream's pre-change version: the anchor span had no tab stop and no role, making every tooltip mouse-only. Consumers adapted to ours - QueueStatus, the interactive import flag popover, and the links panel on the Movie, Performer and Studio details pages instead of SeriesDetails. Verified on 6969: the Links anchor is role=button with an accessible name, Enter opens a role=dialog panel and the link inside is reachable. |
+| [`7726ddf9b`](https://github.com/Sonarr/Sonarr/commit/7726ddf9b91a4697cbdac5893c0e605bd86f500a) | Make manual import cells keyboard accessible | `pick` | Our TableRowCellButton was identical to upstream's pre-change version - the cell was the link, so there was no focusable element and the quality and language cells could not be changed without a mouse. Verified on 6969 against a scanned folder: both cells render a focusable button and Enter on the quality cell opens Select Quality. |
+| [`b0b16f1fe`](https://github.com/Sonarr/Sonarr/commit/b0b16f1fe7515f1ee0ee59dfb087f1502c3aaa2a) | Don't refetch interactive search results when switching tabs | `have` | Both halves already hold here. We never set refetchOnMount: 'always', and our useReleases uses gcTime: 0 with a comment saying so, which drops the query on unmount - strictly stronger than the useClearReleasesOnUnmount hook upstream needed because they keep a 30-minute gcTime. |
+| [`26d55458e`](https://github.com/Sonarr/Sonarr/commit/26d55458e78b8d48bc1472da0220347853284391) | Close modal after saving provider | `skip` | Refactor of a hook that has diverged. It resets a lastSaveData ref we do not have, and it deletes the setSaveError setter that our EditNotificationModalContent writes an OAuth 400 through. Our provider modals close on wasSaving && !isSaving && !saveError, and handleSaveSuccess already clears the merged error. |
+| [`fde8bb0ec`](https://github.com/Sonarr/Sonarr/commit/fde8bb0ecfc01e54f257ef931db656f97d4426bb) | Fixed: Connecting to Jellyfin 12+ | `have` | Landed in #571 via Radarr's fuller version (bcab4b0da's descendant): we set both X-MediaBrowser-Token and the Authorization MediaBrowser scheme on every request, not just TestConnection. |
+| [`2933f1bfe`](https://github.com/Sonarr/Sonarr/commit/2933f1bfefacbfb875c7344e2dbb9969b2da8d2a) | Remove waiting-for-info label after correcting issues | `skip` | Edits .github/workflows/label_invalid_issues.yml, which we do not have. |

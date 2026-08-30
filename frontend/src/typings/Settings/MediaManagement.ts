@@ -10,6 +10,7 @@ export default interface MediaManagement {
   setPermissionsLinux: boolean;
   chmodFolder: string;
   chownGroup: string;
+  skipFreeSpaceCheckWhenGrabbing: boolean;
   skipFreeSpaceCheckWhenImporting: boolean;
   minimumFreeSpaceWhenImporting: number;
   copyUsingHardlinks: boolean;

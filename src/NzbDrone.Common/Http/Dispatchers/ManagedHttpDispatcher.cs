@@ -80,9 +80,12 @@ namespace NzbDrone.Common.Http.Dispatchers
             {
                 if (request.Credentials is BasicNetworkCredential bc)
                 {
-                    // Manually set header to avoid initial challenge response
+                    // Manually set header to avoid initial challenge response.
+                    // ISO-8859-1 replaces anything outside Latin-1 with '?', so a
+                    // credential with an accent or a non-Latin script was silently
+                    // sent as the wrong string rather than failing loudly.
                     var authInfo = bc.UserName + ":" + bc.Password;
-                    authInfo = Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(authInfo));
+                    authInfo = Convert.ToBase64String(Encoding.UTF8.GetBytes(authInfo));
                     requestMessage.Headers.Add("Authorization", "Basic " + authInfo);
                 }
                 else if (request.Credentials is NetworkCredential nc)

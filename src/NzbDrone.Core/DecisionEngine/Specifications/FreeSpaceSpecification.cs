@@ -26,7 +26,7 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
 
         public DownloadSpecDecision IsSatisfiedBy(RemoteMovie subject, SearchCriteriaBase searchCriteria)
         {
-            if (_configService.SkipFreeSpaceCheckWhenImporting)
+            if (_configService.SkipFreeSpaceCheckWhenGrabbing)
             {
                 _logger.Debug("Skipping free space check");
                 return DownloadSpecDecision.Accept();
