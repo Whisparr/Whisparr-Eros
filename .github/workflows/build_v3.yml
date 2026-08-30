@@ -78,6 +78,20 @@ jobs:
             echo "Base version ${BASE} (from VERSION_FALLBACK; no vX.Y.Z tag reachable)"
           fi
 
+          # Deleting a base tag that CI has already built from walks the version
+          # backwards without failing anything: the next run just resolves the
+          # next tag down and publishes a release that looks like a downgrade to
+          # every updater in the field. Every CI-minted tag records the base it
+          # came from, so compare against the highest of those and stop instead.
+          PUBLISHED=$(git tag --merged HEAD 2>/dev/null \
+            | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+-(develop|release)\.[0-9]+$' \
+            | sed -E 's/^v([0-9]+\.[0-9]+\.[0-9]+)-.*$/\1/' \
+            | sort -V | tail -n1 || true)
+          if [ -n "$PUBLISHED" ] && [ "$(printf '%s\n%s\n' "$BASE" "$PUBLISHED" | sort -V | tail -n1)" != "$BASE" ]; then
+            echo "::error::Base version ${BASE} is behind ${PUBLISHED}, which this branch has already published. The v${PUBLISHED} base tag is missing - restore it with 'git push origin v${PUBLISHED}' before merging."
+            exit 1
+          fi
+
           if [[ "${{ github.ref_name }}" == "eros-develop" ]]; then
             SEMVER_LABEL="develop"
           else
