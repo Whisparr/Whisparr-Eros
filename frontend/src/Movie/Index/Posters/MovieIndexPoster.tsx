@@ -158,7 +158,7 @@ function MovieIndexPoster(props: Readonly<MovieIndexPosterProps>) {
   const onSelectPress = useCallback(
     (event: SyntheticEvent<HTMLElement, MouseEvent>) => {
       if (event.nativeEvent.ctrlKey || event.nativeEvent.metaKey) {
-        window.open(`/movie/${foreignId}`, '_blank');
+        window.open(`${window.Whisparr.urlBase}/movie/${titleSlug}`, '_blank');
         return;
       }
 
@@ -171,7 +171,7 @@ function MovieIndexPoster(props: Readonly<MovieIndexPosterProps>) {
         shiftKey,
       });
     },
-    [movieId, selectState.selectedState, selectDispatch, foreignId]
+    [movieId, selectState.selectedState, selectDispatch, titleSlug]
   );
 
   const link = `/movie/${titleSlug}`;
