@@ -1,5 +1,6 @@
 declare namespace TableRowCellButtonCssNamespace {
   export interface ITableRowCellButtonCss {
+    button: string;
     cell: string;
   }
 }
