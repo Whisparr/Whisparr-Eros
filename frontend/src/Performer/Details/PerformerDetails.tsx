@@ -516,6 +516,7 @@ function PerformerDetails() {
                 ) : null}
 
                 <Tooltip
+                  accessibleLabel={translate('Links')}
                   anchor={
                     <Label className={styles.detailsLabel} size={sizes.LARGE}>
                       <div>
@@ -526,6 +527,7 @@ function PerformerDetails() {
                       </div>
                     </Label>
                   }
+                  contentRole="dialog"
                   tooltip={
                     <PerformerDetailsLinks
                       tpdbId={tpdbId}

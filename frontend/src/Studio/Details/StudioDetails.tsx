@@ -518,6 +518,7 @@ function StudioDetails() {
                 ) : null}
 
                 <Tooltip
+                  accessibleLabel={translate('Links')}
                   anchor={
                     <Label className={styles.detailsLabel} size={sizes.LARGE}>
                       <div>
@@ -528,6 +529,7 @@ function StudioDetails() {
                       </div>
                     </Label>
                   }
+                  contentRole="dialog"
                   tooltip={
                     <StudioDetailsLinks
                       tpdbId={studio.tpdbId}
