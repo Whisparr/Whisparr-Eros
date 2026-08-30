@@ -7,31 +7,15 @@ See `.github/upstream/state.json` for the machine state and the `sync-upstream` 
 
 ## radarr — Radarr/Radarr `develop`
 
-Owns: **backend**. High-water mark: `0134fdedca`.
+Owns: **backend**. High-water mark: `520bf4215a`.
 
-**67 outstanding.**
+**55 outstanding.**
 
 | Month | Total | be | fe | be+fe | chore |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| 2026-05 | 12 | 10 | 0 | 0 | 2 |
 | 2026-06 | 5 | 4 | 0 | 0 | 1 |
 | 2026-07 | 18 | 15 | 0 | 0 | 3 |
 | 2026-08 | 32 | 18 | 8 | 4 | 2 |
-
-### 2026-05
-
-- `be   ` [`8ac3e4746`](https://github.com/Radarr/Radarr/commit/8ac3e4746a40390c4278e97af034f9dc710992c5) Fixed: Testing qBittorrent after credentials change would always pass tests — *Mark McDowall*
-- `be   ` [`b028efbe3`](https://github.com/Radarr/Radarr/commit/b028efbe3eb5c5c9a4f0776627d22b0781e212d9) Fixed: Login with credentials on Qbittorrent 5.2 — *Bogdan*
-- `be   ` [`eec3efdb3`](https://github.com/Radarr/Radarr/commit/eec3efdb317bdfc81d1a18c0d3af76d6d10cb096) New: API key support for qBittorrent — *Bogdan*
-- `be   ` [`065414211`](https://github.com/Radarr/Radarr/commit/065414211d275a86c7b580d000065f548aafbcb5) Fix qBittorrent priority help text — *Auggie*
-- `be   ` [`5981aea57`](https://github.com/Radarr/Radarr/commit/5981aea577db5ae8e27920c50e7c6f23f1806f9c) New: Simkl Anime List integration (#11465) — *Bogdan*
-- `be   ` [`c7c205caf`](https://github.com/Radarr/Radarr/commit/c7c205cafb4487317616aa57bc36e4948d10114c) Fixed: Reduce data transfer when reading video stream from files (#11364) — *realzombee*
-- `be   ` [`559a2980c`](https://github.com/Radarr/Radarr/commit/559a2980c360473a9e017f37669cd5e300657cb8) New: Bump .NET to 8.0.27 — *Bogdan*
-- `be   ` [`16c4ab2b0`](https://github.com/Radarr/Radarr/commit/16c4ab2b0da866c1a72e14ed747fb0893628a716) New: Postgres Connection String option — *solidDoWant*
-- `be   ` [`4e1e87660`](https://github.com/Radarr/Radarr/commit/4e1e87660094752d8f4dca40009ae29cda982e20) Reuse authentification cookies for qBittorrent calls — *Bogdan*
-- `chore` [`cf3775621`](https://github.com/Radarr/Radarr/commit/cf3775621be8e39c011cdff63f6939400a108bb5) Bump dessant github actions to fix token issues — *Bogdan*
-- `chore` [`3b8007637`](https://github.com/Radarr/Radarr/commit/3b80076373859a5f866b1d52ddc25aa7613a064a) Bump version to 6.2.1 — *Auggie*
-- `be   ` [`520bf4215`](https://github.com/Radarr/Radarr/commit/520bf4215a13223433ef6c77ad7e822cd8359c94) Bump BusyTimeout for SQLite to 1000ms — *Bogdan*
 
 ### 2026-06
 
@@ -218,3 +202,15 @@ Commits reviewed and dispositioned. Skips carry their reason.
 | [`ece044e27`](https://github.com/Radarr/Radarr/commit/ece044e2701d0269e36e458572f48816e5293654) | Log media info title used to augment quality | `adapt` | Took the debug log and the single null-safe Trim in AugmentQualityFromMediaInfo. Our version of the file has far more resolution tiers (8K, 6K RED, 6K Blackmagic, 5K) than upstream's, so only the title handling was portable. |
 | [`7dd5365cc`](https://github.com/Radarr/Radarr/commit/7dd5365ccd5130b62b98f4bef9bfd69d7721aebc) | Fixed: Include quality modifier when augmenting quality from media info | `skip` | Not adaptable: our quality model has no Modifier concept at all. There is no Modifier enum under Qualities/, AugmentQualityResult carries no Modifier property, AggregateQuality tracks no modifier, and QualityFinder.FindBySourceAndResolution takes only (source, resolution). Introducing one would be a quality-matching design change, not a sync - and matching is not somewhere to make drive-by changes. |
 | [`0134fdedc`](https://github.com/Radarr/Radarr/commit/0134fdedcaff8eaeb6baaeee95e873a2b4881221) | Prevent overflow exception for big numbers in SizeSuffix and Fluent.Round | `pick` | Real crash, not a rounding nit: SizeSuffix(long.MinValue) negated to itself and recursed forever. Reproduced here - the new test case stack-overflows and aborts the whole test run without the fix. Round also floored negatives away from zero. |
+| [`8ac3e4746`](https://github.com/Radarr/Radarr/commit/8ac3e4746a40390c4278e97af034f9dc710992c5) | Fixed: Testing qBittorrent after credentials change would always pass tests | `adapt` | Both bugs are ours: the auth cookie cache was keyed on base URL + password only, and the session cookie went into the persistent container where it outlived the settings that made it. Took HttpRequestBuilder.StoreRequestCookie and the username in the cache key, covered by a new QBittorrentProxyV2Fixture (2 of its 6 tests fail without this). Did not take upstream's move of BasicNetworkCredential onto the login request alone - radarr/radarr@4dcc7c78 put it back in BuildRequest in 2026-06, which is where ours already is. |
+| [`eec3efdb3`](https://github.com/Radarr/Radarr/commit/eec3efdb317bdfc81d1a18c0d3af76d6d10cb096) | New: API key support for qBittorrent | `have` | Landed as our own #525: ApiKey setting, Bearer header in BuildRequest, the API-key branch in ProcessRequest, the validator rules forbidding username/password alongside a key, and the ApiKey/Username switch in TestConnection are all present. en.json already carries the reworded DownloadClientValidationAuthenticationFailureDetail. |
+| [`b028efbe3`](https://github.com/Radarr/Radarr/commit/b028efbe3eb5c5c9a4f0776627d22b0781e212d9) | Fixed: Login with credentials on Qbittorrent 5.2 | `have` | This dropped BasicNetworkCredential from the login request, then radarr/radarr@4dcc7c78 restored it for every request in 2026-06. Our BuildRequest already matches that end state, so there is nothing left to take. |
+| [`065414211`](https://github.com/Radarr/Radarr/commit/065414211d275a86c7b580d000065f548aafbcb5) | Fix qBittorrent priority help text | `have` | Upstream briefly pasted Sonarr's Episode help-text keys into the priority fields and reverted it here. We never had the wrong ones - RecentMoviePriority and OlderMoviePriority already point at DownloadClientSettingsRecentPriorityMovieHelpText and ...OlderPriorityMovieHelpText. |
+| [`4e1e87660`](https://github.com/Radarr/Radarr/commit/4e1e87660094752d8f4dca40009ae29cda982e20) | Reuse authentification cookies for qBittorrent calls | `have` | Fixes the ordering introduced with API key support, where ProcessRequest built the request before AuthenticateClient set the session cookie on the builder. Our #525 picked the corrected form: the cookie-auth path builds after AuthenticateClient, and the API-key path builds its own request. |
+| [`5981aea57`](https://github.com/Radarr/Radarr/commit/5981aea577db5ae8e27920c50e7c6f23f1806f9c) | New: Simkl Anime List integration (#11465) | `skip` | Feature decision, declined. Simkl indexes anime and mainstream film/TV; it has no coverage of the scenes, performers and studios we track, so the list would come back empty here. |
+| [`c7c205caf`](https://github.com/Radarr/Radarr/commit/c7c205cafb4487317616aa57bc36e4948d10114c) | Fixed: Reduce data transfer when reading video stream from files (#11364) | `adapt` | Real bug here too: -select_streams v:N indexes within the video streams, not the file's absolute stream list, so HDR frame analysis on a file whose video stream is not stream 0 read the wrong stream. Ported onto our older FFProbe.GetFrames(customArguments:) signature - we are not on upstream's GetFrameJson/RawFrameData. |
+| [`559a2980c`](https://github.com/Radarr/Radarr/commit/559a2980c360473a9e017f37669cd5e300657cb8) | New: Bump .NET to 8.0.27 | `skip` | We are on .NET 10 (global.json pins SDK 10.0.101); a bump to .NET 8.0.27 would be a downgrade. |
+| [`16c4ab2b0`](https://github.com/Radarr/Radarr/commit/16c4ab2b0da866c1a72e14ed747fb0893628a716) | New: Postgres Connection String option | `skip` | Feature decision, deferred. Adds PostgresMainDbConnectionString/PostgresLogDbConnectionString as an alternative to the discrete Postgres settings. Worth having for managed-Postgres deployments, but upstream's GetConnectionStringType ships two if-branches testing the identical condition and never rejects main-set-without-log, so it wants rewriting rather than picking. Raise separately if wanted. |
+| [`cf3775621`](https://github.com/Radarr/Radarr/commit/cf3775621be8e39c011cdff63f6939400a108bb5) | Bump dessant github actions to fix token issues | `have` | We are already on dessant/label-actions@v5 and dessant/lock-threads@v6, which is what this bumped upstream to. |
+| [`3b8007637`](https://github.com/Radarr/Radarr/commit/3b80076373859a5f866b1d52ddc25aa7613a064a) | Bump version to 6.2.1 | `skip` | Upstream's own version number in azure-pipelines.yml. We version independently. |
+| [`520bf4215`](https://github.com/Radarr/Radarr/commit/520bf4215a13223433ef6c77ad7e822cd8359c94) | Bump BusyTimeout for SQLite to 1000ms | `have` | ConnectionStringFactory already sets BusyTimeout = 1000. |
