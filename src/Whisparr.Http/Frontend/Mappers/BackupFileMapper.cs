@@ -15,7 +15,9 @@ namespace Whisparr.Http.Frontend.Mappers
             _backupService = backupService;
         }
 
-        public override string Map(string resourceUrl)
+        protected override string FolderPath => _backupService.GetBackupFolder().TrimEnd(Path.DirectorySeparatorChar);
+
+        protected override string MapPath(string resourceUrl)
         {
             var path = resourceUrl.Replace("/backup/", "").Replace('/', Path.DirectorySeparatorChar);
 

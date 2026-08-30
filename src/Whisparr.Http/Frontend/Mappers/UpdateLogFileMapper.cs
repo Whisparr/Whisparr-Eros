@@ -16,7 +16,9 @@ namespace Whisparr.Http.Frontend.Mappers
             _appFolderInfo = appFolderInfo;
         }
 
-        public override string Map(string resourceUrl)
+        protected override string FolderPath => _appFolderInfo.GetUpdateLogFolder();
+
+        protected override string MapPath(string resourceUrl)
         {
             var path = resourceUrl.Replace('/', Path.DirectorySeparatorChar);
             path = Path.GetFileName(path);
