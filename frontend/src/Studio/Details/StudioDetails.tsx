@@ -255,7 +255,7 @@ function StudioDetails() {
   if (!studio) {
     if (isStudioDetailsFetching) {
       return (
-        <PageContent>
+        <PageContent title={translate('Studio')}>
           <LoadingIndicator />
         </PageContent>
       );

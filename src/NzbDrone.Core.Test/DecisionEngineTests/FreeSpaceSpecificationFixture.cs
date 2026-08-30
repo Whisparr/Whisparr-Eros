@@ -39,6 +39,20 @@ namespace NzbDrone.Core.Test.DecisionEngineTests
         }
 
         [Test]
+        public void should_only_check_the_disk_once_for_repeated_releases_for_the_same_movie()
+        {
+            WithMinimumFreeSpace(0);
+            WithAvailableSpace(200);
+            WithSize(100);
+
+            Subject.IsSatisfiedBy(_remoteMovie, null).Accepted.Should().BeTrue();
+            Subject.IsSatisfiedBy(_remoteMovie, null).Accepted.Should().BeTrue();
+
+            Mocker.GetMock<IDiskProvider>()
+                  .Verify(s => s.GetAvailableSpace(_remoteMovie.Movie.Path), Times.Once());
+        }
+
+        [Test]
         public void should_return_true_when_available_space_is_more_than_size()
         {
             WithMinimumFreeSpace(0);

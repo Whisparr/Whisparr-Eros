@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import * as commandNames from 'Commands/commandNames';
 import { useCommandExecuting, useExecuteCommand } from 'Commands/useCommands';
 import Alert from 'Components/Alert';
@@ -60,7 +60,7 @@ function GeneralSettings() {
 
   const wasSaving = usePrevious(isSaving);
   const wasResettingApiKey = usePrevious(isResettingApiKey);
-  const previousPendingChanges = usePrevious(pendingChanges);
+  const isRestartRequired = useRef(false);
 
   const [isRestartRequiredModalOpen, setIsRestartRequiredModalOpen] =
     useState(false);
@@ -73,8 +73,12 @@ function GeneralSettings() {
   );
 
   const handleSavePress = useCallback(() => {
+    isRestartRequired.current = Object.keys(pendingChanges ?? {}).some((key) =>
+      REQUIRES_RESTART_KEYS.includes(key as keyof General)
+    );
+
     saveSettings();
-  }, [saveSettings]);
+  }, [pendingChanges, saveSettings]);
 
   const handleConfirmResetApiKey = useCallback(() => {
     executeCommand({ name: commandNames.RESET_API_KEY });
@@ -89,20 +93,15 @@ function GeneralSettings() {
     setIsRestartRequiredModalOpen(false);
   }, []);
 
-  // The class this replaces compared each restart-sensitive setting's
-  // `previousValue` against its `value` after a save, which only worked because
-  // the slice kept the pending bag until the fetch that followed the save
-  // overwrote it. `useSaveSettings` clears the bag on success, so the keys that
-  // were pending have to be read from the render before the save landed.
+  // `useSaveSettings` clears the pending bag on success, so which keys were
+  // pending has to be captured when the save is pressed. Reading it back off
+  // the previous render only worked while nothing else re-rendered in between.
   useEffect(() => {
-    const requiresRestart = Object.keys(previousPendingChanges ?? {}).some(
-      (key) => REQUIRES_RESTART_KEYS.includes(key as keyof General)
-    );
-
-    if (wasSaving && !isSaving && !saveError && requiresRestart) {
+    if (wasSaving && !isSaving && !saveError && isRestartRequired.current) {
+      isRestartRequired.current = false;
       setIsRestartRequiredModalOpen(true);
     }
-  }, [isSaving, wasSaving, saveError, previousPendingChanges]);
+  }, [isSaving, wasSaving, saveError]);
 
   useEffect(() => {
     if (wasResettingApiKey && !isResettingApiKey) {

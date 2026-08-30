@@ -508,6 +508,42 @@ namespace NzbDrone.Core.Test.Download.DownloadClientTests.QBittorrentTests
         }
 
         [Test]
+        public void Download_should_report_a_rejected_release_when_qbittorrent_already_has_the_magnet_link()
+        {
+            Mocker.GetMock<IQBittorrentProxy>()
+                  .Setup(s => s.GetConfig(It.IsAny<QBittorrentSettings>()))
+                  .Returns(new QBittorrentPreferences() { DhtEnabled = true });
+
+            Mocker.GetMock<IQBittorrentProxy>()
+                  .Setup(s => s.AddTorrentFromUrl(It.IsAny<string>(), It.IsAny<TorrentSeedConfiguration>(), It.IsAny<QBittorrentSettings>()))
+                  .Throws(new DownloadClientException("Failed to add torrent", GivenConflictResponse()));
+
+            var remoteMovie = CreateRemoteMovie();
+            remoteMovie.Release.DownloadUrl = "magnet:?xt=urn:btih:ZPBPA2P6ROZPKRHK44D5OW6NHXU5Z6KR&tr=udp://abc";
+
+            Assert.ThrowsAsync<DownloadClientRejectedReleaseException>(async () => await Subject.Download(remoteMovie, CreateIndexer()));
+        }
+
+        [Test]
+        public void Download_should_report_a_rejected_release_when_qbittorrent_already_has_the_torrent_file()
+        {
+            Mocker.GetMock<IQBittorrentProxy>()
+                  .Setup(s => s.AddTorrentFromFile(It.IsAny<string>(), It.IsAny<byte[]>(), It.IsAny<TorrentSeedConfiguration>(), It.IsAny<QBittorrentSettings>()))
+                  .Throws(new DownloadClientException("Failed to add torrent", GivenConflictResponse()));
+
+            var remoteMovie = CreateRemoteMovie();
+
+            Assert.ThrowsAsync<DownloadClientRejectedReleaseException>(async () => await Subject.Download(remoteMovie, CreateIndexer()));
+        }
+
+        private static HttpException GivenConflictResponse()
+        {
+            var request = new HttpRequest("http://127.0.0.1:8080/api/v2/torrents/add");
+
+            return new HttpException(request, new HttpResponse(request, new HttpHeader(), Array.Empty<byte>(), System.Net.HttpStatusCode.Conflict));
+        }
+
+        [Test]
         public async Task Download_should_set_top_priority()
         {
             GivenHighPriority();

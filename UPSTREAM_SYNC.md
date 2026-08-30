@@ -13,64 +13,19 @@ Caught up — nothing outstanding.
 
 ## sonarr — Sonarr/Sonarr `v5-develop`
 
-Owns: **frontend**. High-water mark: `2933f1bfef`.
+Owns: **frontend**. High-water mark: `f089df054f`.
 
-**48 outstanding.**
+**3 outstanding.**
 
 | Month | Total | be | fe | be+fe | chore |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| 2026-08 | 48 | 33 | 5 | 7 | 3 |
+| 2026-08 | 3 | 1 | 0 | 2 | 0 |
 
 ### 2026-08
 
-- `be   ` [`93e8c54b8`](https://github.com/Sonarr/Sonarr/commit/93e8c54b8116bb9086fa28d3cbd3cf533bc6e5e8) Multiple Translations updated by Weblate — *Weblate*
-- `be+fe` [`fae7240d6`](https://github.com/Sonarr/Sonarr/commit/fae7240d647ce9b593a7259cdd67a3e2de9af001) New: Calendar date selector — *Mark McDowall*
-- `be   ` [`cd0850938`](https://github.com/Sonarr/Sonarr/commit/cd08509385fc66a920a6e06d836ec9baeec21053) New: Only search for individual anime episodes for unaired seasons — *Mark McDowall*
-- `be   ` [`143a007ce`](https://github.com/Sonarr/Sonarr/commit/143a007cec0b7e8408ffd1b8ea3282f1cfe76cb9) Fixed: Ignore invalid languages during Manual Import — *Bogdan*
-- `be+fe` [`3d0029e4c`](https://github.com/Sonarr/Sonarr/commit/3d0029e4c893cd1d90afb8b9a48a48baa7d744d1) Announce clipboard copy results to screen readers — *coopa11y*
-- `be   ` [`bcab4b0da`](https://github.com/Sonarr/Sonarr/commit/bcab4b0dab19c8cdce829f11b1a543fb725d0deb) Use same request builder for all Emby/Jellyfin requests — *Mark McDowall*
-- `be   ` [`b966b53da`](https://github.com/Sonarr/Sonarr/commit/b966b53daa5432d2459a52523a746edef4e69c0a) Downgrade System.IO.FileSystem.AccessControl to 5.0.0 — *Bogdan*
-- `be   ` [`9e8d45566`](https://github.com/Sonarr/Sonarr/commit/9e8d45566701a101b6f3c2c8d92866193e0142a1) Bump Mono.Unix to 7.1.0 — *Bogdan*
-- `be   ` [`a8d50c164`](https://github.com/Sonarr/Sonarr/commit/a8d50c1641085ed359346a0ef4ba4704447f19af) Bump sqlite3 to 3.53.4 — *Bogdan*
-- `be   ` [`95acb08e0`](https://github.com/Sonarr/Sonarr/commit/95acb08e013b6a29e667fbf6c7d2a54fcc311aa0) Bump NUnit to 4.6.1 — *Bogdan*
-- `be   ` [`f88571be3`](https://github.com/Sonarr/Sonarr/commit/f88571be33b4d2009cb5696da64baff014813129) Bump FFprobe to 9.0 — *Bogdan*
-- `be   ` [`7b54ccdc1`](https://github.com/Sonarr/Sonarr/commit/7b54ccdc1ade63db01350bf7f14e80371aa96771) Fixed: Avoid marking grab as failed when qBittorrent already has that release — *Bogdan*
-- `fe   ` [`818ac70df`](https://github.com/Sonarr/Sonarr/commit/818ac70df13c84f0ef41d18e6c45d095b6ea22ae) Announce sidebar messages to screen readers — *coopa11y*
-- `be   ` [`be9b16c5a`](https://github.com/Sonarr/Sonarr/commit/be9b16c5ad86e4f64afe78d02861191d68d1aefa) Multiple Translations updated by Weblate — *Weblate*
-- `be   ` [`7650fa19b`](https://github.com/Sonarr/Sonarr/commit/7650fa19bf8c4885a29cf72779a9effb4f9b08e9) Include reason in release rejection message — *Bogdan*
-- `be   ` [`ae5b03bcf`](https://github.com/Sonarr/Sonarr/commit/ae5b03bcfc0f31e8ce5054f791f6cf25ad2133ac) Fixed: Ensure date is parsed before 4-digit absolute episode number — *Mark McDowall*
-- `be   ` [`a533a1a46`](https://github.com/Sonarr/Sonarr/commit/a533a1a463add90fd919060b6abd426d5665859d) Fixed: Skip 'N-Z-B' as release group name — *Mark McDowall*
-- `be+fe` [`249f13137`](https://github.com/Sonarr/Sonarr/commit/249f131371de7965a71d1b882588d3731975cd70) Expose pages as named main landmarks — *coopa11y*
-- `be+fe` [`8f0d18e5f`](https://github.com/Sonarr/Sonarr/commit/8f0d18e5ff1439ef2d25f71c24d5e632220688b1) Identify Queue download progress to screen readers — *coopa11y*
-- `chore` [`3381b393f`](https://github.com/Sonarr/Sonarr/commit/3381b393f46d28cae0cb2445a512b44ae6c0aaf5) Close PRs without author activity in last 90 days — *Mark McDowall*
-- `chore` [`59468add5`](https://github.com/Sonarr/Sonarr/commit/59468add52f1d91b65c1a93b8a72cdaf63620cc0) Bump node.js to 24 LTS — *Bogdan*
-- `be   ` [`30661f86b`](https://github.com/Sonarr/Sonarr/commit/30661f86befba905955cded7dd947a1f41825828) Bump .NET to 10.0.11 — *Bogdan*
-- `be   ` [`9bb2f390b`](https://github.com/Sonarr/Sonarr/commit/9bb2f390bdc16d20eb54f2c84a145ac689f229f0) Bump coverlet.collector to 10.0.1 — *Bogdan*
-- `be   ` [`c87a61c49`](https://github.com/Sonarr/Sonarr/commit/c87a61c49c417e6eb79fb739fd6ae5c79ca61253) Bump GitHubActionsTestLogger to 3.0.5 — *Bogdan*
-- `chore` [`b67fff717`](https://github.com/Sonarr/Sonarr/commit/b67fff71747518ad038080b81cd89f6e1d63c924) Build and lint frontend in parallel — *Bogdan*
-- `be   ` [`fe09a6889`](https://github.com/Sonarr/Sonarr/commit/fe09a688954a0d0159a5043d8c303a08fabe274a) Bump FFprobe to 9.0.1 — *Bogdan*
-- `be   ` [`da2284d7e`](https://github.com/Sonarr/Sonarr/commit/da2284d7eaab22ed9b2ca698af690148d691e967) Caching for the same series path in free space specification — *Bogdan*
-- `be   ` [`a7fa9dc34`](https://github.com/Sonarr/Sonarr/commit/a7fa9dc34a3f3a7e02ac6c0e9d4b29e3f4b5fa5f) Multiple Translations updated by Weblate — *Weblate*
-- `be   ` [`9cba4a29a`](https://github.com/Sonarr/Sonarr/commit/9cba4a29a260035a273f7d0ecb00e3266862d6cb) Don't start miniprofiler if it's disabled — *Mark McDowall*
-- `be   ` [`10e445d55`](https://github.com/Sonarr/Sonarr/commit/10e445d556caf057c72c63938e18f8e95c7184ef) New: Do not blocklist similar NZBs from a different indexer — *Mark McDowall*
-- `fe   ` [`4e4182583`](https://github.com/Sonarr/Sonarr/commit/4e41825838b321ac23462b137c19400fbbafb5bd) Remove help joke from loading messages — *Corgo*
-- `be+fe` [`e27c1f47a`](https://github.com/Sonarr/Sonarr/commit/e27c1f47a586be118470d8e1c135decb98a24be1) Announce indexer and download client test results — *coopa11y*
-- `be   ` [`6f12070e8`](https://github.com/Sonarr/Sonarr/commit/6f12070e8cdf6d81da1e04ee703174de9b9a564e) Multiple Translations updated by Weblate — *Weblate*
-- `be   ` [`2b7906724`](https://github.com/Sonarr/Sonarr/commit/2b790672480b472df8d465658b186f305b542356) New: Option to reject and blocklist torrents containing rejected extensions at grab time — *Adrian*
-- `fe   ` [`bcb333fd8`](https://github.com/Sonarr/Sonarr/commit/bcb333fd8c1829d2278ab9f76e7847e34d863a37) Localize examples for date and time settings — *Bogdan*
-- `fe   ` [`a4a2583de`](https://github.com/Sonarr/Sonarr/commit/a4a2583dea800f3926f069a66a4b7651ef516796) Fix configured timezone usage in moment — *Bogdan*
-- `be   ` [`f089df054`](https://github.com/Sonarr/Sonarr/commit/f089df054fc2d60af1491626a833b3397ff6a986) Improve zip extraction — *Mark McDowall*
 - `be+fe` [`1579a8bb7`](https://github.com/Sonarr/Sonarr/commit/1579a8bb7f89803d0850369f3ff7980d6edaf31d) New: Add hostname validation — *Mark McDowall*
 - `be+fe` [`022f69e14`](https://github.com/Sonarr/Sonarr/commit/022f69e14bc333588bc775b9cab98f5e8f12df0c) New: Add Trusted Networks setting — *Mark McDowall*
-- `be   ` [`79483e254`](https://github.com/Sonarr/Sonarr/commit/79483e254253013e5380a3527d4f626ba4185cf1) Multiple Translations updated by Weblate — *Weblate*
-- `be   ` [`aee587697`](https://github.com/Sonarr/Sonarr/commit/aee587697f5216c1a1b3431aa2f13e85c61a1939) Automated API Docs update — *Sonarr*
-- `be   ` [`c0e859718`](https://github.com/Sonarr/Sonarr/commit/c0e8597189fa14c238f76d9d6377c8e7f549aff8) Fixed: Preferred size comparison for multi-episode release  — *dronkailp*
 - `be   ` [`85964fec1`](https://github.com/Sonarr/Sonarr/commit/85964fec18edfe11a898252303349f4ce81cd7c2) Fix allowed hosts check check on config file changes — *Bogdan*
-- `be   ` [`6f850c5b9`](https://github.com/Sonarr/Sonarr/commit/6f850c5b9ced762dc70bae8a303b2e1aa41c3692) Fixed: Importing single files from Freebox — *Bogdan*
-- `be   ` [`c0023b4c2`](https://github.com/Sonarr/Sonarr/commit/c0023b4c22a1a2c2d5b9393820ff1bc464b41504) Set PooledConnectionLifetime to 30 minutes — *Mark McDowall*
-- `fe   ` [`a4448b720`](https://github.com/Sonarr/Sonarr/commit/a4448b720db87e1b37d59d4cc7e8567f27973817) Improve restart required behavior — *Mark McDowall*
-- `be   ` [`900cc21d3`](https://github.com/Sonarr/Sonarr/commit/900cc21d3bc7441211aa71baf61577437501c839) New: Support for Polish tracker releases — *Mark McDowall*
-- `be   ` [`b84a621e9`](https://github.com/Sonarr/Sonarr/commit/b84a621e991747360b63e074d06fc7d8b534ef63) New: Parsing file names with ambiguous episode numbering — *Mark McDowall*
 
 ## Settled
 
@@ -204,3 +159,48 @@ Commits reviewed and dispositioned. Skips carry their reason.
 | [`26d55458e`](https://github.com/Sonarr/Sonarr/commit/26d55458e78b8d48bc1472da0220347853284391) | Close modal after saving provider | `skip` | Refactor of a hook that has diverged. It resets a lastSaveData ref we do not have, and it deletes the setSaveError setter that our EditNotificationModalContent writes an OAuth 400 through. Our provider modals close on wasSaving && !isSaving && !saveError, and handleSaveSuccess already clears the merged error. |
 | [`fde8bb0ec`](https://github.com/Sonarr/Sonarr/commit/fde8bb0ecfc01e54f257ef931db656f97d4426bb) | Fixed: Connecting to Jellyfin 12+ | `have` | Landed in #571 via Radarr's fuller version (bcab4b0da's descendant): we set both X-MediaBrowser-Token and the Authorization MediaBrowser scheme on every request, not just TestConnection. |
 | [`2933f1bfe`](https://github.com/Sonarr/Sonarr/commit/2933f1bfefacbfb875c7344e2dbb9969b2da8d2a) | Remove waiting-for-info label after correcting issues | `skip` | Edits .github/workflows/label_invalid_issues.yml, which we do not have. |
+| [`93e8c54b8`](https://github.com/Sonarr/Sonarr/commit/93e8c54b8116bb9086fa28d3cbd3cf533bc6e5e8) | Multiple Translations updated by Weblate | `skip` | Weblate commit. Our translations come from Weblate directly, never from cherry-picks. |
+| [`fae7240d6`](https://github.com/Sonarr/Sonarr/commit/fae7240d647ce9b593a7259cdd67a3e2de9af001) | New: Calendar date selector | `adapt` | Our calendar header and navigation match Sonarr's. Adapted goToDate to set calendarStore's time directly, since we have no setCalendarTime helper, and wrote DateInput's .css.d.ts in our namespace format. |
+| [`cd0850938`](https://github.com/Sonarr/Sonarr/commit/cd08509385fc66a920a6e06d836ec9baeec21053) | New: Only search for individual anime episodes for unaired seasons | `skip` | Anime season packs and unaired episode searching. We have no seasons, no episodes and no anime handling. |
+| [`143a007ce`](https://github.com/Sonarr/Sonarr/commit/143a007cec0b7e8408ffd1b8ea3282f1cfe76cb9) | Fixed: Ignore invalid languages during Manual Import | `have` | Language.IsValid and the guard in ManualImportService around file.Languages are already in our tree. |
+| [`3d0029e4c`](https://github.com/Sonarr/Sonarr/commit/3d0029e4c893cd1d90afb8b9a48a48baa7d744d1) | Announce clipboard copy results to screen readers | `adapt` | Applied to our ClipboardButton, which has no label span, so only the title/aria-label and the StatusIndicator wrapper were taken. |
+| [`bcab4b0da`](https://github.com/Sonarr/Sonarr/commit/bcab4b0dab19c8cdce829f11b1a543fb725d0deb) | Use same request builder for all Emby/Jellyfin requests | `have` | Our MediaBrowserProxy already builds every request through BuildRequest and sends the token on the Items query. |
+| [`b966b53da`](https://github.com/Sonarr/Sonarr/commit/b966b53daa5432d2459a52523a746edef4e69c0a) | Downgrade System.IO.FileSystem.AccessControl to 5.0.0 | `have` | All three csproj files already reference 5.0.0. |
+| [`9e8d45566`](https://github.com/Sonarr/Sonarr/commit/9e8d45566701a101b6f3c2c8d92866193e0142a1) | Bump Mono.Unix to 7.1.0 | `skip` | Different package: we reference Mono.Posix.NETStandard 5.20.1.34-servarr24. Swapping to Mono.Unix means reworking NzbDrone.Mono's DiskProvider and dropping a NuGet source, which is a toolchain decision rather than a sync one. |
+| [`a8d50c164`](https://github.com/Sonarr/Sonarr/commit/a8d50c1641085ed359346a0ef4ba4704447f19af) | Bump sqlite3 to 3.53.4 | `have` | SourceGear.sqlite3 is already at 3.53.4. |
+| [`95acb08e0`](https://github.com/Sonarr/Sonarr/commit/95acb08e013b6a29e667fbf6c7d2a54fcc311aa0) | Bump NUnit to 4.6.1 | `have` | Already at 4.6.1 in Directory.Build.props and Whisparr.Test.Common. |
+| [`f88571be3`](https://github.com/Sonarr/Sonarr/commit/f88571be33b4d2009cb5696da64baff014813129) | Bump FFprobe to 9.0 | `have` | We are ahead: Openur.FFprobeStatic 9.0.1.492. |
+| [`7b54ccdc1`](https://github.com/Sonarr/Sonarr/commit/7b54ccdc1ade63db01350bf7f14e80371aa96771) | Fixed: Avoid marking grab as failed when qBittorrent already has that release | `pick` | Our QBittorrent client had the same unguarded AddTorrentFromUrl/AddTorrentFromFile calls, and DownloadService already handles DownloadClientRejectedReleaseException. Added two tests, verified failing without the fix. |
+| [`818ac70df`](https://github.com/Sonarr/Sonarr/commit/818ac70df13c84f0ef41d18e6c45d095b6ea22ae) | Announce sidebar messages to screen readers | `pick` | Our sidebar Message is identical apart from the ref type. |
+| [`be9b16c5a`](https://github.com/Sonarr/Sonarr/commit/be9b16c5ad86e4f64afe78d02861191d68d1aefa) | Multiple Translations updated by Weblate | `skip` | Weblate commit. Our translations come from Weblate directly, never from cherry-picks. |
+| [`7650fa19b`](https://github.com/Sonarr/Sonarr/commit/7650fa19bf8c4885a29cf72779a9effb4f9b08e9) | Include reason in release rejection message | `adapt` | We only have the V3 controller; the V5 half of the change does not apply. |
+| [`ae5b03bcf`](https://github.com/Sonarr/Sonarr/commit/ae5b03bcfc0f31e8ce5054f791f6cf25ad2133ac) | Fixed: Ensure date is parsed before 4-digit absolute episode number | `skip` | Parser gate. Absolute episode numbering does not exist here, and the change reorders date-vs-number precedence, which is exactly where our grammar deliberately differs. |
+| [`a533a1a46`](https://github.com/Sonarr/Sonarr/commit/a533a1a463add90fd919060b6abd426d5665859d) | Fixed: Skip 'N-Z-B' as release group name | `pick` | Parser gate cleared: our ReleaseGroupParser carries the same clean-up regex and returned 'Z-B' for a title ending -[N-Z-B]-xpost. Test written against our parser first and confirmed failing. |
+| [`249f13137`](https://github.com/Sonarr/Sonarr/commit/249f131371de7965a71d1b882588d3731975cd70) | Expose pages as named main landmarks | `adapt` | Making PageContent's title required found seven call sites here rather than Sonarr's one, including both index pages and the two details pages' loading states. |
+| [`8f0d18e5f`](https://github.com/Sonarr/Sonarr/commit/8f0d18e5ff1439ef2d25f71c24d5e632220688b1) | Identify Queue download progress to screen readers | `pick` | Our ProgressBar and QueueRow match; the title variable was already in scope. |
+| [`3381b393f`](https://github.com/Sonarr/Sonarr/commit/3381b393f46d28cae0cb2445a512b44ae6c0aaf5) | Close PRs without author activity in last 90 days | `skip` | Edits .github/workflows/close_stale_draft_prs.yml, which this repo does not have. |
+| [`59468add5`](https://github.com/Sonarr/Sonarr/commit/59468add52f1d91b65c1a93b8a72cdaf63620cc0) | Bump node.js to 24 LTS | `skip` | Our toolchain versions are ours to move. Node 22 is still in LTS here and the bump touches the devcontainer and yarn.lock, so it belongs in its own PR rather than a sync chunk. |
+| [`30661f86b`](https://github.com/Sonarr/Sonarr/commit/30661f86befba905955cded7dd947a1f41825828) | Bump .NET to 10.0.11 | `have` | We are already on net10.0 with SDK 10.0.101 in global.json. |
+| [`9bb2f390b`](https://github.com/Sonarr/Sonarr/commit/9bb2f390bdc16d20eb54f2c84a145ac689f229f0) | Bump coverlet.collector to 10.0.1 | `have` | Directory.Build.props is already at 10.0.1. |
+| [`c87a61c49`](https://github.com/Sonarr/Sonarr/commit/c87a61c49c417e6eb79fb739fd6ae5c79ca61253) | Bump GitHubActionsTestLogger to 3.0.5 | `have` | Directory.Build.props is already at 3.0.5. |
+| [`b67fff717`](https://github.com/Sonarr/Sonarr/commit/b67fff71747518ad038080b81cd89f6e1d63c924) | Build and lint frontend in parallel | `skip` | Restructures Sonarr's own build_v5 workflow and composite actions. Our build_v3 pipeline is a different shape. |
+| [`fe09a6889`](https://github.com/Sonarr/Sonarr/commit/fe09a688954a0d0159a5043d8c303a08fabe274a) | Bump FFprobe to 9.0.1 | `have` | We are ahead: Openur.FFprobeStatic 9.0.1.492. |
+| [`da2284d7e`](https://github.com/Sonarr/Sonarr/commit/da2284d7eaab22ed9b2ca698af690148d691e967) | Caching for the same series path in free space specification | `adapt` | Keyed on Movie.Path instead of Series.Path. Added a test that the disk is stat'd once for repeated releases on the same movie, verified failing without the cache. |
+| [`a7fa9dc34`](https://github.com/Sonarr/Sonarr/commit/a7fa9dc34a3f3a7e02ac6c0e9d4b29e3f4b5fa5f) | Multiple Translations updated by Weblate | `skip` | Weblate commit. Our translations come from Weblate directly, never from cherry-picks. |
+| [`9cba4a29a`](https://github.com/Sonarr/Sonarr/commit/9cba4a29a260035a273f7d0ecb00e3266862d6cb) | Don't start miniprofiler if it's disabled | `skip` | We do not use MiniProfiler at all; there is no UseMiniProfiler call or profiler endpoint in our Startup. |
+| [`10e445d55`](https://github.com/Sonarr/Sonarr/commit/10e445d556caf057c72c63938e18f8e95c7184ef) | New: Do not blocklist similar NZBs from a different indexer | `skip` | Rewrites Parser/ReleaseComparer.cs, which does not exist in our tree. |
+| [`4e4182583`](https://github.com/Sonarr/Sonarr/commit/4e41825838b321ac23462b137c19400fbbafb5bd) | Remove help joke from loading messages | `pick` | We carried the same hostage joke. |
+| [`e27c1f47a`](https://github.com/Sonarr/Sonarr/commit/e27c1f47a586be118470d8e1c135decb98a24be1) | Announce indexer and download client test results | `adapt` | Our SpinnerErrorButton takes ApiError | string rather than Sonarr's wider union, and providerName is derived the same way in both modals. |
+| [`6f12070e8`](https://github.com/Sonarr/Sonarr/commit/6f12070e8cdf6d81da1e04ee703174de9b9a564e) | Multiple Translations updated by Weblate | `skip` | Weblate commit. Our translations come from Weblate directly, never from cherry-picks. |
+| [`2b7906724`](https://github.com/Sonarr/Sonarr/commit/2b790672480b472df8d465658b186f305b542356) | New: Option to reject and blocklist torrents containing rejected extensions at grab time | `skip` | Feature decision, deferred to its own PR: a new per-indexer setting across eight settings classes plus grab-time torrent inspection in TorrentClientBase. |
+| [`bcb333fd8`](https://github.com/Sonarr/Sonarr/commit/bcb333fd8c1829d2278ab9f76e7847e34d863a37) | Localize examples for date and time settings | `adapt` | Rendered through plain moment rather than moment-timezone, since we have no configured timezone setting. |
+| [`a4a2583de`](https://github.com/Sonarr/Sonarr/commit/a4a2583dea800f3926f069a66a4b7651ef516796) | Fix configured timezone usage in moment | `skip` | Fixes Sonarr's configured-timezone UI setting by moving to moment-timezone and dropping convertToTimezone. We have neither the setting nor that helper. |
+| [`f089df054`](https://github.com/Sonarr/Sonarr/commit/f089df054fc2d60af1491626a833b3397ff6a986) | Improve zip extraction | `have` | Already picked from the Radarr side as radarr/radarr@94ef97b1f. |
+| [`79483e254`](https://github.com/Sonarr/Sonarr/commit/79483e254253013e5380a3527d4f626ba4185cf1) | Multiple Translations updated by Weblate | `skip` | Weblate commit. Our translations come from Weblate directly, never from cherry-picks. |
+| [`aee587697`](https://github.com/Sonarr/Sonarr/commit/aee587697f5216c1a1b3431aa2f13e85c61a1939) | Automated API Docs update | `skip` | Regenerates Sonarr.Api.V5/openapi.json. We have no V5 API, and our own openapi.json is generated by the api_docs workflow. |
+| [`c0e859718`](https://github.com/Sonarr/Sonarr/commit/c0e8597189fa14c238f76d9d6377c8e7f549aff8) | Fixed: Preferred size comparison for multi-episode release | `skip` | Sums per-episode runtimes for a multi-episode release. A release here covers exactly one movie or scene, so the runtime is already the right one. |
+| [`6f850c5b9`](https://github.com/Sonarr/Sonarr/commit/6f850c5b9ced762dc70bae8a303b2e1aa41c3692) | Fixed: Importing single files from Freebox | `have` | Our TorrentFreeboxDownload already takes the release and appends a cleaned per-release folder to the download directory. |
+| [`c0023b4c2`](https://github.com/Sonarr/Sonarr/commit/c0023b4c22a1a2c2d5b9393820ff1bc464b41504) | Set PooledConnectionLifetime to 30 minutes | `pick` | Same SocketsHttpHandler construction in our ManagedHttpDispatcher. |
+| [`a4448b720`](https://github.com/Sonarr/Sonarr/commit/a4448b720db87e1b37d59d4cc7e8567f27973817) | Improve restart required behavior | `adapt` | Same latent bug here: the pending keys were read off the previous render. Our restart-key constant is named REQUIRES_RESTART_KEYS. |
+| [`900cc21d3`](https://github.com/Sonarr/Sonarr/commit/900cc21d3bc7441211aa71baf61577437501c839) | New: Support for Polish tracker releases | `skip` | Parser gate. Adds Polish season-pack tokens to the season regex; we have no season parsing. |
+| [`b84a621e9`](https://github.com/Sonarr/Sonarr/commit/b84a621e991747360b63e074d06fc7d8b534ef63) | New: Parsing file names with ambiguous episode numbering | `skip` | Parser gate. Disambiguates season/episode numbering in file paths, which our grammar has no concept of. |

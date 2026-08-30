@@ -89,7 +89,10 @@ function PerformerIndex(_: Readonly<PerformerIndexProps>): React.JSX.Element {
   return (
     <SelectProvider items={items}>
       <SelectModeReinitializer isSelectMode={isSelectMode} items={items} />
-      <PageContent className={styles.pageContent}>
+      <PageContent
+        className={styles.pageContent}
+        title={translate('Performers')}
+      >
         {/*
           HEADER TOOLBAR
         */}

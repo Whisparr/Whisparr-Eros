@@ -164,6 +164,7 @@ namespace NzbDrone.Common.Http.Dispatchers
                 Credentials = GetCredentialCache(),
                 PreAuthenticate = true,
                 MaxConnectionsPerServer = 12,
+                PooledConnectionLifetime = TimeSpan.FromMinutes(30),
                 ConnectCallback = onConnect,
                 SslOptions = new SslClientAuthenticationOptions
                 {
