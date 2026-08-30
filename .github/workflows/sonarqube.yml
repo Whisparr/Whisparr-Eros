@@ -249,7 +249,7 @@ jobs:
       # The two workflows are independent runs of the same commit with no
       # ordering guarantee, hence the wait. Missing coverage is not fatal: some
       # PRs never trigger build_v3.yml at all (it has paths-ignore for
-      # localization and openapi.json), and analysis without coverage still
+      # localization), and analysis without coverage still
       # beats no analysis.
       - name: Download coverage from build_v3
         env:

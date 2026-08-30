@@ -86,8 +86,9 @@ Each item names a representative path — follow the existing neighbors.
   TModel>` under `src/Whisparr.Api.V3/`, decorated `[V3ApiController]`, with a
   paired `*Resource` DTO carrying static `MapToResource` / `ToModel` mappers.
   Base classes and routing live in `src/Whisparr.Http/REST/`. Controllers often
-  also implement `IHandle<…Event>` to push SignalR updates. `openapi.json` is
-  generated in this project (`docs.sh`).
+  also implement `IHandle<…Event>` to push SignalR updates. The OpenAPI spec is
+  generated from these controllers at runtime and served at `/docs`; there is no
+  checked-in copy to update.
 - **Parser change** → `src/NzbDrone.Core/Parser/` (`Parser.cs`,
   `QualityParser.cs`, `LanguageParser.cs`, `ReleaseGroupParser.cs`,
   `ParsingService.cs`). **This is the most test-guarded area in the repo.** Any
@@ -127,7 +128,7 @@ Each item names a representative path — follow the existing neighbors.
 - Backend: `dotnet msbuild -restore src/Whisparr.sln -p:Configuration=Debug -p:Platform=Posix -t:PublishAllRids`
   (or `Platform=Windows`), or the orchestrator `build.sh`. Output in `_output/`;
   app runs at `http://localhost:6969`.
-- .NET SDK is pinned in `global.json` (10.0.x). API docs: `docs.sh`.
+- .NET SDK is pinned in `global.json` (10.0.x). API docs are served at `/docs`.
 
 ## Conventions live elsewhere
 
