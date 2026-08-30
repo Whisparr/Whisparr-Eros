@@ -3,6 +3,7 @@ import Icon, { IconKind, IconName } from 'Components/Icon';
 import SpinnerButton, {
   SpinnerButtonProps,
 } from 'Components/Link/SpinnerButton';
+import StatusIndicator from 'Components/StatusIndicator';
 import { getValidationFailures } from 'Helpers/Hooks/useApiMutation';
 import usePrevious from 'Helpers/Hooks/usePrevious';
 import { icons } from 'Helpers/Props';
@@ -46,6 +47,10 @@ function getTestResult(error: ApiError | string | undefined | null) {
 interface SpinnerErrorButtonProps extends SpinnerButtonProps {
   isSpinning: boolean;
   error?: ApiError | string | null;
+  pendingLabel?: string;
+  successLabel?: string;
+  warningLabel?: string;
+  errorLabel?: string;
   children: React.ReactNode;
 }
 
@@ -53,6 +58,10 @@ function SpinnerErrorButton({
   kind,
   isSpinning,
   error,
+  pendingLabel,
+  successLabel,
+  warningLabel,
+  errorLabel,
   children,
   ...otherProps
 }: SpinnerErrorButtonProps) {
@@ -70,21 +79,33 @@ function SpinnerErrorButton({
 
   const showIcon = wasSuccessful || hasWarning || hasError;
 
+  let statusLabel: string | undefined = undefined;
+
+  if (isSpinning) {
+    statusLabel = pendingLabel;
+  } else if (hasError) {
+    statusLabel = errorLabel;
+  } else if (hasWarning) {
+    statusLabel = warningLabel;
+  } else if (wasSuccessful) {
+    statusLabel = successLabel;
+  }
+
   const { iconName, iconKind } = useMemo<{
     iconName: IconName;
     iconKind: IconKind;
   }>(() => {
-    if (hasWarning) {
-      return {
-        iconName: icons.WARNING,
-        iconKind: 'warning',
-      };
-    }
-
     if (hasError) {
       return {
         iconName: icons.DANGER,
         iconKind: 'danger',
+      };
+    }
+
+    if (hasWarning) {
+      return {
+        iconName: icons.WARNING,
+        iconKind: 'warning',
       };
     }
 
@@ -123,17 +144,29 @@ function SpinnerErrorButton({
   }, []);
 
   return (
-    <SpinnerButton kind={kind} isSpinning={isSpinning} {...otherProps}>
-      <span className={showIcon ? styles.showIcon : undefined}>
-        {showIcon && (
-          <span className={styles.iconContainer}>
-            <Icon name={iconName} kind={iconKind} />
-          </span>
-        )}
+    <>
+      <SpinnerButton kind={kind} isSpinning={isSpinning} {...otherProps}>
+        <span className={showIcon ? styles.showIcon : undefined}>
+          {showIcon ? (
+            <span className={styles.iconContainer}>
+              <Icon name={iconName} kind={iconKind} aria-hidden={true} />
+            </span>
+          ) : null}
 
-        <span className={styles.label}>{children}</span>
-      </span>
-    </SpinnerButton>
+          <span className={styles.label}>{children}</span>
+        </span>
+      </SpinnerButton>
+
+      {statusLabel ? (
+        <StatusIndicator
+          label={statusLabel}
+          role={hasError ? 'alert' : 'status'}
+          aria-atomic={true}
+        >
+          <span />
+        </StatusIndicator>
+      ) : null}
+    </>
   );
 }
 
