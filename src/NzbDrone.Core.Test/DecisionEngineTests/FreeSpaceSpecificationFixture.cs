@@ -82,7 +82,7 @@ namespace NzbDrone.Core.Test.DecisionEngineTests
         public void should_return_true_if_skip_free_space_check_is_true()
         {
             Mocker.GetMock<IConfigService>()
-                .Setup(s => s.SkipFreeSpaceCheckWhenImporting)
+                .Setup(s => s.SkipFreeSpaceCheckWhenGrabbing)
                 .Returns(true);
 
             WithMinimumFreeSpace(150);
@@ -90,6 +90,20 @@ namespace NzbDrone.Core.Test.DecisionEngineTests
             WithSize(100);
 
             Subject.IsSatisfiedBy(_remoteMovie, null).Accepted.Should().BeTrue();
+        }
+
+        [Test]
+        public void should_not_skip_free_space_check_when_only_the_import_setting_is_true()
+        {
+            Mocker.GetMock<IConfigService>()
+                .Setup(s => s.SkipFreeSpaceCheckWhenImporting)
+                .Returns(true);
+
+            WithMinimumFreeSpace(150);
+            WithAvailableSpace(200);
+            WithSize(100);
+
+            Subject.IsSatisfiedBy(_remoteMovie, null).Accepted.Should().BeFalse();
         }
 
         [Test]
