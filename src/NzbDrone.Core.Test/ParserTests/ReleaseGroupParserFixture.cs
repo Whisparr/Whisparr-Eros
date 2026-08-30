@@ -32,6 +32,7 @@ namespace NzbDrone.Core.Test.ParserTests
         [TestCase("Movie.Name.S01E01.INTERNAL.720p.HDTV.x264-aAF-RakuvUS-Obfuscated", "aAF")]
         [TestCase("Movie.Name.2018.720p.WEBRip.DDP5.1.x264-NTb-postbot", "NTb")]
         [TestCase("Movie.Name.2018.720p.WEBRip.DDP5.1.x264-NTb-xpost", "NTb")]
+        [TestCase("Movie.Name.2018.1080p.AMZN.WEB-DL.DDP2.0.H.264-ToonsHub.mkv-[N-Z-B]-xpost", "ToonsHub")]
         [TestCase("Movie.Name.S02E24.1080p.AMZN.WEBRip.DD5.1.x264-CasStudio-AsRequested", "CasStudio")]
         [TestCase("Movie.Name.S04E11.Lamster.1080p.AMZN.WEB-DL.DDP5.1.H.264-NTb-AlternativeToRequested", "NTb")]
         [TestCase("Movie.Name.S16E04.Third.Wheel.1080p.AMZN.WEB-DL.DDP5.1.H.264-NTb-GEROV", "NTb")]
