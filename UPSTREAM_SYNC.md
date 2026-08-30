@@ -7,35 +7,13 @@ See `.github/upstream/state.json` for the machine state and the `sync-upstream` 
 
 ## radarr — Radarr/Radarr `develop`
 
-Owns: **backend**. High-water mark: `5b8c6f73da`.
+Owns: **backend**. High-water mark: `15369ed5c3`.
 
-**50 outstanding.**
+**36 outstanding.**
 
 | Month | Total | be | fe | be+fe | chore |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| 2026-07 | 18 | 15 | 0 | 0 | 3 |
-| 2026-08 | 32 | 18 | 8 | 4 | 2 |
-
-### 2026-07
-
-- `be   ` [`d944e0e4c`](https://github.com/Radarr/Radarr/commit/d944e0e4c9753604513b0b1823cb2bfd5f68e53d) Fixed: Importing new items from Simkl lists — *Bogdan*
-- `be   ` [`90d0e26bd`](https://github.com/Radarr/Radarr/commit/90d0e26bd1d41c88e7a6bf710219edc818577f8e) Multiple Translations updated by Weblate — *Weblate*
-- `be   ` [`32d9cd9ea`](https://github.com/Radarr/Radarr/commit/32d9cd9ea736664326e536bc7641beb7754089b8) Fixed: Exclude streaming extensions for probing media info — *Bogdan*
-- `chore` [`f5102d315`](https://github.com/Radarr/Radarr/commit/f5102d31592ff2f2d8ec4c9ca01eae200db1be20) Fix build due to low disk space — *Bogdan*
-- `be   ` [`c7cf91c14`](https://github.com/Radarr/Radarr/commit/c7cf91c14ac42096a013e1bbb1875bd73b6c509f) Fixed: Trakt import list crash on watchlist entry with null TMDB ID — *Casaper*
-- `be   ` [`ec1e57d05`](https://github.com/Radarr/Radarr/commit/ec1e57d05c87cd5d85117f8e1a2eeeb2a768c2fb) Fixed: Validate source, modifier and resolution specifications — *Bogdan*
-- `be   ` [`2d1ff13c1`](https://github.com/Radarr/Radarr/commit/2d1ff13c1b16b3625e91dfa445c63b8f98b3959a) Fixed: Error when fetching non-existing tags in import script — *Bogdan*
-- `be   ` [`5e8e532cd`](https://github.com/Radarr/Radarr/commit/5e8e532cd3cecdd3645a4c44148a88a3c26713b1) Fix malformed cookie test — *Bogdan*
-- `chore` [`de4811318`](https://github.com/Radarr/Radarr/commit/de4811318ef1eb6560a5e480cc4bba2afc008ca9) Bump to 6.4.0 — *Auggie*
-- `be   ` [`69f8ceaeb`](https://github.com/Radarr/Radarr/commit/69f8ceaeb59021be314d7790a5eb1f38b99f10da) Fixed: Improve cache busting for covers using a hash instead of file modification time — *Bogdan*
-- `be   ` [`9d814137c`](https://github.com/Radarr/Radarr/commit/9d814137c12dae035e95ee14e3a2c079ce7d20db) Wrap bulk UpdateMany/SetFields in a transaction — *Colin Mackie*
-- `be   ` [`2089d4a33`](https://github.com/Radarr/Radarr/commit/2089d4a33f2ffe0151cbab5ebb3b7ec48af3c34c) Avoid suppresing search for movies errors — *Bogdan*
-- `be   ` [`f3bb6321c`](https://github.com/Radarr/Radarr/commit/f3bb6321cdee98cf8f22c80acc26d847bd4ecba8) Ignore case for rating type enums — *Bogdan*
-- `be   ` [`1737a7166`](https://github.com/Radarr/Radarr/commit/1737a7166976e077dc288081c3b47a85ac4ee79a) Fix log message for MinCustomFormatScore rejection — *Bogdan*
-- `be   ` [`750247fbe`](https://github.com/Radarr/Radarr/commit/750247fbe7dbcaa06b3b95ef52286b7c314d46f8) Defer deserialize JSON response resource with Lazy — *Bogdan*
-- `be   ` [`0c78421d5`](https://github.com/Radarr/Radarr/commit/0c78421d553f8395fee14171892da60650123c97) Fix disposing of the HttpRequestMessage — *Bogdan*
-- `chore` [`9f0328d31`](https://github.com/Radarr/Radarr/commit/9f0328d31781b488659fa33119b5a0fd5419da1d) Update major version to 6.4.1 — *Auggie*
-- `be   ` [`15369ed5c`](https://github.com/Radarr/Radarr/commit/15369ed5c359c9704783d243ce2b55e59a40a3a3) New: RQBit download client — *Alexander WB*
+| 2026-08 | 36 | 22 | 8 | 4 | 2 |
 
 ### 2026-08
 
@@ -71,6 +49,10 @@ Owns: **backend**. High-water mark: `5b8c6f73da`.
 - `be   ` [`1906cfb38`](https://github.com/Radarr/Radarr/commit/1906cfb3819b6e9f603642020c6a7d689c8e5352) Fixed: Format of timestamps for Discord notifications from some systems — *Alexander*
 - `be   ` [`bdd5a7260`](https://github.com/Radarr/Radarr/commit/bdd5a726071630f408c85fe1b716c5bef108d513) Multiple Translations updated by Weblate — *Weblate*
 - `be   ` [`40bb746c5`](https://github.com/Radarr/Radarr/commit/40bb746c5e3f5929f09e0edb9350c721e7670065) Fixed: Connecting to Jellyfin 12+ (#11663) — *Auggie*
+- `be   ` [`2cfc781f8`](https://github.com/Radarr/Radarr/commit/2cfc781f85c6fb0355f4c37da5c68d86616e7bdf) Fixed: Ignore invalid languages during Manual Import — *Bogdan*
+- `be   ` [`9910767f5`](https://github.com/Radarr/Radarr/commit/9910767f58b0d9beb3b7fa671ed4695487d917d3) Fixed: Unexpected languages stored in DB will be treated as Unknown — *Mark McDowall*
+- `be   ` [`45da623c7`](https://github.com/Radarr/Radarr/commit/45da623c777c2451bff5684718832952925f2be3) Fixed: Re-grabbing a torrent that was already imported should re-import — *Mark McDowall*
+- `be   ` [`68b93db78`](https://github.com/Radarr/Radarr/commit/68b93db78cb7a648d61a486d94eae703242e1e36) Fixed: Importing single files from Freebox — *Bogdan*
 
 ## sonarr — Sonarr/Sonarr `v5-develop`
 
@@ -210,3 +192,21 @@ Commits reviewed and dispositioned. Skips carry their reason.
 | [`c3849dbcb`](https://github.com/Radarr/Radarr/commit/c3849dbcb02f6e38cb6206e672ca6e2313962b8c) | Upgrade StyleCop.Analyzers to Unstable 1.2.0.556 | `skip` | Deferred to its own PR, not skipped on merit. Two blockers: 1.2.0.556 is not on nuget.org (a trial bump fails with NU1102) so it needs a package source we do not configure, and the upgrade churns 160 files including Parser.cs, where our fork has diverged furthest. Not something to fold into a sync chunk. |
 | [`c97100c1c`](https://github.com/Radarr/Radarr/commit/c97100c1c8f3cdf839be3adca42835684cc92c36) | Bump version to 6.3.0 | `skip` | Upstream's own version number in azure-pipelines.yml. We version independently. |
 | [`5b8c6f73d`](https://github.com/Radarr/Radarr/commit/5b8c6f73da737c69bb74bde419673319f0d47e49) | Fix: Bump FFProbe to 5.1.10 | `skip` | Different package and we are ahead. Upstream moves Servarr.FFprobe 5.1.4 to 5.1.10; we reference Openur.FFprobeStatic 9.0.1.492. |
+| [`d944e0e4c`](https://github.com/Radarr/Radarr/commit/d944e0e4c9753604513b0b1823cb2bfd5f68e53d) | Fixed: Importing new items from Simkl lists | `skip` | Touches SimklImportBase only. We declined the Simkl integration itself in 2026-05 (5981aea57), so there is nothing here to fix. |
+| [`90d0e26bd`](https://github.com/Radarr/Radarr/commit/90d0e26bd1d41c88e7a6bf710219edc818577f8e) | Multiple Translations updated by Weblate | `skip` | Weblate commit. Our translations come from Weblate directly, never from cherry-picks. |
+| [`32d9cd9ea`](https://github.com/Radarr/Radarr/commit/32d9cd9ea736664326e536bc7641beb7754089b8) | Fixed: Exclude streaming extensions for probing media info | `adapt` | Picked the StreamingExtensions gate, not upstream's rationale: our bundled ffprobe is built --disable-network with only the file protocol, so it cannot follow a .strm or .m3u to a remote stream. It matters here for a Whisparr-only reason instead - the decode failure came back through the FFMpegException branch, which returns a -1 minute runtime and lets WhisparrCorruptFileDetection condemn the file. Skipped upstream's unrelated MediaFileExtensions restyling. |
+| [`f5102d315`](https://github.com/Radarr/Radarr/commit/f5102d31592ff2f2d8ec4c9ca01eae200db1be20) | Fix build due to low disk space | `skip` | Only touches azure-pipelines.yml. We have no such file; our CI is GitHub Actions. |
+| [`c7cf91c14`](https://github.com/Radarr/Radarr/commit/c7cf91c14ac42096a013e1bbb1875bd73b6c509f) | Fixed: Trakt import list crash on watchlist entry with null TMDB ID | `skip` | Fixes TraktParser and TraktPopularParser in ImportLists/Trakt. We carry only the Trakt *notification* connector - there is no Trakt import list here, and our lists are RSS, StashDB, TMDb and Whisparr. |
+| [`ec1e57d05`](https://github.com/Radarr/Radarr/commit/ec1e57d05c87cd5d85117f8e1a2eeeb2a768c2fb) | Fixed: Validate source, modifier and resolution specifications | `adapt` | Took the ResolutionSpecification and SourceSpecification validators. Reproduced live on the dev instance first: NotEmpty() rejected Unknown (0) with "'Value' must not be empty" even though the API advertises it in selectOptions, while 9999 - in neither enum - was accepted with a 201. No QualityModifierSpecification exists here, and upstream's IndexerFlagSpecification hunk was only a variable rename. |
+| [`2d1ff13c1`](https://github.com/Radarr/Radarr/commit/2d1ff13c1b16b3625e91dfa445c63b8f98b3959a) | Fixed: Error when fetching non-existing tags in import script | `pick` | Identical code in our ImportScriptService. A movie holding a since-deleted tag id made _tagRepository.Get(t) throw ModelNotFoundException and take the whole import script down; GetTags queries once and returns what exists. |
+| [`5e8e532cd`](https://github.com/Radarr/Radarr/commit/5e8e532cd3cecdd3645a4c44148a88a3c26713b1) | Fix malformed cookie test | `have` | Upstream moved a hardcoded expiry from 2026 to 2046. Ours already generates the date as UtcNow.AddYears(1), so it cannot go stale at all. |
+| [`de4811318`](https://github.com/Radarr/Radarr/commit/de4811318ef1eb6560a5e480cc4bba2afc008ca9) | Bump to 6.4.0 | `skip` | Radarr version bump. Our versioning is independent. |
+| [`69f8ceaeb`](https://github.com/Radarr/Radarr/commit/69f8ceaeb59021be314d7790a5eb1f38b99f10da) | Fixed: Improve cache busting for covers using a hash instead of file modification time | `skip` | Wanted, but deferred to its own PR by decision on 2026-08-30. Radarr's pick of Sonarr cecb4052e. Replaces the per-cover disk stat with a hash of the remote URL - a real win here because we have three of these loops (movie, performer, studio) and the studio one lists a directory per cover and creates folders as a side effect of a GET. Too large for a bug-fix chunk: it changes IMapCoversToLocal across 17 call sites and needs live verification on 6969. |
+| [`9d814137c`](https://github.com/Radarr/Radarr/commit/9d814137c12dae035e95ee14e3a2c079ce7d20db) | Wrap bulk UpdateMany/SetFields in a transaction | `pick` | Identical code in our BasicRepository. Both bulk paths passed a null transaction, so each row committed separately - slow, and a partial write survived a mid-batch failure. |
+| [`2089d4a33`](https://github.com/Radarr/Radarr/commit/2089d4a33f2ffe0151cbab5ebb3b7ec48af3c34c) | Avoid suppresing search for movies errors | `skip` | Our SkyHookProxy talks to api.whisparr.com and sets SuppressHttpError on all ten of its call sites. Unsuppressing one of them is inconsistent, and upstream also drops AllowAutoRedirect, which we cannot verify against an endpoint we do not control. Worth its own PR if we want search failures to report their status code. |
+| [`f3bb6321c`](https://github.com/Radarr/Radarr/commit/f3bb6321cdee98cf8f22c80acc26d847bd4ecba8) | Ignore case for rating type enums | `skip` | Fixes MapRatings' Enum.Parse calls in Radarr's SkyHookProxy. Our proxy has no MapRatings and no Enum.Parse over a rating type - ratings reach us already shaped from api.whisparr.com. |
+| [`1737a7166`](https://github.com/Radarr/Radarr/commit/1737a7166976e077dc288081c3b47a85ac4ee79a) | Fix log message for MinCustomFormatScore rejection | `pick` | Same broken indices in our UpgradableSpecification: the format string referenced {3}/{4}/{5} against five arguments, so the score and the existing formats logged wrong. |
+| [`750247fbe`](https://github.com/Radarr/Radarr/commit/750247fbe7dbcaa06b3b95ef52286b7c314d46f8) | Defer deserialize JSON response resource with Lazy | `skip` | Moves deserialization out of the HttpResponse<T> constructor and into first Resource access, which relocates every throw site. Callers that build the response inside a try/catch and read .Resource outside it would start leaking exceptions. Upstream shipped no test for it and the gain is a deserialization we usually want anyway. |
+| [`0c78421d5`](https://github.com/Radarr/Radarr/commit/0c78421d553f8395fee14171892da60650123c97) | Fix disposing of the HttpRequestMessage | `pick` | Identical code in our ManagedHttpDispatcher. HttpRequestMessage and its ByteArrayContent were never disposed on any request. Also unwraps the stray block left behind when SendAsync moved to a using declaration. |
+| [`9f0328d31`](https://github.com/Radarr/Radarr/commit/9f0328d31781b488659fa33119b5a0fd5419da1d) | Update major version to 6.4.1 | `skip` | Radarr version bump. Our versioning is independent. |
+| [`15369ed5c`](https://github.com/Radarr/Radarr/commit/15369ed5c359c9704783d243ce2b55e59a40a3a3) | New: RQBit download client | `skip` | Declined on 2026-08-30. A new download client, not a fix: ~950 lines of client, proxy, settings and six response models we would own, unverifiable without running an rqbit instance, and nobody has asked for it. |

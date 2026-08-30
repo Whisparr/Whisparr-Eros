@@ -6,6 +6,7 @@ using FluentAssertions;
 using Moq;
 using NUnit.Framework;
 using NzbDrone.Common.Disk;
+using NzbDrone.Core.Configuration;
 using NzbDrone.Core.MediaFiles.MediaInfo;
 using NzbDrone.Core.Test.Framework;
 using NzbDrone.Test.Common.Categories;
@@ -34,6 +35,27 @@ namespace NzbDrone.Core.Test.MediaFiles.MediaInfo
             var path = Path.Combine(TestContext.CurrentContext.TestDirectory, "Files", "Media", "H264_sample.mp4");
 
             Subject.GetRunTime(path).Value.Seconds.Should().Be(10);
+        }
+
+        [TestCase(".m3u")]
+        [TestCase(".strm")]
+        public void should_not_flag_streaming_files_as_corrupt(string extension)
+        {
+            // A .strm or .m3u is a text pointer, not video, but both are in the media extension
+            // list so a scan hands them to ffprobe anyway. The decode failure came back through
+            // the FFMpegException branch below, which reports a -1 minute runtime - the signal
+            // corrupt file detection uses to condemn a file.
+            Mocker.GetMock<IConfigService>()
+                  .SetupGet(s => s.WhisparrCorruptFileDetection)
+                  .Returns(true);
+
+            var tempPath = GetTempFilePath();
+            Directory.CreateDirectory(tempPath);
+
+            var path = Path.Combine(tempPath, "media" + extension);
+            File.WriteAllText(path, "http://example.com/stream" + extension);
+
+            Subject.GetMediaInfo(path).Should().BeNull();
         }
 
         [Test]

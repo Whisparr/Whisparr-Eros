@@ -75,6 +75,10 @@ namespace NzbDrone.Core.MediaFiles
         public static HashSet<string> Extensions => new HashSet<string>(_fileExtensions.Keys, StringComparer.OrdinalIgnoreCase);
         public static HashSet<string> DiskExtensions => new HashSet<string>(new[] { ".img", ".iso", ".vob" }, StringComparer.OrdinalIgnoreCase);
 
+        // Playlists and stream pointers: a few bytes of text naming somewhere else, never video.
+        // ffprobe cannot make sense of one, so probing it only produces a decode failure.
+        public static HashSet<string> StreamingExtensions => new HashSet<string>(new[] { ".m3u", ".strm" }, StringComparer.OrdinalIgnoreCase);
+
         public static Quality GetQualityForExtension(string extension)
         {
             if (_fileExtensions.TryGetValue(extension, out var quality))

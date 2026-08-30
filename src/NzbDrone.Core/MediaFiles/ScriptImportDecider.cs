@@ -140,7 +140,7 @@ namespace NzbDrone.Core.MediaFiles
             environmentVariables.Add("Whisparr_Movie_ImdbId", movie.MovieMetadata.Value.ImdbId ?? string.Empty);
             environmentVariables.Add("Whisparr_Movie_OriginalLanguage", IsoLanguages.Get(movie.MovieMetadata.Value.OriginalLanguage).ThreeLetterCode);
             environmentVariables.Add("Whisparr_Movie_Genres", string.Join("|", movie.MovieMetadata.Value.Genres));
-            environmentVariables.Add("Whisparr_Movie_Tags", string.Join("|", movie.Tags.Select(t => _tagRepository.Get(t).Label)));
+            environmentVariables.Add("Whisparr_Movie_Tags", string.Join("|", _tagRepository.GetTags(movie.Tags).Select(t => t.Label)));
 
             environmentVariables.Add("Whisparr_Movie_Release_Date", movie.MovieMetadata.Value.ReleaseDateUtc.ToString() ?? string.Empty);
             environmentVariables.Add("Whisparr_Movie_Overview", movie.MovieMetadata.Value.Overview);
