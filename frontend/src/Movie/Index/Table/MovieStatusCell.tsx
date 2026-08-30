@@ -1,5 +1,6 @@
 import React from 'react';
 import Icon from 'Components/Icon';
+import StatusIndicator from 'Components/StatusIndicator';
 import VirtualTableRowCell from 'Components/Table/Cells/TableRowCell';
 import { icons } from 'Helpers/Props';
 import getMovieStatusDetails from 'Movie/getMovieStatusDetails';
@@ -33,21 +34,29 @@ function MovieStatusCell(props: MovieStatusCellProps) {
 
   return (
     <Component className={className} {...otherProps}>
-      <Icon
+      <StatusIndicator
         className={styles.statusIcon}
-        name={monitored ? icons.FILM : icons.FILMUNMONITOR}
+        label={
+          monitored
+            ? translate('MovieIsMonitored')
+            : translate('MovieIsUnmonitored')
+        }
         title={
           monitored
             ? translate('MovieIsMonitored')
             : translate('MovieIsUnmonitored')
         }
-      />
+      >
+        <Icon name={monitored ? icons.FILM : icons.FILMUNMONITOR} />
+      </StatusIndicator>
 
-      <Icon
+      <StatusIndicator
         className={styles.statusIcon}
-        name={statusDetails.icon}
+        label={statusDetails.message}
         title={`${statusDetails.title}: ${statusDetails.message}`}
-      />
+      >
+        <Icon name={statusDetails.icon} />
+      </StatusIndicator>
     </Component>
   );
 }
