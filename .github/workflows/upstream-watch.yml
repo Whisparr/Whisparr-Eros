@@ -1,0 +1,143 @@
+name: 'Upstream watch'
+description: Cherry-pick the ungated part of each upstream backlog into a draft PR, and track the rest on one rolling issue
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Monday morning, so a week of upstream activity lands as one PR and one
+    # issue edit rather than as a notification per commit.
+    - cron: '0 6 * * 1'
+
+permissions: {}
+
+jobs:
+  watch:
+    permissions:
+      contents: read # the app token does the writing, not github.token
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      # One PR and one issue per upstream, and a failure against one upstream
+      # should not hide the state of the other.
+      fail-fast: false
+      matrix:
+        include:
+          - upstream: radarr
+            title: 'Upstream sync: Radarr develop'
+          - upstream: sonarr
+            title: 'Upstream sync: Sonarr v5-develop'
+
+    steps:
+      # github.token cannot be used to open the PR: GitHub does not start
+      # workflow runs for events it creates, so the PR would arrive with no
+      # build, no tests and no upstream-sync check. An app token is a different
+      # actor, so CI runs on the PR normally.
+      - name: Mint app token
+        id: app
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.CI_APP_ID }}
+          private-key: ${{ secrets.CI_APP_KEY }}
+
+      - name: Check out
+        uses: actions/checkout@v7
+        with:
+          ref: eros-develop
+          fetch-depth: 0 # cherry-picking needs real history
+          token: ${{ steps.app.outputs.token }}
+
+      - name: Volta
+        uses: volta-cli/action@v5
+
+      - name: Identify
+        run: |
+          git config user.name 'whisparr-github-ci[bot]'
+          git config user.email '${{ steps.app.outputs.app-slug }}[bot]@users.noreply.github.com'
+
+      - name: Attempt the picks
+        id: attempt
+        env:
+          GITHUB_TOKEN: ${{ steps.app.outputs.token }}
+        run: |
+          set -euo pipefail
+          node scripts/upstream-sync.mjs --attempt --upstream ${{ matrix.upstream }} > summary.json
+          cat summary.json
+          echo "summary=$(cat summary.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Open or update the draft PR
+        if: fromJSON(steps.attempt.outputs.summary).applied > 0
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+          BRANCH: ${{ fromJSON(steps.attempt.outputs.summary).branch }}
+          UPSTREAM: ${{ matrix.upstream }}
+        run: |
+          set -euo pipefail
+
+          # Force-push: the branch is a disposable restatement of what currently
+          # applies cleanly, not a branch anyone commits to. Anything a human
+          # wants to keep gets moved to a branch of their own.
+          git push --force origin "HEAD:refs/heads/${BRANCH}"
+
+          NUMBER=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
+
+          if [ -n "$NUMBER" ]; then
+            gh pr edit "$NUMBER" --body-file pr-body.md
+            echo "updated PR #${NUMBER}"
+          else
+            gh pr create \
+              --base eros-develop \
+              --head "$BRANCH" \
+              --draft \
+              --title "Upstream ${UPSTREAM}: picks that apply cleanly" \
+              --body-file pr-body.md
+          fi
+
+      - name: Update the tracking issue
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+          TITLE: ${{ matrix.title }}
+          OUTSTANDING: ${{ fromJSON(steps.attempt.outputs.summary).outstanding }}
+        run: |
+          set -euo pipefail
+
+          # Created here rather than by hand so a fresh clone of this repo can
+          # run the workflow without setup.
+          gh label create upstream \
+            --description 'Tracking issue for the upstream sync backlog' \
+            --color 'ededed' --force
+
+          # --state all, not open: the issue is closed whenever the backlog
+          # empties, and the next upstream commit has to reopen that same issue
+          # rather than start a second one.
+          FOUND=$(gh issue list --label upstream --state all --limit 50 \
+            --json number,title,state \
+            --jq "map(select(.title == \"${TITLE}\")) | .[0] // empty")
+
+          NUMBER=$(printf '%s' "$FOUND" | jq -r '.number // empty')
+          STATE=$(printf '%s' "$FOUND" | jq -r '.state // empty')
+
+          {
+            echo "Rendered by \`scripts/upstream-sync.mjs --attempt\` from \`.github/upstream/state.json\`."
+            echo "Work it with the \`sync-upstream\` skill, oldest month first."
+            echo
+            cat issue-body.md
+          } > issue.md
+
+          if [ -z "$NUMBER" ]; then
+            if [ "$OUTSTANDING" -eq 0 ]; then
+              echo "nothing outstanding and no issue to update"
+              exit 0
+            fi
+
+            gh issue create --title "$TITLE" --label upstream --body-file issue.md
+            exit 0
+          fi
+
+          gh issue edit "$NUMBER" --body-file issue.md
+
+          if [ "$OUTSTANDING" -eq 0 ] && [ "$STATE" = "OPEN" ]; then
+            gh issue close "$NUMBER" --comment 'Backlog is empty. Reopened automatically when the next upstream commit lands.'
+          elif [ "$OUTSTANDING" -gt 0 ] && [ "$STATE" = "CLOSED" ]; then
+            gh issue reopen "$NUMBER" --comment "${OUTSTANDING} new upstream commit(s) to disposition."
+          fi
