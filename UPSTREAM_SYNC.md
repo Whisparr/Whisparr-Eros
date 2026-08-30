@@ -7,52 +7,9 @@ See `.github/upstream/state.json` for the machine state and the `sync-upstream` 
 
 ## radarr — Radarr/Radarr `develop`
 
-Owns: **backend**. High-water mark: `15369ed5c3`.
+Owns: **backend**. High-water mark: `68b93db78c`.
 
-**36 outstanding.**
-
-| Month | Total | be | fe | be+fe | chore |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| 2026-08 | 36 | 22 | 8 | 4 | 2 |
-
-### 2026-08
-
-- `chore` [`598f989ad`](https://github.com/Radarr/Radarr/commit/598f989ad1163b3ed21ef57880ba8ba4d1b07e51) Bump to 6.4.2 — *Auggie*
-- `be   ` [`34b0f5450`](https://github.com/Radarr/Radarr/commit/34b0f5450fdc346cc72cf18669e601d68b974250) Fixed: Parse Celdra as release group — *Bogdan*
-- `be   ` [`80bbaa6e4`](https://github.com/Radarr/Radarr/commit/80bbaa6e413c84dc901b090d33ecc66190e7d83b) Fixed: Parsing quality and languages when manual importing item with multiple movies error — *Bogdan*
-- `be   ` [`d2d9dce33`](https://github.com/Radarr/Radarr/commit/d2d9dce33baf969ee5801820ee7cdac25d5b8b89) Fix parsing already imported items from download clients — *Bogdan*
-- `be   ` [`25062f2d7`](https://github.com/Radarr/Radarr/commit/25062f2d7aec0bcc83551f48e94836fa658c28ef) Fix queue not showing items with issues — *Bogdan*
-- `be   ` [`c6fef4309`](https://github.com/Radarr/Radarr/commit/c6fef4309de3ffdd5e0e9607ad30beb12d791333) Return maximum long value on overflow getting disk information — *Mark McDowall*
-- `be   ` [`ca451608d`](https://github.com/Radarr/Radarr/commit/ca451608dc60c6cec754aba8d96bfa30e9468ed5) Bump sqlite to 3.53.4 — *Bogdan*
-- `fe   ` [`6bb8edeaf`](https://github.com/Radarr/Radarr/commit/6bb8edeafdf71829249702f0e85cd8d6c7809a5c) Remove offensive joke about a sensitive topic — *Corgo*
-- `be+fe` [`6a1c50028`](https://github.com/Radarr/Radarr/commit/6a1c50028457d45712316d06b1c07f5387987835) Fixed: Broken Trakt links — *Joshua Higgins*
-- `be   ` [`b8a3923bc`](https://github.com/Radarr/Radarr/commit/b8a3923bce9d80eccc0abcbc0cbb4ff4091e7999) Fixed: Parsing anime releases that contain year in the movie title — *Camillo Positano*
-- `be   ` [`a598695ec`](https://github.com/Radarr/Radarr/commit/a598695ecd70c95b38f4f9efcd1dbe12cccd2f49) Multiple Translations updated by Weblate — *Weblate*
-- `be   ` [`2c24d9b4a`](https://github.com/Radarr/Radarr/commit/2c24d9b4aafd00dedea4505119060c242c0963be) Fixed: Trakt OAuth URL — *RobinDadswell*
-- `fe   ` [`25eeec39b`](https://github.com/Radarr/Radarr/commit/25eeec39b5c43422e2e81cae3758a902890d9e40) Query options support for useApiQuery — *Mark McDowall*
-- `fe   ` [`aae657b16`](https://github.com/Radarr/Radarr/commit/aae657b160787f1f3765d3ba5abbd6adb3a06f47) Convert getLanguageName to hook — *Mark McDowall*
-- `be+fe` [`109f88d7b`](https://github.com/Radarr/Radarr/commit/109f88d7b50a4ba9b1a8430dfafa0b5e0d6fc451) New: Use translations for days of week — *Mark McDowall*
-- `fe   ` [`3287f8e14`](https://github.com/Radarr/Radarr/commit/3287f8e14ae5204604fb12d8fc1101b77903d35a) New: Search movies by original title from page header — *Bogdan*
-- `fe   ` [`c53ccacbc`](https://github.com/Radarr/Radarr/commit/c53ccacbce65ed6c61e802038213413d720e0bc6) Bump swiper to 14.1.0 — *Bogdan*
-- `be   ` [`fd8eb4d15`](https://github.com/Radarr/Radarr/commit/fd8eb4d1593f05b3025b17a61265cbc6593d8e91) Fixed: Don't allow pushed releases to bypass pending releases that recently expired — *Mark McDowall*
-- `fe   ` [`dbcb327a1`](https://github.com/Radarr/Radarr/commit/dbcb327a1134d26d2feb9b4589ee8c7b2dafb1ae) New: Include External IDs for movies with links — *Yashizzle*
-- `fe   ` [`f62cb92c1`](https://github.com/Radarr/Radarr/commit/f62cb92c105b761c142cedfef2e3eed024f6e922) Display external ID only for main movie link group — *Bogdan*
-- `be   ` [`a11778302`](https://github.com/Radarr/Radarr/commit/a11778302bc04e9d60b7d1d0c640c423272deb0b) Bump FluentAssertions to 7.2.2 — *Bogdan*
-- `be   ` [`94ef97b1f`](https://github.com/Radarr/Radarr/commit/94ef97b1f1187aeeca20d658a747620df8980238) Improve zip extraction — *Mark McDowall*
-- `be   ` [`72ae0c011`](https://github.com/Radarr/Radarr/commit/72ae0c011dc3297b6b5b9feb8971da28977f510c) Add reason to health check — *Mark McDowall*
-- `be+fe` [`91c6dc4ea`](https://github.com/Radarr/Radarr/commit/91c6dc4eac9883e8389145ff4728858442502212) New: Add hostname validation — *Mark McDowall*
-- `be+fe` [`387d43d7a`](https://github.com/Radarr/Radarr/commit/387d43d7aecc3dfa63f780bf93a72e0966aab319) New: Add Trusted Networks setting — *Mark McDowall*
-- `be   ` [`c3f065498`](https://github.com/Radarr/Radarr/commit/c3f0654984994145deeb6bfbdd77654653fd2224) Fix allowed hosts check check on config file changes — *Bogdan*
-- `fe   ` [`e575ec5e5`](https://github.com/Radarr/Radarr/commit/e575ec5e5e856ebbfeef1c4c1f9b55a86e0d1641) Add isSaving to createSettingsSectionSelector — *Bogdan*
-- `be   ` [`fb908fd5f`](https://github.com/Radarr/Radarr/commit/fb908fd5f4861a529e6d60e12ee0a214e24c80ef) Remove configuring as service duplicated PostgresOptions — *Bogdan*
-- `chore` [`02ef5f56d`](https://github.com/Radarr/Radarr/commit/02ef5f56d54aaf46216b6718fd3591ad253548e5) Bump to 6.4.3 — *Auggie*
-- `be   ` [`1906cfb38`](https://github.com/Radarr/Radarr/commit/1906cfb3819b6e9f603642020c6a7d689c8e5352) Fixed: Format of timestamps for Discord notifications from some systems — *Alexander*
-- `be   ` [`bdd5a7260`](https://github.com/Radarr/Radarr/commit/bdd5a726071630f408c85fe1b716c5bef108d513) Multiple Translations updated by Weblate — *Weblate*
-- `be   ` [`40bb746c5`](https://github.com/Radarr/Radarr/commit/40bb746c5e3f5929f09e0edb9350c721e7670065) Fixed: Connecting to Jellyfin 12+ (#11663) — *Auggie*
-- `be   ` [`2cfc781f8`](https://github.com/Radarr/Radarr/commit/2cfc781f85c6fb0355f4c37da5c68d86616e7bdf) Fixed: Ignore invalid languages during Manual Import — *Bogdan*
-- `be   ` [`9910767f5`](https://github.com/Radarr/Radarr/commit/9910767f58b0d9beb3b7fa671ed4695487d917d3) Fixed: Unexpected languages stored in DB will be treated as Unknown — *Mark McDowall*
-- `be   ` [`45da623c7`](https://github.com/Radarr/Radarr/commit/45da623c777c2451bff5684718832952925f2be3) Fixed: Re-grabbing a torrent that was already imported should re-import — *Mark McDowall*
-- `be   ` [`68b93db78`](https://github.com/Radarr/Radarr/commit/68b93db78cb7a648d61a486d94eae703242e1e36) Fixed: Importing single files from Freebox — *Bogdan*
+Caught up — nothing outstanding.
 
 ## sonarr — Sonarr/Sonarr `v5-develop`
 
@@ -210,3 +167,39 @@ Commits reviewed and dispositioned. Skips carry their reason.
 | [`0c78421d5`](https://github.com/Radarr/Radarr/commit/0c78421d553f8395fee14171892da60650123c97) | Fix disposing of the HttpRequestMessage | `pick` | Identical code in our ManagedHttpDispatcher. HttpRequestMessage and its ByteArrayContent were never disposed on any request. Also unwraps the stray block left behind when SendAsync moved to a using declaration. |
 | [`9f0328d31`](https://github.com/Radarr/Radarr/commit/9f0328d31781b488659fa33119b5a0fd5419da1d) | Update major version to 6.4.1 | `skip` | Radarr version bump. Our versioning is independent. |
 | [`15369ed5c`](https://github.com/Radarr/Radarr/commit/15369ed5c359c9704783d243ce2b55e59a40a3a3) | New: RQBit download client | `skip` | Declined on 2026-08-30. A new download client, not a fix: ~950 lines of client, proxy, settings and six response models we would own, unverifiable without running an rqbit instance, and nobody has asked for it. |
+| [`598f989ad`](https://github.com/Radarr/Radarr/commit/598f989ad1163b3ed21ef57880ba8ba4d1b07e51) | Bump to 6.4.2 | `skip` | Radarr version bump. Our versioning is independent. |
+| [`34b0f5450`](https://github.com/Radarr/Radarr/commit/34b0f5450fdc346cc72cf18669e601d68b974250) | Fixed: Parse Celdra as release group | `skip` | Parser gate. Adds a release group token to Radarr's grammar; our Parser.cs is a different grammar entirely and the bar to touch it is a failing test against our parser, which this does not produce. |
+| [`80bbaa6e4`](https://github.com/Radarr/Radarr/commit/80bbaa6e413c84dc901b090d33ecc66190e7d83b) | Fixed: Parsing quality and languages when manual importing item with multiple movies error | `pick` | Identical shape here. Quality, Languages and Rejections were left null on ManualImportItem, so the multiple-movies path dereferenced them while building the error response. |
+| [`d2d9dce33`](https://github.com/Radarr/Radarr/commit/d2d9dce33baf969ee5801820ee7cdac25d5b8b89) | Fix parsing already imported items from download clients | `pick` | Same ordering problem in our TrackedDownloadService. Once a download has been imported we know its movie id, but the title was still being re-parsed and mapped by name, so a title our parser reads differently lost its movie. |
+| [`25062f2d7`](https://github.com/Radarr/Radarr/commit/25062f2d7aec0bcc83551f48e94836fa658c28ef) | Fix queue not showing items with issues | `pick` | Returning null dropped the tracked download entirely, so an item we could not parse never reached the queue and the user got no explanation. Now it is tracked with a warning. |
+| [`c6fef4309`](https://github.com/Radarr/Radarr/commit/c6fef4309de3ffdd5e0e9607ad30beb12d791333) | Return maximum long value on overflow getting disk information | `pick` | Identical ProcMount here. UnixDriveInfo throws OverflowException on filesystems reporting sizes beyond long, which took out disk space checks entirely rather than degrading. |
+| [`ca451608d`](https://github.com/Radarr/Radarr/commit/ca451608dc60c6cec754aba8d96bfa30e9468ed5) | Bump sqlite to 3.53.4 | `have` | We are already on SourceGear.sqlite3 3.53.4 and System.Data.SQLite 2.0.4 - the exact versions this commit moves Radarr to. |
+| [`6bb8edeaf`](https://github.com/Radarr/Radarr/commit/6bb8edeafdf71829249702f0e85cd8d6c7809a5c) | Remove offensive joke about a sensitive topic | `skip` | Radarr frontend gate. Edits a Radarr loading-message string we do not carry. |
+| [`6a1c50028`](https://github.com/Radarr/Radarr/commit/6a1c50028457d45712316d06b1c07f5387987835) | Fixed: Broken Trakt links | `pick` | Verified live before taking it: https://trakt.tv/search/tmdb/550?id_type=movie now redirects to app.trakt.tv and returns 404, while https://trakt.tv/movies/tt0137523 returns 200. Applied to Gotify and Telegram; our Discord connector links StashDB and TMDb rather than Trakt, and we skipped the frontend half. |
+| [`b8a3923bc`](https://github.com/Radarr/Radarr/commit/b8a3923bce9d80eccc0abcbc0cbb4ff4091e7999) | Fixed: Parsing anime releases that contain year in the movie title | `skip` | Parser gate, and the worst possible collision: it changes year-vs-title precedence, which is exactly where our grammar deliberately differs. A bare [YYYY] means a movie here; scenes carry full dates. |
+| [`a598695ec`](https://github.com/Radarr/Radarr/commit/a598695ecd70c95b38f4f9efcd1dbe12cccd2f49) | Multiple Translations updated by Weblate | `skip` | Weblate commit. Our translations come from Weblate directly, never from cherry-picks. |
+| [`2c24d9b4a`](https://github.com/Radarr/Radarr/commit/2c24d9b4aafd00dedea4505119060c242c0963be) | Fixed: Trakt OAuth URL | `pick` | One-line const. Both hosts currently 307 to the same /api/auth/oauth2/authorize endpoint, so this is following upstream to Trakt's canonical auth host rather than repairing an observed break. |
+| [`25eeec39b`](https://github.com/Radarr/Radarr/commit/25eeec39b5c43422e2e81cae3758a902890d9e40) | Query options support for useApiQuery | `skip` | Radarr frontend gate, and specifically Radarr catching up to the react-query patterns Sonarr already finished and we already ported. |
+| [`aae657b16`](https://github.com/Radarr/Radarr/commit/aae657b160787f1f3765d3ba5abbd6adb3a06f47) | Convert getLanguageName to hook | `skip` | Radarr frontend gate. Same react-query catch-up we moved past with the Sonarr port. |
+| [`109f88d7b`](https://github.com/Radarr/Radarr/commit/109f88d7b50a4ba9b1a8430dfafa0b5e0d6fc451) | New: Use translations for days of week | `skip` | Frontend plus an en.json hunk. Our frontend follows Sonarr and we never take an upstream en.json diff. |
+| [`3287f8e14`](https://github.com/Radarr/Radarr/commit/3287f8e14ae5204604fb12d8fc1101b77903d35a) | New: Search movies by original title from page header | `skip` | Radarr frontend gate. Original-title search is a Radarr movie concept and the component is Radarr-shaped. |
+| [`c53ccacbc`](https://github.com/Radarr/Radarr/commit/c53ccacbce65ed6c61e802038213413d720e0bc6) | Bump swiper to 14.1.0 | `skip` | Radarr frontend gate; a dependency bump in their package.json, not ours. |
+| [`fd8eb4d15`](https://github.com/Radarr/Radarr/commit/fd8eb4d1593f05b3025b17a61265cbc6593d8e91) | Fixed: Don't allow pushed releases to bypass pending releases that recently expired | `skip` | Wanted, but deferred to its own PR by decision on 2026-08-30. Real bug, but the new PendingSpecification needs to know a release was pushed, so it changes IDownloadDecisionEngineSpecification from (RemoteMovie, SearchCriteria) to (RemoteMovie, ReleaseDecisionInformation) across ~25 specifications and ~25 fixtures. 65 files wants its own review. |
+| [`dbcb327a1`](https://github.com/Radarr/Radarr/commit/dbcb327a1134d26d2feb9b4589ee8c7b2dafb1ae) | New: Include External IDs for movies with links | `skip` | Radarr frontend gate. External id links are built around Radarr's movie link groups. |
+| [`f62cb92c1`](https://github.com/Radarr/Radarr/commit/f62cb92c105b761c142cedfef2e3eed024f6e922) | Display external ID only for main movie link group | `skip` | Radarr frontend gate, and a follow-up to dbcb327a1 which we are not taking. |
+| [`a11778302`](https://github.com/Radarr/Radarr/commit/a11778302bc04e9d60b7d1d0c640c423272deb0b) | Bump FluentAssertions to 7.2.2 | `have` | We are on FluentAssertions 8.10.0, ahead of the version this moves Radarr to. |
+| [`94ef97b1f`](https://github.com/Radarr/Radarr/commit/94ef97b1f1187aeeca20d658a747620df8980238) | Improve zip extraction | `pick` | Zip slip. Our ArchiveService had no path check either, so an archive naming an entry ../../x could write anywhere the process can reach. Same fix as Sonarr f089df054. |
+| [`72ae0c011`](https://github.com/Radarr/Radarr/commit/72ae0c011dc3297b6b5b9feb8971da28977f510c) | Add reason to health check | `skip` | Deferred to its own PR by decision on 2026-08-30. A diagnostics feature rather than a fix, touching all 36 health checks plus the HealthCheck model. |
+| [`91c6dc4ea`](https://github.com/Radarr/Radarr/commit/91c6dc4eac9883e8389145ff4728858442502212) | New: Add hostname validation | `skip` | Taking Sonarr's original instead, by decision on 2026-08-30. Radarr's is a pick of sonarr/sonarr@1579a8bb7f89803d0850369f3ff7980d6edaf31d, which the Sonarr 2026-08 chunk covers. Keeps one source for the security code rather than importing Radarr's re-spin plus its Radarr-shaped frontend. |
+| [`387d43d7a`](https://github.com/Radarr/Radarr/commit/387d43d7aecc3dfa63f780bf93a72e0966aab319) | New: Add Trusted Networks setting | `skip` | Taking Sonarr's original instead, by decision on 2026-08-30. Radarr's is a pick of sonarr/sonarr@022f69e14bc333588bc775b9cab98f5e8f12df0c, which the Sonarr 2026-08 chunk covers. |
+| [`c3f065498`](https://github.com/Radarr/Radarr/commit/c3f0654984994145deeb6bfbdd77654653fd2224) | Fix allowed hosts check check on config file changes | `skip` | Follow-up to the AllowedHostsCheck that 91c6dc4ea introduces. We have no such check yet; it rides along when we take the hostname validation from Sonarr. |
+| [`e575ec5e5`](https://github.com/Radarr/Radarr/commit/e575ec5e5e856ebbfeef1c4c1f9b55a86e0d1641) | Add isSaving to createSettingsSectionSelector | `skip` | Radarr frontend gate, and specifically a Redux selector - we removed Redux in #549. |
+| [`fb908fd5f`](https://github.com/Radarr/Radarr/commit/fb908fd5f4861a529e6d60e12ee0a214e24c80ef) | Remove configuring as service duplicated PostgresOptions | `have` | Our Bootstrap registers PostgresOptions once in each of the two host builders; there is no duplicated line to remove. |
+| [`02ef5f56d`](https://github.com/Radarr/Radarr/commit/02ef5f56d54aaf46216b6718fd3591ad253548e5) | Bump to 6.4.3 | `skip` | Radarr version bump. Our versioning is independent. |
+| [`1906cfb38`](https://github.com/Radarr/Radarr/commit/1906cfb3819b6e9f603642020c6a7d689c8e5352) | Fixed: Format of timestamps for Discord notifications from some systems | `pick` | Reproduced the premise before taking it: a custom format string renders the year in the current culture's calendar, so th-TH produced 2569 and ar-SA produced 1448. "O" is culture-invariant. Seven call sites here. |
+| [`bdd5a7260`](https://github.com/Radarr/Radarr/commit/bdd5a726071630f408c85fe1b716c5bef108d513) | Multiple Translations updated by Weblate | `skip` | Weblate commit. Our translations come from Weblate directly, never from cherry-picks. |
+| [`40bb746c5`](https://github.com/Radarr/Radarr/commit/40bb746c5e3f5929f09e0edb9350c721e7670065) | Fixed: Connecting to Jellyfin 12+ | `pick` | Jellyfin 12 dropped the X-MediaBrowser-Token header in favour of the Authorization: MediaBrowser Token="..." scheme, so the connector stops working outright. Also splits Test into a real connection check plus an optional notification, which is what made a Jellyfin test fail on the notification endpoint rather than the connection. |
+| [`2cfc781f8`](https://github.com/Radarr/Radarr/commit/2cfc781f85c6fb0355f4c37da5c68d86616e7bdf) | Fixed: Ignore invalid languages during Manual Import | `pick` | Adds Language.IsValid and stops a manual import overwriting the aggregated languages with a bad client payload. Adapted the lookup: Radarr has a Lookup dictionary, we search All by id. |
+| [`9910767f5`](https://github.com/Radarr/Radarr/commit/9910767f58b0d9beb3b7fa671ed4695487d917d3) | Fixed: Unexpected languages stored in DB will be treated as Unknown | `pick` | Identical converter here. A null language column made GetInt32 throw, so one bad row took down whatever was deserializing it instead of degrading to Unknown. |
+| [`45da623c7`](https://github.com/Radarr/Radarr/commit/45da623c777c2451bff5684718832952925f2be3) | Fixed: Re-grabbing a torrent that was already imported should re-import | `pick` | Same gap here: nothing evicted a tracked download on a new grab, so re-grabbing a release we had already imported kept the old terminal state and the new download was never imported. |
+| [`68b93db78`](https://github.com/Radarr/Radarr/commit/68b93db78cb7a648d61a486d94eae703242e1e36) | Fixed: Importing single files from Freebox | `pick` | Freebox drops a single-file torrent straight into the download root, so there is no folder to identify it by and the import matched the wrong thing. Now each task gets its own folder named for the release. Updated the three existing fixture assertions, which encoded the old paths - that path change is the fix, not a workaround. |
