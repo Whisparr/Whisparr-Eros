@@ -208,6 +208,27 @@ export const goToToday = () => {
   calendarStore.setState({ time: moment() });
 };
 
+export const goToDate = (date: moment.MomentInput) => {
+  const view = getCalendarOption('view');
+  const selected = moment(date).startOf('day');
+
+  // Forecast starts a day behind the range it shows, so land on the same
+  // weekday offset the current range starts at rather than on the date itself.
+  if (view === 'forecast') {
+    const { time } = calendarStore.getState();
+    const currentStartWeekday = moment(time).subtract(1, 'day').day();
+    const diff = (selected.day() - currentStartWeekday + 7) % 7;
+
+    calendarStore.setState({
+      time: selected.subtract(diff, 'days').add(1, 'day'),
+    });
+
+    return;
+  }
+
+  calendarStore.setState({ time: selected });
+};
+
 export const goToPreviousRange = () => {
   const { dayCount, time } = calendarStore.getState();
   const view = getCalendarOption('view');
