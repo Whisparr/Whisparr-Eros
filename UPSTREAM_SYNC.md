@@ -7,30 +7,17 @@ See `.github/upstream/state.json` for the machine state and the `sync-upstream` 
 
 ## radarr — Radarr/Radarr `develop`
 
-Owns: **backend**. High-water mark: `89110c2cc8`.
+Owns: **backend**. High-water mark: `4b85fab05b`.
 
-**82 outstanding.**
+**73 outstanding.**
 
 | Month | Total | be | fe | be+fe | chore |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| 2026-03 | 9 | 6 | 0 | 0 | 3 |
 | 2026-04 | 6 | 4 | 0 | 0 | 2 |
 | 2026-05 | 12 | 10 | 0 | 0 | 2 |
 | 2026-06 | 5 | 4 | 0 | 0 | 1 |
 | 2026-07 | 18 | 15 | 0 | 0 | 3 |
 | 2026-08 | 32 | 18 | 8 | 4 | 2 |
-
-### 2026-03
-
-- `be   ` [`1a2b90bf3`](https://github.com/Radarr/Radarr/commit/1a2b90bf3660cb937042b9fb12ce5e24a0d67bbb) Improve HTTP file mappers — *Mark McDowall*
-- `be   ` [`1ce378356`](https://github.com/Radarr/Radarr/commit/1ce378356645c21dcb3fb9d583958aa778263f84) Fixed: Parsing URLs on some systems due to Locale — *Bogdan*
-- `be   ` [`7885404c2`](https://github.com/Radarr/Radarr/commit/7885404c2c2a850365c42608720f551aab9d180a) Bump ImageSharp to 3.1.12 — *Auggie*
-- `be   ` [`7062b3a17`](https://github.com/Radarr/Radarr/commit/7062b3a1786d8825648ef70a277a29233b85e118) Bump MailKit to 4.15.1 — *Auggie*
-- `be   ` [`f1513ca39`](https://github.com/Radarr/Radarr/commit/f1513ca39e7179030eb84ac3769bdc6e41b9c05b) Multiple Translations updated by Weblate — *Weblate*
-- `chore` [`cf0d6b014`](https://github.com/Radarr/Radarr/commit/cf0d6b014222a6424bae52dbbb55849a6f874d2f) Chore: Sonar Cloud version bump — *RobinDadswell*
-- `chore` [`079e2136e`](https://github.com/Radarr/Radarr/commit/079e2136ee6d3b579329f18deaf2e59ed20d93ee) version bump to 6.1.2 — *RobinDadswell*
-- `chore` [`8ae71b54a`](https://github.com/Radarr/Radarr/commit/8ae71b54a784ec333d37dc2d62a22ab3c9825214) chore: Fix innosetup download URI — *Auggie*
-- `be   ` [`4b85fab05`](https://github.com/Radarr/Radarr/commit/4b85fab05bc37a51c2e673673d9cabd4113fedd8) Fixed: Downloading backups when path contains a trailing slash — *Mark McDowall*
 
 ### 2026-04
 
@@ -226,3 +213,12 @@ Commits reviewed and dispositioned. Skips carry their reason.
 | [`4c0072918`](https://github.com/Radarr/Radarr/commit/4c007291833246d3ed78e6f396fc7e60cc9ca70c) | Fix: (#11303) collection API error when using `Movie CollectionThe` (#11304) | `skip` | Fixes the {Movie CollectionThe} token, which we do not have. Bug cannot reproduce here. Separately surfaced that our {Movie Collection} token is advertised in NamingModal.tsx but has no FileNameBuilder handler - filed on its own, not fixed here. |
 | [`a12683502`](https://github.com/Radarr/Radarr/commit/a12683502849fdc739b0e41505905a38aa416e90) | New: Parse Group GiLG | `skip` | Parser change under the skip-by-default rule. Would reproduce (our ExceptionReleaseGroupRegex matches upstream's pre-change form), but GiLG is a movie-scene release group we do not need to carry. |
 | [`89110c2cc`](https://github.com/Radarr/Radarr/commit/89110c2cc8ec671d718cf34acc845f66d475a427) | version bump to 6.1.1 | `skip` | Touches azure-pipelines.yml only. We do not have that file; we build on GitHub Actions. |
+| [`1a2b90bf3`](https://github.com/Radarr/Radarr/commit/1a2b90bf3660cb937042b9fb12ce5e24a0d67bbb) | Improve HTTP file mappers | `adapt` | Path-traversal containment, not the refactor the subject suggests: Map() now resolves the full path and returns null if it escapes a new abstract FolderPath. Adapted to our tree, which has no UrlBaseReplacementResourceMapperBase and keeps HtmlPath/UrlBase as fields. Verified against the live 6969 instance first - not currently exploitable, ASP.NET normalises every vector before routing and a canary above appdata returns 404 - so this is defence in depth, not a live bug fix. |
+| [`4b85fab05`](https://github.com/Radarr/Radarr/commit/4b85fab05bc37a51c2e673673d9cabd4113fedd8) | Fixed: Downloading backups when path contains a trailing slash | `pick` | Follow-up to the containment change: a backup folder configured with a trailing separator would otherwise fail the FolderPath prefix check. Only meaningful once 1a2b90bf3 is in. |
+| [`1ce378356`](https://github.com/Radarr/Radarr/commit/1ce378356645c21dcb3fb9d583958aa778263f84) | Fixed: Parsing URLs on some systems due to Locale | `adapt` | Real bug: RegexOptions.IgnoreCase without CultureInvariant uses the current culture, so under tr-TR the host class [-_A-Z0-9.] stops matching a lowercase i. Took RegexOptions.CultureInvariant rather than upstream's switch to [GeneratedRegex], which would mean dropping our RegexDefaults.Timeout convention. |
+| [`8ae71b54a`](https://github.com/Radarr/Radarr/commit/8ae71b54a784ec333d37dc2d62a22ab3c9825214) | chore: Fix innosetup download URI | `adapt` | files.jrsoftware.org/is/6/innosetup-6.2.2.exe is a live 404; the GitHub releases URL returns 200 (both checked). Took only the URL line, kept our INNOVERSION default that upstream's version drops, and left their whitespace churn. |
+| [`7885404c2`](https://github.com/Radarr/Radarr/commit/7885404c2c2a850365c42608720f551aab9d180a) | Bump ImageSharp to 3.1.12 | `have` | Whisparr.Core.csproj already references SixLabors.ImageSharp 3.1.12 - the same version. |
+| [`7062b3a17`](https://github.com/Radarr/Radarr/commit/7062b3a1786d8825648ef70a277a29233b85e118) | Bump MailKit to 4.15.1 | `have` | Whisparr.Core.csproj is on MailKit 4.17.0, ahead of upstream's 4.15.1. |
+| [`f1513ca39`](https://github.com/Radarr/Radarr/commit/f1513ca39e7179030eb84ac3769bdc6e41b9c05b) | Multiple Translations updated by Weblate | `skip` | Weblate-generated translation files. Ours come from our own Weblate project, never from upstream cherry-picks. |
+| [`cf0d6b014`](https://github.com/Radarr/Radarr/commit/cf0d6b014222a6424bae52dbbb55849a6f874d2f) | Chore: Sonar Cloud version bump | `skip` | Touches azure-pipelines.yml only. Our Sonar setup lives in .github/workflows/sonarqube.yml. |
+| [`079e2136e`](https://github.com/Radarr/Radarr/commit/079e2136ee6d3b579329f18deaf2e59ed20d93ee) | version bump to 6.1.2 | `skip` | Touches azure-pipelines.yml only. We do not have that file and version independently of Radarr. |

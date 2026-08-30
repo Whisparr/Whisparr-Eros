@@ -5,8 +5,8 @@
       "repo": "Radarr/Radarr",
       "branch": "develop",
       "owns": "backend",
-      "highWater": "89110c2cc8ec671d718cf34acc845f66d475a427",
-      "highWaterNote": "2025-12-29 'version bump to 6.1.1'. Every Radarr develop commit from 2025-10-01 through this point is dispositioned (2026-01 and 2026-02 had no upstream commits at all), so the pointer is safe to sit here. Advance it only when everything at or before the new mark is settled."
+      "highWater": "4b85fab05bc37a51c2e673673d9cabd4113fedd8",
+      "highWaterNote": "2026-03-29 'Fixed: Downloading backups when path contains a trailing slash'. Everything on Radarr develop from 2025-10-01 through this point is dispositioned. Advance only when everything at or before the new mark is settled."
     },
     "sonarr": {
       "repo": "Sonarr/Sonarr",
@@ -125,6 +125,60 @@
         "month": "2025-10",
         "disposition": "adapt",
         "reason": "Upstream's restructure (handler moved into MovieIndexPosterSelect, overlay 36px->100%, linkProps dropped) is Redux-era Radarr shape we deliberately do not follow. Took only the URL fix it carries: our ctrl/cmd-click built '/movie/${foreignId}' with no url base and the wrong identifier, while the normal link uses titleSlug. Now '${window.Whisparr.urlBase}/movie/${titleSlug}'."
+      },
+      "1a2b90bf3660cb937042b9fb12ce5e24a0d67bbb": {
+        "subject": "Improve HTTP file mappers",
+        "month": "2026-03",
+        "disposition": "adapt",
+        "reason": "Path-traversal containment, not the refactor the subject suggests: Map() now resolves the full path and returns null if it escapes a new abstract FolderPath. Adapted to our tree, which has no UrlBaseReplacementResourceMapperBase and keeps HtmlPath/UrlBase as fields. Verified against the live 6969 instance first - not currently exploitable, ASP.NET normalises every vector before routing and a canary above appdata returns 404 - so this is defence in depth, not a live bug fix."
+      },
+      "4b85fab05bc37a51c2e673673d9cabd4113fedd8": {
+        "subject": "Fixed: Downloading backups when path contains a trailing slash",
+        "month": "2026-03",
+        "disposition": "pick",
+        "reason": "Follow-up to the containment change: a backup folder configured with a trailing separator would otherwise fail the FolderPath prefix check. Only meaningful once 1a2b90bf3 is in."
+      },
+      "1ce378356645c21dcb3fb9d583958aa778263f84": {
+        "subject": "Fixed: Parsing URLs on some systems due to Locale",
+        "month": "2026-03",
+        "disposition": "adapt",
+        "reason": "Real bug: RegexOptions.IgnoreCase without CultureInvariant uses the current culture, so under tr-TR the host class [-_A-Z0-9.] stops matching a lowercase i. Took RegexOptions.CultureInvariant rather than upstream's switch to [GeneratedRegex], which would mean dropping our RegexDefaults.Timeout convention."
+      },
+      "8ae71b54a784ec333d37dc2d62a22ab3c9825214": {
+        "subject": "chore: Fix innosetup download URI",
+        "month": "2026-03",
+        "disposition": "adapt",
+        "reason": "files.jrsoftware.org/is/6/innosetup-6.2.2.exe is a live 404; the GitHub releases URL returns 200 (both checked). Took only the URL line, kept our INNOVERSION default that upstream's version drops, and left their whitespace churn."
+      },
+      "7885404c2c2a850365c42608720f551aab9d180a": {
+        "subject": "Bump ImageSharp to 3.1.12",
+        "month": "2026-03",
+        "disposition": "have",
+        "reason": "Whisparr.Core.csproj already references SixLabors.ImageSharp 3.1.12 - the same version."
+      },
+      "7062b3a1786d8825648ef70a277a29233b85e118": {
+        "subject": "Bump MailKit to 4.15.1",
+        "month": "2026-03",
+        "disposition": "have",
+        "reason": "Whisparr.Core.csproj is on MailKit 4.17.0, ahead of upstream's 4.15.1."
+      },
+      "f1513ca39e7179030eb84ac3769bdc6e41b9c05b": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-03",
+        "disposition": "skip",
+        "reason": "Weblate-generated translation files. Ours come from our own Weblate project, never from upstream cherry-picks."
+      },
+      "cf0d6b014222a6424bae52dbbb55849a6f874d2f": {
+        "subject": "Chore: Sonar Cloud version bump",
+        "month": "2026-03",
+        "disposition": "skip",
+        "reason": "Touches azure-pipelines.yml only. Our Sonar setup lives in .github/workflows/sonarqube.yml."
+      },
+      "079e2136ee6d3b579329f18deaf2e59ed20d93ee": {
+        "subject": "version bump to 6.1.2",
+        "month": "2026-03",
+        "disposition": "skip",
+        "reason": "Touches azure-pipelines.yml only. We do not have that file and version independently of Radarr."
       }
     },
     "sonarr": {}
