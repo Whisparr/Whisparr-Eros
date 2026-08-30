@@ -157,7 +157,7 @@ function PerformerDetails() {
   if (!performer) {
     if (isPerformerDetailsFetching) {
       return (
-        <PageContent>
+        <PageContent title={translate('Performer')}>
           <LoadingIndicator />
         </PageContent>
       );
@@ -249,7 +249,7 @@ function PerformerDetails() {
 
   // Render
   return (
-    <PageContent>
+    <PageContent title={fullName}>
       <PageToolbar>
         <PageToolbarButton
           label={translate('RefreshAndScan')}

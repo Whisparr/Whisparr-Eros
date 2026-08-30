@@ -71,7 +71,7 @@ function StudioIndex(): React.JSX.Element {
         isSelectMode={isSelectMode}
         items={items}
       />
-      <PageContent className={styles.pageContent}>
+      <PageContent className={styles.pageContent} title={translate('Studios')}>
         {/*
           HEADER TOOLBAR
         */}
