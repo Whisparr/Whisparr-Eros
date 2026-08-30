@@ -1,3 +1,4 @@
+using System;
 using FluentValidation;
 using NzbDrone.Core.Annotations;
 using NzbDrone.Core.Parser;
@@ -9,7 +10,13 @@ namespace NzbDrone.Core.CustomFormats
     {
         public ResolutionSpecificationValidator()
         {
-            RuleFor(c => c.Value).NotEmpty();
+            RuleFor(c => c.Value).Custom((value, context) =>
+            {
+                if (!Enum.IsDefined(typeof(Resolution), value))
+                {
+                    context.AddFailure($"Invalid resolution condition value: {value}");
+                }
+            });
         }
     }
 
