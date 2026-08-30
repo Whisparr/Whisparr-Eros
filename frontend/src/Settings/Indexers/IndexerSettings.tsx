@@ -1,13 +1,10 @@
 import React, { useCallback, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import AppState from 'App/State/AppState';
 import PageContent from 'Components/Page/PageContent';
 import PageContentBody from 'Components/Page/PageContentBody';
 import PageToolbarButton from 'Components/Page/Toolbar/PageToolbarButton';
 import PageToolbarSeparator from 'Components/Page/Toolbar/PageToolbarSeparator';
 import { icons } from 'Helpers/Props';
 import SettingsToolbar from 'Settings/SettingsToolbar';
-import { testAllIndexers } from 'Store/Actions/settingsActions';
 import {
   SaveCallback,
   SettingsStateChange,
@@ -15,13 +12,11 @@ import {
 import translate from 'Utilities/String/translate';
 import Indexers from './Indexers/Indexers';
 import ManageIndexersModal from './Indexers/Manage/ManageIndexersModal';
+import { useTestAllIndexers } from './Indexers/useIndexers';
 import IndexerOptions from './Options/IndexerOptions';
 
 function IndexerSettings() {
-  const dispatch = useDispatch();
-  const isTestingAll = useSelector(
-    (state: AppState) => state.settings.indexers.isTestingAll
-  );
+  const { testAllIndexers, isTestingAll } = useTestAllIndexers();
 
   const saveOptions = useRef<(() => void) | undefined>(undefined);
 
@@ -55,8 +50,8 @@ function IndexerSettings() {
   }, []);
 
   const handleTestAllIndexersPress = useCallback(() => {
-    dispatch(testAllIndexers());
-  }, [dispatch]);
+    testAllIndexers();
+  }, [testAllIndexers]);
 
   return (
     <PageContent title={translate('IndexerSettings')}>

@@ -1,10 +1,11 @@
 import React from 'react';
 import Modal from 'Components/Modal/Modal';
+import { SelectedSchema } from 'Settings/useProviderSchema';
 import AddIndexerModalContent from './AddIndexerModalContent';
 
 interface AddIndexerModalProps {
   isOpen: boolean;
-  onIndexerSelect: () => void;
+  onIndexerSelect: (selectedSchema: SelectedSchema) => void;
   onModalClose: () => void;
 }
 
@@ -12,7 +13,7 @@ function AddIndexerModal({
   isOpen,
   onIndexerSelect,
   onModalClose,
-}: AddIndexerModalProps) {
+}: Readonly<AddIndexerModalProps>) {
   return (
     <Modal isOpen={isOpen} onModalClose={onModalClose}>
       <AddIndexerModalContent

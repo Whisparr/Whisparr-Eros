@@ -1,27 +1,8 @@
 import React, { useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { createSelector } from 'reselect';
-import AppState from 'App/State/AppState';
 import FilterModal from 'Components/Filter/FilterModal';
-import { setSceneFilter, setScenePage } from 'Store/Actions/sceneIndexActions';
-
-function createSceneSelector() {
-  return createSelector(
-    (state: AppState) => state.movies.items,
-    (scenes) => {
-      return scenes;
-    }
-  );
-}
-
-function createFilterBuilderPropsSelector() {
-  return createSelector(
-    (state: AppState) => state.sceneIndex.filterBuilderProps,
-    (filterBuilderProps) => {
-      return filterBuilderProps;
-    }
-  );
-}
+import { SCENE_INDEX_FILTER_BUILDER_PROPS } from './sceneIndexFilterBuilderProps';
+import { setSceneIndexFilter } from './sceneIndexOptionsStore';
+import { useSceneIndex } from './useSceneIndex';
 
 interface SceneIndexFilterModalProps {
   isOpen: boolean;
@@ -30,18 +11,22 @@ interface SceneIndexFilterModalProps {
 export default function SceneIndexFilterModal(
   props: SceneIndexFilterModalProps
 ) {
-  const sectionItems = useSelector(createSceneSelector());
-  const filterBuilderProps = useSelector(createFilterBuilderPropsSelector());
+  // `sectionItems` is what the filter builder would draw value suggestions from.
+  // It used to read `state.movies.items`, which nothing has populated since the
+  // index went paged. Unlike Movie, no Scene filter row declares an
+  // `optionsSelector`, and `FilterBuilderRowValueConnector` returns an empty list
+  // without one -- so this is inert either way today. It is fed from the page the
+  // index is already showing, off the same cached query, so it costs no extra
+  // request and is real data if a Scene row ever gains a selector.
+  const { items: sectionItems } = useSceneIndex();
   const customFilterType = 'sceneIndex';
 
-  const dispatch = useDispatch();
-
+  // Setting the filter resets the page, so no separate page dispatch is needed.
   const dispatchSetFilter = useCallback(
-    (payload: unknown) => {
-      dispatch(setSceneFilter(payload));
-      dispatch(setScenePage(1));
+    ({ selectedFilterKey }: { selectedFilterKey: string | number }) => {
+      setSceneIndexFilter(selectedFilterKey);
     },
-    [dispatch]
+    []
   );
 
   return (
@@ -49,7 +34,7 @@ export default function SceneIndexFilterModal(
       // TODO: Don't spread all the props
       {...props}
       sectionItems={sectionItems}
-      filterBuilderProps={filterBuilderProps}
+      filterBuilderProps={SCENE_INDEX_FILTER_BUILDER_PROPS}
       customFilterType={customFilterType}
       dispatchSetFilter={dispatchSetFilter}
     />

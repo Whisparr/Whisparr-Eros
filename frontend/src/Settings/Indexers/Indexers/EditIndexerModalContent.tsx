@@ -1,6 +1,4 @@
 import React, { useCallback, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { IndexerAppState } from 'App/State/SettingsAppState';
 import Alert from 'Components/Alert';
 import Form from 'Components/Form/Form';
 import FormGroup from 'Components/Form/FormGroup';
@@ -18,44 +16,45 @@ import usePrevious from 'Helpers/Hooks/usePrevious';
 import useShowAdvancedSettings from 'Helpers/Hooks/useShowAdvancedSettings';
 import { inputTypes, kinds } from 'Helpers/Props';
 import AdvancedSettingsButton from 'Settings/AdvancedSettingsButton';
-import {
-  saveIndexer,
-  setIndexerFieldValue,
-  setIndexerValue,
-  testIndexer,
-} from 'Store/Actions/settingsActions';
-import { createProviderSettingsSelectorHook } from 'Store/Selectors/createProviderSettingsSelector';
+import { SelectedSchema } from 'Settings/useProviderSchema';
 import Indexer from 'typings/Indexer';
-import { InputChanged } from 'typings/inputs';
+import { EnhancedSelectInputChanged, InputChanged } from 'typings/inputs';
 import translate from 'Utilities/String/translate';
+import { useManageIndexer } from './useIndexers';
 import styles from './EditIndexerModalContent.css';
 
-export interface EditIndexerModalContentProps {
-  id?: number;
-  onModalClose: () => void;
+interface EditIndexerModalContentProps {
+  id: number;
+  selectedSchema?: SelectedSchema;
+  cloneId?: number;
   onDeleteIndexerPress?: () => void;
+  onModalClose: () => void;
 }
 
 function EditIndexerModalContent({
   id,
-  onModalClose,
+  selectedSchema,
+  cloneId,
   onDeleteIndexerPress,
-}: EditIndexerModalContentProps) {
-  const dispatch = useDispatch();
+  onModalClose,
+}: Readonly<EditIndexerModalContentProps>) {
   const showAdvancedSettings = useShowAdvancedSettings();
 
   const {
+    item,
     isFetching,
     error,
     isSaving,
-    isTesting = false,
     saveError,
-    item,
+    isTesting,
     validationErrors,
     validationWarnings,
-  } = useSelector(
-    createProviderSettingsSelectorHook<Indexer, IndexerAppState>('indexers', id)
-  );
+    updateValue,
+    updateFieldValue,
+    updateFieldValues,
+    saveProvider,
+    testProvider,
+  } = useManageIndexer(id, selectedSchema, cloneId);
 
   const wasSaving = usePrevious(isSaving);
 
@@ -75,34 +74,48 @@ function EditIndexerModalContent({
   } = item;
 
   const handleInputChange = useCallback(
-    (change: InputChanged) => {
-      // @ts-expect-error - actions are not typed
-      dispatch(setIndexerValue(change));
+    ({ name, value }: InputChanged) => {
+      updateValue(name as keyof Indexer, value as Indexer[keyof Indexer]);
     },
-    [dispatch]
+    [updateValue]
   );
 
+  // A field that answers with more than its own value goes up as a batch;
+  // anything else is a single edit, which can be reverted back to the saved
+  // value and dropped from the pending set.
   const handleFieldChange = useCallback(
-    (change: InputChanged) => {
-      // @ts-expect-error - actions are not typed
-      dispatch(setIndexerFieldValue(change));
+    ({
+      name,
+      value,
+      additionalProperties,
+    }: EnhancedSelectInputChanged<unknown>) => {
+      if (additionalProperties) {
+        updateFieldValues({
+          ...(additionalProperties as Record<string, unknown>),
+          [name]: value,
+        });
+
+        return;
+      }
+
+      updateFieldValue(name, value);
     },
-    [dispatch]
+    [updateFieldValue, updateFieldValues]
   );
 
   const handleSavePress = useCallback(() => {
-    dispatch(saveIndexer({ id }));
-  }, [id, dispatch]);
+    saveProvider();
+  }, [saveProvider]);
 
   const handleTestPress = useCallback(() => {
-    dispatch(testIndexer({ id }));
-  }, [id, dispatch]);
+    testProvider();
+  }, [testProvider]);
 
   useEffect(() => {
-    if (!isSaving && wasSaving && !saveError) {
+    if (wasSaving && !isSaving && !saveError) {
       onModalClose();
     }
-  }, [isSaving, wasSaving, saveError, onModalClose]);
+  }, [wasSaving, isSaving, saveError, onModalClose]);
 
   return (
     <ModalContent onModalClose={onModalClose}>

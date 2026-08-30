@@ -1,11 +1,10 @@
-import { useSelector } from 'react-redux';
-import AppState, { Filter, PropertyFilter } from 'App/State/AppState';
-import { CustomFilter } from 'Filters/Filter';
+import { CustomFilter, Filter, PropertyFilter } from 'Filters/Filter';
+import { useCustomFiltersList } from 'Filters/useCustomFilters';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import { SortDirection } from 'Helpers/Props/sortDirections';
-import { filters as studioFilters } from 'Store/Actions/studioActions';
-import { createCustomFiltersSelector } from 'Store/Selectors/createClientSideCollectionSelector';
 import Studio from 'Studio/Studio';
+import { STUDIO_INDEX_FILTERS } from './studioIndexFilters';
+import { useStudioIndexOption } from './studioIndexOptionsStore';
 
 /**
  * Filter configuration for studio queries
@@ -17,14 +16,15 @@ export interface StudioFilter {
 }
 
 /**
- * Parameters for querying paginated studio data
+ * Parameters for querying paginated studio data. Filters are not among them:
+ * this hook resolves the selected filter itself and appends it, so the caller's
+ * `filters` was overwritten on every call.
  */
 export interface StudioIndexQueryParams {
   page: number;
   pageSize: number;
   sortKey: string;
   sortDirection: SortDirection;
-  filters: StudioFilter[];
 }
 
 /**
@@ -73,15 +73,11 @@ export function useStudioIndexQuery(
     ) => StudioIndexPagedResponse;
   }
 ) {
-  // Retrieve selected filter key from Redux store
-  const selectedFilterKey = useSelector(
-    (state: AppState) => state.studios.selectedFilterKey
-  );
+  const selectedFilterKey = useStudioIndexOption('selectedFilterKey');
 
-  // Get custom filters from Redux store
-  const customFilters = useSelector(createCustomFiltersSelector('studios'));
+  const customFilters = useCustomFiltersList('studios');
 
-  let filterDef: Filter | undefined = undefined;
+  let filterDef: Filter | CustomFilter | undefined = undefined;
   let filters: PropertyFilter[] = [];
 
   // Resolve filter definition: custom filters (numeric IDs) or predefined filters (string keys)
@@ -97,7 +93,9 @@ export function useStudioIndexQuery(
     filters = filterDef?.filters ?? [];
   } else {
     // String key indicates a predefined filter
-    filterDef = studioFilters.find((f: Filter) => f.key === selectedFilterKey);
+    filterDef = STUDIO_INDEX_FILTERS.find(
+      (f: Filter) => f.key === selectedFilterKey
+    );
     filters = filterDef?.filters ?? [];
   }
 

@@ -1,14 +1,12 @@
 import React, {
   ReactElement,
   useCallback,
-  useEffect,
   useMemo,
   useRef,
   useState,
 } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import AppState from 'App/State/AppState';
 import * as commandNames from 'Commands/commandNames';
+import { useCommandExecuting, useExecuteCommand } from 'Commands/useCommands';
 import Alert from 'Components/Alert';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import FilterMenu from 'Components/Menu/FilterMenu';
@@ -22,65 +20,58 @@ import Table from 'Components/Table/Table';
 import TableBody from 'Components/Table/TableBody';
 import TableOptionsModalWrapper from 'Components/Table/TableOptions/TableOptionsModalWrapper';
 import TablePager from 'Components/Table/TablePager';
-import usePaging from 'Components/Table/usePaging';
-import useCurrentPage from 'Helpers/Hooks/useCurrentPage';
+import { Filter as AppStateFilter } from 'Filters/Filter';
+import { useCustomFiltersList } from 'Filters/useCustomFilters';
 import useSelectState from 'Helpers/Hooks/useSelectState';
 import { align, icons, kinds } from 'Helpers/Props';
-import { executeCommand } from 'Store/Actions/commandActions';
-import {
-  clearQueue,
-  fetchQueue,
-  gotoQueuePage,
-  grabQueueItems,
-  removeQueueItems,
-  setQueueFilter,
-  setQueueSort,
-  setQueueTableOption,
-} from 'Store/Actions/queueActions';
-import { createCustomFiltersSelector } from 'Store/Selectors/createClientSideCollectionSelector';
-import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
 import { CheckInputChanged } from 'typings/inputs';
 import { SelectStateInputProps } from 'typings/props';
 import { TableOptionsChangePayload } from 'typings/Table';
-import {
-  registerPagePopulator,
-  unregisterPagePopulator,
-} from 'Utilities/pagePopulator';
 import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
 import QueueFilterModal from './QueueFilterModal';
 import QueueOptions from './QueueOptions';
+import {
+  setQueueOption,
+  setQueueOptions,
+  setQueueSort,
+  useQueueOptions,
+} from './queueOptionsStore';
 import QueueRow from './QueueRow';
 import RemoveQueueItemModal, { RemovePressProps } from './RemoveQueueItemModal';
-import createQueueStatusSelector from './Status/createQueueStatusSelector';
+import useQueueStatus from './Status/useQueueStatus';
+import useQueue, {
+  FILTERS,
+  useGrabQueueItems,
+  useRemoveQueueItems,
+} from './useQueue';
 
 function Queue() {
-  const requestCurrentPage = useCurrentPage();
-  const dispatch = useDispatch();
+  const executeCommand = useExecuteCommand();
+
+  const { columns, selectedFilterKey, sortKey, sortDirection, pageSize } =
+    useQueueOptions();
 
   const {
-    isFetching,
-    isPopulated,
-    error,
-    items,
-    columns,
-    selectedFilterKey,
-    filters,
-    sortKey,
-    sortDirection,
-    page,
-    pageSize,
+    records: items,
     totalPages,
     totalRecords,
-    isGrabbing,
-    isRemoving,
-  } = useSelector((state: AppState) => state.queue.paged);
+    isFetching,
+    isLoading,
+    isFetched,
+    error,
+    page,
+    goToPage,
+  } = useQueue();
 
-  const { count } = useSelector(createQueueStatusSelector());
-  const customFilters = useSelector(createCustomFiltersSelector('queue'));
+  const { grabQueueItems, isGrabbing } = useGrabQueueItems();
+  const { removeQueueItems, isRemoving } = useRemoveQueueItems();
 
-  const isRefreshMonitoredDownloadsExecuting = useSelector(
-    createCommandExecutingSelector(commandNames.REFRESH_MONITORED_DOWNLOADS)
+  const { count } = useQueueStatus();
+  const customFilters = useCustomFiltersList('queue');
+
+  const isRefreshMonitoredDownloadsExecuting = useCommandExecuting(
+    commandNames.REFRESH_MONITORED_DOWNLOADS
   );
 
   const shouldBlockRefresh = useRef(false);
@@ -102,8 +93,9 @@ function Queue() {
   const [isConfirmRemoveModalOpen, setIsConfirmRemoveModalOpen] =
     useState(false);
 
-  const isRefreshing = isFetching || isRefreshMonitoredDownloadsExecuting;
-  const isAllPopulated = isPopulated;
+  const isRefreshing =
+    isFetching || isLoading || isRefreshMonitoredDownloadsExecuting;
+  const isAllPopulated = isFetched;
   const hasError = error;
   const selectedCount = selectedIds.length;
   const disableSelectedActions = selectedCount === 0;
@@ -129,20 +121,18 @@ function Queue() {
   );
 
   const handleRefreshPress = useCallback(() => {
-    dispatch(
-      executeCommand({
-        name: commandNames.REFRESH_MONITORED_DOWNLOADS,
-      })
-    );
-  }, [dispatch]);
+    executeCommand({
+      name: commandNames.REFRESH_MONITORED_DOWNLOADS,
+    });
+  }, [executeCommand]);
 
   const handleQueueRowModalOpenOrClose = useCallback((isOpen: boolean) => {
     shouldBlockRefresh.current = isOpen;
   }, []);
 
   const handleGrabSelectedPress = useCallback(() => {
-    dispatch(grabQueueItems({ ids: selectedIds }));
-  }, [selectedIds, dispatch]);
+    grabQueueItems({ ids: selectedIds });
+  }, [selectedIds, grabQueueItems]);
 
   const handleRemoveSelectedPress = useCallback(() => {
     shouldBlockRefresh.current = true;
@@ -152,10 +142,10 @@ function Queue() {
   const handleRemoveSelectedConfirmed = useCallback(
     (payload: RemovePressProps) => {
       shouldBlockRefresh.current = false;
-      dispatch(removeQueueItems({ ids: selectedIds, ...payload }));
+      removeQueueItems({ ids: selectedIds, ...payload });
       setIsConfirmRemoveModalOpen(false);
     },
-    [selectedIds, setIsConfirmRemoveModalOpen, dispatch]
+    [selectedIds, setIsConfirmRemoveModalOpen, removeQueueItems]
   );
 
   const handleConfirmRemoveModalClose = useCallback(() => {
@@ -163,66 +153,51 @@ function Queue() {
     setIsConfirmRemoveModalOpen(false);
   }, [setIsConfirmRemoveModalOpen]);
 
-  const {
-    handleFirstPagePress,
-    handlePreviousPagePress,
-    handleNextPagePress,
-    handleLastPagePress,
-    handlePageSelect,
-  } = usePaging({
-    page,
-    totalPages,
-    gotoPage: gotoQueuePage,
-  });
+  const handleFirstPagePress = useCallback(() => {
+    goToPage(1);
+  }, [goToPage]);
+
+  const handlePreviousPagePress = useCallback(() => {
+    goToPage(Math.max(page - 1, 1));
+  }, [goToPage, page]);
+
+  const handleNextPagePress = useCallback(() => {
+    goToPage(Math.min(page + 1, totalPages));
+  }, [goToPage, page, totalPages]);
+
+  const handleLastPagePress = useCallback(() => {
+    goToPage(totalPages);
+  }, [goToPage, totalPages]);
+
+  const handlePageSelect = useCallback(
+    (pageNumber: number) => {
+      goToPage(pageNumber);
+    },
+    [goToPage]
+  );
 
   const handleFilterSelect = useCallback(
     (selectedFilterKey: string | number) => {
-      dispatch(setQueueFilter({ selectedFilterKey }));
+      setQueueOption('selectedFilterKey', selectedFilterKey);
+      goToPage(1);
     },
-    [dispatch]
+    [goToPage]
   );
 
-  const handleSortPress = useCallback(
-    (sortKey: string) => {
-      dispatch(setQueueSort({ sortKey }));
-    },
-    [dispatch]
-  );
+  const handleSortPress = useCallback((sortKey: string) => {
+    setQueueSort({ sortKey });
+  }, []);
 
   const handleTableOptionChange = useCallback(
     (payload: TableOptionsChangePayload) => {
-      dispatch(setQueueTableOption(payload));
+      setQueueOptions(payload);
 
       if (payload.pageSize) {
-        dispatch(gotoQueuePage({ page: 1 }));
+        goToPage(1);
       }
     },
-    [dispatch]
+    [goToPage]
   );
-
-  useEffect(() => {
-    if (requestCurrentPage) {
-      dispatch(fetchQueue());
-    } else {
-      dispatch(gotoQueuePage({ page: 1 }));
-    }
-
-    return () => {
-      dispatch(clearQueue());
-    };
-  }, [requestCurrentPage, dispatch]);
-
-  useEffect(() => {
-    const repopulate = () => {
-      dispatch(fetchQueue());
-    };
-
-    registerPagePopulator(repopulate);
-
-    return () => {
-      unregisterPagePopulator(repopulate);
-    };
-  }, [dispatch]);
 
   if (!shouldBlockRefresh.current) {
     currentQueue.current = (
@@ -339,9 +314,10 @@ function Queue() {
           <FilterMenu
             alignMenu={align.RIGHT}
             selectedFilterKey={selectedFilterKey}
-            filters={filters}
+            filters={FILTERS as unknown as AppStateFilter[]}
             customFilters={customFilters}
             filterModalConnectorComponent={QueueFilterModal}
+            filterModalConnectorComponentProps={{ sectionItems: items }}
             onFilterSelect={handleFilterSelect}
           />
         </PageToolbarSection>

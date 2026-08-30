@@ -1,15 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { createSelector } from 'reselect';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useSelect } from 'App/SelectContext';
-import AppState from 'App/State/AppState';
 import { RENAME_MOVIE } from 'Commands/commandNames';
+import { useCommandExecuting } from 'Commands/useCommands';
 import SpinnerButton from 'Components/Link/SpinnerButton';
 import PageContentFooter from 'Components/Page/PageContentFooter';
 import { kinds } from 'Helpers/Props';
-import { saveMovieEditor } from 'Store/Actions/movieActions';
-import { fetchRootFolders } from 'Store/Actions/rootFolderActions';
-import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
+import Movie from 'Movie/Movie';
 import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
 import { DeleteSceneModal } from './Delete/DeleteSceneModal';
@@ -27,32 +23,24 @@ interface SavePayload {
   searchOnAdd?: boolean;
 }
 
-const sceneEditorSelector = createSelector(
-  (state: AppState) => state.movies,
-  (movies) => {
-    // Keep legacy isSaving for other features like tags and delete
-    const { isSaving } = movies;
+interface SceneIndexSelectFooterProps {
+  items: Movie[];
+}
 
-    return {
-      isSaving,
-    };
-  }
-);
+function SceneIndexSelectFooter({
+  items,
+}: Readonly<SceneIndexSelectFooterProps>) {
+  const isOrganizingMovies = useCommandExecuting(RENAME_MOVIE);
 
-function SceneIndexSelectFooter() {
-  const { isSaving: legacyIsSaving } = useSelector(sceneEditorSelector);
-  const isOrganizingMovies = useSelector(
-    createCommandExecutingSelector(RENAME_MOVIE)
-  );
-
-  const dispatch = useDispatch();
+  // `/movie/editor` serves both buttons, but they spin independently, so each
+  // gets its own mutation rather than sharing one `isPending`.
   const editMutation = useEditScenesModalMutation();
+  const tagsMutation = useEditScenesModalMutation();
 
   const [isDeleteSceneModalOpen, setIsDeleteSceneModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isOrganizeModalOpen, setIsOrganizeModalOpen] = useState(false);
   const [isTagsModalOpen, setIsTagsModalOpen] = useState(false);
-  const [isSavingTags, setIsSavingTags] = useState(false);
 
   const [selectState] = useSelect();
   const { selectedState } = selectState;
@@ -101,18 +89,15 @@ function SceneIndexSelectFooter() {
 
   const onApplyTagsPress = useCallback(
     (tags: number[], applyTags: string) => {
-      setIsSavingTags(true);
       setIsTagsModalOpen(false);
 
-      dispatch(
-        saveMovieEditor({
-          movieIds: sceneIds,
-          tags,
-          applyTags,
-        })
-      );
+      tagsMutation.mutate({
+        movieIds: sceneIds,
+        tags,
+        applyTags: applyTags as 'add' | 'remove' | 'replace',
+      });
     },
-    [sceneIds, dispatch]
+    [sceneIds, tagsMutation]
   );
 
   const onDeleteModalClose = useCallback(() => {
@@ -129,17 +114,6 @@ function SceneIndexSelectFooter() {
       sceneIds,
       onModalClose: onDeleteModalClose,
     });
-
-  useEffect(() => {
-    // Legacy reducer-based isSaving for tags operation
-    if (!legacyIsSaving) {
-      setIsSavingTags(false);
-    }
-  }, [legacyIsSaving]);
-
-  useEffect(() => {
-    dispatch(fetchRootFolders());
-  }, [dispatch]);
 
   const anySelected = selectedCount > 0;
 
@@ -164,7 +138,7 @@ function SceneIndexSelectFooter() {
           </SpinnerButton>
 
           <SpinnerButton
-            isSpinning={legacyIsSaving && isSavingTags}
+            isSpinning={tagsMutation.isPending}
             isDisabled={!anySelected}
             onPress={onTagsPress}
           >
@@ -196,6 +170,7 @@ function SceneIndexSelectFooter() {
       <TagsModal
         isOpen={isTagsModalOpen}
         sceneIds={sceneIds}
+        items={items}
         onApplyTagsPress={onApplyTagsPress}
         onModalClose={onTagsModalClose}
       />
@@ -203,6 +178,7 @@ function SceneIndexSelectFooter() {
       <OrganizeScenesModal
         isOpen={isOrganizeModalOpen}
         sceneIds={sceneIds}
+        items={items}
         onModalClose={onOrganizeModalClose}
       />
 

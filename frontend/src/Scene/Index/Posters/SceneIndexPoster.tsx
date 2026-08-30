@@ -1,13 +1,14 @@
 import React, { useCallback, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import AppState from 'App/State/AppState';
+import { useSafeForWorkMode } from 'App/safeForWorkStore';
 import Command from 'Commands/Command';
 import { MOVIE_SEARCH, REFRESH_MOVIE } from 'Commands/commandNames';
+import { useExecuteCommand, useExecutingCommands } from 'Commands/useCommands';
 import Icon from 'Components/Icon';
 import Label from 'Components/Label';
 import IconButton from 'Components/Link/IconButton';
 import Link from 'Components/Link/Link';
 import SpinnerIconButton from 'Components/Link/SpinnerIconButton';
+import { CommonPosterOptions } from 'Components/PosterOptionsForm';
 import Popover from 'Components/Tooltip/Popover';
 import { icons } from 'Helpers/Props';
 import EditMovieModal from 'Movie/Edit/EditMovieModal';
@@ -17,13 +18,12 @@ import DeleteSceneModal from 'Scene/Delete/DeleteSceneModal';
 import SceneDetailsLinks from 'Scene/Details/SceneDetailsLinks';
 import SceneIndexProgressBar from 'Scene/Index/ProgressBar/SceneIndexProgressBar';
 import ScenePoster from 'Scene/ScenePoster';
-import { executeCommand } from 'Store/Actions/commandActions';
-import createExecutingCommandsSelector from 'Store/Selectors/createExecutingCommandsSelector';
-import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
+import { useQualityProfile } from 'Settings/Profiles/Quality/useQualityProfiles';
+import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import getRelativeDate from 'Utilities/Date/getRelativeDate';
 import translate from 'Utilities/String/translate';
+import { useSceneIndexOption } from '../sceneIndexOptionsStore';
 import SceneIndexPosterInfo from './SceneIndexPosterInfo';
-import selectPosterOptions from './selectPosterOptions';
 import styles from './SceneIndexPoster.css';
 
 interface SceneIndexPosterProps {
@@ -32,19 +32,23 @@ interface SceneIndexPosterProps {
   isSelectMode: boolean;
   posterWidth: number;
   posterHeight: number;
+  posterOptions?: CommonPosterOptions;
 }
 
-function SceneIndexPoster(props: SceneIndexPosterProps) {
-  const { scene, sortKey, isSelectMode, posterWidth, posterHeight } = props;
+function SceneIndexPoster(props: Readonly<SceneIndexPosterProps>) {
+  const {
+    scene,
+    sortKey,
+    isSelectMode,
+    posterWidth,
+    posterHeight,
+    posterOptions,
+  } = props;
   const sceneId = scene.id;
 
-  const qualityProfile = useSelector((state: AppState) =>
-    state.settings.qualityProfiles.items.find(
-      (p) => p.id === scene.qualityProfileId
-    )
-  );
+  const qualityProfile = useQualityProfile(scene.qualityProfileId);
 
-  const executingCommands = useSelector(createExecutingCommandsSelector());
+  const executingCommands = useExecutingCommands();
 
   const isRefreshingScene = executingCommands.some(
     (command: Command) =>
@@ -56,10 +60,9 @@ function SceneIndexPoster(props: SceneIndexPosterProps) {
       command.name === MOVIE_SEARCH && command.body.movieId === sceneId
   );
 
-  const safeForWorkMode = useSelector(
-    (state: AppState) => state.settings.safeForWorkMode
-  );
+  const safeForWorkMode = useSafeForWorkMode();
 
+  const indexPosterOptions = useSceneIndexOption('posterOptions');
   const {
     detailedProgressBar,
     showTitle,
@@ -67,10 +70,10 @@ function SceneIndexPoster(props: SceneIndexPosterProps) {
     showQualityProfile,
     showReleaseDate,
     showSearchAction,
-  } = useSelector(selectPosterOptions);
+  } = posterOptions ?? indexPosterOptions;
 
   const { showRelativeDates, shortDateFormat, longDateFormat, timeFormat } =
-    useSelector(createUISettingsSelector());
+    useUiSettingsValues();
 
   const {
     title,
@@ -93,28 +96,24 @@ function SceneIndexPoster(props: SceneIndexPosterProps) {
 
   const { sizeOnDisk = 0 } = statistics;
 
-  const dispatch = useDispatch();
+  const executeCommand = useExecuteCommand();
   const [hasPosterError, setHasPosterError] = useState(false);
   const [isEditSceneModalOpen, setIsEditSceneModalOpen] = useState(false);
   const [isDeleteSceneModalOpen, setIsDeleteSceneModalOpen] = useState(false);
 
   const onRefreshPress = useCallback(() => {
-    dispatch(
-      executeCommand({
-        name: REFRESH_MOVIE,
-        movieIds: [sceneId],
-      })
-    );
-  }, [sceneId, dispatch]);
+    executeCommand({
+      name: REFRESH_MOVIE,
+      movieIds: [sceneId],
+    });
+  }, [sceneId, executeCommand]);
 
   const onSearchPress = useCallback(() => {
-    dispatch(
-      executeCommand({
-        name: MOVIE_SEARCH,
-        movieIds: [sceneId],
-      })
-    );
-  }, [sceneId, dispatch]);
+    executeCommand({
+      name: MOVIE_SEARCH,
+      movieIds: [sceneId],
+    });
+  }, [sceneId, executeCommand]);
 
   const onPosterLoadError = useCallback(() => {
     setHasPosterError(true);
@@ -276,7 +275,7 @@ function SceneIndexPoster(props: SceneIndexPosterProps) {
 
       <DeleteSceneModal
         isOpen={isDeleteSceneModalOpen}
-        sceneId={sceneId}
+        scene={scene}
         onModalClose={onDeleteSceneModalClose}
       />
     </div>

@@ -3,23 +3,20 @@ import Column from 'Components/Table/Column';
 import Table from 'Components/Table/Table';
 import TableBody from 'Components/Table/TableBody';
 import { SortDirection } from 'Helpers/Props/sortDirections';
+import { TableOptionsChangePayload } from 'typings/Table';
 import translate from 'Utilities/String/translate';
 import { MovieFile } from '../MovieFile';
 import MovieFileEditorRow from './MovieFileEditorRow';
 import styles from './MovieFileEditorTableContent.css';
 
 export interface MovieFileEditorTableContentProps {
-  movieId?: number;
-  isDeleting: boolean;
-  items: MovieFile[];
+  items: readonly MovieFile[];
   columns: Column[];
   sortKey: string;
   sortDirection: SortDirection;
-  onTableOptionChange: (option: unknown) => void;
+  onTableOptionChange: (payload: TableOptionsChangePayload) => void;
   onSortPress: (name: string, sortDirection?: SortDirection) => void;
   onDeletePress: (id: number) => void;
-  isLoading?: boolean;
-  error?: unknown;
 }
 
 function MovieFileEditorTableContent({
@@ -30,17 +27,7 @@ function MovieFileEditorTableContent({
   onSortPress,
   onTableOptionChange,
   onDeletePress,
-  isLoading,
-  error,
 }: Readonly<MovieFileEditorTableContentProps>) {
-  if (isLoading) {
-    return <div className={styles.blankpad}>{translate('Loading')}</div>;
-  }
-  if (error) {
-    return (
-      <div className={styles.blankpad}>{translate('MovieFilesLoadError')}</div>
-    );
-  }
   return (
     <div>
       {!items.length && (

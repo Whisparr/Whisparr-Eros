@@ -1,47 +1,45 @@
-import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useCallback, useEffect } from 'react';
 import * as commandNames from 'Commands/commandNames';
-import Column from 'Components/Table/Column';
+import { useCommandExecuting, useExecuteCommand } from 'Commands/useCommands';
 import withCurrentPage from 'Components/withCurrentPage';
-import { executeCommand } from 'Store/Actions/commandActions';
+import { TableOptionsChangePayload } from 'typings/Table';
 import {
-  deleteMovieFile,
-  deleteMovieFiles,
-} from 'Store/Actions/movieFileActions';
-import { setUnmappedMovieFilesTableOption } from 'Store/Actions/unmappedMovieFileActions';
-import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
+  useDeleteMovieFile,
+  useDeleteMovieFiles,
+  useUnmappedMovieFiles,
+} from '../MovieFile/useMovieFile';
 import {
-  registerPagePopulator,
-  unregisterPagePopulator,
-} from 'Utilities/pagePopulator';
-import { useUnmappedMovieFiles } from '../MovieFile/useMovieFile';
+  setUnmappedFilesOptions,
+  setUnmappedFilesSort,
+  useUnmappedFilesOptions,
+} from './unmappedFilesOptionsStore';
 import UnmappedFilesTable from './UnmappedFilesTable';
 
 function UnmappedFilesTableConnector() {
-  const dispatch = useDispatch();
+  const executeCommand = useExecuteCommand();
   const {
     data: items = [],
     isLoading,
     isSuccess,
     refetch,
   } = useUnmappedMovieFiles();
-  const movieFileColumns = useSelector(
-    (state: { unmappedMovieFiles: { columns: Column[] } }) =>
-      state.unmappedMovieFiles || { columns: [] as Column[] }
-  );
-  const isScanningFolders = useSelector(
-    createCommandExecutingSelector(commandNames.RESCAN_SCENES)
-  );
-  const isCleaningUnmappedFiles = useSelector(
-    createCommandExecutingSelector(commandNames.CLEAN_UNMAPPED_FILES)
+  const { columns, sortKey, sortDirection } = useUnmappedFilesOptions();
+  const {
+    mutate: deleteMovieFile,
+    isPending: isDeletingFile,
+    error: deleteFileError,
+  } = useDeleteMovieFile();
+  const {
+    mutate: deleteMovieFiles,
+    isPending: isDeletingFiles,
+    error: deleteFilesError,
+  } = useDeleteMovieFiles();
+  const isScanningFolders = useCommandExecuting(commandNames.RESCAN_SCENES);
+  const isCleaningUnmappedFiles = useCommandExecuting(
+    commandNames.CLEAN_UNMAPPED_FILES
   );
 
-  React.useEffect(() => {
-    registerPagePopulator(refetch);
-    return () => unregisterPagePopulator(refetch);
-  }, [refetch]);
-
-  React.useEffect(() => {
+  useEffect(() => {
     // When scan completes, refetch unmapped files
     if (!isScanningFolders) {
       refetch();
@@ -50,49 +48,60 @@ function UnmappedFilesTableConnector() {
   }, [isScanningFolders, refetch]);
 
   // Stable callbacks for props
-  const handleDeleteUnmappedFile = React.useCallback(
+  const handleDeleteUnmappedFile = useCallback(
     (id: number) => {
-      dispatch(deleteMovieFile(id));
+      deleteMovieFile({ id });
     },
-    [dispatch]
+    [deleteMovieFile]
   );
-  const handleDeleteUnmappedFiles = React.useCallback(
-    (ids: number[]) => {
-      dispatch(deleteMovieFiles(ids));
+  const handleDeleteUnmappedFiles = useCallback(
+    (movieFileIds: number[]) => {
+      deleteMovieFiles({ movieFileIds });
     },
-    [dispatch]
+    [deleteMovieFiles]
   );
-  const handleTableOptionChange = React.useCallback(
-    (payload: unknown) => {
-      dispatch(setUnmappedMovieFilesTableOption(payload));
+  const handleTableOptionChange = useCallback(
+    (payload: TableOptionsChangePayload) => {
+      setUnmappedFilesOptions(payload);
     },
-    [dispatch]
+    []
   );
-  const handleAddScenesPress = React.useCallback(() => {
-    dispatch(executeCommand({ name: commandNames.RESCAN_SCENES }));
-  }, [dispatch]);
-  const handleCleanUnmappedFilesPress = React.useCallback(() => {
-    dispatch(executeCommand({ name: commandNames.CLEAN_UNMAPPED_FILES }));
-  }, [dispatch]);
+  const handleSortPress = useCallback((sortKey: string) => {
+    setUnmappedFilesSort({ sortKey });
+  }, []);
+  const handleAddScenesPress = useCallback(() => {
+    executeCommand({ name: commandNames.RESCAN_SCENES });
+  }, [executeCommand]);
+  const handleCleanUnmappedFilesPress = useCallback(() => {
+    executeCommand({ name: commandNames.CLEAN_UNMAPPED_FILES });
+  }, [executeCommand]);
 
   const isPopulated = isSuccess;
-  const isDeleting = false;
-  const fetchUnmappedFiles = React.useCallback(() => {
+  // The table deselects its rows once a delete finishes cleanly, so it needs
+  // both halves: `isDeleting` was hardcoded false, which left the spinner dead
+  // and that branch unreachable.
+  const isDeleting = isDeletingFile || isDeletingFiles;
+  const deleteError = deleteFileError ?? deleteFilesError ?? undefined;
+  const fetchUnmappedFiles = useCallback(() => {
     refetch();
   }, [refetch]);
 
   return (
     <UnmappedFilesTable
       items={items}
-      columns={movieFileColumns.columns}
+      columns={columns}
+      sortKey={sortKey}
+      sortDirection={sortDirection}
       isFetching={isLoading}
       isScanningFolders={isScanningFolders}
       isCleaningUnmappedFiles={isCleaningUnmappedFiles}
       isPopulated={isPopulated}
       isDeleting={isDeleting}
+      deleteError={deleteError}
       fetchUnmappedFiles={fetchUnmappedFiles}
       deleteUnmappedFile={handleDeleteUnmappedFile}
       deleteUnmappedFiles={handleDeleteUnmappedFiles}
+      onSortPress={handleSortPress}
       onTableOptionChange={handleTableOptionChange}
       onAddScenesPress={handleAddScenesPress}
       onCleanUnmappedFilesPress={handleCleanUnmappedFilesPress}

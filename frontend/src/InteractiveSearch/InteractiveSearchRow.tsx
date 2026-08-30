@@ -1,8 +1,9 @@
-import React, { useCallback, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { createSelector } from 'reselect';
+import React, { useCallback, useMemo, useState } from 'react';
+import {
+  useMovieBlocklist,
+  useMovieHistory,
+} from 'Activity/History/useHistory';
 import ProtocolLabel from 'Activity/Queue/ProtocolLabel';
-import AppState from 'App/State/AppState';
 import Icon from 'Components/Icon';
 import Link from 'Components/Link/Link';
 import SpinnerIconButton from 'Components/Link/SpinnerIconButton';
@@ -15,7 +16,7 @@ import { icons, kinds, tooltipPositions } from 'Helpers/Props';
 import MovieFormats from 'Movie/MovieFormats';
 import MovieLanguages from 'Movie/MovieLanguages';
 import MovieQuality from 'Movie/MovieQuality';
-import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
+import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import Release from 'typings/Release';
 import formatDateTime from 'Utilities/Date/formatDateTime';
 import formatAge from 'Utilities/Number/formatAge';
@@ -25,6 +26,7 @@ import translate from 'Utilities/String/translate';
 import InteractiveSearchPayload from './InteractiveSearchPayload';
 import OverrideMatchModal from './OverrideMatch/OverrideMatchModal';
 import Peers from './Peers';
+import { useGrabRelease } from './useReleases';
 import styles from './InteractiveSearchRow.css';
 
 function getDownloadIcon(
@@ -71,47 +73,47 @@ function getDownloadTooltip(
   return translate('AddToDownloadQueue');
 }
 
-function releaseHistorySelector({ guid }: Release) {
-  return createSelector(
-    (state: AppState) => state.movieHistory.items,
-    (state: AppState) => state.movieBlocklist.items,
-    (movieHistory, movieBlocklist) => {
-      let historyFailedData = null;
-      let blocklistedData = null;
+// Both queries are keyed by movieId, so every row on a search shares the one
+// request React Query already has in flight.
+function useReleaseHistory(guid: string, movieId: number) {
+  const { data: movieHistory } = useMovieHistory(movieId);
+  const { data: movieBlocklist } = useMovieBlocklist(movieId);
 
-      const historyGrabbedData = movieHistory.find(
-        ({ eventType, data }) =>
-          eventType === 'grabbed' &&
-          data != null &&
-          typeof data === 'object' &&
-          'guid' in data &&
-          (data as { guid?: string }).guid === guid
+  return useMemo(() => {
+    let historyFailedData = null;
+    let blocklistedData = null;
+
+    const historyGrabbedData = movieHistory.find(
+      ({ eventType, data }) =>
+        eventType === 'grabbed' &&
+        data != null &&
+        typeof data === 'object' &&
+        'guid' in data &&
+        (data as { guid?: string }).guid === guid
+    );
+
+    if (historyGrabbedData) {
+      historyFailedData = movieHistory.find(
+        ({ eventType, sourceTitle }) =>
+          eventType === 'downloadFailed' &&
+          sourceTitle === historyGrabbedData.sourceTitle
       );
 
-      if (historyGrabbedData) {
-        historyFailedData = movieHistory.find(
-          ({ eventType, sourceTitle }) =>
-            eventType === 'downloadFailed' &&
-            sourceTitle === historyGrabbedData.sourceTitle
-        );
-
-        blocklistedData = movieBlocklist.find(
-          (item) => item.sourceTitle === historyGrabbedData.sourceTitle
-        );
-      }
-
-      return {
-        historyGrabbedData,
-        historyFailedData,
-        blocklistedData,
-      };
+      blocklistedData = movieBlocklist.find(
+        (item) => item.sourceTitle === historyGrabbedData.sourceTitle
+      );
     }
-  );
+
+    return {
+      historyGrabbedData,
+      historyFailedData,
+      blocklistedData,
+    };
+  }, [guid, movieHistory, movieBlocklist]);
 }
 
 interface InteractiveSearchRowProps extends Release {
   searchPayload: InteractiveSearchPayload;
-  onGrabPress(...args: unknown[]): void;
 }
 
 function InteractiveSearchRow(props: InteractiveSearchRowProps) {
@@ -137,26 +139,24 @@ function InteractiveSearchRow(props: InteractiveSearchRowProps) {
     indexerFlags = [],
     rejections = [],
     downloadAllowed,
-    isGrabbing = false,
-    isGrabbed = false,
-    grabError,
     searchPayload,
-    onGrabPress,
   } = props;
 
-  const { longDateFormat, timeFormat } = useSelector(
-    createUISettingsSelector()
-  );
+  // One grab per row. The override modal below is handed this same instance, so
+  // whichever button starts the grab, both report it.
+  const { grabRelease, isGrabbing, isGrabbed, grabError } = useGrabRelease();
+
+  const { longDateFormat, timeFormat } = useUiSettingsValues();
 
   const { historyGrabbedData, historyFailedData, blocklistedData } =
-    useSelector(releaseHistorySelector(props));
+    useReleaseHistory(guid, searchPayload.movieId);
 
   const [isConfirmGrabModalOpen, setIsConfirmGrabModalOpen] = useState(false);
   const [isOverrideModalOpen, setIsOverrideModalOpen] = useState(false);
 
   const onGrabPressWrapper = useCallback(() => {
     if (downloadAllowed) {
-      onGrabPress({
+      grabRelease({
         guid,
         indexerId,
       });
@@ -169,19 +169,19 @@ function InteractiveSearchRow(props: InteractiveSearchRowProps) {
     guid,
     indexerId,
     downloadAllowed,
-    onGrabPress,
+    grabRelease,
     setIsConfirmGrabModalOpen,
   ]);
 
   const onGrabConfirm = useCallback(() => {
     setIsConfirmGrabModalOpen(false);
 
-    onGrabPress({
+    grabRelease({
       guid,
       indexerId,
       ...searchPayload,
     });
-  }, [guid, indexerId, searchPayload, onGrabPress, setIsConfirmGrabModalOpen]);
+  }, [guid, indexerId, searchPayload, grabRelease, setIsConfirmGrabModalOpen]);
 
   const onGrabCancel = useCallback(() => {
     setIsConfirmGrabModalOpen(false);
@@ -384,6 +384,7 @@ function InteractiveSearchRow(props: InteractiveSearchRowProps) {
         protocol={protocol}
         isGrabbing={isGrabbing}
         grabError={grabError}
+        onGrabRelease={grabRelease}
         onModalClose={onOverrideModalClose}
       />
     </TableRow>

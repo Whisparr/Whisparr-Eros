@@ -1,0 +1,2372 @@
+[
+  {
+    "tag_name": "v3.3.9-develop.1200",
+    "body": "## What's Changed\n* Fix: Remove Duplicate Text in Modal by @JoyboySon in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n## New Contributors\n* @JoyboySon made their first contribution in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n**Full Changelog**: https://github.com/Whisparr/Whisparr-Eros/compare/3.2.0-develop.1...v3.2.0-develop.8",
+    "published_at": "2026-01-15T04:24:58Z",
+    "prerelease": true,
+    "draft": false,
+    "assets": [
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz",
+        "digest": "sha256:7e600f422ad9de8aba5ad7de8a7a217c7ba6464321df1bfe2e6b954a210e4288",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz",
+        "digest": "sha256:609aa587af8d7242b6fc7adbe88e1741f747ca90297e387079170d5e6ff8a7da",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz",
+        "digest": "sha256:edd6bce36455201f11847266b63f2f523a48c5917ce2d37ede52612dfa4d5828",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz",
+        "digest": "sha256:3cf7b6de34e0ea9008e76bcba7668c39e7cb70ba4ac27cc795a19983faa5f4c6",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz",
+        "digest": "sha256:e5c57131d0d87574edbab3144f65cb8c1dd5dfe139cf293f4778eece8a63a348",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz",
+        "digest": "sha256:697facd9727ae84a12dcf2e260e5e7f83112965801d070aab4a1042dd08d1236",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip",
+        "digest": "sha256:6fb730e35ef05464e3e1427ac121a16f9b4541ef54fbe188b0cee7353ee5d7de",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz",
+        "digest": "sha256:a50d4c2742e561686b43e597887dd0683a1e2fb160e1e8dfe0c46660826cb068",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip",
+        "digest": "sha256:a3721acbefbb832f8f0d9420db6054671fcf6cbe89747d048d398ff00fcf3f6c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz",
+        "digest": "sha256:060bf1fdb0fa022232847910a18744efcfc5f80bbacdb1a599612de9d45b591d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe",
+        "digest": "sha256:b9d509d9c960f3bfe7e189852c701ae10e2bf0ed4314c04855f9029f0d04cf59",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip",
+        "digest": "sha256:9155f78fffc7c3a004e708ca1f25b546e30e514a893cd1c57ba09153afb5f11d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe",
+        "digest": "sha256:7227fad4690e7ec812088b03b1efccd277a302fc8250f1ed2703eb41176a502c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip",
+        "digest": "sha256:1570702c35765cf40ef6ecb37d275f9bf91f0b7bd8f41b81ed67da2e2d2bcbee",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip"
+      }
+    ]
+  },
+  {
+    "tag_name": "v3.3.9-develop.1199",
+    "body": "## What's Changed\n* Fix: Remove Duplicate Text in Modal by @JoyboySon in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n## New Contributors\n* @JoyboySon made their first contribution in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n**Full Changelog**: https://github.com/Whisparr/Whisparr-Eros/compare/3.2.0-develop.1...v3.2.0-develop.8",
+    "published_at": "2026-01-15T04:24:58Z",
+    "prerelease": true,
+    "draft": false,
+    "assets": [
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz",
+        "digest": "sha256:7e600f422ad9de8aba5ad7de8a7a217c7ba6464321df1bfe2e6b954a210e4288",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz",
+        "digest": "sha256:609aa587af8d7242b6fc7adbe88e1741f747ca90297e387079170d5e6ff8a7da",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz",
+        "digest": "sha256:edd6bce36455201f11847266b63f2f523a48c5917ce2d37ede52612dfa4d5828",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz",
+        "digest": "sha256:3cf7b6de34e0ea9008e76bcba7668c39e7cb70ba4ac27cc795a19983faa5f4c6",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz",
+        "digest": "sha256:e5c57131d0d87574edbab3144f65cb8c1dd5dfe139cf293f4778eece8a63a348",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz",
+        "digest": "sha256:697facd9727ae84a12dcf2e260e5e7f83112965801d070aab4a1042dd08d1236",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip",
+        "digest": "sha256:6fb730e35ef05464e3e1427ac121a16f9b4541ef54fbe188b0cee7353ee5d7de",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz",
+        "digest": "sha256:a50d4c2742e561686b43e597887dd0683a1e2fb160e1e8dfe0c46660826cb068",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip",
+        "digest": "sha256:a3721acbefbb832f8f0d9420db6054671fcf6cbe89747d048d398ff00fcf3f6c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz",
+        "digest": "sha256:060bf1fdb0fa022232847910a18744efcfc5f80bbacdb1a599612de9d45b591d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe",
+        "digest": "sha256:b9d509d9c960f3bfe7e189852c701ae10e2bf0ed4314c04855f9029f0d04cf59",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip",
+        "digest": "sha256:9155f78fffc7c3a004e708ca1f25b546e30e514a893cd1c57ba09153afb5f11d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe",
+        "digest": "sha256:7227fad4690e7ec812088b03b1efccd277a302fc8250f1ed2703eb41176a502c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip",
+        "digest": "sha256:1570702c35765cf40ef6ecb37d275f9bf91f0b7bd8f41b81ed67da2e2d2bcbee",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip"
+      }
+    ]
+  },
+  {
+    "tag_name": "v3.3.9-develop.1198",
+    "body": "## What's Changed\n* Fix: Remove Duplicate Text in Modal by @JoyboySon in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n## New Contributors\n* @JoyboySon made their first contribution in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n**Full Changelog**: https://github.com/Whisparr/Whisparr-Eros/compare/3.2.0-develop.1...v3.2.0-develop.8",
+    "published_at": "2026-01-15T04:24:58Z",
+    "prerelease": true,
+    "draft": false,
+    "assets": [
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz",
+        "digest": "sha256:7e600f422ad9de8aba5ad7de8a7a217c7ba6464321df1bfe2e6b954a210e4288",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz",
+        "digest": "sha256:609aa587af8d7242b6fc7adbe88e1741f747ca90297e387079170d5e6ff8a7da",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz",
+        "digest": "sha256:edd6bce36455201f11847266b63f2f523a48c5917ce2d37ede52612dfa4d5828",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz",
+        "digest": "sha256:3cf7b6de34e0ea9008e76bcba7668c39e7cb70ba4ac27cc795a19983faa5f4c6",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz",
+        "digest": "sha256:e5c57131d0d87574edbab3144f65cb8c1dd5dfe139cf293f4778eece8a63a348",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz",
+        "digest": "sha256:697facd9727ae84a12dcf2e260e5e7f83112965801d070aab4a1042dd08d1236",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip",
+        "digest": "sha256:6fb730e35ef05464e3e1427ac121a16f9b4541ef54fbe188b0cee7353ee5d7de",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz",
+        "digest": "sha256:a50d4c2742e561686b43e597887dd0683a1e2fb160e1e8dfe0c46660826cb068",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip",
+        "digest": "sha256:a3721acbefbb832f8f0d9420db6054671fcf6cbe89747d048d398ff00fcf3f6c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz",
+        "digest": "sha256:060bf1fdb0fa022232847910a18744efcfc5f80bbacdb1a599612de9d45b591d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe",
+        "digest": "sha256:b9d509d9c960f3bfe7e189852c701ae10e2bf0ed4314c04855f9029f0d04cf59",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip",
+        "digest": "sha256:9155f78fffc7c3a004e708ca1f25b546e30e514a893cd1c57ba09153afb5f11d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe",
+        "digest": "sha256:7227fad4690e7ec812088b03b1efccd277a302fc8250f1ed2703eb41176a502c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip",
+        "digest": "sha256:1570702c35765cf40ef6ecb37d275f9bf91f0b7bd8f41b81ed67da2e2d2bcbee",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip"
+      }
+    ]
+  },
+  {
+    "tag_name": "v3.3.9-develop.1197",
+    "body": "## What's Changed\n* Fix: Remove Duplicate Text in Modal by @JoyboySon in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n## New Contributors\n* @JoyboySon made their first contribution in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n**Full Changelog**: https://github.com/Whisparr/Whisparr-Eros/compare/3.2.0-develop.1...v3.2.0-develop.8",
+    "published_at": "2026-01-15T04:24:58Z",
+    "prerelease": true,
+    "draft": false,
+    "assets": [
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz",
+        "digest": "sha256:7e600f422ad9de8aba5ad7de8a7a217c7ba6464321df1bfe2e6b954a210e4288",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz",
+        "digest": "sha256:609aa587af8d7242b6fc7adbe88e1741f747ca90297e387079170d5e6ff8a7da",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz",
+        "digest": "sha256:edd6bce36455201f11847266b63f2f523a48c5917ce2d37ede52612dfa4d5828",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz",
+        "digest": "sha256:3cf7b6de34e0ea9008e76bcba7668c39e7cb70ba4ac27cc795a19983faa5f4c6",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz",
+        "digest": "sha256:e5c57131d0d87574edbab3144f65cb8c1dd5dfe139cf293f4778eece8a63a348",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz",
+        "digest": "sha256:697facd9727ae84a12dcf2e260e5e7f83112965801d070aab4a1042dd08d1236",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip",
+        "digest": "sha256:6fb730e35ef05464e3e1427ac121a16f9b4541ef54fbe188b0cee7353ee5d7de",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz",
+        "digest": "sha256:a50d4c2742e561686b43e597887dd0683a1e2fb160e1e8dfe0c46660826cb068",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip",
+        "digest": "sha256:a3721acbefbb832f8f0d9420db6054671fcf6cbe89747d048d398ff00fcf3f6c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz",
+        "digest": "sha256:060bf1fdb0fa022232847910a18744efcfc5f80bbacdb1a599612de9d45b591d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe",
+        "digest": "sha256:b9d509d9c960f3bfe7e189852c701ae10e2bf0ed4314c04855f9029f0d04cf59",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip",
+        "digest": "sha256:9155f78fffc7c3a004e708ca1f25b546e30e514a893cd1c57ba09153afb5f11d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe",
+        "digest": "sha256:7227fad4690e7ec812088b03b1efccd277a302fc8250f1ed2703eb41176a502c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip",
+        "digest": "sha256:1570702c35765cf40ef6ecb37d275f9bf91f0b7bd8f41b81ed67da2e2d2bcbee",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip"
+      }
+    ]
+  },
+  {
+    "tag_name": "v3.3.9-develop.1196",
+    "body": "## What's Changed\n* Fix: Remove Duplicate Text in Modal by @JoyboySon in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n## New Contributors\n* @JoyboySon made their first contribution in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n**Full Changelog**: https://github.com/Whisparr/Whisparr-Eros/compare/3.2.0-develop.1...v3.2.0-develop.8",
+    "published_at": "2026-01-15T04:24:58Z",
+    "prerelease": true,
+    "draft": false,
+    "assets": [
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz",
+        "digest": "sha256:7e600f422ad9de8aba5ad7de8a7a217c7ba6464321df1bfe2e6b954a210e4288",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz",
+        "digest": "sha256:609aa587af8d7242b6fc7adbe88e1741f747ca90297e387079170d5e6ff8a7da",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz",
+        "digest": "sha256:edd6bce36455201f11847266b63f2f523a48c5917ce2d37ede52612dfa4d5828",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz",
+        "digest": "sha256:3cf7b6de34e0ea9008e76bcba7668c39e7cb70ba4ac27cc795a19983faa5f4c6",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz",
+        "digest": "sha256:e5c57131d0d87574edbab3144f65cb8c1dd5dfe139cf293f4778eece8a63a348",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz",
+        "digest": "sha256:697facd9727ae84a12dcf2e260e5e7f83112965801d070aab4a1042dd08d1236",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip",
+        "digest": "sha256:6fb730e35ef05464e3e1427ac121a16f9b4541ef54fbe188b0cee7353ee5d7de",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz",
+        "digest": "sha256:a50d4c2742e561686b43e597887dd0683a1e2fb160e1e8dfe0c46660826cb068",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip",
+        "digest": "sha256:a3721acbefbb832f8f0d9420db6054671fcf6cbe89747d048d398ff00fcf3f6c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz",
+        "digest": "sha256:060bf1fdb0fa022232847910a18744efcfc5f80bbacdb1a599612de9d45b591d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe",
+        "digest": "sha256:b9d509d9c960f3bfe7e189852c701ae10e2bf0ed4314c04855f9029f0d04cf59",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip",
+        "digest": "sha256:9155f78fffc7c3a004e708ca1f25b546e30e514a893cd1c57ba09153afb5f11d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe",
+        "digest": "sha256:7227fad4690e7ec812088b03b1efccd277a302fc8250f1ed2703eb41176a502c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip",
+        "digest": "sha256:1570702c35765cf40ef6ecb37d275f9bf91f0b7bd8f41b81ed67da2e2d2bcbee",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip"
+      }
+    ]
+  },
+  {
+    "tag_name": "v3.3.9-develop.1195",
+    "body": "## What's Changed\n* Fix: Remove Duplicate Text in Modal by @JoyboySon in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n## New Contributors\n* @JoyboySon made their first contribution in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n**Full Changelog**: https://github.com/Whisparr/Whisparr-Eros/compare/3.2.0-develop.1...v3.2.0-develop.8",
+    "published_at": "2026-01-15T04:24:58Z",
+    "prerelease": true,
+    "draft": false,
+    "assets": [
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz",
+        "digest": "sha256:7e600f422ad9de8aba5ad7de8a7a217c7ba6464321df1bfe2e6b954a210e4288",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz",
+        "digest": "sha256:609aa587af8d7242b6fc7adbe88e1741f747ca90297e387079170d5e6ff8a7da",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz",
+        "digest": "sha256:edd6bce36455201f11847266b63f2f523a48c5917ce2d37ede52612dfa4d5828",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz",
+        "digest": "sha256:3cf7b6de34e0ea9008e76bcba7668c39e7cb70ba4ac27cc795a19983faa5f4c6",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz",
+        "digest": "sha256:e5c57131d0d87574edbab3144f65cb8c1dd5dfe139cf293f4778eece8a63a348",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz",
+        "digest": "sha256:697facd9727ae84a12dcf2e260e5e7f83112965801d070aab4a1042dd08d1236",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip",
+        "digest": "sha256:6fb730e35ef05464e3e1427ac121a16f9b4541ef54fbe188b0cee7353ee5d7de",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz",
+        "digest": "sha256:a50d4c2742e561686b43e597887dd0683a1e2fb160e1e8dfe0c46660826cb068",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip",
+        "digest": "sha256:a3721acbefbb832f8f0d9420db6054671fcf6cbe89747d048d398ff00fcf3f6c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz",
+        "digest": "sha256:060bf1fdb0fa022232847910a18744efcfc5f80bbacdb1a599612de9d45b591d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe",
+        "digest": "sha256:b9d509d9c960f3bfe7e189852c701ae10e2bf0ed4314c04855f9029f0d04cf59",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip",
+        "digest": "sha256:9155f78fffc7c3a004e708ca1f25b546e30e514a893cd1c57ba09153afb5f11d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe",
+        "digest": "sha256:7227fad4690e7ec812088b03b1efccd277a302fc8250f1ed2703eb41176a502c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip",
+        "digest": "sha256:1570702c35765cf40ef6ecb37d275f9bf91f0b7bd8f41b81ed67da2e2d2bcbee",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip"
+      }
+    ]
+  },
+  {
+    "tag_name": "v3.3.9-develop.1194",
+    "body": "## What's Changed\n* Fix: Remove Duplicate Text in Modal by @JoyboySon in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n## New Contributors\n* @JoyboySon made their first contribution in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n**Full Changelog**: https://github.com/Whisparr/Whisparr-Eros/compare/3.2.0-develop.1...v3.2.0-develop.8",
+    "published_at": "2026-01-15T04:24:58Z",
+    "prerelease": true,
+    "draft": false,
+    "assets": [
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz",
+        "digest": "sha256:7e600f422ad9de8aba5ad7de8a7a217c7ba6464321df1bfe2e6b954a210e4288",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz",
+        "digest": "sha256:609aa587af8d7242b6fc7adbe88e1741f747ca90297e387079170d5e6ff8a7da",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz",
+        "digest": "sha256:edd6bce36455201f11847266b63f2f523a48c5917ce2d37ede52612dfa4d5828",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz",
+        "digest": "sha256:3cf7b6de34e0ea9008e76bcba7668c39e7cb70ba4ac27cc795a19983faa5f4c6",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz",
+        "digest": "sha256:e5c57131d0d87574edbab3144f65cb8c1dd5dfe139cf293f4778eece8a63a348",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz",
+        "digest": "sha256:697facd9727ae84a12dcf2e260e5e7f83112965801d070aab4a1042dd08d1236",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip",
+        "digest": "sha256:6fb730e35ef05464e3e1427ac121a16f9b4541ef54fbe188b0cee7353ee5d7de",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz",
+        "digest": "sha256:a50d4c2742e561686b43e597887dd0683a1e2fb160e1e8dfe0c46660826cb068",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip",
+        "digest": "sha256:a3721acbefbb832f8f0d9420db6054671fcf6cbe89747d048d398ff00fcf3f6c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz",
+        "digest": "sha256:060bf1fdb0fa022232847910a18744efcfc5f80bbacdb1a599612de9d45b591d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe",
+        "digest": "sha256:b9d509d9c960f3bfe7e189852c701ae10e2bf0ed4314c04855f9029f0d04cf59",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip",
+        "digest": "sha256:9155f78fffc7c3a004e708ca1f25b546e30e514a893cd1c57ba09153afb5f11d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe",
+        "digest": "sha256:7227fad4690e7ec812088b03b1efccd277a302fc8250f1ed2703eb41176a502c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip",
+        "digest": "sha256:1570702c35765cf40ef6ecb37d275f9bf91f0b7bd8f41b81ed67da2e2d2bcbee",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip"
+      }
+    ]
+  },
+  {
+    "tag_name": "v3.3.9-develop.1193",
+    "body": "## What's Changed\n* Fix: Remove Duplicate Text in Modal by @JoyboySon in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n## New Contributors\n* @JoyboySon made their first contribution in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n**Full Changelog**: https://github.com/Whisparr/Whisparr-Eros/compare/3.2.0-develop.1...v3.2.0-develop.8",
+    "published_at": "2026-01-15T04:24:58Z",
+    "prerelease": true,
+    "draft": false,
+    "assets": [
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz",
+        "digest": "sha256:7e600f422ad9de8aba5ad7de8a7a217c7ba6464321df1bfe2e6b954a210e4288",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz",
+        "digest": "sha256:609aa587af8d7242b6fc7adbe88e1741f747ca90297e387079170d5e6ff8a7da",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz",
+        "digest": "sha256:edd6bce36455201f11847266b63f2f523a48c5917ce2d37ede52612dfa4d5828",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz",
+        "digest": "sha256:3cf7b6de34e0ea9008e76bcba7668c39e7cb70ba4ac27cc795a19983faa5f4c6",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz",
+        "digest": "sha256:e5c57131d0d87574edbab3144f65cb8c1dd5dfe139cf293f4778eece8a63a348",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz",
+        "digest": "sha256:697facd9727ae84a12dcf2e260e5e7f83112965801d070aab4a1042dd08d1236",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip",
+        "digest": "sha256:6fb730e35ef05464e3e1427ac121a16f9b4541ef54fbe188b0cee7353ee5d7de",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz",
+        "digest": "sha256:a50d4c2742e561686b43e597887dd0683a1e2fb160e1e8dfe0c46660826cb068",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip",
+        "digest": "sha256:a3721acbefbb832f8f0d9420db6054671fcf6cbe89747d048d398ff00fcf3f6c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz",
+        "digest": "sha256:060bf1fdb0fa022232847910a18744efcfc5f80bbacdb1a599612de9d45b591d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe",
+        "digest": "sha256:b9d509d9c960f3bfe7e189852c701ae10e2bf0ed4314c04855f9029f0d04cf59",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip",
+        "digest": "sha256:9155f78fffc7c3a004e708ca1f25b546e30e514a893cd1c57ba09153afb5f11d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe",
+        "digest": "sha256:7227fad4690e7ec812088b03b1efccd277a302fc8250f1ed2703eb41176a502c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip",
+        "digest": "sha256:1570702c35765cf40ef6ecb37d275f9bf91f0b7bd8f41b81ed67da2e2d2bcbee",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip"
+      }
+    ]
+  },
+  {
+    "tag_name": "v3.3.9-develop.1192",
+    "body": "## What's Changed\n* Fix: Remove Duplicate Text in Modal by @JoyboySon in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n## New Contributors\n* @JoyboySon made their first contribution in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n**Full Changelog**: https://github.com/Whisparr/Whisparr-Eros/compare/3.2.0-develop.1...v3.2.0-develop.8",
+    "published_at": "2026-01-15T04:24:58Z",
+    "prerelease": true,
+    "draft": false,
+    "assets": [
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz",
+        "digest": "sha256:7e600f422ad9de8aba5ad7de8a7a217c7ba6464321df1bfe2e6b954a210e4288",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz",
+        "digest": "sha256:609aa587af8d7242b6fc7adbe88e1741f747ca90297e387079170d5e6ff8a7da",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz",
+        "digest": "sha256:edd6bce36455201f11847266b63f2f523a48c5917ce2d37ede52612dfa4d5828",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz",
+        "digest": "sha256:3cf7b6de34e0ea9008e76bcba7668c39e7cb70ba4ac27cc795a19983faa5f4c6",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz",
+        "digest": "sha256:e5c57131d0d87574edbab3144f65cb8c1dd5dfe139cf293f4778eece8a63a348",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz",
+        "digest": "sha256:697facd9727ae84a12dcf2e260e5e7f83112965801d070aab4a1042dd08d1236",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip",
+        "digest": "sha256:6fb730e35ef05464e3e1427ac121a16f9b4541ef54fbe188b0cee7353ee5d7de",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz",
+        "digest": "sha256:a50d4c2742e561686b43e597887dd0683a1e2fb160e1e8dfe0c46660826cb068",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip",
+        "digest": "sha256:a3721acbefbb832f8f0d9420db6054671fcf6cbe89747d048d398ff00fcf3f6c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz",
+        "digest": "sha256:060bf1fdb0fa022232847910a18744efcfc5f80bbacdb1a599612de9d45b591d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe",
+        "digest": "sha256:b9d509d9c960f3bfe7e189852c701ae10e2bf0ed4314c04855f9029f0d04cf59",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip",
+        "digest": "sha256:9155f78fffc7c3a004e708ca1f25b546e30e514a893cd1c57ba09153afb5f11d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe",
+        "digest": "sha256:7227fad4690e7ec812088b03b1efccd277a302fc8250f1ed2703eb41176a502c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip",
+        "digest": "sha256:1570702c35765cf40ef6ecb37d275f9bf91f0b7bd8f41b81ed67da2e2d2bcbee",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip"
+      }
+    ]
+  },
+  {
+    "tag_name": "v3.3.9-develop.1191",
+    "body": "## What's Changed\n* Fix: Remove Duplicate Text in Modal by @JoyboySon in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n## New Contributors\n* @JoyboySon made their first contribution in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n**Full Changelog**: https://github.com/Whisparr/Whisparr-Eros/compare/3.2.0-develop.1...v3.2.0-develop.8",
+    "published_at": "2026-01-15T04:24:58Z",
+    "prerelease": true,
+    "draft": false,
+    "assets": [
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz",
+        "digest": "sha256:7e600f422ad9de8aba5ad7de8a7a217c7ba6464321df1bfe2e6b954a210e4288",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz",
+        "digest": "sha256:609aa587af8d7242b6fc7adbe88e1741f747ca90297e387079170d5e6ff8a7da",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz",
+        "digest": "sha256:edd6bce36455201f11847266b63f2f523a48c5917ce2d37ede52612dfa4d5828",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz",
+        "digest": "sha256:3cf7b6de34e0ea9008e76bcba7668c39e7cb70ba4ac27cc795a19983faa5f4c6",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz",
+        "digest": "sha256:e5c57131d0d87574edbab3144f65cb8c1dd5dfe139cf293f4778eece8a63a348",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz",
+        "digest": "sha256:697facd9727ae84a12dcf2e260e5e7f83112965801d070aab4a1042dd08d1236",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip",
+        "digest": "sha256:6fb730e35ef05464e3e1427ac121a16f9b4541ef54fbe188b0cee7353ee5d7de",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz",
+        "digest": "sha256:a50d4c2742e561686b43e597887dd0683a1e2fb160e1e8dfe0c46660826cb068",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip",
+        "digest": "sha256:a3721acbefbb832f8f0d9420db6054671fcf6cbe89747d048d398ff00fcf3f6c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz",
+        "digest": "sha256:060bf1fdb0fa022232847910a18744efcfc5f80bbacdb1a599612de9d45b591d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe",
+        "digest": "sha256:b9d509d9c960f3bfe7e189852c701ae10e2bf0ed4314c04855f9029f0d04cf59",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip",
+        "digest": "sha256:9155f78fffc7c3a004e708ca1f25b546e30e514a893cd1c57ba09153afb5f11d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe",
+        "digest": "sha256:7227fad4690e7ec812088b03b1efccd277a302fc8250f1ed2703eb41176a502c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip",
+        "digest": "sha256:1570702c35765cf40ef6ecb37d275f9bf91f0b7bd8f41b81ed67da2e2d2bcbee",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip"
+      }
+    ]
+  },
+  {
+    "tag_name": "v3.3.9-develop.1190",
+    "body": "## What's Changed\n* Fix: Remove Duplicate Text in Modal by @JoyboySon in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n## New Contributors\n* @JoyboySon made their first contribution in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n**Full Changelog**: https://github.com/Whisparr/Whisparr-Eros/compare/3.2.0-develop.1...v3.2.0-develop.8",
+    "published_at": "2026-01-15T04:24:58Z",
+    "prerelease": true,
+    "draft": false,
+    "assets": [
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz",
+        "digest": "sha256:7e600f422ad9de8aba5ad7de8a7a217c7ba6464321df1bfe2e6b954a210e4288",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz",
+        "digest": "sha256:609aa587af8d7242b6fc7adbe88e1741f747ca90297e387079170d5e6ff8a7da",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz",
+        "digest": "sha256:edd6bce36455201f11847266b63f2f523a48c5917ce2d37ede52612dfa4d5828",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz",
+        "digest": "sha256:3cf7b6de34e0ea9008e76bcba7668c39e7cb70ba4ac27cc795a19983faa5f4c6",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz",
+        "digest": "sha256:e5c57131d0d87574edbab3144f65cb8c1dd5dfe139cf293f4778eece8a63a348",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz",
+        "digest": "sha256:697facd9727ae84a12dcf2e260e5e7f83112965801d070aab4a1042dd08d1236",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip",
+        "digest": "sha256:6fb730e35ef05464e3e1427ac121a16f9b4541ef54fbe188b0cee7353ee5d7de",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz",
+        "digest": "sha256:a50d4c2742e561686b43e597887dd0683a1e2fb160e1e8dfe0c46660826cb068",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip",
+        "digest": "sha256:a3721acbefbb832f8f0d9420db6054671fcf6cbe89747d048d398ff00fcf3f6c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz",
+        "digest": "sha256:060bf1fdb0fa022232847910a18744efcfc5f80bbacdb1a599612de9d45b591d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe",
+        "digest": "sha256:b9d509d9c960f3bfe7e189852c701ae10e2bf0ed4314c04855f9029f0d04cf59",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip",
+        "digest": "sha256:9155f78fffc7c3a004e708ca1f25b546e30e514a893cd1c57ba09153afb5f11d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe",
+        "digest": "sha256:7227fad4690e7ec812088b03b1efccd277a302fc8250f1ed2703eb41176a502c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip",
+        "digest": "sha256:1570702c35765cf40ef6ecb37d275f9bf91f0b7bd8f41b81ed67da2e2d2bcbee",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip"
+      }
+    ]
+  },
+  {
+    "tag_name": "v3.3.9-develop.1189",
+    "body": "## What's Changed\n* Fix: Remove Duplicate Text in Modal by @JoyboySon in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n## New Contributors\n* @JoyboySon made their first contribution in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n**Full Changelog**: https://github.com/Whisparr/Whisparr-Eros/compare/3.2.0-develop.1...v3.2.0-develop.8",
+    "published_at": "2026-01-15T04:24:58Z",
+    "prerelease": true,
+    "draft": false,
+    "assets": [
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz",
+        "digest": "sha256:7e600f422ad9de8aba5ad7de8a7a217c7ba6464321df1bfe2e6b954a210e4288",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz",
+        "digest": "sha256:609aa587af8d7242b6fc7adbe88e1741f747ca90297e387079170d5e6ff8a7da",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz",
+        "digest": "sha256:edd6bce36455201f11847266b63f2f523a48c5917ce2d37ede52612dfa4d5828",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz",
+        "digest": "sha256:3cf7b6de34e0ea9008e76bcba7668c39e7cb70ba4ac27cc795a19983faa5f4c6",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz",
+        "digest": "sha256:e5c57131d0d87574edbab3144f65cb8c1dd5dfe139cf293f4778eece8a63a348",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz",
+        "digest": "sha256:697facd9727ae84a12dcf2e260e5e7f83112965801d070aab4a1042dd08d1236",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip",
+        "digest": "sha256:6fb730e35ef05464e3e1427ac121a16f9b4541ef54fbe188b0cee7353ee5d7de",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz",
+        "digest": "sha256:a50d4c2742e561686b43e597887dd0683a1e2fb160e1e8dfe0c46660826cb068",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip",
+        "digest": "sha256:a3721acbefbb832f8f0d9420db6054671fcf6cbe89747d048d398ff00fcf3f6c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz",
+        "digest": "sha256:060bf1fdb0fa022232847910a18744efcfc5f80bbacdb1a599612de9d45b591d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe",
+        "digest": "sha256:b9d509d9c960f3bfe7e189852c701ae10e2bf0ed4314c04855f9029f0d04cf59",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip",
+        "digest": "sha256:9155f78fffc7c3a004e708ca1f25b546e30e514a893cd1c57ba09153afb5f11d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe",
+        "digest": "sha256:7227fad4690e7ec812088b03b1efccd277a302fc8250f1ed2703eb41176a502c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip",
+        "digest": "sha256:1570702c35765cf40ef6ecb37d275f9bf91f0b7bd8f41b81ed67da2e2d2bcbee",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip"
+      }
+    ]
+  },
+  {
+    "tag_name": "v3.3.9-develop.1188",
+    "body": "## What's Changed\n* Fix: Remove Duplicate Text in Modal by @JoyboySon in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n## New Contributors\n* @JoyboySon made their first contribution in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n**Full Changelog**: https://github.com/Whisparr/Whisparr-Eros/compare/3.2.0-develop.1...v3.2.0-develop.8",
+    "published_at": "2026-01-15T04:24:58Z",
+    "prerelease": true,
+    "draft": false,
+    "assets": [
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz",
+        "digest": "sha256:7e600f422ad9de8aba5ad7de8a7a217c7ba6464321df1bfe2e6b954a210e4288",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz",
+        "digest": "sha256:609aa587af8d7242b6fc7adbe88e1741f747ca90297e387079170d5e6ff8a7da",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz",
+        "digest": "sha256:edd6bce36455201f11847266b63f2f523a48c5917ce2d37ede52612dfa4d5828",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz",
+        "digest": "sha256:3cf7b6de34e0ea9008e76bcba7668c39e7cb70ba4ac27cc795a19983faa5f4c6",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz",
+        "digest": "sha256:e5c57131d0d87574edbab3144f65cb8c1dd5dfe139cf293f4778eece8a63a348",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz",
+        "digest": "sha256:697facd9727ae84a12dcf2e260e5e7f83112965801d070aab4a1042dd08d1236",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip",
+        "digest": "sha256:6fb730e35ef05464e3e1427ac121a16f9b4541ef54fbe188b0cee7353ee5d7de",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz",
+        "digest": "sha256:a50d4c2742e561686b43e597887dd0683a1e2fb160e1e8dfe0c46660826cb068",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip",
+        "digest": "sha256:a3721acbefbb832f8f0d9420db6054671fcf6cbe89747d048d398ff00fcf3f6c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz",
+        "digest": "sha256:060bf1fdb0fa022232847910a18744efcfc5f80bbacdb1a599612de9d45b591d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe",
+        "digest": "sha256:b9d509d9c960f3bfe7e189852c701ae10e2bf0ed4314c04855f9029f0d04cf59",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip",
+        "digest": "sha256:9155f78fffc7c3a004e708ca1f25b546e30e514a893cd1c57ba09153afb5f11d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe",
+        "digest": "sha256:7227fad4690e7ec812088b03b1efccd277a302fc8250f1ed2703eb41176a502c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip",
+        "digest": "sha256:1570702c35765cf40ef6ecb37d275f9bf91f0b7bd8f41b81ed67da2e2d2bcbee",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip"
+      }
+    ]
+  },
+  {
+    "tag_name": "v3.3.9-develop.1187",
+    "body": "## What's Changed\n* Fix: Remove Duplicate Text in Modal by @JoyboySon in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n## New Contributors\n* @JoyboySon made their first contribution in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n**Full Changelog**: https://github.com/Whisparr/Whisparr-Eros/compare/3.2.0-develop.1...v3.2.0-develop.8",
+    "published_at": "2026-01-15T04:24:58Z",
+    "prerelease": true,
+    "draft": false,
+    "assets": [
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz",
+        "digest": "sha256:7e600f422ad9de8aba5ad7de8a7a217c7ba6464321df1bfe2e6b954a210e4288",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz",
+        "digest": "sha256:609aa587af8d7242b6fc7adbe88e1741f747ca90297e387079170d5e6ff8a7da",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz",
+        "digest": "sha256:edd6bce36455201f11847266b63f2f523a48c5917ce2d37ede52612dfa4d5828",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz",
+        "digest": "sha256:3cf7b6de34e0ea9008e76bcba7668c39e7cb70ba4ac27cc795a19983faa5f4c6",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz",
+        "digest": "sha256:e5c57131d0d87574edbab3144f65cb8c1dd5dfe139cf293f4778eece8a63a348",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz",
+        "digest": "sha256:697facd9727ae84a12dcf2e260e5e7f83112965801d070aab4a1042dd08d1236",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip",
+        "digest": "sha256:6fb730e35ef05464e3e1427ac121a16f9b4541ef54fbe188b0cee7353ee5d7de",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz",
+        "digest": "sha256:a50d4c2742e561686b43e597887dd0683a1e2fb160e1e8dfe0c46660826cb068",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip",
+        "digest": "sha256:a3721acbefbb832f8f0d9420db6054671fcf6cbe89747d048d398ff00fcf3f6c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz",
+        "digest": "sha256:060bf1fdb0fa022232847910a18744efcfc5f80bbacdb1a599612de9d45b591d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe",
+        "digest": "sha256:b9d509d9c960f3bfe7e189852c701ae10e2bf0ed4314c04855f9029f0d04cf59",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip",
+        "digest": "sha256:9155f78fffc7c3a004e708ca1f25b546e30e514a893cd1c57ba09153afb5f11d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe",
+        "digest": "sha256:7227fad4690e7ec812088b03b1efccd277a302fc8250f1ed2703eb41176a502c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip",
+        "digest": "sha256:1570702c35765cf40ef6ecb37d275f9bf91f0b7bd8f41b81ed67da2e2d2bcbee",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip"
+      }
+    ]
+  },
+  {
+    "tag_name": "v3.3.9-develop.1186",
+    "body": "## What's Changed\n* Fix: Remove Duplicate Text in Modal by @JoyboySon in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n## New Contributors\n* @JoyboySon made their first contribution in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n**Full Changelog**: https://github.com/Whisparr/Whisparr-Eros/compare/3.2.0-develop.1...v3.2.0-develop.8",
+    "published_at": "2026-01-15T04:24:58Z",
+    "prerelease": true,
+    "draft": false,
+    "assets": [
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz",
+        "digest": "sha256:7e600f422ad9de8aba5ad7de8a7a217c7ba6464321df1bfe2e6b954a210e4288",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz",
+        "digest": "sha256:609aa587af8d7242b6fc7adbe88e1741f747ca90297e387079170d5e6ff8a7da",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz",
+        "digest": "sha256:edd6bce36455201f11847266b63f2f523a48c5917ce2d37ede52612dfa4d5828",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz",
+        "digest": "sha256:3cf7b6de34e0ea9008e76bcba7668c39e7cb70ba4ac27cc795a19983faa5f4c6",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz",
+        "digest": "sha256:e5c57131d0d87574edbab3144f65cb8c1dd5dfe139cf293f4778eece8a63a348",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz",
+        "digest": "sha256:697facd9727ae84a12dcf2e260e5e7f83112965801d070aab4a1042dd08d1236",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip",
+        "digest": "sha256:6fb730e35ef05464e3e1427ac121a16f9b4541ef54fbe188b0cee7353ee5d7de",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz",
+        "digest": "sha256:a50d4c2742e561686b43e597887dd0683a1e2fb160e1e8dfe0c46660826cb068",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip",
+        "digest": "sha256:a3721acbefbb832f8f0d9420db6054671fcf6cbe89747d048d398ff00fcf3f6c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz",
+        "digest": "sha256:060bf1fdb0fa022232847910a18744efcfc5f80bbacdb1a599612de9d45b591d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe",
+        "digest": "sha256:b9d509d9c960f3bfe7e189852c701ae10e2bf0ed4314c04855f9029f0d04cf59",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip",
+        "digest": "sha256:9155f78fffc7c3a004e708ca1f25b546e30e514a893cd1c57ba09153afb5f11d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe",
+        "digest": "sha256:7227fad4690e7ec812088b03b1efccd277a302fc8250f1ed2703eb41176a502c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip",
+        "digest": "sha256:1570702c35765cf40ef6ecb37d275f9bf91f0b7bd8f41b81ed67da2e2d2bcbee",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip"
+      }
+    ]
+  },
+  {
+    "tag_name": "v3.3.9-develop.1185",
+    "body": "## What's Changed\n* Fix: Remove Duplicate Text in Modal by @JoyboySon in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n## New Contributors\n* @JoyboySon made their first contribution in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n**Full Changelog**: https://github.com/Whisparr/Whisparr-Eros/compare/3.2.0-develop.1...v3.2.0-develop.8",
+    "published_at": "2026-01-15T04:24:58Z",
+    "prerelease": true,
+    "draft": false,
+    "assets": [
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz",
+        "digest": "sha256:7e600f422ad9de8aba5ad7de8a7a217c7ba6464321df1bfe2e6b954a210e4288",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz",
+        "digest": "sha256:609aa587af8d7242b6fc7adbe88e1741f747ca90297e387079170d5e6ff8a7da",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz",
+        "digest": "sha256:edd6bce36455201f11847266b63f2f523a48c5917ce2d37ede52612dfa4d5828",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz",
+        "digest": "sha256:3cf7b6de34e0ea9008e76bcba7668c39e7cb70ba4ac27cc795a19983faa5f4c6",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz",
+        "digest": "sha256:e5c57131d0d87574edbab3144f65cb8c1dd5dfe139cf293f4778eece8a63a348",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz",
+        "digest": "sha256:697facd9727ae84a12dcf2e260e5e7f83112965801d070aab4a1042dd08d1236",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip",
+        "digest": "sha256:6fb730e35ef05464e3e1427ac121a16f9b4541ef54fbe188b0cee7353ee5d7de",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz",
+        "digest": "sha256:a50d4c2742e561686b43e597887dd0683a1e2fb160e1e8dfe0c46660826cb068",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip",
+        "digest": "sha256:a3721acbefbb832f8f0d9420db6054671fcf6cbe89747d048d398ff00fcf3f6c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz",
+        "digest": "sha256:060bf1fdb0fa022232847910a18744efcfc5f80bbacdb1a599612de9d45b591d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe",
+        "digest": "sha256:b9d509d9c960f3bfe7e189852c701ae10e2bf0ed4314c04855f9029f0d04cf59",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip",
+        "digest": "sha256:9155f78fffc7c3a004e708ca1f25b546e30e514a893cd1c57ba09153afb5f11d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe",
+        "digest": "sha256:7227fad4690e7ec812088b03b1efccd277a302fc8250f1ed2703eb41176a502c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip",
+        "digest": "sha256:1570702c35765cf40ef6ecb37d275f9bf91f0b7bd8f41b81ed67da2e2d2bcbee",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip"
+      }
+    ]
+  },
+  {
+    "tag_name": "v3.3.9-develop.1184",
+    "body": "## What's Changed\n* Fix: Remove Duplicate Text in Modal by @JoyboySon in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n## New Contributors\n* @JoyboySon made their first contribution in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n**Full Changelog**: https://github.com/Whisparr/Whisparr-Eros/compare/3.2.0-develop.1...v3.2.0-develop.8",
+    "published_at": "2026-01-15T04:24:58Z",
+    "prerelease": true,
+    "draft": false,
+    "assets": [
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz",
+        "digest": "sha256:7e600f422ad9de8aba5ad7de8a7a217c7ba6464321df1bfe2e6b954a210e4288",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz",
+        "digest": "sha256:609aa587af8d7242b6fc7adbe88e1741f747ca90297e387079170d5e6ff8a7da",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz",
+        "digest": "sha256:edd6bce36455201f11847266b63f2f523a48c5917ce2d37ede52612dfa4d5828",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz",
+        "digest": "sha256:3cf7b6de34e0ea9008e76bcba7668c39e7cb70ba4ac27cc795a19983faa5f4c6",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz",
+        "digest": "sha256:e5c57131d0d87574edbab3144f65cb8c1dd5dfe139cf293f4778eece8a63a348",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz",
+        "digest": "sha256:697facd9727ae84a12dcf2e260e5e7f83112965801d070aab4a1042dd08d1236",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip",
+        "digest": "sha256:6fb730e35ef05464e3e1427ac121a16f9b4541ef54fbe188b0cee7353ee5d7de",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz",
+        "digest": "sha256:a50d4c2742e561686b43e597887dd0683a1e2fb160e1e8dfe0c46660826cb068",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip",
+        "digest": "sha256:a3721acbefbb832f8f0d9420db6054671fcf6cbe89747d048d398ff00fcf3f6c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz",
+        "digest": "sha256:060bf1fdb0fa022232847910a18744efcfc5f80bbacdb1a599612de9d45b591d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe",
+        "digest": "sha256:b9d509d9c960f3bfe7e189852c701ae10e2bf0ed4314c04855f9029f0d04cf59",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip",
+        "digest": "sha256:9155f78fffc7c3a004e708ca1f25b546e30e514a893cd1c57ba09153afb5f11d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe",
+        "digest": "sha256:7227fad4690e7ec812088b03b1efccd277a302fc8250f1ed2703eb41176a502c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip",
+        "digest": "sha256:1570702c35765cf40ef6ecb37d275f9bf91f0b7bd8f41b81ed67da2e2d2bcbee",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip"
+      }
+    ]
+  },
+  {
+    "tag_name": "v3.3.9-develop.1183",
+    "body": "## What's Changed\n* Fix: Remove Duplicate Text in Modal by @JoyboySon in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n## New Contributors\n* @JoyboySon made their first contribution in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n**Full Changelog**: https://github.com/Whisparr/Whisparr-Eros/compare/3.2.0-develop.1...v3.2.0-develop.8",
+    "published_at": "2026-01-15T04:24:58Z",
+    "prerelease": true,
+    "draft": false,
+    "assets": [
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz",
+        "digest": "sha256:7e600f422ad9de8aba5ad7de8a7a217c7ba6464321df1bfe2e6b954a210e4288",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz",
+        "digest": "sha256:609aa587af8d7242b6fc7adbe88e1741f747ca90297e387079170d5e6ff8a7da",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz",
+        "digest": "sha256:edd6bce36455201f11847266b63f2f523a48c5917ce2d37ede52612dfa4d5828",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz",
+        "digest": "sha256:3cf7b6de34e0ea9008e76bcba7668c39e7cb70ba4ac27cc795a19983faa5f4c6",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz",
+        "digest": "sha256:e5c57131d0d87574edbab3144f65cb8c1dd5dfe139cf293f4778eece8a63a348",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz",
+        "digest": "sha256:697facd9727ae84a12dcf2e260e5e7f83112965801d070aab4a1042dd08d1236",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip",
+        "digest": "sha256:6fb730e35ef05464e3e1427ac121a16f9b4541ef54fbe188b0cee7353ee5d7de",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz",
+        "digest": "sha256:a50d4c2742e561686b43e597887dd0683a1e2fb160e1e8dfe0c46660826cb068",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip",
+        "digest": "sha256:a3721acbefbb832f8f0d9420db6054671fcf6cbe89747d048d398ff00fcf3f6c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz",
+        "digest": "sha256:060bf1fdb0fa022232847910a18744efcfc5f80bbacdb1a599612de9d45b591d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe",
+        "digest": "sha256:b9d509d9c960f3bfe7e189852c701ae10e2bf0ed4314c04855f9029f0d04cf59",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip",
+        "digest": "sha256:9155f78fffc7c3a004e708ca1f25b546e30e514a893cd1c57ba09153afb5f11d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe",
+        "digest": "sha256:7227fad4690e7ec812088b03b1efccd277a302fc8250f1ed2703eb41176a502c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip",
+        "digest": "sha256:1570702c35765cf40ef6ecb37d275f9bf91f0b7bd8f41b81ed67da2e2d2bcbee",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip"
+      }
+    ]
+  },
+  {
+    "tag_name": "v3.3.9-develop.1182",
+    "body": "## What's Changed\n* Fix: Remove Duplicate Text in Modal by @JoyboySon in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n## New Contributors\n* @JoyboySon made their first contribution in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n**Full Changelog**: https://github.com/Whisparr/Whisparr-Eros/compare/3.2.0-develop.1...v3.2.0-develop.8",
+    "published_at": "2026-01-15T04:24:58Z",
+    "prerelease": true,
+    "draft": false,
+    "assets": [
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz",
+        "digest": "sha256:7e600f422ad9de8aba5ad7de8a7a217c7ba6464321df1bfe2e6b954a210e4288",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz",
+        "digest": "sha256:609aa587af8d7242b6fc7adbe88e1741f747ca90297e387079170d5e6ff8a7da",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz",
+        "digest": "sha256:edd6bce36455201f11847266b63f2f523a48c5917ce2d37ede52612dfa4d5828",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz",
+        "digest": "sha256:3cf7b6de34e0ea9008e76bcba7668c39e7cb70ba4ac27cc795a19983faa5f4c6",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz",
+        "digest": "sha256:e5c57131d0d87574edbab3144f65cb8c1dd5dfe139cf293f4778eece8a63a348",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz",
+        "digest": "sha256:697facd9727ae84a12dcf2e260e5e7f83112965801d070aab4a1042dd08d1236",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip",
+        "digest": "sha256:6fb730e35ef05464e3e1427ac121a16f9b4541ef54fbe188b0cee7353ee5d7de",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz",
+        "digest": "sha256:a50d4c2742e561686b43e597887dd0683a1e2fb160e1e8dfe0c46660826cb068",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip",
+        "digest": "sha256:a3721acbefbb832f8f0d9420db6054671fcf6cbe89747d048d398ff00fcf3f6c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz",
+        "digest": "sha256:060bf1fdb0fa022232847910a18744efcfc5f80bbacdb1a599612de9d45b591d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe",
+        "digest": "sha256:b9d509d9c960f3bfe7e189852c701ae10e2bf0ed4314c04855f9029f0d04cf59",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip",
+        "digest": "sha256:9155f78fffc7c3a004e708ca1f25b546e30e514a893cd1c57ba09153afb5f11d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe",
+        "digest": "sha256:7227fad4690e7ec812088b03b1efccd277a302fc8250f1ed2703eb41176a502c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip",
+        "digest": "sha256:1570702c35765cf40ef6ecb37d275f9bf91f0b7bd8f41b81ed67da2e2d2bcbee",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip"
+      }
+    ]
+  },
+  {
+    "tag_name": "v3.3.9-develop.1181",
+    "body": "## What's Changed\n* Fix: Remove Duplicate Text in Modal by @JoyboySon in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n## New Contributors\n* @JoyboySon made their first contribution in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n**Full Changelog**: https://github.com/Whisparr/Whisparr-Eros/compare/3.2.0-develop.1...v3.2.0-develop.8",
+    "published_at": "2026-01-15T04:24:58Z",
+    "prerelease": true,
+    "draft": false,
+    "assets": [
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz",
+        "digest": "sha256:7e600f422ad9de8aba5ad7de8a7a217c7ba6464321df1bfe2e6b954a210e4288",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz",
+        "digest": "sha256:609aa587af8d7242b6fc7adbe88e1741f747ca90297e387079170d5e6ff8a7da",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz",
+        "digest": "sha256:edd6bce36455201f11847266b63f2f523a48c5917ce2d37ede52612dfa4d5828",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz",
+        "digest": "sha256:3cf7b6de34e0ea9008e76bcba7668c39e7cb70ba4ac27cc795a19983faa5f4c6",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz",
+        "digest": "sha256:e5c57131d0d87574edbab3144f65cb8c1dd5dfe139cf293f4778eece8a63a348",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz",
+        "digest": "sha256:697facd9727ae84a12dcf2e260e5e7f83112965801d070aab4a1042dd08d1236",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip",
+        "digest": "sha256:6fb730e35ef05464e3e1427ac121a16f9b4541ef54fbe188b0cee7353ee5d7de",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz",
+        "digest": "sha256:a50d4c2742e561686b43e597887dd0683a1e2fb160e1e8dfe0c46660826cb068",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip",
+        "digest": "sha256:a3721acbefbb832f8f0d9420db6054671fcf6cbe89747d048d398ff00fcf3f6c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz",
+        "digest": "sha256:060bf1fdb0fa022232847910a18744efcfc5f80bbacdb1a599612de9d45b591d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe",
+        "digest": "sha256:b9d509d9c960f3bfe7e189852c701ae10e2bf0ed4314c04855f9029f0d04cf59",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip",
+        "digest": "sha256:9155f78fffc7c3a004e708ca1f25b546e30e514a893cd1c57ba09153afb5f11d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe",
+        "digest": "sha256:7227fad4690e7ec812088b03b1efccd277a302fc8250f1ed2703eb41176a502c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip",
+        "digest": "sha256:1570702c35765cf40ef6ecb37d275f9bf91f0b7bd8f41b81ed67da2e2d2bcbee",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip"
+      }
+    ]
+  },
+  {
+    "tag_name": "v3.3.9-develop.1180",
+    "body": "## What's Changed\n* Fix: Remove Duplicate Text in Modal by @JoyboySon in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n## New Contributors\n* @JoyboySon made their first contribution in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n**Full Changelog**: https://github.com/Whisparr/Whisparr-Eros/compare/3.2.0-develop.1...v3.2.0-develop.8",
+    "published_at": "2026-01-15T04:24:58Z",
+    "prerelease": true,
+    "draft": false,
+    "assets": [
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz",
+        "digest": "sha256:7e600f422ad9de8aba5ad7de8a7a217c7ba6464321df1bfe2e6b954a210e4288",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz",
+        "digest": "sha256:609aa587af8d7242b6fc7adbe88e1741f747ca90297e387079170d5e6ff8a7da",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz",
+        "digest": "sha256:edd6bce36455201f11847266b63f2f523a48c5917ce2d37ede52612dfa4d5828",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz",
+        "digest": "sha256:3cf7b6de34e0ea9008e76bcba7668c39e7cb70ba4ac27cc795a19983faa5f4c6",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz",
+        "digest": "sha256:e5c57131d0d87574edbab3144f65cb8c1dd5dfe139cf293f4778eece8a63a348",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz",
+        "digest": "sha256:697facd9727ae84a12dcf2e260e5e7f83112965801d070aab4a1042dd08d1236",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip",
+        "digest": "sha256:6fb730e35ef05464e3e1427ac121a16f9b4541ef54fbe188b0cee7353ee5d7de",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz",
+        "digest": "sha256:a50d4c2742e561686b43e597887dd0683a1e2fb160e1e8dfe0c46660826cb068",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip",
+        "digest": "sha256:a3721acbefbb832f8f0d9420db6054671fcf6cbe89747d048d398ff00fcf3f6c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz",
+        "digest": "sha256:060bf1fdb0fa022232847910a18744efcfc5f80bbacdb1a599612de9d45b591d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe",
+        "digest": "sha256:b9d509d9c960f3bfe7e189852c701ae10e2bf0ed4314c04855f9029f0d04cf59",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip",
+        "digest": "sha256:9155f78fffc7c3a004e708ca1f25b546e30e514a893cd1c57ba09153afb5f11d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe",
+        "digest": "sha256:7227fad4690e7ec812088b03b1efccd277a302fc8250f1ed2703eb41176a502c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip",
+        "digest": "sha256:1570702c35765cf40ef6ecb37d275f9bf91f0b7bd8f41b81ed67da2e2d2bcbee",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip"
+      }
+    ]
+  },
+  {
+    "tag_name": "v3.3.9-develop.1179",
+    "body": "## What's Changed\n* Fix: Remove Duplicate Text in Modal by @JoyboySon in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n## New Contributors\n* @JoyboySon made their first contribution in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n**Full Changelog**: https://github.com/Whisparr/Whisparr-Eros/compare/3.2.0-develop.1...v3.2.0-develop.8",
+    "published_at": "2026-01-15T04:24:58Z",
+    "prerelease": true,
+    "draft": false,
+    "assets": [
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz",
+        "digest": "sha256:7e600f422ad9de8aba5ad7de8a7a217c7ba6464321df1bfe2e6b954a210e4288",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz",
+        "digest": "sha256:609aa587af8d7242b6fc7adbe88e1741f747ca90297e387079170d5e6ff8a7da",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz",
+        "digest": "sha256:edd6bce36455201f11847266b63f2f523a48c5917ce2d37ede52612dfa4d5828",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz",
+        "digest": "sha256:3cf7b6de34e0ea9008e76bcba7668c39e7cb70ba4ac27cc795a19983faa5f4c6",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz",
+        "digest": "sha256:e5c57131d0d87574edbab3144f65cb8c1dd5dfe139cf293f4778eece8a63a348",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz",
+        "digest": "sha256:697facd9727ae84a12dcf2e260e5e7f83112965801d070aab4a1042dd08d1236",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip",
+        "digest": "sha256:6fb730e35ef05464e3e1427ac121a16f9b4541ef54fbe188b0cee7353ee5d7de",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz",
+        "digest": "sha256:a50d4c2742e561686b43e597887dd0683a1e2fb160e1e8dfe0c46660826cb068",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip",
+        "digest": "sha256:a3721acbefbb832f8f0d9420db6054671fcf6cbe89747d048d398ff00fcf3f6c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz",
+        "digest": "sha256:060bf1fdb0fa022232847910a18744efcfc5f80bbacdb1a599612de9d45b591d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe",
+        "digest": "sha256:b9d509d9c960f3bfe7e189852c701ae10e2bf0ed4314c04855f9029f0d04cf59",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip",
+        "digest": "sha256:9155f78fffc7c3a004e708ca1f25b546e30e514a893cd1c57ba09153afb5f11d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe",
+        "digest": "sha256:7227fad4690e7ec812088b03b1efccd277a302fc8250f1ed2703eb41176a502c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip",
+        "digest": "sha256:1570702c35765cf40ef6ecb37d275f9bf91f0b7bd8f41b81ed67da2e2d2bcbee",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip"
+      }
+    ]
+  },
+  {
+    "tag_name": "v3.3.9-develop.1178",
+    "body": "## What's Changed\n* Fix: Remove Duplicate Text in Modal by @JoyboySon in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n## New Contributors\n* @JoyboySon made their first contribution in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n**Full Changelog**: https://github.com/Whisparr/Whisparr-Eros/compare/3.2.0-develop.1...v3.2.0-develop.8",
+    "published_at": "2026-01-15T04:24:58Z",
+    "prerelease": true,
+    "draft": false,
+    "assets": [
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz",
+        "digest": "sha256:7e600f422ad9de8aba5ad7de8a7a217c7ba6464321df1bfe2e6b954a210e4288",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz",
+        "digest": "sha256:609aa587af8d7242b6fc7adbe88e1741f747ca90297e387079170d5e6ff8a7da",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz",
+        "digest": "sha256:edd6bce36455201f11847266b63f2f523a48c5917ce2d37ede52612dfa4d5828",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz",
+        "digest": "sha256:3cf7b6de34e0ea9008e76bcba7668c39e7cb70ba4ac27cc795a19983faa5f4c6",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz",
+        "digest": "sha256:e5c57131d0d87574edbab3144f65cb8c1dd5dfe139cf293f4778eece8a63a348",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz",
+        "digest": "sha256:697facd9727ae84a12dcf2e260e5e7f83112965801d070aab4a1042dd08d1236",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip",
+        "digest": "sha256:6fb730e35ef05464e3e1427ac121a16f9b4541ef54fbe188b0cee7353ee5d7de",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz",
+        "digest": "sha256:a50d4c2742e561686b43e597887dd0683a1e2fb160e1e8dfe0c46660826cb068",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip",
+        "digest": "sha256:a3721acbefbb832f8f0d9420db6054671fcf6cbe89747d048d398ff00fcf3f6c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz",
+        "digest": "sha256:060bf1fdb0fa022232847910a18744efcfc5f80bbacdb1a599612de9d45b591d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe",
+        "digest": "sha256:b9d509d9c960f3bfe7e189852c701ae10e2bf0ed4314c04855f9029f0d04cf59",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip",
+        "digest": "sha256:9155f78fffc7c3a004e708ca1f25b546e30e514a893cd1c57ba09153afb5f11d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe",
+        "digest": "sha256:7227fad4690e7ec812088b03b1efccd277a302fc8250f1ed2703eb41176a502c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip",
+        "digest": "sha256:1570702c35765cf40ef6ecb37d275f9bf91f0b7bd8f41b81ed67da2e2d2bcbee",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip"
+      }
+    ]
+  },
+  {
+    "tag_name": "v3.3.9-develop.1177",
+    "body": "## What's Changed\n* Fix: Remove Duplicate Text in Modal by @JoyboySon in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n## New Contributors\n* @JoyboySon made their first contribution in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n**Full Changelog**: https://github.com/Whisparr/Whisparr-Eros/compare/3.2.0-develop.1...v3.2.0-develop.8",
+    "published_at": "2026-01-15T04:24:58Z",
+    "prerelease": true,
+    "draft": false,
+    "assets": [
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz",
+        "digest": "sha256:7e600f422ad9de8aba5ad7de8a7a217c7ba6464321df1bfe2e6b954a210e4288",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz",
+        "digest": "sha256:609aa587af8d7242b6fc7adbe88e1741f747ca90297e387079170d5e6ff8a7da",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz",
+        "digest": "sha256:edd6bce36455201f11847266b63f2f523a48c5917ce2d37ede52612dfa4d5828",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz",
+        "digest": "sha256:3cf7b6de34e0ea9008e76bcba7668c39e7cb70ba4ac27cc795a19983faa5f4c6",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz",
+        "digest": "sha256:e5c57131d0d87574edbab3144f65cb8c1dd5dfe139cf293f4778eece8a63a348",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz",
+        "digest": "sha256:697facd9727ae84a12dcf2e260e5e7f83112965801d070aab4a1042dd08d1236",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip",
+        "digest": "sha256:6fb730e35ef05464e3e1427ac121a16f9b4541ef54fbe188b0cee7353ee5d7de",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz",
+        "digest": "sha256:a50d4c2742e561686b43e597887dd0683a1e2fb160e1e8dfe0c46660826cb068",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip",
+        "digest": "sha256:a3721acbefbb832f8f0d9420db6054671fcf6cbe89747d048d398ff00fcf3f6c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz",
+        "digest": "sha256:060bf1fdb0fa022232847910a18744efcfc5f80bbacdb1a599612de9d45b591d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe",
+        "digest": "sha256:b9d509d9c960f3bfe7e189852c701ae10e2bf0ed4314c04855f9029f0d04cf59",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip",
+        "digest": "sha256:9155f78fffc7c3a004e708ca1f25b546e30e514a893cd1c57ba09153afb5f11d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe",
+        "digest": "sha256:7227fad4690e7ec812088b03b1efccd277a302fc8250f1ed2703eb41176a502c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip",
+        "digest": "sha256:1570702c35765cf40ef6ecb37d275f9bf91f0b7bd8f41b81ed67da2e2d2bcbee",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip"
+      }
+    ]
+  },
+  {
+    "tag_name": "v3.3.9-develop.1176",
+    "body": "## What's Changed\n* Fix: Remove Duplicate Text in Modal by @JoyboySon in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n## New Contributors\n* @JoyboySon made their first contribution in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n**Full Changelog**: https://github.com/Whisparr/Whisparr-Eros/compare/3.2.0-develop.1...v3.2.0-develop.8",
+    "published_at": "2026-01-15T04:24:58Z",
+    "prerelease": true,
+    "draft": false,
+    "assets": [
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz",
+        "digest": "sha256:7e600f422ad9de8aba5ad7de8a7a217c7ba6464321df1bfe2e6b954a210e4288",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz",
+        "digest": "sha256:609aa587af8d7242b6fc7adbe88e1741f747ca90297e387079170d5e6ff8a7da",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz",
+        "digest": "sha256:edd6bce36455201f11847266b63f2f523a48c5917ce2d37ede52612dfa4d5828",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz",
+        "digest": "sha256:3cf7b6de34e0ea9008e76bcba7668c39e7cb70ba4ac27cc795a19983faa5f4c6",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz",
+        "digest": "sha256:e5c57131d0d87574edbab3144f65cb8c1dd5dfe139cf293f4778eece8a63a348",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz",
+        "digest": "sha256:697facd9727ae84a12dcf2e260e5e7f83112965801d070aab4a1042dd08d1236",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip",
+        "digest": "sha256:6fb730e35ef05464e3e1427ac121a16f9b4541ef54fbe188b0cee7353ee5d7de",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz",
+        "digest": "sha256:a50d4c2742e561686b43e597887dd0683a1e2fb160e1e8dfe0c46660826cb068",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip",
+        "digest": "sha256:a3721acbefbb832f8f0d9420db6054671fcf6cbe89747d048d398ff00fcf3f6c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz",
+        "digest": "sha256:060bf1fdb0fa022232847910a18744efcfc5f80bbacdb1a599612de9d45b591d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe",
+        "digest": "sha256:b9d509d9c960f3bfe7e189852c701ae10e2bf0ed4314c04855f9029f0d04cf59",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip",
+        "digest": "sha256:9155f78fffc7c3a004e708ca1f25b546e30e514a893cd1c57ba09153afb5f11d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe",
+        "digest": "sha256:7227fad4690e7ec812088b03b1efccd277a302fc8250f1ed2703eb41176a502c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip",
+        "digest": "sha256:1570702c35765cf40ef6ecb37d275f9bf91f0b7bd8f41b81ed67da2e2d2bcbee",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip"
+      }
+    ]
+  },
+  {
+    "tag_name": "v3.3.9-develop.1175",
+    "body": "## What's Changed\n* Fix: Remove Duplicate Text in Modal by @JoyboySon in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n## New Contributors\n* @JoyboySon made their first contribution in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n**Full Changelog**: https://github.com/Whisparr/Whisparr-Eros/compare/3.2.0-develop.1...v3.2.0-develop.8",
+    "published_at": "2026-01-15T04:24:58Z",
+    "prerelease": true,
+    "draft": false,
+    "assets": [
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz",
+        "digest": "sha256:7e600f422ad9de8aba5ad7de8a7a217c7ba6464321df1bfe2e6b954a210e4288",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz",
+        "digest": "sha256:609aa587af8d7242b6fc7adbe88e1741f747ca90297e387079170d5e6ff8a7da",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz",
+        "digest": "sha256:edd6bce36455201f11847266b63f2f523a48c5917ce2d37ede52612dfa4d5828",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz",
+        "digest": "sha256:3cf7b6de34e0ea9008e76bcba7668c39e7cb70ba4ac27cc795a19983faa5f4c6",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz",
+        "digest": "sha256:e5c57131d0d87574edbab3144f65cb8c1dd5dfe139cf293f4778eece8a63a348",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz",
+        "digest": "sha256:697facd9727ae84a12dcf2e260e5e7f83112965801d070aab4a1042dd08d1236",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip",
+        "digest": "sha256:6fb730e35ef05464e3e1427ac121a16f9b4541ef54fbe188b0cee7353ee5d7de",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz",
+        "digest": "sha256:a50d4c2742e561686b43e597887dd0683a1e2fb160e1e8dfe0c46660826cb068",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip",
+        "digest": "sha256:a3721acbefbb832f8f0d9420db6054671fcf6cbe89747d048d398ff00fcf3f6c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz",
+        "digest": "sha256:060bf1fdb0fa022232847910a18744efcfc5f80bbacdb1a599612de9d45b591d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe",
+        "digest": "sha256:b9d509d9c960f3bfe7e189852c701ae10e2bf0ed4314c04855f9029f0d04cf59",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip",
+        "digest": "sha256:9155f78fffc7c3a004e708ca1f25b546e30e514a893cd1c57ba09153afb5f11d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe",
+        "digest": "sha256:7227fad4690e7ec812088b03b1efccd277a302fc8250f1ed2703eb41176a502c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip",
+        "digest": "sha256:1570702c35765cf40ef6ecb37d275f9bf91f0b7bd8f41b81ed67da2e2d2bcbee",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip"
+      }
+    ]
+  },
+  {
+    "tag_name": "v3.3.9-develop.1174",
+    "body": "## What's Changed\n* Fix: Remove Duplicate Text in Modal by @JoyboySon in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n## New Contributors\n* @JoyboySon made their first contribution in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n**Full Changelog**: https://github.com/Whisparr/Whisparr-Eros/compare/3.2.0-develop.1...v3.2.0-develop.8",
+    "published_at": "2026-01-15T04:24:58Z",
+    "prerelease": true,
+    "draft": false,
+    "assets": [
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz",
+        "digest": "sha256:7e600f422ad9de8aba5ad7de8a7a217c7ba6464321df1bfe2e6b954a210e4288",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz",
+        "digest": "sha256:609aa587af8d7242b6fc7adbe88e1741f747ca90297e387079170d5e6ff8a7da",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz",
+        "digest": "sha256:edd6bce36455201f11847266b63f2f523a48c5917ce2d37ede52612dfa4d5828",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz",
+        "digest": "sha256:3cf7b6de34e0ea9008e76bcba7668c39e7cb70ba4ac27cc795a19983faa5f4c6",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz",
+        "digest": "sha256:e5c57131d0d87574edbab3144f65cb8c1dd5dfe139cf293f4778eece8a63a348",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz",
+        "digest": "sha256:697facd9727ae84a12dcf2e260e5e7f83112965801d070aab4a1042dd08d1236",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip",
+        "digest": "sha256:6fb730e35ef05464e3e1427ac121a16f9b4541ef54fbe188b0cee7353ee5d7de",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz",
+        "digest": "sha256:a50d4c2742e561686b43e597887dd0683a1e2fb160e1e8dfe0c46660826cb068",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip",
+        "digest": "sha256:a3721acbefbb832f8f0d9420db6054671fcf6cbe89747d048d398ff00fcf3f6c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz",
+        "digest": "sha256:060bf1fdb0fa022232847910a18744efcfc5f80bbacdb1a599612de9d45b591d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe",
+        "digest": "sha256:b9d509d9c960f3bfe7e189852c701ae10e2bf0ed4314c04855f9029f0d04cf59",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip",
+        "digest": "sha256:9155f78fffc7c3a004e708ca1f25b546e30e514a893cd1c57ba09153afb5f11d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe",
+        "digest": "sha256:7227fad4690e7ec812088b03b1efccd277a302fc8250f1ed2703eb41176a502c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip",
+        "digest": "sha256:1570702c35765cf40ef6ecb37d275f9bf91f0b7bd8f41b81ed67da2e2d2bcbee",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip"
+      }
+    ]
+  },
+  {
+    "tag_name": "v3.3.9-develop.1173",
+    "body": "## What's Changed\n* Fix: Remove Duplicate Text in Modal by @JoyboySon in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n## New Contributors\n* @JoyboySon made their first contribution in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n**Full Changelog**: https://github.com/Whisparr/Whisparr-Eros/compare/3.2.0-develop.1...v3.2.0-develop.8",
+    "published_at": "2026-01-15T04:24:58Z",
+    "prerelease": true,
+    "draft": false,
+    "assets": [
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz",
+        "digest": "sha256:7e600f422ad9de8aba5ad7de8a7a217c7ba6464321df1bfe2e6b954a210e4288",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz",
+        "digest": "sha256:609aa587af8d7242b6fc7adbe88e1741f747ca90297e387079170d5e6ff8a7da",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz",
+        "digest": "sha256:edd6bce36455201f11847266b63f2f523a48c5917ce2d37ede52612dfa4d5828",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz",
+        "digest": "sha256:3cf7b6de34e0ea9008e76bcba7668c39e7cb70ba4ac27cc795a19983faa5f4c6",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz",
+        "digest": "sha256:e5c57131d0d87574edbab3144f65cb8c1dd5dfe139cf293f4778eece8a63a348",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz",
+        "digest": "sha256:697facd9727ae84a12dcf2e260e5e7f83112965801d070aab4a1042dd08d1236",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip",
+        "digest": "sha256:6fb730e35ef05464e3e1427ac121a16f9b4541ef54fbe188b0cee7353ee5d7de",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz",
+        "digest": "sha256:a50d4c2742e561686b43e597887dd0683a1e2fb160e1e8dfe0c46660826cb068",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip",
+        "digest": "sha256:a3721acbefbb832f8f0d9420db6054671fcf6cbe89747d048d398ff00fcf3f6c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz",
+        "digest": "sha256:060bf1fdb0fa022232847910a18744efcfc5f80bbacdb1a599612de9d45b591d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe",
+        "digest": "sha256:b9d509d9c960f3bfe7e189852c701ae10e2bf0ed4314c04855f9029f0d04cf59",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip",
+        "digest": "sha256:9155f78fffc7c3a004e708ca1f25b546e30e514a893cd1c57ba09153afb5f11d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe",
+        "digest": "sha256:7227fad4690e7ec812088b03b1efccd277a302fc8250f1ed2703eb41176a502c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip",
+        "digest": "sha256:1570702c35765cf40ef6ecb37d275f9bf91f0b7bd8f41b81ed67da2e2d2bcbee",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip"
+      }
+    ]
+  },
+  {
+    "tag_name": "v3.3.9-develop.1172",
+    "body": "## What's Changed\n* Fix: Remove Duplicate Text in Modal by @JoyboySon in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n## New Contributors\n* @JoyboySon made their first contribution in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n**Full Changelog**: https://github.com/Whisparr/Whisparr-Eros/compare/3.2.0-develop.1...v3.2.0-develop.8",
+    "published_at": "2026-01-15T04:24:58Z",
+    "prerelease": true,
+    "draft": false,
+    "assets": [
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz",
+        "digest": "sha256:7e600f422ad9de8aba5ad7de8a7a217c7ba6464321df1bfe2e6b954a210e4288",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz",
+        "digest": "sha256:609aa587af8d7242b6fc7adbe88e1741f747ca90297e387079170d5e6ff8a7da",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz",
+        "digest": "sha256:edd6bce36455201f11847266b63f2f523a48c5917ce2d37ede52612dfa4d5828",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz",
+        "digest": "sha256:3cf7b6de34e0ea9008e76bcba7668c39e7cb70ba4ac27cc795a19983faa5f4c6",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz",
+        "digest": "sha256:e5c57131d0d87574edbab3144f65cb8c1dd5dfe139cf293f4778eece8a63a348",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz",
+        "digest": "sha256:697facd9727ae84a12dcf2e260e5e7f83112965801d070aab4a1042dd08d1236",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip",
+        "digest": "sha256:6fb730e35ef05464e3e1427ac121a16f9b4541ef54fbe188b0cee7353ee5d7de",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz",
+        "digest": "sha256:a50d4c2742e561686b43e597887dd0683a1e2fb160e1e8dfe0c46660826cb068",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip",
+        "digest": "sha256:a3721acbefbb832f8f0d9420db6054671fcf6cbe89747d048d398ff00fcf3f6c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz",
+        "digest": "sha256:060bf1fdb0fa022232847910a18744efcfc5f80bbacdb1a599612de9d45b591d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe",
+        "digest": "sha256:b9d509d9c960f3bfe7e189852c701ae10e2bf0ed4314c04855f9029f0d04cf59",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip",
+        "digest": "sha256:9155f78fffc7c3a004e708ca1f25b546e30e514a893cd1c57ba09153afb5f11d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe",
+        "digest": "sha256:7227fad4690e7ec812088b03b1efccd277a302fc8250f1ed2703eb41176a502c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip",
+        "digest": "sha256:1570702c35765cf40ef6ecb37d275f9bf91f0b7bd8f41b81ed67da2e2d2bcbee",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip"
+      }
+    ]
+  },
+  {
+    "tag_name": "v3.3.9-develop.1171",
+    "body": "## What's Changed\n* Fix: Remove Duplicate Text in Modal by @JoyboySon in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n## New Contributors\n* @JoyboySon made their first contribution in https://github.com/Whisparr/Whisparr-Eros/pull/3\n\n**Full Changelog**: https://github.com/Whisparr/Whisparr-Eros/compare/3.2.0-develop.1...v3.2.0-develop.8",
+    "published_at": "2026-01-15T04:24:58Z",
+    "prerelease": true,
+    "draft": false,
+    "assets": [
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz",
+        "digest": "sha256:7e600f422ad9de8aba5ad7de8a7a217c7ba6464321df1bfe2e6b954a210e4288",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.freebsd-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz",
+        "digest": "sha256:609aa587af8d7242b6fc7adbe88e1741f747ca90297e387079170d5e6ff8a7da",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz",
+        "digest": "sha256:edd6bce36455201f11847266b63f2f523a48c5917ce2d37ede52612dfa4d5828",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz",
+        "digest": "sha256:3cf7b6de34e0ea9008e76bcba7668c39e7cb70ba4ac27cc795a19983faa5f4c6",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz",
+        "digest": "sha256:e5c57131d0d87574edbab3144f65cb8c1dd5dfe139cf293f4778eece8a63a348",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-musl-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz",
+        "digest": "sha256:697facd9727ae84a12dcf2e260e5e7f83112965801d070aab4a1042dd08d1236",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.linux-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip",
+        "digest": "sha256:6fb730e35ef05464e3e1427ac121a16f9b4541ef54fbe188b0cee7353ee5d7de",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz",
+        "digest": "sha256:a50d4c2742e561686b43e597887dd0683a1e2fb160e1e8dfe0c46660826cb068",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-arm64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip",
+        "digest": "sha256:a3721acbefbb832f8f0d9420db6054671fcf6cbe89747d048d398ff00fcf3f6c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64-app.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz",
+        "digest": "sha256:060bf1fdb0fa022232847910a18744efcfc5f80bbacdb1a599612de9d45b591d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.osx-x64.tar.gz"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe",
+        "digest": "sha256:b9d509d9c960f3bfe7e189852c701ae10e2bf0ed4314c04855f9029f0d04cf59",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip",
+        "digest": "sha256:9155f78fffc7c3a004e708ca1f25b546e30e514a893cd1c57ba09153afb5f11d",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x64.zip"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe",
+        "digest": "sha256:7227fad4690e7ec812088b03b1efccd277a302fc8250f1ed2703eb41176a502c",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86-installer.exe"
+      },
+      {
+        "name": "Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip",
+        "digest": "sha256:1570702c35765cf40ef6ecb37d275f9bf91f0b7bd8f41b81ed67da2e2d2bcbee",
+        "browser_download_url": "https://github.com/Whisparr/Whisparr-Eros/releases/download/v3.2.0-develop.8/Whisparr.eros-develop.3.2.0-develop.8.win-x86.zip"
+      }
+    ]
+  }
+]

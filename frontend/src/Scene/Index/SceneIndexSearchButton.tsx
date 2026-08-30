@@ -1,27 +1,25 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { useSelect } from 'App/SelectContext';
 import { MOVIE_SEARCH } from 'Commands/commandNames';
+import { useCommandExecuting, useExecuteCommand } from 'Commands/useCommands';
 import ConfirmModal from 'Components/Modal/ConfirmModal';
 import PageToolbarButton from 'Components/Page/Toolbar/PageToolbarButton';
 import { icons, kinds } from 'Helpers/Props';
 import Movie from 'Movie/Movie';
-import { executeCommand } from 'Store/Actions/commandActions';
-import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
 import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
 
 interface SceneIndexSearchButtonProps {
   isSelectMode: boolean;
-  selectedFilterKey: string;
+  selectedFilterKey: string | number;
   items: Movie[];
 }
 
 function SceneIndexSearchButton(props: SceneIndexSearchButtonProps) {
   const { items } = props;
-  const isSearching = useSelector(createCommandExecutingSelector(MOVIE_SEARCH));
+  const isSearching = useCommandExecuting(MOVIE_SEARCH);
 
-  const dispatch = useDispatch();
+  const executeCommand = useExecuteCommand();
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
   const { isSelectMode, selectedFilterKey } = props;
@@ -50,13 +48,11 @@ function SceneIndexSearchButton(props: SceneIndexSearchButtonProps) {
   const onPress = useCallback(() => {
     setIsConfirmModalOpen(false);
 
-    dispatch(
-      executeCommand({
-        name: MOVIE_SEARCH,
-        movieIds: scenesToSearch,
-      })
-    );
-  }, [dispatch, scenesToSearch]);
+    executeCommand({
+      name: MOVIE_SEARCH,
+      movieIds: scenesToSearch,
+    });
+  }, [scenesToSearch, executeCommand]);
 
   const onConfirmPress = useCallback(() => {
     setIsConfirmModalOpen(true);

@@ -1,13 +1,9 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { createSelector } from 'reselect';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useSelect } from 'App/SelectContext';
-import AppState from 'App/State/AppState';
 import SpinnerButton from 'Components/Link/SpinnerButton';
 import PageContentFooter from 'Components/Page/PageContentFooter';
 import { kinds } from 'Helpers/Props';
-import { savePerformerEditor } from 'Store/Actions/performerActions';
-import { fetchRootFolders } from 'Store/Actions/rootFolderActions';
+import Performer from 'Performer/Performer';
 import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
 import { DeletePerformerModal } from './Delete/DeletePerformerModal';
@@ -17,34 +13,31 @@ import { useEditPerformersMutation } from './Edit/useEditPerformersModalMutation
 import TagsModal from './Tags/TagsModal';
 import styles from './PerformerIndexSelectFooter.css';
 
+// Mirrors what `EditPerformersModalContent` builds. `moviesMonitored` was
+// missing here and only survived because the modal types its callback as
+// `object`; the key was reaching the request all along.
 interface SavePayload {
   monitored?: boolean;
+  moviesMonitored?: boolean;
   qualityProfileId?: number;
   rootFolderPath?: string;
   searchOnAdd?: boolean;
 }
 
-const sceneEditorSelector = createSelector(
-  (state: AppState) => state.performers,
-  (performers) => {
-    // Keep legacy isSaving for other features like tags and delete
-    const { isSaving } = performers;
+interface PerformerIndexSelectFooterProps {
+  items: Performer[];
+}
 
-    return {
-      isSaving,
-    };
-  }
-);
-
-function PerformerIndexSelectFooter() {
-  const { isSaving: legacyIsSaving } = useSelector(sceneEditorSelector);
-
-  const dispatch = useDispatch();
+function PerformerIndexSelectFooter({
+  items,
+}: Readonly<PerformerIndexSelectFooterProps>) {
+  // `/performer/editor` serves both buttons, but they spin independently, so
+  // each gets its own mutation rather than sharing one `isPending`.
   const editMutation = useEditPerformersMutation();
+  const tagsMutation = useEditPerformersMutation();
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isTagsModalOpen, setIsTagsModalOpen] = useState(false);
-  const [isSavingTags, setIsSavingTags] = useState(false);
   const [isPerformerModalOpen, setIsPerformerModalOpen] = useState(false);
 
   const [selectState] = useSelect();
@@ -86,18 +79,15 @@ function PerformerIndexSelectFooter() {
 
   const onApplyTagsPress = useCallback(
     (tags: number[], applyTags: string) => {
-      setIsSavingTags(true);
       setIsTagsModalOpen(false);
 
-      dispatch(
-        savePerformerEditor({
-          performerIds,
-          tags,
-          applyTags,
-        })
-      );
+      tagsMutation.mutate({
+        performerIds,
+        tags,
+        applyTags: applyTags as 'add' | 'remove' | 'replace',
+      });
     },
-    [performerIds, dispatch]
+    [performerIds, tagsMutation]
   );
 
   const onDeleteModalClose = useCallback(() => {
@@ -115,17 +105,6 @@ function PerformerIndexSelectFooter() {
       onModalClose: onDeleteModalClose,
     });
 
-  useEffect(() => {
-    // Legacy reducer-based isSaving for tags operation
-    if (!legacyIsSaving) {
-      setIsSavingTags(false);
-    }
-  }, [legacyIsSaving]);
-
-  useEffect(() => {
-    dispatch(fetchRootFolders());
-  }, [dispatch]);
-
   const anySelected = selectedCount > 0;
 
   return (
@@ -141,7 +120,7 @@ function PerformerIndexSelectFooter() {
           </SpinnerButton>
 
           <SpinnerButton
-            isSpinning={legacyIsSaving && isSavingTags}
+            isSpinning={tagsMutation.isPending}
             isDisabled={!anySelected}
             onPress={onTagsPress}
           >
@@ -173,6 +152,7 @@ function PerformerIndexSelectFooter() {
       <TagsModal
         isOpen={isTagsModalOpen}
         performerIds={performerIds}
+        items={items}
         onApplyTagsPress={onApplyTagsPress}
         onModalClose={onTagsModalClose}
       />

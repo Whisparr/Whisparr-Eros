@@ -1,15 +1,16 @@
 import React, { SyntheticEvent, useCallback, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSafeForWorkMode } from 'App/safeForWorkStore';
 import { useSelect } from 'App/SelectContext';
-import AppState from 'App/State/AppState';
 import Command from 'Commands/Command';
 import { MOVIE_SEARCH, REFRESH_MOVIE } from 'Commands/commandNames';
+import { useExecuteCommand, useExecutingCommands } from 'Commands/useCommands';
 import Icon from 'Components/Icon';
 import Label from 'Components/Label';
 import IconButton from 'Components/Link/IconButton';
 import Link from 'Components/Link/Link';
 import SpinnerIconButton from 'Components/Link/SpinnerIconButton';
 import MovieTagList from 'Components/MovieTagList';
+import { CommonPosterOptions } from 'Components/PosterOptionsForm';
 import TmdbRating from 'Components/TmdbRating';
 import Popover from 'Components/Tooltip/Popover';
 import { icons } from 'Helpers/Props';
@@ -20,14 +21,13 @@ import MovieIndexProgressBar from 'Movie/Index/ProgressBar/MovieIndexProgressBar
 import MovieIndexPosterSelect from 'Movie/Index/Select/MovieIndexPosterSelect';
 import Movie, { Statistics } from 'Movie/Movie';
 import MoviePoster from 'Movie/MoviePoster';
-import { executeCommand } from 'Store/Actions/commandActions';
-import createExecutingCommandsSelector from 'Store/Selectors/createExecutingCommandsSelector';
-import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
+import { useQualityProfile } from 'Settings/Profiles/Quality/useQualityProfiles';
+import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import formatDate from 'Utilities/Date/formatDate';
 import getRelativeDate from 'Utilities/Date/getRelativeDate';
 import translate from 'Utilities/String/translate';
+import { useMovieIndexOption } from '../movieIndexOptionsStore';
 import MovieIndexPosterInfo from './MovieIndexPosterInfo';
-import selectPosterOptions from './selectPosterOptions';
 import styles from './MovieIndexPoster.css';
 
 interface MovieIndexPosterProps {
@@ -36,19 +36,23 @@ interface MovieIndexPosterProps {
   isSelectMode: boolean;
   posterWidth: number;
   posterHeight: number;
+  posterOptions?: CommonPosterOptions;
 }
 
-function MovieIndexPoster(props: MovieIndexPosterProps) {
-  const { movie, sortKey, isSelectMode, posterWidth, posterHeight } = props;
+function MovieIndexPoster(props: Readonly<MovieIndexPosterProps>) {
+  const {
+    movie,
+    sortKey,
+    isSelectMode,
+    posterWidth,
+    posterHeight,
+    posterOptions,
+  } = props;
   const movieId = movie.id;
 
-  const qualityProfile = useSelector((state: AppState) =>
-    state.settings.qualityProfiles.items.find(
-      (p) => p.id === movie.qualityProfileId
-    )
-  );
+  const qualityProfile = useQualityProfile(movie.qualityProfileId);
 
-  const executingCommands = useSelector(createExecutingCommandsSelector());
+  const executingCommands = useExecutingCommands();
 
   const isRefreshingMovie = executingCommands.some(
     (command: Command) =>
@@ -60,23 +64,24 @@ function MovieIndexPoster(props: MovieIndexPosterProps) {
       command.name === MOVIE_SEARCH && command.body.movieId === movieId
   );
 
-  const safeForWorkMode = useSelector(
-    (state: AppState) => state.settings.safeForWorkMode
-  );
+  const safeForWorkMode = useSafeForWorkMode();
 
+  const indexPosterOptions = useMovieIndexOption('posterOptions');
   const {
     detailedProgressBar,
     showTitle,
     showMonitored,
     showQualityProfile,
     showReleaseDate,
-    showTmdbRating,
-    showTags,
     showSearchAction,
-  } = useSelector(selectPosterOptions);
+  } = posterOptions ?? indexPosterOptions;
+  const showTmdbRating = posterOptions
+    ? false
+    : indexPosterOptions.showTmdbRating;
+  const showTags = posterOptions ? false : indexPosterOptions.showTags;
 
   const { showRelativeDates, shortDateFormat, longDateFormat, timeFormat } =
-    useSelector(createUISettingsSelector());
+    useUiSettingsValues();
 
   const {
     title,
@@ -104,28 +109,24 @@ function MovieIndexPoster(props: MovieIndexPosterProps) {
 
   const { sizeOnDisk = 0 } = statistics;
 
-  const dispatch = useDispatch();
+  const executeCommand = useExecuteCommand();
   const [hasPosterError, setHasPosterError] = useState(false);
   const [isEditMovieModalOpen, setIsEditMovieModalOpen] = useState(false);
   const [isDeleteMovieModalOpen, setIsDeleteMovieModalOpen] = useState(false);
 
   const onRefreshPress = useCallback(() => {
-    dispatch(
-      executeCommand({
-        name: REFRESH_MOVIE,
-        movieIds: [movieId],
-      })
-    );
-  }, [movieId, dispatch]);
+    executeCommand({
+      name: REFRESH_MOVIE,
+      movieIds: [movieId],
+    });
+  }, [movieId, executeCommand]);
 
   const onSearchPress = useCallback(() => {
-    dispatch(
-      executeCommand({
-        name: MOVIE_SEARCH,
-        movieIds: [movieId],
-      })
-    );
-  }, [movieId, dispatch]);
+    executeCommand({
+      name: MOVIE_SEARCH,
+      movieIds: [movieId],
+    });
+  }, [movieId, executeCommand]);
 
   const onPosterLoadError = useCallback(() => {
     setHasPosterError(true);

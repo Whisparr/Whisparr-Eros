@@ -1,8 +1,10 @@
 import classNames from 'classnames';
 import React, { useCallback, useState } from 'react';
+import { useSafeForWorkMode } from 'App/safeForWorkStore';
 import Link from 'Components/Link/Link';
 import MonitorToggleButton from 'Components/MonitorToggleButton';
 import MovieHeadshot from 'Movie/MovieHeadshot';
+import { useTogglePerformerMonitored } from 'Performer/usePerformer';
 import MovieCredit from 'typings/MovieCredit';
 import styles from '../MovieCreditPoster.css';
 
@@ -10,26 +12,22 @@ interface Props {
   credit: MovieCredit;
   posterWidth: number;
   posterHeight: number;
-  safeForWorkMode: boolean;
-  onTogglePerformerMonitored: (args: {
-    monitored: boolean;
-    moviesMonitored: boolean;
-  }) => void;
 }
 
-function MovieCastPoster({
-  credit,
-  posterWidth,
-  posterHeight,
-  safeForWorkMode,
-  onTogglePerformerMonitored,
-}: Props) {
+function MovieCastPoster({ credit, posterWidth, posterHeight }: Props) {
+  const safeForWorkMode = useSafeForWorkMode();
+  const togglePerformerMonitored = useTogglePerformerMonitored();
+
   // Adapter for MonitorToggleButton signature
   const handleMonitorTogglePress = useCallback(
     (
       value: boolean | { monitored: boolean; moviesMonitored: boolean },
       _options: { shiftKey: boolean }
     ) => {
+      if (!credit.performerId || !credit.foreignId) {
+        return;
+      }
+
       const { monitored, moviesMonitored } =
         typeof value === 'object' &&
         value !== null &&
@@ -40,9 +38,20 @@ function MovieCastPoster({
               monitored: value as boolean,
               moviesMonitored: credit.moviesMonitored,
             };
-      onTogglePerformerMonitored({ monitored, moviesMonitored });
+
+      togglePerformerMonitored.mutate({
+        performerId: credit.performerId,
+        foreignId: credit.foreignId,
+        monitored,
+        moviesMonitored,
+      });
     },
-    [onTogglePerformerMonitored, credit.moviesMonitored]
+    [
+      credit.performerId,
+      credit.foreignId,
+      credit.moviesMonitored,
+      togglePerformerMonitored,
+    ]
   );
   const [hasPosterError, setHasPosterError] = useState(false);
   const {

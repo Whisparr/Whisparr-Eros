@@ -13,6 +13,7 @@ interface Studio extends ModelBase {
   tmdbId: number;
   tpdbId: string;
   title: string;
+  afterDate?: string | null;
   aliases: string[];
   hasMovies: boolean;
   hasScenes: boolean;
@@ -24,6 +25,8 @@ interface Studio extends ModelBase {
   qualityProfileId: number;
   rootFolderPath: string;
   sceneCount: number;
+  searchOnAdd: boolean;
+  searchTitle?: string;
   sizeOnDisk: number;
   sortTitle: string;
   tags: number[];

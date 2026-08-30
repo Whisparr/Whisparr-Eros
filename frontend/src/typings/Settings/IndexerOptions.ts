@@ -1,4 +1,5 @@
 export default interface IndexerOptions {
+  id: number;
   minimumAge: number;
   retention: number;
   searchStudioCode: boolean;
@@ -12,6 +13,9 @@ export default interface IndexerOptions {
   rssSyncInterval: number;
   preferIndexerFlags: boolean;
   availabilityDelay: number;
-  whitelistedHardcodedSubs: string[];
+  // The endpoint sends and takes one comma-separated string, which
+  // `TextTagInput` splits for display and the change handler joins back. The
+  // interface said `string[]`, which nothing on either side ever produced.
+  whitelistedHardcodedSubs: string;
   allowHardcodedSubs: boolean;
 }

@@ -1,18 +1,16 @@
 import React, { useCallback, useMemo } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import ModelBase from 'App/ModelBase';
 import { useSelect } from 'App/SelectContext';
 import { REFRESH_STUDIO } from 'Commands/commandNames';
+import { useCommandExecuting, useExecuteCommand } from 'Commands/useCommands';
 import PageToolbarButton from 'Components/Page/Toolbar/PageToolbarButton';
 import { icons } from 'Helpers/Props';
-import { executeCommand } from 'Store/Actions/commandActions';
-import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
 import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
 
 interface StudioIndexRefreshStudioButtonProps {
   isSelectMode: boolean;
-  selectedFilterKey: string;
+  selectedFilterKey: string | number;
   items: ModelBase[];
   totalItems: number;
 }
@@ -20,11 +18,9 @@ interface StudioIndexRefreshStudioButtonProps {
 function StudioIndexRefreshStudioButton(
   props: StudioIndexRefreshStudioButtonProps
 ) {
-  const isRefreshing = useSelector(
-    createCommandExecutingSelector(REFRESH_STUDIO)
-  );
+  const isRefreshing = useCommandExecuting(REFRESH_STUDIO);
 
-  const dispatch = useDispatch();
+  const executeCommand = useExecuteCommand();
   const { isSelectMode, selectedFilterKey, items, totalItems } = props;
   const [selectState] = useSelect();
   const { selectedState } = selectState;
@@ -49,13 +45,11 @@ function StudioIndexRefreshStudioButton(
       : translate('UpdateAll');
 
   const onPress = useCallback(() => {
-    dispatch(
-      executeCommand({
-        name: REFRESH_STUDIO,
-        studioIds: studiosToRefresh,
-      })
-    );
-  }, [dispatch, studiosToRefresh]);
+    executeCommand({
+      name: REFRESH_STUDIO,
+      studioIds: studiosToRefresh,
+    });
+  }, [studiosToRefresh, executeCommand]);
 
   return (
     <PageToolbarButton

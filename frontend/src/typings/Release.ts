@@ -4,6 +4,7 @@ import { QualityModel } from 'Quality/Quality';
 import CustomFormat from 'typings/CustomFormat';
 
 interface Release {
+  id: number;
   guid: string;
   protocol: DownloadProtocol;
   age: number;
@@ -18,6 +19,8 @@ interface Release {
   seeders?: number;
   leechers?: number;
   quality: QualityModel;
+  qualityWeight: number;
+  releaseWeight: number;
   languages: Language[];
   customFormats: CustomFormat[];
   customFormatScore: number;
@@ -26,10 +29,6 @@ interface Release {
   rejections: string[];
   movieRequested: boolean;
   downloadAllowed: boolean;
-
-  isGrabbing?: boolean;
-  isGrabbed?: boolean;
-  grabError?: string;
 }
 
 export default Release;

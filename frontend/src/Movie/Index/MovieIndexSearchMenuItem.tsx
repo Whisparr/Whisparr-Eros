@@ -1,32 +1,32 @@
 import React, { useCallback, useMemo } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { useSelect } from 'App/SelectContext';
-import ClientSideCollectionAppState from 'App/State/ClientSideCollectionAppState';
-import MoviesAppState, { MovieIndexAppState } from 'App/State/MoviesAppState';
 import { MOVIE_SEARCH } from 'Commands/commandNames';
+import { useCommandExecuting, useExecuteCommand } from 'Commands/useCommands';
 import PageToolbarOverflowMenuItem from 'Components/Page/Toolbar/PageToolbarOverflowMenuItem';
 import { icons } from 'Helpers/Props';
-import { executeCommand } from 'Store/Actions/commandActions';
-import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
-import createMovieClientSideCollectionItemsSelector from 'Store/Selectors/createMovieClientSideCollectionItemsSelector';
+import Movie from 'Movie/Movie';
 import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
 
+// The overflow twin of `MovieIndexSearchButton`. `PageToolbarSection` renders it
+// with the button's own props, so `items` is the page the index is showing --
+// the same list the button searches. It used to run its own client-side
+// collection selector over the `movies` slice instead, which nothing has
+// populated since the index went paged, so the menu item was always disabled.
 interface MovieIndexSearchMenuItemProps {
   isSelectMode: boolean;
-  selectedFilterKey: string;
+  selectedFilterKey: string | number;
+  items: Movie[];
 }
 
-function MovieIndexSearchMenuItem(props: MovieIndexSearchMenuItemProps) {
-  const isSearching = useSelector(createCommandExecutingSelector(MOVIE_SEARCH));
-  const {
-    items,
-  }: MoviesAppState & MovieIndexAppState & ClientSideCollectionAppState =
-    useSelector(createMovieClientSideCollectionItemsSelector('movieIndex'));
+function MovieIndexSearchMenuItem(
+  props: Readonly<MovieIndexSearchMenuItemProps>
+) {
+  const { isSelectMode, selectedFilterKey, items } = props;
 
-  const dispatch = useDispatch();
+  const isSearching = useCommandExecuting(MOVIE_SEARCH);
+  const executeCommand = useExecuteCommand();
 
-  const { isSelectMode, selectedFilterKey } = props;
   const [selectState] = useSelect();
   const { selectedState } = selectState;
 
@@ -50,13 +50,11 @@ function MovieIndexSearchMenuItem(props: MovieIndexSearchMenuItemProps) {
       : translate('SearchAll');
 
   const onPress = useCallback(() => {
-    dispatch(
-      executeCommand({
-        name: MOVIE_SEARCH,
-        movieIds: moviesToSearch,
-      })
-    );
-  }, [dispatch, moviesToSearch]);
+    executeCommand({
+      name: MOVIE_SEARCH,
+      movieIds: moviesToSearch,
+    });
+  }, [moviesToSearch, executeCommand]);
 
   return (
     <PageToolbarOverflowMenuItem

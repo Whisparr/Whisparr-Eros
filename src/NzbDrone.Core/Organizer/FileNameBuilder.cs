@@ -173,7 +173,7 @@ namespace NzbDrone.Core.Organizer
                 AddSceneTitlePlaceholderTokens(tokenHandlers, movie);
             }
 
-            AddReleaseDateTokens(tokenHandlers, movie.Year);
+            AddReleaseDateTokens(tokenHandlers, movie);
             AddIdTokens(tokenHandlers, movie);
             AddQualityTokens(tokenHandlers, movie, movieFile);
             AddMediaInfoTokens(tokenHandlers, movieFile);
@@ -252,7 +252,7 @@ namespace NzbDrone.Core.Organizer
             }
 
             AddStudioTokens(tokenHandlers, movie);
-            AddReleaseDateTokens(tokenHandlers, movie.Year);
+            AddReleaseDateTokens(tokenHandlers, movie);
             AddIdTokens(tokenHandlers, movie);
 
             var splitPatterns = pattern.Split(new char[] { '\\', '/' }, StringSplitOptions.RemoveEmptyEntries);
@@ -546,15 +546,34 @@ namespace NzbDrone.Core.Organizer
             }
         }
 
-        private void AddReleaseDateTokens(Dictionary<string, Func<TokenMatch, string>> tokenHandlers, int releaseYear)
+        private void AddReleaseDateTokens(Dictionary<string, Func<TokenMatch, string>> tokenHandlers, Movie movie)
         {
+            var releaseYear = GetReleaseYear(movie);
+
             if (releaseYear == 0)
             {
                 tokenHandlers["{Release Year}"] = m => string.Empty;
                 return;
             }
 
-            tokenHandlers["{Release Year}"] = m => string.Format("{0}", releaseYear.ToString()); // Do I need m.CustomFormat?
+            tokenHandlers["{Release Year}"] = m => releaseYear.ToString(CultureInfo.InvariantCulture);
+        }
+
+        private static int GetReleaseYear(Movie movie)
+        {
+            // The SkyHook metadata source only populates the year for movies, so scenes can
+            // have a release date but no year. Derive it from the release date in that case.
+            if (movie.Year > 1800)
+            {
+                return movie.Year;
+            }
+
+            if (DateTime.TryParse(movie.MovieMetadata.Value.ReleaseDate, out var parsedReleaseDate))
+            {
+                return parsedReleaseDate.Year;
+            }
+
+            return 0;
         }
 
         private void AddIdTokens(Dictionary<string, Func<TokenMatch, string>> tokenHandlers, Movie movie)

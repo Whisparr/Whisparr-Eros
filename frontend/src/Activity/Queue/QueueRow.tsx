@@ -1,7 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import ProtocolLabel from 'Activity/Queue/ProtocolLabel';
-import { Error } from 'App/State/AppSectionState';
 import IconButton from 'Components/Link/IconButton';
 import SpinnerIconButton from 'Components/Link/SpinnerIconButton';
 import ProgressBar from 'Components/ProgressBar';
@@ -21,8 +19,7 @@ import MovieQuality from 'Movie/MovieQuality';
 import MovieTitleLink from 'Movie/MovieTitleLink';
 import useMovie from 'Movie/useMovie';
 import { QualityModel } from 'Quality/Quality';
-import { grabQueueItem, removeQueueItem } from 'Store/Actions/queueActions';
-import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
+import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import CustomFormat from 'typings/CustomFormat';
 import { SelectStateInputProps } from 'typings/props';
 import {
@@ -36,6 +33,7 @@ import translate from 'Utilities/String/translate';
 import QueueStatusCell from './QueueStatusCell';
 import RemoveQueueItemModal, { RemovePressProps } from './RemoveQueueItemModal';
 import TimeleftCell from './TimeleftCell';
+import { useGrabQueueItem, useRemoveQueueItem } from './useQueue';
 import styles from './QueueRow.css';
 
 interface QueueRowProps {
@@ -62,9 +60,6 @@ interface QueueRowProps {
   timeleft?: string;
   size: number;
   sizeleft: number;
-  isGrabbing?: boolean;
-  grabError?: Error;
-  isRemoving?: boolean;
   isSelected?: boolean;
   columns: Column[];
   onSelectedChange: (options: SelectStateInputProps) => void;
@@ -96,20 +91,17 @@ function QueueRow(props: QueueRowProps) {
     timeleft,
     size,
     sizeleft,
-    isGrabbing = false,
-    grabError,
-    isRemoving = false,
     isSelected,
     columns,
     onSelectedChange,
     onQueueRowModalOpenOrClose,
   } = props;
 
-  const dispatch = useDispatch();
+  const { grabQueueItem, isGrabbing, grabError } = useGrabQueueItem(id);
+  const { removeQueueItem, isRemoving } = useRemoveQueueItem();
   const { data: movie } = useMovie(movieId);
-  const { showRelativeDates, shortDateFormat, timeFormat } = useSelector(
-    createUISettingsSelector()
-  );
+  const { showRelativeDates, shortDateFormat, timeFormat } =
+    useUiSettingsValues();
 
   const [isRemoveQueueItemModalOpen, setIsRemoveQueueItemModalOpen] =
     useState(false);
@@ -118,8 +110,8 @@ function QueueRow(props: QueueRowProps) {
     useState(false);
 
   const handleGrabPress = useCallback(() => {
-    dispatch(grabQueueItem({ id }));
-  }, [id, dispatch]);
+    grabQueueItem();
+  }, [grabQueueItem]);
 
   const handleInteractiveImportPress = useCallback(() => {
     onQueueRowModalOpenOrClose(true);
@@ -139,10 +131,15 @@ function QueueRow(props: QueueRowProps) {
   const handleRemoveQueueItemModalConfirmed = useCallback(
     (payload: RemovePressProps) => {
       onQueueRowModalOpenOrClose(false);
-      dispatch(removeQueueItem({ id, ...payload }));
+      removeQueueItem({ id, ...payload });
       setIsRemoveQueueItemModalOpen(false);
     },
-    [id, setIsRemoveQueueItemModalOpen, onQueueRowModalOpenOrClose, dispatch]
+    [
+      id,
+      setIsRemoveQueueItemModalOpen,
+      onQueueRowModalOpenOrClose,
+      removeQueueItem,
+    ]
   );
 
   const handleRemoveQueueItemModalClose = useCallback(() => {

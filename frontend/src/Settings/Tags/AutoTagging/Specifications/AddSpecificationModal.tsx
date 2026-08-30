@@ -1,21 +1,20 @@
 import React from 'react';
 import Modal from 'Components/Modal/Modal';
+import { AutoTaggingSpecification } from 'typings/AutoTagging';
 import AddSpecificationModalContent from './AddSpecificationModalContent';
 
 interface AddSpecificationModalProps {
   isOpen: boolean;
-  onModalClose: (options?: { specificationSelected: boolean }) => void;
+  onModalClose: (selectedSpecification?: AutoTaggingSpecification) => void;
 }
 
-function AddSpecificationModal({
+export default function AddSpecificationModal({
   isOpen,
   onModalClose,
-}: AddSpecificationModalProps) {
+}: Readonly<AddSpecificationModalProps>) {
   return (
     <Modal isOpen={isOpen} onModalClose={onModalClose}>
       <AddSpecificationModalContent onModalClose={onModalClose} />
     </Modal>
   );
 }
-
-export default AddSpecificationModal;

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useAppValues } from 'App/appStore';
 import Button from 'Components/Link/Button';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import InlineMarkdown from 'Components/Markdown/InlineMarkdown';
@@ -10,14 +10,26 @@ import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import usePrevious from 'Helpers/Hooks/usePrevious';
 import { kinds } from 'Helpers/Props';
-import { fetchUpdates } from 'Store/Actions/systemActions';
 import UpdateChanges from 'System/Updates/UpdateChanges';
+import useUpdates from 'System/Updates/useUpdates';
 import Update from 'typings/Update';
 import translate from 'Utilities/String/translate';
-import AppState from './State/AppState';
 import styles from './AppUpdatedModalContent.css';
 
-function mergeUpdates(items: Update[], version: string, prevVersion?: string) {
+// A release with no `- New` or `- Fix` lines used to arrive as a single empty string
+// rather than an empty list, which counts as content and renders the "What's new?"
+// block blank instead of falling through to the maintenance-release line. The API no
+// longer sends that, but the modal should not depend on it -- `Updates.tsx` has always
+// filtered blank lines the same way. See Whisparr/Whisparr#1125.
+function hasContent(line: string) {
+  return typeof line === 'string' && line.trim() !== '';
+}
+
+function mergeUpdates(
+  items: readonly Update[],
+  version: string,
+  prevVersion?: string
+) {
   let installedIndex = items.findIndex((u) => u.version === version);
   let installedPreviouslyIndex = items.findIndex(
     (u) => u.version === prevVersion
@@ -48,8 +60,10 @@ function mergeUpdates(items: Update[], version: string, prevVersion?: string) {
     const appliedChanges: Update['changes'] = { new: [], fixed: [] };
     appliedUpdates.forEach((u: Update) => {
       if (u.changes && typeof u.changes === 'object') {
-        appliedChanges.new.push(...u.changes.new);
-        appliedChanges.fixed.push(...u.changes.fixed);
+        appliedChanges.new.push(...(u.changes.new ?? []).filter(hasContent));
+        appliedChanges.fixed.push(
+          ...(u.changes.fixed ?? []).filter(hasContent)
+        );
       }
     });
     const mergedUpdate: Update = Object.assign({}, appliedUpdates[0], {
@@ -74,11 +88,8 @@ interface AppUpdatedModalContentProps {
 }
 
 function AppUpdatedModalContent(props: AppUpdatedModalContentProps) {
-  const dispatch = useDispatch();
-  const { version, prevVersion } = useSelector((state: AppState) => state.app);
-  const { isPopulated, error, items } = useSelector(
-    (state: AppState) => state.system.updates
-  );
+  const { version, prevVersion } = useAppValues('version', 'prevVersion');
+  const { data: items, isFetched: isPopulated, error, refetch } = useUpdates();
   const previousVersion = usePrevious(version);
 
   const { onModalClose } = props;
@@ -90,14 +101,10 @@ function AppUpdatedModalContent(props: AppUpdatedModalContentProps) {
   }, []);
 
   useEffect(() => {
-    dispatch(fetchUpdates());
-  }, [dispatch]);
-
-  useEffect(() => {
     if (version !== previousVersion) {
-      dispatch(fetchUpdates());
+      refetch();
     }
-  }, [version, previousVersion, dispatch]);
+  }, [version, previousVersion, refetch]);
 
   return (
     <ModalContent onModalClose={onModalClose}>

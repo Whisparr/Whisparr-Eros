@@ -1,18 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { queryClient } from 'App/queryClient';
-import AppState from 'App/State/AppState';
 import * as commandNames from 'Commands/commandNames';
+import { useExecuteCommand } from 'Commands/useCommands';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import Movie from 'Movie/Movie';
 import Performer from 'Performer/Performer';
 import { useTogglePerformerMonitored } from 'Performer/usePerformer';
-import { executeCommand } from 'Store/Actions/commandActions';
 
 const PATH = 'performer';
 
 export const usePerformerDetails = (foreignId: string) => {
-  const dispatch = useDispatch();
+  const executeCommand = useExecuteCommand();
   const [isManualRefresh, setIsManualRefresh] = useState(false);
   const prevPerformerRef = useRef<Performer | undefined>(undefined);
 
@@ -38,24 +36,20 @@ export const usePerformerDetails = (foreignId: string) => {
   function onRefreshPress() {
     if (!performerId) return;
     setIsManualRefresh(true);
-    dispatch(
-      executeCommand({
-        name: commandNames.REFRESH_PERFORMER,
-        performerIds: [performerId],
-      })
-    );
+    executeCommand({
+      name: commandNames.REFRESH_PERFORMER,
+      performerIds: [performerId],
+    });
   }
 
   // TODO: Move to useApiQuery
   function onYearRefreshPress(ids: number[]) {
     if (!performerId) return;
     setIsManualRefresh(true);
-    dispatch(
-      executeCommand({
-        name: commandNames.REFRESH_MOVIE,
-        movieIds: ids,
-      })
-    );
+    executeCommand({
+      name: commandNames.REFRESH_MOVIE,
+      movieIds: ids,
+    });
   }
 
   // When performer data changes, clear manual refresh
@@ -73,12 +67,10 @@ export const usePerformerDetails = (foreignId: string) => {
   // TODO: Move to useApiQuery
   function onSearchPress() {
     if (!performerId) return;
-    dispatch(
-      executeCommand({
-        name: commandNames.PERFORMER_SEARCH,
-        performerIds: [performerId],
-      })
-    );
+    executeCommand({
+      name: commandNames.PERFORMER_SEARCH,
+      performerIds: [performerId],
+    });
   }
 
   function onMonitorTogglePress(args: {
@@ -99,12 +91,10 @@ export const usePerformerDetails = (foreignId: string) => {
   function searchMoviesByIds(movieIds: number[]) {
     if (!movieIds || movieIds.length === 0) return;
     for (const id of movieIds) {
-      dispatch(
-        executeCommand({
-          name: commandNames.MOVIE_SEARCH,
-          movieIds: [id],
-        })
-      );
+      executeCommand({
+        name: commandNames.MOVIE_SEARCH,
+        movieIds: [id],
+      });
     }
   }
 
@@ -128,18 +118,5 @@ export const usePerformerDetails = (foreignId: string) => {
 export function usePerformerDetailsMovies(performerForeignId: string) {
   return useApiQuery<Movie[]>({
     path: `/${PATH}/${performerForeignId}/works`,
-  });
-}
-
-export function usePerformerScenesColumns() {
-  return useSelector((state: AppState) => {
-    // AppState isn't fully converted to TypeScript yet
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const performerScenes = (state as any).performerScenes;
-    return {
-      columns: performerScenes?.columns ?? [],
-      sortKey: performerScenes?.sortKey ?? 'releaseDate',
-      sortDirection: performerScenes?.sortDirection ?? 'DESC',
-    };
   });
 }

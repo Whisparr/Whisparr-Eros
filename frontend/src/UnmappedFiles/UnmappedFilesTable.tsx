@@ -7,11 +7,14 @@ import PageContentBody from 'Components/Page/PageContentBody';
 import PageToolbar from 'Components/Page/Toolbar/PageToolbar';
 import PageToolbarButton from 'Components/Page/Toolbar/PageToolbarButton';
 import PageToolbarSection from 'Components/Page/Toolbar/PageToolbarSection';
+import Column from 'Components/Table/Column';
 import TableOptionsModalWrapper from 'Components/Table/TableOptions/TableOptionsModalWrapper';
 import VirtualTable from 'Components/Table/VirtualTable';
 import VirtualTableRow from 'Components/Table/VirtualTableRow';
 import { align, icons } from 'Helpers/Props';
+import { SortDirection } from 'Helpers/Props/sortDirections';
 import MediaInfo from 'typings/MediaInfo';
+import { TableOptionsChangePayload } from 'typings/Table';
 import hasDifferentItemsOrOrder from 'Utilities/Object/hasDifferentItemsOrOrder';
 import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
@@ -36,9 +39,12 @@ export interface UnmappedFilesTableProps {
   isDeleting: boolean;
   deleteError?: object;
   error?: object;
-  items: UnmappedFile[];
-  columns: Array<{ name: string; isVisible: boolean }>;
-  onTableOptionChange: (payload: unknown) => void;
+  items: readonly UnmappedFile[];
+  columns: Column[];
+  sortKey: string;
+  sortDirection: SortDirection;
+  onSortPress: (sortKey: string) => void;
+  onTableOptionChange: (payload: TableOptionsChangePayload) => void;
   fetchUnmappedFiles: () => void;
   deleteUnmappedFile: (id: number) => void;
   deleteUnmappedFiles: (ids: number[]) => void;
@@ -53,8 +59,6 @@ interface UnmappedFilesTableState {
   allUnselected: boolean;
   lastToggled: number | null;
   selectedState: Record<number, boolean>;
-  sortKey: string | null;
-  sortDirection: 'asc' | 'desc';
 }
 
 class UnmappedFilesTable extends Component<
@@ -69,8 +73,6 @@ class UnmappedFilesTable extends Component<
       allUnselected: false,
       lastToggled: null,
       selectedState: {},
-      sortKey: null,
-      sortDirection: 'asc',
     };
   }
 
@@ -100,23 +102,12 @@ class UnmappedFilesTable extends Component<
 
   scrollerRef: RefObject<HTMLDivElement | null>;
 
-  onSortColumnPress = (column: string) => {
-    this.setState((prevState) => {
-      const isSame = prevState.sortKey === column;
-      const direction =
-        isSame && prevState.sortDirection === 'asc' ? 'desc' : 'asc';
-      return {
-        sortKey: column,
-        sortDirection: direction,
-      };
-    });
-  };
-
   getSortedItems() {
-    const { items } = this.props;
-    const { sortKey, sortDirection } = this.state;
+    const { items, sortKey, sortDirection } = this.props;
+    // Copy in both branches: query data is readonly, and the caller passes the
+    // result to VirtualTable, which takes a mutable array.
     if (!sortKey) {
-      return items;
+      return [...items];
     }
     return [...items].sort((a, b) => {
       let valA: string | number = '';
@@ -175,10 +166,10 @@ class UnmappedFilesTable extends Component<
         valB = b[sortKey]?.toString().toLowerCase?.() ?? '';
       }
       if (valA < valB) {
-        return sortDirection === 'asc' ? -1 : 1;
+        return sortDirection === 'ascending' ? -1 : 1;
       }
       if (valA > valB) {
-        return sortDirection === 'asc' ? 1 : -1;
+        return sortDirection === 'ascending' ? 1 : -1;
       }
       return 0;
     });
@@ -284,6 +275,9 @@ class UnmappedFilesTable extends Component<
       error,
       items,
       columns,
+      sortKey,
+      sortDirection,
+      onSortPress,
       onTableOptionChange,
       isScanningFolders,
       isCleaningUnmappedFiles,
@@ -292,7 +286,7 @@ class UnmappedFilesTable extends Component<
       deleteUnmappedFiles,
       ...otherProps
     } = this.props;
-    const { allSelected, allUnselected, sortKey, sortDirection } = this.state;
+    const { allSelected, allUnselected } = this.state;
     const selectedTrackFileIds = this.getSelectedIds();
     const sortedItems = this.getSortedItems();
     return (
@@ -354,13 +348,11 @@ class UnmappedFilesTable extends Component<
               header={
                 <UnmappedFilesTableHeader
                   columns={columns}
-                  sortKey={sortKey === null ? undefined : sortKey}
-                  sortDirection={
-                    sortDirection === null ? undefined : sortDirection
-                  }
+                  sortKey={sortKey}
+                  sortDirection={sortDirection}
                   allSelected={allSelected}
                   allUnselected={allUnselected}
-                  onSortColumnPress={this.onSortColumnPress}
+                  onSortPress={onSortPress}
                   onTableOptionChange={onTableOptionChange}
                   onSelectAllChange={this.onSelectAllChange}
                 />

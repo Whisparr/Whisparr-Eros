@@ -205,8 +205,6 @@ class UnmappedFilesTableRow extends Component<
           showFilterExistingFiles={true}
           filterExistingFiles={true}
           showImportMode={false}
-          showReplaceExistingFiles={false}
-          replaceExistingFiles={false}
           onModalClose={this.onInteractiveImportModalClose}
         />
 

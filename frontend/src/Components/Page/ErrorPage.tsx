@@ -1,22 +1,23 @@
 import React from 'react';
-import { Error } from 'App/State/AppSectionState';
+import AppError from 'typings/AppError';
+import { ApiError } from 'Utilities/Fetch/fetchJson';
 import getErrorMessage from 'Utilities/Object/getErrorMessage';
 import styles from './ErrorPage.css';
 
 interface ErrorPageProps {
   version: string;
   isLocalStorageSupported: boolean;
-  translationsError?: Error;
-  moviesError?: Error;
-  customFiltersError?: Error;
-  tagsError?: Error;
-  qualityProfilesError?: Error;
-  languagesError?: Error;
-  uiSettingsError?: Error;
-  systemStatusError?: Error;
+  translationsError?: AppError | ApiError | null;
+  moviesError?: AppError;
+  customFiltersError?: ApiError | null;
+  tagsError?: ApiError | null;
+  qualityProfilesError?: ApiError | null;
+  languagesError?: ApiError | null;
+  uiSettingsError?: AppError | ApiError | null;
+  systemStatusError?: ApiError | null;
 }
 
-function ErrorPage(props: ErrorPageProps) {
+function ErrorPage(props: Readonly<ErrorPageProps>) {
   const {
     version,
     isLocalStorageSupported,
@@ -69,7 +70,7 @@ function ErrorPage(props: ErrorPageProps) {
     );
   } else if (systemStatusError) {
     errorMessage = getErrorMessage(
-      uiSettingsError,
+      systemStatusError,
       'Failed to load system status from API'
     );
   }

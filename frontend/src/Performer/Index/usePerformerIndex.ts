@@ -1,42 +1,40 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import AppState from 'App/State/AppState';
-import { SafeForWorkModeContext } from 'App/State/SafeForWorkContext';
+import { useCustomFiltersList } from 'Filters/useCustomFilters';
+import usePage from 'Helpers/Hooks/usePage';
+import { PERFORMER_INDEX_FILTERS } from './performerIndexFilters';
 import {
-  setPerformerFilter,
-  setPerformerPage,
-  setPerformerSort,
-  setPerformerTableOption,
-  setPerformerView,
-} from 'Store/Actions/performerActions';
-import { createCustomFiltersSelector } from 'Store/Selectors/createClientSideCollectionSelector';
+  PerformerIndexOptions,
+  setPerformerIndexFilter,
+  setPerformerIndexSort,
+  setPerformerIndexTableOption,
+  setPerformerIndexView,
+  usePerformerIndexOptions,
+} from './performerIndexOptionsStore';
 import { usePerformerIndexQuery } from './usePerformerIndexQuery';
 
 export function usePerformerIndex() {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const safeForWorkMode = React.useContext(SafeForWorkModeContext);
 
-  const page = useSelector((state: AppState) => state.performers.page);
-  const sortKey = useSelector((state: AppState) => state.performers.sortKey);
-  const sortDirection = useSelector(
-    (state: AppState) => state.performers.sortDirection
-  );
-  const view = useSelector((state: AppState) => state.performers.view);
-  const selectedFilterKey = useSelector(
-    (state: AppState) => state.performers.selectedFilterKey
-  );
-  const columns = useSelector((state: AppState) => state.performers.columns);
-  const filters = useSelector((state: AppState) => state.performers.filters);
-  const customFilters = useSelector(createCustomFiltersSelector('performers'));
+  const {
+    sortKey,
+    sortDirection,
+    view,
+    selectedFilterKey,
+    columns,
+    posterOptions,
+    tableOptions,
+  } = usePerformerIndexOptions();
 
-  const pageSize = useSelector((state: AppState) => {
-    if (view === 'posters') {
-      return state.performers.posterOptions?.pageSize ?? 25;
-    }
-    return state.performers.tableOptions?.pageSize ?? 25;
-  });
+  const { page, goToPage } = usePage('performerIndex');
+  const filters = PERFORMER_INDEX_FILTERS;
+  const customFilters = useCustomFiltersList('performers');
+
+  // Each view pages at its own configured size.
+  const pageSize =
+    view === 'posters'
+      ? (posterOptions?.pageSize ?? 25)
+      : (tableOptions?.pageSize ?? 25);
 
   const { data, isPending, isError } = usePerformerIndexQuery({
     page,
@@ -56,56 +54,47 @@ export function usePerformerIndex() {
   const [isSelectMode, setIsSelectMode] = useState(false);
 
   // Pagination handlers
-  const handleFirstPagePress = useCallback(
-    () => dispatch(setPerformerPage(1)),
-    [dispatch]
-  );
+  const handleFirstPagePress = useCallback(() => goToPage(1), [goToPage]);
   const handlePreviousPagePress = useCallback(
-    () => dispatch(setPerformerPage(Math.max(1, page - 1))),
-    [dispatch, page]
+    () => goToPage(Math.max(1, page - 1)),
+    [goToPage, page]
   );
   const handleNextPagePress = useCallback(
-    () => dispatch(setPerformerPage(Math.min(totalPages, page + 1))),
-    [dispatch, page, totalPages]
+    () => goToPage(Math.min(totalPages, page + 1)),
+    [goToPage, page, totalPages]
   );
   const handleLastPagePress = useCallback(
-    () => dispatch(setPerformerPage(totalPages)),
-    [dispatch, totalPages]
+    () => goToPage(totalPages),
+    [goToPage, totalPages]
   );
   const handlePageSelect = useCallback(
-    (newPage: number) => dispatch(setPerformerPage(newPage)),
-    [dispatch]
+    (newPage: number) => goToPage(newPage),
+    [goToPage]
   );
 
-  const handleSortPress = useCallback(
-    (value: string) => {
-      dispatch(setPerformerSort({ sortKey: value }));
-      dispatch(setPerformerPage(1));
-    },
-    [dispatch]
-  );
+  const handleSortPress = useCallback((value: string) => {
+    setPerformerIndexSort(value);
+  }, []);
 
-  const handleFilterSelect = useCallback(
-    (value: string | number) => {
-      dispatch(setPerformerFilter({ selectedFilterKey: value }));
-      dispatch(setPerformerPage(1));
-    },
-    [dispatch]
-  );
+  const handleFilterSelect = useCallback((value: string | number) => {
+    setPerformerIndexFilter(value);
+  }, []);
 
-  const handleViewSelect = useCallback(
-    (value: string) => {
-      dispatch(setPerformerView({ view: value }));
-      if (scrollerRef.current) {
-        scrollerRef.current.scrollTo(0, 0);
-      }
-    },
-    [dispatch, scrollerRef]
-  );
+  const handleViewSelect = useCallback((value: string) => {
+    setPerformerIndexView(value);
+
+    if (scrollerRef.current) {
+      scrollerRef.current.scrollTo(0, 0);
+    }
+  }, []);
 
   const handleTableOptionChange = useCallback(
-    (payload: unknown) => dispatch(setPerformerTableOption(payload)),
-    [dispatch]
+    (
+      payload: Partial<Pick<PerformerIndexOptions, 'columns' | 'tableOptions'>>
+    ) => {
+      setPerformerIndexTableOption(payload);
+    },
+    []
   );
 
   const handleOptionsPress = useCallback(() => setIsOptionsModalOpen(true), []);
@@ -145,7 +134,6 @@ export function usePerformerIndex() {
     isOptionsModalOpen,
     isSelectMode,
     jumpToCharacter,
-    safeForWorkMode,
     scrollerRef,
     handleFirstPagePress,
     handlePreviousPagePress,

@@ -1,27 +1,8 @@
 import React, { useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { createSelector } from 'reselect';
-import AppState from 'App/State/AppState';
 import FilterModal from 'Components/Filter/FilterModal';
-import { setStudioFilter, setStudioPage } from 'Store/Actions/studioActions';
-
-function createStudioSelector() {
-  return createSelector(
-    (state: AppState) => state.studios.items,
-    (studios) => {
-      return studios;
-    }
-  );
-}
-
-function createFilterBuilderPropsSelector() {
-  return createSelector(
-    (state: AppState) => state.studios.filterBuilderProps,
-    (filterBuilderProps) => {
-      return filterBuilderProps;
-    }
-  );
-}
+import { STUDIO_INDEX_FILTER_BUILDER_PROPS } from './studioIndexFilterBuilderProps';
+import { setStudioIndexFilter } from './studioIndexOptionsStore';
+import { useStudioIndex } from './useStudioIndex';
 
 interface StudioIndexFilterModalProps {
   isOpen: boolean;
@@ -30,18 +11,20 @@ interface StudioIndexFilterModalProps {
 export default function StudioIndexFilterModal(
   props: StudioIndexFilterModalProps
 ) {
-  const sectionItems = useSelector(createStudioSelector());
-  const filterBuilderProps = useSelector(createFilterBuilderPropsSelector());
+  // `sectionItems` feeds the filter builder's value suggestions -- the Network
+  // row builds its list from them. It used to read `state.studios.items`, which
+  // nothing populates now that the index is paged, so Network offered nothing.
+  // `useStudioIndex` returns the page the index is already showing, off the same
+  // cached query: fewer values than the whole library, but real ones.
+  const { items: sectionItems } = useStudioIndex();
   const customFilterType = 'studios';
 
-  const dispatch = useDispatch();
-
+  // Setting the filter resets the page, so no separate page dispatch is needed.
   const dispatchSetFilter = useCallback(
-    (payload: unknown) => {
-      dispatch(setStudioFilter(payload));
-      dispatch(setStudioPage(1));
+    ({ selectedFilterKey }: { selectedFilterKey: string | number }) => {
+      setStudioIndexFilter(selectedFilterKey);
     },
-    [dispatch]
+    []
   );
 
   return (
@@ -49,7 +32,7 @@ export default function StudioIndexFilterModal(
       // TODO: Don't spread all the props
       {...props}
       sectionItems={sectionItems}
-      filterBuilderProps={filterBuilderProps}
+      filterBuilderProps={STUDIO_INDEX_FILTER_BUILDER_PROPS}
       customFilterType={customFilterType}
       dispatchSetFilter={dispatchSetFilter}
     />

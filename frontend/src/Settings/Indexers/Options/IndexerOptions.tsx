@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import Alert from 'Components/Alert';
 import FieldSet from 'Components/FieldSet';
 import Form from 'Components/Form/Form';
@@ -9,21 +8,14 @@ import FormLabel from 'Components/Form/FormLabel';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import useShowAdvancedSettings from 'Helpers/Hooks/useShowAdvancedSettings';
 import { inputTypes, kinds } from 'Helpers/Props';
-import { clearPendingChanges } from 'Store/Actions/baseActions';
-import {
-  fetchIndexerOptions,
-  saveIndexerOptions,
-  setIndexerOptionsValue,
-} from 'Store/Actions/settingsActions';
-import createSettingsSectionSelector from 'Store/Selectors/createSettingsSectionSelector';
 import { InputChanged } from 'typings/inputs';
+import IndexerOptionsSettings from 'typings/Settings/IndexerOptions';
 import {
   OnChildStateChange,
   SetChildSave,
 } from 'typings/Settings/SettingsState';
 import translate from 'Utilities/String/translate';
-
-const SECTION = 'indexerOptions';
+import { useManageIndexerOptions } from './useIndexerOptions';
 
 interface IndexerOptionsProps {
   setChildSave: SetChildSave;
@@ -33,17 +25,17 @@ interface IndexerOptionsProps {
 function IndexerOptions({
   setChildSave,
   onChildStateChange,
-}: IndexerOptionsProps) {
-  const dispatch = useDispatch();
+}: Readonly<IndexerOptionsProps>) {
   const {
+    settings,
+    updateSetting,
+    saveSettings,
     isFetching,
-    isPopulated,
     isSaving,
     error,
-    settings,
     hasSettings,
     hasPendingChanges,
-  } = useSelector(createSettingsSectionSelector(SECTION));
+  } = useManageIndexerOptions();
 
   const showAdvancedSettings = useShowAdvancedSettings();
   const searchDateFormatOptions = [
@@ -76,38 +68,31 @@ function IndexerOptions({
   ];
 
   const handleInputChange = useCallback(
-    (change: InputChanged) => {
-      // @ts-expect-error - actions aren't typed
-      dispatch(setIndexerOptionsValue(change));
+    ({ name, value }: InputChanged) => {
+      const key = name as keyof IndexerOptionsSettings;
+
+      updateSetting(key, value as IndexerOptionsSettings[typeof key]);
     },
-    [dispatch]
+    [updateSetting]
   );
 
+  // The endpoint holds one comma-separated string; `TextTagInput` splits it for
+  // display and hands an array back, so the join is what keeps the two ends
+  // agreeing. It was a second dispatch under the slice for the same reason.
   const handleWhitelistedSubtitleChange = useCallback(
-    ({ name, value }: InputChanged<string[] | null>) => {
-      // @ts-expect-error - actions aren't typed
-      dispatch(setIndexerOptionsValue({ name, value: value?.join(',') }));
+    ({ value }: InputChanged<string[]>) => {
+      updateSetting('whitelistedHardcodedSubs', value.join(','));
     },
-    [dispatch]
+    [updateSetting]
   );
 
   useEffect(() => {
-    dispatch(fetchIndexerOptions());
-    setChildSave(() => dispatch(saveIndexerOptions()));
-  }, [dispatch, setChildSave]);
+    setChildSave(saveSettings);
+  }, [saveSettings, setChildSave]);
 
   useEffect(() => {
-    onChildStateChange({
-      isSaving,
-      hasPendingChanges,
-    });
+    onChildStateChange({ isSaving, hasPendingChanges });
   }, [hasPendingChanges, isSaving, onChildStateChange]);
-
-  useEffect(() => {
-    return () => {
-      dispatch(clearPendingChanges({ section: `settings.${SECTION}` }));
-    };
-  }, [dispatch]);
 
   return (
     <div>
@@ -120,7 +105,7 @@ function IndexerOptions({
           </Alert>
         ) : null}
 
-        {hasSettings && isPopulated && !error ? (
+        {hasSettings && !error ? (
           <Form>
             <FormGroup>
               <FormLabel>{translate('MinimumAge')}</FormLabel>

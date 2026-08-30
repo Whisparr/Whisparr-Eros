@@ -1,37 +1,10 @@
-// ...existing code...
 import React, { useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { createSelector } from 'reselect';
-import AppState, { Filter } from 'App/State/AppState';
 import FilterModal from 'Components/Filter/FilterModal';
-import {
-  setPerformerFilter,
-  setPerformerPage,
-} from 'Store/Actions/performerActions';
-import { createCustomFiltersSelector } from 'Store/Selectors/createClientSideCollectionSelector';
-
-function createPerformerSelector() {
-  return createSelector(
-    (state: AppState) => state.performers.items,
-    (performers) => {
-      // Ensure we always return an array: if items is an object map, convert to values,
-      // if it's already an array return it, otherwise return an empty array.
-      if (Array.isArray(performers)) return performers;
-      if (performers && typeof performers === 'object')
-        return Object.values(performers);
-      return [];
-    }
-  );
-}
-
-function createFilterBuilderPropsSelector() {
-  return createSelector(
-    (state: AppState) => state.performers.filterBuilderProps,
-    (filterBuilderProps) => {
-      return filterBuilderProps;
-    }
-  );
-}
+import { Filter } from 'Filters/Filter';
+import { useCustomFiltersList } from 'Filters/useCustomFilters';
+import { PERFORMER_INDEX_FILTER_BUILDER_PROPS } from './performerIndexFilterBuilderProps';
+import { setPerformerIndexFilter } from './performerIndexOptionsStore';
+import { usePerformerIndex } from './usePerformerIndex';
 
 interface PerformerIndexFilterModalProps {
   isOpen: boolean;
@@ -39,23 +12,22 @@ interface PerformerIndexFilterModalProps {
 }
 
 export default function PerformerIndexFilterModal(
-  props: PerformerIndexFilterModalProps
+  props: Readonly<PerformerIndexFilterModalProps>
 ) {
-  const dispatch = useDispatch();
-
-  const sectionItems = useSelector(createPerformerSelector());
-  const filterBuilderProps = useSelector(createFilterBuilderPropsSelector());
+  // `sectionItems` feeds the filter builder's value suggestions. It used to
+  // read `state.performers.items`, which nothing populates -- `fetchPerformers`
+  // is never dispatched -- so it was always empty. No performer row derives its
+  // options from the loaded items, so nothing looked wrong; it takes the page's
+  // items now regardless.
+  const { items: sectionItems } = usePerformerIndex();
   const customFilterType = 'performers';
-  const customFilters = useSelector(
-    createCustomFiltersSelector(customFilterType)
-  );
+  const customFilters = useCustomFiltersList(customFilterType);
 
   const dispatchSetFilter = useCallback(
-    (payload: unknown) => {
-      dispatch(setPerformerFilter(payload));
-      dispatch(setPerformerPage(1));
+    ({ selectedFilterKey }: { selectedFilterKey: string | number }) => {
+      setPerformerIndexFilter(selectedFilterKey);
     },
-    [dispatch]
+    []
   );
 
   return (
@@ -63,7 +35,7 @@ export default function PerformerIndexFilterModal(
       // TODO: Don't spread all the props
       {...props}
       sectionItems={sectionItems}
-      filterBuilderProps={filterBuilderProps}
+      filterBuilderProps={PERFORMER_INDEX_FILTER_BUILDER_PROPS}
       customFilterType={customFilterType}
       dispatchSetFilter={dispatchSetFilter}
       customFilters={customFilters}

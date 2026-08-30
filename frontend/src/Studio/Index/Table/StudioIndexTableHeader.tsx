@@ -1,6 +1,5 @@
 import classNames from 'classnames';
 import React, { useCallback } from 'react';
-import { useDispatch } from 'react-redux';
 import { useSelect } from 'App/SelectContext';
 import IconButton from 'Components/Link/IconButton';
 import Column from 'Components/Table/Column';
@@ -11,9 +10,10 @@ import VirtualTableSelectAllHeaderCell from 'Components/Table/VirtualTableSelect
 import { icons } from 'Helpers/Props';
 import { SortDirection } from 'Helpers/Props/sortDirections';
 import {
-  setStudioSort,
-  setStudioTableOption,
-} from 'Store/Actions/studioActions';
+  setStudioIndexSort,
+  setStudioIndexTableOption,
+  StudioIndexOptions,
+} from 'Studio/Index/studioIndexOptionsStore';
 import { CheckInputChanged } from 'typings/inputs';
 import StudioIndexTableOptions from './StudioIndexTableOptions';
 import styles from './StudioIndexTableHeader.css';
@@ -28,7 +28,6 @@ interface StudioIndexTableHeaderProps {
 
 function StudioIndexTableHeader(props: StudioIndexTableHeaderProps) {
   const { columns, sortKey, sortDirection, isSelectMode, onSortPress } = props;
-  const dispatch = useDispatch();
   const [selectState, selectDispatch] = useSelect();
 
   const handleSortPress = useCallback(
@@ -36,17 +35,19 @@ function StudioIndexTableHeader(props: StudioIndexTableHeaderProps) {
       if (onSortPress) {
         onSortPress(value);
       } else {
-        dispatch(setStudioSort({ sortKey: value }));
+        setStudioIndexSort(value);
       }
     },
-    [dispatch, onSortPress]
+    [onSortPress]
   );
 
   const onTableOptionChange = useCallback(
-    (payload: unknown) => {
-      dispatch(setStudioTableOption(payload));
+    (
+      payload: Partial<Pick<StudioIndexOptions, 'columns' | 'tableOptions'>>
+    ) => {
+      setStudioIndexTableOption(payload);
     },
-    [dispatch]
+    []
   );
 
   const onSelectAllChange = useCallback(

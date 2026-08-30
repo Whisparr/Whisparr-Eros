@@ -1,10 +1,11 @@
 import _ from 'lodash';
-import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
+import React, { useCallback, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Flag from 'react-world-flags';
-import AppState from 'App/State/AppState';
+import { useSafeForWorkMode } from 'App/safeForWorkStore';
 import Alert from 'Components/Alert';
+import DetailsPosterOptionsModal from 'Components/DetailsPosterOptionsModal';
+import DetailsPosters from 'Components/DetailsPosters';
 import FieldSet from 'Components/FieldSet';
 import Icon from 'Components/Icon';
 import Label from 'Components/Label';
@@ -16,20 +17,17 @@ import PageToolbar from 'Components/Page/Toolbar/PageToolbar';
 import PageToolbarButton from 'Components/Page/Toolbar/PageToolbarButton';
 import PageToolbarSection from 'Components/Page/Toolbar/PageToolbarSection';
 import PageToolbarSeparator from 'Components/Page/Toolbar/PageToolbarSeparator';
+import { PosterOptionChange } from 'Components/PosterOptionsForm';
 import Tooltip from 'Components/Tooltip/Tooltip';
 import { useShowMovieMonitorToggleButton } from 'Helpers/Hooks/useShowMovieMonitorToggleButton';
 import { icons, kinds, sizes, tooltipPositions } from 'Helpers/Props';
-import {
-  ASCENDING,
-  DESCENDING,
-  SortDirection,
-} from 'Helpers/Props/sortDirections';
 import MovieHeadshot from 'Movie/MovieHeadshot';
 import DeletePerformerModal from 'Performer/Delete/DeletePerformerModal';
+import PerformerIndexViewMenu from 'Performer/Index/Menus/PerformerIndexViewMenu';
 import PerformerGenderIcon from 'Performer/PerformerGenderIcon';
 import { getPerformerStatusDetails } from 'Performer/PerformerStatus';
 import QualityProfileName from 'Settings/Profiles/Quality/QualityProfileName';
-import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
+import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import formatDate from 'Utilities/Date/formatDate';
 import formatBytes from 'Utilities/Number/formatBytes';
 import countryCode from 'Utilities/String/countryCode';
@@ -37,12 +35,16 @@ import firstCharToUpper from 'Utilities/String/firstCharToUpper';
 import translate from 'Utilities/String/translate';
 import EditPerformerModal from '../Edit/EditPerformerModal';
 import PerformerDetailsLinks from './PerformerDetailsLinks';
+import {
+  setPerformerDetailsPosterOption,
+  setPerformerDetailsView,
+  usePerformerDetailsOption,
+} from './performerDetailsOptionsStore';
 import PerformerDetailsYear from './PerformerDetailsYear';
 import PerformerTags from './PerformerTags';
 import {
   usePerformerDetails,
   usePerformerDetailsMovies,
-  usePerformerScenesColumns,
 } from './usePerformerDetails';
 import { usePerformerTags } from './usePerformerTags';
 import styles from './PerformerDetails.css';
@@ -56,7 +58,7 @@ function getFanartUrl(
 function PerformerDetails() {
   const { performerForeignId } = useParams() as { performerForeignId: string };
 
-  const { shortDateFormat } = useSelector(createUISettingsSelector());
+  const { shortDateFormat } = useUiSettingsValues();
 
   const {
     performer,
@@ -81,7 +83,31 @@ function PerformerDetails() {
 
   const [isEditMovieModalOpen, setIsEditMovieModalOpen] = useState(false);
   const [isDeleteMovieModalOpen, setIsDeleteMovieModalOpen] = useState(false);
+  const [isPosterOptionsModalOpen, setIsPosterOptionsModalOpen] =
+    useState(false);
   const [allExpandedYears, setAllExpandedYears] = useState<boolean>(false);
+  const worksView = usePerformerDetailsOption('view');
+  const posterOptions = usePerformerDetailsOption('posterOptions');
+  const handleWorksViewSelect = useCallback((view: string) => {
+    setPerformerDetailsView(view);
+  }, []);
+  const handlePosterOptionsPress = useCallback(() => {
+    setIsPosterOptionsModalOpen(true);
+  }, []);
+  const handlePosterOptionsModalClose = useCallback(() => {
+    setIsPosterOptionsModalOpen(false);
+  }, []);
+  const handlePosterOptionChange = useCallback(
+    ({ name, value }: PosterOptionChange) => {
+      setPerformerDetailsPosterOption({ [name]: value });
+    },
+    []
+  );
+  const [scrollContainer, setScrollContainer] = useState<Element | null>(null);
+
+  const contentBodyRef = useCallback((element: HTMLDivElement | null) => {
+    setScrollContainer(element);
+  }, []);
 
   // Initialize expandedYears so current year is expanded by default
   const [expandedYears, setExpandedYears] = useState<Record<number, boolean>>(
@@ -122,33 +148,7 @@ function PerformerDetails() {
     setExpandedYears(newExpanded);
   }
 
-  // Table columns for studios (from Redux, matches legacy connector)
-  const { columns } = usePerformerScenesColumns();
-  // Sorting state for all studios
-  const [sortKey, setSortKey] = useState('releaseDate');
-  const [sortDirection, setSortDirection] = useState<SortDirection>(DESCENDING);
-  function handleSortPress(name: string, direction: SortDirection) {
-    if (sortKey === name) {
-      // Toggle direction if same column
-      setSortDirection((prev: SortDirection) =>
-        prev === ASCENDING ? DESCENDING : ASCENDING
-      );
-    } else {
-      setSortKey(name);
-      // Use provided direction if available, otherwise default
-      if (direction !== undefined) {
-        setSortDirection(direction);
-      } else if (name === 'releaseDate') {
-        setSortDirection(DESCENDING);
-      } else {
-        setSortDirection(ASCENDING);
-      }
-    }
-  }
-
-  // SafeForWork mode from Redux global state
-  const safeForWorkMode =
-    useSelector((state: AppState) => state.settings.safeForWorkMode) ?? false;
+  const safeForWorkMode = useSafeForWorkMode();
 
   // Always call hooks unconditionally
   const performerTags = usePerformerTags(performer?.tags ?? []);
@@ -278,14 +278,34 @@ function PerformerDetails() {
           onPress={handleDeleteMoviePress}
         />
         <PageToolbarSection alignContent="right">
-          <PageToolbarButton
-            label="Expand All"
-            iconName={expandIcon}
-            onPress={handleExpandAllPress}
+          {worksView === 'posters' ? (
+            <>
+              <PageToolbarButton
+                label={translate('Options')}
+                iconName={icons.POSTER}
+                onPress={handlePosterOptionsPress}
+              />
+              <PageToolbarSeparator />
+            </>
+          ) : null}
+          <PerformerIndexViewMenu
+            view={worksView}
+            isDisabled={false}
+            onViewSelect={handleWorksViewSelect}
           />
+          {worksView === 'table' ? (
+            <PageToolbarButton
+              label="Expand All"
+              iconName={expandIcon}
+              onPress={handleExpandAllPress}
+            />
+          ) : null}
         </PageToolbarSection>
       </PageToolbar>
-      <PageContentBody innerClassName={styles.innerContentBody}>
+      <PageContentBody
+        ref={contentBodyRef}
+        innerClassName={styles.innerContentBody}
+      >
         <div className={styles.header}>
           <div
             className={styles.backdrop}
@@ -529,26 +549,34 @@ function PerformerDetails() {
           {/* Studios section (delayed render for each studio) */}
           {movies.length > 0 && (
             <FieldSet legend={translate('Works')}>
-              {moviesByYear.map(({ year, movies: yearMovies }) => (
-                <PerformerDetailsYear
-                  key={year}
-                  year={year}
-                  performerId={performer.id}
-                  columns={columns}
-                  movies={yearMovies}
-                  sortKey={sortKey}
-                  sortDirection={sortDirection}
-                  isExpanded={!!expandedYears[year]}
-                  isSmallScreen={false} // or use your actual logic for small screen
-                  safeForWorkMode={safeForWorkMode}
-                  onSortPress={handleSortPress}
-                  onExpandPress={handleExpandYearPress}
-                  onYearRefreshPress={onYearRefreshPress}
+              {worksView === 'table' ? (
+                moviesByYear.map(({ year, movies: yearMovies }) => (
+                  <PerformerDetailsYear
+                    key={year}
+                    year={year}
+                    movies={yearMovies}
+                    isExpanded={!!expandedYears[year]}
+                    onExpandPress={handleExpandYearPress}
+                    onYearRefreshPress={onYearRefreshPress}
+                  />
+                ))
+              ) : (
+                <DetailsPosters
+                  items={movies}
+                  posterOptions={posterOptions}
+                  scrollContainer={scrollContainer}
+                  sortKey="studio"
                 />
-              ))}
+              )}
             </FieldSet>
           )}
         </div>
+        <DetailsPosterOptionsModal
+          isOpen={isPosterOptionsModalOpen}
+          posterOptions={posterOptions}
+          onModalClose={handlePosterOptionsModalClose}
+          onPosterOptionChange={handlePosterOptionChange}
+        />
         <DeletePerformerModal
           isOpen={isDeleteMovieModalOpen}
           performer={performer}

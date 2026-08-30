@@ -1,14 +1,14 @@
 import { IconDefinition } from '@fortawesome/free-regular-svg-icons';
 import React, { useMemo } from 'react';
-import { useSelector } from 'react-redux';
 import { icons } from 'Helpers/Props';
-import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
+import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import dimensions from 'Styles/Variables/dimensions';
 import QualityProfile from 'typings/QualityProfile';
 import UiSettings from 'typings/Settings/UiSettings';
 import formatDateTime from 'Utilities/Date/formatDateTime';
 import getRelativeDate from 'Utilities/Date/getRelativeDate';
 import formatBytes from 'Utilities/Number/formatBytes';
+import { SceneIndexOverviewOptions } from '../sceneIndexOptionsStore';
 import SceneIndexOverviewInfoRow from './SceneIndexOverviewInfoRow';
 import styles from './SceneIndexOverviewInfo.css';
 
@@ -46,6 +46,9 @@ const infoRowHeight = Number.parseInt(
   10
 );
 
+// A row plus the 4px the layout leaves under it.
+export const INFO_ROW_HEIGHT = infoRowHeight + 4;
+
 const rows = [
   {
     name: 'monitored',
@@ -78,6 +81,21 @@ const rows = [
     valueProp: 'sizeOnDisk',
   },
 ];
+
+// How many rows the current options ask for. `SceneIndexOverviews` reserves
+// height for this many so they are not clipped -- Whisparr/Whisparr#1134. The
+// visibility test matches the one used below, sort column included, so the
+// reservation and the render agree.
+export function getVisibleInfoRowCount(
+  overviewOptions: SceneIndexOverviewOptions,
+  sortKey: string
+) {
+  return rows.filter(
+    (row) =>
+      overviewOptions[row.showProp as keyof SceneIndexOverviewOptions] ||
+      sortKey === row.name
+  ).length;
+}
 
 function getInfoRowProps(
   row: RowProps,
@@ -153,10 +171,11 @@ function getInfoRowProps(
 function SceneIndexOverviewInfo(props: SceneIndexOverviewInfoProps) {
   const height = props.height;
 
-  const uiSettings = useSelector(createUISettingsSelector());
+  const uiSettings = useUiSettingsValues();
 
-  let shownRows = 1;
-  const maxRows = Math.floor(height / (infoRowHeight + 4));
+  // Starts at 0: starting at 1 dropped the last row that actually fitted.
+  let shownRows = 0;
+  const maxRows = Math.floor(height / INFO_ROW_HEIGHT);
 
   const rowInfo = useMemo(() => {
     return rows.map((row) => {

@@ -1,10 +1,7 @@
 import { cloneDeep, without } from 'lodash';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { createSelector } from 'reselect';
-import AppState from 'App/State/AppState';
-import InteractiveImportAppState from 'App/State/InteractiveImportAppState';
 import * as commandNames from 'Commands/commandNames';
+import { useExecuteCommand } from 'Commands/useCommands';
 import SelectInput, { SelectInputOption } from 'Components/Form/SelectInput';
 import Icon from 'Components/Icon';
 import Button from 'Components/Link/Button';
@@ -25,31 +22,30 @@ import TableBody from 'Components/Table/TableBody';
 import useSelectState from 'Helpers/Hooks/useSelectState';
 import { align, icons, kinds } from 'Helpers/Props';
 import { BOTH } from 'Helpers/Props/scrollDirections';
+import { SortDirection } from 'Helpers/Props/sortDirections';
 import ImportMode from 'InteractiveImport/ImportMode';
 import SelectIndexerFlagsModal from 'InteractiveImport/IndexerFlags/SelectIndexerFlagsModal';
 import InteractiveImport, {
   InteractiveImportCommandOptions,
 } from 'InteractiveImport/InteractiveImport';
+import {
+  setInteractiveImportMode,
+  setInteractiveImportSort,
+  useInteractiveImportOptions,
+} from 'InteractiveImport/interactiveImportOptionsStore';
 import SelectLanguageModal from 'InteractiveImport/Language/SelectLanguageModal';
 import SelectMovieModal from 'InteractiveImport/Movie/SelectMovieModal';
 import SelectQualityModal from 'InteractiveImport/Quality/SelectQualityModal';
 import SelectReleaseGroupModal from 'InteractiveImport/ReleaseGroup/SelectReleaseGroupModal';
+import useInteractiveImport from 'InteractiveImport/useInteractiveImport';
 import Language from 'Language/Language';
 import Movie from 'Movie/Movie';
 import { MovieFile } from 'MovieFile/MovieFile';
-import { useDeleteMovieFiles } from 'MovieFile/useMovieFile';
-import { QualityModel } from 'Quality/Quality';
-import { executeCommand } from 'Store/Actions/commandActions';
 import {
-  clearInteractiveImport,
-  fetchInteractiveImportItems,
-  reprocessInteractiveImportItems,
-  setInteractiveImportMode,
-  setInteractiveImportSort,
-  updateInteractiveImportItems,
-} from 'Store/Actions/interactiveImportActions';
-import { updateMovieFiles } from 'Store/Actions/movieFileActions';
-import createClientSideCollectionSelector from 'Store/Selectors/createClientSideCollectionSelector';
+  useDeleteMovieFiles,
+  useUpdateMovieFiles,
+} from 'MovieFile/useMovieFile';
+import { QualityModel } from 'Quality/Quality';
 import { SortCallback } from 'typings/callbacks';
 import { CheckInputChanged } from 'typings/inputs';
 import getErrorMessage from 'Utilities/Object/getErrorMessage';
@@ -165,28 +161,19 @@ function isSameMovieFile(
   return true;
 }
 
-const importModeSelector = createSelector(
-  (state: AppState) => state.interactiveImport.importMode,
-  (importMode) => {
-    return importMode;
-  }
-);
-
-interface InteractiveImportModalContentProps {
+export interface InteractiveImportModalContentProps {
   downloadId?: string;
   movieId?: number;
-  seasonNumber?: number;
   showMovie?: boolean;
   allowMovieChange?: boolean;
   showDelete?: boolean;
   showImportMode?: boolean;
   showFilterExistingFiles?: boolean;
+  filterExistingFiles?: boolean;
   title?: string;
   folder?: string;
-  sortKey?: string;
-  sortDirection?: string;
   initialSortKey?: string;
-  initialSortDirection?: string;
+  initialSortDirection?: SortDirection;
   modalTitle: string;
   onModalClose(): void;
 }
@@ -197,10 +184,10 @@ function InteractiveImportModalContent(
   const {
     downloadId,
     movieId,
-    seasonNumber,
     allowMovieChange = true,
     showMovie = true,
     showFilterExistingFiles = false,
+    filterExistingFiles: initialFilterExistingFiles = false,
     showDelete = false,
     showImportMode = true,
     title,
@@ -211,21 +198,26 @@ function InteractiveImportModalContent(
     onModalClose,
   } = props;
 
-  const {
-    isFetching,
-    isPopulated,
-    error,
-    items,
-    originalItems,
-    sortKey,
-    sortDirection,
-  }: InteractiveImportAppState = useSelector(
-    createClientSideCollectionSelector('interactiveImport')
+  const { sortKey, sortDirection, importMode } = useInteractiveImportOptions();
+
+  // Seeded from the prop rather than hardcoded to false, so the caller's choice
+  // is part of the first fetch instead of being ignored until the user picks it
+  // from the menu themselves.
+  const [filterExistingFiles, setFilterExistingFiles] = useState(
+    initialFilterExistingFiles
   );
 
-  const importMode = useSelector(importModeSelector);
+  const { items, originalItems, isFetching, isFetched, error, updateItems } =
+    useInteractiveImport({
+      downloadId,
+      movieId,
+      folder,
+      filterExistingFiles,
+    });
+
   const { mutate: deleteMovieFilesMutate, isPending: isDeleting } =
     useDeleteMovieFiles();
+  const { mutate: updateMovieFilesMutate } = useUpdateMovieFiles();
 
   const [invalidRowsSelected, setInvalidRowsSelected] = useState<number[]>([]);
   const [withoutMovieFileIdRowsSelected, setWithoutMovieFileIdRowsSelected] =
@@ -235,12 +227,11 @@ function InteractiveImportModalContent(
   );
   const [isConfirmDeleteModalOpen, setIsConfirmDeleteModalOpen] =
     useState(false);
-  const [filterExistingFiles, setFilterExistingFiles] = useState(false);
   const [interactiveImportErrorMessage, setInteractiveImportErrorMessage] =
     useState<string | null>(null);
   const [selectState, setSelectState] = useSelectState();
   const { allSelected, allUnselected, selectedState } = selectState;
-  const dispatch = useDispatch();
+  const executeCommand = useExecuteCommand();
 
   const columns: Column[] = useMemo(() => {
     const result: Column[] = cloneDeep(COLUMNS);
@@ -308,34 +299,23 @@ function InteractiveImportModalContent(
   useEffect(
     () => {
       if (initialSortKey) {
-        const sortProps: { sortKey: string; sortDirection?: string } = {
+        setInteractiveImportSort({
           sortKey: initialSortKey,
-        };
-
-        if (initialSortDirection) {
-          sortProps.sortDirection = initialSortDirection;
-        }
-
-        dispatch(setInteractiveImportSort(sortProps));
+          sortDirection: initialSortDirection,
+        });
       }
-
-      dispatch(
-        fetchInteractiveImportItems({
-          downloadId,
-          movieId,
-          seasonNumber,
-          folder,
-          filterExistingFiles,
-        })
-      );
-
-      // returned function will be called on component unmount
-      return () => {
-        dispatch(clearInteractiveImport());
-      };
     },
+    // Only on open: the caller is stating where the table should start, not
+    // pinning it there.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
+  );
+
+  const handleItemChange = useCallback(
+    (id: number, changes: Partial<InteractiveImport>) => {
+      updateItems([id], changes);
+    },
+    [updateItems]
   );
 
   const onSelectAllChange = useCallback(
@@ -485,23 +465,17 @@ function InteractiveImportModalContent(
     let shouldClose = false;
 
     if (existingFiles.length) {
-      dispatch(
-        updateMovieFiles({
-          files: existingFiles,
-        })
-      );
+      updateMovieFilesMutate(existingFiles);
 
       shouldClose = true;
     }
 
     if (files.length) {
-      dispatch(
-        executeCommand({
-          name: commandNames.INTERACTIVE_IMPORT,
-          files,
-          importMode: finalImportMode,
-        })
-      );
+      executeCommand({
+        name: commandNames.INTERACTIVE_IMPORT,
+        files,
+        importMode: finalImportMode,
+      });
 
       shouldClose = true;
     }
@@ -517,42 +491,26 @@ function InteractiveImportModalContent(
     originalItems,
     selectedIds,
     onModalClose,
-    dispatch,
+    updateMovieFilesMutate,
+    executeCommand,
   ]);
 
-  const onSortPress = useCallback<SortCallback>(
-    (sortKey, sortDirection) => {
-      dispatch(setInteractiveImportSort({ sortKey, sortDirection }));
-    },
-    [dispatch]
-  );
+  const onSortPress = useCallback<SortCallback>((sortKey, sortDirection) => {
+    setInteractiveImportSort({ sortKey, sortDirection });
+  }, []);
 
   const onFilterExistingFilesChange = useCallback(
     (value: string | undefined) => {
-      const filter = value !== 'all';
-
-      setFilterExistingFiles(filter);
-
-      dispatch(
-        fetchInteractiveImportItems({
-          downloadId,
-          movieId,
-          folder,
-          filterExistingFiles: filter,
-        })
-      );
+      setFilterExistingFiles(value !== 'all');
     },
-    [downloadId, movieId, folder, setFilterExistingFiles, dispatch]
+    []
   );
 
   const onImportModeChange = useCallback<
     ({ value }: { value: ImportMode }) => void
-  >(
-    ({ value }) => {
-      dispatch(setInteractiveImportMode({ importMode: value }));
-    },
-    [dispatch]
-  );
+  >(({ value }) => {
+    setInteractiveImportMode(value);
+  }, []);
 
   const onSelectModalSelect = useCallback<
     ({ value }: { value: SelectType }) => void
@@ -569,82 +527,47 @@ function InteractiveImportModalContent(
 
   const onMovieSelect = useCallback(
     (movie: Movie) => {
-      dispatch(
-        updateInteractiveImportItems({
-          ids: selectedIds,
-          movie,
-        })
-      );
-
-      dispatch(reprocessInteractiveImportItems({ ids: selectedIds }));
+      updateItems(selectedIds, { movie });
 
       setSelectModalOpen(null);
     },
-    [selectedIds, setSelectModalOpen, dispatch]
+    [selectedIds, setSelectModalOpen, updateItems]
   );
 
   const onReleaseGroupSelect = useCallback(
     (releaseGroup: string) => {
-      dispatch(
-        updateInteractiveImportItems({
-          ids: selectedIds,
-          releaseGroup,
-        })
-      );
-
-      dispatch(reprocessInteractiveImportItems({ ids: selectedIds }));
+      updateItems(selectedIds, { releaseGroup });
 
       setSelectModalOpen(null);
     },
-    [selectedIds, dispatch]
+    [selectedIds, updateItems]
   );
 
   const onLanguagesSelect = useCallback(
     (newLanguages: Language[]) => {
-      dispatch(
-        updateInteractiveImportItems({
-          ids: selectedIds,
-          languages: newLanguages,
-        })
-      );
-
-      dispatch(reprocessInteractiveImportItems({ ids: selectedIds }));
+      updateItems(selectedIds, { languages: newLanguages });
 
       setSelectModalOpen(null);
     },
-    [selectedIds, dispatch]
+    [selectedIds, updateItems]
   );
 
   const onQualitySelect = useCallback(
     (quality: QualityModel) => {
-      dispatch(
-        updateInteractiveImportItems({
-          ids: selectedIds,
-          quality,
-        })
-      );
-
-      dispatch(reprocessInteractiveImportItems({ ids: selectedIds }));
+      updateItems(selectedIds, { quality });
 
       setSelectModalOpen(null);
     },
-    [selectedIds, dispatch]
+    [selectedIds, updateItems]
   );
 
   const onIndexerFlagsSelect = useCallback(
     (indexerFlags: number) => {
-      dispatch(
-        updateInteractiveImportItems({
-          ids: selectedIds,
-          indexerFlags,
-        })
-      );
-
-      dispatch(reprocessInteractiveImportItems({ ids: selectedIds }));
+      updateItems(selectedIds, { indexerFlags });
 
       setSelectModalOpen(null);
     },
-    [selectedIds, dispatch]
+    [selectedIds, updateItems]
   );
 
   const errorMessage = getErrorMessage(
@@ -697,7 +620,7 @@ function InteractiveImportModalContent(
 
         {error ? <div>{errorMessage}</div> : null}
 
-        {isPopulated && !!items.length && !isFetching && !isFetching ? (
+        {isFetched && !!items.length && !isFetching ? (
           <Table
             columns={columns}
             horizontalScroll={true}
@@ -719,6 +642,7 @@ function InteractiveImportModalContent(
                     allowMovieChange={allowMovieChange}
                     columns={columns}
                     modalTitle={modalTitle}
+                    onItemChange={handleItemChange}
                     onSelectedChange={onSelectedChange}
                     onValidRowChange={onValidRowChange}
                   />
@@ -728,7 +652,7 @@ function InteractiveImportModalContent(
           </Table>
         ) : null}
 
-        {isPopulated && !items.length && !isFetching
+        {isFetched && !items.length && !isFetching
           ? translate('InteractiveImportNoFilesFound')
           : null}
       </ModalBody>

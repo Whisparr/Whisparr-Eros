@@ -1,12 +1,10 @@
 import React, { useCallback } from 'react';
-import { useDispatch } from 'react-redux';
 import Button from 'Components/Link/Button';
 import Link from 'Components/Link/Link';
 import Menu from 'Components/Menu/Menu';
 import MenuContent from 'Components/Menu/MenuContent';
 import { sizes } from 'Helpers/Props';
-import { selectIndexerSchema } from 'Store/Actions/settingsActions';
-import Indexer from 'typings/Indexer';
+import { SelectedSchema } from 'Settings/useProviderSchema';
 import translate from 'Utilities/String/translate';
 import AddIndexerPresetMenuItem from './AddIndexerPresetMenuItem';
 import styles from './AddIndexerItem.css';
@@ -15,8 +13,8 @@ interface AddIndexerItemProps {
   implementation: string;
   implementationName: string;
   infoLink: string;
-  presets?: Indexer[];
-  onIndexerSelect: () => void;
+  presets?: { name: string }[];
+  onIndexerSelect: (selectedSchema: SelectedSchema) => void;
 }
 
 function AddIndexerItem({
@@ -25,20 +23,12 @@ function AddIndexerItem({
   infoLink,
   presets,
   onIndexerSelect,
-}: AddIndexerItemProps) {
-  const dispatch = useDispatch();
+}: Readonly<AddIndexerItemProps>) {
   const hasPresets = !!presets && !!presets.length;
 
   const handleIndexerSelect = useCallback(() => {
-    dispatch(
-      selectIndexerSchema({
-        implementation,
-        implementationName,
-      })
-    );
-
-    onIndexerSelect();
-  }, [implementation, implementationName, dispatch, onIndexerSelect]);
+    onIndexerSelect({ implementation, implementationName });
+  }, [implementation, implementationName, onIndexerSelect]);
 
   return (
     <div className={styles.indexer}>

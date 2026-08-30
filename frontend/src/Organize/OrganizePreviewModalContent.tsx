@@ -1,7 +1,6 @@
-import React, { useCallback, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import AppState from 'App/State/AppState';
+import React, { useCallback } from 'react';
 import * as commandNames from 'Commands/commandNames';
+import { useExecuteCommand } from 'Commands/useCommands';
 import Alert from 'Components/Alert';
 import CheckInput from 'Components/Form/CheckInput';
 import Button from 'Components/Link/Button';
@@ -14,14 +13,13 @@ import ModalHeader from 'Components/Modal/ModalHeader';
 import useSelectState from 'Helpers/Hooks/useSelectState';
 import { kinds } from 'Helpers/Props';
 import { useMovie } from 'Movie/useMovie';
-import { executeCommand } from 'Store/Actions/commandActions';
-import { fetchOrganizePreview } from 'Store/Actions/organizePreviewActions';
-import { fetchNamingSettings } from 'Store/Actions/settingsActions';
+import { useNamingSettings } from 'Settings/MediaManagement/Naming/useNamingSettings';
 import { CheckInputChanged } from 'typings/inputs';
 import { SelectStateInputProps } from 'typings/props';
 import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
 import OrganizePreviewRow from './OrganizePreviewRow';
+import useOrganizePreview from './useOrganizePreview';
 import styles from './OrganizePreviewModalContent.css';
 
 function getValue(allSelected: boolean, allUnselected: boolean) {
@@ -43,27 +41,27 @@ function OrganizePreviewModalContent({
   movieId,
   onModalClose,
 }: OrganizePreviewModalContentProps) {
-  const dispatch = useDispatch();
+  const executeCommand = useExecuteCommand();
   const {
     items,
     isFetching: isPreviewFetching,
-    isPopulated: isPreviewPopulated,
+    isFetched: isPreviewFetched,
     error: previewError,
-  } = useSelector((state: AppState) => state.organizePreview);
+  } = useOrganizePreview(movieId);
 
   const {
+    data: naming,
     isFetching: isNamingFetching,
-    isPopulated: isNamingPopulated,
+    isFetched: isNamingFetched,
     error: namingError,
-    item: naming,
-  } = useSelector((state: AppState) => state.settings.naming);
+  } = useNamingSettings();
 
   const movie = useMovie(movieId).data;
   const [selectState, setSelectState] = useSelectState();
 
   const { allSelected, allUnselected, selectedState } = selectState;
   const isFetching = isPreviewFetching || isNamingFetching;
-  const isPopulated = isPreviewPopulated && isNamingPopulated;
+  const isPopulated = isPreviewFetched && isNamingFetched;
   const error = previewError || namingError;
   const { renameMovies, standardMovieFormat } = naming;
 
@@ -92,21 +90,14 @@ function OrganizePreviewModalContent({
   const handleOrganizePress = useCallback(() => {
     const files = getSelectedIds(selectedState);
 
-    dispatch(
-      executeCommand({
-        name: commandNames.RENAME_FILES,
-        files,
-        movieId,
-      })
-    );
+    executeCommand({
+      name: commandNames.RENAME_FILES,
+      files,
+      movieId,
+    });
 
     onModalClose();
-  }, [movieId, selectedState, dispatch, onModalClose]);
-
-  useEffect(() => {
-    dispatch(fetchOrganizePreview({ movieId }));
-    dispatch(fetchNamingSettings());
-  }, [movieId, dispatch]);
+  }, [movieId, selectedState, onModalClose, executeCommand]);
 
   if (!movie) {
     return null;

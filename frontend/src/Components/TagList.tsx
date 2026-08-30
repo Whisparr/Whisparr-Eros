@@ -1,13 +1,13 @@
 import React from 'react';
-import { Tag } from 'App/State/TagsAppState';
 import { kinds } from 'Helpers/Props';
+import { Tag } from 'Tags/useTags';
 import sortByProp from 'Utilities/Array/sortByProp';
 import Label from './Label';
 import styles from './TagList.css';
 
 interface TagListProps {
   tags: number[];
-  tagList: Tag[];
+  tagList: readonly Tag[];
 }
 
 function TagList({ tags, tagList }: TagListProps) {

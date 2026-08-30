@@ -1,9 +1,5 @@
 import { uniq } from 'lodash';
 import React, { useCallback, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
-import AppState from 'App/State/AppState';
-import { ImportListAppState } from 'App/State/SettingsAppState';
-import { Tag } from 'App/State/TagsAppState';
 import Form from 'Components/Form/Form';
 import FormGroup from 'Components/Form/FormGroup';
 import FormInputGroup from 'Components/Form/FormInputGroup';
@@ -15,8 +11,8 @@ import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { inputTypes, kinds, sizes } from 'Helpers/Props';
-import createTagsSelector from 'Store/Selectors/createTagsSelector';
-import ImportList from 'typings/ImportList';
+import { useImportLists } from 'Settings/ImportLists/ImportLists/useImportLists';
+import { useTagList } from 'Tags/useTags';
 import translate from 'Utilities/String/translate';
 import styles from './TagsModalContent.css';
 
@@ -26,23 +22,21 @@ interface TagsModalContentProps {
   onModalClose: () => void;
 }
 
-function TagsModalContent(props: TagsModalContentProps) {
+function TagsModalContent(props: Readonly<TagsModalContentProps>) {
   const { ids, onModalClose, onApplyTagsPress } = props;
 
-  const allImportLists: ImportListAppState = useSelector(
-    (state: AppState) => state.settings.importLists
-  );
-  const tagList: Tag[] = useSelector(createTagsSelector());
+  const { data: allImportLists } = useImportLists();
+  const tagList = useTagList();
 
   const [tags, setTags] = useState<number[]>([]);
   const [applyTags, setApplyTags] = useState('add');
 
   const importListsTags = useMemo(() => {
     const tags = ids.reduce((acc: number[], id) => {
-      const s = allImportLists.items.find((s: ImportList) => s.id === id);
+      const importList = allImportLists.find((l) => l.id === id);
 
-      if (s) {
-        acc.push(...s.tags);
+      if (importList) {
+        acc.push(...importList.tags);
       }
 
       return acc;

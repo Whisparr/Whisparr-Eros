@@ -1,17 +1,11 @@
-import ModelBase from 'App/ModelBase';
 import DownloadProtocol from 'DownloadClient/DownloadProtocol';
+import Provider from './Provider';
 
-export interface Field {
-  order: number;
-  name: string;
-  label: string;
-  value: boolean | number | string;
-  type: string;
-  advanced: boolean;
-  privacy: string;
-}
-
-interface Indexer extends ModelBase {
+// `supportsRss` / `supportsSearch` are what the implementation can deliver and
+// `enableRss` / `enableAutomaticSearch` / `enableInteractiveSearch` are what
+// the user asked for, so the UI disables the checkbox rather than hiding it and
+// an indexer that loses a capability keeps the stored answer.
+interface Indexer extends Provider {
   enableRss: boolean;
   enableAutomaticSearch: boolean;
   enableInteractiveSearch: boolean;
@@ -19,14 +13,11 @@ interface Indexer extends ModelBase {
   supportsSearch: boolean;
   protocol: DownloadProtocol;
   priority: number;
-  name: string;
-  fields: Field[];
-  implementationName: string;
-  implementation: string;
-  configContract: string;
-  infoLink: string;
   downloadClientId: number;
   tags: number[];
+
+  // Schema responses only: the canned configurations an implementation offers.
+  presets?: Indexer[];
 }
 
 export default Indexer;

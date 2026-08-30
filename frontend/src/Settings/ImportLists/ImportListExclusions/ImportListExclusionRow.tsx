@@ -1,5 +1,4 @@
 import React, { useCallback } from 'react';
-import { useDispatch } from 'react-redux';
 import IconButton from 'Components/Link/IconButton';
 import ConfirmModal from 'Components/Modal/ConfirmModal';
 import TableRowCell from 'Components/Table/Cells/TableRowCell';
@@ -7,30 +6,30 @@ import TableSelectCell from 'Components/Table/Cells/TableSelectCell';
 import TableRow from 'Components/Table/TableRow';
 import useModalOpenState from 'Helpers/Hooks/useModalOpenState';
 import { icons, kinds } from 'Helpers/Props';
-import { deleteImportListExclusion } from 'Store/Actions/Settings/importListExclusions';
 import ImportListExclusion from 'typings/ImportListExclusion';
 import { SelectStateInputProps } from 'typings/props';
 import translate from 'Utilities/String/translate';
 import EditImportListExclusionModal from './EditImportListExclusionModal';
+import { useDeleteImportListExclusion } from './useImportListExclusions';
 import styles from './ImportListExclusionRow.css';
 
-interface ImportListExclusionRowProps extends ImportListExclusion {
+interface ImportListExclusionRowProps {
+  importListExclusion: ImportListExclusion;
   isSelected: boolean;
   onSelectedChange: (options: SelectStateInputProps) => void;
 }
 
-function ImportListExclusionRow(props: ImportListExclusionRowProps) {
-  const {
-    id,
-    foreignId,
-    type,
-    reason,
-    movieTitle,
-    isSelected,
-    onSelectedChange,
-  } = props;
+// The whole record rather than its fields, because the edit modal saves what
+// it was handed: the row is the only place the exclusion is held now that
+// there is no store to read it back out of.
+function ImportListExclusionRow({
+  importListExclusion,
+  isSelected,
+  onSelectedChange,
+}: Readonly<ImportListExclusionRowProps>) {
+  const { id, foreignId, type, reason, movieTitle } = importListExclusion;
 
-  const dispatch = useDispatch();
+  const { deleteImportListExclusion } = useDeleteImportListExclusion(id);
 
   const [
     isEditImportListExclusionModalOpen,
@@ -45,8 +44,8 @@ function ImportListExclusionRow(props: ImportListExclusionRowProps) {
   ] = useModalOpenState(false);
 
   const handleDeletePress = useCallback(() => {
-    dispatch(deleteImportListExclusion({ id }));
-  }, [id, dispatch]);
+    deleteImportListExclusion();
+  }, [deleteImportListExclusion]);
 
   return (
     <TableRow>
@@ -69,7 +68,7 @@ function ImportListExclusionRow(props: ImportListExclusionRowProps) {
       </TableRowCell>
 
       <EditImportListExclusionModal
-        id={id}
+        importListExclusion={importListExclusion}
         isOpen={isEditImportListExclusionModalOpen}
         onModalClose={setEditImportListExclusionModalClosed}
         onDeleteImportListExclusionPress={setDeleteImportListExclusionModalOpen}

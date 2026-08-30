@@ -1,16 +1,17 @@
 import moment from 'moment';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useSelector } from 'react-redux';
-import AppState from 'App/State/AppState';
+import { useCalendarOption } from 'Calendar/calendarOptionsStore';
 import * as calendarViews from 'Calendar/calendarViews';
-import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
+import { useCalendarDates } from 'Calendar/useCalendar';
+import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import DayOfWeek from './DayOfWeek';
 import styles from './DaysOfWeek.css';
 
 function DaysOfWeek() {
-  const { dates, view } = useSelector((state: AppState) => state.calendar);
+  const dates = useCalendarDates();
+  const view = useCalendarOption('view');
   const { calendarWeekColumnHeader, shortDateFormat, showRelativeDates } =
-    useSelector(createUISettingsSelector());
+    useUiSettingsValues();
 
   const updateTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined

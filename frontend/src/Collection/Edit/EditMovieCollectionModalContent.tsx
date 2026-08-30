@@ -1,7 +1,10 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import AppState from 'App/State/AppState';
-import useMovieCollection from 'Collection/useMovieCollection';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useAppDimension } from 'App/appStore';
+import MovieCollection from 'Collection/MovieCollection';
+import {
+  useMovieCollection,
+  useSaveMovieCollection,
+} from 'Collection/useMovieCollections';
 import Form from 'Components/Form/Form';
 import FormGroup from 'Components/Form/FormGroup';
 import FormInputGroup from 'Components/Form/FormInputGroup';
@@ -12,15 +15,9 @@ import ModalBody from 'Components/Modal/ModalBody';
 import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
-import usePrevious from 'Helpers/Hooks/usePrevious';
 import { inputTypes } from 'Helpers/Props';
+import selectSettings from 'Helpers/selectSettings';
 import MoviePoster from 'Movie/MoviePoster';
-import {
-  saveMovieCollection,
-  setMovieCollectionValue,
-} from 'Store/Actions/movieCollectionActions';
-import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
-import selectSettings from 'Store/Selectors/selectSettings';
 import { InputChanged } from 'typings/inputs';
 import translate from 'Utilities/String/translate';
 import styles from './EditMovieCollectionModalContent.css';
@@ -34,74 +31,109 @@ function EditMovieCollectionModalContent({
   collectionId,
   onModalClose,
 }: EditMovieCollectionModalContentProps) {
-  const dispatch = useDispatch();
+  const collection = useMovieCollection(collectionId)!;
+  const isSmallScreen = useAppDimension('isSmallScreen');
 
-  const {
-    title,
-    overview,
-    monitored,
-    qualityProfileId,
-    rootFolderPath,
-    searchOnAdd,
-    images,
-    tags,
-  } = useMovieCollection(collectionId)!;
-
-  const { isSaving, saveError, pendingChanges } = useSelector(
-    (state: AppState) => state.movieCollections
+  const [monitored, setMonitored] = useState(collection.monitored);
+  const [qualityProfileId, setQualityProfileId] = useState(
+    collection.qualityProfileId
   );
-  const { isSmallScreen } = useSelector(createDimensionsSelector());
+  const [rootFolderPath, setRootFolderPath] = useState(
+    collection.rootFolderPath
+  );
+  const [searchOnAdd, setSearchOnAdd] = useState(collection.searchOnAdd);
+  const [tags, setTags] = useState(collection.tags ?? []);
 
-  const wasSaving = usePrevious(isSaving);
+  const saveCollection = useSaveMovieCollection();
 
-  const { settings, ...otherSettings } = useMemo(() => {
-    return selectSettings(
-      {
-        monitored,
-        qualityProfileId,
-        rootFolderPath,
-        searchOnAdd,
-        tags,
-      },
-      pendingChanges,
-      saveError
-    );
+  // The fields the user has actually touched. Sent as a patch over the
+  // collection on save, and handed to selectSettings so it can mark them
+  // pending -- which is what `movieCollections.pendingChanges` did.
+  const pendingChanges = useMemo(() => {
+    const changes: Partial<MovieCollection> = {};
+
+    if (monitored !== collection.monitored) {
+      changes.monitored = monitored;
+    }
+
+    if (qualityProfileId !== collection.qualityProfileId) {
+      changes.qualityProfileId = qualityProfileId;
+    }
+
+    if (rootFolderPath !== collection.rootFolderPath) {
+      changes.rootFolderPath = rootFolderPath;
+    }
+
+    if (searchOnAdd !== collection.searchOnAdd) {
+      changes.searchOnAdd = searchOnAdd;
+    }
+
+    if (JSON.stringify(tags) !== JSON.stringify(collection.tags ?? [])) {
+      changes.tags = tags;
+    }
+
+    return changes;
   }, [
     monitored,
     qualityProfileId,
     rootFolderPath,
     searchOnAdd,
     tags,
-    pendingChanges,
-    saveError,
+    collection,
   ]);
 
-  const handleInputChange = useCallback(
-    ({ name, value }: InputChanged) => {
-      // @ts-expect-error actions aren't typed
-      dispatch(setMovieCollectionValue({ name, value }));
-    },
-    [dispatch]
-  );
+  const { settings, validationErrors, validationWarnings } = useMemo(() => {
+    return selectSettings(
+      {
+        monitored: collection.monitored,
+        qualityProfileId: collection.qualityProfileId,
+        rootFolderPath: collection.rootFolderPath,
+        searchOnAdd: collection.searchOnAdd,
+        tags: collection.tags ?? [],
+      },
+      pendingChanges,
+      saveCollection.error
+    );
+  }, [collection, pendingChanges, saveCollection.error]);
+
+  const handleInputChange = useCallback(({ name, value }: InputChanged) => {
+    switch (name) {
+      case 'monitored':
+        setMonitored(value as boolean);
+        break;
+      case 'qualityProfileId':
+        setQualityProfileId(value as number);
+        break;
+      case 'rootFolderPath':
+        setRootFolderPath(value as string);
+        break;
+      case 'searchOnAdd':
+        setSearchOnAdd(value as boolean);
+        break;
+      case 'tags':
+        setTags(value as number[]);
+        break;
+      default:
+        break;
+    }
+  }, []);
 
   const handleSavePress = useCallback(() => {
-    dispatch(
-      saveMovieCollection({
-        id: collectionId,
-      })
-    );
-  }, [collectionId, dispatch]);
+    saveCollection.mutate({ ...collection, ...pendingChanges });
+  }, [saveCollection, collection, pendingChanges]);
 
   useEffect(() => {
-    if (!isSaving && wasSaving && !saveError) {
+    if (saveCollection.isSuccess) {
       onModalClose();
     }
-  }, [isSaving, wasSaving, saveError, onModalClose]);
+  }, [saveCollection.isSuccess, onModalClose]);
 
   return (
     <ModalContent onModalClose={onModalClose}>
       <ModalHeader>
-        {translate('EditMovieCollectionModalHeader', { title })}
+        {translate('EditMovieCollectionModalHeader', {
+          title: collection.title,
+        })}
       </ModalHeader>
 
       <ModalBody>
@@ -110,16 +142,19 @@ function EditMovieCollectionModalContent({
             <div className={styles.poster}>
               <MoviePoster
                 className={styles.poster}
-                images={images}
+                images={collection.images}
                 size={250}
               />
             </div>
           )}
 
           <div className={styles.info}>
-            <div className={styles.overview}>{overview}</div>
+            <div className={styles.overview}>{collection.overview}</div>
 
-            <Form {...otherSettings}>
+            <Form
+              validationErrors={validationErrors}
+              validationWarnings={validationWarnings}
+            >
               <FormGroup>
                 <FormLabel>{translate('Monitored')}</FormLabel>
 
@@ -186,8 +221,8 @@ function EditMovieCollectionModalContent({
         <Button onPress={onModalClose}>{translate('Cancel')}</Button>
 
         <SpinnerErrorButton
-          error={saveError}
-          isSpinning={isSaving}
+          error={saveCollection.error}
+          isSpinning={saveCollection.isPending}
           onPress={handleSavePress}
         >
           {translate('Save')}

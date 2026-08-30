@@ -6,7 +6,6 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import {
   AutoSizer,
@@ -17,11 +16,16 @@ import {
   WindowScroller,
 } from 'react-virtualized';
 import Alert from 'Components/Alert';
+import DetailsPosterOptionsModal from 'Components/DetailsPosterOptionsModal';
+import DetailsPosters from 'Components/DetailsPosters';
 import FieldSet from 'Components/FieldSet';
 import Icon from 'Components/Icon';
 import Label from 'Components/Label';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import Measure from 'Components/Measure';
+import MenuContent from 'Components/Menu/MenuContent';
+import ViewMenu from 'Components/Menu/ViewMenu';
+import ViewMenuItem from 'Components/Menu/ViewMenuItem';
 import MonitorToggleButton from 'Components/MonitorToggleButton';
 import PageContent from 'Components/Page/PageContent';
 import PageContentBody from 'Components/Page/PageContentBody';
@@ -29,12 +33,12 @@ import PageToolbar from 'Components/Page/Toolbar/PageToolbar';
 import PageToolbarButton from 'Components/Page/Toolbar/PageToolbarButton';
 import PageToolbarSection from 'Components/Page/Toolbar/PageToolbarSection';
 import PageToolbarSeparator from 'Components/Page/Toolbar/PageToolbarSeparator';
+import { PosterOptionChange } from 'Components/PosterOptionsForm';
 import posterPlaceholder from 'Components/posterPlaceholder';
 import Tooltip from 'Components/Tooltip/Tooltip';
 import { useShowMovieMonitorToggleButton } from 'Helpers/Hooks/useShowMovieMonitorToggleButton';
-import { icons, kinds, sizes, tooltipPositions } from 'Helpers/Props';
+import { align, icons, kinds, sizes, tooltipPositions } from 'Helpers/Props';
 import QualityProfileName from 'Settings/Profiles/Quality/QualityProfileName';
-import { setStudioScenesExpanded } from 'Store/Actions/studioScenesActions';
 import DeleteStudioModal from 'Studio/Delete/DeleteStudioModal';
 import EditStudioModal from 'Studio/Edit/EditStudioModal';
 import { type Image } from 'Studio/Studio';
@@ -42,7 +46,13 @@ import StudioLogo from 'Studio/StudioLogo';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
 import StudioDetailsLinks from './StudioDetailsLinks';
+import {
+  setStudioDetailsPosterOption,
+  setStudioDetailsView,
+  useStudioDetailsOption,
+} from './studioDetailsOptionsStore';
 import StudioDetailsYear from './StudioDetailsYear';
+import { setStudioScenesExpanded } from './studioScenesOptionsStore';
 import StudioTags from './StudioTags';
 import {
   buildStudioWorksData,
@@ -59,12 +69,30 @@ function getFanartUrl(images: Image[]): string | undefined {
 
 function StudioDetails() {
   const { studioForeignId } = useParams() as { studioForeignId: string };
-  const dispatch = useDispatch();
 
   const { data: allWorks = [], isFetching: isWorksFetching } =
     useStudioDetailsWorks(studioForeignId as string);
 
   const [scrollContainer, setScrollContainer] = useState<Element | null>(null);
+  const [isPosterOptionsModalOpen, setIsPosterOptionsModalOpen] =
+    useState(false);
+  const worksView = useStudioDetailsOption('view');
+  const posterOptions = useStudioDetailsOption('posterOptions');
+  const handleWorksViewSelect = useCallback((view: string) => {
+    setStudioDetailsView(view);
+  }, []);
+  const handlePosterOptionsPress = useCallback(() => {
+    setIsPosterOptionsModalOpen(true);
+  }, []);
+  const handlePosterOptionsModalClose = useCallback(() => {
+    setIsPosterOptionsModalOpen(false);
+  }, []);
+  const handlePosterOptionChange = useCallback(
+    ({ name, value }: PosterOptionChange) => {
+      setStudioDetailsPosterOption({ [name]: value });
+    },
+    []
+  );
   const contentBodyRef = useCallback((el: HTMLDivElement | null) => {
     setScrollContainer(el);
   }, []);
@@ -124,6 +152,10 @@ function StudioDetails() {
   );
 
   const isPopulated = worksByYear.length > 0;
+  const posterWorks = useMemo(
+    () => worksByYear.flatMap((entry) => entry.works),
+    [worksByYear]
+  );
   const moviesError = studioDetailsError;
 
   useEffect(() => {
@@ -134,9 +166,9 @@ function StudioDetails() {
     if (
       JSON.stringify(initialExpandedState) !== JSON.stringify(expandedState)
     ) {
-      dispatch(setStudioScenesExpanded(initialExpandedState));
+      setStudioScenesExpanded(initialExpandedState);
     }
-  }, [allWorks.length, dispatch, expandedState, initialExpandedState]);
+  }, [allWorks.length, expandedState, initialExpandedState]);
 
   const yearIndexMap = useMemo(() => {
     return new Map(worksByYear.map((entry, index) => [entry.year, index]));
@@ -147,8 +179,8 @@ function StudioDetails() {
     years.forEach((year) => {
       newExpandedState[year] = !allExpanded;
     });
-    dispatch(setStudioScenesExpanded(newExpandedState));
-  }, [allExpanded, dispatch, years]);
+    setStudioScenesExpanded(newExpandedState);
+  }, [allExpanded, years]);
 
   const handleVirtualizedExpandPress = useCallback(
     (year: number, expand: boolean) => {
@@ -203,7 +235,6 @@ function StudioDetails() {
               studioId={studioId}
               year={entry.year}
               works={entry.works}
-              safeForWorkMode={safeForWorkMode}
               isExpanded={isExpanded}
               onExpandPress={handleVirtualizedExpandPress}
               onYearRefreshPress={onYearRefreshPress}
@@ -214,7 +245,6 @@ function StudioDetails() {
     },
     [
       expandedState,
-      safeForWorkMode,
       studioId,
       worksByYear,
       handleVirtualizedExpandPress,
@@ -279,11 +309,42 @@ function StudioDetails() {
         </PageToolbarSection>
 
         <PageToolbarSection alignContent="right">
-          <PageToolbarButton
-            label={allExpanded ? 'Collapse All' : 'Expand All'}
-            iconName={expandIcon}
-            onPress={handleExpandAllPress}
-          />
+          {worksView === 'posters' ? (
+            <>
+              <PageToolbarButton
+                label={translate('Options')}
+                iconName={icons.POSTER}
+                onPress={handlePosterOptionsPress}
+              />
+              <PageToolbarSeparator />
+            </>
+          ) : null}
+          <ViewMenu alignMenu={align.RIGHT}>
+            <MenuContent>
+              <ViewMenuItem
+                name="table"
+                selectedView={worksView}
+                onPress={handleWorksViewSelect}
+              >
+                {translate('Table')}
+              </ViewMenuItem>
+              <ViewMenuItem
+                name="posters"
+                selectedView={worksView}
+                onPress={handleWorksViewSelect}
+              >
+                {translate('Posters')}
+              </ViewMenuItem>
+            </MenuContent>
+          </ViewMenu>
+
+          {worksView === 'table' ? (
+            <PageToolbarButton
+              label={allExpanded ? 'Collapse All' : 'Expand All'}
+              iconName={expandIcon}
+              onPress={handleExpandAllPress}
+            />
+          ) : null}
         </PageToolbarSection>
       </PageToolbar>
 
@@ -508,56 +569,71 @@ function StudioDetails() {
           {/* WORKS BY YEAR */}
           {isPopulated && (studio.hasMovies || studio.hasScenes) && (
             <FieldSet legend={translate('Works')}>
-              <WindowScroller scrollElement={scrollContainer ?? undefined}>
-                {({
-                  height,
-                  isScrolling,
-                  onChildScroll,
-                  scrollTop,
-                  registerChild,
-                }) => {
-                  if (!height) {
-                    return null;
-                  }
+              {worksView === 'table' ? (
+                <WindowScroller scrollElement={scrollContainer ?? undefined}>
+                  {({
+                    height,
+                    isScrolling,
+                    onChildScroll,
+                    scrollTop,
+                    registerChild,
+                  }) => {
+                    if (!height) {
+                      return null;
+                    }
 
-                  return (
-                    <div
-                      ref={(element) => {
-                        (
-                          registerChild as unknown as (
-                            el: Element | null
-                          ) => void
-                        )(element);
-                      }}
-                    >
-                      <AutoSizer disableHeight={true}>
-                        {({ width }) => (
-                          <List
-                            ref={listRef}
-                            autoHeight={true}
-                            height={height}
-                            width={width}
-                            rowCount={worksByYear.length}
-                            rowHeight={cacheRef.current.rowHeight}
-                            estimatedRowSize={80}
-                            deferredMeasurementCache={cacheRef.current}
-                            overscanRowCount={6}
-                            scrollTop={scrollTop}
-                            isScrolling={isScrolling}
-                            rowRenderer={rowRenderer}
-                            onScroll={onChildScroll}
-                          />
-                        )}
-                      </AutoSizer>
-                    </div>
-                  );
-                }}
-              </WindowScroller>
+                    return (
+                      <div
+                        ref={(element) => {
+                          (
+                            registerChild as unknown as (
+                              el: Element | null
+                            ) => void
+                          )(element);
+                        }}
+                      >
+                        <AutoSizer disableHeight={true}>
+                          {({ width }) => (
+                            <List
+                              ref={listRef}
+                              autoHeight={true}
+                              height={height}
+                              width={width}
+                              rowCount={worksByYear.length}
+                              rowHeight={cacheRef.current.rowHeight}
+                              estimatedRowSize={80}
+                              deferredMeasurementCache={cacheRef.current}
+                              overscanRowCount={6}
+                              scrollTop={scrollTop}
+                              isScrolling={isScrolling}
+                              rowRenderer={rowRenderer}
+                              onScroll={onChildScroll}
+                            />
+                          )}
+                        </AutoSizer>
+                      </div>
+                    );
+                  }}
+                </WindowScroller>
+              ) : (
+                <DetailsPosters
+                  items={posterWorks}
+                  posterOptions={posterOptions}
+                  scrollContainer={scrollContainer}
+                  sortKey="releaseDate"
+                />
+              )}
             </FieldSet>
           )}
         </div>
 
         {/* MODALS */}
+        <DetailsPosterOptionsModal
+          isOpen={isPosterOptionsModalOpen}
+          posterOptions={posterOptions}
+          onModalClose={handlePosterOptionsModalClose}
+          onPosterOptionChange={handlePosterOptionChange}
+        />
         {studio && (
           <>
             <EditStudioModal
@@ -570,7 +646,6 @@ function StudioDetails() {
               isOpen={isDeleteMovieModalOpen}
               studio={studio}
               onModalClose={handleDeleteMovieModalClose}
-              onDeleteMoviePress={handleDeleteMoviePress}
             />
           </>
         )}

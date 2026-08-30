@@ -1,11 +1,9 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
-import { createSelector } from 'reselect';
-import AppState from 'App/State/AppState';
 import Scroller from 'Components/Scroller/Scroller';
 import { HORIZONTAL } from 'Helpers/Props/scrollDirections';
 import { SortDirection } from 'Helpers/Props/sortDirections';
 import Movie from 'Movie/Movie';
+import { useSceneIndexOption } from '../sceneIndexOptionsStore';
 import SceneIndexRow from './SceneIndexRow';
 import SceneIndexTableHeader from './SceneIndexTableHeader';
 import styles from './SceneIndexTable.css';
@@ -18,14 +16,9 @@ interface SceneIndexTableProps {
   isSmallScreen: boolean;
 }
 
-const columnsSelector = createSelector(
-  (state: AppState) => state.sceneIndex.columns,
-  (columns) => columns
-);
-
 function SceneIndexTable(props: SceneIndexTableProps) {
   const { items, sortKey, sortDirection, isSelectMode } = props;
-  const columns = useSelector(columnsSelector);
+  const columns = useSceneIndexOption('columns');
 
   return (
     <Scroller className={styles.tableScroller} scrollDirection={HORIZONTAL}>

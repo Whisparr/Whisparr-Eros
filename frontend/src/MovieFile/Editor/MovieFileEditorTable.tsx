@@ -1,16 +1,16 @@
-import React, { useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import AppState from 'App/State/AppState';
+import React, { useCallback, useMemo } from 'react';
 import Alert from 'Components/Alert';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import { SortDirection } from 'Helpers/Props/sortDirections';
-import {
-  deleteMovieFile,
-  setMovieFilesSort,
-  setMovieFilesTableOption,
-} from 'Store/Actions/movieFileActions';
+import { TableOptionsChangePayload } from 'typings/Table';
+import clientSideFilterAndSort from 'Utilities/Filter/clientSideFilterAndSort';
 import translate from 'Utilities/String/translate';
-import useMovieFile from '../useMovieFile';
+import useMovieFile, { useDeleteMovieFile } from '../useMovieFile';
+import {
+  setMovieFileEditorOptions,
+  setMovieFileEditorSort,
+  useMovieFileEditorOptions,
+} from './movieFileEditorOptionsStore';
 import MovieFileEditorTableContent from './MovieFileEditorTableContent';
 import styles from './MovieFileEditorTable.css';
 
@@ -19,44 +19,47 @@ export interface MovieFileEditorTableProps {
 }
 
 function MovieFileEditorTable({ movieId }: MovieFileEditorTableProps) {
-  const dispatch = useDispatch();
-  const { columns, sortKey, sortDirection, isDeleting } = useSelector(
-    (state: AppState) => state.movieFiles
-  );
+  const { columns, sortKey, sortDirection } = useMovieFileEditorOptions();
 
   const { data: items, isLoading, isError, error } = useMovieFile(movieId);
+  const { mutate: deleteMovieFile } = useDeleteMovieFile();
 
-  const onDeletePress = useCallback(
+  // The table hands the header its sort key and direction; nothing applied
+  // them to the rows, so every column header was inert.
+  const sortedItems = useMemo(() => {
+    return clientSideFilterAndSort(items ?? [], { sortKey, sortDirection })
+      .data;
+  }, [items, sortKey, sortDirection]);
+
+  const handleDeletePress = useCallback(
     (id: number) => {
-      dispatch(deleteMovieFile({ id }));
+      deleteMovieFile({ id });
     },
-    [dispatch]
+    [deleteMovieFile]
   );
 
-  const onTableOptionChange = useCallback(
-    (payload: unknown) => {
-      dispatch(setMovieFilesTableOption(payload));
+  const handleTableOptionChange = useCallback(
+    (payload: TableOptionsChangePayload) => {
+      setMovieFileEditorOptions(payload);
     },
-    [dispatch]
+    []
   );
 
-  const onSortPress = useCallback(
+  const handleSortPress = useCallback(
     (name: string, newSortDirection?: SortDirection) => {
-      dispatch(
-        setMovieFilesSort({
-          sortKey: name,
-          sortDirection: newSortDirection ?? sortDirection,
-        })
-      );
+      setMovieFileEditorSort({
+        sortKey: name,
+        sortDirection: newSortDirection,
+      });
     },
-    [dispatch, sortDirection]
+    []
   );
 
   if (isError) {
     return (
       <div className={styles.container}>
         <Alert kind="danger">{`${translate('LoadingMovieFilesFailed')}: ${
-          (error as Error)?.message || translate('UnknownError')
+          error?.message || translate('UnknownError')
         }`}</Alert>
       </div>
     );
@@ -73,14 +76,13 @@ function MovieFileEditorTable({ movieId }: MovieFileEditorTableProps) {
   return (
     <div className={styles.container}>
       <MovieFileEditorTableContent
-        items={items ?? []}
+        items={sortedItems}
         columns={columns}
         sortKey={sortKey}
         sortDirection={sortDirection}
-        isDeleting={isDeleting}
-        onDeletePress={onDeletePress}
-        onTableOptionChange={onTableOptionChange}
-        onSortPress={onSortPress}
+        onDeletePress={handleDeletePress}
+        onTableOptionChange={handleTableOptionChange}
+        onSortPress={handleSortPress}
       />
     </div>
   );

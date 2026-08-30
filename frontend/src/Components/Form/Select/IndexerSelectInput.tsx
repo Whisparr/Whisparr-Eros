@@ -1,42 +1,9 @@
-import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { createSelector } from 'reselect';
-import AppState from 'App/State/AppState';
-import { fetchIndexers } from 'Store/Actions/settingsActions';
+import React, { useMemo } from 'react';
+import { useIndexers } from 'Settings/Indexers/Indexers/useIndexers';
 import { EnhancedSelectInputChanged } from 'typings/inputs';
 import sortByProp from 'Utilities/Array/sortByProp';
 import translate from 'Utilities/String/translate';
 import EnhancedSelectInput from './EnhancedSelectInput';
-
-function createIndexersSelector(includeAny: boolean) {
-  return createSelector(
-    (state: AppState) => state.settings.indexers,
-    (indexers) => {
-      const { isFetching, isPopulated, error, items } = indexers;
-
-      const values = items.sort(sortByProp('name')).map((indexer) => {
-        return {
-          key: indexer.id,
-          value: indexer.name,
-        };
-      });
-
-      if (includeAny) {
-        values.unshift({
-          key: 0,
-          value: `(${translate('Any')})`,
-        });
-      }
-
-      return {
-        isFetching,
-        isPopulated,
-        error,
-        values,
-      };
-    }
-  );
-}
 
 export interface IndexerSelectInputProps {
   name: string;
@@ -50,17 +17,28 @@ function IndexerSelectInput({
   value,
   includeAny = false,
   onChange,
-}: IndexerSelectInputProps) {
-  const dispatch = useDispatch();
-  const { isFetching, isPopulated, values } = useSelector(
-    createIndexersSelector(includeAny)
-  );
+}: Readonly<IndexerSelectInputProps>) {
+  const { data, isFetching } = useIndexers();
 
-  useEffect(() => {
-    if (!isPopulated) {
-      dispatch(fetchIndexers());
+  const values = useMemo(() => {
+    // The selector this replaces sorted `items` in place, which mutated the
+    // slice's own array. Under React Query that array is the cached object
+    // every other reader shares, so the copy is not optional -- it is the §8
+    // F1 hazard.
+    const sorted = [...data].sort(sortByProp('name')).map((indexer) => ({
+      key: indexer.id,
+      value: indexer.name,
+    }));
+
+    if (includeAny) {
+      sorted.unshift({
+        key: 0,
+        value: `(${translate('Any')})`,
+      });
     }
-  }, [isPopulated, dispatch]);
+
+    return sorted;
+  }, [data, includeAny]);
 
   return (
     <EnhancedSelectInput

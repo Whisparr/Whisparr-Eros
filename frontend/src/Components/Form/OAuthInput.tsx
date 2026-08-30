@@ -1,17 +1,16 @@
 import React, { useCallback, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import AppState from 'App/State/AppState';
 import SpinnerErrorButton from 'Components/Link/SpinnerErrorButton';
 import { kinds } from 'Helpers/Props';
-import { resetOAuth, startOAuth } from 'Store/Actions/oAuthActions';
+import useOAuth from 'OAuth/useOAuth';
+import AppError from 'typings/AppError';
 import { InputOnChange } from 'typings/inputs';
 
 export interface OAuthInputProps {
   label?: string;
   name: string;
   provider: string;
-  providerData: object;
-  section: string;
+  providerData: Record<string, unknown>;
+  onSaveError?: (error: AppError | null) => void;
   onChange: InputOnChange<unknown>;
 }
 
@@ -20,24 +19,32 @@ function OAuthInput({
   name,
   provider,
   providerData,
-  section,
+  onSaveError,
   onChange,
-}: OAuthInputProps) {
-  const dispatch = useDispatch();
-  const { authorizing, error, result } = useSelector(
-    (state: AppState) => state.oAuth
+}: Readonly<OAuthInputProps>) {
+  const { authorizing, error, result, startOAuth, resetOAuth } = useOAuth();
+
+  // The provider form reads validation errors off whatever holds its save
+  // error, so a failed authorization has to be reported there rather than just
+  // shown on the button.
+  const reportSaveError = useCallback(
+    (saveError: AppError | null) => {
+      onSaveError?.(saveError);
+    },
+    [onSaveError]
   );
 
   const handlePress = useCallback(() => {
-    dispatch(
-      startOAuth({
-        name,
-        provider,
-        providerData,
-        section,
+    startOAuth({ name, provider, providerData })
+      .then(() => {
+        reportSaveError(null);
       })
-    );
-  }, [name, provider, providerData, section, dispatch]);
+      .catch((error) => {
+        if (error?.status === 400) {
+          reportSaveError(error);
+        }
+      });
+  }, [name, provider, providerData, startOAuth, reportSaveError]);
 
   useEffect(() => {
     if (!result) {
@@ -51,9 +58,9 @@ function OAuthInput({
 
   useEffect(() => {
     return () => {
-      dispatch(resetOAuth());
+      resetOAuth();
     };
-  }, [dispatch]);
+  }, [resetOAuth]);
 
   return (
     <div>

@@ -1,7 +1,4 @@
 import React, { useCallback, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { createSelector } from 'reselect';
-import { LanguageSettingsAppState } from 'App/State/SettingsAppState';
 import Alert from 'Components/Alert';
 import Form from 'Components/Form/Form';
 import FormGroup from 'Components/Form/FormGroup';
@@ -15,7 +12,7 @@ import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { inputTypes, kinds, sizes } from 'Helpers/Props';
 import Language from 'Language/Language';
-import createLanguagesSelector from 'Store/Selectors/createLanguagesSelector';
+import { useFilteredLanguages } from 'Language/useLanguages';
 import translate from 'Utilities/String/translate';
 import styles from './SelectLanguageModalContent.css';
 
@@ -26,31 +23,21 @@ interface SelectLanguageModalContentProps {
   onModalClose(): void;
 }
 
-function createFilteredLanguagesSelector() {
-  return createSelector(createLanguagesSelector(), (languages) => {
-    const { isFetching, isPopulated, error, items } =
-      languages as LanguageSettingsAppState;
+// Neither is something a file can be tagged with: `Any` is the wildcard and
+// `Original` means "whatever the file says".
+const UNSELECTABLE_LANGUAGES = ['Any', 'Original'];
 
-    const filterItems = ['Any', 'Original'];
-    const filteredLanguages = items.filter(
-      (lang: Language) => !filterItems.includes(lang.name)
-    );
-
-    return {
-      isFetching,
-      isPopulated,
-      error,
-      items: filteredLanguages,
-    };
-  });
-}
-
-function SelectLanguageModalContent(props: SelectLanguageModalContentProps) {
+function SelectLanguageModalContent(
+  props: Readonly<SelectLanguageModalContentProps>
+) {
   const { modalTitle, onLanguagesSelect, onModalClose } = props;
 
-  const { isFetching, isPopulated, error, items } = useSelector(
-    createFilteredLanguagesSelector()
-  );
+  const {
+    isFetching,
+    isFetched,
+    error,
+    data: items,
+  } = useFilteredLanguages(UNSELECTABLE_LANGUAGES);
 
   const [languageIds, setLanguageIds] = useState(props.languageIds);
 
@@ -90,7 +77,7 @@ function SelectLanguageModalContent(props: SelectLanguageModalContentProps) {
           <Alert kind={kinds.DANGER}>{translate('LanguagesLoadError')}</Alert>
         ) : null}
 
-        {isPopulated && !error ? (
+        {isFetched && !error ? (
           <Form>
             {items.map((language) => {
               return (

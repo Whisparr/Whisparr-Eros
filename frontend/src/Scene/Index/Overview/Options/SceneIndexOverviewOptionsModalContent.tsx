@@ -1,5 +1,4 @@
 import React, { useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import Form from 'Components/Form/Form';
 import FormGroup from 'Components/Form/FormGroup';
 import FormInputGroup from 'Components/Form/FormInputGroup';
@@ -10,9 +9,11 @@ import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { inputTypes } from 'Helpers/Props';
-import { setSceneOverviewOption } from 'Store/Actions/sceneIndexActions';
 import translate from 'Utilities/String/translate';
-import selectOverviewOptions from '../selectOverviewOptions';
+import {
+  setSceneIndexOverviewOption,
+  useSceneIndexOption,
+} from '../../sceneIndexOptionsStore';
 
 const posterSizeOptions = [
   {
@@ -55,15 +56,13 @@ function SceneIndexOverviewOptionsModalContent(
     showPath,
     showSizeOnDisk,
     showSearchAction,
-  } = useSelector(selectOverviewOptions);
-
-  const dispatch = useDispatch();
+  } = useSceneIndexOption('overviewOptions');
 
   const onOverviewOptionChange = useCallback(
     ({ name, value }: { name: string; value: unknown }) => {
-      dispatch(setSceneOverviewOption({ [name]: value }));
+      setSceneIndexOverviewOption({ [name]: value });
     },
-    [dispatch]
+    []
   );
 
   return (

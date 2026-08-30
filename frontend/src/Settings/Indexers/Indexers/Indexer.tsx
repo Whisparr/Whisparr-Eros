@@ -1,63 +1,64 @@
-import React, { useCallback, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useCallback } from 'react';
 import Card from 'Components/Card';
 import Label from 'Components/Label';
 import IconButton from 'Components/Link/IconButton';
 import ConfirmModal from 'Components/Modal/ConfirmModal';
 import TagList from 'Components/TagList';
+import useModalOpenState from 'Helpers/Hooks/useModalOpenState';
 import { icons, kinds } from 'Helpers/Props';
-import { deleteIndexer } from 'Store/Actions/settingsActions';
-import createTagsSelector from 'Store/Selectors/createTagsSelector';
+import { useTagList } from 'Tags/useTags';
 import IndexerModel from 'typings/Indexer';
 import translate from 'Utilities/String/translate';
 import EditIndexerModal from './EditIndexerModal';
+import { useDeleteIndexer } from './useIndexers';
 import styles from './Indexer.css';
 
-interface IndexerProps extends IndexerModel {
+interface IndexerProps {
+  indexer: IndexerModel;
   showPriority: boolean;
   onCloneIndexerPress: (id: number) => void;
 }
 
 function Indexer({
-  id,
-  name,
-  enableRss,
-  enableAutomaticSearch,
-  enableInteractiveSearch,
-  tags,
-  supportsRss,
-  supportsSearch,
-  priority,
+  indexer,
   showPriority,
   onCloneIndexerPress,
-}: IndexerProps) {
-  const dispatch = useDispatch();
-  const tagList = useSelector(createTagsSelector());
+}: Readonly<IndexerProps>) {
+  const {
+    id,
+    name,
+    enableRss,
+    enableAutomaticSearch,
+    enableInteractiveSearch,
+    tags,
+    supportsRss,
+    supportsSearch,
+    priority,
+  } = indexer;
 
-  const [isEditIndexerModalOpen, setIsEditIndexerModalOpen] = useState(false);
-  const [isDeleteIndexerModalOpen, setIsDeleteIndexerModalOpen] =
-    useState(false);
+  const tagList = useTagList();
+  const { deleteIndexer, isDeleting } = useDeleteIndexer(id);
 
-  const handleEditIndexerPress = useCallback(() => {
-    setIsEditIndexerModalOpen(true);
-  }, []);
+  const [
+    isEditIndexerModalOpen,
+    setEditIndexerModalOpen,
+    setEditIndexerModalClosed,
+  ] = useModalOpenState(false);
 
-  const handleEditIndexerModalClose = useCallback(() => {
-    setIsEditIndexerModalOpen(false);
-  }, []);
+  const [
+    isDeleteIndexerModalOpen,
+    setDeleteIndexerModalOpen,
+    setDeleteIndexerModalClosed,
+  ] = useModalOpenState(false);
 
   const handleDeleteIndexerPress = useCallback(() => {
-    setIsEditIndexerModalOpen(false);
-    setIsDeleteIndexerModalOpen(true);
-  }, []);
-
-  const handleDeleteIndexerModalClose = useCallback(() => {
-    setIsDeleteIndexerModalOpen(false);
-  }, []);
+    setEditIndexerModalClosed();
+    setDeleteIndexerModalOpen();
+  }, [setEditIndexerModalClosed, setDeleteIndexerModalOpen]);
 
   const handleConfirmDeleteIndexer = useCallback(() => {
-    dispatch(deleteIndexer({ id }));
-  }, [id, dispatch]);
+    deleteIndexer();
+  }, [deleteIndexer]);
 
   const handleCloneIndexerPress = useCallback(() => {
     onCloneIndexerPress(id);
@@ -67,7 +68,7 @@ function Indexer({
     <Card
       className={styles.indexer}
       overlayContent={true}
-      onPress={handleEditIndexerPress}
+      onPress={setEditIndexerModalOpen}
     >
       <div className={styles.nameContainer}>
         <div className={styles.name}>{name}</div>
@@ -111,8 +112,8 @@ function Indexer({
       <EditIndexerModal
         id={id}
         isOpen={isEditIndexerModalOpen}
-        onModalClose={handleEditIndexerModalClose}
         onDeleteIndexerPress={handleDeleteIndexerPress}
+        onModalClose={setEditIndexerModalClosed}
       />
 
       <ConfirmModal
@@ -121,8 +122,9 @@ function Indexer({
         title={translate('DeleteIndexer')}
         message={translate('DeleteIndexerMessageText', { name })}
         confirmLabel={translate('Delete')}
+        isSpinning={isDeleting}
         onConfirm={handleConfirmDeleteIndexer}
-        onCancel={handleDeleteIndexerModalClose}
+        onCancel={setDeleteIndexerModalClosed}
       />
     </Card>
   );

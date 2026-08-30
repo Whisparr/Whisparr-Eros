@@ -1,15 +1,17 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Error } from 'App/State/AppSectionState';
 import Icon, { IconKind, IconName } from 'Components/Icon';
 import SpinnerButton, {
   SpinnerButtonProps,
 } from 'Components/Link/SpinnerButton';
+import { getValidationFailures } from 'Helpers/Hooks/useApiMutation';
 import usePrevious from 'Helpers/Hooks/usePrevious';
 import { icons } from 'Helpers/Props';
+import AppError from 'typings/AppError';
 import { ValidationFailure } from 'typings/pending';
+import { ApiError } from 'Utilities/Fetch/fetchJson';
 import styles from './SpinnerErrorButton.css';
 
-function getTestResult(error: Error | string | undefined) {
+function getTestResult(error: ApiError | AppError | string | undefined | null) {
   if (!error) {
     return {
       wasSuccessful: true,
@@ -18,7 +20,33 @@ function getTestResult(error: Error | string | undefined) {
     };
   }
 
-  if (typeof error === 'string' || error.status !== 400) {
+  if (typeof error === 'string') {
+    return {
+      wasSuccessful: false,
+      hasWarning: false,
+      hasError: true,
+    };
+  }
+
+  if (error instanceof ApiError) {
+    if (error.statusCode !== 400 || error.statusBody == null) {
+      return {
+        wasSuccessful: false,
+        hasWarning: false,
+        hasError: true,
+      };
+    }
+
+    const failures = getValidationFailures(error);
+
+    return {
+      wasSuccessful: false,
+      hasWarning: failures.warnings.length > 0,
+      hasError: failures.errors.length > 0,
+    };
+  }
+
+  if (error.status !== 400) {
     return {
       wasSuccessful: false,
       hasWarning: false,
@@ -50,7 +78,7 @@ function getTestResult(error: Error | string | undefined) {
 
 interface SpinnerErrorButtonProps extends SpinnerButtonProps {
   isSpinning: boolean;
-  error?: Error | string;
+  error?: ApiError | AppError | string | null;
   children: React.ReactNode;
 }
 

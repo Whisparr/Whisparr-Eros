@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import FormGroup from 'Components/Form/FormGroup';
 import FormInputGroup from 'Components/Form/FormInputGroup';
 import FormLabel from 'Components/Form/FormLabel';
@@ -9,44 +9,49 @@ import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { inputTypes, kinds, sizes } from 'Helpers/Props';
+import {
+  setStudioDeleteOption,
+  useStudioDeleteOptions,
+} from 'Studio/studioDeleteOptionsStore';
 import translate from 'Utilities/String/translate';
-import { useDeleteStudioModalContent } from './useDeleteStudioModalContent';
 import styles from './DeleteStudioModal.css';
 
 interface DeleteStudioModalContentProps {
-  studioIds: number[];
-  onModalClose: (deleted?: boolean) => void;
+  onDeletePress: (deleteFiles: boolean, addImportExclusion: boolean) => void;
+  onModalClose: () => void;
 }
 
 function DeleteStudioModalContent({
-  studioIds,
+  onDeletePress,
   onModalClose,
-}: DeleteStudioModalContentProps) {
+}: Readonly<DeleteStudioModalContentProps>) {
   const [deleteFiles, setDeleteFiles] = useState(false);
-  const { deleteOptions, onDeleteOptionChange, onDeletePress } =
-    useDeleteStudioModalContent(studioIds, onModalClose);
 
-  const addImportExclusion = deleteOptions?.addImportExclusion ?? false;
+  // The exclusion preference is the same store the per-studio modal uses -- it
+  // was one `studios.deleteOptions` blob before either converted.
+  const { addImportExclusion } = useStudioDeleteOptions();
 
-  function handleDeleteOptionChange({ value }: { value: boolean }) {
-    onDeleteOptionChange({ name: 'addImportExclusion', value });
-  }
+  const handleDeleteOptionChange = useCallback(
+    ({ value }: { value: boolean }) => {
+      setStudioDeleteOption('addImportExclusion', value);
+    },
+    []
+  );
 
-  function handleDeleteFilesChange({ value }: { value: boolean }) {
-    setDeleteFiles(value);
-  }
+  const handleDeleteFilesChange = useCallback(
+    ({ value }: { value: boolean }) => {
+      setDeleteFiles(value);
+    },
+    []
+  );
 
-  function handleDeleteStudioConfirmed() {
-    onDeletePress(deleteFiles, addImportExclusion);
+  const handleDeleteStudioConfirmed = useCallback(() => {
     setDeleteFiles(false);
-  }
-
-  function handleModalClose() {
-    onModalClose(false);
-  }
+    onDeletePress(deleteFiles, addImportExclusion);
+  }, [deleteFiles, addImportExclusion, onDeletePress]);
 
   return (
-    <ModalContent onModalClose={handleModalClose}>
+    <ModalContent onModalClose={onModalClose}>
       <ModalHeader>{translate('DeleteStudiosModalHeader')}</ModalHeader>
       <ModalBody>
         <FormGroup>
@@ -80,7 +85,7 @@ function DeleteStudioModalContent({
         </FormGroup>
       </ModalBody>
       <ModalFooter>
-        <Button onPress={handleModalClose}>{translate('Close')}</Button>
+        <Button onPress={onModalClose}>{translate('Close')}</Button>
         <Button kind={kinds.DANGER} onPress={handleDeleteStudioConfirmed}>
           {translate('Delete')}
         </Button>

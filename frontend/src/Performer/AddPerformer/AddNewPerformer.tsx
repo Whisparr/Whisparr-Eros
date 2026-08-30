@@ -1,5 +1,4 @@
 import React from 'react';
-import { Error } from 'App/State/AppSectionState';
 import Alert from 'Components/Alert';
 import TextInput from 'Components/Form/TextInput';
 import Icon from 'Components/Icon';
@@ -65,9 +64,7 @@ function AddNewPerformer() {
             <div className={styles.helpText}>
               {translate('YouCanAlsoSearchPerformer')}
             </div>
-            <Alert kind={kinds.WARNING}>
-              {getErrorMessage(error as Error)}
-            </Alert>
+            <Alert kind={kinds.WARNING}>{getErrorMessage(error)}</Alert>
             <div>
               <Link to="https://wiki.servarr.com/whisparr/troubleshooting#invalid-response-received-from-tmdb">
                 {translate('WhySearchesCouldBeFailing')}

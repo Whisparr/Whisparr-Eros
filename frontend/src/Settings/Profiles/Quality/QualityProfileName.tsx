@@ -1,16 +1,15 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
-import { createQualityProfileSelectorForHook } from 'Store/Selectors/createQualityProfileSelector';
 import translate from 'Utilities/String/translate';
+import { useQualityProfile } from './useQualityProfiles';
 
 interface QualityProfileNameProps {
   qualityProfileId: number;
 }
 
-function QualityProfileName({ qualityProfileId }: QualityProfileNameProps) {
-  const qualityProfile = useSelector(
-    createQualityProfileSelectorForHook(qualityProfileId)
-  );
+function QualityProfileName({
+  qualityProfileId,
+}: Readonly<QualityProfileNameProps>) {
+  const qualityProfile = useQualityProfile(qualityProfileId);
 
   return <span>{qualityProfile?.name ?? translate('Unknown')}</span>;
 }

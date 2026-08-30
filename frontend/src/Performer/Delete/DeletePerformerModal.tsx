@@ -7,27 +7,19 @@ import DeletePerformerModalContent from './DeletePerformerModalContent';
 export interface DeletePerformerModalProps {
   isOpen: boolean;
   performer: Performer;
-  onModalClose: (deleted: boolean) => void;
-  [key: string]: string | unknown;
+  onModalClose: () => void;
 }
 
 function DeletePerformerModal({
   isOpen,
   performer,
   onModalClose,
-  ...otherProps
-}: DeletePerformerModalProps) {
-  // Adapt the signature for Modal
-  const handleModalClose = () => {
-    onModalClose(false);
-  };
+}: Readonly<DeletePerformerModalProps>) {
   return (
-    // eslint-disable-next-line react/jsx-no-bind
-    <Modal isOpen={isOpen} size={sizes.MEDIUM} onModalClose={handleModalClose}>
+    <Modal isOpen={isOpen} size={sizes.MEDIUM} onModalClose={onModalClose}>
       <DeletePerformerModalContent
         performer={performer}
         onModalClose={onModalClose}
-        {...otherProps}
       />
     </Modal>
   );

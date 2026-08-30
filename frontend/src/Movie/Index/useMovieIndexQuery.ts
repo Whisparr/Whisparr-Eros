@@ -1,15 +1,11 @@
-import { useSelector } from 'react-redux';
-import AppState, {
-  CustomFilter,
-  Filter,
-  PropertyFilter,
-} from 'App/State/AppState';
+import { CustomFilter, Filter, PropertyFilter } from 'Filters/Filter';
+import { useCustomFiltersList } from 'Filters/useCustomFilters';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import { SortDirection } from 'Helpers/Props/sortDirections';
+import { MOVIE_INDEX_FILTERS } from 'Movie/Index/movieIndexFilters';
 import Movie from 'Movie/Movie';
 import { PagingResource } from 'Movie/Movie.types';
-import { filters as movieIndexFilters } from 'Store/Actions/movieActions';
-import { createCustomFiltersSelector } from 'Store/Selectors/createClientSideCollectionSelector';
+import { useMovieIndexOption } from './movieIndexOptionsStore';
 
 export interface MovieIndexQueryParams {
   page: number;
@@ -19,13 +15,11 @@ export interface MovieIndexQueryParams {
 }
 
 export function useMovieIndexQuery(params: MovieIndexQueryParams) {
-  const selectedFilterKey = useSelector(
-    (state: AppState) => state.movieIndex.selectedFilterKey
-  );
+  const selectedFilterKey = useMovieIndexOption('selectedFilterKey');
 
-  const customFilters = useSelector(createCustomFiltersSelector('movieIndex'));
+  const customFilters = useCustomFiltersList('movieIndex');
 
-  let filterDef: Filter | undefined = undefined;
+  let filterDef: Filter | CustomFilter | undefined = undefined;
   let filters: PropertyFilter[] = [];
 
   if (
@@ -40,7 +34,7 @@ export function useMovieIndexQuery(params: MovieIndexQueryParams) {
     filters = filterDef && filterDef.filters ? filterDef.filters : [];
   } else {
     // String key indicates a predefined filter
-    filterDef = movieIndexFilters.find((f) => f.key === selectedFilterKey);
+    filterDef = MOVIE_INDEX_FILTERS.find((f) => f.key === selectedFilterKey);
     filters = filterDef && filterDef.filters ? filterDef.filters : [];
   }
 

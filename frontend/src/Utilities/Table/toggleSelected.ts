@@ -5,7 +5,7 @@ import getToggledRange from './getToggledRange';
 
 function toggleSelected<T extends ModelBase>(
   selectState: SelectState,
-  items: T[],
+  items: readonly T[],
   id: number | string,
   selected: boolean | null,
   shiftKey: boolean

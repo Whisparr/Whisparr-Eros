@@ -198,6 +198,46 @@ namespace NzbDrone.Core.Test.OrganizerTests.FileNameBuilderTests
         }
 
         [Test]
+        public void scene_release_year_format()
+        {
+            _scene.MovieMetadata.Value.Year = 0; // SkyHook only populates the year for movies
+            _namingConfig.StandardSceneFormat = "{Studio Title} - {Release-Year} - {Scene Title}";
+
+            Subject.BuildFileName(_scene, _movieFile)
+                .Should().Be("Pure Taboo - 2025 - The Last Train Home");
+        }
+
+        [Test]
+        public void scene_release_year_uses_metadata_year_when_available()
+        {
+            _scene.MovieMetadata.Value.Year = 1998;
+            _namingConfig.StandardSceneFormat = "{Release Year}";
+
+            Subject.BuildFileName(_scene, _movieFile)
+                .Should().Be("1998");
+        }
+
+        [Test]
+        public void scene_release_year_empty_when_no_release_date_or_year()
+        {
+            _scene.MovieMetadata.Value.Year = 0;
+            _scene.MovieMetadata.Value.ReleaseDate = null;
+            _namingConfig.StandardSceneFormat = "{Studio Title} - {Release-Year}";
+
+            Subject.BuildFileName(_scene, _movieFile)
+                .Should().Be("Pure Taboo");
+        }
+
+        [Test]
+        public void scene_folder_release_year_format()
+        {
+            _namingConfig.SceneFolderFormat = "{Studio Title}/{Release Year}";
+
+            Subject.GetMovieFolder(_scene, _namingConfig)
+                .Should().Be(Path.Combine("Pure Taboo", "2025"));
+        }
+
+        [Test]
         public void scene_performers_format()
         {
             _namingConfig.StandardSceneFormat = "{Studio Title} - {Release-Date} - {Scene Title} [{Scene Performers}]";

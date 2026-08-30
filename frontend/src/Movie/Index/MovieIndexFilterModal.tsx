@@ -1,27 +1,8 @@
 import React, { useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { createSelector } from 'reselect';
-import AppState from 'App/State/AppState';
 import FilterModal from 'Components/Filter/FilterModal';
-import { setMovieFilter, setMoviePage } from 'Store/Actions/movieIndexActions';
-
-function createMovieSelector() {
-  return createSelector(
-    (state: AppState) => state.movies.items,
-    (movies) => {
-      return movies;
-    }
-  );
-}
-
-function createFilterBuilderPropsSelector() {
-  return createSelector(
-    (state: AppState) => state.movieIndex.filterBuilderProps,
-    (filterBuilderProps) => {
-      return filterBuilderProps;
-    }
-  );
-}
+import { MOVIE_INDEX_FILTER_BUILDER_PROPS } from './movieIndexFilterBuilderProps';
+import { setMovieIndexFilter } from './movieIndexOptionsStore';
+import { useMovieIndex } from './useMovieIndex';
 
 interface MovieIndexFilterModalProps {
   isOpen: boolean;
@@ -30,18 +11,20 @@ interface MovieIndexFilterModalProps {
 export default function MovieIndexFilterModal(
   props: MovieIndexFilterModalProps
 ) {
-  const sectionItems = useSelector(createMovieSelector());
-  const filterBuilderProps = useSelector(createFilterBuilderPropsSelector());
+  // `sectionItems` feeds the filter builder's value suggestions. It used to read
+  // `state.movies.items`, which nothing has populated since the index went paged,
+  // so the suggestions were always empty. `useMovieIndex` returns the page the
+  // index is already showing off the same cached query -- fewer values than
+  // Sonarr's whole-library list, but real ones.
+  const { items: sectionItems } = useMovieIndex();
   const customFilterType = 'movieIndex';
 
-  const dispatch = useDispatch();
-
+  // Setting the filter resets the page, so no separate page dispatch is needed.
   const dispatchSetFilter = useCallback(
-    (payload: unknown) => {
-      dispatch(setMovieFilter(payload));
-      dispatch(setMoviePage(1));
+    ({ selectedFilterKey }: { selectedFilterKey: string | number }) => {
+      setMovieIndexFilter(selectedFilterKey);
     },
-    [dispatch]
+    []
   );
 
   return (
@@ -49,7 +32,7 @@ export default function MovieIndexFilterModal(
       // TODO: Don't spread all the props
       {...props}
       sectionItems={sectionItems}
-      filterBuilderProps={filterBuilderProps}
+      filterBuilderProps={MOVIE_INDEX_FILTER_BUILDER_PROPS}
       customFilterType={customFilterType}
       dispatchSetFilter={dispatchSetFilter}
     />

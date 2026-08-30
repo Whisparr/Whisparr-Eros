@@ -4,6 +4,7 @@ import DownloadProtocol from 'DownloadClient/DownloadProtocol';
 import { sizes } from 'Helpers/Props';
 import Language from 'Language/Language';
 import { QualityModel } from 'Quality/Quality';
+import { GrabReleasePayload } from '../useReleases';
 import OverrideMatchModalContent from './OverrideMatchModalContent';
 
 interface OverrideMatchModalProps {
@@ -17,6 +18,7 @@ interface OverrideMatchModalProps {
   protocol: DownloadProtocol;
   isGrabbing: boolean;
   grabError?: string;
+  onGrabRelease(payload: GrabReleasePayload): void;
   onModalClose(): void;
 }
 
@@ -32,6 +34,7 @@ function OverrideMatchModal(props: OverrideMatchModalProps) {
     protocol,
     isGrabbing,
     grabError,
+    onGrabRelease,
     onModalClose,
   } = props;
 
@@ -47,6 +50,7 @@ function OverrideMatchModal(props: OverrideMatchModalProps) {
         protocol={protocol}
         isGrabbing={isGrabbing}
         grabError={grabError}
+        onGrabRelease={onGrabRelease}
         onModalClose={onModalClose}
       />
     </Modal>

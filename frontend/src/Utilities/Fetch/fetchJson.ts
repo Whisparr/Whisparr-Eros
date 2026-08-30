@@ -79,11 +79,17 @@ async function fetchJson<T, TData>({
     throw new ApiError(path, response.status, response.statusText, body);
   }
 
-  if (response.status === 204) {
+  // Not every success carries a body. `[RestDeleteById]` actions that return
+  // `void` answer 200 with an empty body, and `response.json()` rejects on
+  // that -- which lands the mutation in `onError` and skips its cache
+  // invalidation, so the deleted row stays on screen.
+  const text = await response.text();
+
+  if (!text) {
     return {} as T;
   }
 
-  return response.json() as T;
+  return JSON.parse(text) as T;
 }
 
 export default fetchJson;

@@ -1,15 +1,11 @@
 import moment from 'moment';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useCommand, useExecuteCommand } from 'Commands/useCommands';
 import SpinnerIconButton from 'Components/Link/SpinnerIconButton';
 import TableRowCell from 'Components/Table/Cells/TableRowCell';
 import TableRow from 'Components/Table/TableRow';
-import usePrevious from 'Helpers/Hooks/usePrevious';
 import { icons } from 'Helpers/Props';
-import { executeCommand } from 'Store/Actions/commandActions';
-import { fetchTask } from 'Store/Actions/systemActions';
-import createCommandSelector from 'Store/Selectors/createCommandSelector';
-import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
+import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import { isCommandExecuting } from 'Utilities/Command';
 import formatDate from 'Utilities/Date/formatDate';
 import formatDateTime from 'Utilities/Date/formatDateTime';
@@ -29,7 +25,6 @@ interface ScheduledTaskRowProps {
 
 function ScheduledTaskRow(props: ScheduledTaskRowProps) {
   const {
-    id,
     taskName,
     name,
     interval,
@@ -39,17 +34,16 @@ function ScheduledTaskRow(props: ScheduledTaskRowProps) {
     nextExecution,
   } = props;
 
-  const dispatch = useDispatch();
+  const executeCommand = useExecuteCommand();
 
   const { showRelativeDates, longDateFormat, shortDateFormat, timeFormat } =
-    useSelector(createUISettingsSelector());
-  const command = useSelector(createCommandSelector(taskName));
+    useUiSettingsValues();
+  const command = useCommand(taskName);
 
   const [time, setTime] = useState(Date.now());
 
   const isQueued = !!(command && command.status === 'queued');
   const isExecuting = isCommandExecuting(command);
-  const wasExecuting = usePrevious(isExecuting);
   const isDisabled = interval === 0;
   const executeNow = !isDisabled && moment().isAfter(nextExecution);
   const hasNextExecutionTime = !isDisabled && !executeNow;
@@ -88,20 +82,10 @@ function ScheduledTaskRow(props: ScheduledTaskRowProps) {
   ]);
 
   const handleExecutePress = useCallback(() => {
-    dispatch(
-      executeCommand({
-        name: taskName,
-      })
-    );
-  }, [taskName, dispatch]);
-
-  useEffect(() => {
-    if (!isExecuting && wasExecuting) {
-      setTimeout(() => {
-        dispatch(fetchTask({ id }));
-      }, 1000);
-    }
-  }, [id, isExecuting, wasExecuting, dispatch]);
+    executeCommand({
+      name: taskName,
+    });
+  }, [taskName, executeCommand]);
 
   useEffect(() => {
     const interval = setInterval(() => setTime(Date.now()), 1000);

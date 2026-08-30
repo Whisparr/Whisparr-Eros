@@ -1,7 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import AppState, { Filter } from 'App/State/AppState';
+import React, { useCallback, useMemo, useState } from 'react';
 import * as commandNames from 'Commands/commandNames';
+import { useCommandExecuting, useExecuteCommand } from 'Commands/useCommands';
 import Alert from 'Components/Alert';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import FilterMenu from 'Components/Menu/FilterMenu';
@@ -16,73 +15,53 @@ import Table from 'Components/Table/Table';
 import TableBody from 'Components/Table/TableBody';
 import TableOptionsModalWrapper from 'Components/Table/TableOptions/TableOptionsModalWrapper';
 import TablePager from 'Components/Table/TablePager';
-import usePaging from 'Components/Table/usePaging';
-import useCurrentPage from 'Helpers/Hooks/useCurrentPage';
-import usePrevious from 'Helpers/Hooks/usePrevious';
+import { Filter as AppStateFilter } from 'Filters/Filter';
 import useSelectState from 'Helpers/Hooks/useSelectState';
 import { align, icons, kinds } from 'Helpers/Props';
-import Movie from 'Movie/Movie';
-import { executeCommand } from 'Store/Actions/commandActions';
-import {
-  clearQueueDetails,
-  fetchQueueDetails,
-} from 'Store/Actions/queueActions';
-import {
-  batchToggleCutoffUnmetMovies,
-  clearCutoffUnmet,
-  fetchCutoffUnmet,
-  gotoCutoffUnmetPage,
-  setCutoffUnmetFilter,
-  setCutoffUnmetSort,
-  setCutoffUnmetTableOption,
-} from 'Store/Actions/wantedActions';
-import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
+import { SortDirection } from 'Helpers/Props/sortDirections';
 import { CheckInputChanged } from 'typings/inputs';
 import { SelectStateInputProps } from 'typings/props';
 import { TableOptionsChangePayload } from 'typings/Table';
-import getFilterValue from 'Utilities/Filter/getFilterValue';
-import hasDifferentItems from 'Utilities/Object/hasDifferentItems';
-import selectUniqueIds from 'Utilities/Object/selectUniqueIds';
-import {
-  registerPagePopulator,
-  unregisterPagePopulator,
-} from 'Utilities/pagePopulator';
 import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
+import getMonitoredValue from 'Wanted/getMonitoredValue';
+import useToggleMoviesMonitored from 'Wanted/useToggleMoviesMonitored';
+import {
+  setCutoffUnmetOption,
+  setCutoffUnmetOptions,
+  setCutoffUnmetSort,
+  useCutoffUnmetOptions,
+} from './cutoffUnmetOptionsStore';
 import CutoffUnmetRow from './CutoffUnmetRow';
-
-function getMonitoredValue(
-  filters: Filter[],
-  selectedFilterKey: string
-): boolean {
-  return !!getFilterValue(filters, selectedFilterKey, 'monitored', false);
-}
+import useCutoffUnmet, { FILTERS } from './useCutoffUnmet';
 
 function CutoffUnmet() {
-  const dispatch = useDispatch();
-  const requestCurrentPage = useCurrentPage();
+  const executeCommand = useExecuteCommand();
+
+  const { columns, pageSize, selectedFilterKey, sortKey, sortDirection } =
+    useCutoffUnmetOptions();
 
   const {
-    isFetching,
-    isPopulated,
-    error,
-    items,
-    columns,
-    selectedFilterKey,
-    filters,
-    sortKey,
-    sortDirection,
-    page,
-    pageSize,
+    records: items,
     totalPages,
-    totalRecords = 0,
-  } = useSelector((state: AppState) => state.wanted.cutoffUnmet);
+    totalRecords,
+    isFetching,
+    isLoading,
+    error,
+    refetch,
+    page,
+    goToPage,
+    filters,
+  } = useCutoffUnmet();
 
-  const isSearchingForAllMovies = useSelector(
-    createCommandExecutingSelector(commandNames.CUTOFF_UNMET_MOVIES_SEARCH)
+  const { toggleMoviesMonitored, isToggling } =
+    useToggleMoviesMonitored('/wanted/cutoff');
+
+  const isSearchingForAllMovies = useCommandExecuting(
+    commandNames.CUTOFF_UNMET_MOVIES_SEARCH
   );
-  const isSearchingForSelectedMovies = useSelector(
-    createCommandExecutingSelector(commandNames.MOVIE_SEARCH)
+  const isSearchingForSelectedMovies = useCommandExecuting(
+    commandNames.MOVIE_SEARCH
   );
 
   const [selectState, setSelectState] = useSelectState();
@@ -91,32 +70,14 @@ function CutoffUnmet() {
   const [isConfirmSearchAllModalOpen, setIsConfirmSearchAllModalOpen] =
     useState(false);
 
-  const {
-    handleFirstPagePress,
-    handlePreviousPagePress,
-    handleNextPagePress,
-    handleLastPagePress,
-    handlePageSelect,
-  } = usePaging({
-    page,
-    totalPages,
-    gotoPage: gotoCutoffUnmetPage,
-  });
-
   const selectedIds = useMemo(() => {
     return getSelectedIds(selectedState);
   }, [selectedState]);
 
-  const isSaving = useMemo(() => {
-    return items.filter((m) => m.isSaving).length > 1;
-  }, [items]);
-
   const itemsSelected = !!selectedIds.length;
-  const isShowingMonitored = getMonitoredValue(filters, selectedFilterKey);
+  const isShowingMonitored = getMonitoredValue(filters);
   const isSearchingForMovies =
     isSearchingForAllMovies || isSearchingForSelectedMovies;
-
-  const previousItems = usePrevious(items);
 
   const handleSelectAllChange = useCallback(
     ({ value }: CheckInputChanged) => {
@@ -139,16 +100,14 @@ function CutoffUnmet() {
   );
 
   const handleSearchSelectedPress = useCallback(() => {
-    dispatch(
-      executeCommand({
-        name: commandNames.MOVIE_SEARCH,
-        movieIds: selectedIds,
-        commandFinished: () => {
-          dispatch(fetchCutoffUnmet());
-        },
-      })
-    );
-  }, [selectedIds, dispatch]);
+    executeCommand({
+      name: commandNames.MOVIE_SEARCH,
+      movieIds: selectedIds,
+      commandFinished: () => {
+        refetch();
+      },
+    });
+  }, [selectedIds, refetch, executeCommand]);
 
   const handleSearchAllPress = useCallback(() => {
     setIsConfirmSearchAllModalOpen(true);
@@ -159,90 +118,64 @@ function CutoffUnmet() {
   }, []);
 
   const handleSearchAllCutoffUnmetConfirmed = useCallback(() => {
-    dispatch(
-      executeCommand({
-        name: commandNames.CUTOFF_UNMET_MOVIES_SEARCH,
-        commandFinished: () => {
-          dispatch(fetchCutoffUnmet());
-        },
-      })
-    );
+    executeCommand({
+      name: commandNames.CUTOFF_UNMET_MOVIES_SEARCH,
+      commandFinished: () => {
+        refetch();
+      },
+    });
 
     setIsConfirmSearchAllModalOpen(false);
-  }, [dispatch]);
+  }, [refetch, executeCommand]);
 
   const handleToggleSelectedPress = useCallback(() => {
-    dispatch(
-      batchToggleCutoffUnmetMovies({
-        movieIds: selectedIds,
-        monitored: !isShowingMonitored,
-      })
-    );
-  }, [isShowingMonitored, selectedIds, dispatch]);
+    toggleMoviesMonitored({
+      movieIds: selectedIds,
+      monitored: !isShowingMonitored,
+    });
+  }, [isShowingMonitored, selectedIds, toggleMoviesMonitored]);
 
   const handleFilterSelect = useCallback(
     (filterKey: number | string) => {
-      dispatch(setCutoffUnmetFilter({ selectedFilterKey: filterKey }));
+      setCutoffUnmetOption('selectedFilterKey', filterKey);
+      goToPage(1);
     },
-    [dispatch]
+    [goToPage]
   );
 
   const handleSortPress = useCallback(
-    (sortKey: string) => {
-      dispatch(setCutoffUnmetSort({ sortKey }));
+    (sortKey: string, sortDirection?: SortDirection) => {
+      setCutoffUnmetSort({ sortKey, sortDirection });
     },
-    [dispatch]
+    []
   );
 
   const handleTableOptionChange = useCallback(
     (payload: TableOptionsChangePayload) => {
-      dispatch(setCutoffUnmetTableOption(payload));
+      setCutoffUnmetOptions(payload);
 
       if (payload.pageSize) {
-        dispatch(gotoCutoffUnmetPage({ page: 1 }));
+        goToPage(1);
       }
     },
-    [dispatch]
+    [goToPage]
   );
 
-  useEffect(() => {
-    if (requestCurrentPage) {
-      dispatch(fetchCutoffUnmet());
-    } else {
-      dispatch(gotoCutoffUnmetPage({ page: 1 }));
-    }
+  const handleFirstPagePress = useCallback(() => {
+    goToPage(1);
+  }, [goToPage]);
 
-    return () => {
-      dispatch(clearCutoffUnmet());
-      dispatch(clearQueueDetails());
-    };
-  }, [requestCurrentPage, dispatch]);
+  const handlePreviousPagePress = useCallback(() => {
+    goToPage(Math.max(page - 1, 1));
+  }, [goToPage, page]);
 
-  useEffect(() => {
-    const repopulate = () => {
-      dispatch(fetchCutoffUnmet());
-    };
+  const handleNextPagePress = useCallback(() => {
+    goToPage(Math.min(page + 1, totalPages));
+  }, [goToPage, page, totalPages]);
 
-    registerPagePopulator(repopulate, [
-      'movieUpdated',
-      'movieFileUpdated',
-      'movieFileDeleted',
-    ]);
-
-    return () => {
-      unregisterPagePopulator(repopulate);
-    };
-  }, [dispatch]);
-
-  useEffect(() => {
-    if (!previousItems || hasDifferentItems(items, previousItems)) {
-      const movieIds = selectUniqueIds<Movie, number>(items, 'id');
-
-      if (movieIds.length) {
-        dispatch(fetchQueueDetails({ movieIds }));
-      }
-    }
-  }, [items, previousItems, dispatch]);
+  const handleLastPagePress = useCallback(() => {
+    goToPage(totalPages);
+  }, [goToPage, totalPages]);
 
   return (
     <PageContent title={translate('CutoffUnmet')}>
@@ -272,7 +205,7 @@ function CutoffUnmet() {
             }
             iconName={icons.MONITORED}
             isDisabled={!itemsSelected}
-            isSpinning={isSaving}
+            isSpinning={isToggling}
             onPress={handleToggleSelectedPress}
           />
         </PageToolbarSection>
@@ -292,7 +225,7 @@ function CutoffUnmet() {
           <FilterMenu
             alignMenu={align.RIGHT}
             selectedFilterKey={selectedFilterKey}
-            filters={filters}
+            filters={FILTERS as unknown as AppStateFilter[]}
             customFilters={[]}
             onFilterSelect={handleFilterSelect}
           />
@@ -300,17 +233,17 @@ function CutoffUnmet() {
       </PageToolbar>
 
       <PageContentBody>
-        {isFetching && !isPopulated ? <LoadingIndicator /> : null}
+        {isFetching && isLoading ? <LoadingIndicator /> : null}
 
         {!isFetching && error ? (
           <Alert kind={kinds.DANGER}>{translate('CutoffUnmetLoadError')}</Alert>
         ) : null}
 
-        {isPopulated && !error && !items.length ? (
+        {!isLoading && !error && !items.length ? (
           <Alert kind={kinds.INFO}>{translate('CutoffUnmetNoItems')}</Alert>
         ) : null}
 
-        {isPopulated && !error && !!items.length ? (
+        {!isLoading && !error && !!items.length ? (
           <div>
             <Table
               selectAll={true}
@@ -348,7 +281,7 @@ function CutoffUnmet() {
               onPreviousPagePress={handlePreviousPagePress}
               onNextPagePress={handleNextPagePress}
               onLastPagePress={handleLastPagePress}
-              onPageSelect={handlePageSelect}
+              onPageSelect={goToPage}
             />
 
             <ConfirmModal

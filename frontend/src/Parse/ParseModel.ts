@@ -1,0 +1,35 @@
+import ModelBase from 'App/ModelBase';
+import Language from 'Language/Language';
+import Movie from 'Movie/Movie';
+import { QualityModel } from 'Quality/Quality';
+import CustomFormat from 'typings/CustomFormat';
+
+export interface ParsedMovieInfo {
+  releaseTitle: string;
+  isScene: boolean;
+  episode: string;
+  releaseTokens: string;
+  originalTitle: string;
+  movieTitle: string;
+  movieTitles: string[];
+  studioTitle: string;
+  releaseDate: string;
+  year: number;
+  quality: QualityModel;
+  languages: Language[];
+  releaseHash: string;
+  releaseGroup?: string;
+  edition?: string;
+  tmdbId?: number;
+  imdbId?: string;
+  tpdbId?: string;
+}
+
+export interface ParseModel extends ModelBase {
+  title: string;
+  parsedMovieInfo: ParsedMovieInfo;
+  movie?: Movie;
+  languages?: Language[];
+  customFormats?: CustomFormat[];
+  customFormatScore?: number;
+}

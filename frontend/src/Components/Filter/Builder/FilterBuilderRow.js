@@ -10,18 +10,18 @@ import {
 import sortByProp from 'Utilities/Array/sortByProp';
 import BoolFilterBuilderRowValue from './BoolFilterBuilderRowValue';
 import DateFilterBuilderRowValue from './DateFilterBuilderRowValue';
-import FilterBuilderRowValueConnector from './FilterBuilderRowValueConnector';
+import DefaultFilterBuilderRowValue from './DefaultFilterBuilderRowValue';
 import HistoryEventTypeFilterBuilderRowValue from './HistoryEventTypeFilterBuilderRowValue';
-import ImportListFilterBuilderRowValueConnector from './ImportListFilterBuilderRowValueConnector';
-import IndexerFilterBuilderRowValueConnector from './IndexerFilterBuilderRowValueConnector';
+import ImportListFilterBuilderRowValue from './ImportListFilterBuilderRowValue';
+import IndexerFilterBuilderRowValue from './IndexerFilterBuilderRowValue';
 import LanguageFilterBuilderRowValue from './LanguageFilterBuilderRowValue';
 import MovieFilterBuilderRowValue from './MovieFilterBuilderRowValue';
 import ProtocolFilterBuilderRowValue from './ProtocolFilterBuilderRowValue';
-import QualityFilterBuilderRowValueConnector from './QualityFilterBuilderRowValueConnector';
+import QualityFilterBuilderRowValue from './QualityFilterBuilderRowValue';
 import QualityProfileFilterBuilderRowValue from './QualityProfileFilterBuilderRowValue';
 import QueueStatusFilterBuilderRowValue from './QueueStatusFilterBuilderRowValue';
 import ReleaseStatusFilterBuilderRowValue from './ReleaseStatusFilterBuilderRowValue';
-import TagFilterBuilderRowValueConnector from './TagFilterBuilderRowValueConnector';
+import TagFilterBuilderRowValue from './TagFilterBuilderRowValue';
 import styles from './FilterBuilderRow.css';
 
 function getselectedFilterBuilderProp(filterBuilderProps, name) {
@@ -59,7 +59,7 @@ function getDefaultFilterValue(selectedFilterBuilderProp) {
 
 function getRowValueConnector(selectedFilterBuilderProp) {
   if (!selectedFilterBuilderProp) {
-    return FilterBuilderRowValueConnector;
+    return DefaultFilterBuilderRowValue;
   }
 
   const valueType = selectedFilterBuilderProp.valueType;
@@ -75,7 +75,7 @@ function getRowValueConnector(selectedFilterBuilderProp) {
       return HistoryEventTypeFilterBuilderRowValue;
 
     case filterBuilderValueTypes.INDEXER:
-      return IndexerFilterBuilderRowValueConnector;
+      return IndexerFilterBuilderRowValue;
 
     case filterBuilderValueTypes.LANGUAGE:
       return LanguageFilterBuilderRowValue;
@@ -84,7 +84,7 @@ function getRowValueConnector(selectedFilterBuilderProp) {
       return ProtocolFilterBuilderRowValue;
 
     case filterBuilderValueTypes.QUALITY:
-      return QualityFilterBuilderRowValueConnector;
+      return QualityFilterBuilderRowValue;
 
     case filterBuilderValueTypes.QUALITY_PROFILE:
       return QualityProfileFilterBuilderRowValue;
@@ -99,13 +99,13 @@ function getRowValueConnector(selectedFilterBuilderProp) {
       return ReleaseStatusFilterBuilderRowValue;
 
     case filterBuilderValueTypes.TAG:
-      return TagFilterBuilderRowValueConnector;
+      return TagFilterBuilderRowValue;
 
     case filterBuilderValueTypes.IMPORTLIST:
-      return ImportListFilterBuilderRowValueConnector;
+      return ImportListFilterBuilderRowValue;
 
     default:
-      return FilterBuilderRowValueConnector;
+      return DefaultFilterBuilderRowValue;
   }
 }
 

@@ -1,6 +1,8 @@
 declare namespace DeleteSceneModalContentCssNamespace {
   export interface IDeleteSceneModalContentCss {
+    deleteCount: string;
     deleteFilesMessage: string;
+    folderPath: string;
     pathContainer: string;
     pathIcon: string;
   }

@@ -4,11 +4,15 @@ import EnhancedSelectInput, {
   EnhancedSelectInputValue,
 } from './EnhancedSelectInput';
 
+// UI settings picks one language and the file editor picks several, so the
+// value is a scalar in one place and an array in the other. Both were already
+// passed here; only the file editor was typed, because the UI settings page was
+// JavaScript until it came off Redux.
 export interface LanguageSelectInputProps {
   name: string;
-  value: number[];
+  value: number | number[];
   values: EnhancedSelectInputValue<number>[];
-  onChange: (change: EnhancedSelectInputChanged<number[]>) => void;
+  onChange: (change: EnhancedSelectInputChanged<number | number[]>) => void;
 }
 
 function LanguageSelectInput({
@@ -33,7 +37,7 @@ function LanguageSelectInput({
 
   return (
     <EnhancedSelectInput<
-      number[],
+      number | number[],
       { key: number; value: string; dividerAfter: boolean }
     >
       {...otherProps}

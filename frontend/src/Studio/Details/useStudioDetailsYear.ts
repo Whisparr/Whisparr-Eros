@@ -1,20 +1,21 @@
-import _ from 'lodash';
+import { orderBy } from 'lodash';
 import { useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import AppState from 'App/State/AppState';
+import { useAppDimensions } from 'App/appStore';
 import * as commandNames from 'Commands/commandNames';
+import { useExecuteCommand } from 'Commands/useCommands';
 import Column from 'Components/Table/Column';
 import { sortDirections } from 'Helpers/Props';
 import { SortDirection } from 'Helpers/Props/sortDirections';
 import Movie from 'Movie/Movie';
-import { executeCommand } from 'Store/Actions/commandActions';
-import { bulkMonitorMovie } from 'Store/Actions/movieActions';
-import {
-  setStudioScenesSort,
-  setStudioScenesTableOption,
-} from 'Store/Actions/studioScenesActions';
-import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
+import { useBulkMonitorMovies } from 'Movie/useMovie';
 import { TableOptionsChangePayload } from 'typings/Table';
+import {
+  SECONDARY_SORT_DIRECTION,
+  SECONDARY_SORT_KEY,
+  setStudioScenesColumns,
+  setStudioScenesSort,
+  useStudioScenesOption,
+} from './studioScenesOptionsStore';
 
 interface StudioDetailsYearState {
   items: Movie[];
@@ -37,86 +38,50 @@ interface StudioDetailsYearActions {
   onSearchPress: () => void;
 }
 
-interface StudioScenesState {
-  columns: Column[];
-  sortKey: string;
-  sortDirection: SortDirection;
-  secondarySortKey?: string;
-  secondarySortDirection?: SortDirection;
-  sortPredicates?: Record<
-    string,
-    (item: Movie, sortDirection: SortDirection) => unknown
-  >;
-}
-
-function getSortClause(
-  sortKey: string,
-  sortDirection: SortDirection,
-  sortPredicates?: Record<
-    string,
-    (item: Movie, sortDirection: SortDirection) => unknown
-  >
-) {
-  if (sortPredicates && sortPredicates.hasOwnProperty(sortKey)) {
-    return function (item: Movie) {
-      return sortPredicates[sortKey](item, sortDirection);
-    };
-  }
-
+function getSortClause(sortKey: string) {
   return function (item: Movie) {
     return item[sortKey as keyof Movie];
   };
 }
 
-function sort(items: Movie[], state: StudioScenesState) {
-  const {
-    sortKey,
-    sortDirection,
-    sortPredicates,
-    secondarySortKey,
-    secondarySortDirection,
-  } = state;
-
-  const clauses: Array<(item: Movie) => unknown> = [];
-  const orders: Array<'asc' | 'desc'> = [];
-
-  clauses.push(getSortClause(sortKey, sortDirection, sortPredicates));
-  orders.push(sortDirection === sortDirections.ASCENDING ? 'asc' : 'desc');
+function sort(
+  items: Movie[],
+  sortKey: string,
+  sortDirection: SortDirection
+): Movie[] {
+  const clauses = [getSortClause(sortKey)];
+  const orders: Array<'asc' | 'desc'> = [
+    sortDirection === sortDirections.ASCENDING ? 'asc' : 'desc',
+  ];
 
   if (
-    secondarySortKey &&
-    secondarySortDirection &&
-    (sortKey !== secondarySortKey || sortDirection !== secondarySortDirection)
+    sortKey !== SECONDARY_SORT_KEY ||
+    sortDirection !== SECONDARY_SORT_DIRECTION
   ) {
-    clauses.push(
-      getSortClause(secondarySortKey, secondarySortDirection, sortPredicates)
-    );
+    clauses.push(getSortClause(SECONDARY_SORT_KEY));
     orders.push(
-      secondarySortDirection === sortDirections.ASCENDING ? 'asc' : 'desc'
+      SECONDARY_SORT_DIRECTION === sortDirections.ASCENDING ? 'asc' : 'desc'
     );
   }
 
-  return _.orderBy(items, clauses, orders);
+  return orderBy(items, clauses, orders);
 }
 
 export function useStudioDetailsYearData(
   items: Movie[]
 ): StudioDetailsYearState {
-  const studioScenes = useSelector(
-    (state: AppState & { studioScenes: StudioScenesState }) =>
-      state.studioScenes
-  );
-  const dimensions = useSelector(createDimensionsSelector());
-
-  const sortedItems = sort(items, studioScenes);
+  const columns = useStudioScenesOption('columns');
+  const sortKey = useStudioScenesOption('sortKey');
+  const sortDirection = useStudioScenesOption('sortDirection');
+  const { isSmallScreen } = useAppDimensions();
 
   return {
-    items: sortedItems,
-    isSmallScreen: dimensions.isSmallScreen,
+    items: sort(items, sortKey, sortDirection),
+    isSmallScreen,
     isSearching: false,
-    columns: studioScenes.columns,
-    sortKey: studioScenes.sortKey,
-    sortDirection: studioScenes.sortDirection as SortDirection,
+    columns,
+    sortKey,
+    sortDirection,
   };
 }
 
@@ -125,20 +90,23 @@ export function useStudioDetailsYearActions(
   year: number,
   items: Movie[]
 ): StudioDetailsYearActions {
-  const dispatch = useDispatch();
+  const executeCommand = useExecuteCommand();
+
+  const monitorMovies = useBulkMonitorMovies(true);
+  const unmonitorMovies = useBulkMonitorMovies(false);
 
   const onMonitorYearPress = useCallback(() => {
-    const allMonitored = items.every((movie: Movie) => movie.monitored);
-    const newMonitoredState = !allMonitored;
-    const ids = items.map((item: Movie) => item.id);
-    dispatch(bulkMonitorMovie({ ids, monitored: newMonitoredState }));
-  }, [dispatch, items]);
+    const allMonitored = items.every((movie) => movie.monitored);
+    const mutation = allMonitored ? unmonitorMovies : monitorMovies;
+
+    mutation.mutate(items.map((item) => item.id));
+  }, [items, monitorMovies, unmonitorMovies]);
 
   const onTableOptionChange = useCallback(
-    (payload: TableOptionsChangePayload) => {
-      dispatch(setStudioScenesTableOption(payload));
+    ({ columns }: TableOptionsChangePayload) => {
+      setStudioScenesColumns(columns);
     },
-    [dispatch]
+    []
   );
 
   const onSortPress = useCallback(
@@ -149,6 +117,7 @@ export function useStudioDetailsYearActions(
       currentSortDirection: SortDirection
     ) => {
       let nextDirection = sortDirection;
+
       if (!nextDirection) {
         if (sortKey === currentSortKey) {
           nextDirection =
@@ -160,25 +129,18 @@ export function useStudioDetailsYearActions(
         }
       }
 
-      dispatch(
-        setStudioScenesSort({
-          sortKey,
-          sortDirection: nextDirection,
-        })
-      );
+      setStudioScenesSort(sortKey, nextDirection);
     },
-    [dispatch]
+    []
   );
 
   const onSearchPress = useCallback(() => {
-    dispatch(
-      executeCommand({
-        name: commandNames.STUDIO_SEARCH,
-        studioIds: [studioId],
-        years: [year],
-      })
-    );
-  }, [dispatch, studioId, year]);
+    executeCommand({
+      name: commandNames.STUDIO_SEARCH,
+      studioIds: [studioId],
+      years: [year],
+    });
+  }, [studioId, year, executeCommand]);
 
   return {
     onMonitorYearPress,

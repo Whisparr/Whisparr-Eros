@@ -1,23 +1,20 @@
 import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import AppState from 'App/State/AppState';
 import DescriptionList from 'Components/DescriptionList/DescriptionList';
 import DescriptionListItem from 'Components/DescriptionList/DescriptionListItem';
 import FieldSet from 'Components/FieldSet';
-import { fetchStatus } from 'Store/Actions/systemActions';
+import useSystemStatus from 'System/Status/useSystemStatus';
 import formatNumber from 'Utilities/Number/formatNumber';
 import translate from 'Utilities/String/translate';
 import styles from './Stats.css';
 
 function Stats() {
-  const dispatch = useDispatch();
-  const { item } = useSelector((state: AppState) => state.system.status);
+  const { data, refetch } = useSystemStatus();
 
-  const { movieCount, sceneCount, studioCount, performerCount } = item;
+  const { movieCount, sceneCount, studioCount, performerCount } = data;
 
   useEffect(() => {
-    dispatch(fetchStatus());
-  }, [dispatch]);
+    refetch();
+  }, [refetch]);
 
   return (
     <FieldSet legend={translate('Stats')}>

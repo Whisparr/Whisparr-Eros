@@ -1,5 +1,4 @@
 import React, { useCallback, useState } from 'react';
-import { Tag } from 'App/State/TagsAppState';
 import Card from 'Components/Card';
 import Label from 'Components/Label';
 import IconButton from 'Components/Link/IconButton';
@@ -7,9 +6,11 @@ import ConfirmModal from 'Components/Modal/ConfirmModal';
 import TagList from 'Components/TagList';
 import { icons, kinds } from 'Helpers/Props';
 import { Kind } from 'Helpers/Props/kinds';
+import { Tag } from 'Tags/useTags';
 import { AutoTaggingSpecification } from 'typings/AutoTagging';
 import translate from 'Utilities/String/translate';
 import EditAutoTaggingModal from './EditAutoTaggingModal';
+import { useDeleteAutoTagging } from './useAutoTaggings';
 import styles from './AutoTagging.css';
 
 interface AutoTaggingProps {
@@ -17,9 +18,7 @@ interface AutoTaggingProps {
   name: string;
   specifications: AutoTaggingSpecification[];
   tags: number[];
-  tagList: Tag[];
-  isDeleting: boolean;
-  onConfirmDeleteAutoTagging: (id: number) => void;
+  tagList: readonly Tag[];
   onCloneAutoTaggingPress: (id: number) => void;
 }
 
@@ -29,10 +28,9 @@ export default function AutoTagging({
   tags,
   tagList,
   specifications,
-  isDeleting,
-  onConfirmDeleteAutoTagging,
   onCloneAutoTaggingPress,
-}: AutoTaggingProps) {
+}: Readonly<AutoTaggingProps>) {
+  const { deleteAutoTagging, isDeleting } = useDeleteAutoTagging(id);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
@@ -54,8 +52,8 @@ export default function AutoTagging({
   }, [setIsDeleteModalOpen]);
 
   const onConfirmDelete = useCallback(() => {
-    onConfirmDeleteAutoTagging(id);
-  }, [id, onConfirmDeleteAutoTagging]);
+    deleteAutoTagging();
+  }, [deleteAutoTagging]);
 
   const onClonePress = useCallback(() => {
     onCloneAutoTaggingPress(id);

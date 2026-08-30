@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigationType } from 'react-router-dom';
-import scrollPositions from 'Store/scrollPositions';
+import scrollPositions from 'Helpers/scrollPositions';
 
 interface WrappedComponentProps {
   initialScrollTop: number;

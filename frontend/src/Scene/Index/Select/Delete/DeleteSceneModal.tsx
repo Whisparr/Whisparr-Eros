@@ -2,7 +2,6 @@ import React from 'react';
 import Modal from 'Components/Modal/Modal';
 import { sizes } from 'Helpers/Props';
 import DeleteSceneModalContent from './DeleteSceneModalContent';
-import { useDeleteSceneModal } from './useDeleteSceneModal';
 
 export interface DeleteSceneModalProps {
   isOpen: boolean;
@@ -19,19 +18,13 @@ export function DeleteSceneModal({
   onDeletePress,
   ...otherProps
 }: DeleteSceneModalProps) {
-  const { onModalClose: enhancedOnModalClose } =
-    useDeleteSceneModal(onModalClose);
   return (
-    <Modal
-      isOpen={isOpen}
-      size={sizes.MEDIUM}
-      onModalClose={enhancedOnModalClose}
-    >
+    <Modal isOpen={isOpen} size={sizes.MEDIUM} onModalClose={onModalClose}>
       <DeleteSceneModalContent
         {...otherProps}
         sceneIds={sceneIds}
         onDeletePress={onDeletePress}
-        onModalClose={enhancedOnModalClose}
+        onModalClose={onModalClose}
       />
     </Modal>
   );

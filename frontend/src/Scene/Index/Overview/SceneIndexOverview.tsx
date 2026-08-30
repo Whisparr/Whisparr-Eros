@@ -1,9 +1,9 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import TextTruncate from 'react-text-truncate';
-import AppState from 'App/State/AppState';
+import { useSafeForWorkMode } from 'App/safeForWorkStore';
 import Command from 'Commands/Command';
 import { MOVIE_SEARCH, REFRESH_MOVIE } from 'Commands/commandNames';
+import { useExecuteCommand, useExecutingCommands } from 'Commands/useCommands';
 import Icon from 'Components/Icon';
 import IconButton from 'Components/Link/IconButton';
 import Link from 'Components/Link/Link';
@@ -17,13 +17,12 @@ import DeleteSceneModal from 'Scene/Delete/DeleteSceneModal';
 import SceneDetailsLinks from 'Scene/Details/SceneDetailsLinks';
 import SceneIndexProgressBar from 'Scene/Index/ProgressBar/SceneIndexProgressBar';
 import ScenePoster from 'Scene/ScenePoster';
-import { executeCommand } from 'Store/Actions/commandActions';
-import createExecutingCommandsSelector from 'Store/Selectors/createExecutingCommandsSelector';
+import { useQualityProfile } from 'Settings/Profiles/Quality/useQualityProfiles';
 import dimensions from 'Styles/Variables/dimensions';
 import fonts from 'Styles/Variables/fonts';
 import translate from 'Utilities/String/translate';
+import { useSceneIndexOption } from '../sceneIndexOptionsStore';
 import SceneIndexOverviewInfo from './SceneIndexOverviewInfo';
-import selectOverviewOptions from './selectOverviewOptions';
 import styles from './SceneIndexOverview.css';
 
 const columnPadding = Number.parseInt(dimensions.movieIndexColumnPadding, 10);
@@ -36,7 +35,7 @@ const lineHeight = Number.parseFloat(fonts.lineHeight);
 
 // Hardcoded height beased on line-height of 32 + bottom margin of 10.
 // Less side-effecty than using react-measure.
-const titleRowHeight = 42;
+export const TITLE_ROW_HEIGHT = 42;
 
 interface SceneIndexOverviewProps {
   scene: Movie;
@@ -48,7 +47,7 @@ interface SceneIndexOverviewProps {
   isSmallScreen: boolean;
 }
 
-function SceneIndexOverview(props: SceneIndexOverviewProps) {
+function SceneIndexOverview(props: Readonly<SceneIndexOverviewProps>) {
   const {
     scene,
     sortKey,
@@ -61,17 +60,11 @@ function SceneIndexOverview(props: SceneIndexOverviewProps) {
 
   const sceneId = scene.id;
 
-  const safeForWorkMode = useSelector(
-    (state: AppState) => state.settings.safeForWorkMode
-  );
+  const safeForWorkMode = useSafeForWorkMode();
 
-  const qualityProfile = useSelector((state: AppState) =>
-    state.settings.qualityProfiles.items.find(
-      (p) => p.id === scene.qualityProfileId
-    )
-  );
+  const qualityProfile = useQualityProfile(scene.qualityProfileId);
 
-  const executingCommands = useSelector(createExecutingCommandsSelector());
+  const executingCommands = useExecutingCommands();
 
   const isRefreshingScene = executingCommands.some(
     (command: Command) =>
@@ -83,7 +76,7 @@ function SceneIndexOverview(props: SceneIndexOverviewProps) {
       command.name === MOVIE_SEARCH && command.body.movieId === sceneId
   );
 
-  const overviewOptions = useSelector(selectOverviewOptions);
+  const overviewOptions = useSceneIndexOption('overviewOptions');
 
   const {
     title,
@@ -102,27 +95,23 @@ function SceneIndexOverview(props: SceneIndexOverviewProps) {
 
   const { sizeOnDisk = 0 } = statistics;
 
-  const dispatch = useDispatch();
+  const executeCommand = useExecuteCommand();
   const [isEditSceneModalOpen, setIsEditSceneModalOpen] = useState(false);
   const [isDeleteSceneModalOpen, setIsDeleteSceneModalOpen] = useState(false);
 
   const onRefreshPress = useCallback(() => {
-    dispatch(
-      executeCommand({
-        name: REFRESH_MOVIE,
-        movieIds: [sceneId],
-      })
-    );
-  }, [sceneId, dispatch]);
+    executeCommand({
+      name: REFRESH_MOVIE,
+      movieIds: [sceneId],
+    });
+  }, [sceneId, executeCommand]);
 
   const onSearchPress = useCallback(() => {
-    dispatch(
-      executeCommand({
-        name: MOVIE_SEARCH,
-        movieIds: [sceneId],
-      })
-    );
-  }, [sceneId, dispatch]);
+    executeCommand({
+      name: MOVIE_SEARCH,
+      movieIds: [sceneId],
+    });
+  }, [sceneId, executeCommand]);
 
   const onEditScenePress = useCallback(() => {
     setIsEditSceneModalOpen(true);
@@ -155,7 +144,7 @@ function SceneIndexOverview(props: SceneIndexOverviewProps) {
     return rowHeight - padding;
   }, [rowHeight, isSmallScreen]);
 
-  const overviewHeight = contentHeight - titleRowHeight;
+  const overviewHeight = contentHeight - TITLE_ROW_HEIGHT;
 
   return (
     <div>
@@ -263,7 +252,7 @@ function SceneIndexOverview(props: SceneIndexOverviewProps) {
 
       <DeleteSceneModal
         isOpen={isDeleteSceneModalOpen}
-        sceneId={sceneId}
+        scene={scene}
         onModalClose={onDeleteSceneModalClose}
       />
     </div>

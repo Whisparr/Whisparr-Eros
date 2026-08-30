@@ -1,47 +1,40 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { createSelector } from 'reselect';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useSelect } from 'App/SelectContext';
-import AppState from 'App/State/AppState';
 import SpinnerButton from 'Components/Link/SpinnerButton';
 import PageContentFooter from 'Components/Page/PageContentFooter';
 import { kinds } from 'Helpers/Props';
-import { fetchRootFolders } from 'Store/Actions/rootFolderActions';
-import { saveStudioEditor } from 'Store/Actions/studioActions';
+import Studio from 'Studio/Studio';
 import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
 import DeleteStudioModal from './Delete/DeleteStudioModal';
+import { useDeleteStudiosModalFooterHandler } from './Delete/useDeleteStudiosModalFooterHandler';
 import EditStudiosModal from './Edit/EditStudiosModal';
+import { useEditStudiosModalMutation } from './Edit/useEditStudiosModalMutation';
 import TagsModal from './Tags/TagsModal';
 import styles from './StudioIndexSelectFooter.css';
 
 interface SavePayload {
   monitored?: boolean;
+  moviesMonitored?: boolean;
   qualityProfileId?: number;
   rootFolderPath?: string;
-  moveFiles?: boolean;
+  searchOnAdd?: boolean;
 }
 
-const sceneEditorSelector = createSelector(
-  (state: AppState) => state.studios,
-  (studios) => {
-    const { isSaving } = studios;
+interface StudioIndexSelectFooterProps {
+  items: Studio[];
+}
 
-    return {
-      isSaving,
-    };
-  }
-);
-
-function StudioIndexSelectFooter() {
-  const { isSaving } = useSelector(sceneEditorSelector);
-
-  const dispatch = useDispatch();
+function StudioIndexSelectFooter({
+  items,
+}: Readonly<StudioIndexSelectFooterProps>) {
+  // `/studio/editor` serves both buttons, but they spin independently, so each
+  // gets its own mutation rather than sharing one `isPending`.
+  const editMutation = useEditStudiosModalMutation();
+  const tagsMutation = useEditStudiosModalMutation();
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isTagsModalOpen, setIsTagsModalOpen] = useState(false);
-  const [isSavingStudios, setIsSavingStudios] = useState(false);
-  const [isSavingTags, setIsSavingTags] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const [selectState] = useSelect();
@@ -63,17 +56,14 @@ function StudioIndexSelectFooter() {
 
   const onSavePress = useCallback(
     (payload: SavePayload) => {
-      setIsSavingStudios(true);
       setIsEditModalOpen(false);
 
-      dispatch(
-        saveStudioEditor({
-          ...payload,
-          studioIds,
-        })
-      );
+      editMutation.mutate({
+        studioIds,
+        ...payload,
+      });
     },
-    [studioIds, dispatch]
+    [studioIds, editMutation]
   );
 
   const onTagsPress = useCallback(() => {
@@ -86,18 +76,15 @@ function StudioIndexSelectFooter() {
 
   const onApplyTagsPress = useCallback(
     (tags: number[], applyTags: string) => {
-      setIsSavingTags(true);
       setIsTagsModalOpen(false);
 
-      dispatch(
-        saveStudioEditor({
-          studioIds,
-          tags,
-          applyTags,
-        })
-      );
+      tagsMutation.mutate({
+        studioIds,
+        tags,
+        applyTags: applyTags as 'add' | 'remove' | 'replace',
+      });
     },
-    [studioIds, dispatch]
+    [studioIds, tagsMutation]
   );
 
   const onDeletePress = useCallback(() => {
@@ -108,16 +95,11 @@ function StudioIndexSelectFooter() {
     setIsDeleteModalOpen(false);
   }, []);
 
-  useEffect(() => {
-    if (!isSaving) {
-      setIsSavingStudios(false);
-      setIsSavingTags(false);
-    }
-  }, [isSaving]);
-
-  useEffect(() => {
-    dispatch(fetchRootFolders());
-  }, [dispatch]);
+  const { onDeletePress: onDeleteConfirmed, isPending: isDeletePending } =
+    useDeleteStudiosModalFooterHandler({
+      studioIds,
+      onModalClose: onDeleteModalClose,
+    });
 
   const anySelected = selectedCount > 0;
 
@@ -126,7 +108,7 @@ function StudioIndexSelectFooter() {
       <div className={styles.buttons}>
         <div className={styles.actionButtons}>
           <SpinnerButton
-            isSpinning={isSaving && isSavingStudios}
+            isSpinning={editMutation.isPending}
             isDisabled={!anySelected}
             onPress={onEditPress}
           >
@@ -134,7 +116,7 @@ function StudioIndexSelectFooter() {
           </SpinnerButton>
 
           <SpinnerButton
-            isSpinning={isSaving && isSavingTags}
+            isSpinning={tagsMutation.isPending}
             isDisabled={!anySelected}
             onPress={onTagsPress}
           >
@@ -142,7 +124,7 @@ function StudioIndexSelectFooter() {
           </SpinnerButton>
 
           <SpinnerButton
-            isSpinning={isSaving}
+            isSpinning={isDeletePending}
             isDisabled={!anySelected}
             kind={kinds.DANGER}
             onPress={onDeletePress}
@@ -166,13 +148,14 @@ function StudioIndexSelectFooter() {
       <TagsModal
         isOpen={isTagsModalOpen}
         studioIds={studioIds}
+        items={items}
         onApplyTagsPress={onApplyTagsPress}
         onModalClose={onTagsModalClose}
       />
 
       <DeleteStudioModal
         isOpen={isDeleteModalOpen}
-        studioIds={studioIds}
+        onDeletePress={onDeleteConfirmed}
         onModalClose={onDeleteModalClose}
       />
     </PageContentFooter>

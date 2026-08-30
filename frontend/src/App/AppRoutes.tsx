@@ -7,7 +7,7 @@ import AddNewMovie from 'AddMovie/AddNewMovie/AddNewMovie';
 import AddNewScene from 'AddMovie/AddNewMovie/AddNewScene';
 import ImportMovies from 'AddMovie/ImportMovie/ImportMovies';
 import CalendarPage from 'Calendar/CalendarPage';
-import CollectionConnector from 'Collection/CollectionConnector';
+import Collection from 'Collection/Collection';
 import NotFound from 'Components/NotFound';
 import MovieDetails from 'Movie/Details/MovieDetails';
 import MovieIndex from 'Movie/Index/MovieIndex';
@@ -16,23 +16,23 @@ import PerformerDetails from 'Performer/Details/PerformerDetails';
 import PerformerIndex from 'Performer/Index/PerformerIndex';
 import SceneIndex from 'Scene/Index/SceneIndex';
 import CustomFormatSettingsPage from 'Settings/CustomFormats/CustomFormatSettingsPage';
-import DownloadClientSettingsConnector from 'Settings/DownloadClients/DownloadClientSettingsConnector';
-import GeneralSettingsConnector from 'Settings/General/GeneralSettingsConnector';
+import DownloadClientSettings from 'Settings/DownloadClients/DownloadClientSettings';
+import GeneralSettings from 'Settings/General/GeneralSettings';
 import ImportListSettings from 'Settings/ImportLists/ImportListSettings';
 import IndexerSettings from 'Settings/Indexers/IndexerSettings';
 import MediaManagement from 'Settings/MediaManagement/MediaManagement';
 import MetadataSettings from 'Settings/Metadata/MetadataSettings';
 import NotificationSettings from 'Settings/Notifications/NotificationSettings';
 import Profiles from 'Settings/Profiles/Profiles';
-import QualityConnector from 'Settings/Quality/QualityConnector';
+import Quality from 'Settings/Quality/Quality';
 import Settings from 'Settings/Settings';
 import TagSettings from 'Settings/Tags/TagSettings';
-import UISettingsConnector from 'Settings/UI/UISettingsConnector';
+import UISettings from 'Settings/UI/UISettings';
 import AddNewStudio from 'Studio/AddNewStudio/AddNewStudio';
 import StudioDetails from 'Studio/Details/StudioDetails';
 import StudioIndex from 'Studio/Index/StudioIndex';
-import BackupsConnector from 'System/Backup/BackupsConnector';
-import LogsTableConnector from 'System/Events/LogsTableConnector';
+import Backups from 'System/Backup/Backups';
+import LogsTable from 'System/Events/LogsTable';
 import Logs from 'System/Logs/Logs';
 import Status from 'System/Status/Status';
 import Tasks from 'System/Tasks/Tasks';
@@ -52,7 +52,7 @@ function AppRoutes() {
 
       <Route path="/movies" element={<MovieIndex />} />
 
-      <Route path="/collections" element={<CollectionConnector />} />
+      <Route path="/collections" element={<Collection />} />
 
       <Route path="/scenes" element={<SceneIndex />} />
 
@@ -115,7 +115,7 @@ function AppRoutes() {
 
       <Route path="/settings/profiles" element={<Profiles />} />
 
-      <Route path="/settings/quality" element={<QualityConnector />} />
+      <Route path="/settings/quality" element={<Quality />} />
 
       <Route
         path="/settings/customformats"
@@ -126,7 +126,7 @@ function AppRoutes() {
 
       <Route
         path="/settings/downloadclients"
-        element={<DownloadClientSettingsConnector />}
+        element={<DownloadClientSettings />}
       />
 
       <Route path="/settings/importlists" element={<ImportListSettings />} />
@@ -137,9 +137,9 @@ function AppRoutes() {
 
       <Route path="/settings/tags" element={<TagSettings />} />
 
-      <Route path="/settings/general" element={<GeneralSettingsConnector />} />
+      <Route path="/settings/general" element={<GeneralSettings />} />
 
-      <Route path="/settings/ui" element={<UISettingsConnector />} />
+      <Route path="/settings/ui" element={<UISettings />} />
 
       {/*
         System
@@ -149,11 +149,11 @@ function AppRoutes() {
 
       <Route path="/system/tasks" element={<Tasks />} />
 
-      <Route path="/system/backup" element={<BackupsConnector />} />
+      <Route path="/system/backup" element={<Backups />} />
 
       <Route path="/system/updates" element={<Updates />} />
 
-      <Route path="/system/events" element={<LogsTableConnector />} />
+      <Route path="/system/events" element={<LogsTable />} />
 
       <Route path="/system/logs/files/*" element={<Logs />} />
 

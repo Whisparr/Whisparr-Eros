@@ -1,6 +1,4 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import AppState from 'App/State/AppState';
 import FieldSet from 'Components/FieldSet';
 import Form from 'Components/Form/Form';
 import FormGroup from 'Components/Form/FormGroup';
@@ -17,12 +15,18 @@ import {
   timeFormatOptions,
   weekColumnOptions,
 } from 'Settings/UI/UISettings';
-import { setCalendarOption } from 'Store/Actions/calendarActions';
-import { saveUISettings } from 'Store/Actions/settingsActions';
-import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
+import {
+  useSaveUiSettings,
+  useUiSettingsValues,
+} from 'Settings/UI/useUiSettings';
 import { InputChanged } from 'typings/inputs';
 import UiSettings from 'typings/Settings/UiSettings';
 import translate from 'Utilities/String/translate';
+import {
+  CalendarOptions,
+  setCalendarOption,
+  useCalendarOptions,
+} from '../calendarOptionsStore';
 
 interface CalendarOptionsModalContentProps {
   onModalClose: () => void;
@@ -31,12 +35,11 @@ interface CalendarOptionsModalContentProps {
 function CalendarOptionsModalContent({
   onModalClose,
 }: CalendarOptionsModalContentProps) {
-  const dispatch = useDispatch();
-
   const { showMovieInformation, showCutoffUnmetIcon, fullColorEvents } =
-    useSelector((state: AppState) => state.calendar.options);
+    useCalendarOptions();
 
-  const uiSettings = useSelector(createUISettingsSelector());
+  const uiSettings = useUiSettingsValues();
+  const saveUiSettings = useSaveUiSettings();
 
   const [state, setState] = useState<Partial<UiSettings>>({
     firstDayOfWeek: uiSettings.firstDayOfWeek,
@@ -54,18 +57,21 @@ function CalendarOptionsModalContent({
 
   const handleOptionInputChange = useCallback(
     ({ name, value }: InputChanged) => {
-      dispatch(setCalendarOption({ [name]: value }));
+      setCalendarOption(
+        name as keyof CalendarOptions,
+        value as CalendarOptions[keyof CalendarOptions]
+      );
     },
-    [dispatch]
+    []
   );
 
   const handleGlobalInputChange = useCallback(
     ({ name, value }: InputChanged) => {
       setState((prevState) => ({ ...prevState, [name]: value }));
 
-      dispatch(saveUISettings({ [name]: value }));
+      saveUiSettings({ [name]: value });
     },
-    [dispatch]
+    [saveUiSettings]
   );
 
   useEffect(() => {

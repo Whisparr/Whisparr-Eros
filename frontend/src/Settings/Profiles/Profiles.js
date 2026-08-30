@@ -13,8 +13,8 @@ import PageContent from 'Components/Page/PageContent';
 import PageContentBody from 'Components/Page/PageContentBody';
 import SettingsToolbar from 'Settings/SettingsToolbar';
 import translate from 'Utilities/String/translate';
-import DelayProfilesConnector from './Delay/DelayProfilesConnector';
-import QualityProfilesConnector from './Quality/QualityProfilesConnector';
+import DelayProfiles from './Delay/DelayProfiles';
+import QualityProfiles from './Quality/QualityProfiles';
 import ReleaseProfiles from './Release/ReleaseProfiles';
 
 // Only a single DragDrop Context can exist so it's done here to allow editing
@@ -31,8 +31,8 @@ class Profiles extends Component {
 
         <PageContentBody>
           <DndProvider options={HTML5toTouch}>
-            <QualityProfilesConnector />
-            <DelayProfilesConnector />
+            <QualityProfiles />
+            <DelayProfiles />
             <ReleaseProfiles />
           </DndProvider>
         </PageContentBody>

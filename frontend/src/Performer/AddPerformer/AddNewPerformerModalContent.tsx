@@ -10,35 +10,35 @@ import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { inputTypes, kinds } from 'Helpers/Props';
-import { Image } from 'Movie/Movie';
 import MovieHeadshot from 'Movie/MovieHeadshot';
+import Performer from 'Performer/Performer';
 import { EnhancedSelectInputChanged } from 'typings/inputs';
 import translate from 'Utilities/String/translate';
 import { useAddNewPerformerModalContent } from './useAddNewPerformer';
 import styles from './AddNewPerformerModalContent.css';
 
 interface AddNewPerformerModalContentProps {
-  foreignId: string;
-  fullName: string;
-  images: Image[];
+  performer: Performer;
   onModalClose: () => void;
 }
 
 function AddNewPerformerModalContent({
-  foreignId,
-  fullName,
-  images,
+  performer,
   onModalClose,
-}: AddNewPerformerModalContentProps) {
+}: Readonly<AddNewPerformerModalContentProps>) {
+  const { fullName, images } = performer;
+
   const {
     isAdding,
     isSmallScreen,
     isWindows,
     safeForWorkMode,
     settings,
+    validationErrors,
+    validationWarnings,
     onInputChange,
     onAddPerformerPress,
-  } = useAddNewPerformerModalContent(foreignId);
+  } = useAddNewPerformerModalContent(performer, onModalClose);
 
   const {
     rootFolderPath,
@@ -71,7 +71,7 @@ function AddNewPerformerModalContent({
               <MovieHeadshot
                 safeForWorkMode={safeForWorkMode}
                 className={styles.poster}
-                images={images}
+                images={images ?? []}
                 size={250}
                 overflow={true}
                 lazy={true}
@@ -80,7 +80,10 @@ function AddNewPerformerModalContent({
           )}
 
           <div className={styles.info}>
-            <Form>
+            <Form
+              validationErrors={validationErrors}
+              validationWarnings={validationWarnings}
+            >
               <FormGroup>
                 <FormLabel>{translate('RootFolder')}</FormLabel>
 
@@ -93,7 +96,6 @@ function AddNewPerformerModalContent({
                   selectedValueOptions={{
                     isWindows,
                   }}
-                  errors={rootFolderPath.errors}
                   {...rootFolderPath}
                   onChange={onInputChange}
                 />
@@ -106,7 +108,6 @@ function AddNewPerformerModalContent({
                   type={inputTypes.CHECK}
                   name="monitored"
                   helpText={translate('MonitoredPerformerHelpText')}
-                  errors={monitored.errors}
                   {...monitored}
                   onChange={onInputChange}
                 />
@@ -119,7 +120,6 @@ function AddNewPerformerModalContent({
                   type={inputTypes.CHECK}
                   name="moviesMonitored"
                   helpText={translate('MonitoredPerformerMovieHelpText')}
-                  errors={moviesMonitored.errors}
                   {...moviesMonitored}
                   onChange={onInputChange}
                 />
@@ -131,7 +131,6 @@ function AddNewPerformerModalContent({
                 <FormInputGroup
                   type={inputTypes.QUALITY_PROFILE_SELECT}
                   name="qualityProfileId"
-                  errors={qualityProfileId.errors}
                   {...qualityProfileId}
                   onChange={onQualityProfileIdChange}
                 />
@@ -143,7 +142,6 @@ function AddNewPerformerModalContent({
                 <FormInputGroup
                   type={inputTypes.TAG}
                   name="tags"
-                  errors={tags.errors}
                   {...tags}
                   onChange={onInputChange}
                 />

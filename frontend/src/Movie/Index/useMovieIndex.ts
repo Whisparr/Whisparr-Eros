@@ -1,37 +1,39 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import AppState from 'App/State/AppState';
+import type Column from 'Components/Table/Column';
+import { useCustomFiltersList } from 'Filters/useCustomFilters';
+import usePage from 'Helpers/Hooks/usePage';
+import { MOVIE_INDEX_FILTERS } from 'Movie/Index/movieIndexFilters';
 import {
-  setMovieFilter,
-  setMovieIndexMode,
-  setMovieOverviewOption,
-  setMoviePage,
-  setMoviePosterOption,
-  setMovieSort,
-  setMovieTableOption,
-  setMovieView,
-} from 'Store/Actions/movieIndexActions';
-import { createCustomFiltersSelector } from 'Store/Selectors/createClientSideCollectionSelector';
+  MovieIndexOverviewOptions,
+  MovieIndexPosterOptions,
+  MovieIndexTableOptions,
+  setMovieIndexFilter,
+  setMovieIndexOption,
+  setMovieIndexOverviewOption,
+  setMovieIndexPosterOption,
+  setMovieIndexSort,
+  setMovieIndexTableOption,
+  setMovieIndexView,
+  useMovieIndexOptions,
+} from './movieIndexOptionsStore';
 import { useMovieIndexQuery } from './useMovieIndexQuery';
 
 export function useMovieIndex() {
-  const dispatch = useDispatch();
-  const movieIndexState = useSelector((state: AppState) => state.movieIndex);
   const {
-    page,
     sortKey,
     sortDirection,
     view,
     selectedFilterKey,
     columns,
-    filters,
     indexMode,
     posterOptions,
     tableOptions,
     overviewOptions,
-  } = movieIndexState;
+  } = useMovieIndexOptions();
 
-  const customFilters = useSelector(createCustomFiltersSelector('movieIndex'));
+  const { page, goToPage } = usePage('movieIndex');
+  const customFilters = useCustomFiltersList('movieIndex');
+
   function getPageSize() {
     switch (view) {
       case 'posters':
@@ -58,79 +60,68 @@ export function useMovieIndex() {
   const [isSelectMode, setIsSelectMode] = useState(false);
 
   // Pagination handlers
-  const handleFirstPagePress = useCallback(
-    () => dispatch(setMoviePage(1)),
-    [dispatch]
-  );
+  const handleFirstPagePress = useCallback(() => goToPage(1), [goToPage]);
   const handlePreviousPagePress = useCallback(
-    () => dispatch(setMoviePage(Math.max(1, page - 1))),
-    [dispatch, page]
+    () => goToPage(Math.max(1, page - 1)),
+    [goToPage, page]
   );
   const handleNextPagePress = useCallback(
-    () => dispatch(setMoviePage(Math.min(totalPages, page + 1))),
-    [dispatch, page, totalPages]
+    () => goToPage(Math.min(totalPages, page + 1)),
+    [goToPage, page, totalPages]
   );
   const handleLastPagePress = useCallback(
-    () => dispatch(setMoviePage(totalPages)),
-    [dispatch, totalPages]
+    () => goToPage(totalPages),
+    [goToPage, totalPages]
   );
   const handlePageSelect = useCallback(
-    (newPage: number) => dispatch(setMoviePage(newPage)),
-    [dispatch]
+    (newPage: number) => goToPage(newPage),
+    [goToPage]
   );
 
-  // Sort, filter, view handlers
-  const handleSortPress = useCallback(
-    (value: string) => {
-      dispatch(setMovieSort({ sortKey: value }));
-    },
-    [dispatch]
-  );
+  // Sort, filter, view handlers. Each resets the page, as the reducers did.
+  const handleSortPress = useCallback((value: string) => {
+    setMovieIndexSort(value);
+  }, []);
 
-  const handleFilterSelect = useCallback(
-    (value: string | number) => {
-      dispatch(setMovieFilter({ selectedFilterKey: value }));
-    },
-    [dispatch]
-  );
+  const handleFilterSelect = useCallback((value: string | number) => {
+    setMovieIndexFilter(value);
+  }, []);
 
-  const handleViewSelect = useCallback(
-    (value: string) => {
-      dispatch(setMovieView({ view: value }));
-      if (scrollerRef.current) {
-        scrollerRef.current.scrollTo(0, 0);
-      }
-    },
-    [dispatch, scrollerRef]
-  );
+  const handleViewSelect = useCallback((value: string) => {
+    setMovieIndexView(value);
+
+    if (scrollerRef.current) {
+      scrollerRef.current.scrollTo(0, 0);
+    }
+  }, []);
 
   const handleTableOptionChange = useCallback(
-    (payload: unknown) => {
-      dispatch(setMovieTableOption(payload));
+    (payload: {
+      columns?: Column[];
+      tableOptions?: MovieIndexTableOptions;
+    }) => {
+      setMovieIndexTableOption(payload);
     },
-    [dispatch]
+    []
   );
 
   const handlePosterOptionChange = useCallback(
-    (payload: unknown) => {
-      dispatch(setMoviePosterOption(payload));
+    (payload: Partial<MovieIndexPosterOptions>) => {
+      setMovieIndexPosterOption(payload);
     },
-    [dispatch]
+    []
   );
 
   const handleOverviewOptionChange = useCallback(
-    (payload: unknown) => {
-      dispatch(setMovieOverviewOption(payload));
+    (payload: Partial<MovieIndexOverviewOptions>) => {
+      setMovieIndexOverviewOption(payload);
     },
-    [dispatch]
+    []
   );
 
-  const handleIndexModeChange = useCallback(
-    (value: string) => {
-      dispatch(setMovieIndexMode({ indexMode: value }));
-    },
-    [dispatch]
-  );
+  const handleIndexModeChange = useCallback((value: string) => {
+    setMovieIndexOption('indexMode', value);
+  }, []);
 
   const handleSelectModePress = useCallback(() => {
     setIsSelectMode((prev) => !prev);
@@ -149,7 +140,7 @@ export function useMovieIndex() {
     sortDirection,
     view,
     columns,
-    filters,
+    filters: MOVIE_INDEX_FILTERS,
     customFilters,
     selectedFilterKey,
     indexMode,

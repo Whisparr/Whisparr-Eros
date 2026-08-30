@@ -1,11 +1,9 @@
 import React, { RefObject, useMemo } from 'react';
-import { useSelector } from 'react-redux';
-import { createSelector } from 'reselect';
-import AppState from 'App/State/AppState';
 import useMeasure from 'Helpers/Hooks/useMeasure';
 import { SortDirection } from 'Helpers/Props/sortDirections';
 import Movie from 'Movie/Movie';
 import dimensions from 'Styles/Variables/dimensions';
+import { useMovieIndexOption } from '../movieIndexOptionsStore';
 import MovieIndexPoster from './MovieIndexPoster';
 
 const columnPadding = Number.parseInt(dimensions.movieIndexColumnPadding, 10);
@@ -29,14 +27,9 @@ interface MovieIndexPostersProps {
   isSmallScreen: boolean;
 }
 
-const movieIndexSelector = createSelector(
-  (state: AppState) => state.movieIndex.posterOptions,
-  (posterOptions) => ({ posterOptions })
-);
-
 export default function MovieIndexPosters(props: MovieIndexPostersProps) {
   const { items, sortKey, isSelectMode, isSmallScreen } = props;
-  const { posterOptions } = useSelector(movieIndexSelector);
+  const posterOptions = useMovieIndexOption('posterOptions');
   const [measureRef, bounds] = useMeasure();
 
   const columnWidth = useMemo(() => {

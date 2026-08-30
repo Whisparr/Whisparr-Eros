@@ -79,7 +79,7 @@ function MovieHistoryModalContent({
   const { mutate: markHistoryFailed } = useMarkHistoryFailed();
 
   function handleMarkAsFailedPress(historyId: number) {
-    markHistoryFailed(historyId);
+    markHistoryFailed({ id: historyId });
   }
 
   return (
@@ -87,17 +87,17 @@ function MovieHistoryModalContent({
       <ModalHeader>{translate('History')}</ModalHeader>
 
       <ModalBody>
-        {isFetching && !items ? <LoadingIndicator /> : null}
+        {isFetching && !items.length ? <LoadingIndicator /> : null}
 
         {!isFetching && !!error ? (
           <Alert kind={kinds.DANGER}>{translate('HistoryLoadError')}</Alert>
         ) : null}
 
-        {!isFetching && !items && !error ? (
+        {!isFetching && !items.length && !error ? (
           <div>{translate('NoHistory')}</div>
         ) : null}
 
-        {!isFetching && items && !error && (
+        {!isFetching && !!items.length && !error && (
           <Table columns={columns}>
             <TableBody>
               {items.map((item) => {

@@ -1,8 +1,7 @@
 import React, { useMemo } from 'react';
-import { useSelector } from 'react-redux';
 import { IconName } from 'Components/Icon';
 import { icons } from 'Helpers/Props';
-import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
+import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import dimensions from 'Styles/Variables/dimensions';
 import QualityProfile from 'typings/QualityProfile';
 import UiSettings from 'typings/Settings/UiSettings';
@@ -154,7 +153,7 @@ function getInfoRowProps(
 function MovieIndexOverviewInfo(props: MovieIndexOverviewInfoProps) {
   const height = props.height;
 
-  const uiSettings = useSelector(createUISettingsSelector());
+  const uiSettings = useUiSettingsValues();
 
   let shownRows = 1;
   const maxRows = Math.floor(height / (infoRowHeight + 4));

@@ -47,7 +47,8 @@ const usePaths = ({
     path: '/filesystem',
     queryParams: { path, allowFoldersWithoutTrailingSlashes, includeFiles },
     queryOptions: {
-      enabled: path.trim().length > 0,
+      // No `enabled` guard: an empty path is what the file browser opens on,
+      // and the endpoint answers it with the drive/root listing.
       placeholderData: keepPreviousData,
     },
   });

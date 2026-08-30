@@ -1,16 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { createSelector } from 'reselect';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useSelect } from 'App/SelectContext';
-import AppState from 'App/State/AppState';
 import { RENAME_MOVIE } from 'Commands/commandNames';
+import { useCommandExecuting } from 'Commands/useCommands';
 import SpinnerButton from 'Components/Link/SpinnerButton';
 import PageContentFooter from 'Components/Page/PageContentFooter';
 import { kinds } from 'Helpers/Props';
 import Movie from 'Movie/Movie';
-import { saveMovieEditor } from 'Store/Actions/movieActions';
-import { fetchRootFolders } from 'Store/Actions/rootFolderActions';
-import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
 import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
 import { DeleteMovieModal } from './Delete/DeleteMovieModal';
@@ -28,18 +23,6 @@ interface SavePayload {
   searchOnAdd?: boolean;
 }
 
-const sceneEditorSelector = createSelector(
-  (state: AppState) => state.movies,
-  (movies) => {
-    // Keep legacy isSaving for other features like tags and delete
-    const { isSaving } = movies;
-
-    return {
-      isSaving,
-    };
-  }
-);
-
 interface MovieIndexSelectFooterProps {
   items: Movie[];
 }
@@ -47,19 +30,17 @@ interface MovieIndexSelectFooterProps {
 function MovieIndexSelectFooter({
   items,
 }: Readonly<MovieIndexSelectFooterProps>) {
-  const { isSaving: legacyIsSaving } = useSelector(sceneEditorSelector);
-  const isOrganizingMovies = useSelector(
-    createCommandExecutingSelector(RENAME_MOVIE)
-  );
+  const isOrganizingMovies = useCommandExecuting(RENAME_MOVIE);
 
-  const dispatch = useDispatch();
+  // `/movie/editor` serves both buttons, but they spin independently, so each
+  // gets its own mutation rather than sharing one `isPending`.
   const editMutation = useEditMoviesModalMutation();
+  const tagsMutation = useEditMoviesModalMutation();
 
   const [isDeleteMovieModalOpen, setIsDeleteMovieModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isOrganizeModalOpen, setIsOrganizeModalOpen] = useState(false);
   const [isTagsModalOpen, setIsTagsModalOpen] = useState(false);
-  const [isSavingTags, setIsSavingTags] = useState(false);
 
   const [selectState] = useSelect();
   const { selectedState } = selectState;
@@ -108,18 +89,15 @@ function MovieIndexSelectFooter({
 
   const onApplyTagsPress = useCallback(
     (tags: number[], applyTags: string) => {
-      setIsSavingTags(true);
       setIsTagsModalOpen(false);
 
-      dispatch(
-        saveMovieEditor({
-          movieIds,
-          tags,
-          applyTags,
-        })
-      );
+      tagsMutation.mutate({
+        movieIds,
+        tags,
+        applyTags: applyTags as 'add' | 'remove' | 'replace',
+      });
     },
-    [movieIds, dispatch]
+    [movieIds, tagsMutation]
   );
 
   const onDeleteModalClose = useCallback(() => {
@@ -136,17 +114,6 @@ function MovieIndexSelectFooter({
       movieIds,
       onModalClose: onDeleteModalClose,
     });
-
-  useEffect(() => {
-    // Legacy reducer-based isSaving for tags operation
-    if (!legacyIsSaving) {
-      setIsSavingTags(false);
-    }
-  }, [legacyIsSaving]);
-
-  useEffect(() => {
-    dispatch(fetchRootFolders());
-  }, [dispatch]);
 
   const anySelected = selectedCount > 0;
 
@@ -171,7 +138,7 @@ function MovieIndexSelectFooter({
           </SpinnerButton>
 
           <SpinnerButton
-            isSpinning={legacyIsSaving && isSavingTags}
+            isSpinning={tagsMutation.isPending}
             isDisabled={!anySelected}
             onPress={onTagsPress}
           >

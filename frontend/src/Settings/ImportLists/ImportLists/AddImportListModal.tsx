@@ -1,21 +1,25 @@
 import React from 'react';
 import Modal from 'Components/Modal/Modal';
-import AddImportListModalContent, {
-  AddImportListModalContentProps,
-} from './AddImportListModalContent';
+import { SelectedSchema } from 'Settings/useProviderSchema';
+import AddImportListModalContent from './AddImportListModalContent';
 
-interface AddImportListModalProps extends AddImportListModalContentProps {
+interface AddImportListModalProps {
   isOpen: boolean;
+  onImportListSelect: (selectedSchema: SelectedSchema) => void;
+  onModalClose: () => void;
 }
 
 function AddImportListModal({
   isOpen,
+  onImportListSelect,
   onModalClose,
-  ...otherProps
-}: AddImportListModalProps) {
+}: Readonly<AddImportListModalProps>) {
   return (
     <Modal isOpen={isOpen} onModalClose={onModalClose}>
-      <AddImportListModalContent {...otherProps} onModalClose={onModalClose} />
+      <AddImportListModalContent
+        onImportListSelect={onImportListSelect}
+        onModalClose={onModalClose}
+      />
     </Modal>
   );
 }

@@ -30,6 +30,9 @@ updates:
           - "eslint-*"
           - "@eslint/*"
           - "@typescript-eslint/*"
+      # Every member of this group is currently ignored (see below), so it
+      # produces no PRs today. Kept so grouping still applies if the redux
+      # migration is ever abandoned and the ignore entries are dropped.
       redux:
         patterns:
           - "redux"
@@ -62,6 +65,24 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "swiper"
         update-types: ["version-update:semver-major"]
+      # The redux family is being removed, not upgraded. The frontend is
+      # migrating to React Query and zustand, after which every one of these
+      # is deleted from package.json. Bumping them in the meantime is churn
+      # against code with a scheduled demolition date -- react-redux 9.3.0,
+      # which #395 kept proposing, exists mainly to mark `connect` deprecated,
+      # and we still have 66 connectors to delete rather than migrate.
+      #
+      # No update-types filter: ignore every update, not just majors. Drop
+      # these entries only if the migration is abandoned.
+      #
+      # reselect is included because it is only used by redux selectors, and
+      # @types/redux-actions needs naming explicitly -- it matches none of the
+      # redux group's patterns, so it would otherwise land in prod-minor.
+      - dependency-name: "redux"
+      - dependency-name: "redux-*"
+      - dependency-name: "react-redux"
+      - dependency-name: "reselect"
+      - dependency-name: "@types/redux-actions"
   - package-ecosystem: "nuget"
     directory: "/src"
     schedule:

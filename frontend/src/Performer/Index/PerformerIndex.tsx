@@ -1,5 +1,4 @@
 import React, { useEffect, useRef } from 'react';
-import { useSelector } from 'react-redux';
 import { SelectProvider, useSelect } from 'App/SelectContext';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import PageContent from 'Components/Page/PageContent';
@@ -10,14 +9,13 @@ import PageToolbarSection from 'Components/Page/Toolbar/PageToolbarSection';
 import PageToolbarSeparator from 'Components/Page/Toolbar/PageToolbarSeparator';
 import TableOptionsModalWrapper from 'Components/Table/TableOptions/TableOptionsModalWrapper';
 import TablePager from 'Components/Table/TablePager';
+import { useCustomFiltersList } from 'Filters/useCustomFilters';
 import { align, icons } from 'Helpers/Props';
 import MovieIndexSelectAllButton from 'Movie/Index/Select/MovieIndexSelectAllButton';
 import MovieIndexSelectAllMenuItem from 'Movie/Index/Select/MovieIndexSelectAllMenuItem';
 import MovieIndexSelectModeButton from 'Movie/Index/Select/MovieIndexSelectModeButton';
 import MovieIndexSelectModeMenuItem from 'Movie/Index/Select/MovieIndexSelectModeMenuItem';
 import NoPerformer from 'Performer/NoPerformer';
-import { defaultState } from 'Store/Actions/performerActions';
-import { createCustomFiltersSelector } from 'Store/Selectors/createClientSideCollectionSelector';
 import translate from 'Utilities/String/translate';
 import PerformerIndexFilterMenu from './Menus/PerformerIndexFilterMenu';
 import PerformerIndexSortMenu from './Menus/PerformerIndexSortMenu';
@@ -61,10 +59,10 @@ function PerformerIndex(_: Readonly<PerformerIndexProps>): React.JSX.Element {
     totalPages,
     sortKey,
     columns,
+    filters,
     isLoading,
     isOptionsModalOpen,
     isSelectMode,
-    safeForWorkMode,
     selectedFilterKey,
     sortDirection,
     view,
@@ -83,8 +81,7 @@ function PerformerIndex(_: Readonly<PerformerIndexProps>): React.JSX.Element {
     handleViewSelect,
   } = usePerformerIndex();
 
-  const filters = defaultState.filters || [];
-  const customFilters = useSelector(createCustomFiltersSelector('performers'));
+  const customFilters = useCustomFiltersList('performers');
   const hasNoPerformer = items.length === 0;
   const isLoaded = !!items.length;
   const scrollerRef = useRef<HTMLDivElement>(null);
@@ -215,7 +212,6 @@ function PerformerIndex(_: Readonly<PerformerIndexProps>): React.JSX.Element {
                 scrollerRef={scrollerRef}
                 isSmallScreen={false}
                 isSelectMode={isSelectMode}
-                safeForWorkMode={safeForWorkMode}
                 sortKey={sortKey}
                 sortDirection={sortDirection}
               />
@@ -241,7 +237,7 @@ function PerformerIndex(_: Readonly<PerformerIndexProps>): React.JSX.Element {
           {/*
           FOOTER - SELECT MODE
           */}
-          {isSelectMode ? <PerformerIndexSelectFooter /> : null}
+          {isSelectMode ? <PerformerIndexSelectFooter items={items} /> : null}
 
           {/*
           MODALS

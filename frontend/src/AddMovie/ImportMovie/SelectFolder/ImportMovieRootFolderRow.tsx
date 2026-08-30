@@ -1,18 +1,15 @@
 import React, { useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import IconButton from 'Components/Link/IconButton';
 import Link from 'Components/Link/Link';
 import TableRowCell from 'Components/Table/Cells/TableRowCell';
 import TableRow from 'Components/Table/TableRow';
 import { icons } from 'Helpers/Props';
-import { refreshRootFolder } from 'Store/Actions/rootFolderActions';
-import createSettingsSectionSelector from 'Store/Selectors/createSettingsSectionSelector';
+import { useRefreshRootFolder } from 'RootFolder/useRootFolders';
+import { useNamingSettings } from 'Settings/MediaManagement/Naming/useNamingSettings';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
 import styles from './ImportMovieRootFolderRow.css';
-
-const namingSelector = createSettingsSectionSelector('naming');
 
 interface ImportFile {
   name: string;
@@ -21,7 +18,7 @@ interface ImportFile {
 interface ImportMovieRootFolderRowProps {
   id: number;
   path: string;
-  freeSpace: number;
+  freeSpace?: number;
   importFiles: ImportFile[];
 }
 
@@ -31,9 +28,9 @@ function ImportMovieRootFolderRow({
   freeSpace,
   importFiles,
 }: Readonly<ImportMovieRootFolderRowProps>) {
-  const dispatch = useDispatch();
   const location = useLocation();
-  const { settings } = useSelector(namingSelector);
+  const { refreshRootFolder } = useRefreshRootFolder();
+  const { data: naming } = useNamingSettings();
 
   const isMovies = location.pathname === '/add/import/movies';
   const linkTo = isMovies
@@ -42,11 +39,11 @@ function ImportMovieRootFolderRow({
   const importFilesCount = importFiles.length || '-';
 
   const handleRefreshPress = useCallback(() => {
-    dispatch(refreshRootFolder({ id }));
-  }, [dispatch, id]);
+    refreshRootFolder({ id });
+  }, [refreshRootFolder, id]);
 
   const sep = path.includes('\\') ? '\\' : '/';
-  const importFormatValue = settings.sceneImportFolderFormat?.value;
+  const importFormatValue = naming.sceneImportFolderFormat;
   const importPath = importFormatValue ? sep + importFormatValue : undefined;
 
   return (
@@ -63,7 +60,7 @@ function ImportMovieRootFolderRow({
       </TableRowCell>
 
       <TableRowCell className={styles.freeSpace}>
-        {formatBytes(freeSpace) || '-'}
+        {freeSpace == null ? '-' : formatBytes(freeSpace) || '-'}
       </TableRowCell>
 
       <TableRowCell className={styles.importFiles}>

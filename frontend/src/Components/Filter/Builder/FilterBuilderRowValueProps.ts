@@ -1,4 +1,4 @@
-import { FilterBuilderProp } from 'App/State/AppState';
+import { FilterBuilderProp } from 'Filters/Filter';
 
 interface FilterBuilderRowOnChangeProps {
   name: string;

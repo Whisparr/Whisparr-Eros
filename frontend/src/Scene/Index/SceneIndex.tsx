@@ -1,7 +1,8 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useCallback, useState } from 'react';
+import { useAppDimension } from 'App/appStore';
 import { SelectProvider } from 'App/SelectContext';
 import { RSS_SYNC } from 'Commands/commandNames';
+import { useCommandExecuting, useExecuteCommand } from 'Commands/useCommands';
 import Alert from 'Components/Alert';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import PageContent from 'Components/Page/PageContent';
@@ -20,10 +21,6 @@ import MovieIndexSelectModeButton from 'Movie/Index/Select/MovieIndexSelectModeB
 import MovieIndexSelectModeMenuItem from 'Movie/Index/Select/MovieIndexSelectModeMenuItem';
 import ParseToolbarButton from 'Parse/ParseToolbarButton';
 import NoScene from 'Scene/NoScene';
-import { executeCommand } from 'Store/Actions/commandActions';
-import { fetchQueueDetails } from 'Store/Actions/queueActions';
-import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
-import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import translate from 'Utilities/String/translate';
 import SceneIndexFilterMenu from './Menus/SceneIndexFilterMenu';
 import SceneIndexSortMenu from './Menus/SceneIndexSortMenu';
@@ -70,23 +67,17 @@ function SceneIndex() {
     handleSelectModePress,
   } = useSceneIndex();
 
-  const isRssSyncExecuting = useSelector(
-    createCommandExecutingSelector(RSS_SYNC)
-  );
-  const { isSmallScreen } = useSelector(createDimensionsSelector());
-  const dispatch = useDispatch();
+  const isRssSyncExecuting = useCommandExecuting(RSS_SYNC);
+  const isSmallScreen = useAppDimension('isSmallScreen');
+  const executeCommand = useExecuteCommand();
 
   const [isOptionsModalOpen, setIsOptionsModalOpen] = useState(false);
   const [isInteractiveImportModalOpen, setIsInteractiveImportModalOpen] =
     useState(false);
 
-  useEffect(() => {
-    dispatch(fetchQueueDetails({ all: true }));
-  }, [dispatch]);
-
   const handleRssSyncPress = useCallback(() => {
-    dispatch(executeCommand({ name: RSS_SYNC }));
-  }, [dispatch]);
+    executeCommand({ name: RSS_SYNC });
+  }, [executeCommand]);
 
   const handleOptionsPress = useCallback(() => {
     setIsOptionsModalOpen(true);
@@ -291,7 +282,7 @@ function SceneIndex() {
           ) : null}
         </PageContentBody>
 
-        {isSelectMode ? <SceneIndexSelectFooter /> : null}
+        {isSelectMode ? <SceneIndexSelectFooter items={items} /> : null}
 
         <InteractiveImportModal
           isOpen={isInteractiveImportModalOpen}

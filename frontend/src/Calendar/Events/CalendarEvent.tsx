@@ -1,15 +1,14 @@
 import classNames from 'classnames';
 import moment from 'moment';
 import React, { useMemo } from 'react';
-import { useSelector } from 'react-redux';
-import AppState from 'App/State/AppState';
+import { useQueueItemForMovie } from 'Activity/Queue/Details/useQueueDetails';
+import { useCalendarOptions } from 'Calendar/calendarOptionsStore';
 import getStatusStyle from 'Calendar/getStatusStyle';
 import Icon from 'Components/Icon';
 import Link from 'Components/Link/Link';
 import { icons, kinds } from 'Helpers/Props';
 import { useSingleMovieFile } from 'MovieFile/useMovieFile';
-import { createQueueItemSelectorForHook } from 'Store/Selectors/createQueueItemSelector';
-import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
+import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import translate from 'Utilities/String/translate';
 import CalendarEventQueueDetails from './CalendarEventQueueDetails';
 import styles from './CalendarEvent.css';
@@ -48,12 +47,12 @@ function CalendarEvent({
   grabbed,
 }: CalendarEventProps) {
   const { data: movieFile } = useSingleMovieFile(movieFileId);
-  const queueItem = useSelector(createQueueItemSelectorForHook(id));
+  const queueItem = useQueueItemForMovie(id);
 
-  const { enableColorImpairedMode } = useSelector(createUISettingsSelector());
+  const { enableColorImpairedMode } = useUiSettingsValues();
 
   const { showMovieInformation, showCutoffUnmetIcon, fullColorEvents } =
-    useSelector((state: AppState) => state.calendar.options);
+    useCalendarOptions();
 
   const isDownloading = !!(queueItem || grabbed);
   const statusStyle = getStatusStyle(

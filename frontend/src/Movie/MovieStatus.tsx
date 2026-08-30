@@ -1,5 +1,5 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
+import { useQueueItemForMovie } from 'Activity/Queue/Details/useQueueDetails';
 import QueueDetails from 'Activity/Queue/QueueDetails';
 import Icon from 'Components/Icon';
 import ProgressBar from 'Components/ProgressBar';
@@ -7,7 +7,6 @@ import { icons, kinds, sizes } from 'Helpers/Props';
 import Movie from 'Movie/Movie';
 import { useMovie } from 'Movie/useMovie';
 import { useSingleMovieFile } from 'MovieFile/useMovieFile';
-import { createQueueItemSelectorForHook } from 'Store/Selectors/createQueueItemSelector';
 import translate from 'Utilities/String/translate';
 import MovieQuality from './MovieQuality';
 import styles from './MovieStatus.css';
@@ -19,7 +18,7 @@ interface MovieStatusProps {
 }
 
 function MovieStatus({ movieId, movieFileId }: MovieStatusProps) {
-  const queueItem = useSelector(createQueueItemSelectorForHook(movieId));
+  const queueItem = useQueueItemForMovie(movieId);
   const { data: movieFile } = useSingleMovieFile(movieFileId);
   const { data: movie } = useMovie(movieId);
   if (!movie) {

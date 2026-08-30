@@ -6,21 +6,24 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { useMatch, useParams } from 'react-router-dom';
 import Alert from 'Components/Alert';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import PageContent from 'Components/Page/PageContent';
 import PageContentBody from 'Components/Page/PageContentBody';
 import { kinds } from 'Helpers/Props';
-import { setAddMovieDefault } from 'Store/Actions/addMovieActions';
-import { fetchRootFolders } from 'Store/Actions/rootFolderActions';
-import createRootFoldersSelector from 'Store/Selectors/createRootFoldersSelector';
+import { useRootFolder } from 'RootFolder/useRootFolders';
+import { useQualityProfiles } from 'Settings/Profiles/Quality/useQualityProfiles';
+import ImportFile from 'typings/ImportFile';
 import { SelectStateInputProps } from 'typings/props';
 import { ApiError } from 'Utilities/Fetch/fetchJson';
 import translate from 'Utilities/String/translate';
 import selectAll from 'Utilities/Table/selectAll';
 import toggleSelected from 'Utilities/Table/toggleSelected';
+import {
+  setAddMovieDefault,
+  useAddMovieDefaults,
+} from '../../addMovieDefaultsStore';
 import {
   IMPORT_ITEM_LIMIT,
   importReducer,
@@ -30,6 +33,8 @@ import useImportLookupQueue from '../useImportLookupQueue';
 import useImportMutation, { buildImportBody } from '../useImportMutation';
 import ImportMovieFooter from './ImportMovieFooter';
 import ImportMovieTable from './ImportMovieTable';
+
+const EMPTY_IMPORT_FILES: ImportFile[] = [];
 
 interface SelectionState {
   allSelected: boolean;
@@ -59,54 +64,23 @@ function ImportMovie() {
   const scenesMatch = useMatch('/add/import/scenes/:rootFolderId');
   const itemType: 'movie' | 'scene' = scenesMatch ? 'scene' : 'movie';
 
-  const reduxDispatch = useDispatch();
-
-  const rootFoldersState = useSelector(createRootFoldersSelector());
+  // The list endpoint already carries import files, but this page is reachable
+  // by url with no list in the cache, so it reads the folder on its own.
   const {
     isFetching: rootFoldersFetching,
-    isPopulated: rootFoldersPopulated,
+    isFetched: rootFoldersPopulated,
     error: rootFoldersError,
-    items: rootFolderItems,
-  } = rootFoldersState as unknown as {
-    isFetching: boolean;
-    isPopulated: boolean;
-    error: Error | null;
-    items: {
-      id: number;
-      path: string;
-      importFiles: { name: string; path: string; relativePath: string }[];
-    }[];
-  };
+    data: rootFolder,
+  } = useRootFolder(rootFolderId);
 
-  const addMovieState = useSelector(
-    (state: {
-      addMovie: {
-        movieDefaults: { monitor: string; qualityProfileId: number };
-      };
-    }) => state.addMovie.movieDefaults
-  );
-  const qualityProfiles = useSelector(
-    (state: { settings: { qualityProfiles: { items: { id: number }[] } } }) =>
-      state.settings.qualityProfiles.items
-  );
+  const movieDefaults = useAddMovieDefaults();
+  const { data: qualityProfiles } = useQualityProfiles();
 
-  const defaultMonitor = addMovieState.monitor ?? 'movieOnly';
-  const defaultQualityProfileId = addMovieState.qualityProfileId;
+  const defaultMonitor = movieDefaults.monitor ?? 'movieOnly';
+  const defaultQualityProfileId = movieDefaults.qualityProfileId;
 
-  const rootFolder = rootFolderItems.find((rf) => rf.id === rootFolderId);
   const path = rootFolder?.path;
-  const importFiles = rootFolder?.importFiles ?? [];
-
-  // Fetch this root folder's data on mount (includes importFiles via getMovieFolder)
-  useEffect(() => {
-    reduxDispatch(
-      fetchRootFolders({
-        id: rootFolderId,
-        timeout: false,
-        getMovieFolder: true,
-      })
-    );
-  }, [reduxDispatch, rootFolderId]);
+  const importFiles = rootFolder?.importFiles ?? EMPTY_IMPORT_FILES;
 
   // Ensure a valid quality profile default is set
   useEffect(() => {
@@ -115,11 +89,9 @@ function ImportMovie() {
       (!defaultQualityProfileId ||
         !qualityProfiles.some((p) => p.id === defaultQualityProfileId))
     ) {
-      reduxDispatch(
-        setAddMovieDefault({ qualityProfileId: qualityProfiles[0].id })
-      );
+      setAddMovieDefault('qualityProfileId', qualityProfiles[0].id);
     }
-  }, [defaultQualityProfileId, qualityProfiles, reduxDispatch]);
+  }, [defaultQualityProfileId, qualityProfiles]);
 
   const [importState, dispatch] = useReducer(importReducer, {
     isLookingUp: false,
@@ -236,7 +208,11 @@ function ImportMovie() {
   const onFooterInputChange = useCallback(
     ({ name, value }: { name: string; value: string | number }) => {
       const selectedIds = getSelectedIds(selectionState.selectedState);
-      reduxDispatch(setAddMovieDefault({ [name]: value }));
+      if (name === 'monitor') {
+        setAddMovieDefault('monitor', value as string);
+      } else if (name === 'qualityProfileId') {
+        setAddMovieDefault('qualityProfileId', value as number);
+      }
       selectedIds.forEach((id) => {
         dispatch({
           type: 'SET_ITEM_VALUE',
@@ -246,7 +222,7 @@ function ImportMovie() {
         });
       });
     },
-    [reduxDispatch, selectionState.selectedState]
+    [selectionState.selectedState]
   );
 
   const onImportPress = useCallback(async () => {

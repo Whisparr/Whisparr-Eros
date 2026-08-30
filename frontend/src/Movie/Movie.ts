@@ -3,6 +3,8 @@ import Language from 'Language/Language';
 import { MovieFile } from 'MovieFile/MovieFile';
 import MovieCredit from 'typings/MovieCredit';
 
+// The shape an import list's `monitor` takes. `MovieAddOptions` used to claim
+// it too -- see the note there.
 export type MovieMonitor = 'monitor' | 'none';
 
 export type MovieStatus =
@@ -41,8 +43,15 @@ export interface AlternativeTitle extends ModelBase {
   title: string;
 }
 
+// What the add flows actually send. The declared shape was `monitor:
+// MovieMonitor`, which no caller has ever produced and whose values do not
+// match the server's `MonitorTypes` either; `getNewMovie`, `getNewPerformer`,
+// `getNewStudio` and the import body all send `monitored`. The server's
+// `AddMovieOptions` has neither -- it reads `SearchForMovie` and defaults
+// `Monitor` -- so the key is inert on the wire. Typed as sent; sending
+// `monitor` instead would be a behaviour change, not a typing fix.
 export interface MovieAddOptions {
-  monitor: MovieMonitor;
+  monitored: boolean;
   searchForMovie: boolean;
 }
 

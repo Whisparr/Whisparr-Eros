@@ -1,7 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { createSelector } from 'reselect';
-import AppState from 'App/State/AppState';
+import React, { useCallback, useEffect, useState } from 'react';
 import Alert from 'Components/Alert';
 import FieldSet from 'Components/FieldSet';
 import Form from 'Components/Form/Form';
@@ -10,38 +7,23 @@ import FormInputButton from 'Components/Form/FormInputButton';
 import FormInputGroup from 'Components/Form/FormInputGroup';
 import FormLabel from 'Components/Form/FormLabel';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
+import useDebounce from 'Helpers/Hooks/useDebounce';
 import useModalOpenState from 'Helpers/Hooks/useModalOpenState';
+import useShowAdvancedSettings from 'Helpers/Hooks/useShowAdvancedSettings';
 import { inputTypes, kinds, sizes } from 'Helpers/Props';
-import { clearPendingChanges } from 'Store/Actions/baseActions';
-import {
-  fetchNamingExamples,
-  fetchNamingSettings,
-  setNamingSettingsValue,
-} from 'Store/Actions/settingsActions';
-import createSettingsSectionSelector from 'Store/Selectors/createSettingsSectionSelector';
 import { InputChanged } from 'typings/inputs';
 import NamingConfig from 'typings/Settings/NamingConfig';
+import {
+  OnChildStateChange,
+  SetChildSave,
+} from 'typings/Settings/SettingsState';
 import translate from 'Utilities/String/translate';
 import NamingModal from './NamingModal';
+import {
+  useManageNamingSettings,
+  useNamingExamples,
+} from './useNamingSettings';
 import styles from './Naming.css';
-
-const SECTION = 'naming';
-
-function createNamingSelector() {
-  return createSelector(
-    (state: AppState) => state.settings.advancedSettings,
-    (state: AppState) => state.settings.namingExamples,
-    createSettingsSectionSelector(SECTION),
-    (advancedSettings, namingExamples, sectionSettings) => {
-      return {
-        advancedSettings,
-        examples: namingExamples.item,
-        examplesPopulated: namingExamples.isPopulated,
-        ...sectionSettings,
-      };
-    }
-  );
-}
 
 interface NamingModalOptions {
   name: keyof Pick<
@@ -57,50 +39,46 @@ interface NamingModalOptions {
   additional?: boolean;
 }
 
-function Naming() {
-  const {
-    advancedSettings,
-    isFetching,
-    error,
-    settings,
-    hasSettings,
-    examples,
-    examplesPopulated,
-  } = useSelector(createNamingSelector());
+interface NamingProps {
+  setChildSave: SetChildSave;
+  onChildStateChange: OnChildStateChange;
+}
 
-  const dispatch = useDispatch();
+function Naming({ setChildSave, onChildStateChange }: Readonly<NamingProps>) {
+  const advancedSettings = useShowAdvancedSettings();
+
+  const {
+    settings,
+    updateSetting,
+    saveSettings,
+    isFetching,
+    isSaving,
+    error,
+    hasSettings,
+    hasPendingChanges,
+  } = useManageNamingSettings();
+
+  // The redux version debounced by hand, restarting a one-second timer on
+  // every keystroke before dispatching the examples fetch. The request is now
+  // keyed on the settings themselves, so the debounce moves onto the value --
+  // and typing back to a format that was already asked about is a cache hit
+  // rather than a request.
+  const debouncedSettings = useDebounce(settings, 300);
+  const { examples } = useNamingExamples(debouncedSettings);
+  const examplesPopulated = !!examples;
 
   const [isNamingModalOpen, setNamingModalOpen, setNamingModalClosed] =
     useModalOpenState(false);
   const [namingModalOptions, setNamingModalOptions] =
     useState<NamingModalOptions | null>(null);
-  const namingExampleTimeout = useRef<
-    ReturnType<typeof setTimeout> | undefined
-  >(undefined);
-
-  useEffect(() => {
-    dispatch(fetchNamingSettings());
-    dispatch(fetchNamingExamples());
-
-    return () => {
-      dispatch(clearPendingChanges({ section: 'settings.naming' }));
-    };
-  }, [dispatch]);
 
   const handleInputChange = useCallback(
-    (change: InputChanged) => {
-      // @ts-expect-error 'setNamingSettingsValue' isn't typed yet
-      dispatch(setNamingSettingsValue(change));
+    ({ name, value }: InputChanged) => {
+      const key = name as keyof NamingConfig;
 
-      if (namingExampleTimeout.current) {
-        clearTimeout(namingExampleTimeout.current);
-      }
-
-      namingExampleTimeout.current = setTimeout(() => {
-        dispatch(fetchNamingExamples());
-      }, 1000);
+      updateSetting(key, value as NamingConfig[typeof key]);
     },
-    [dispatch]
+    [updateSetting]
   );
 
   const onSceneNamingModalOpenClick = useCallback(() => {
@@ -138,6 +116,14 @@ function Naming() {
       movie: true,
     });
   }, [setNamingModalOpen, setNamingModalOptions]);
+
+  useEffect(() => {
+    setChildSave(saveSettings);
+  }, [saveSettings, setChildSave]);
+
+  useEffect(() => {
+    onChildStateChange({ isSaving, hasPendingChanges });
+  }, [hasPendingChanges, isSaving, onChildStateChange]);
 
   const renameScenes = hasSettings && settings.renameScenes.value;
   const renameMovies = hasSettings && settings.renameMovies.value;
@@ -303,17 +289,13 @@ function Naming() {
                     ?
                   </FormInputButton>
                 }
-                value={
-                  settings.standardMovieFormat?.value ??
-                  settings.standardMovieFormat ??
-                  ''
-                }
+                onChange={handleInputChange}
+                {...settings.standardMovieFormat}
                 helpTexts={standardMovieFormatHelpTexts}
                 errors={[
                   ...standardMovieFormatErrors,
                   ...settings.standardMovieFormat.errors,
                 ]}
-                onChange={handleInputChange}
               />
             </FormGroup>
           ) : null}
@@ -334,23 +316,19 @@ function Naming() {
                   ?
                 </FormInputButton>
               }
-              value={
-                settings.movieFolderFormat?.value ??
-                settings.movieFolderFormat ??
-                ''
-              }
+              helpTextWarning={translate(
+                'MovieFolderFormatHelpTextDeprecatedWarning'
+              )}
+              onChange={handleInputChange}
+              {...settings.movieFolderFormat}
               helpTexts={[
                 translate('MovieFolderFormatHelpText'),
                 ...movieFolderFormatHelpTexts,
               ]}
-              helpTextWarning={translate(
-                'MovieFolderFormatHelpTextDeprecatedWarning'
-              )}
               errors={[
                 ...movieFolderFormatErrors,
                 ...settings.movieFolderFormat.errors,
               ]}
-              onChange={handleInputChange}
             />
           </FormGroup>
 
@@ -366,17 +344,13 @@ function Naming() {
                     ?
                   </FormInputButton>
                 }
-                value={
-                  settings.standardSceneFormat?.value ??
-                  settings.standardSceneFormat ??
-                  ''
-                }
+                onChange={handleInputChange}
+                {...settings.standardSceneFormat}
                 helpTexts={standardSceneFormatHelpTexts}
                 errors={[
                   ...standardSceneFormatErrors,
                   ...settings.standardSceneFormat.errors,
                 ]}
-                onChange={handleInputChange}
               />
             </FormGroup>
           ) : null}
@@ -396,20 +370,16 @@ function Naming() {
                   ?
                 </FormInputButton>
               }
-              value={
-                settings.sceneFolderFormat?.value ??
-                settings.sceneFolderFormat ??
-                ''
-              }
-              helpTexts={sceneFolderFormatHelpTexts}
               helpTextWarning={translate(
                 'SceneFolderFormatHelpTextDeprecatedWarning'
               )}
+              onChange={handleInputChange}
+              {...settings.sceneFolderFormat}
+              helpTexts={sceneFolderFormatHelpTexts}
               errors={[
                 ...sceneFolderFormatErrors,
                 ...settings.sceneFolderFormat.errors,
               ]}
-              onChange={handleInputChange}
             />
           </FormGroup>
 
@@ -423,23 +393,19 @@ function Naming() {
               inputClassName={styles.namingInput}
               type={inputTypes.TEXT}
               name="sceneImportFolderFormat"
-              value={
-                settings.sceneImportFolderFormat?.value ??
-                settings.sceneImportFolderFormat ??
-                ''
-              }
+              helpTextWarning={translate(
+                'SceneImportFolderFormatHelpTextRelativePath'
+              )}
+              onChange={handleInputChange}
+              {...settings.sceneImportFolderFormat}
               helpTexts={[
                 translate('SceneImportFolderFormatHelpText'),
                 ...sceneImportFolderFormatHelpTexts,
               ]}
-              helpTextWarning={translate(
-                'SceneImportFolderFormatHelpTextRelativePath'
-              )}
               errors={[
                 ...sceneImportFolderFormatErrors,
                 ...settings.sceneImportFolderFormat.errors,
               ]}
-              onChange={handleInputChange}
             />
           </FormGroup>
 
@@ -453,16 +419,12 @@ function Naming() {
               inputClassName={styles.namingInput}
               type={inputTypes.NUMBER}
               name="maxFolderPathLength"
-              value={
-                settings.maxFolderPathLength?.value ??
-                settings.maxFolderPathLength ??
-                ''
-              }
+              onChange={handleInputChange}
+              {...settings.maxFolderPathLength}
               helpTexts={[
                 translate('MaxFolderPathLengthHelpText'),
                 ...maxFolderPathLengthHelpTexts,
               ]}
-              onChange={handleInputChange}
             />
           </FormGroup>
 
@@ -476,16 +438,12 @@ function Naming() {
               inputClassName={styles.namingInput}
               type={inputTypes.NUMBER}
               name="maxFilePathLength"
-              value={
-                settings.maxFilePathLength?.value ??
-                settings.maxFilePathLength ??
-                ''
-              }
+              onChange={handleInputChange}
+              {...settings.maxFilePathLength}
               helpTexts={[
                 translate('MaxFilePathLengthHelpText'),
                 ...maxFilePathLengthHelpTexts,
               ]}
-              onChange={handleInputChange}
             />
           </FormGroup>
 

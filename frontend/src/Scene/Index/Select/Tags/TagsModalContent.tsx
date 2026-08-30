@@ -1,7 +1,5 @@
 import { uniq } from 'lodash';
 import React, { useCallback, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { Tag } from 'App/State/TagsAppState';
 import Form from 'Components/Form/Form';
 import FormGroup from 'Components/Form/FormGroup';
 import FormInputGroup from 'Components/Form/FormInputGroup';
@@ -14,29 +12,28 @@ import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { inputTypes, kinds, sizes } from 'Helpers/Props';
 import Movie from 'Movie/Movie';
-import createAllScenesSelector from 'Store/Selectors/createAllScenesSelector';
-import createTagsSelector from 'Store/Selectors/createTagsSelector';
+import { useTagList } from 'Tags/useTags';
 import translate from 'Utilities/String/translate';
 import styles from './TagsModalContent.css';
 
 interface TagsModalContentProps {
   sceneIds: number[];
+  items: Movie[];
   onApplyTagsPress: (tags: number[], applyTags: string) => void;
   onModalClose: () => void;
 }
 
 function TagsModalContent(props: TagsModalContentProps) {
-  const { sceneIds, onModalClose, onApplyTagsPress } = props;
+  const { sceneIds, items, onModalClose, onApplyTagsPress } = props;
 
-  const allScenes: Movie[] = useSelector(createAllScenesSelector());
-  const tagList: Tag[] = useSelector(createTagsSelector());
+  const tagList = useTagList();
 
   const [tags, setTags] = useState<number[]>([]);
   const [applyTags, setApplyTags] = useState('add');
 
   const sceneTags = useMemo(() => {
     const tags = sceneIds.reduce((acc: number[], id) => {
-      const s = allScenes.find((s) => s.id === id);
+      const s = items.find((s) => s.id === id);
 
       if (s) {
         acc.push(...s.tags);
@@ -46,7 +43,7 @@ function TagsModalContent(props: TagsModalContentProps) {
     }, []);
 
     return uniq(tags);
-  }, [sceneIds, allScenes]);
+  }, [sceneIds, items]);
 
   const onTagsChange = useCallback(
     ({ value }: { value: number[] }) => {

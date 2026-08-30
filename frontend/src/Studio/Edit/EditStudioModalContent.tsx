@@ -1,64 +1,91 @@
-import React from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useAppDimensions } from 'App/appStore';
 import Form from 'Components/Form/Form';
 import FormGroup from 'Components/Form/FormGroup';
 import FormInputGroup from 'Components/Form/FormInputGroup';
 import FormLabel from 'Components/Form/FormLabel';
 import Button from 'Components/Link/Button';
-import SpinnerButton from 'Components/Link/SpinnerButton';
+import SpinnerErrorButton from 'Components/Link/SpinnerErrorButton';
 import ModalBody from 'Components/Modal/ModalBody';
 import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { inputTypes } from 'Helpers/Props';
-import type { Image } from 'Movie/Movie';
+import selectSettings from 'Helpers/selectSettings';
+import { useGeneralSettings } from 'Settings/General/useGeneralSettings';
+import Studio from 'Studio/Studio';
 import StudioLogo from 'Studio/StudioLogo';
-import type { PendingSection } from 'typings/pending';
+import { useSaveStudio } from 'Studio/useStudio';
+import { InputChanged } from 'typings/inputs';
 import translate from 'Utilities/String/translate';
 import styles from './EditStudioModalContent.css';
 
-interface StudioSettings {
-  monitored: boolean;
-  moviesMonitored: boolean;
-  afterDate?: string | null;
-  qualityProfileId: number;
-  minimumAvailability?: string;
-  rootFolderPath: string;
-  tags: number[];
-  searchTitle?: string;
-  searchOnAdd?: boolean;
-}
-
-interface EditStudioModalContentProps {
-  studioId: number;
-  title: string;
-  overview?: string;
-  images: Image[];
-  item: PendingSection<StudioSettings>;
-  isSaving: boolean;
-  isPathChanging: boolean;
-  isSmallScreen: boolean;
-  onInputChange: (payload: { name: string; value: unknown }) => void;
-  onSavePress: () => void;
+export interface EditStudioModalContentProps {
+  studio: Studio;
   onModalClose: () => void;
-  [key: string]: unknown;
 }
 
-function EditStudioModalContent(props: Readonly<EditStudioModalContentProps>) {
-  const {
-    title,
-    images,
-    overview,
-    item,
-    showMovieMonitor,
-    isSaving,
-    onInputChange,
-    onModalClose,
-    isSmallScreen,
-    onSavePress,
-    ...otherProps
-  } = props;
+function EditStudioModalContent({
+  studio,
+  onModalClose,
+}: Readonly<EditStudioModalContentProps>) {
+  const { isSmallScreen } = useAppDimensions();
+  const { data: generalSettings } = useGeneralSettings();
 
-  const {
+  const [monitored, setMonitored] = useState(studio.monitored);
+  const [moviesMonitored, setMoviesMonitored] = useState(
+    studio.moviesMonitored
+  );
+  const [afterDate, setAfterDate] = useState(studio.afterDate ?? '');
+  const [qualityProfileId, setQualityProfileId] = useState(
+    studio.qualityProfileId
+  );
+  const [rootFolderPath, setRootFolderPath] = useState(studio.rootFolderPath);
+  const [tags, setTags] = useState(studio.tags ?? []);
+  const [searchTitle, setSearchTitle] = useState(studio.searchTitle ?? '');
+  const [searchOnAdd, setSearchOnAdd] = useState(studio.searchOnAdd);
+
+  const saveStudio = useSaveStudio();
+
+  // The fields the user has actually touched. Sent as a patch over the studio
+  // on save, and handed to selectSettings so it can mark them pending.
+  const pendingChanges = useMemo(() => {
+    const changes: Partial<Studio> = {};
+
+    if (monitored !== studio.monitored) {
+      changes.monitored = monitored;
+    }
+
+    if (moviesMonitored !== studio.moviesMonitored) {
+      changes.moviesMonitored = moviesMonitored;
+    }
+
+    if (afterDate !== (studio.afterDate ?? '')) {
+      changes.afterDate = afterDate;
+    }
+
+    if (qualityProfileId !== studio.qualityProfileId) {
+      changes.qualityProfileId = qualityProfileId;
+    }
+
+    if (rootFolderPath !== studio.rootFolderPath) {
+      changes.rootFolderPath = rootFolderPath;
+    }
+
+    if (JSON.stringify(tags) !== JSON.stringify(studio.tags ?? [])) {
+      changes.tags = tags;
+    }
+
+    if (searchTitle !== (studio.searchTitle ?? '')) {
+      changes.searchTitle = searchTitle;
+    }
+
+    if (searchOnAdd !== studio.searchOnAdd) {
+      changes.searchOnAdd = searchOnAdd;
+    }
+
+    return changes;
+  }, [
     monitored,
     moviesMonitored,
     afterDate,
@@ -67,48 +94,109 @@ function EditStudioModalContent(props: Readonly<EditStudioModalContentProps>) {
     tags,
     searchTitle,
     searchOnAdd,
-  } = item;
+    studio,
+  ]);
 
-  // Helper to safely get .value from item fields
-  const getValue = (field: unknown, fallback: unknown) =>
-    field && typeof field === 'object' && 'value' in field
-      ? (field as { value: unknown }).value
-      : fallback;
+  const { settings, validationErrors, validationWarnings } = useMemo(() => {
+    return selectSettings(
+      {
+        monitored: studio.monitored,
+        moviesMonitored: studio.moviesMonitored,
+        afterDate: studio.afterDate ?? '',
+        qualityProfileId: studio.qualityProfileId,
+        rootFolderPath: studio.rootFolderPath,
+        tags: studio.tags ?? [],
+        searchTitle: studio.searchTitle ?? '',
+        searchOnAdd: studio.searchOnAdd,
+      },
+      pendingChanges,
+      saveStudio.error
+    );
+  }, [studio, pendingChanges, saveStudio.error]);
 
-  function handleSavePress() {
-    onSavePress();
-  }
+  // Movie monitoring only means something when the metadata source can supply
+  // movies for this studio, so the toggle follows the configured source.
+  const showMovieMonitor = useMemo(() => {
+    const source = generalSettings?.whisparrMovieMetadataSource?.toLowerCase();
+
+    return (
+      (source === 'tmdb' && studio.tmdbId > 0) ||
+      (source === 'tpdb' && studio.tpdbId?.length > 0)
+    );
+  }, [generalSettings, studio.tmdbId, studio.tpdbId]);
+
+  const handleInputChange = useCallback(({ name, value }: InputChanged) => {
+    switch (name) {
+      case 'monitored':
+        setMonitored(value as boolean);
+        break;
+      case 'moviesMonitored':
+        setMoviesMonitored(value as boolean);
+        break;
+      case 'afterDate':
+        setAfterDate(value as string);
+        break;
+      case 'qualityProfileId':
+        setQualityProfileId(value as number);
+        break;
+      case 'rootFolderPath':
+        setRootFolderPath(value as string);
+        break;
+      case 'tags':
+        setTags(value as number[]);
+        break;
+      case 'searchTitle':
+        setSearchTitle(value as string);
+        break;
+      case 'searchOnAdd':
+        setSearchOnAdd(value as boolean);
+        break;
+      default:
+        break;
+    }
+  }, []);
+
+  const handleSavePress = useCallback(() => {
+    saveStudio.mutate({ ...studio, ...pendingChanges });
+  }, [saveStudio, studio, pendingChanges]);
+
+  useEffect(() => {
+    if (saveStudio.isSuccess) {
+      onModalClose();
+    }
+  }, [saveStudio.isSuccess, onModalClose]);
 
   return (
     <ModalContent onModalClose={onModalClose}>
       <ModalHeader>
-        {translate('Edit')} - {title}
+        {translate('Edit')} - {studio.title}
       </ModalHeader>
 
       <ModalBody>
         <div className={styles.container}>
-          {!isSmallScreen && (
+          {isSmallScreen ? null : (
             <div className={styles.poster}>
               <StudioLogo
                 className={styles.poster}
-                images={images}
+                images={studio.images}
                 size={250}
               />
             </div>
           )}
 
           <div className={styles.info}>
-            <div className={styles.overview}>{overview}</div>
-
-            <Form {...otherProps}>
+            <Form
+              validationErrors={validationErrors}
+              validationWarnings={validationWarnings}
+            >
               <FormGroup>
                 <FormLabel>{translate('MonitoredScene')}</FormLabel>
                 <FormInputGroup
                   type={inputTypes.CHECK}
                   name="monitored"
                   helpText={translate('MonitoredStudioHelpText')}
-                  {...monitored}
-                  onChange={onInputChange}
+                  {...settings.monitored}
+                  onChange={handleInputChange}
                 />
               </FormGroup>
 
@@ -119,8 +207,8 @@ function EditStudioModalContent(props: Readonly<EditStudioModalContentProps>) {
                     type={inputTypes.CHECK}
                     name="moviesMonitored"
                     helpText={translate('MonitoredStudioMovieHelpText')}
-                    {...moviesMonitored}
-                    onChange={onInputChange}
+                    {...settings.moviesMonitored}
+                    onChange={handleInputChange}
                   />
                 </FormGroup>
               ) : null}
@@ -131,78 +219,78 @@ function EditStudioModalContent(props: Readonly<EditStudioModalContentProps>) {
                   type={inputTypes.DATE}
                   name="afterDate"
                   helpText={translate('MonitorAfterStudioHelpText')}
-                  {...afterDate}
-                  value={getValue(afterDate, '') as string | number | string[]}
-                  onChange={onInputChange}
+                  {...settings.afterDate}
+                  onChange={handleInputChange}
                 />
               </FormGroup>
+
               <FormGroup>
                 <FormLabel>{translate('QualityProfile')}</FormLabel>
                 <FormInputGroup
                   type={inputTypes.QUALITY_PROFILE_SELECT}
-                  helpText={translate('StudioQualityProfileHelpText')}
                   name="qualityProfileId"
-                  {...qualityProfileId}
-                  value={getValue(qualityProfileId, '') as string | number}
-                  onChange={onInputChange}
+                  helpText={translate('StudioQualityProfileHelpText')}
+                  {...settings.qualityProfileId}
+                  onChange={handleInputChange}
                 />
               </FormGroup>
+
               <FormGroup>
                 <FormLabel>{translate('RootFolder')}</FormLabel>
                 <FormInputGroup
                   type={inputTypes.ROOT_FOLDER_SELECT}
                   name="rootFolderPath"
-                  {...rootFolderPath}
-                  value={getValue(rootFolderPath, '') as string | undefined}
+                  {...settings.rootFolderPath}
                   includeMissingValue={false}
-                  onChange={onInputChange}
+                  onChange={handleInputChange}
                 />
               </FormGroup>
+
               <FormGroup>
                 <FormLabel>{translate('Tags')}</FormLabel>
                 <FormInputGroup
                   type={inputTypes.TAG}
                   name="tags"
-                  onChange={onInputChange}
-                  {...tags}
-                  value={getValue(tags, []) as string[]}
+                  {...settings.tags}
+                  onChange={handleInputChange}
                 />
               </FormGroup>
+
               <FormGroup>
                 <FormLabel>{translate('SearchTitle')}</FormLabel>
                 <FormInputGroup
                   type={inputTypes.TEXT}
                   name="searchTitle"
-                  onChange={onInputChange}
-                  {...searchTitle}
-                  value={
-                    getValue(searchTitle, '') as string | number | string[]
-                  }
+                  {...settings.searchTitle}
+                  onChange={handleInputChange}
                 />
               </FormGroup>
+
               <FormGroup>
                 <FormLabel>{translate('SearchOnAdd')}</FormLabel>
                 <FormInputGroup
                   type={inputTypes.CHECK}
                   name="searchOnAdd"
                   helpText={translate('SearchOnAddStudioHelpText')}
-                  {...searchOnAdd}
-                  value={
-                    getValue(searchOnAdd, false) as
-                      string | boolean | null | undefined
-                  }
-                  onChange={onInputChange}
+                  {...settings.searchOnAdd}
+                  onChange={handleInputChange}
                 />
               </FormGroup>
             </Form>
           </div>
         </div>
       </ModalBody>
+
       <ModalFooter>
         <Button onPress={onModalClose}>{translate('Cancel')}</Button>
-        <SpinnerButton isSpinning={isSaving} onPress={handleSavePress}>
+
+        <SpinnerErrorButton
+          error={saveStudio.error}
+          isSpinning={saveStudio.isPending}
+          onPress={handleSavePress}
+        >
           {translate('Save')}
-        </SpinnerButton>
+        </SpinnerErrorButton>
       </ModalFooter>
     </ModalContent>
   );

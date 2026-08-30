@@ -16,14 +16,14 @@ export interface SelectState {
 
 export type SelectAction =
   | { type: 'reset' }
-  | { type: 'selectAll'; items: ModelBase[] }
-  | { type: 'unselectAll'; items: ModelBase[] }
+  | { type: 'selectAll'; items: readonly ModelBase[] }
+  | { type: 'unselectAll'; items: readonly ModelBase[] }
   | {
       type: 'toggleSelected';
       id: number | string;
       isSelected: boolean | null;
       shiftKey: boolean;
-      items: ModelBase[];
+      items: readonly ModelBase[];
     }
   | {
       type: 'removeItem';
@@ -31,7 +31,7 @@ export type SelectAction =
     }
   | {
       type: 'updateItems';
-      items: ModelBase[];
+      items: readonly ModelBase[];
     };
 
 export type Dispatch = (action: SelectAction) => void;
@@ -44,7 +44,10 @@ const initialState = {
   items: [],
 };
 
-function getSelectedState(items: ModelBase[], existingState: SelectedState) {
+function getSelectedState(
+  items: readonly ModelBase[],
+  existingState: SelectedState
+) {
   return items.reduce((acc: SelectedState, item) => {
     const id = item.id;
 

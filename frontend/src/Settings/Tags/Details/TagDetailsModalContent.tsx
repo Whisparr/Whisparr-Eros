@@ -1,8 +1,4 @@
-import React from 'react';
-import { useSelector } from 'react-redux';
-import { createSelector } from 'reselect';
-import ModelBase from 'App/ModelBase';
-import AppState from 'App/State/AppState';
+import React, { useMemo } from 'react';
 import FieldSet from 'Components/FieldSet';
 import Label from 'Components/Label';
 import Button from 'Components/Link/Button';
@@ -11,49 +7,18 @@ import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { kinds } from 'Helpers/Props';
-import createAllMoviesSelector from 'Store/Selectors/createAllMoviesSelector';
+import { useMoviesByIds } from 'Movie/useMovie';
+import { useDownloadClientsWithIds } from 'Settings/DownloadClients/DownloadClients/useDownloadClients';
+import { useImportListsWithIds } from 'Settings/ImportLists/ImportLists/useImportLists';
+import { useIndexersWithIds } from 'Settings/Indexers/Indexers/useIndexers';
+import { useNotificationsWithIds } from 'Settings/Notifications/useNotifications';
+import { useDelayProfilesWithIds } from 'Settings/Profiles/Delay/useDelayProfiles';
+import { useReleaseProfilesWithIds } from 'Settings/Profiles/Release/useReleaseProfiles';
+import { useAutoTaggingsWithIds } from 'Settings/Tags/AutoTagging/useAutoTaggings';
+import sortByProp from 'Utilities/Array/sortByProp';
 import translate from 'Utilities/String/translate';
 import TagDetailsDelayProfile from './TagDetailsDelayProfile';
 import styles from './TagDetailsModalContent.css';
-
-function findMatchingItems<T extends ModelBase>(ids: number[], items: T[]) {
-  return items.filter((s) => {
-    return ids.includes(s.id);
-  });
-}
-
-function createUnorderedMatchingMoviesSelector(movieIds: number[]) {
-  return createSelector(createAllMoviesSelector(), (movies) =>
-    findMatchingItems(movieIds, movies)
-  );
-}
-
-function createMatchingMoviesSelector(movieIds: number[]) {
-  return createSelector(
-    createUnorderedMatchingMoviesSelector(movieIds),
-    (movies) => {
-      return movies.sort((movieA, movieB) => {
-        const sortTitleA = movieA.sortTitle;
-        const sortTitleB = movieB.sortTitle;
-
-        if (sortTitleA > sortTitleB) {
-          return 1;
-        } else if (sortTitleA < sortTitleB) {
-          return -1;
-        }
-
-        return 0;
-      });
-    }
-  );
-}
-
-function createMatchingItemSelector<T extends ModelBase>(
-  ids: number[],
-  selector: (state: AppState) => T[]
-) {
-  return createSelector(selector, (items) => findMatchingItems<T>(ids, items));
-}
 
 export interface TagDetailsModalContentProps {
   label: string;
@@ -83,57 +48,30 @@ function TagDetailsModalContent({
   movieIds = [],
   onModalClose,
   onDeleteTagPress,
-}: TagDetailsModalContentProps) {
-  const movies = useSelector(createMatchingMoviesSelector(movieIds));
+}: Readonly<TagDetailsModalContentProps>) {
+  // The tag resource names the movies by id only. This read the `movies` slice,
+  // which nothing has populated since the indexes went paged, so the Movies
+  // fieldset never rendered however many movies carried the tag.
+  const { movies: taggedMovies } = useMoviesByIds(movieIds);
 
-  const delayProfiles = useSelector(
-    createMatchingItemSelector(
-      delayProfileIds,
-      (state: AppState) => state.settings.delayProfiles.items
-    )
+  const movies = useMemo(
+    () => [...taggedMovies].sort(sortByProp('sortTitle')),
+    [taggedMovies]
   );
 
-  const importLists = useSelector(
-    createMatchingItemSelector(
-      importListIds,
-      (state: AppState) => state.settings.importLists.items
-    )
-  );
+  const delayProfiles = useDelayProfilesWithIds(delayProfileIds);
 
-  const notifications = useSelector(
-    createMatchingItemSelector(
-      notificationIds,
-      (state: AppState) => state.settings.notifications.items
-    )
-  );
+  const importLists = useImportListsWithIds(importListIds);
 
-  const releaseProfiles = useSelector(
-    createMatchingItemSelector(
-      releaseProfileIds,
-      (state: AppState) => state.settings.releaseProfiles.items
-    )
-  );
+  const notifications = useNotificationsWithIds(notificationIds);
 
-  const indexers = useSelector(
-    createMatchingItemSelector(
-      indexerIds,
-      (state: AppState) => state.settings.indexers.items
-    )
-  );
+  const releaseProfiles = useReleaseProfilesWithIds(releaseProfileIds);
 
-  const downloadClients = useSelector(
-    createMatchingItemSelector(
-      downloadClientIds,
-      (state: AppState) => state.settings.downloadClients.items
-    )
-  );
+  const indexers = useIndexersWithIds(indexerIds);
 
-  const autoTags = useSelector(
-    createMatchingItemSelector(
-      autoTagIds,
-      (state: AppState) => state.settings.autoTaggings.items
-    )
-  );
+  const downloadClients = useDownloadClientsWithIds(downloadClientIds);
+
+  const autoTags = useAutoTaggingsWithIds(autoTagIds);
 
   return (
     <ModalContent onModalClose={onModalClose}>

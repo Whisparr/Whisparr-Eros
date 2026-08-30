@@ -1,5 +1,4 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
 import Alert from 'Components/Alert';
 import Form from 'Components/Form/Form';
 import Button from 'Components/Link/Button';
@@ -10,7 +9,7 @@ import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import DownloadProtocol from 'DownloadClient/DownloadProtocol';
 import { kinds } from 'Helpers/Props';
-import createEnabledDownloadClientsSelector from 'Store/Selectors/createEnabledDownloadClientsSelector';
+import { useEnabledDownloadClients } from 'Settings/DownloadClients/DownloadClients/useDownloadClients';
 import translate from 'Utilities/String/translate';
 import SelectDownloadClientRow from './SelectDownloadClientRow';
 
@@ -22,13 +21,12 @@ interface SelectDownloadClientModalContentProps {
 }
 
 function SelectDownloadClientModalContent(
-  props: SelectDownloadClientModalContentProps
+  props: Readonly<SelectDownloadClientModalContentProps>
 ) {
   const { modalTitle, protocol, onDownloadClientSelect, onModalClose } = props;
 
-  const { isFetching, isPopulated, error, items } = useSelector(
-    createEnabledDownloadClientsSelector(protocol)
-  );
+  const { isFetching, isFetched, error, items } =
+    useEnabledDownloadClients(protocol);
 
   return (
     <ModalContent onModalClose={onModalClose}>
@@ -45,7 +43,7 @@ function SelectDownloadClientModalContent(
           </Alert>
         ) : null}
 
-        {isPopulated && !error ? (
+        {isFetched && !error ? (
           <Form>
             {items.map((downloadClient) => {
               const { id, name, priority } = downloadClient;

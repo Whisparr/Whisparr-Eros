@@ -28,7 +28,7 @@ function TagSelectInput({
   ...otherProps
 }: TagSelectInputProps) {
   const { tags, tagList, allTags } = useMemo(() => {
-    const sortedTags = values.sort((a, b) => a.key - b.key);
+    const sortedTags = [...values].sort((a, b) => a.key - b.key);
 
     return {
       tags: value.reduce((acc: SelectTag[], tag) => {

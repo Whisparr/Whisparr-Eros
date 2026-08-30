@@ -1,5 +1,4 @@
-import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React from 'react';
 import Button from 'Components/Link/Button';
 import ModalBody from 'Components/Modal/ModalBody';
 import ModalContent from 'Components/Modal/ModalContent';
@@ -8,13 +7,7 @@ import ModalHeader from 'Components/Modal/ModalHeader';
 import { BOTH } from 'Helpers/Props/scrollDirections';
 import InteractiveSearch from 'InteractiveSearch/InteractiveSearch';
 import { useMovie } from 'Movie/useMovie';
-import { clearMovieBlocklist } from 'Store/Actions/movieBlocklistActions';
-import { clearMovieHistory } from 'Store/Actions/movieHistoryActions';
-import {
-  cancelFetchReleases,
-  clearReleases,
-} from 'Store/Actions/releaseActions';
-import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
+import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import getRelativeDate from 'Utilities/Date/getRelativeDate';
 import translate from 'Utilities/String/translate';
 
@@ -27,23 +20,9 @@ function MovieInteractiveSearchModalContent({
   movieId,
   onModalClose,
 }: MovieInteractiveSearchModalContentProps) {
-  const dispatch = useDispatch();
-
   const movie = useMovie(movieId).data;
 
-  useEffect(() => {
-    return () => {
-      dispatch(cancelFetchReleases());
-      dispatch(clearReleases());
-
-      dispatch(clearMovieBlocklist());
-      dispatch(clearMovieHistory());
-    };
-  }, [dispatch]);
-
-  const { showRelativeDates, shortDateFormat } = useSelector(
-    createUISettingsSelector()
-  );
+  const { showRelativeDates, shortDateFormat } = useUiSettingsValues();
 
   if (!movie) {
     return null;

@@ -1,42 +1,21 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { queryClient } from 'App/queryClient';
-import AppState from 'App/State/AppState';
-import { SafeForWorkModeContext } from 'App/State/SafeForWorkContext';
+import { useSafeForWorkMode } from 'App/safeForWorkStore';
 import * as commandNames from 'Commands/commandNames';
+import useCommands, { useExecuteCommand } from 'Commands/useCommands';
 import type { IconName } from 'Components/Icon';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import { icons } from 'Helpers/Props';
 import Movie from 'Movie/Movie';
-import { executeCommand } from 'Store/Actions/commandActions';
-import { fetchGeneralSettings } from 'Store/Actions/Settings/general';
-import { toggleStudioScenesExpanded } from 'Store/Actions/studioScenesActions';
 import Studio, { type CoverType, type Image } from 'Studio/Studio';
 import { useToggleStudioMonitored } from 'Studio/useStudio';
+import { useTagList } from 'Tags/useTags';
+import {
+  toggleStudioScenesExpanded,
+  useStudioScenesOption,
+} from './studioScenesOptionsStore';
 
 const PATH = 'studio';
-
-/**
- * Hook to fetch and manage general application settings.
- * Dispatches the fetchGeneralSettings action on mount and returns the general settings state.
- *
- * @returns {AppState['settings']['general']['item']} The general settings object
- */
-export function useGeneralSettings() {
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    dispatch(fetchGeneralSettings());
-  }, [dispatch]);
-
-  return useSelector((state: AppState) => state.settings.general.item);
-}
 
 /**
  * Return type for the useStudioDetails hook.
@@ -62,10 +41,6 @@ export interface UseStudioDetailsReturn {
   isDeleteMovieModalOpen: boolean;
   /** Tracks which years are expanded in the studio works list */
   expandedState: Record<number, boolean>;
-
-  // Derived data
-  /** Whether to show the movie monitor toggle based on metadata source settings */
-  showMovieMonitorToggle: boolean;
 
   // Handlers
   /** Toggles the monitored state of the studio and/or its movies */
@@ -115,21 +90,16 @@ export interface StudioWorksData {
  * @returns {UseStudioDetailsReturn} State, derived data, and handler functions
  */
 export const useStudioDetails = (foreignId: string): UseStudioDetailsReturn => {
-  const dispatch = useDispatch();
+  const executeCommand = useExecuteCommand();
 
   // Local state
-  const safeForWorkMode = React.useContext(SafeForWorkModeContext);
+  const safeForWorkMode = useSafeForWorkMode();
   const [isManualRefresh, setIsManualRefresh] = useState(false);
   const [isEditMovieModalOpen, setIsEditMovieModalOpen] = useState(false);
   const [isDeleteMovieModalOpen, setIsDeleteMovieModalOpen] = useState(false);
   const prevStudioRef = useRef<Studio | undefined>(undefined);
 
-  // Redux selectors for expanded state
-  const expandedState = useSelector((state: AppState) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const studioScenes = (state as any).studioScenes;
-    return studioScenes?.expandedState ?? {};
-  });
+  const expandedState = useStudioScenesOption('expandedState');
 
   // API calls
   const {
@@ -142,18 +112,17 @@ export const useStudioDetails = (foreignId: string): UseStudioDetailsReturn => {
 
   const monitorToggleMutation = useToggleStudioMonitored();
 
-  // Redux selectors
-  const isStudioRefreshing = useSelector((state: AppState) => {
-    const commands = state.commands.items;
-    return commands.some(
-      (command) =>
-        command.name === commandNames.REFRESH_STUDIO &&
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (command as any).studioIds?.includes(studio?.id)
-    );
-  });
+  // Matching stays exactly as the slice had it, including reading `studioIds` off the
+  // command rather than its body.
+  const { data: allCommands } = useCommands();
 
-  const generalSettings = useGeneralSettings();
+  const isStudioRefreshing = allCommands.some(
+    (command) =>
+      command.name === commandNames.REFRESH_STUDIO &&
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (command as any).studioIds?.includes(studio?.id)
+  );
+
   const studioId = studio?.id;
 
   // Cache studio data
@@ -171,44 +140,24 @@ export const useStudioDetails = (foreignId: string): UseStudioDetailsReturn => {
     prevStudioRef.current = studio;
   }, [studio, isManualRefresh]);
 
-  // Determine if we should show the monitor toggle
-  const showMovieMonitorToggle = useMemo(() => {
-    return !!(
-      (generalSettings?.whisparrMovieMetadataSource === 'tmdb' &&
-        studio?.tmdbId &&
-        studio.tmdbId > 0) ||
-      (generalSettings?.whisparrMovieMetadataSource === 'tpdb' &&
-        studio?.tpdbId &&
-        studio.tpdbId.length > 0)
-    );
-  }, [
-    generalSettings?.whisparrMovieMetadataSource,
-    studio?.tmdbId,
-    studio?.tpdbId,
-  ]);
-
   // Handler: Refresh studio
   const onRefreshPress = useCallback(() => {
     if (!studioId) return;
     setIsManualRefresh(true);
-    dispatch(
-      executeCommand({
-        name: commandNames.REFRESH_STUDIO,
-        studioIds: [studioId],
-      })
-    );
-  }, [studioId, dispatch]);
+    executeCommand({
+      name: commandNames.REFRESH_STUDIO,
+      studioIds: [studioId],
+    });
+  }, [studioId, executeCommand]);
 
   // Handler: Search for studio
   const onSearchPress = useCallback(() => {
     if (!studioId) return;
-    dispatch(
-      executeCommand({
-        name: commandNames.STUDIO_SEARCH,
-        studioIds: [studioId],
-      })
-    );
-  }, [studioId, dispatch]);
+    executeCommand({
+      name: commandNames.STUDIO_SEARCH,
+      studioIds: [studioId],
+    });
+  }, [studioId, executeCommand]);
 
   // Handler: Toggle monitored state
   const onMonitorTogglePress = useCallback(
@@ -238,14 +187,12 @@ export const useStudioDetails = (foreignId: string): UseStudioDetailsReturn => {
     (ids: number[]) => {
       if (!studioId) return;
       setIsManualRefresh(true);
-      dispatch(
-        executeCommand({
-          name: commandNames.REFRESH_MOVIE,
-          movieIds: ids,
-        })
-      );
+      executeCommand({
+        name: commandNames.REFRESH_MOVIE,
+        movieIds: ids,
+      });
     },
-    [studioId, dispatch]
+    [studioId, executeCommand]
   );
 
   // Handler: Open edit modal
@@ -277,12 +224,9 @@ export const useStudioDetails = (foreignId: string): UseStudioDetailsReturn => {
   );
 
   // Handler: Toggle expansion of a specific year
-  const handleExpandPress = useCallback(
-    (year: number) => {
-      dispatch(toggleStudioScenesExpanded({ year }));
-    },
-    [dispatch]
-  );
+  const handleExpandPress = useCallback((year: number) => {
+    toggleStudioScenesExpanded(year);
+  }, []);
 
   return {
     studio,
@@ -295,9 +239,6 @@ export const useStudioDetails = (foreignId: string): UseStudioDetailsReturn => {
     isEditMovieModalOpen,
     isDeleteMovieModalOpen,
     expandedState,
-
-    // Derived data
-    showMovieMonitorToggle,
 
     // Handlers
     onRefreshPress,
@@ -326,36 +267,21 @@ export function useStudioDetailsWorks(studioForeignId: string) {
 }
 
 /**
- * Hook to fetch studio movies table configuration from Redux state.
- * Returns the configured columns, sort key, and sort direction for the movies list.
- *
- * @returns {{columns: any[], sortKey: string, sortDirection: string}} Table configuration
- */
-export function useStudioMoviesColumns() {
-  return useSelector((state: AppState) => {
-    // AppState isn't fully converted to TypeScript yet
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const studioScenes = (state as any).studioScenes;
-    return {
-      columns: studioScenes?.columns ?? [],
-      sortKey: studioScenes?.sortKey ?? 'releaseDate',
-      sortDirection: studioScenes?.sortDirection ?? 'DESC',
-    };
-  });
-}
-
-/**
- * Hook to fetch tag label data for given tag IDs from Redux state.
+ * Hook to fetch tag label data for given tag IDs.
  *
  * @param {number[]} tags - Array of tag IDs to look up
  * @returns {{id: number, label: string}[]} Array of tag objects with id and label
  */
 export function useStudioTags(tags: number[]) {
-  return useSelector((state: AppState) => {
-    return state.tags.items
-      .filter((tag) => tags.includes(tag.id))
-      .map((tag) => ({ id: tag.id, label: tag.label }));
-  });
+  const tagList = useTagList();
+
+  return useMemo(
+    () =>
+      tagList
+        .filter((tag) => tags.includes(tag.id))
+        .map((tag) => ({ id: tag.id, label: tag.label })),
+    [tagList, tags]
+  );
 }
 
 /**
@@ -391,7 +317,7 @@ export function ensureImageType(
  * @returns {StudioWorksData} Organized works data with year groupings and UI state
  */
 export function buildStudioWorksData(
-  allWorks: Movie[],
+  allWorks: readonly Movie[],
   expandedState: Record<number, boolean>
 ): StudioWorksData {
   const years = Array.from(

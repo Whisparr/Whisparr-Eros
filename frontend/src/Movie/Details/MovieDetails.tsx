@@ -1,9 +1,11 @@
-import React, { useContext, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import TextTruncate from 'react-text-truncate';
-import { SafeForWorkModeContext } from 'App/State/SafeForWorkContext';
+import { useQueueItemForMovie } from 'Activity/Queue/Details/useQueueDetails';
+import { useAppDimension } from 'App/appStore';
+import { useSafeForWorkMode } from 'App/safeForWorkStore';
 import { MOVIE_SEARCH, REFRESH_MOVIE } from 'Commands/commandNames';
+import { useExecuteCommand } from 'Commands/useCommands';
 import Alert from 'Components/Alert';
 import FieldSet from 'Components/FieldSet';
 import Icon from 'Components/Icon';
@@ -46,14 +48,11 @@ import MovieFileEditorTable from 'MovieFile/Editor/MovieFileEditorTable';
 import ExtraFileTable from 'MovieFile/Extras/ExtraFileTable';
 import OrganizePreviewModal from 'Organize/OrganizePreviewModal';
 import QualityProfileName from 'Settings/Profiles/Quality/QualityProfileName';
-import { executeCommand } from 'Store/Actions/commandActions';
-import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
-import { createQueueItemSelectorForHook } from 'Store/Selectors/createQueueItemSelector';
 import fonts from 'Styles/Variables/fonts';
 import formatRuntime from 'Utilities/Date/formatRuntime';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
-import MovieCastPostersConnector from './Credits/Cast/MovieCastPostersConnector';
+import MovieCastPosters from './Credits/Cast/MovieCastPosters';
 import MovieDetailsLinks from './MovieDetailsLinks';
 import MovieStatusLabel from './MovieStatusLabel';
 import MovieStudioLink from './MovieStudioLink';
@@ -71,9 +70,6 @@ interface Props {
   isPopulated: boolean;
   isSmallScreen: boolean;
   isSidebarVisible: boolean;
-  movieFilesError?: unknown;
-  extraFilesError?: unknown;
-  movieCreditsError?: unknown;
   onRefreshPress: () => void;
   onSearchPress: () => void;
   onGoToMovie: () => void;
@@ -91,15 +87,15 @@ function getFanartUrl(images: MovieImageType[]) {
 function MovieDetails(props: Readonly<Partial<Props>>) {
   // Get id from route params and fetch movie data
   const { id } = useParams();
-  const dispatch = useDispatch();
-  const safeForWorkMode = useContext(SafeForWorkModeContext);
+  const executeCommand = useExecuteCommand();
+  const safeForWorkMode = useSafeForWorkMode();
 
   const { data: movie, isLoading, isError, error } = useMovie(id);
   const statusDetails = getMovieStatusDetails(movie?.status);
-  const queueItem = useSelector(createQueueItemSelectorForHook(movie?.id ?? 0));
+  const queueItem = useQueueItemForMovie(movie?.id ?? 0);
 
   // State for modals and measurements
-  const { isSmallScreen } = useSelector(createDimensionsSelector());
+  const isSmallScreen = useAppDimension('isSmallScreen');
   const [overviewHeight, setOverviewHeight] = useState(0);
   const [titleWidth, setTitleWidth] = useState(0);
   const { mutate: toggleMonitored } = useToggleMovieMonitored();
@@ -193,25 +189,21 @@ function MovieDetails(props: Readonly<Partial<Props>>) {
   }
 
   function handleRefreshPress() {
-    dispatch(
-      executeCommand({
-        name: REFRESH_MOVIE,
-        movieIds: [movieId],
-      })
-    );
+    executeCommand({
+      name: REFRESH_MOVIE,
+      movieIds: [movieId],
+    });
   }
   function handleSearchPress() {
-    dispatch(
-      executeCommand({
-        name: MOVIE_SEARCH,
-        movieIds: [movieId],
-      })
-    );
+    executeCommand({
+      name: MOVIE_SEARCH,
+      movieIds: [movieId],
+    });
   }
 
   function handleMonitoredPress() {
     if (!movie) return;
-    toggleMonitored({ movie, monitored: !monitored });
+    toggleMonitored({ id: movie.id, monitored: !monitored });
   }
 
   return (
@@ -487,7 +479,7 @@ function MovieDetails(props: Readonly<Partial<Props>>) {
           </FieldSet>
 
           <FieldSet legend={translate('Cast')}>
-            <MovieCastPostersConnector
+            <MovieCastPosters
               movieId={Number(movieId)}
               isSmallScreen={isSmallScreen}
             />
@@ -526,7 +518,6 @@ function MovieDetails(props: Readonly<Partial<Props>>) {
         />
         <InteractiveImportModal
           isOpen={isInteractiveImportModalOpen}
-          movie={movie}
           movieId={movieId}
           title={title}
           folder={path}

@@ -1,74 +1,65 @@
-import React, { useCallback, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useCallback } from 'react';
 import Card from 'Components/Card';
 import Label from 'Components/Label';
 import IconButton from 'Components/Link/IconButton';
 import ConfirmModal from 'Components/Modal/ConfirmModal';
 import TagList from 'Components/TagList';
+import useModalOpenState from 'Helpers/Hooks/useModalOpenState';
 import { icons, kinds } from 'Helpers/Props';
-import { deleteImportList } from 'Store/Actions/settingsActions';
-import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
-import useTags from 'Tags/useTags';
+import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
+import { useTagList } from 'Tags/useTags';
+import ImportListModel from 'typings/ImportList';
 import formatShortTimeSpan from 'Utilities/Date/formatShortTimeSpan';
 import getRelativeDate from 'Utilities/Date/getRelativeDate';
 import translate from 'Utilities/String/translate';
 import EditImportListModal from './EditImportListModal';
+import { useDeleteImportList } from './useImportLists';
 import styles from './ImportList.css';
 
 interface ImportListProps {
-  id: number;
-  name: string;
-  enabled: boolean;
-  enableAuto: boolean;
-  tags: number[];
-  minRefreshInterval: string;
-  lastInfoSync: string;
+  importList: ImportListModel;
   onCloneImportListPress: (id: number) => void;
 }
 
 function ImportList({
-  id,
-  name,
-  enabled,
-  enableAuto,
-  tags,
-  minRefreshInterval,
-  lastInfoSync,
+  importList,
   onCloneImportListPress,
-}: ImportListProps) {
-  const dispatch = useDispatch();
-  const tagList = useTags();
+}: Readonly<ImportListProps>) {
+  const {
+    id,
+    name,
+    enabled,
+    enableAuto,
+    tags,
+    minRefreshInterval,
+    lastInfoSync,
+  } = importList;
 
-  const { shortDateFormat, timeFormat } = useSelector(
-    createUISettingsSelector()
-  );
+  const tagList = useTagList();
+  const { deleteImportList, isDeleting } = useDeleteImportList(id);
 
-  const [isEditImportListModalOpen, setIsEditImportListModalOpen] =
-    useState(false);
+  const { shortDateFormat, timeFormat } = useUiSettingsValues();
 
-  const [isDeleteImportListModalOpen, setIsDeleteImportListModalOpen] =
-    useState(false);
+  const [
+    isEditImportListModalOpen,
+    setEditImportListModalOpen,
+    setEditImportListModalClosed,
+  ] = useModalOpenState(false);
 
-  const handleEditImportListPress = useCallback(() => {
-    setIsEditImportListModalOpen(true);
-  }, []);
-
-  const handleEditImportListModalClose = useCallback(() => {
-    setIsEditImportListModalOpen(false);
-  }, []);
+  const [
+    isDeleteImportListModalOpen,
+    setDeleteImportListModalOpen,
+    setDeleteImportListModalClosed,
+  ] = useModalOpenState(false);
 
   const handleDeleteImportListPress = useCallback(() => {
-    setIsEditImportListModalOpen(false);
-    setIsDeleteImportListModalOpen(true);
-  }, []);
-
-  const handleDeleteImportListModalClose = useCallback(() => {
-    setIsDeleteImportListModalOpen(false);
-  }, []);
+    setEditImportListModalClosed();
+    setDeleteImportListModalOpen();
+  }, [setEditImportListModalClosed, setDeleteImportListModalOpen]);
 
   const handleConfirmDeleteImportList = useCallback(() => {
-    dispatch(deleteImportList({ id }));
-  }, [id, dispatch]);
+    deleteImportList();
+  }, [deleteImportList]);
 
   const handleCloneImportListPress = useCallback(() => {
     onCloneImportListPress(id);
@@ -78,7 +69,7 @@ function ImportList({
     <Card
       className={styles.list}
       overlayContent={true}
-      onPress={handleEditImportListPress}
+      onPress={setEditImportListModalOpen}
     >
       <div className={styles.nameContainer}>
         <div className={styles.name}>{name}</div>
@@ -132,8 +123,8 @@ function ImportList({
       <EditImportListModal
         id={id}
         isOpen={isEditImportListModalOpen}
-        onModalClose={handleEditImportListModalClose}
         onDeleteImportListPress={handleDeleteImportListPress}
+        onModalClose={setEditImportListModalClosed}
       />
 
       <ConfirmModal
@@ -142,8 +133,9 @@ function ImportList({
         title={translate('DeleteImportList')}
         message={translate('DeleteImportListMessageText', { name })}
         confirmLabel={translate('Delete')}
+        isSpinning={isDeleting}
         onConfirm={handleConfirmDeleteImportList}
-        onCancel={handleDeleteImportListModalClose}
+        onCancel={setDeleteImportListModalClosed}
       />
     </Card>
   );

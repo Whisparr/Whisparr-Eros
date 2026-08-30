@@ -1,38 +1,25 @@
-import { cloneDeep } from 'lodash';
 import React, { useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useAppDimension, useAppDimensions } from 'App/appStore';
 import { queryClient } from 'App/queryClient';
-import AppState from 'App/State/AppState';
+import { useSafeForWorkMode } from 'App/safeForWorkStore';
 import { ValidationMessage } from 'Components/Form/FormInputGroup';
 import useApiMutation from 'Helpers/Hooks/useApiMutation';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
-import { setAddStudioDefault } from 'Store/Actions/addMovieActions';
-import {
-  clearQueueDetails,
-  fetchQueueDetails,
-} from 'Store/Actions/queueActions';
-import { fetchRootFolders } from 'Store/Actions/rootFolderActions';
-import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
-import createSystemStatusSelector from 'Store/Selectors/createSystemStatusSelector';
-import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
-import selectSettings from 'Store/Selectors/selectSettings';
+import selectSettings from 'Helpers/selectSettings';
+import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import Studio from 'Studio/Studio';
+import { useSystemStatusData } from 'System/Status/useSystemStatus';
 import { InputChanged } from 'typings/inputs';
-import { ApiError } from 'Utilities/Fetch/fetchJson';
 import getNewStudio from 'Utilities/Studio/getNewStudio';
+import {
+  AddStudioDefaults,
+  setAddStudioDefault,
+  useAddStudioDefaults,
+} from './addStudioDefaultsStore';
 
 export interface StudioWithExistingStatus {
   studio: Studio;
   isExistingStudio: boolean;
-}
-
-interface StudioDefaults {
-  rootFolderPath: string;
-  monitored: boolean;
-  moviesMonitored: boolean;
-  qualityProfileId: number;
-  searchForMovie: boolean;
-  tags: number[];
 }
 
 interface SettingValue<T> {
@@ -52,15 +39,6 @@ interface AddStudioSettings {
   tags: SettingValue<number[]>;
 }
 
-const defaultStudioDefaults: StudioDefaults = {
-  rootFolderPath: '',
-  monitored: true,
-  moviesMonitored: false,
-  qualityProfileId: 0,
-  searchForMovie: false,
-  tags: [],
-};
-
 interface SearchResource {
   foreignId: string;
   studio: Studio;
@@ -68,25 +46,17 @@ interface SearchResource {
 }
 
 function useAddNewStudio() {
-  const dispatch = useDispatch();
-  const uiSettings = useSelector(createUISettingsSelector());
-  const existingStudiosCount = useSelector(
-    (state: AppState) => state.studios.items.length
-  );
+  const uiSettings = useUiSettingsValues();
   const [term, setTerm] = useState('');
   const [debouncedTerm, setDebouncedTerm] = useState('');
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   React.useEffect(() => {
-    dispatch(fetchRootFolders());
-    dispatch(fetchQueueDetails());
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
-      dispatch(clearQueueDetails());
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const {
@@ -132,17 +102,14 @@ function useAddNewStudio() {
     })),
     term,
     colorImpairedMode: uiSettings.enableColorImpairedMode,
-    hasExistingStudios: existingStudiosCount > 0,
     onStudioLookupChange,
     onClearStudioLookupPress,
   };
 }
 
 export function useAddNewStudioSearchResult() {
-  const dimensions = useSelector(createDimensionsSelector());
-  const safeForWorkMode = useSelector(
-    (state: AppState) => state.settings.safeForWorkMode
-  );
+  const dimensions = useAppDimensions();
+  const safeForWorkMode = useSafeForWorkMode();
 
   return {
     isSmallScreen: dimensions.isSmallScreen,
@@ -151,22 +118,11 @@ export function useAddNewStudioSearchResult() {
 }
 
 export function useAddNewStudioModalContent(studio: Studio) {
-  const dispatch = useDispatch();
-  const { isSmallScreen } = useSelector(createDimensionsSelector());
-  const systemStatus = useSelector(createSystemStatusSelector());
-  const safeForWorkMode = useSelector(
-    (state: AppState) => state.settings.safeForWorkMode
-  );
+  const isSmallScreen = useAppDimension('isSmallScreen');
+  const systemStatus = useSystemStatusData();
+  const safeForWorkMode = useSafeForWorkMode();
 
-  const addMovieState = useSelector(
-    (
-      state: AppState & {
-        addMovie: { studioDefaults: StudioDefaults; addError?: ApiError };
-      }
-    ) => state.addMovie
-  );
-
-  const { studioDefaults = defaultStudioDefaults } = addMovieState || {};
+  const studioDefaults = useAddStudioDefaults();
 
   const mutation = useApiMutation<Studio, Studio>({
     method: 'POST',
@@ -189,24 +145,25 @@ export function useAddNewStudioModalContent(studio: Studio) {
     validationWarnings: unknown[];
   };
 
-  const onInputChange = React.useCallback(
-    (change: InputChanged) => {
-      dispatch(setAddStudioDefault({ [change.name]: change.value }));
-    },
-    [dispatch]
-  );
+  const onInputChange = React.useCallback(({ name, value }: InputChanged) => {
+    setAddStudioDefault(
+      name as keyof AddStudioDefaults,
+      value as AddStudioDefaults[keyof AddStudioDefaults]
+    );
+  }, []);
 
   const onAddStudioPress = React.useCallback(() => {
-    const studioToAdd = getNewStudio(cloneDeep(studio) as object, {
-      rootFolderPath: settings.rootFolderPath.value,
-      monitored: settings.monitored.value === true,
-      moviesMonitored: settings.moviesMonitored.value === true,
-      qualityProfileId: settings.qualityProfileId.value,
-      searchForMovie: settings.searchForMovie.value,
-      tags: settings.tags.value,
-    }) as Studio;
-    studioToAdd.id = 0;
-    mutation.mutate(studioToAdd);
+    mutation.mutate({
+      ...getNewStudio(studio, {
+        rootFolderPath: settings.rootFolderPath.value,
+        monitored: settings.monitored.value === true,
+        moviesMonitored: settings.moviesMonitored.value === true,
+        qualityProfileId: settings.qualityProfileId.value,
+        searchForMovie: settings.searchForMovie.value,
+        tags: settings.tags.value,
+      }),
+      id: 0,
+    });
   }, [studio, settings, mutation]);
 
   return {

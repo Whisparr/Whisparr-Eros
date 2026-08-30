@@ -1,6 +1,6 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
+import { useSafeForWorkMode } from 'App/safeForWorkStore';
 import Icon from 'Components/Icon';
 import MonitorToggleButton from 'Components/MonitorToggleButton';
 import RelativeDateCell from 'Components/Table/Cells/RelativeDateCell';
@@ -14,7 +14,7 @@ import Movie, { MovieStatus } from 'Movie/Movie';
 import MovieSearchCell from 'Movie/MovieSearchCell';
 import MovieTitleLink from 'Movie/MovieTitleLink';
 import { useToggleMovieMonitored } from 'Movie/useMovie';
-import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
+import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import formatRuntime from 'Utilities/Date/formatRuntime';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
@@ -23,12 +23,12 @@ import styles from './SceneRow.css';
 interface SceneRowProps {
   movie: Movie;
   isSaving?: boolean;
-  safeForWorkMode?: boolean;
   columns: Column[];
 }
 
 export default function SceneRow(props: SceneRowProps) {
-  const { movieRuntimeFormat } = useSelector(createUISettingsSelector());
+  const { movieRuntimeFormat } = useUiSettingsValues();
+  const safeForWorkMode = useSafeForWorkMode();
 
   const { isSaving, columns, movie } = props;
   const {
@@ -71,7 +71,7 @@ export default function SceneRow(props: SceneRowProps) {
 
   const { mutate: toggleMonitored } = useToggleMovieMonitored();
   function onMonitorToggle(): void {
-    toggleMonitored({ movie, monitored: !movie.monitored });
+    toggleMonitored({ id: movie.id, monitored: !movie.monitored });
   }
 
   const url = externalLink();
@@ -164,7 +164,7 @@ export default function SceneRow(props: SceneRowProps) {
           return path ? (
             <TableRowCell
               key={name}
-              className={props.safeForWorkMode ? styles.blurred : styles.path}
+              className={safeForWorkMode ? styles.blurred : styles.path}
             >
               {path}
             </TableRowCell>

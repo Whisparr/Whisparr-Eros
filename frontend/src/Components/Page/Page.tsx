@@ -1,17 +1,13 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { saveDimensions, useAppDimension, useAppValues } from 'App/appStore';
 import AppUpdatedModal from 'App/AppUpdatedModal';
 import ColorImpairedContext from 'App/ColorImpairedContext';
 import ConnectionLostModal from 'App/ConnectionLostModal';
-import AppState from 'App/State/AppState';
-import { SafeForWorkModeContext } from 'App/State/SafeForWorkContext';
-import SignalRConnector from 'Components/SignalRConnector';
+import SignalRListener from 'Components/SignalRListener';
 import AuthenticationRequiredModal from 'FirstRun/AuthenticationRequiredModal';
 import useAppPage from 'Helpers/Hooks/useAppPage';
-import { saveDimensions } from 'Store/Actions/appActions';
-import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
-import createSystemStatusSelector from 'Store/Selectors/createSystemStatusSelector';
-import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
+import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
+import { useSystemStatusData } from 'System/Status/useSystemStatus';
 import ErrorPage from './ErrorPage';
 import PageHeader from './Header/PageHeader';
 import LoadingPage from './LoadingPage';
@@ -22,23 +18,22 @@ interface PageProps {
   children: React.ReactNode;
 }
 
-function Page({ children }: PageProps) {
-  const dispatch = useDispatch();
+function Page({ children }: Readonly<PageProps>) {
   const { hasError, errors, isPopulated, isLocalStorageSupported } =
     useAppPage();
   const [isUpdatedModalOpen, setIsUpdatedModalOpen] = useState(false);
   const [isConnectionLostModalOpen, setIsConnectionLostModalOpen] =
     useState(false);
 
-  const safeForWorkMode = useSelector(
-    (state: AppState) => state.settings.safeForWorkMode
-  );
-  const { enableColorImpairedMode } = useSelector(createUISettingsSelector());
-  const { isSmallScreen } = useSelector(createDimensionsSelector());
-  const { authentication } = useSelector(createSystemStatusSelector());
+  const { enableColorImpairedMode } = useUiSettingsValues();
+  const isSmallScreen = useAppDimension('isSmallScreen');
+  const { authentication } = useSystemStatusData();
   const authenticationEnabled = authentication !== 'none';
-  const { isSidebarVisible, isUpdated, isDisconnected, version } = useSelector(
-    (state: AppState) => state.app
+  const { isSidebarVisible, isUpdated, isDisconnected, version } = useAppValues(
+    'isSidebarVisible',
+    'isUpdated',
+    'isDisconnected',
+    'version'
   );
 
   const handleUpdatedModalClose = useCallback(() => {
@@ -46,13 +41,11 @@ function Page({ children }: PageProps) {
   }, []);
 
   const handleResize = useCallback(() => {
-    dispatch(
-      saveDimensions({
-        width: window.innerWidth,
-        height: window.innerHeight,
-      })
-    );
-  }, [dispatch]);
+    saveDimensions({
+      width: window.innerWidth,
+      height: window.innerHeight,
+    });
+  }, []);
 
   useEffect(() => {
     window.addEventListener('resize', handleResize);
@@ -89,33 +82,31 @@ function Page({ children }: PageProps) {
   }
 
   return (
-    <SafeForWorkModeContext.Provider value={safeForWorkMode}>
-      <ColorImpairedContext.Provider value={enableColorImpairedMode}>
-        <div className={styles.page}>
-          <SignalRConnector />
+    <ColorImpairedContext.Provider value={enableColorImpairedMode}>
+      <div className={styles.page}>
+        <SignalRListener />
 
-          <PageHeader isSmallScreen={isSmallScreen} />
+        <PageHeader isSmallScreen={isSmallScreen} />
 
-          <div className={styles.main}>
-            <PageSidebar
-              isSmallScreen={isSmallScreen}
-              isSidebarVisible={!!isSidebarVisible}
-            />
-
-            {children}
-          </div>
-
-          <AppUpdatedModal
-            isOpen={isUpdatedModalOpen}
-            onModalClose={handleUpdatedModalClose}
+        <div className={styles.main}>
+          <PageSidebar
+            isSmallScreen={isSmallScreen}
+            isSidebarVisible={!!isSidebarVisible}
           />
 
-          <ConnectionLostModal isOpen={isConnectionLostModalOpen} />
-
-          <AuthenticationRequiredModal isOpen={!authenticationEnabled} />
+          {children}
         </div>
-      </ColorImpairedContext.Provider>
-    </SafeForWorkModeContext.Provider>
+
+        <AppUpdatedModal
+          isOpen={isUpdatedModalOpen}
+          onModalClose={handleUpdatedModalClose}
+        />
+
+        <ConnectionLostModal isOpen={isConnectionLostModalOpen} />
+
+        <AuthenticationRequiredModal isOpen={!authenticationEnabled} />
+      </div>
+    </ColorImpairedContext.Provider>
   );
 }
 

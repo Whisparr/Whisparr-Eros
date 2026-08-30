@@ -1,19 +1,22 @@
 import { useMutation } from '@tanstack/react-query';
-import { cloneDeep } from 'lodash';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useLocation } from 'react-router-dom';
+import { useAppDimension, useAppDimensions } from 'App/appStore';
 import { queryClient } from 'App/queryClient';
-import AppState from 'App/State/AppState';
+import { useSafeForWorkMode } from 'App/safeForWorkStore';
 import { ValidationMessage } from 'Components/Form/FormInputGroup';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
+import selectSettings from 'Helpers/selectSettings';
 import { MovieStats } from 'Movie/Index/useMovieStats';
 import Movie, { Image, Ratings } from 'Movie/Movie';
-import { setAddMovieDefault } from 'Store/Actions/addMovieActions';
-import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
-import createSystemStatusSelector from 'Store/Selectors/createSystemStatusSelector';
-import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
-import selectSettings from 'Store/Selectors/selectSettings';
+import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
+import { useSystemStatusData } from 'System/Status/useSystemStatus';
 import { InputChanged } from 'typings/inputs';
 import MovieCredit from 'typings/MovieCredit';
 import { ValidationError, ValidationWarning } from 'typings/pending';
@@ -21,6 +24,11 @@ import fetchJson, { ApiError } from 'Utilities/Fetch/fetchJson';
 import getQueryPath from 'Utilities/Fetch/getQueryPath';
 import getNewMovie from 'Utilities/Movie/getNewMovie';
 import parseUrl from 'Utilities/String/parseUrl';
+import {
+  AddMovieDefaults,
+  setAddMovieDefault,
+  useAddMovieDefaults,
+} from '../addMovieDefaultsStore';
 
 // Lookup result shape returned by GET /movie/lookup
 export interface MovieLookupResult {
@@ -58,14 +66,6 @@ export interface MovieLookupResult {
   addOptions?: Movie['addOptions'];
 }
 
-interface MovieDefaults {
-  rootFolderPath: string;
-  monitored: boolean;
-  qualityProfileId: number;
-  searchForMovie: boolean;
-  tags: number[];
-}
-
 interface SettingValue<T> {
   value: T;
   errors?: ValidationMessage[];
@@ -81,14 +81,6 @@ interface AddMovieSettings {
   searchForMovie: SettingValue<boolean>;
   tags: SettingValue<number[]>;
 }
-
-const defaultMovieDefaults: MovieDefaults = {
-  rootFolderPath: '',
-  monitored: true,
-  qualityProfileId: 0,
-  searchForMovie: false,
-  tags: [],
-};
 
 const AUTH_HEADERS = {
   'X-Api-Key': window.Whisparr.apiKey,
@@ -107,7 +99,7 @@ function apiPost<T, TBody>(path: string, body: TBody): Promise<T> {
 // Hook for the AddNewMovie and AddNewScene pages
 export function useAddNewMovie(itemType: 'movie' | 'scene') {
   const location = useLocation();
-  const uiSettings = useSelector(createUISettingsSelector());
+  const uiSettings = useUiSettingsValues();
 
   // Initialise term from URL query param (e.g. ?term=foo) on first render
   const initialTerm = React.useMemo(() => {
@@ -178,11 +170,9 @@ export function useAddNewMovie(itemType: 'movie' | 'scene') {
 
 // Hook for AddNewMovieSearchResult card (display settings)
 export function useAddNewMovieSearchResult() {
-  const dimensions = useSelector(createDimensionsSelector());
-  const safeForWorkMode = useSelector(
-    (state: AppState) => state.settings.safeForWorkMode
-  );
-  const uiSettings = useSelector(createUISettingsSelector());
+  const dimensions = useAppDimensions();
+  const safeForWorkMode = useSafeForWorkMode();
+  const uiSettings = useUiSettingsValues();
 
   return {
     isSmallScreen: dimensions.isSmallScreen,
@@ -198,34 +188,11 @@ export function useAddMovieMutation(
   item: MovieLookupResult,
   onSuccess?: () => void
 ) {
-  const dispatch = useDispatch();
-  const { isSmallScreen } = useSelector(createDimensionsSelector());
-  const systemStatus = useSelector(createSystemStatusSelector());
-  const safeForWorkMode = useSelector(
-    (state: AppState) => state.settings.safeForWorkMode
-  );
+  const isSmallScreen = useAppDimension('isSmallScreen');
+  const systemStatus = useSystemStatusData();
+  const safeForWorkMode = useSafeForWorkMode();
 
-  // movieDefaults stay in Redux for persistence across page loads (ImportMovie also reads them)
-  const addMovieState = useSelector(
-    (
-      state: AppState & {
-        addMovie: { movieDefaults: MovieDefaults; addError?: ApiError };
-      }
-    ) => state.addMovie
-  );
-
-  const { movieDefaults = defaultMovieDefaults, addError } =
-    addMovieState || {};
-
-  const { settings, validationErrors, validationWarnings } = selectSettings(
-    movieDefaults,
-    {},
-    addError
-  ) as {
-    settings: AddMovieSettings;
-    validationErrors: ValidationError[];
-    validationWarnings: ValidationWarning[];
-  };
+  const defaults = useAddMovieDefaults();
 
   const mutation = useMutation<Movie, ApiError, MovieLookupResult>({
     mutationFn: (movieToAdd: MovieLookupResult) => {
@@ -239,23 +206,36 @@ export function useAddMovieMutation(
     },
   });
 
-  const onInputChange = useCallback(
-    (change: InputChanged) => {
-      dispatch(setAddMovieDefault({ [change.name]: change.value }));
-    },
-    [dispatch]
+  // The add thunk used to stash its failure on the slice; the mutation carries
+  // it now, so a 400 from POST /movie lands on the field it names again.
+  const { settings, validationErrors, validationWarnings } = useMemo(
+    () =>
+      selectSettings(defaults, {}, mutation.error) as {
+        settings: AddMovieSettings;
+        validationErrors: ValidationError[];
+        validationWarnings: ValidationWarning[];
+      },
+    [defaults, mutation.error]
   );
 
+  const onInputChange = useCallback(({ name, value }: InputChanged) => {
+    setAddMovieDefault(
+      name as keyof AddMovieDefaults,
+      value as AddMovieDefaults[keyof AddMovieDefaults]
+    );
+  }, []);
+
   const onAddMoviePress = useCallback(() => {
-    const movieToAdd = getNewMovie(cloneDeep(item) as object, {
-      rootFolderPath: settings.rootFolderPath.value,
-      monitored: settings.monitored.value === true,
-      qualityProfileId: settings.qualityProfileId.value,
-      searchForMovie: settings.searchForMovie.value,
-      tags: settings.tags.value,
-    }) as MovieLookupResult;
-    movieToAdd.id = 0;
-    mutation.mutate(movieToAdd);
+    mutation.mutate({
+      ...getNewMovie(item, {
+        rootFolderPath: settings.rootFolderPath.value,
+        monitored: settings.monitored.value === true,
+        qualityProfileId: settings.qualityProfileId.value,
+        searchForMovie: settings.searchForMovie.value,
+        tags: settings.tags.value,
+      }),
+      id: 0,
+    });
   }, [item, settings, mutation]);
 
   return {

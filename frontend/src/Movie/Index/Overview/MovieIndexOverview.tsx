@@ -1,9 +1,9 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import TextTruncate from 'react-text-truncate';
-import AppState from 'App/State/AppState';
+import { useSafeForWorkMode } from 'App/safeForWorkStore';
 import Command from 'Commands/Command';
 import { MOVIE_SEARCH, REFRESH_MOVIE } from 'Commands/commandNames';
+import { useExecuteCommand, useExecutingCommands } from 'Commands/useCommands';
 import Icon from 'Components/Icon';
 import IconButton from 'Components/Link/IconButton';
 import Link from 'Components/Link/Link';
@@ -18,13 +18,12 @@ import MovieIndexProgressBar from 'Movie/Index/ProgressBar/MovieIndexProgressBar
 import MovieIndexPosterSelect from 'Movie/Index/Select/MovieIndexPosterSelect';
 import Movie, { Statistics } from 'Movie/Movie';
 import MoviePoster from 'Movie/MoviePoster';
-import { executeCommand } from 'Store/Actions/commandActions';
-import createExecutingCommandsSelector from 'Store/Selectors/createExecutingCommandsSelector';
+import { useQualityProfile } from 'Settings/Profiles/Quality/useQualityProfiles';
 import dimensions from 'Styles/Variables/dimensions';
 import fonts from 'Styles/Variables/fonts';
 import translate from 'Utilities/String/translate';
+import { useMovieIndexOption } from '../movieIndexOptionsStore';
 import MovieIndexOverviewInfo from './MovieIndexOverviewInfo';
-import selectOverviewOptions from './selectOverviewOptions';
 import styles from './MovieIndexOverview.css';
 
 const columnPadding = Number.parseInt(dimensions.movieIndexColumnPadding, 10);
@@ -49,7 +48,7 @@ interface MovieIndexOverviewProps {
   isSmallScreen: boolean;
 }
 
-function MovieIndexOverview(props: MovieIndexOverviewProps) {
+function MovieIndexOverview(props: Readonly<MovieIndexOverviewProps>) {
   const {
     movie,
     sortKey,
@@ -62,13 +61,9 @@ function MovieIndexOverview(props: MovieIndexOverviewProps) {
 
   const movieId = movie.id;
 
-  const qualityProfile = useSelector((state: AppState) =>
-    state.settings.qualityProfiles.items.find(
-      (p) => p.id === movie.qualityProfileId
-    )
-  );
+  const qualityProfile = useQualityProfile(movie.qualityProfileId);
 
-  const executingCommands = useSelector(createExecutingCommandsSelector());
+  const executingCommands = useExecutingCommands();
 
   const isRefreshingMovie = executingCommands.some(
     (command: Command) =>
@@ -80,11 +75,9 @@ function MovieIndexOverview(props: MovieIndexOverviewProps) {
       command.name === MOVIE_SEARCH && command.body.movieId === movieId
   );
 
-  const safeForWorkMode = useSelector(
-    (state: AppState) => state.settings.safeForWorkMode
-  );
+  const safeForWorkMode = useSafeForWorkMode();
 
-  const overviewOptions = useSelector(selectOverviewOptions);
+  const overviewOptions = useMovieIndexOption('overviewOptions');
 
   const {
     title,
@@ -107,27 +100,23 @@ function MovieIndexOverview(props: MovieIndexOverviewProps) {
 
   const { sizeOnDisk = 0 } = statistics;
 
-  const dispatch = useDispatch();
+  const executeCommand = useExecuteCommand();
   const [isEditMovieModalOpen, setIsEditMovieModalOpen] = useState(false);
   const [isDeleteMovieModalOpen, setIsDeleteMovieModalOpen] = useState(false);
 
   const onRefreshPress = useCallback(() => {
-    dispatch(
-      executeCommand({
-        name: REFRESH_MOVIE,
-        movieIds: [movieId],
-      })
-    );
-  }, [movieId, dispatch]);
+    executeCommand({
+      name: REFRESH_MOVIE,
+      movieIds: [movieId],
+    });
+  }, [movieId, executeCommand]);
 
   const onSearchPress = useCallback(() => {
-    dispatch(
-      executeCommand({
-        name: MOVIE_SEARCH,
-        movieIds: [movieId],
-      })
-    );
-  }, [movieId, dispatch]);
+    executeCommand({
+      name: MOVIE_SEARCH,
+      movieIds: [movieId],
+    });
+  }, [movieId, executeCommand]);
 
   const onEditMoviePress = useCallback(() => {
     setIsEditMovieModalOpen(true);

@@ -1,7 +1,5 @@
 import { uniq } from 'lodash';
 import React, { useCallback, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { Tag } from 'App/State/TagsAppState';
 import Form from 'Components/Form/Form';
 import FormGroup from 'Components/Form/FormGroup';
 import FormInputGroup from 'Components/Form/FormInputGroup';
@@ -13,30 +11,29 @@ import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { inputTypes, kinds, sizes } from 'Helpers/Props';
-import createAllStudiosSelector from 'Store/Selectors/createAllStudiosSelector';
-import createTagsSelector from 'Store/Selectors/createTagsSelector';
 import Studio from 'Studio/Studio';
+import { useTagList } from 'Tags/useTags';
 import translate from 'Utilities/String/translate';
 import styles from './TagsModalContent.css';
 
 interface TagsModalContentProps {
   studioIds: number[];
+  items: Studio[];
   onApplyTagsPress: (tags: number[], applyTags: string) => void;
   onModalClose: () => void;
 }
 
 function TagsModalContent(props: TagsModalContentProps) {
-  const { studioIds, onModalClose, onApplyTagsPress } = props;
+  const { studioIds, items, onModalClose, onApplyTagsPress } = props;
 
-  const allStudios: Studio[] = useSelector(createAllStudiosSelector());
-  const tagList: Tag[] = useSelector(createTagsSelector());
+  const tagList = useTagList();
 
   const [tags, setTags] = useState<number[]>([]);
   const [applyTags, setApplyTags] = useState('add');
 
-  const sceneTags = useMemo(() => {
+  const studioTags = useMemo(() => {
     const tags = studioIds.reduce((acc: number[], id) => {
-      const s = allStudios.find((s) => s.id === id);
+      const s = items.find((s) => s.id === id);
 
       if (s) {
         acc.push(...s.tags);
@@ -46,7 +43,7 @@ function TagsModalContent(props: TagsModalContentProps) {
     }, []);
 
     return uniq(tags);
-  }, [studioIds, allStudios]);
+  }, [studioIds, items]);
 
   const onTagsChange = useCallback(
     ({ value }: { value: number[] }) => {
@@ -111,7 +108,7 @@ function TagsModalContent(props: TagsModalContentProps) {
             <FormLabel>{translate('Result')}</FormLabel>
 
             <div className={styles.result}>
-              {sceneTags.map((id) => {
+              {studioTags.map((id) => {
                 const tag = tagList.find((t) => t.id === id);
 
                 if (!tag) {
@@ -146,7 +143,7 @@ function TagsModalContent(props: TagsModalContentProps) {
                     return null;
                   }
 
-                  if (sceneTags.indexOf(id) > -1) {
+                  if (studioTags.indexOf(id) > -1) {
                     return null;
                   }
 

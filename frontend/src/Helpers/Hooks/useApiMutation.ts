@@ -1,5 +1,5 @@
 import { useMutation, UseMutationOptions } from '@tanstack/react-query';
-import { ValidationFailures } from 'Store/Selectors/selectSettings';
+import { ValidationFailures } from 'Helpers/selectSettings';
 import {
   ValidationError,
   ValidationFailure,
@@ -19,7 +19,10 @@ interface MutationOptions<T, TData> extends Omit<
   method: 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   path: string | ((data: TData) => string);
   mutationOptions?: Omit<UseMutationOptions<T, ApiError, TData>, 'mutationFn'>;
-  queryParams?: QueryParams;
+  // A function form is for query params the caller can only decide per-call,
+  // such as the provider `forceSave` flag, which depends on whether this is a
+  // repeat of the previous attempt.
+  queryParams?: QueryParams | ((data: TData) => QueryParams);
 }
 
 function useApiMutation<T, TData>(options: MutationOptions<T, TData>) {
@@ -29,9 +32,12 @@ function useApiMutation<T, TData>(options: MutationOptions<T, TData>) {
       const { path, queryParams, mutationOptions, ...otherOptions } = options;
       const resolvedPath = typeof path === 'function' ? path(data) : path;
 
+      const resolvedQueryParams =
+        typeof queryParams === 'function' ? queryParams(data) : queryParams;
+
       return fetchJson<T, TData>({
         ...otherOptions,
-        path: getQueryPath(resolvedPath) + getQueryString(queryParams),
+        path: getQueryPath(resolvedPath) + getQueryString(resolvedQueryParams),
         headers: {
           ...options.headers,
           'X-Api-Key': window.Whisparr.apiKey,
