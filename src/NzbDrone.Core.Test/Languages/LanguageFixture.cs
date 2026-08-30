@@ -1,3 +1,4 @@
+using System;
 using FluentAssertions;
 using NUnit.Framework;
 using NzbDrone.Core.Languages;
@@ -150,6 +151,28 @@ namespace NzbDrone.Core.Test.Languages
         {
             var i = (int)source;
             i.Should().Be(expected);
+        }
+
+        [Test]
+        public void should_report_a_known_language_as_valid()
+        {
+            Language.English.IsValid().Should().BeTrue();
+        }
+
+        [Test]
+        public void should_report_an_unknown_id_as_invalid()
+        {
+            // A language id can reach us from a client payload or an old DB row without ever
+            // going through FindById, so the object exists but names nothing.
+            new Language { Id = 9999, Name = "Klingon" }.IsValid(false).Should().BeFalse();
+        }
+
+        [Test]
+        public void should_throw_on_an_unknown_id_by_default()
+        {
+            var language = new Language { Id = 9999, Name = "Klingon" };
+
+            Assert.Throws<InvalidOperationException>(() => language.IsValid());
         }
     }
 }
