@@ -1,6 +1,9 @@
 using System.IO;
+using System.Threading.Tasks;
 using FluentAssertions;
 using NLog;
+using NLog.Config;
+using NLog.Targets;
 using NUnit.Framework;
 using NzbDrone.Common.Disk;
 using NzbDrone.Test.Common;
@@ -66,6 +69,23 @@ namespace NzbDrone.Api.Test.Frontend.Mappers
         public void should_return_null_when_the_folder_itself_is_requested()
         {
             _subject.Map("/resource/").Should().BeNull();
+        }
+
+        [Test]
+        public async Task should_not_let_a_refused_url_forge_a_log_line()
+        {
+            var target = new MemoryTarget { Layout = "${message}" };
+            var config = new LoggingConfiguration();
+            config.AddRuleForAllLevels(target);
+
+            var factory = new LogFactory { Configuration = config };
+            var mapper = new TestMapper(_folder, Mocker.GetMock<IDiskProvider>().Object, factory.GetLogger("test"));
+
+            await mapper.GetResponse("/resource/../escaped.txt\r\nWARN  Forged log line");
+
+            target.Logs.Should().ContainSingle();
+            target.Logs[0].Should().NotContain("\r").And.NotContain("\n");
+            target.Logs[0].Should().Contain("Forged log line");
         }
 
         private sealed class TestMapper : StaticResourceMapperBase
