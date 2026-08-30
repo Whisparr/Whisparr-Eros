@@ -30,6 +30,7 @@ const REQUIRES_RESTART_KEYS: (keyof General)[] = [
   'port',
   'urlBase',
   'allowedHosts',
+  'trustedNetworks',
   'instanceName',
   'enableSsl',
   'sslPort',

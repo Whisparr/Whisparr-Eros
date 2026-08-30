@@ -122,6 +122,7 @@ function SecuritySettings({
     passwordConfirmation,
     apiKey,
     certificateValidation,
+    trustedNetworks,
   } = settings;
 
   const authenticationEnabled =
@@ -247,6 +248,20 @@ function SecuritySettings({
           helpText={translate('CertificateValidationHelpText')}
           onChange={onInputChange}
           {...certificateValidation}
+        />
+      </FormGroup>
+
+      <FormGroup>
+        <FormLabel>{translate('TrustedNetworks')}</FormLabel>
+
+        <FormInputGroup
+          type={inputTypes.TEXT}
+          name="trustedNetworks"
+          helpText={translate('TrustedNetworksHelpText')}
+          helpTextWarning={translate('RestartRequiredHelpTextWarning')}
+          helpLink="https://wiki.servarr.com/whisparr/settings#security"
+          onChange={onInputChange}
+          {...trustedNetworks}
         />
       </FormGroup>
 

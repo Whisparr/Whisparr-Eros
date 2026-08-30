@@ -29,6 +29,7 @@ namespace Whisparr.Api.V3.Config
         public string SslCertPath { get; set; }
         public string SslCertPassword { get; set; }
         public string UrlBase { get; set; }
+        public string TrustedNetworks { get; set; }
         public string InstanceName { get; set; }
         public string ApplicationUrl { get; set; }
         public bool UpdateAutomatically { get; set; }
@@ -91,6 +92,7 @@ namespace Whisparr.Api.V3.Config
                 SslCertPath = model.SslCertPath,
                 SslCertPassword = model.SslCertPassword,
                 UrlBase = model.UrlBase,
+                TrustedNetworks = model.TrustedNetworks,
                 InstanceName = model.InstanceName,
                 UpdateAutomatically = model.UpdateAutomatically,
                 UpdateMechanism = model.UpdateMechanism,
