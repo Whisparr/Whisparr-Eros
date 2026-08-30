@@ -13,19 +13,9 @@ Caught up — nothing outstanding.
 
 ## sonarr — Sonarr/Sonarr `v5-develop`
 
-Owns: **frontend**. High-water mark: `f089df054f`.
+Owns: **frontend**. High-water mark: `b84a621e99`.
 
-**3 outstanding.**
-
-| Month | Total | be | fe | be+fe | chore |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| 2026-08 | 3 | 1 | 0 | 2 | 0 |
-
-### 2026-08
-
-- `be+fe` [`1579a8bb7`](https://github.com/Sonarr/Sonarr/commit/1579a8bb7f89803d0850369f3ff7980d6edaf31d) New: Add hostname validation — *Mark McDowall*
-- `be+fe` [`022f69e14`](https://github.com/Sonarr/Sonarr/commit/022f69e14bc333588bc775b9cab98f5e8f12df0c) New: Add Trusted Networks setting — *Mark McDowall*
-- `be   ` [`85964fec1`](https://github.com/Sonarr/Sonarr/commit/85964fec18edfe11a898252303349f4ce81cd7c2) Fix allowed hosts check check on config file changes — *Bogdan*
+Caught up — nothing outstanding.
 
 ## Settled
 
@@ -204,3 +194,6 @@ Commits reviewed and dispositioned. Skips carry their reason.
 | [`a4448b720`](https://github.com/Sonarr/Sonarr/commit/a4448b720db87e1b37d59d4cc7e8567f27973817) | Improve restart required behavior | `adapt` | Same latent bug here: the pending keys were read off the previous render. Our restart-key constant is named REQUIRES_RESTART_KEYS. |
 | [`900cc21d3`](https://github.com/Sonarr/Sonarr/commit/900cc21d3bc7441211aa71baf61577437501c839) | New: Support for Polish tracker releases | `skip` | Parser gate. Adds Polish season-pack tokens to the season regex; we have no season parsing. |
 | [`b84a621e9`](https://github.com/Sonarr/Sonarr/commit/b84a621e991747360b63e074d06fc7d8b534ef63) | New: Parsing file names with ambiguous episode numbering | `skip` | Parser gate. Disambiguates season/episode numbering in file paths, which our grammar has no concept of. |
+| [`1579a8bb7`](https://github.com/Sonarr/Sonarr/commit/1579a8bb7f89803d0850369f3ff7980d6edaf31d) | New: Add hostname validation | `adapt` | Picked as the source for this pair rather than Radarr's re-spin. Adapted: our HealthCheck carries no reason enum yet (Radarr's 'Add reason to health check' is still queued for its own PR), so the check passes message and wiki fragment only, and the validators land on HostConfigController since we have a single API version. |
+| [`022f69e14`](https://github.com/Sonarr/Sonarr/commit/022f69e14bc333588bc775b9cab98f5e8f12df0c) | New: Add Trusted Networks setting | `adapt` | Picked as the source for this pair rather than Radarr's re-spin. Adapted to our single API version and to settings fieldsets that take the whole settings object, so no prop threading. Behaviour change: forwarded headers are no longer trusted from every RFC 1918 range, only from loopback plus configured networks. |
+| [`85964fec1`](https://github.com/Sonarr/Sonarr/commit/85964fec18edfe11a898252303349f4ce81cd7c2) | Fix allowed hosts check check on config file changes | `pick` | Allowed Hosts lives in the config file, so ConfigFileSavedEvent is the event that follows a change to it; ConfigSavedEvent left the check showing a stale result until the next scheduled run. Applies as-is. |

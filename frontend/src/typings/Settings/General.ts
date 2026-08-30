@@ -9,6 +9,7 @@ export default interface General {
   launchBrowser: boolean;
   authenticationMethod: string;
   authenticationRequired: string;
+  allowedHosts: string;
   analyticsEnabled: boolean;
   username: string;
   password: string;
@@ -21,6 +22,7 @@ export default interface General {
   sslCertPath: string;
   sslCertPassword: string;
   urlBase: string;
+  trustedNetworks: string;
   instanceName: string;
   applicationUrl: string;
   updateAutomatically: boolean;
