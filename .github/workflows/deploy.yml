@@ -85,14 +85,29 @@ jobs:
           pattern: release-*
           merge-multiple: true
 
+      # cardinalby/git-get-release-action only scans a bounded window of recent
+      # releases, so on eros it stopped finding the newest stable one once ~100
+      # -develop prereleases piled up ahead of it. /releases/latest is defined as
+      # the newest non-draft, non-prerelease release and has no window at all.
       - name: Get Previous Release
         id: previous-release
-        uses: cardinalby/git-get-release-action@v1
         env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          latest: true
-          prerelease: ${{ inputs.branch != 'eros' }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [[ "${{ inputs.branch }}" == "eros" ]]; then
+            tag=$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" -q '.tag_name')
+          else
+            tag=$(gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" \
+              -q 'map(select(.prerelease and (.draft | not))) | .[0].tag_name // empty')
+          fi
+
+          if [[ -z "$tag" ]]; then
+            echo "::error::No previous release found for branch ${{ inputs.branch }}"
+            exit 1
+          fi
+
+          echo "Previous release: $tag"
+          echo "tag_name=$tag" >> "$GITHUB_OUTPUT"
 
       - name: Enable GPG signing
         uses: crazy-max/ghaction-import-gpg@v7

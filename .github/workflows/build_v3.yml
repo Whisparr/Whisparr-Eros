@@ -17,8 +17,13 @@ on:
       - "src/Whisparr.Api.*/openapi.json"
 
 concurrency:
-  group: ${{ github.workflow }}-pr-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
+  # pull_request.number is empty on push, so keying on it alone put every push
+  # run - eros and eros-develop alike - in one group named "Build-pr-", where
+  # each merge cancelled whatever was building on the other branch.
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  # Superseding a PR run is useful; killing a half-finished release build that
+  # packages 11 runtimes and publishes a release is not.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   FRAMEWORK: net10.0
