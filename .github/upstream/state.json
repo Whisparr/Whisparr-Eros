@@ -5,8 +5,8 @@
       "repo": "Radarr/Radarr",
       "branch": "develop",
       "owns": "backend",
-      "highWater": "520bf4215a13223433ef6c77ad7e822cd8359c94",
-      "highWaterNote": "2026-05-31 'Bump BusyTimeout for SQLite to 1000ms'. Everything on Radarr develop from 2025-10-01 through this point is dispositioned. Advance only when everything at or before the new mark is settled."
+      "highWater": "5b8c6f73da737c69bb74bde419673319f0d47e49",
+      "highWaterNote": "2026-06-29 'Fix: Bump FFProbe to 5.1.10'. Everything on Radarr develop from 2025-10-01 through this point is dispositioned. Advance only when everything at or before the new mark is settled."
     },
     "sonarr": {
       "repo": "Sonarr/Sonarr",
@@ -287,6 +287,36 @@
         "month": "2026-05",
         "disposition": "have",
         "reason": "ConnectionStringFactory already sets BusyTimeout = 1000."
+      },
+      "4dcc7c78317ec2a58578c35bfa6dae559d98548f": {
+        "subject": "Fixed: Basic auth for qBittorrent",
+        "month": "2026-06",
+        "disposition": "have",
+        "reason": "Restores BasicNetworkCredential in BuildRequest after radarr/radarr@8ac3e474 moved it onto the login request alone. Our BuildRequest already sets it for every request when a username or password is present, which is this end state."
+      },
+      "104fbe7e3f005c438ed6f91d013bd8d921483cb9": {
+        "subject": "Fixed: Custom formats with year for imported files",
+        "month": "2026-06",
+        "disposition": "pick",
+        "reason": "Reproduces here unchanged. ParsedMovieInfo.Year is a non-nullable int, so YearSpecification's ?? never reached the movie metadata, and none of the four infos synthesized from a stored movie set Year - so Year specifications failed for anything already imported. Our CustomFormats still mirror upstream's, so it applies as-is; three of the four new CustomFormatCalculationServiceFixture tests fail without it."
+      },
+      "c3849dbcb02f6e38cb6206e672ca6e2313962b8c": {
+        "subject": "Upgrade StyleCop.Analyzers to Unstable 1.2.0.556",
+        "month": "2026-06",
+        "disposition": "skip",
+        "reason": "Deferred to its own PR, not skipped on merit. Two blockers: 1.2.0.556 is not on nuget.org (a trial bump fails with NU1102) so it needs a package source we do not configure, and the upgrade churns 160 files including Parser.cs, where our fork has diverged furthest. Not something to fold into a sync chunk."
+      },
+      "c97100c1c8f3cdf839be3adca42835684cc92c36": {
+        "subject": "Bump version to 6.3.0",
+        "month": "2026-06",
+        "disposition": "skip",
+        "reason": "Upstream's own version number in azure-pipelines.yml. We version independently."
+      },
+      "5b8c6f73da737c69bb74bde419673319f0d47e49": {
+        "subject": "Fix: Bump FFProbe to 5.1.10",
+        "month": "2026-06",
+        "disposition": "skip",
+        "reason": "Different package and we are ahead. Upstream moves Servarr.FFprobe 5.1.4 to 5.1.10; we reference Openur.FFprobeStatic 9.0.1.492."
       }
     },
     "sonarr": {}

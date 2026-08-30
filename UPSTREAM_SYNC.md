@@ -7,23 +7,14 @@ See `.github/upstream/state.json` for the machine state and the `sync-upstream` 
 
 ## radarr — Radarr/Radarr `develop`
 
-Owns: **backend**. High-water mark: `520bf4215a`.
+Owns: **backend**. High-water mark: `5b8c6f73da`.
 
-**55 outstanding.**
+**50 outstanding.**
 
 | Month | Total | be | fe | be+fe | chore |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| 2026-06 | 5 | 4 | 0 | 0 | 1 |
 | 2026-07 | 18 | 15 | 0 | 0 | 3 |
 | 2026-08 | 32 | 18 | 8 | 4 | 2 |
-
-### 2026-06
-
-- `be   ` [`4dcc7c783`](https://github.com/Radarr/Radarr/commit/4dcc7c78317ec2a58578c35bfa6dae559d98548f) Fixed: Basic auth for qBittorrent — *Bogdan*
-- `be   ` [`104fbe7e3`](https://github.com/Radarr/Radarr/commit/104fbe7e3f005c438ed6f91d013bd8d921483cb9) Fixed: Custom formats with year for imported files — *Bogdan*
-- `be   ` [`c3849dbcb`](https://github.com/Radarr/Radarr/commit/c3849dbcb02f6e38cb6206e672ca6e2313962b8c) Upgrade StyleCop.Analyzers to Unstable 1.2.0.556 — *Bogdan*
-- `chore` [`c97100c1c`](https://github.com/Radarr/Radarr/commit/c97100c1c8f3cdf839be3adca42835684cc92c36) Bump version to 6.3.0 — *Auggie*
-- `be   ` [`5b8c6f73d`](https://github.com/Radarr/Radarr/commit/5b8c6f73da737c69bb74bde419673319f0d47e49) Fix: Bump FFProbe to 5.1.10 — *RobinDadswell*
 
 ### 2026-07
 
@@ -214,3 +205,8 @@ Commits reviewed and dispositioned. Skips carry their reason.
 | [`cf3775621`](https://github.com/Radarr/Radarr/commit/cf3775621be8e39c011cdff63f6939400a108bb5) | Bump dessant github actions to fix token issues | `have` | We are already on dessant/label-actions@v5 and dessant/lock-threads@v6, which is what this bumped upstream to. |
 | [`3b8007637`](https://github.com/Radarr/Radarr/commit/3b80076373859a5f866b1d52ddc25aa7613a064a) | Bump version to 6.2.1 | `skip` | Upstream's own version number in azure-pipelines.yml. We version independently. |
 | [`520bf4215`](https://github.com/Radarr/Radarr/commit/520bf4215a13223433ef6c77ad7e822cd8359c94) | Bump BusyTimeout for SQLite to 1000ms | `have` | ConnectionStringFactory already sets BusyTimeout = 1000. |
+| [`4dcc7c783`](https://github.com/Radarr/Radarr/commit/4dcc7c78317ec2a58578c35bfa6dae559d98548f) | Fixed: Basic auth for qBittorrent | `have` | Restores BasicNetworkCredential in BuildRequest after radarr/radarr@8ac3e474 moved it onto the login request alone. Our BuildRequest already sets it for every request when a username or password is present, which is this end state. |
+| [`104fbe7e3`](https://github.com/Radarr/Radarr/commit/104fbe7e3f005c438ed6f91d013bd8d921483cb9) | Fixed: Custom formats with year for imported files | `pick` | Reproduces here unchanged. ParsedMovieInfo.Year is a non-nullable int, so YearSpecification's ?? never reached the movie metadata, and none of the four infos synthesized from a stored movie set Year - so Year specifications failed for anything already imported. Our CustomFormats still mirror upstream's, so it applies as-is; three of the four new CustomFormatCalculationServiceFixture tests fail without it. |
+| [`c3849dbcb`](https://github.com/Radarr/Radarr/commit/c3849dbcb02f6e38cb6206e672ca6e2313962b8c) | Upgrade StyleCop.Analyzers to Unstable 1.2.0.556 | `skip` | Deferred to its own PR, not skipped on merit. Two blockers: 1.2.0.556 is not on nuget.org (a trial bump fails with NU1102) so it needs a package source we do not configure, and the upgrade churns 160 files including Parser.cs, where our fork has diverged furthest. Not something to fold into a sync chunk. |
+| [`c97100c1c`](https://github.com/Radarr/Radarr/commit/c97100c1c8f3cdf839be3adca42835684cc92c36) | Bump version to 6.3.0 | `skip` | Upstream's own version number in azure-pipelines.yml. We version independently. |
+| [`5b8c6f73d`](https://github.com/Radarr/Radarr/commit/5b8c6f73da737c69bb74bde419673319f0d47e49) | Fix: Bump FFProbe to 5.1.10 | `skip` | Different package and we are ahead. Upstream moves Servarr.FFprobe 5.1.4 to 5.1.10; we reference Openur.FFprobeStatic 9.0.1.492. |
