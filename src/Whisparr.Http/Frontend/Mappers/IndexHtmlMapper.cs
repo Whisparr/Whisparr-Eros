@@ -10,6 +10,7 @@ namespace Whisparr.Http.Frontend.Mappers
     public class IndexHtmlMapper : HtmlMapperBase
     {
         private readonly IConfigFileProvider _configFileProvider;
+        private readonly string _folderPath;
 
         public IndexHtmlMapper(IAppFolderInfo appFolderInfo,
                                IDiskProvider diskProvider,
@@ -20,11 +21,15 @@ namespace Whisparr.Http.Frontend.Mappers
         {
             _configFileProvider = configFileProvider;
 
-            HtmlPath = Path.Combine(appFolderInfo.StartUpFolder, _configFileProvider.UiFolder, "index.html");
+            _folderPath = Path.Combine(appFolderInfo.StartUpFolder, configFileProvider.UiFolder);
+
+            HtmlPath = Path.Combine(_folderPath, "index.html");
             UrlBase = configFileProvider.UrlBase;
         }
 
-        public override string Map(string resourceUrl)
+        protected override string FolderPath => _folderPath;
+
+        protected override string MapPath(string resourceUrl)
         {
             return HtmlPath;
         }
