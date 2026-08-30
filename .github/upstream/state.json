@@ -5,8 +5,8 @@
       "repo": "Radarr/Radarr",
       "branch": "develop",
       "owns": "backend",
-      "highWater": "4b85fab05bc37a51c2e673673d9cabd4113fedd8",
-      "highWaterNote": "2026-03-29 'Fixed: Downloading backups when path contains a trailing slash'. Everything on Radarr develop from 2025-10-01 through this point is dispositioned. Advance only when everything at or before the new mark is settled."
+      "highWater": "0134fdedcaff8eaeb6baaeee95e873a2b4881221",
+      "highWaterNote": "2026-04-29 'Prevent overflow exception for big numbers in SizeSuffix and Fluent.Round'. Everything on Radarr develop from 2025-10-01 through this point is dispositioned. Advance only when everything at or before the new mark is settled."
     },
     "sonarr": {
       "repo": "Sonarr/Sonarr",
@@ -179,6 +179,42 @@
         "month": "2026-03",
         "disposition": "skip",
         "reason": "Touches azure-pipelines.yml only. We do not have that file and version independently of Radarr."
+      },
+      "331ce4579ce2f3d7cb06d82c0e62c42148acacb8": {
+        "subject": "Close issues that don't follow issue templates",
+        "month": "2026-04",
+        "disposition": "skip",
+        "reason": "Adds .github/workflows/close_invalid_issues.yml, which auto-closes issues that do not follow the templates. Declined deliberately, not for lack of the file: we are not seeing template compliance problems, so the workflow would only add a way to close reporters' issues automatically. Revisit only if that changes."
+      },
+      "662324775ed72ea39589a2a8f9d7ffec39bca644": {
+        "subject": "version bump to 6.2.0",
+        "month": "2026-04",
+        "disposition": "skip",
+        "reason": "Touches azure-pipelines.yml only. We do not have that file and version independently of Radarr."
+      },
+      "92268767921bddd1625c6acb80b704464b5feb0a": {
+        "subject": "Bump MailKit to 4.16.0",
+        "month": "2026-04",
+        "disposition": "have",
+        "reason": "Whisparr.Core.csproj is on MailKit 4.17.0, ahead of upstream's 4.16.0."
+      },
+      "ece044e2701d0269e36e458572f48816e5293654": {
+        "subject": "Log media info title used to augment quality",
+        "month": "2026-04",
+        "disposition": "adapt",
+        "reason": "Took the debug log and the single null-safe Trim in AugmentQualityFromMediaInfo. Our version of the file has far more resolution tiers (8K, 6K RED, 6K Blackmagic, 5K) than upstream's, so only the title handling was portable."
+      },
+      "7dd5365ccd5130b62b98f4bef9bfd69d7721aebc": {
+        "subject": "Fixed: Include quality modifier when augmenting quality from media info",
+        "month": "2026-04",
+        "disposition": "skip",
+        "reason": "Not adaptable: our quality model has no Modifier concept at all. There is no Modifier enum under Qualities/, AugmentQualityResult carries no Modifier property, AggregateQuality tracks no modifier, and QualityFinder.FindBySourceAndResolution takes only (source, resolution). Introducing one would be a quality-matching design change, not a sync - and matching is not somewhere to make drive-by changes."
+      },
+      "0134fdedcaff8eaeb6baaeee95e873a2b4881221": {
+        "subject": "Prevent overflow exception for big numbers in SizeSuffix and Fluent.Round",
+        "month": "2026-04",
+        "disposition": "pick",
+        "reason": "Real crash, not a rounding nit: SizeSuffix(long.MinValue) negated to itself and recursed forever. Reproduced here - the new test case stack-overflows and aborts the whole test run without the fix. Round also floored negatives away from zero."
       }
     },
     "sonarr": {}

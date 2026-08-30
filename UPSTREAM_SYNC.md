@@ -7,26 +7,16 @@ See `.github/upstream/state.json` for the machine state and the `sync-upstream` 
 
 ## radarr — Radarr/Radarr `develop`
 
-Owns: **backend**. High-water mark: `4b85fab05b`.
+Owns: **backend**. High-water mark: `0134fdedca`.
 
-**73 outstanding.**
+**67 outstanding.**
 
 | Month | Total | be | fe | be+fe | chore |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| 2026-04 | 6 | 4 | 0 | 0 | 2 |
 | 2026-05 | 12 | 10 | 0 | 0 | 2 |
 | 2026-06 | 5 | 4 | 0 | 0 | 1 |
 | 2026-07 | 18 | 15 | 0 | 0 | 3 |
 | 2026-08 | 32 | 18 | 8 | 4 | 2 |
-
-### 2026-04
-
-- `chore` [`331ce4579`](https://github.com/Radarr/Radarr/commit/331ce4579ce2f3d7cb06d82c0e62c42148acacb8) Close issues that don't follow issue templates — *Mark McDowall*
-- `chore` [`662324775`](https://github.com/Radarr/Radarr/commit/662324775ed72ea39589a2a8f9d7ffec39bca644) version bump to 6.2.0 — *Auggie*
-- `be   ` [`922687679`](https://github.com/Radarr/Radarr/commit/92268767921bddd1625c6acb80b704464b5feb0a) Bump MailKit to 4.16.0 — *Auggie*
-- `be   ` [`ece044e27`](https://github.com/Radarr/Radarr/commit/ece044e2701d0269e36e458572f48816e5293654) Log media info title used to augment quality — *Bogdan*
-- `be   ` [`7dd5365cc`](https://github.com/Radarr/Radarr/commit/7dd5365ccd5130b62b98f4bef9bfd69d7721aebc) Fixed: Include quality modifier when augmenting quality from media info — *Bogdan*
-- `be   ` [`0134fdedc`](https://github.com/Radarr/Radarr/commit/0134fdedcaff8eaeb6baaeee95e873a2b4881221) Prevent overflow exception for big numbers in SizeSuffix and Fluent.Round — *Bogdan*
 
 ### 2026-05
 
@@ -222,3 +212,9 @@ Commits reviewed and dispositioned. Skips carry their reason.
 | [`f1513ca39`](https://github.com/Radarr/Radarr/commit/f1513ca39e7179030eb84ac3769bdc6e41b9c05b) | Multiple Translations updated by Weblate | `skip` | Weblate-generated translation files. Ours come from our own Weblate project, never from upstream cherry-picks. |
 | [`cf0d6b014`](https://github.com/Radarr/Radarr/commit/cf0d6b014222a6424bae52dbbb55849a6f874d2f) | Chore: Sonar Cloud version bump | `skip` | Touches azure-pipelines.yml only. Our Sonar setup lives in .github/workflows/sonarqube.yml. |
 | [`079e2136e`](https://github.com/Radarr/Radarr/commit/079e2136ee6d3b579329f18deaf2e59ed20d93ee) | version bump to 6.1.2 | `skip` | Touches azure-pipelines.yml only. We do not have that file and version independently of Radarr. |
+| [`331ce4579`](https://github.com/Radarr/Radarr/commit/331ce4579ce2f3d7cb06d82c0e62c42148acacb8) | Close issues that don't follow issue templates | `skip` | Adds .github/workflows/close_invalid_issues.yml, which auto-closes issues that do not follow the templates. Declined deliberately, not for lack of the file: we are not seeing template compliance problems, so the workflow would only add a way to close reporters' issues automatically. Revisit only if that changes. |
+| [`662324775`](https://github.com/Radarr/Radarr/commit/662324775ed72ea39589a2a8f9d7ffec39bca644) | version bump to 6.2.0 | `skip` | Touches azure-pipelines.yml only. We do not have that file and version independently of Radarr. |
+| [`922687679`](https://github.com/Radarr/Radarr/commit/92268767921bddd1625c6acb80b704464b5feb0a) | Bump MailKit to 4.16.0 | `have` | Whisparr.Core.csproj is on MailKit 4.17.0, ahead of upstream's 4.16.0. |
+| [`ece044e27`](https://github.com/Radarr/Radarr/commit/ece044e2701d0269e36e458572f48816e5293654) | Log media info title used to augment quality | `adapt` | Took the debug log and the single null-safe Trim in AugmentQualityFromMediaInfo. Our version of the file has far more resolution tiers (8K, 6K RED, 6K Blackmagic, 5K) than upstream's, so only the title handling was portable. |
+| [`7dd5365cc`](https://github.com/Radarr/Radarr/commit/7dd5365ccd5130b62b98f4bef9bfd69d7721aebc) | Fixed: Include quality modifier when augmenting quality from media info | `skip` | Not adaptable: our quality model has no Modifier concept at all. There is no Modifier enum under Qualities/, AugmentQualityResult carries no Modifier property, AggregateQuality tracks no modifier, and QualityFinder.FindBySourceAndResolution takes only (source, resolution). Introducing one would be a quality-matching design change, not a sync - and matching is not somewhere to make drive-by changes. |
+| [`0134fdedc`](https://github.com/Radarr/Radarr/commit/0134fdedcaff8eaeb6baaeee95e873a2b4881221) | Prevent overflow exception for big numbers in SizeSuffix and Fluent.Round | `pick` | Real crash, not a rounding nit: SizeSuffix(long.MinValue) negated to itself and recursed forever. Reproduced here - the new test case stack-overflows and aborts the whole test run without the fix. Round also floored negatives away from zero. |
