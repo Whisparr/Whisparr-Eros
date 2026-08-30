@@ -1,0 +1,132 @@
+{
+  "$comment": "Machine-owned sync state. Edited via the sync-upstream skill, never by hand. UPSTREAM_SYNC.md and the upstream-watch tracking issues are rendered from this file.",
+  "upstreams": {
+    "radarr": {
+      "repo": "Radarr/Radarr",
+      "branch": "develop",
+      "owns": "backend",
+      "highWater": "89110c2cc8ec671d718cf34acc845f66d475a427",
+      "highWaterNote": "2025-12-29 'version bump to 6.1.1'. Every Radarr develop commit from 2025-10-01 through this point is dispositioned (2026-01 and 2026-02 had no upstream commits at all), so the pointer is safe to sit here. Advance it only when everything at or before the new mark is settled."
+    },
+    "sonarr": {
+      "repo": "Sonarr/Sonarr",
+      "branch": "v5-develop",
+      "owns": "frontend",
+      "highWater": "7e627f69470b1a1d20560e31968cf281e711cc2e",
+      "highWaterNote": "2026-07-19 'Fixed: rqbit output path mapping' - the SHA REDUX_MIGRATION.md pins."
+    }
+  },
+  "dispositions": {
+    "radarr": {
+      "4c007291833246d3ed78e6f396fc7e60cc9ca70c": {
+        "subject": "Fix: (#11303) collection API error when using `Movie CollectionThe` (#11304)",
+        "month": "2025-12",
+        "disposition": "skip",
+        "reason": "Fixes the {Movie CollectionThe} token, which we do not have. Bug cannot reproduce here. Separately surfaced that our {Movie Collection} token is advertised in NamingModal.tsx but has no FileNameBuilder handler - filed on its own, not fixed here."
+      },
+      "a12683502849fdc739b0e41505905a38aa416e90": {
+        "subject": "New: Parse Group GiLG",
+        "month": "2025-12",
+        "disposition": "skip",
+        "reason": "Parser change under the skip-by-default rule. Would reproduce (our ExceptionReleaseGroupRegex matches upstream's pre-change form), but GiLG is a movie-scene release group we do not need to carry."
+      },
+      "89110c2cc8ec671d718cf34acc845f66d475a427": {
+        "subject": "version bump to 6.1.1",
+        "month": "2025-12",
+        "disposition": "skip",
+        "reason": "Touches azure-pipelines.yml only. We do not have that file; we build on GitHub Actions."
+      },
+      "1883ae52ac9ac25c052c12db934d424f787fcda6": {
+        "subject": "Fixed: qBittorrent /login API success check",
+        "month": "2025-10",
+        "disposition": "have",
+        "reason": "Already cherry-picked into eros-develop. Recorded explicitly because the high-water mark sits behind it."
+      },
+      "90cd8df1ae4985387ad1965d95a8bebad5c2bb10": {
+        "subject": "Add private IPv6 networks",
+        "month": "2025-11",
+        "disposition": "have",
+        "reason": "Already in src/NzbDrone.Host/Startup.cs via our own a2888696cc (2025-11-06), three days BEFORE upstream landed it. Ours uses KnownIPNetworks (the .NET 8 name) rather than upstream's KnownNetworks."
+      },
+      "005c870f692b9a2466c5f03e22014000728e4f4f": {
+        "subject": "bump to 6.1.0",
+        "month": "2025-11",
+        "disposition": "skip",
+        "reason": "Touches azure-pipelines.yml only. We do not have that file; we build on GitHub Actions and version independently."
+      },
+      "1b9662d58823ff02b7162282e84e4aed95db0126": {
+        "subject": "chore: updated build images",
+        "month": "2025-11",
+        "disposition": "skip",
+        "reason": "Touches azure-pipelines.yml only. Our runner images are set in .github/workflows/build_v3.yml and are ours to choose."
+      },
+      "949922b9a1873dc228c0693eea63af6f8c854f0d": {
+        "subject": "New: add TTL setting for pushover notifications",
+        "month": "2025-11",
+        "disposition": "have",
+        "reason": "Ttl field, validator, proxy form parameter and both en.json keys are all present, landed untrailed in a2bc0f1763 (January radarr upstream final)."
+      },
+      "b9c2563c9b94b127a296907ca2e0e069c01c2575": {
+        "subject": "Chore: Remove Readarr donation logo",
+        "month": "2025-11",
+        "disposition": "have",
+        "reason": "Donations.tsx entry and logo-readarr.png both already gone, removed in our 6b81695459 (November Radarr upstream 14)."
+      },
+      "b59ff0a3b131d842266b5958bc9977dc87e0220d": {
+        "subject": "Skip proxy tests on MacOsX",
+        "month": "2025-11",
+        "disposition": "have",
+        "reason": "[Platform(Exclude = \"MacOsX\")] already on HttpProxySettingsProviderFixture, landed untrailed in a2bc0f1763."
+      },
+      "e52547fa37431bdf0df7efc67086735cb51a4e0c": {
+        "subject": "chore: sync CONTRIBUTING.md from Servarr/wiki (#11207)",
+        "month": "2025-10",
+        "disposition": "have",
+        "reason": "Landed untrailed in a2bc0f1763 (CONTRIBUTING.md +183). Our heading structure is identical to Radarr develop's current CONTRIBUTING.md."
+      },
+      "24639a70164dff81cbef0ad79d9831ebfaf3a944": {
+        "subject": "Pin System.Drawing.Common to 8.0.20",
+        "month": "2025-10",
+        "disposition": "have",
+        "reason": "Whisparr.Core.csproj already pins System.Drawing.Common, at 10.0.11 - ahead of upstream's 8.0.20."
+      },
+      "1e72cc6b5a6d9e292795fa54d51274d561dcce29": {
+        "subject": "Bump to 6.0.3",
+        "month": "2025-10",
+        "disposition": "skip",
+        "reason": "Touches azure-pipelines.yml only. We do not have that file and version independently of Radarr."
+      },
+      "47d4ebbeac4a65ba24966c57a290c757890acc29": {
+        "subject": "Bump to 6.0.4",
+        "month": "2025-10",
+        "disposition": "skip",
+        "reason": "Touches azure-pipelines.yml only. We do not have that file and version independently of Radarr."
+      },
+      "955ee2f29b80a8ad92b74ca6fbb326ce4eba1159": {
+        "subject": "Switch to FluentMigrator.Runner.Core to avoid extranous platform runners",
+        "month": "2025-10",
+        "disposition": "have",
+        "reason": "Whisparr.Core.csproj already references FluentMigrator.Runner.Core, at 8.0.1 - ahead of upstream's 6.2.0."
+      },
+      "7d8444c435afe73c4e337079c901e378b18e0430": {
+        "subject": "Set known networks to RFC 1918 ranges during startup",
+        "month": "2025-10",
+        "disposition": "have",
+        "reason": "All three RFC 1918 ranges are in src/NzbDrone.Host/Startup.cs, added alongside the IPv6 ranges in our a2888696cc."
+      },
+      "ef9836d71d79cdefe949c276af4a7604b7e69278": {
+        "subject": "Fixed: Movie status on Wanted pages",
+        "month": "2025-10",
+        "disposition": "have",
+        "reason": "Landed untrailed in a2bc0f1763, then reshaped by our Redux migration: the page-level fetchMovieFiles/fetchQueueDetails prefetch is now per-row React Query in MovieStatus.tsx (useQueueItemForMovie, useSingleMovieFile, useMovie). Behaviour preserved; do not re-apply the Redux-era version."
+      },
+      "abf3fc45579f5635f82d05848ecc126e9596413b": {
+        "subject": "Remove redundant code in selecting with click on poster",
+        "month": "2025-10",
+        "disposition": "adapt",
+        "reason": "Upstream's restructure (handler moved into MovieIndexPosterSelect, overlay 36px->100%, linkProps dropped) is Redux-era Radarr shape we deliberately do not follow. Took only the URL fix it carries: our ctrl/cmd-click built '/movie/${foreignId}' with no url base and the wrong identifier, while the normal link uses titleSlug. Now '${window.Whisparr.urlBase}/movie/${titleSlug}'."
+      }
+    },
+    "sonarr": {}
+  }
+}
