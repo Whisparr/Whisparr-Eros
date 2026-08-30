@@ -28,7 +28,9 @@ namespace NzbDrone.Core.CustomFormats
 
         protected override bool IsSatisfiedByWithoutNegate(CustomFormatInput input)
         {
-            var year = input.MovieInfo?.Year ?? input.Movie?.MovieMetadata?.Value?.Year;
+            // ParsedMovieInfo.Year is non-nullable, so ?? never falls through; the synthesized
+            // infos built from a stored movie leave it at 0 rather than null.
+            var year = input.MovieInfo?.Year is > 0 ? input.MovieInfo.Year : input.Movie?.MovieMetadata?.Value?.Year;
 
             return year >= Min && year <= Max;
         }
