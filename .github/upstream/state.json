@@ -12,8 +12,8 @@
       "repo": "Sonarr/Sonarr",
       "branch": "v5-develop",
       "owns": "frontend",
-      "highWater": "f089df054fc2d60af1491626a833b3397ff6a986",
-      "highWaterNote": "2026-08-25 'Improve zip extraction'. Everything on Sonarr v5-develop at or before this point is dispositioned. The hostname validation and Trusted Networks pair immediately after it is under review in its own PR, so the mark stops here. Advance only when everything at or before the new mark is settled."
+      "highWater": "b84a621e991747360b63e074d06fc7d8b534ef63",
+      "highWaterNote": "2026-08-27 'New: Parsing file names with ambiguous episode numbering'. Everything on Sonarr v5-develop at or before this point is dispositioned. Advance only when everything at or before the new mark is settled."
     }
   },
   "dispositions": {
@@ -1003,6 +1003,24 @@
         "month": "2026-08",
         "disposition": "skip",
         "reason": "Parser gate. Disambiguates season/episode numbering in file paths, which our grammar has no concept of."
+      },
+      "1579a8bb7f89803d0850369f3ff7980d6edaf31d": {
+        "subject": "New: Add hostname validation",
+        "month": "2026-08",
+        "disposition": "adapt",
+        "reason": "Picked as the source for this pair rather than Radarr's re-spin. Adapted: our HealthCheck carries no reason enum yet (Radarr's 'Add reason to health check' is still queued for its own PR), so the check passes message and wiki fragment only, and the validators land on HostConfigController since we have a single API version."
+      },
+      "022f69e14bc333588bc775b9cab98f5e8f12df0c": {
+        "subject": "New: Add Trusted Networks setting",
+        "month": "2026-08",
+        "disposition": "adapt",
+        "reason": "Picked as the source for this pair rather than Radarr's re-spin. Adapted to our single API version and to settings fieldsets that take the whole settings object, so no prop threading. Behaviour change: forwarded headers are no longer trusted from every RFC 1918 range, only from loopback plus configured networks."
+      },
+      "85964fec18edfe11a898252303349f4ce81cd7c2": {
+        "subject": "Fix allowed hosts check check on config file changes",
+        "month": "2026-08",
+        "disposition": "pick",
+        "reason": "Allowed Hosts lives in the config file, so ConfigFileSavedEvent is the event that follows a change to it; ConfigSavedEvent left the check showing a stale result until the next scheduled run. Applies as-is."
       }
     }
   }
