@@ -12,8 +12,8 @@
       "repo": "Sonarr/Sonarr",
       "branch": "v5-develop",
       "owns": "frontend",
-      "highWater": "a4f210855e9a5457546a612a6fca57081d239433",
-      "highWaterNote": "2026-08-27 'New: Parsing file names with ambiguous episode numbering'. Everything on Sonarr v5-develop at or before this point is dispositioned. Advance only when everything at or before the new mark is settled."
+      "highWater": "37dfad11f26301c1d0dbfd944df1e4bdc0d44d89",
+      "highWaterNote": "2025-10-30 'Remove v3 updates from UI'. Everything on Sonarr v5-develop at or before this point is dispositioned. Deliberately stops one short of the end of 2025-10: 550cf8d39 'New: Option to specify timezone for formatting times in the UI' is a feature decision being taken as its own PR, so it stays outstanding rather than being recorded as settled. Advance only when everything at or before the new mark is settled."
     }
   },
   "dispositions": {
@@ -1021,6 +1021,90 @@
         "month": "2026-08",
         "disposition": "pick",
         "reason": "Allowed Hosts lives in the config file, so ConfigFileSavedEvent is the event that follows a change to it; ConfigSavedEvent left the check showing a stale result until the next scheduled run. Applies as-is."
+      },
+      "ca364724cfcf5d22604dd32556e3415ff1fbe566": {
+        "subject": "Automated API Docs update",
+        "month": "2025-10",
+        "disposition": "skip",
+        "reason": "Regenerated openapi.json only. We retired the checked-in spec and the workflow that produced it, so there is no counterpart file here."
+      },
+      "74ce132556557897ef35f4d7cc73dacdb96c36d8": {
+        "subject": "Add v5 History endpoints",
+        "month": "2025-10",
+        "disposition": "skip",
+        "reason": "Adds src/Sonarr.Api.V5/History. Sonarr is building a v5 API surface alongside v3; we only have Whisparr.Api.V3, so there is nothing here to add these to."
+      },
+      "a45b077625e7c20a2421bb61822e3b21805817cb": {
+        "subject": "Use react-query for History UI",
+        "month": "2025-10",
+        "disposition": "have",
+        "reason": "We already ran this migration: frontend/src/Activity/History has historyOptionsStore.ts and useHistory.ts, and the redux historyActions.js this deletes never existed here - there is no frontend/src/Store at all."
+      },
+      "b04b9f900fc72c68df8dafd8980e0db5fcba0e1b": {
+        "subject": "New: Add button to close side bar",
+        "month": "2025-10",
+        "disposition": "adapt",
+        "reason": "Ported. Ours drives visibility through the zustand appStore rather than a redux dispatch, and the logo is logo.png under window.Whisparr, so the small-screen sidebar header was rewritten rather than cherry-picked. Also drops the scroll-tracked sidebar positioning, as upstream did."
+      },
+      "813d7df643fb1b47221201e27a8b8039a4deaaf8": {
+        "subject": "Fixed: Notifications when episode is not available",
+        "month": "2025-10",
+        "disposition": "skip",
+        "reason": "Guards episodes.First() against an empty episode list in the Series/Episode notification builders. Our NotificationService.GetMessage takes a single Movie and no collection, and there is no .First() on an item collection anywhere under Notifications, so the crash path does not exist here."
+      },
+      "5568746ef817b0e09bd30e32e192a574294eb09c": {
+        "subject": "Fixed: Validation for SSL certificate file existence",
+        "month": "2025-10",
+        "disposition": "have",
+        "reason": "Upstream's FileExistsValidator was still the FluentValidation 9 non-generic PropertyValidator, and this migrates its use to construct one with an IDiskProvider. Ours is already the generic FileExistsValidator<T> : PropertyValidator<T, string>, injected and working. We also have no SslKeyPath setting, so that half does not apply."
+      },
+      "79b56c3ff60e2e56e9d9b57a953764d7ef6cdac0": {
+        "subject": "Pin System.Drawing.Common to 8.0.20",
+        "month": "2025-10",
+        "disposition": "have",
+        "reason": "We already pin System.Drawing.Common in Whisparr.Core.csproj, at 10.0.11 - ahead of the 8.0.20 this pins to."
+      },
+      "a1db23353c89c1a20ddb3b39f3b3817583a42616": {
+        "subject": "Fix Queue v5 API resource mapping when no episodes present",
+        "month": "2025-10",
+        "disposition": "skip",
+        "reason": "Fixes src/Sonarr.Api.V5/Queue/QueueResource.cs. We have no Api.V5 project, so there is no resource here to fix."
+      },
+      "52d7f676274df312db7120474119132928690766": {
+        "subject": "Switch to FluentMigrator.Runner.Core to avoid extranous platform runners",
+        "month": "2025-10",
+        "disposition": "have",
+        "reason": "Whisparr.Core.csproj already references FluentMigrator.Runner.Core 8.0.1 alongside the SQLite and Postgres runners, which is what this switches to."
+      },
+      "5a3f41263aa066f64ababcf73756fbf077a54fb3": {
+        "subject": "Fixed: qBittorrent /login API success check",
+        "month": "2025-10",
+        "disposition": "have",
+        "reason": "QBittorrentProxyV2 already has both halves: the catch logs the exception and treats Unauthorized or Forbidden as an auth failure, and the content check is guarded with IsNotNullOrWhiteSpace() so an empty body from older qbit builds is not read as a failed login."
+      },
+      "4fb89252b527b1a34cc0e1133a2acb765360fa13": {
+        "subject": "New: Parse multilang and multilanguage as multi",
+        "month": "2025-10",
+        "disposition": "adapt",
+        "reason": "Same gap, different home: our MultiRegex lives in Indexers/IndexerBase.cs, not under Parser/, and uses \\b word boundaries where upstream used an explicit delimiter class. Widened the alternation to multilanguage|multilang|multi and kept our boundaries, so titles like 'MultiSub' and 'Multiple.Angles' still do not match. Covered by new cases in IndexerBaseFixture, which failed before the change."
+      },
+      "fce8e780cb7567fed9a47c3bbb2dc510f1a461e6": {
+        "subject": "Add v5 log files endpoints",
+        "month": "2025-10",
+        "disposition": "skip",
+        "reason": "Adds src/Sonarr.Api.V5/Logs. Same reason as the other v5 endpoint commits: we have no Api.V5 project."
+      },
+      "ff5e73273b02f90be9ee03307cd6909e8b5fb8bd": {
+        "subject": "Use react-query for Log Files",
+        "month": "2025-10",
+        "disposition": "have",
+        "reason": "We already have frontend/src/System/Logs/useLogFiles.ts and the redux systemActions.js this strips from never existed here."
+      },
+      "37dfad11f26301c1d0dbfd944df1e4bdc0d44d89": {
+        "subject": "Remove v3 updates from UI",
+        "month": "2025-10",
+        "disposition": "have",
+        "reason": "Drops the redux fetchUpdates dispatch in favour of react-query refetch. Our AppUpdatedModalContent already uses useUpdates() with refetch and useAppValues, with no redux anywhere in the tree."
       }
     }
   }

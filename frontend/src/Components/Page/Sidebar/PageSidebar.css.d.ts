@@ -1,7 +1,12 @@
 declare namespace PageSidebarCssNamespace {
   export interface IPageSidebarCss {
+    logo: string;
+    logoContainer: string;
+    logoLink: string;
     sidebar: string;
+    sidebarCloseButton: string;
     sidebarContainer: string;
+    sidebarHeader: string;
   }
 }
 
