@@ -39,11 +39,23 @@ public class IndexerBaseFixture : CoreTest<IndexerBase<TestIndexerSettings>>
     }
 
     [TestCase("The.Movie.Name.2016.Multi.DTS.720p.BluRay.x264-RlsGrp")]
+    [TestCase("The.Movie.Name.2016.MultiLang.DTS.720p.BluRay.x264-RlsGrp")]
+    [TestCase("The.Movie.Name.2016.MULTILANGUAGE.DTS.720p.BluRay.x264-RlsGrp")]
+    [TestCase("The Movie Name (2016) [1080p H265 EAC3 MultiLang MultiSub][RlsGrp]")]
+    [TestCase("Studio.Name.16.01.15.Performer.Name.MULTILANG.1080p.MP4-RlsGrp")]
     public void should_parse_multi_language(string postTitle)
     {
         var result = _indexer.CleanupReleases(new ReleaseInfo[] { new () { Title = postTitle, Languages = new List<Language>() } });
         result.Single().Languages.Count.Should().Be(2);
         result.Single().Languages.Should().Contain(Language.German);
         result.Single().Languages.Should().Contain(Language.English);
+    }
+
+    [TestCase("The.Movie.Name.2016.MultiSub.DTS.720p.BluRay.x264-RlsGrp")]
+    [TestCase("Studio.Name.16.01.15.Performer.Name.Multiple.Angles.1080p.MP4-RlsGrp")]
+    public void should_not_parse_multi_language_when_multi_is_part_of_another_word(string postTitle)
+    {
+        var result = _indexer.CleanupReleases(new ReleaseInfo[] { new () { Title = postTitle, Languages = new List<Language>() } });
+        result.Single().Languages.Should().BeEmpty();
     }
 }
