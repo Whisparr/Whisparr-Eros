@@ -1,15 +1,9 @@
-import { useMutation } from '@tanstack/react-query';
 import { queryClient } from 'App/queryClient';
 import useApiMutation from 'Helpers/Hooks/useApiMutation';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import fetchJson from 'Utilities/Fetch/fetchJson';
 import getQueryPath from 'Utilities/Fetch/getQueryPath';
 import Performer from './Performer';
-
-const AUTH_HEADERS = {
-  'X-Api-Key': globalThis.Whisparr.apiKey,
-  'X-Whisparr-Client': 'Whisparr',
-};
 
 export function usePerformer(foreignId: string | undefined) {
   return useApiQuery<Performer>({
@@ -28,19 +22,22 @@ export function useSavePerformer() {
   });
 }
 
+interface TogglePerformerInput {
+  performerId: number;
+  foreignId: string;
+  monitored: boolean;
+  moviesMonitored: boolean;
+}
+
+// `PUT /performer/{id}` takes the whole performer, but callers only hold the two
+// monitored fields -- read-modify-write against the cached entity. The cache is
+// cold when `usePerformer` was never mounted for this foreign id (movie credit
+// posters), so fall back to a plain read over the same path it would take.
 export function useTogglePerformerMonitored() {
-  return useMutation({
-    mutationFn: async ({
-      performerId,
-      foreignId,
-      monitored,
-      moviesMonitored,
-    }: {
-      performerId: number;
-      foreignId: string;
-      monitored: boolean;
-      moviesMonitored: boolean;
-    }) => {
+  return useApiMutation<Performer, TogglePerformerInput, Performer>({
+    method: 'PUT',
+    path: ({ performerId }) => `/performer/${performerId}`,
+    body: async ({ foreignId, monitored, moviesMonitored }) => {
       const performerPath = `/performer/${foreignId}`;
       // Fetch from cache first; falls back to network if not cached
       const performer = await queryClient.fetchQuery<Performer>({
@@ -48,26 +45,26 @@ export function useTogglePerformerMonitored() {
         queryFn: () =>
           fetchJson<Performer, undefined>({
             path: getQueryPath(performerPath),
-            headers: AUTH_HEADERS,
+            headers: {
+              'X-Api-Key': window.Whisparr.apiKey,
+              'X-Whisparr-Client': 'Whisparr',
+            },
           }),
       });
-      return fetchJson<Performer, Performer>({
-        path: getQueryPath(`/performer/${performerId}`),
-        method: 'PUT',
-        body: { ...performer, monitored, moviesMonitored },
-        headers: AUTH_HEADERS,
-      });
+      return { ...performer, monitored, moviesMonitored };
     },
-    onSuccess: (data) => {
-      if (data?.foreignId) {
-        queryClient.setQueryData(
-          [`/performer/${data.foreignId}`],
-          (old: Performer) => (old ? { ...old, ...data } : data)
-        );
+    mutationOptions: {
+      onSuccess: (data) => {
+        if (data?.foreignId) {
+          queryClient.setQueryData(
+            [`/performer/${data.foreignId}`],
+            (old: Performer) => (old ? { ...old, ...data } : data)
+          );
 
-        // Invalidate credit to handle the toggle on MovieDetails posters
-        queryClient.invalidateQueries({ queryKey: ['/credit'] });
-      }
+          // Invalidate credit to handle the toggle on MovieDetails posters
+          queryClient.invalidateQueries({ queryKey: ['/credit'] });
+        }
+      },
     },
   });
 }

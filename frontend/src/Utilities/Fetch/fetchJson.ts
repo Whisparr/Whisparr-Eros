@@ -51,9 +51,21 @@ async function fetchJson<T, TData>({
     }, timeout);
   }
 
+  // Binary bodies (FormData, Blob) pass through untouched so a multipart upload
+  // keeps the boundary only the browser can set. Everything else is JSON-encoded
+  // and gets a matching content type below.
+  const isBinaryBody = body instanceof FormData || body instanceof Blob;
+
+  let requestBody: BodyInit | undefined = undefined;
+  if (body) {
+    requestBody = isBinaryBody
+      ? (body as unknown as BodyInit)
+      : JSON.stringify(body);
+  }
+
   const response = await fetch(path, {
     ...options,
-    body: body ? JSON.stringify(body) : undefined,
+    body: requestBody,
     headers: {
       ...options.headers,
       Accept: 'application/json',
@@ -61,8 +73,9 @@ async function fetchJson<T, TData>({
       // application/json` is not a CORS-safelisted request header, so setting
       // it unconditionally makes every cross-origin GET preflight -- which the
       // OAuth intermediate request to plex.tv is. Same-origin calls never
-      // noticed, and a body-less request has no content type to declare.
-      ...(body ? { 'Content-Type': 'application/json' } : {}),
+      // noticed, and a body-less request has no content type to declare. A
+      // binary body carries its own (browser-set) multipart content type.
+      ...(body && !isBinaryBody ? { 'Content-Type': 'application/json' } : {}),
     },
     signal: anySignal(abortController.signal, signal),
   });

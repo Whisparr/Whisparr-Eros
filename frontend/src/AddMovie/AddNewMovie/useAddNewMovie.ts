@@ -1,4 +1,3 @@
-import { useMutation } from '@tanstack/react-query';
 import React, {
   useCallback,
   useEffect,
@@ -11,6 +10,7 @@ import { useAppDimension, useAppDimensions } from 'App/appStore';
 import { queryClient } from 'App/queryClient';
 import { useSafeForWorkMode } from 'App/safeForWorkStore';
 import { ValidationMessage } from 'Components/Form/FormInputGroup';
+import useApiMutation from 'Helpers/Hooks/useApiMutation';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import selectSettings from 'Helpers/selectSettings';
 import { MovieStats } from 'Movie/Index/useMovieStats';
@@ -20,8 +20,6 @@ import { useSystemStatusData } from 'System/Status/useSystemStatus';
 import { InputChanged } from 'typings/inputs';
 import MovieCredit from 'typings/MovieCredit';
 import { ValidationError, ValidationWarning } from 'typings/pending';
-import fetchJson, { ApiError } from 'Utilities/Fetch/fetchJson';
-import getQueryPath from 'Utilities/Fetch/getQueryPath';
 import getNewMovie from 'Utilities/Movie/getNewMovie';
 import parseUrl from 'Utilities/String/parseUrl';
 import {
@@ -80,20 +78,6 @@ interface AddMovieSettings {
   qualityProfileId: SettingValue<number>;
   searchForMovie: SettingValue<boolean>;
   tags: SettingValue<number[]>;
-}
-
-const AUTH_HEADERS = {
-  'X-Api-Key': window.Whisparr.apiKey,
-  'X-Whisparr-Client': 'Whisparr',
-};
-
-function apiPost<T, TBody>(path: string, body: TBody): Promise<T> {
-  return fetchJson<T, TBody>({
-    path: getQueryPath(path),
-    method: 'POST',
-    body,
-    headers: AUTH_HEADERS,
-  });
 }
 
 // Hook for the AddNewMovie and AddNewScene pages
@@ -193,15 +177,16 @@ export function useAddMovieMutation(
 
   const defaults = useAddMovieDefaults();
 
-  const mutation = useMutation<Movie, ApiError, MovieLookupResult>({
-    mutationFn: (movieToAdd: MovieLookupResult) => {
-      return apiPost<Movie, MovieLookupResult>('/movie', movieToAdd);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/movie/paged'] });
-      queryClient.invalidateQueries({ queryKey: ['/movie/stats'] });
-      queryClient.invalidateQueries({ queryKey: ['/movie/lookup'] });
-      onSuccess?.();
+  const mutation = useApiMutation<Movie, MovieLookupResult>({
+    method: 'POST',
+    path: '/movie',
+    mutationOptions: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['/movie/paged'] });
+        queryClient.invalidateQueries({ queryKey: ['/movie/stats'] });
+        queryClient.invalidateQueries({ queryKey: ['/movie/lookup'] });
+        onSuccess?.();
+      },
     },
   });
 

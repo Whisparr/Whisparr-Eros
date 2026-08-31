@@ -12,12 +12,16 @@ import fetchJson, {
 import getQueryPath from 'Utilities/Fetch/getQueryPath';
 import getQueryString, { QueryParams } from 'Utilities/Fetch/getQueryString';
 
-interface MutationOptions<T, TData> extends Omit<
-  FetchJsonOptions<TData>,
-  'method' | 'path'
+interface MutationOptions<T, TData, TBody = TData> extends Omit<
+  FetchJsonOptions<TBody>,
+  'method' | 'path' | 'body'
 > {
   method: 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   path: string | ((data: TData) => string);
+  // Derives the request body from the mutate() argument. For read-modify-
+  // writes where the caller only holds a partial payload (a monitored flag,
+  // say) and the full entity is loaded from cache before a whole-record PUT.
+  body?: (data: TData) => TBody | Promise<TBody>;
   mutationOptions?: Omit<UseMutationOptions<T, ApiError, TData>, 'mutationFn'>;
   // A function form is for query params the caller can only decide per-call,
   // such as the provider `forceSave` flag, which depends on whether this is a
@@ -25,17 +29,26 @@ interface MutationOptions<T, TData> extends Omit<
   queryParams?: QueryParams | ((data: TData) => QueryParams);
 }
 
-function useApiMutation<T, TData>(options: MutationOptions<T, TData>) {
+function useApiMutation<T, TData, TBody = TData>(
+  options: MutationOptions<T, TData, TBody>
+) {
   return useMutation<T, ApiError, TData>({
     ...options.mutationOptions,
     mutationFn: async (data: TData) => {
-      const { path, queryParams, mutationOptions, ...otherOptions } = options;
+      const { path, queryParams, body, mutationOptions, ...otherOptions } =
+        options;
       const resolvedPath = typeof path === 'function' ? path(data) : path;
 
       const resolvedQueryParams =
         typeof queryParams === 'function' ? queryParams(data) : queryParams;
 
-      return fetchJson<T, TData>({
+      // Without a body function the mutate() argument is the request body --
+      // `TBody` defaults to `TData`, so widening through `unknown` is safe.
+      const resolvedBody: TBody = body
+        ? await body(data)
+        : (data as unknown as TBody);
+
+      return fetchJson<T, TBody>({
         ...otherOptions,
         path: getQueryPath(resolvedPath) + getQueryString(resolvedQueryParams),
         headers: {
@@ -43,7 +56,7 @@ function useApiMutation<T, TData>(options: MutationOptions<T, TData>) {
           'X-Api-Key': window.Whisparr.apiKey,
           'X-Whisparr-Client': 'Whisparr',
         },
-        body: data,
+        body: resolvedBody,
       });
     },
   });
