@@ -26,15 +26,15 @@ Owns: **backend**. High-water mark: `68b93db78c`.
 
 ## sonarr — Sonarr/Sonarr `v5-develop`
 
-<!-- outstanding: 486 -->
+<!-- outstanding: 472 -->
 
-Owns: **frontend**. High-water mark: `a4f210855e`.
+Owns: **frontend**. High-water mark: `37dfad11f2`.
 
-**486 outstanding.**
+**472 outstanding.**
 
 | Month | Total | be | fe | be+fe | chore |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| 2025-10 | 15 | 10 | 4 | 1 | 0 |
+| 2025-10 | 1 | 0 | 0 | 1 | 0 |
 | 2025-11 | 73 | 46 | 21 | 6 | 0 |
 | 2025-12 | 74 | 46 | 19 | 7 | 2 |
 | 2026-01 | 62 | 37 | 15 | 10 | 0 |
@@ -47,20 +47,6 @@ Owns: **frontend**. High-water mark: `a4f210855e`.
 
 ### 2025-10
 
-- `be   ` [`ca364724c`](https://github.com/Sonarr/Sonarr/commit/ca364724cfcf5d22604dd32556e3415ff1fbe566) Automated API Docs update — *Sonarr*
-- `be   ` [`74ce13255`](https://github.com/Sonarr/Sonarr/commit/74ce132556557897ef35f4d7cc73dacdb96c36d8) Add v5 History endpoints — *Mark McDowall*
-- `fe   ` [`a45b07762`](https://github.com/Sonarr/Sonarr/commit/a45b077625e7c20a2421bb61822e3b21805817cb) Use react-query for History UI — *Mark McDowall*
-- `fe   ` [`b04b9f900`](https://github.com/Sonarr/Sonarr/commit/b04b9f900fc72c68df8dafd8980e0db5fcba0e1b) New: Add button to close side bar — *Mark McDowall*
-- `be   ` [`813d7df64`](https://github.com/Sonarr/Sonarr/commit/813d7df643fb1b47221201e27a8b8039a4deaaf8) Fixed: Notifications when episode is not available — *Stevie Robinson*
-- `be   ` [`5568746ef`](https://github.com/Sonarr/Sonarr/commit/5568746ef817b0e09bd30e32e192a574294eb09c) Fixed: Validation for SSL certificate file existence — *Bogdan*
-- `be   ` [`79b56c3ff`](https://github.com/Sonarr/Sonarr/commit/79b56c3ff60e2e56e9d9b57a953764d7ef6cdac0) Pin System.Drawing.Common to 8.0.20 — *Bogdan*
-- `be   ` [`a1db23353`](https://github.com/Sonarr/Sonarr/commit/a1db23353c89c1a20ddb3b39f3b3817583a42616) Fix Queue v5 API resource mapping when no episodes present — *Stevie Robinson*
-- `be   ` [`52d7f6762`](https://github.com/Sonarr/Sonarr/commit/52d7f676274df312db7120474119132928690766) Switch to FluentMigrator.Runner.Core to avoid extranous platform runners — *Bogdan*
-- `be   ` [`5a3f41263`](https://github.com/Sonarr/Sonarr/commit/5a3f41263aa066f64ababcf73756fbf077a54fb3) Fixed: qBittorrent /login API success check — *Polgonite*
-- `be   ` [`4fb89252b`](https://github.com/Sonarr/Sonarr/commit/4fb89252b527b1a34cc0e1133a2acb765360fa13) New: Parse multilang and multilanguage as multi — *Stevie Robinson*
-- `be   ` [`fce8e780c`](https://github.com/Sonarr/Sonarr/commit/fce8e780cb7567fed9a47c3bbb2dc510f1a461e6) Add v5 log files endpoints — *Mark McDowall*
-- `fe   ` [`ff5e73273`](https://github.com/Sonarr/Sonarr/commit/ff5e73273b02f90be9ee03307cd6909e8b5fb8bd) Use react-query for Log Files — *Mark McDowall*
-- `fe   ` [`37dfad11f`](https://github.com/Sonarr/Sonarr/commit/37dfad11f26301c1d0dbfd944df1e4bdc0d44d89) Remove v3 updates from UI — *Mark McDowall*
 - `be+fe` [`550cf8d39`](https://github.com/Sonarr/Sonarr/commit/550cf8d39963f30da7273b884c6007ce9da9cdf0) New: Option to specify timezone for formatting times in the UI — *Audionut*
 
 ### 2025-11
@@ -678,6 +664,20 @@ Commits reviewed and dispositioned. Skips carry their reason.
 
 | Commit | Subject | Disposition | Reason |
 | --- | --- | --- | --- |
+| [`ca364724c`](https://github.com/Sonarr/Sonarr/commit/ca364724cfcf5d22604dd32556e3415ff1fbe566) | Automated API Docs update | `skip` | Regenerated openapi.json only. We retired the checked-in spec and the workflow that produced it, so there is no counterpart file here. |
+| [`74ce13255`](https://github.com/Sonarr/Sonarr/commit/74ce132556557897ef35f4d7cc73dacdb96c36d8) | Add v5 History endpoints | `skip` | Adds src/Sonarr.Api.V5/History. Sonarr is building a v5 API surface alongside v3; we only have Whisparr.Api.V3, so there is nothing here to add these to. |
+| [`a45b07762`](https://github.com/Sonarr/Sonarr/commit/a45b077625e7c20a2421bb61822e3b21805817cb) | Use react-query for History UI | `have` | We already ran this migration: frontend/src/Activity/History has historyOptionsStore.ts and useHistory.ts, and the redux historyActions.js this deletes never existed here - there is no frontend/src/Store at all. |
+| [`b04b9f900`](https://github.com/Sonarr/Sonarr/commit/b04b9f900fc72c68df8dafd8980e0db5fcba0e1b) | New: Add button to close side bar | `adapt` | Ported. Ours drives visibility through the zustand appStore rather than a redux dispatch, and the logo is logo.png under window.Whisparr, so the small-screen sidebar header was rewritten rather than cherry-picked. Also drops the scroll-tracked sidebar positioning, as upstream did. |
+| [`813d7df64`](https://github.com/Sonarr/Sonarr/commit/813d7df643fb1b47221201e27a8b8039a4deaaf8) | Fixed: Notifications when episode is not available | `skip` | Guards episodes.First() against an empty episode list in the Series/Episode notification builders. Our NotificationService.GetMessage takes a single Movie and no collection, and there is no .First() on an item collection anywhere under Notifications, so the crash path does not exist here. |
+| [`5568746ef`](https://github.com/Sonarr/Sonarr/commit/5568746ef817b0e09bd30e32e192a574294eb09c) | Fixed: Validation for SSL certificate file existence | `have` | Upstream's FileExistsValidator was still the FluentValidation 9 non-generic PropertyValidator, and this migrates its use to construct one with an IDiskProvider. Ours is already the generic FileExistsValidator<T> : PropertyValidator<T, string>, injected and working. We also have no SslKeyPath setting, so that half does not apply. |
+| [`79b56c3ff`](https://github.com/Sonarr/Sonarr/commit/79b56c3ff60e2e56e9d9b57a953764d7ef6cdac0) | Pin System.Drawing.Common to 8.0.20 | `have` | We already pin System.Drawing.Common in Whisparr.Core.csproj, at 10.0.11 - ahead of the 8.0.20 this pins to. |
+| [`a1db23353`](https://github.com/Sonarr/Sonarr/commit/a1db23353c89c1a20ddb3b39f3b3817583a42616) | Fix Queue v5 API resource mapping when no episodes present | `skip` | Fixes src/Sonarr.Api.V5/Queue/QueueResource.cs. We have no Api.V5 project, so there is no resource here to fix. |
+| [`52d7f6762`](https://github.com/Sonarr/Sonarr/commit/52d7f676274df312db7120474119132928690766) | Switch to FluentMigrator.Runner.Core to avoid extranous platform runners | `have` | Whisparr.Core.csproj already references FluentMigrator.Runner.Core 8.0.1 alongside the SQLite and Postgres runners, which is what this switches to. |
+| [`5a3f41263`](https://github.com/Sonarr/Sonarr/commit/5a3f41263aa066f64ababcf73756fbf077a54fb3) | Fixed: qBittorrent /login API success check | `have` | QBittorrentProxyV2 already has both halves: the catch logs the exception and treats Unauthorized or Forbidden as an auth failure, and the content check is guarded with IsNotNullOrWhiteSpace() so an empty body from older qbit builds is not read as a failed login. |
+| [`4fb89252b`](https://github.com/Sonarr/Sonarr/commit/4fb89252b527b1a34cc0e1133a2acb765360fa13) | New: Parse multilang and multilanguage as multi | `adapt` | Same gap, different home: our MultiRegex lives in Indexers/IndexerBase.cs, not under Parser/, and uses \b word boundaries where upstream used an explicit delimiter class. Widened the alternation to multilanguage|multilang|multi and kept our boundaries, so titles like 'MultiSub' and 'Multiple.Angles' still do not match. Covered by new cases in IndexerBaseFixture, which failed before the change. |
+| [`fce8e780c`](https://github.com/Sonarr/Sonarr/commit/fce8e780cb7567fed9a47c3bbb2dc510f1a461e6) | Add v5 log files endpoints | `skip` | Adds src/Sonarr.Api.V5/Logs. Same reason as the other v5 endpoint commits: we have no Api.V5 project. |
+| [`ff5e73273`](https://github.com/Sonarr/Sonarr/commit/ff5e73273b02f90be9ee03307cd6909e8b5fb8bd) | Use react-query for Log Files | `have` | We already have frontend/src/System/Logs/useLogFiles.ts and the redux systemActions.js this strips from never existed here. |
+| [`37dfad11f`](https://github.com/Sonarr/Sonarr/commit/37dfad11f26301c1d0dbfd944df1e4bdc0d44d89) | Remove v3 updates from UI | `have` | Drops the redux fetchUpdates dispatch in favour of react-query refetch. Our AppUpdatedModalContent already uses useUpdates() with refetch and useAppValues, with no redux anywhere in the tree. |
 | [`2fbeff438`](https://github.com/Sonarr/Sonarr/commit/2fbeff4383af3ced58aac72d2470b90572a27da0) | Multiple Translations updated by Weblate | `skip` | Weblate commit. Our translations come from Weblate directly, never from cherry-picks. |
 | [`8112b536a`](https://github.com/Sonarr/Sonarr/commit/8112b536a23b16c27900aca05437b5ff9661b5e9) | Improve accessibility of series status indicators | `adapt` | Applied to MovieStatusCell and SceneStatusCell, our equivalents of SeriesStatusCell. Also brought in Components/StatusIndicator, which upstream added in 71d9a5d57 (2026-07-12, behind our high-water mark) and we never ported. Verified on 6969: all 40 status icons on the movie table now carry announced text. |
 | [`650a452bf`](https://github.com/Sonarr/Sonarr/commit/650a452bf0aa7a1f93aec5a1528c8e08d19b29cf) | New: Sorting Blocklist, History and Queue by Quality | `skip` | Deferred to its own PR by decision on 2026-08-30, not skipped on merit. 21 files: a QualityProfileQualityRank table, repository and service, a DB migration (233 there, 242 here) and rank joins added to the Blocklist, History and Episode repositories. A schema change belongs in its own review, not in a 15-commit sync chunk. |
