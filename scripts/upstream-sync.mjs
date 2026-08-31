@@ -51,6 +51,35 @@ async function gh(path) {
   return res.json();
 }
 
+// GitHub caps /compare at 250 commits per response and reports the true
+// figure in `total_commits`, so reading `commits` from a single call silently
+// truncates any window wider than that - which is exactly how ten months of
+// Sonarr stayed invisible. Walk every page and assert the count, so a future
+// cap fails loudly instead of rendering a short list as a complete one.
+async function compare(repo, base, head) {
+  const commits = [];
+  let total = 0;
+
+  for (let page = 1; ; page += 1) {
+    const cmp = await gh(`/repos/${repo}/compare/${base}...${head}?per_page=100&page=${page}`);
+
+    total = cmp.total_commits;
+    commits.push(...cmp.commits);
+
+    if (cmp.commits.length === 0 || commits.length >= total) {
+      break;
+    }
+  }
+
+  if (commits.length !== total) {
+    throw new Error(
+      `compare ${repo} ${base}...${head} returned ${commits.length} of ${total} commits`
+    );
+  }
+
+  return commits;
+}
+
 // Which tree a commit touches, using the same rule the skew report used.
 function area(files) {
   const kinds = new Set(
@@ -78,12 +107,12 @@ function area(files) {
 // recorded yet. Anything already picked, adapted, skipped or held is settled.
 async function backlog(name, upstream, dispositions, ref) {
   const { repo, branch, highWater } = upstream;
-  const cmp = await gh(`/repos/${repo}/compare/${highWater}...${ref ?? branch}`);
+  const commits = await compare(repo, highWater, ref ?? branch);
 
   const settled = dispositions[name] ?? {};
   const out = [];
 
-  for (const c of cmp.commits) {
+  for (const c of commits) {
     if (settled[c.sha]) {
       continue;
     }
@@ -120,7 +149,7 @@ function byMonth(commits) {
   return [...months.entries()].sort(([a], [b]) => a.localeCompare(b));
 }
 
-function renderUpstream(name, upstream, commits) {
+function renderUpstream(name, upstream, commits, { detailMonths = Infinity } = {}) {
   const lines = [];
   const label = `${upstream.repo} \`${upstream.branch}\``;
 
@@ -153,9 +182,18 @@ function renderUpstream(name, upstream, commits) {
 
   lines.push('');
 
-  for (const [month, cs] of byMonth(commits)) {
+  byMonth(commits).forEach(([month, cs], i) => {
     lines.push(`### ${month}`);
     lines.push('');
+
+    // Past the detail budget the month is summarised, not listed. The table
+    // above still carries its counts, and UPSTREAM_SYNC.md still carries every
+    // commit, so nothing is lost - it just does not have to fit in one issue.
+    if (i >= detailMonths) {
+      lines.push(`${cs.length} outstanding. Listed in \`UPSTREAM_SYNC.md\`; work the oldest month first.`);
+      lines.push('');
+      return;
+    }
 
     for (const c of cs) {
       const url = `https://github.com/${upstream.repo}/commit/${c.sha}`;
@@ -165,7 +203,7 @@ function renderUpstream(name, upstream, commits) {
     }
 
     lines.push('');
-  }
+  });
 
   return lines.join('\n');
 }
@@ -396,6 +434,29 @@ function renderAttempt(result) {
   return lines.join('\n');
 }
 
+// GitHub rejects an issue body over 65536 characters. A backlog this wide
+// blows past that on the commit list alone, and the workflow prepends a few
+// lines of its own, so compose against a budget and spell out only the month
+// actually being worked.
+const ISSUE_BUDGET = 60000;
+
+function renderIssue(name, upstream, commits, leftovers = '') {
+  const body = [renderUpstream(name, upstream, commits, { detailMonths: 1 }), '', leftovers]
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trimEnd();
+
+  if (body.length <= ISSUE_BUDGET) {
+    return body;
+  }
+
+  const note =
+    '\n\n> Truncated to fit one issue body. `UPSTREAM_SYNC.md` carries the full backlog.';
+  const kept = body.slice(0, ISSUE_BUDGET - note.length);
+
+  return kept.slice(0, kept.lastIndexOf('\n')) + note;
+}
+
 function renderLeftovers(result) {
   const { upstream, gated, conflicted } = result;
   const lines = [];
@@ -519,7 +580,7 @@ if (mode === '--check') {
   }
 
   const commits = await backlog(name, upstream, state.dispositions);
-  console.log(renderUpstream(name, upstream, commits));
+  console.log(renderIssue(name, upstream, commits));
 } else if (mode === '--attempt') {
   const name = args[args.indexOf('--upstream') + 1];
   const upstream = state.upstreams[name];
@@ -534,9 +595,7 @@ if (mode === '--check') {
   writeFileSync(join(ROOT, 'pr-body.md'), renderAttempt(result));
   writeFileSync(
     join(ROOT, 'issue-body.md'),
-    [renderUpstream(name, upstream, result.commits), '', renderLeftovers(result)]
-      .join('\n')
-      .replace(/\n{3,}/g, '\n\n')
+    renderIssue(name, upstream, result.commits, renderLeftovers(result))
   );
 
   // The workflow branches on these; keep it to one line of JSON on stdout so
