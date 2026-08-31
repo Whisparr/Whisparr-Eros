@@ -172,6 +172,21 @@ dispositioned.** A pointer that jumps ahead of unreviewed commits hides them —
 that is how a stray October pick concealed seven earlier commits until the
 report was rebuilt.
 
+**If any commit carries a cherry-pick trailer, say so in the handoff and ask for
+a merge commit rather than a squash.** This repo squashes by default, and its
+`squash_merge_commit_message` is `BLANK` — a squash keeps only the PR title and
+discards every commit body, trailers included. #586 squashed to the single line
+`Chore: Sync Sonarr 2025-10 (#586)` and both `sonarr/sonarr@` trailers left the
+history with it. `state.json` still held the dispositions, so the knowledge
+survived, but a trailer grep now reports those picks as absent — the same
+blindness that hid the Sonarr backlog to begin with.
+
+Check before handing over, and mention the count if it hits:
+
+```sh
+git log eros-develop..HEAD --format=%b | grep -c 'cherry picked from'
+```
+
 Open the PR against `eros-develop` (never `eros`) filling in
 `.github/PULL_REQUEST_TEMPLATE.md` — `gh pr create --body` silently bypasses it,
 so pass `--body-file` with the template filled in. Keep the body short: what was
