@@ -6,13 +6,13 @@
       "branch": "develop",
       "owns": "backend",
       "highWater": "68b93db78cb7a648d61a486d94eae703242e1e36",
-      "highWaterNote": "2026-08-27 'Fixed: Importing single files from Freebox'. Everything on Radarr develop from 2025-10-01 through this point is dispositioned. Advance only when everything at or before the new mark is settled."
+      "highWaterNote": "2025-10-02 'Use react-query for Blocklist UI'. Rolled back here from b84a621e99 on 2026-08-31: the old mark was seeded at the 2026-08 tip, so ten months of v5-develop were never walked and 486 commits sat outside the window - not skipped on the merits, invisible by construction. This matches the Radarr baseline (its own walk starts 2025-10-04), which is as far back as we claim to have reviewed. Advance only when everything at or before the new mark is settled."
     },
     "sonarr": {
       "repo": "Sonarr/Sonarr",
       "branch": "v5-develop",
       "owns": "frontend",
-      "highWater": "b84a621e991747360b63e074d06fc7d8b534ef63",
+      "highWater": "a4f210855e9a5457546a612a6fca57081d239433",
       "highWaterNote": "2026-08-27 'New: Parsing file names with ambiguous episode numbering'. Everything on Sonarr v5-develop at or before this point is dispositioned. Advance only when everything at or before the new mark is settled."
     }
   },
