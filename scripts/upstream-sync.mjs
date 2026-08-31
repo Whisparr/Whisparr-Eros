@@ -304,6 +304,20 @@ function gateFor(name, commit) {
     };
   }
 
+  // The upstreams regenerate a checked-in OpenAPI spec from a bot, several
+  // times a month. We retired ours with its workflow, so those commits rewrite
+  // a file that does not exist here. Matched on the files rather than the
+  // subject: hand-written commits with "API docs" in the title touch real C#
+  // and still have to be read.
+  if (commit.files.length > 0 && commit.files.every((f) => /(^|\/)openapi\.json$/.test(f))) {
+    return {
+      gate: 'api-docs',
+      reason:
+        'Regenerated OpenAPI spec only. We retired the checked-in spec and the workflow that ' +
+        'produced it, so there is no counterpart file here to update.',
+    };
+  }
+
   if (commit.files.some((f) => f.startsWith('src/NzbDrone.Core/Parser/'))) {
     return {
       gate: 'parser',
