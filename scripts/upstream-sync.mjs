@@ -383,7 +383,8 @@ function renderAttempt(result) {
 
   if (conflicted.length > 0 || gated.length > 0) {
     lines.push(
-      `Left out and tracked on the \`Upstream sync: ${upstream.repo.split('/')[1]} ${upstream.branch}\` issue:`,
+      `Left out and tracked on the \`Upstream sync: ${upstream.repo.split('/')[1]} ${upstream.branch}\` issue`,
+      'on Whisparr/Whisparr, where issues for both repos live:',
       `${conflicted.length} conflicted, ${gated.length} gated.`,
       ''
     );
