@@ -13,7 +13,7 @@ src/**/[Oo]bj/
 .vs/
 .continue
 .vscode
-.claude
+.claude/settings.local.json
 CLAUDE.md
 
 # Build results
