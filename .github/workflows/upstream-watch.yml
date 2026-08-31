@@ -39,6 +39,15 @@ jobs:
         with:
           app-id: ${{ secrets.CI_APP_ID }}
           private-key: ${{ secrets.CI_APP_KEY }}
+          # Two repos, because the work is split across two. The PR belongs
+          # here, but issues are disabled on this repo -- the backlog issue
+          # goes to Whisparr/Whisparr, where issues for both are tracked.
+          # Left unset, the token is scoped to this repo alone and every
+          # issue call 404s.
+          owner: ${{ github.repository_owner }}
+          repositories: |
+            Whisparr-Eros
+            Whisparr
 
       - name: Check out
         uses: actions/checkout@v7
@@ -69,6 +78,9 @@ jobs:
         if: fromJSON(steps.attempt.outputs.summary).applied > 0
         env:
           GH_TOKEN: ${{ steps.app.outputs.token }}
+          # Stated rather than inferred from the checkout, so the contrast with
+          # the issue step below is on the page.
+          GH_REPO: ${{ github.repository }}
           BRANCH: ${{ fromJSON(steps.attempt.outputs.summary).branch }}
           UPSTREAM: ${{ matrix.upstream }}
         run: |
@@ -96,6 +108,10 @@ jobs:
       - name: Update the tracking issue
         env:
           GH_TOKEN: ${{ steps.app.outputs.token }}
+          # Issues are disabled on Whisparr-Eros and tracked on Whisparr for
+          # both repos, so every gh call in this step -- label and issue alike
+          # -- has to be aimed off this repo.
+          GH_REPO: Whisparr/Whisparr
           TITLE: ${{ matrix.title }}
           OUTSTANDING: ${{ fromJSON(steps.attempt.outputs.summary).outstanding }}
         run: |
