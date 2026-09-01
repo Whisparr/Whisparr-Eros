@@ -22,11 +22,16 @@ jobs:
       # should not hide the state of the other.
       fail-fast: false
       matrix:
+        # Titles carry a [v3] prefix: the tracking issues live on
+        # Whisparr/Whisparr, which serves both the v2 line and this one, so an
+        # unprefixed 'Upstream sync: ...' reads as ambiguous there. The prefix
+        # is also part of the lookup key -- changing it orphans the existing
+        # issue and opens a new one, so rename the issue with it.
         include:
           - upstream: radarr
-            title: 'Upstream sync: Radarr develop'
+            title: '[v3] Upstream sync: Radarr develop'
           - upstream: sonarr
-            title: 'Upstream sync: Sonarr v5-develop'
+            title: '[v3] Upstream sync: Sonarr v5-develop'
 
     steps:
       # github.token cannot be used to open the PR: GitHub does not start
