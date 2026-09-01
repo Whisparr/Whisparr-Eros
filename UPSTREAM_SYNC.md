@@ -26,15 +26,14 @@ Owns: **backend**. High-water mark: `68b93db78c`.
 
 ## sonarr — Sonarr/Sonarr `v5-develop`
 
-<!-- outstanding: 472 -->
+<!-- outstanding: 471 -->
 
-Owns: **frontend**. High-water mark: `37dfad11f2`.
+Owns: **frontend**. High-water mark: `550cf8d399`.
 
-**472 outstanding.**
+**471 outstanding.**
 
 | Month | Total | be | fe | be+fe | chore |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| 2025-10 | 1 | 0 | 0 | 1 | 0 |
 | 2025-11 | 73 | 46 | 21 | 6 | 0 |
 | 2025-12 | 74 | 46 | 19 | 7 | 2 |
 | 2026-01 | 62 | 37 | 15 | 10 | 0 |
@@ -44,10 +43,6 @@ Owns: **frontend**. High-water mark: `37dfad11f2`.
 | 2026-05 | 82 | 48 | 20 | 5 | 9 |
 | 2026-06 | 30 | 16 | 5 | 3 | 6 |
 | 2026-07 | 36 | 19 | 7 | 6 | 4 |
-
-### 2025-10
-
-- `be+fe` [`550cf8d39`](https://github.com/Sonarr/Sonarr/commit/550cf8d39963f30da7273b884c6007ce9da9cdf0) New: Option to specify timezone for formatting times in the UI — *Audionut*
 
 ### 2025-11
 
@@ -678,6 +673,7 @@ Commits reviewed and dispositioned. Skips carry their reason.
 | [`fce8e780c`](https://github.com/Sonarr/Sonarr/commit/fce8e780cb7567fed9a47c3bbb2dc510f1a461e6) | Add v5 log files endpoints | `skip` | Adds src/Sonarr.Api.V5/Logs. Same reason as the other v5 endpoint commits: we have no Api.V5 project. |
 | [`ff5e73273`](https://github.com/Sonarr/Sonarr/commit/ff5e73273b02f90be9ee03307cd6909e8b5fb8bd) | Use react-query for Log Files | `have` | We already have frontend/src/System/Logs/useLogFiles.ts and the redux systemActions.js this strips from never existed here. |
 | [`37dfad11f`](https://github.com/Sonarr/Sonarr/commit/37dfad11f26301c1d0dbfd944df1e4bdc0d44d89) | Remove v3 updates from UI | `have` | Drops the redux fetchUpdates dispatch in favour of react-query refetch. Our AppUpdatedModalContent already uses useUpdates() with refetch and useAppValues, with no redux anywhere in the tree. |
+| [`550cf8d39`](https://github.com/Sonarr/Sonarr/commit/550cf8d39963f30da7273b884c6007ce9da9cdf0) | New: Option to specify timezone for formatting times in the UI | `adapt` | Taken as its own PR because it is a feature, not a sync: a new dependency, a settings field and a config key. Adapted in two ways. Only moment-timezone was added -- upstream also pulls @types/moment-timezone, which npm marks as a deprecated stub since moment-timezone ships its own types. And the zone is deliberately not applied to date-only values: our getRelativeDate forces a UTC calendar for YYYY-MM-DD and midnight-UTC strings because scene and release dates carry no time of day, so converting them would move the calendar day rather than the clock. Applied wider than upstream's four consumers by threading it through the shared RelativeDateCell. |
 | [`2fbeff438`](https://github.com/Sonarr/Sonarr/commit/2fbeff4383af3ced58aac72d2470b90572a27da0) | Multiple Translations updated by Weblate | `skip` | Weblate commit. Our translations come from Weblate directly, never from cherry-picks. |
 | [`8112b536a`](https://github.com/Sonarr/Sonarr/commit/8112b536a23b16c27900aca05437b5ff9661b5e9) | Improve accessibility of series status indicators | `adapt` | Applied to MovieStatusCell and SceneStatusCell, our equivalents of SeriesStatusCell. Also brought in Components/StatusIndicator, which upstream added in 71d9a5d57 (2026-07-12, behind our high-water mark) and we never ported. Verified on 6969: all 40 status icons on the movie table now carry announced text. |
 | [`650a452bf`](https://github.com/Sonarr/Sonarr/commit/650a452bf0aa7a1f93aec5a1528c8e08d19b29cf) | New: Sorting Blocklist, History and Queue by Quality | `skip` | Deferred to its own PR by decision on 2026-08-30, not skipped on merit. 21 files: a QualityProfileQualityRank table, repository and service, a DB migration (233 there, 242 here) and rank joins added to the Blocklist, History and Episode repositories. A schema change belongs in its own review, not in a 15-commit sync chunk. |
