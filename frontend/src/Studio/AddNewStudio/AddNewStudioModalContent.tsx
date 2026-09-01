@@ -112,6 +112,7 @@ function AddNewStudioModalContent(props: AddNewStudioModalContentProps) {
                 <FormInputGroup
                   type={inputTypes.CHECK}
                   name="monitorNewItems"
+                  helpText={translate('MonitorNewItemsEntityHelpText')}
                   {...settings.monitorNewItems}
                   errors={settings.monitorNewItems?.errors}
                   onChange={onInputChange}

@@ -132,6 +132,7 @@ function AddNewPerformerModalContent({
                 <FormInputGroup
                   type={inputTypes.CHECK}
                   name="monitorNewItems"
+                  helpText={translate('MonitorNewItemsEntityHelpText')}
                   {...monitorNewItems}
                   onChange={onInputChange}
                 />

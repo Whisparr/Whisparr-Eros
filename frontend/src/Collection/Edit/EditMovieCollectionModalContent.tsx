@@ -185,6 +185,7 @@ function EditMovieCollectionModalContent({
                 <FormInputGroup
                   type={inputTypes.CHECK}
                   name="monitorNewItems"
+                  helpText={translate('MonitorNewItemsEntityHelpText')}
                   {...settings.monitorNewItems}
                   onChange={handleInputChange}
                 />
