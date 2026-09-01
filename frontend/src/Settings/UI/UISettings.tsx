@@ -17,6 +17,7 @@ import SettingsToolbar from 'Settings/SettingsToolbar';
 import themes from 'Styles/Themes';
 import { InputChanged } from 'typings/inputs';
 import UiSettings from 'typings/Settings/UiSettings';
+import timeZoneOptions from 'Utilities/Date/timeZoneOptions';
 import titleCase from 'Utilities/String/titleCase';
 import translate from 'Utilities/String/translate';
 import { useManageUiSettings } from './useUiSettings';
@@ -235,6 +236,18 @@ function UISettings() {
                   values={timeFormatOptions}
                   onChange={handleInputChange}
                   {...settings.timeFormat}
+                />
+              </FormGroup>
+
+              <FormGroup>
+                <FormLabel>{translate('TimeZone')}</FormLabel>
+
+                <FormInputGroup
+                  type={inputTypes.SELECT}
+                  name="timeZone"
+                  values={timeZoneOptions}
+                  onChange={handleInputChange}
+                  {...settings.timeZone}
                 />
               </FormGroup>
 

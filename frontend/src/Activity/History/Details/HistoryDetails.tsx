@@ -32,7 +32,7 @@ interface HistoryDetailsProps {
 function HistoryDetails(props: HistoryDetailsProps) {
   const { eventType, sourceTitle, data, downloadId } = props;
 
-  const { shortDateFormat, timeFormat } = useUiSettingsValues();
+  const { shortDateFormat, timeFormat, timeZone } = useUiSettingsValues();
 
   if (eventType === 'grabbed') {
     const {
@@ -157,6 +157,7 @@ function HistoryDetails(props: HistoryDetailsProps) {
           <DescriptionListItem
             title={translate('PublishedDate')}
             data={formatDateTime(publishedDate, shortDateFormat, timeFormat, {
+              timeZone,
               includeSeconds: true,
             })}
           />

@@ -1,5 +1,6 @@
-import moment from 'moment';
+import moment from 'moment-timezone';
 import translate from 'Utilities/String/translate';
+import { convertToTimezone } from './convertToTimezone';
 import formatDateTime from './formatDateTime';
 
 interface GetRelativeDateOptions {
@@ -7,6 +8,7 @@ interface GetRelativeDateOptions {
   shortDateFormat: string;
   showRelativeDates: boolean;
   timeFormat?: string;
+  timeZone?: string;
   includeSeconds?: boolean;
   timeForToday?: boolean;
   includeTime?: boolean;
@@ -18,6 +20,7 @@ function getRelativeDate({
   shortDateFormat,
   showRelativeDates,
   timeFormat,
+  timeZone = '',
   includeSeconds = false,
   timeForToday = false,
   includeTime = false,
@@ -41,9 +44,20 @@ function getRelativeDate({
 
   const useUtcCalendar = Boolean(ignoreTimezone || isDateOnly || isMidnightUtc);
 
-  // Parse date and reference 'now' in the same mode (UTC or local)
-  const m = useUtcCalendar ? moment.utc(date) : moment(date);
-  const now = useUtcCalendar ? moment.utc() : moment();
+  // Parse date and reference 'now' in the same mode (UTC, configured zone, or
+  // local). The UTC calendar path deliberately ignores timeZone: a date-only
+  // value carries no time of day, so converting it would move the calendar day
+  // rather than the clock time.
+  const zoned = (value?: string) => {
+    if (value == null) {
+      return timeZone ? moment.tz(timeZone) : moment();
+    }
+
+    return convertToTimezone(value, timeZone);
+  };
+
+  const m = useUtcCalendar ? moment.utc(date) : zoned(date);
+  const now = useUtcCalendar ? moment.utc() : zoned();
 
   // Small local time formatter that mirrors Utilities/Date/formatTime behavior
   const time = timeFormat
@@ -98,7 +112,10 @@ function getRelativeDate({
   }
 
   return includeTime
-    ? formatDateTime(date, shortDateFormat, timeFormat, { includeSeconds })
+    ? formatDateTime(date, shortDateFormat, timeFormat, {
+        includeSeconds,
+        timeZone: useUtcCalendar ? '' : timeZone,
+      })
     : m.format(shortDateFormat);
 }
 

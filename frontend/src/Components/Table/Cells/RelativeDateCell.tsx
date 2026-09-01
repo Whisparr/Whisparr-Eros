@@ -26,8 +26,13 @@ function RelativeDateCell(props: RelativeDateCellProps) {
     ...otherProps
   } = props;
 
-  const { showRelativeDates, shortDateFormat, longDateFormat, timeFormat } =
-    useUiSettingsValues();
+  const {
+    showRelativeDates,
+    shortDateFormat,
+    longDateFormat,
+    timeFormat,
+    timeZone,
+  } = useUiSettingsValues();
 
   if (!date) {
     return <Component className={className} {...otherProps} />;
@@ -39,6 +44,7 @@ function RelativeDateCell(props: RelativeDateCellProps) {
       title={formatDateTime(date, longDateFormat, timeFormat, {
         includeSeconds,
         includeRelativeDay: !showRelativeDates,
+        timeZone,
       })}
       {...otherProps}
     >
@@ -47,6 +53,7 @@ function RelativeDateCell(props: RelativeDateCellProps) {
         shortDateFormat,
         showRelativeDates,
         timeFormat,
+        timeZone,
         includeSeconds,
         includeTime,
         timeForToday,

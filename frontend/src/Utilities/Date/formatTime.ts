@@ -1,20 +1,25 @@
-import moment from 'moment';
+import { convertToTimezone } from './convertToTimezone';
 
 interface FormatTimeOptions {
   includeMinuteZero?: boolean;
   includeSeconds?: boolean;
+  timeZone?: string;
 }
 
 function formatTime(
   date: string | Date | null | undefined,
   timeFormat: string | undefined,
-  { includeMinuteZero = false, includeSeconds = false }: FormatTimeOptions = {}
+  {
+    includeMinuteZero = false,
+    includeSeconds = false,
+    timeZone = '',
+  }: FormatTimeOptions = {}
 ) {
   if (!date || !timeFormat) {
     return '';
   }
 
-  const time = moment(date);
+  const time = convertToTimezone(date, timeZone);
 
   let format = timeFormat;
 

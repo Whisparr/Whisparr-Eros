@@ -1,5 +1,5 @@
-import moment from 'moment';
 import translate from 'Utilities/String/translate';
+import { convertToTimezone } from './convertToTimezone';
 import formatTime from './formatTime';
 import isToday from './isToday';
 import isTomorrow from './isTomorrow';
@@ -8,6 +8,7 @@ import isYesterday from './isYesterday';
 interface FormatDateTimeOptions {
   includeSeconds?: boolean;
   includeRelativeDay?: boolean;
+  timeZone?: string;
 }
 
 function getRelativeDay(date: string | Date, includeRelativeDate: boolean) {
@@ -37,17 +38,21 @@ function formatDateTime(
   {
     includeSeconds = false,
     includeRelativeDay = false,
+    timeZone = '',
   }: FormatDateTimeOptions = {}
 ) {
   if (!date) {
     return '';
   }
 
+  const dateTime = convertToTimezone(date, timeZone);
+
   const relativeDay = getRelativeDay(date, includeRelativeDay);
-  const formattedDate = dateFormat ? moment(date).format(dateFormat) : '';
+  const formattedDate = dateFormat ? dateTime.format(dateFormat) : '';
   const formattedTime = formatTime(date, timeFormat, {
     includeMinuteZero: true,
     includeSeconds,
+    timeZone,
   });
 
   if (relativeDay) {
