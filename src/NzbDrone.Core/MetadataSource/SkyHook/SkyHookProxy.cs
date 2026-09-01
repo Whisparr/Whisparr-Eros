@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using NLog;
 using NzbDrone.Common;
 using NzbDrone.Common.Cloud;
+using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
 using NzbDrone.Common.Serializer;
@@ -752,6 +753,11 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             if (title.IsNullOrWhiteSpace())
             {
                 return null;
+            }
+
+            if (title.IsPathValid(PathValidationType.AnyOs))
+            {
+                throw new InvalidSearchTermException("Invalid search term '{0}'", title);
             }
 
             var result = new List<object>();

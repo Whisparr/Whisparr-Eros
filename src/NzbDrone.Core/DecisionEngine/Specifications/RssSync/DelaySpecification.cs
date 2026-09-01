@@ -1,4 +1,5 @@
 using NLog;
+using NzbDrone.Core.Configuration;
 using NzbDrone.Core.CustomFormats;
 using NzbDrone.Core.Download.Pending;
 using NzbDrone.Core.IndexerSearch.Definitions;
@@ -14,18 +15,21 @@ namespace NzbDrone.Core.DecisionEngine.Specifications.RssSync
         private readonly IUpgradableSpecification _qualityUpgradableSpecification;
         private readonly ICustomFormatCalculationService _formatService;
         private readonly IDelayProfileService _delayProfileService;
+        private readonly IConfigService _configService;
         private readonly Logger _logger;
 
         public DelaySpecification(IPendingReleaseService pendingReleaseService,
                                   IUpgradableSpecification qualityUpgradableSpecification,
                                   ICustomFormatCalculationService formatService,
                                   IDelayProfileService delayProfileService,
+                                  IConfigService configService,
                                   Logger logger)
         {
             _pendingReleaseService = pendingReleaseService;
             _qualityUpgradableSpecification = qualityUpgradableSpecification;
             _formatService = formatService;
             _delayProfileService = delayProfileService;
+            _configService = configService;
             _logger = logger;
         }
 
@@ -44,6 +48,7 @@ namespace NzbDrone.Core.DecisionEngine.Specifications.RssSync
             var delayProfile = _delayProfileService.BestForTags(subject.Movie.Tags);
             var delay = delayProfile.GetProtocolDelay(subject.Release.DownloadProtocol);
             var isPreferredProtocol = subject.Release.DownloadProtocol == delayProfile.PreferredProtocol;
+            var preferPropersAndRepacks = _configService.DownloadPropersAndRepacks == ProperDownloadTypes.PreferAndUpgrade;
 
             if (delay == 0)
             {
@@ -57,7 +62,7 @@ namespace NzbDrone.Core.DecisionEngine.Specifications.RssSync
 
             var file = subject.Movie.MovieFile;
 
-            if (isPreferredProtocol && (subject.Movie.MovieFileId != 0 && file != null))
+            if (isPreferredProtocol && preferPropersAndRepacks && (subject.Movie.MovieFileId != 0 && file != null))
             {
                 var customFormats = _formatService.ParseCustomFormat(file);
                 var upgradeableRejectReason = _qualityUpgradableSpecification.IsUpgradable(profile,
