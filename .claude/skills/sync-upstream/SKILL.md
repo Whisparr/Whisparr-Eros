@@ -112,6 +112,29 @@ share.
 
 ## 4. Classify what survives
 
+Before deciding anything, check the file list for `src/Sonarr.Api.V5/`.
+
+Sonarr is building a v5 API surface alongside v3; we have only
+`src/Whisparr.Api.V3/`. Those commits **add files under a directory we do not
+have**, so they cherry-pick with no conflict, no csproj references them, and the
+build stays green. Clean merge plus passing build reads as success, and the
+result is dead files in a tree nobody compiles. The gates do not catch this —
+they look for trouble, and this looks fine.
+
+Two shapes, and the second is the trap:
+
+- **V5-only** — every file under `src/Sonarr.Api.V5/`. Straight `skip`: no
+  counterpart project here.
+- **Mixed** — V5 files *plus* real changes elsewhere. **Do not blanket-skip
+  these.** Take the non-V5 half and drop the V5 files. They include work we
+  actively want: `8f95849e9 Use react-query for interactive search` and
+  `dd84bcd91 Bump Sentry to 5.16.2` both touch V5 incidentally.
+
+It is a quarter of the Sonarr backlog — 120 of 471 outstanding, 68 V5-only and
+52 mixed — so this is not a rare case. Worst in 2025-11 and 2025-12.
+
+
+
 One of four, and **every one needs a reason** — `--check` rejects a bare or
 stub reason:
 
