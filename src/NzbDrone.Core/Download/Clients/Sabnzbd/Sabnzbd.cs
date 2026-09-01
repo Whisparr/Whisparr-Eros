@@ -258,7 +258,7 @@ namespace NzbDrone.Core.Download.Clients.Sabnzbd
 
             var status = new DownloadClientInfo
             {
-                IsLocalhost = Settings.Host == "127.0.0.1" || Settings.Host == "localhost"
+                IsLocalhost = Settings.Host.IsLocalhostAddress()
             };
 
             if (category != null)
