@@ -46,6 +46,7 @@ namespace NzbDrone.Core.Movies.Performers
         public DateTime Added { get; set; }
         public bool Monitored { get; set; }
         public bool MoviesMonitored { get; set; }
+        public bool MonitorNewItems { get; set; } = true;
         public int QualityProfileId { get; set; }
         public bool SearchOnAdd { get; set; }
         public DateTime? LastInfoSync { get; set; }
@@ -74,6 +75,7 @@ namespace NzbDrone.Core.Movies.Performers
             SearchOnAdd = otherPerformer.SearchOnAdd;
             Monitored = otherPerformer.Monitored;
             MoviesMonitored = otherPerformer.MoviesMonitored;
+            MonitorNewItems = otherPerformer.MonitorNewItems;
             RootFolderPath = otherPerformer.RootFolderPath;
             Tags = otherPerformer.Tags;
         }

@@ -21,6 +21,7 @@ namespace Whisparr.Api.V3.Studios
         public List<MediaCover> Images { get; set; }
         public bool Monitored { get; set; }
         public bool MoviesMonitored { get; set; }
+        public bool MonitorNewItems { get; set; }
         public StudioStatus Status { get; set; }
         public string AfterDate { get; set; }
         public string RootFolderPath { get; set; }
@@ -61,6 +62,7 @@ namespace Whisparr.Api.V3.Studios
                 Network = model.Network,
                 Monitored = model.Monitored,
                 MoviesMonitored = model.MoviesMonitored,
+                MonitorNewItems = model.MonitorNewItems,
                 Status = model.Status,
                 AfterDate = model.AfterDate?.ToLocalTime().ToString("yyyy-MM-dd"),
                 Images = model.Images,
@@ -103,6 +105,7 @@ namespace Whisparr.Api.V3.Studios
                 Network = resource.Network,
                 Monitored = resource.Monitored,
                 MoviesMonitored = resource.MoviesMonitored,
+                MonitorNewItems = resource.MonitorNewItems,
                 Status = resource.Status,
                 AfterDate = string.IsNullOrWhiteSpace(resource.AfterDate) ? null : DateTime.Parse(resource.AfterDate),
                 QualityProfileId = resource.QualityProfileId,

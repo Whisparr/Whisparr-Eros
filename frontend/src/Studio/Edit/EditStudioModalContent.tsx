@@ -36,6 +36,9 @@ function EditStudioModalContent({
   const [moviesMonitored, setMoviesMonitored] = useState(
     studio.moviesMonitored
   );
+  const [monitorNewItems, setMonitorNewItems] = useState(
+    studio.monitorNewItems
+  );
   const [afterDate, setAfterDate] = useState(studio.afterDate ?? '');
   const [qualityProfileId, setQualityProfileId] = useState(
     studio.qualityProfileId
@@ -58,6 +61,10 @@ function EditStudioModalContent({
 
     if (moviesMonitored !== studio.moviesMonitored) {
       changes.moviesMonitored = moviesMonitored;
+    }
+
+    if (monitorNewItems !== studio.monitorNewItems) {
+      changes.monitorNewItems = monitorNewItems;
     }
 
     if (afterDate !== (studio.afterDate ?? '')) {
@@ -88,6 +95,7 @@ function EditStudioModalContent({
   }, [
     monitored,
     moviesMonitored,
+    monitorNewItems,
     afterDate,
     qualityProfileId,
     rootFolderPath,
@@ -102,6 +110,7 @@ function EditStudioModalContent({
       {
         monitored: studio.monitored,
         moviesMonitored: studio.moviesMonitored,
+        monitorNewItems: studio.monitorNewItems,
         afterDate: studio.afterDate ?? '',
         qualityProfileId: studio.qualityProfileId,
         rootFolderPath: studio.rootFolderPath,
@@ -132,6 +141,9 @@ function EditStudioModalContent({
         break;
       case 'moviesMonitored':
         setMoviesMonitored(value as boolean);
+        break;
+      case 'monitorNewItems':
+        setMonitorNewItems(value as boolean);
         break;
       case 'afterDate':
         setAfterDate(value as string);
@@ -212,6 +224,16 @@ function EditStudioModalContent({
                   />
                 </FormGroup>
               ) : null}
+
+              <FormGroup>
+                <FormLabel>{translate('MonitorNewItems')}</FormLabel>
+                <FormInputGroup
+                  type={inputTypes.CHECK}
+                  name="monitorNewItems"
+                  {...settings.monitorNewItems}
+                  onChange={handleInputChange}
+                />
+              </FormGroup>
 
               <FormGroup>
                 <FormLabel>{translate('MonitorAfter')}</FormLabel>

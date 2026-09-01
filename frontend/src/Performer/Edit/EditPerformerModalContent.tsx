@@ -38,6 +38,9 @@ function EditPerformerModalContent({
   const [moviesMonitored, setMoviesMonitored] = useState(
     performer.moviesMonitored
   );
+  const [monitorNewItems, setMonitorNewItems] = useState(
+    performer.monitorNewItems
+  );
   const [qualityProfileId, setQualityProfileId] = useState(
     performer.qualityProfileId
   );
@@ -63,6 +66,10 @@ function EditPerformerModalContent({
       changes.moviesMonitored = moviesMonitored;
     }
 
+    if (monitorNewItems !== performer.monitorNewItems) {
+      changes.monitorNewItems = monitorNewItems;
+    }
+
     if (qualityProfileId !== performer.qualityProfileId) {
       changes.qualityProfileId = qualityProfileId;
     }
@@ -83,6 +90,7 @@ function EditPerformerModalContent({
   }, [
     monitored,
     moviesMonitored,
+    monitorNewItems,
     qualityProfileId,
     rootFolderPath,
     tags,
@@ -95,6 +103,7 @@ function EditPerformerModalContent({
       {
         monitored: performer.monitored,
         moviesMonitored: performer.moviesMonitored,
+        monitorNewItems: performer.monitorNewItems,
         qualityProfileId: performer.qualityProfileId,
         rootFolderPath: performer.rootFolderPath,
         tags: performer.tags ?? [],
@@ -112,6 +121,9 @@ function EditPerformerModalContent({
         break;
       case 'moviesMonitored':
         setMoviesMonitored(value as boolean);
+        break;
+      case 'monitorNewItems':
+        setMonitorNewItems(value as boolean);
         break;
       case 'qualityProfileId':
         setQualityProfileId(value as number);
@@ -187,6 +199,16 @@ function EditPerformerModalContent({
                   />
                 </FormGroup>
               ) : null}
+
+              <FormGroup>
+                <FormLabel>{translate('MonitorNewItems')}</FormLabel>
+                <FormInputGroup
+                  type={inputTypes.CHECK}
+                  name="monitorNewItems"
+                  {...settings.monitorNewItems}
+                  onChange={handleInputChange}
+                />
+              </FormGroup>
 
               <FormGroup>
                 <FormLabel>{translate('QualityProfile')}</FormLabel>

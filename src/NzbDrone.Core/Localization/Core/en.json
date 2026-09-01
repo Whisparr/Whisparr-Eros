@@ -1270,6 +1270,7 @@
   "MonitoredStudioMovieHelpText": "Monitor to automatically have items from this studio added to the library. Requires a link to be added on the studio to the Movie Metadata source on stashdb.org",
   "MonitorMovie": "Monitor Movie",
   "MonitorMovies": "Monitor Movies",
+  "MonitorNewItems": "Monitor New Items",
   "MonitorOptionsMovieAndScene": "Movie and Scene",
   "MonitorOptionsSceneOnly": "Scene Only",
   "MonitorSelected": "Monitor Selected",

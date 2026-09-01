@@ -2,6 +2,7 @@ export interface AddStudioOptions {
   rootFolderPath: string;
   monitored: boolean;
   moviesMonitored: boolean;
+  monitorNewItems: boolean;
   qualityProfileId: number;
   tags: number[];
   searchForMovie?: boolean;
@@ -14,6 +15,7 @@ function getNewStudio<T extends object>(studio: T, options: AddStudioOptions) {
     rootFolderPath,
     monitored,
     moviesMonitored,
+    monitorNewItems,
     qualityProfileId,
     tags,
     searchForMovie = false,
@@ -28,6 +30,7 @@ function getNewStudio<T extends object>(studio: T, options: AddStudioOptions) {
     },
     monitored,
     moviesMonitored,
+    monitorNewItems,
     qualityProfileId,
     rootFolderPath,
     tags,

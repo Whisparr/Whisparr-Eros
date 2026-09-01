@@ -144,9 +144,9 @@ namespace NzbDrone.Core.Movies
                         RootFolderPath = collection.RootFolderPath,
                         AddOptions = new AddMovieOptions
                         {
-                            SearchForMovie = collection.SearchOnAdd,
+                            SearchForMovie = collection.SearchOnAdd && collection.MonitorNewItems,
                         },
-                        Monitored = true,
+                        Monitored = collection.MonitorNewItems,
                         Tags = collection.Tags
                     }).ToList(), true);
                 }

@@ -2,6 +2,7 @@ export interface AddPerformerOptions {
   rootFolderPath: string;
   monitored: boolean;
   moviesMonitored: boolean;
+  monitorNewItems: boolean;
   qualityProfileId: number;
   tags: number[];
   searchForMovie?: boolean;
@@ -17,6 +18,7 @@ function getNewPerformer<T extends object>(
     rootFolderPath,
     monitored,
     moviesMonitored,
+    monitorNewItems,
     qualityProfileId,
     tags,
     searchForMovie = false,
@@ -31,6 +33,7 @@ function getNewPerformer<T extends object>(
     },
     monitored,
     moviesMonitored,
+    monitorNewItems,
     qualityProfileId,
     rootFolderPath,
     tags,

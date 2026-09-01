@@ -100,6 +100,9 @@ namespace Whisparr.Api.V3.Performers
         /// <summary>Whether movies featuring this performer are monitored</summary>
         public bool MoviesMonitored { get; set; }
 
+        /// <summary>Whether newly discovered works are added monitored</summary>
+        public bool MonitorNewItems { get; set; }
+
         /// <summary>Root folder path where performer content is stored</summary>
         public string RootFolderPath { get; set; }
 
@@ -196,6 +199,7 @@ namespace Whisparr.Api.V3.Performers
                 Aliases = model.Aliases,
                 Monitored = model.Monitored,
                 MoviesMonitored = model.MoviesMonitored,
+                MonitorNewItems = model.MonitorNewItems,
                 Images = model.Images,
                 QualityProfileId = model.QualityProfileId,
                 RootFolderPath = model.RootFolderPath,
@@ -234,6 +238,7 @@ namespace Whisparr.Api.V3.Performers
                 Name = resource.FullName,
                 Monitored = resource.Monitored,
                 MoviesMonitored = resource.MoviesMonitored,
+                MonitorNewItems = resource.MonitorNewItems,
                 QualityProfileId = resource.QualityProfileId,
                 RootFolderPath = resource.RootFolderPath,
                 SearchOnAdd = resource.SearchOnAdd,

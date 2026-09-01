@@ -20,6 +20,7 @@ interface Performer extends ModelBase {
   hasScenes: boolean;
   images: Image[];
   monitored: boolean;
+  monitorNewItems: boolean;
   movieCount: number;
   moviesMonitored: boolean;
   qualityProfileId: number;

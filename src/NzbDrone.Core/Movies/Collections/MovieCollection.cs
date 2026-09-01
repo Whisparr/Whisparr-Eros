@@ -18,6 +18,7 @@ namespace NzbDrone.Core.Movies.Collections
         public int TmdbId { get; set; }
         public string Overview { get; set; }
         public bool Monitored { get; set; }
+        public bool MonitorNewItems { get; set; } = true;
         public int QualityProfileId { get; set; }
         public string RootFolderPath { get; set; }
         public bool SearchOnAdd { get; set; }
@@ -32,6 +33,7 @@ namespace NzbDrone.Core.Movies.Collections
             TmdbId = otherCollection.TmdbId;
 
             Monitored = otherCollection.Monitored;
+            MonitorNewItems = otherCollection.MonitorNewItems;
             SearchOnAdd = otherCollection.SearchOnAdd;
             QualityProfileId = otherCollection.QualityProfileId;
             RootFolderPath = otherCollection.RootFolderPath;

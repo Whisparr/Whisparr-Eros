@@ -130,6 +130,7 @@ namespace NzbDrone.Core.Movies.Performers
                     {
                         ForeignId = performerInfo.MergedIntoId,
                         Monitored = performer.Monitored,
+                        MonitorNewItems = performer.MonitorNewItems,
                         QualityProfileId = performer.QualityProfileId,
                         RootFolderPath = performer.RootFolderPath,
                         SearchOnAdd = performer.SearchOnAdd,
@@ -191,10 +192,10 @@ namespace NzbDrone.Core.Movies.Performers
                         RootFolderPath = performer.RootFolderPath,
                         AddOptions = new AddMovieOptions
                         {
-                            SearchForMovie = performer.SearchOnAdd,
+                            SearchForMovie = performer.SearchOnAdd && performer.MonitorNewItems,
                             AddMethod = AddMovieMethod.Performer
                         },
-                        Monitored = true,
+                        Monitored = performer.MonitorNewItems,
                         Tags = performer.Tags
                     }).Chunk(chunkSize);
 
@@ -232,10 +233,10 @@ namespace NzbDrone.Core.Movies.Performers
                             RootFolderPath = performer.RootFolderPath,
                             AddOptions = new AddMovieOptions
                             {
-                                SearchForMovie = performer.SearchOnAdd,
+                                SearchForMovie = performer.SearchOnAdd && performer.MonitorNewItems,
                                 AddMethod = AddMovieMethod.Performer
                             },
-                            Monitored = true,
+                            Monitored = performer.MonitorNewItems,
                             Tags = performer.Tags
                         }).Chunk(chunkSize);
 
@@ -268,10 +269,10 @@ namespace NzbDrone.Core.Movies.Performers
                             RootFolderPath = performer.RootFolderPath,
                             AddOptions = new AddMovieOptions
                             {
-                                SearchForMovie = performer.SearchOnAdd,
+                                SearchForMovie = performer.SearchOnAdd && performer.MonitorNewItems,
                                 AddMethod = AddMovieMethod.Performer
                             },
-                            Monitored = true,
+                            Monitored = performer.MonitorNewItems,
                             Tags = performer.Tags
                         }).Chunk(chunkSize);
 

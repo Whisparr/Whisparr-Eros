@@ -35,6 +35,9 @@ function EditMovieCollectionModalContent({
   const isSmallScreen = useAppDimension('isSmallScreen');
 
   const [monitored, setMonitored] = useState(collection.monitored);
+  const [monitorNewItems, setMonitorNewItems] = useState(
+    collection.monitorNewItems
+  );
   const [qualityProfileId, setQualityProfileId] = useState(
     collection.qualityProfileId
   );
@@ -56,6 +59,10 @@ function EditMovieCollectionModalContent({
       changes.monitored = monitored;
     }
 
+    if (monitorNewItems !== collection.monitorNewItems) {
+      changes.monitorNewItems = monitorNewItems;
+    }
+
     if (qualityProfileId !== collection.qualityProfileId) {
       changes.qualityProfileId = qualityProfileId;
     }
@@ -75,6 +82,7 @@ function EditMovieCollectionModalContent({
     return changes;
   }, [
     monitored,
+    monitorNewItems,
     qualityProfileId,
     rootFolderPath,
     searchOnAdd,
@@ -86,6 +94,7 @@ function EditMovieCollectionModalContent({
     return selectSettings(
       {
         monitored: collection.monitored,
+        monitorNewItems: collection.monitorNewItems,
         qualityProfileId: collection.qualityProfileId,
         rootFolderPath: collection.rootFolderPath,
         searchOnAdd: collection.searchOnAdd,
@@ -100,6 +109,9 @@ function EditMovieCollectionModalContent({
     switch (name) {
       case 'monitored':
         setMonitored(value as boolean);
+        break;
+      case 'monitorNewItems':
+        setMonitorNewItems(value as boolean);
         break;
       case 'qualityProfileId':
         setQualityProfileId(value as number);
@@ -163,6 +175,17 @@ function EditMovieCollectionModalContent({
                   name="monitored"
                   helpText={translate('MonitoredCollectionHelpText')}
                   {...settings.monitored}
+                  onChange={handleInputChange}
+                />
+              </FormGroup>
+
+              <FormGroup>
+                <FormLabel>{translate('MonitorNewItems')}</FormLabel>
+
+                <FormInputGroup
+                  type={inputTypes.CHECK}
+                  name="monitorNewItems"
+                  {...settings.monitorNewItems}
                   onChange={handleInputChange}
                 />
               </FormGroup>

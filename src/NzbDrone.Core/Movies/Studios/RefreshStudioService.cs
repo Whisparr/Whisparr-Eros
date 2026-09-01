@@ -142,10 +142,10 @@ namespace NzbDrone.Core.Movies.Studios
                         RootFolderPath = studio.RootFolderPath,
                         AddOptions = new AddMovieOptions
                         {
-                            SearchForMovie = studio.SearchOnAdd,
+                            SearchForMovie = studio.SearchOnAdd && studio.MonitorNewItems,
                             AddMethod = AddMovieMethod.Studio
                         },
-                        Monitored = true,
+                        Monitored = studio.MonitorNewItems,
                         Tags = studio.Tags
                     }).Chunk(chunkSize);
 
@@ -187,10 +187,10 @@ namespace NzbDrone.Core.Movies.Studios
                             RootFolderPath = studio.RootFolderPath,
                             AddOptions = new AddMovieOptions
                             {
-                                SearchForMovie = studio.SearchOnAdd,
+                                SearchForMovie = studio.SearchOnAdd && studio.MonitorNewItems,
                                 AddMethod = AddMovieMethod.Studio
                             },
-                            Monitored = true,
+                            Monitored = studio.MonitorNewItems,
                             Tags = studio.Tags
                         }).Chunk(chunkSize);
 
@@ -224,10 +224,10 @@ namespace NzbDrone.Core.Movies.Studios
                             RootFolderPath = studio.RootFolderPath,
                             AddOptions = new AddMovieOptions
                             {
-                                SearchForMovie = studio.SearchOnAdd,
+                                SearchForMovie = studio.SearchOnAdd && studio.MonitorNewItems,
                                 AddMethod = AddMovieMethod.Studio
                             },
-                            Monitored = true,
+                            Monitored = studio.MonitorNewItems,
                             Tags = studio.Tags
                         }).Chunk(chunkSize);
 

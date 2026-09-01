@@ -34,6 +34,7 @@ interface AddStudioSettings {
   rootFolderPath: SettingValue<string>;
   monitored: SettingValue<boolean>;
   moviesMonitored: SettingValue<boolean>;
+  monitorNewItems: SettingValue<boolean>;
   qualityProfileId: SettingValue<number>;
   searchForMovie: SettingValue<boolean>;
   tags: SettingValue<number[]>;
@@ -158,6 +159,7 @@ export function useAddNewStudioModalContent(studio: Studio) {
         rootFolderPath: settings.rootFolderPath.value,
         monitored: settings.monitored.value === true,
         moviesMonitored: settings.moviesMonitored.value === true,
+        monitorNewItems: settings.monitorNewItems.value === true,
         qualityProfileId: settings.qualityProfileId.value,
         searchForMovie: settings.searchForMovie.value,
         tags: settings.tags.value,

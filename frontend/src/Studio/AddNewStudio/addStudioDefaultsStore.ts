@@ -4,6 +4,7 @@ export interface AddStudioDefaults {
   rootFolderPath: string;
   monitored: boolean;
   moviesMonitored: boolean;
+  monitorNewItems: boolean;
   qualityProfileId: number;
   searchForMovie: boolean;
   tags: number[];
@@ -18,6 +19,7 @@ const addStudioDefaultsStore = createPersist<AddStudioDefaults>(
     rootFolderPath: '',
     monitored: true,
     moviesMonitored: false,
+    monitorNewItems: true,
     qualityProfileId: 0,
     searchForMovie: false,
     tags: [],

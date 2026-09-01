@@ -108,6 +108,17 @@ function AddNewStudioModalContent(props: AddNewStudioModalContentProps) {
               </FormGroup>
 
               <FormGroup>
+                <FormLabel>{translate('MonitorNewItems')}</FormLabel>
+                <FormInputGroup
+                  type={inputTypes.CHECK}
+                  name="monitorNewItems"
+                  {...settings.monitorNewItems}
+                  errors={settings.monitorNewItems?.errors}
+                  onChange={onInputChange}
+                />
+              </FormGroup>
+
+              <FormGroup>
                 <FormLabel>{translate('QualityProfile')}</FormLabel>
                 <FormInputGroup
                   type={inputTypes.QUALITY_PROFILE_SELECT}

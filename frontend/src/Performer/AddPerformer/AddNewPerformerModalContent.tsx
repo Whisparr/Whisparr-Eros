@@ -44,6 +44,7 @@ function AddNewPerformerModalContent({
     rootFolderPath,
     monitored,
     moviesMonitored,
+    monitorNewItems,
     qualityProfileId,
     searchForMovie,
     tags,
@@ -121,6 +122,17 @@ function AddNewPerformerModalContent({
                   name="moviesMonitored"
                   helpText={translate('MonitoredPerformerMovieHelpText')}
                   {...moviesMonitored}
+                  onChange={onInputChange}
+                />
+              </FormGroup>
+
+              <FormGroup>
+                <FormLabel>{translate('MonitorNewItems')}</FormLabel>
+
+                <FormInputGroup
+                  type={inputTypes.CHECK}
+                  name="monitorNewItems"
+                  {...monitorNewItems}
                   onChange={onInputChange}
                 />
               </FormGroup>
