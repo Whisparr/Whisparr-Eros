@@ -109,9 +109,12 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.app.outputs.token }}
           # Issues are disabled on Whisparr-Eros and tracked on Whisparr for
-          # both repos, so every gh call in this step -- label and issue alike
-          # -- has to be aimed off this repo.
-          GH_REPO: Whisparr/Whisparr
+          # both repos, so every gh call in this step has to be aimed off this
+          # repo. Passed as an explicit --repo rather than GH_REPO: gh honours
+          # GH_REPO for `issue`, but `label create` ignored it and made the
+          # label against the checkout's remote instead, which is how the first
+          # two issues were opened unlabelled and then duplicated.
+          ISSUES_REPO: Whisparr/Whisparr
           TITLE: ${{ matrix.title }}
           OUTSTANDING: ${{ fromJSON(steps.attempt.outputs.summary).outstanding }}
         run: |
@@ -119,16 +122,22 @@ jobs:
 
           # Created here rather than by hand so a fresh clone of this repo can
           # run the workflow without setup.
-          gh label create upstream \
+          gh label create upstream --repo "$ISSUES_REPO" \
             --description 'Tracking issue for the upstream sync backlog' \
             --color 'ededed' --force
 
+          # Matched on the title, not the label. The label is applied for
+          # humans, but it is not what identifies the issue: if it ever fails to
+          # stick, a label-filtered lookup silently finds nothing and opens a
+          # second issue every run.
+          #
           # --state all, not open: the issue is closed whenever the backlog
           # empties, and the next upstream commit has to reopen that same issue
           # rather than start a second one.
-          FOUND=$(gh issue list --label upstream --state all --limit 50 \
+          FOUND=$(gh issue list --repo "$ISSUES_REPO" --state all --limit 100 \
+            --search "\"${TITLE}\" in:title" \
             --json number,title,state \
-            --jq "map(select(.title == \"${TITLE}\")) | .[0] // empty")
+            --jq "map(select(.title == \"${TITLE}\")) | sort_by(.number) | .[0] // empty")
 
           NUMBER=$(printf '%s' "$FOUND" | jq -r '.number // empty')
           STATE=$(printf '%s' "$FOUND" | jq -r '.state // empty')
@@ -146,14 +155,17 @@ jobs:
               exit 0
             fi
 
-            gh issue create --title "$TITLE" --label upstream --body-file issue.md
+            gh issue create --repo "$ISSUES_REPO" \
+              --title "$TITLE" --label upstream --body-file issue.md
             exit 0
           fi
 
-          gh issue edit "$NUMBER" --body-file issue.md
+          gh issue edit "$NUMBER" --repo "$ISSUES_REPO" --body-file issue.md
 
           if [ "$OUTSTANDING" -eq 0 ] && [ "$STATE" = "OPEN" ]; then
-            gh issue close "$NUMBER" --comment 'Backlog is empty. Reopened automatically when the next upstream commit lands.'
+            gh issue close "$NUMBER" --repo "$ISSUES_REPO" \
+              --comment 'Backlog is empty. Reopened automatically when the next upstream commit lands.'
           elif [ "$OUTSTANDING" -gt 0 ] && [ "$STATE" = "CLOSED" ]; then
-            gh issue reopen "$NUMBER" --comment "${OUTSTANDING} new upstream commit(s) to disposition."
+            gh issue reopen "$NUMBER" --repo "$ISSUES_REPO" \
+              --comment "${OUTSTANDING} new upstream commit(s) to disposition."
           fi
