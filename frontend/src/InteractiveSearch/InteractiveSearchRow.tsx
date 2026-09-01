@@ -146,7 +146,7 @@ function InteractiveSearchRow(props: InteractiveSearchRowProps) {
   // whichever button starts the grab, both report it.
   const { grabRelease, isGrabbing, isGrabbed, grabError } = useGrabRelease();
 
-  const { longDateFormat, timeFormat } = useUiSettingsValues();
+  const { longDateFormat, timeFormat, timeZone } = useUiSettingsValues();
 
   const { historyGrabbedData, historyFailedData, blocklistedData } =
     useReleaseHistory(guid, searchPayload.movieId);
@@ -205,6 +205,7 @@ function InteractiveSearchRow(props: InteractiveSearchRowProps) {
         className={styles.age}
         title={formatDateTime(publishDate, longDateFormat, timeFormat, {
           includeSeconds: true,
+          timeZone,
         })}
       >
         {formatAge(age, ageHours, ageMinutes)}

@@ -118,8 +118,13 @@ export default function QueuedTaskRow(props: QueuedTaskRowProps) {
   } = props;
 
   const { cancelCommand } = useCancelCommand(id);
-  const { longDateFormat, shortDateFormat, showRelativeDates, timeFormat } =
-    useUiSettingsValues();
+  const {
+    longDateFormat,
+    shortDateFormat,
+    showRelativeDates,
+    timeFormat,
+    timeZone,
+  } = useUiSettingsValues();
 
   const updateTimeTimeoutId = useRef<ReturnType<typeof setTimeout> | null>(
     null
@@ -192,21 +197,23 @@ export default function QueuedTaskRow(props: QueuedTaskRowProps) {
 
       <TableRowCell
         className={styles.queued}
-        title={formatDateTime(queued, longDateFormat, timeFormat)}
+        title={formatDateTime(queued, longDateFormat, timeFormat, { timeZone })}
       >
         {queuedAt}
       </TableRowCell>
 
       <TableRowCell
         className={styles.started}
-        title={formatDateTime(started, longDateFormat, timeFormat)}
+        title={formatDateTime(started, longDateFormat, timeFormat, {
+          timeZone,
+        })}
       >
         {startedAt}
       </TableRowCell>
 
       <TableRowCell
         className={styles.ended}
-        title={formatDateTime(ended, longDateFormat, timeFormat)}
+        title={formatDateTime(ended, longDateFormat, timeFormat, { timeZone })}
       >
         {endedAt}
       </TableRowCell>

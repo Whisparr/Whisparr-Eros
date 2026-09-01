@@ -12,8 +12,8 @@
       "repo": "Sonarr/Sonarr",
       "branch": "v5-develop",
       "owns": "frontend",
-      "highWater": "37dfad11f26301c1d0dbfd944df1e4bdc0d44d89",
-      "highWaterNote": "2025-10-30 'Remove v3 updates from UI'. Everything on Sonarr v5-develop at or before this point is dispositioned. Deliberately stops one short of the end of 2025-10: 550cf8d39 'New: Option to specify timezone for formatting times in the UI' is a feature decision being taken as its own PR, so it stays outstanding rather than being recorded as settled. Advance only when everything at or before the new mark is settled."
+      "highWater": "550cf8d39963f30da7273b884c6007ce9da9cdf0",
+      "highWaterNote": "2025-10-31 'New: Option to specify timezone for formatting times in the UI'. Everything on Sonarr v5-develop at or before this point is dispositioned -- 2025-10 is now complete. Advance only when everything at or before the new mark is settled."
     }
   },
   "dispositions": {
@@ -1105,6 +1105,12 @@
         "month": "2025-10",
         "disposition": "have",
         "reason": "Drops the redux fetchUpdates dispatch in favour of react-query refetch. Our AppUpdatedModalContent already uses useUpdates() with refetch and useAppValues, with no redux anywhere in the tree."
+      },
+      "550cf8d39963f30da7273b884c6007ce9da9cdf0": {
+        "subject": "New: Option to specify timezone for formatting times in the UI",
+        "month": "2025-10",
+        "disposition": "adapt",
+        "reason": "Taken as its own PR because it is a feature, not a sync: a new dependency, a settings field and a config key. Adapted in two ways. Only moment-timezone was added -- upstream also pulls @types/moment-timezone, which npm marks as a deprecated stub since moment-timezone ships its own types. And the zone is deliberately not applied to date-only values: our getRelativeDate forces a UTC calendar for YYYY-MM-DD and midnight-UTC strings because scene and release dates carry no time of day, so converting them would move the calendar day rather than the clock. Applied wider than upstream's four consumers by threading it through the shared RelativeDateCell."
       }
     }
   }
