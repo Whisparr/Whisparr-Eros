@@ -318,6 +318,24 @@ function gateFor(name, commit) {
     };
   }
 
+  // A GitHub App token cannot push a commit that touches .github/workflows/
+  // without the `workflows` permission, so one of these in the batch fails the
+  // push and takes every other pick with it. Granting the app that permission
+  // is the wrong trade: it would let an unattended cherry-picker rewrite our
+  // CI. These are held for a human instead -- which is what upstream CI
+  // deserves anyway, being mostly their labels, their release automation and
+  // their bots. We have declined a run of them already, `close_invalid_issues`
+  // among them.
+  if (commit.files.some((f) => f.startsWith('.github/workflows/'))) {
+    return {
+      gate: 'workflows',
+      reason:
+        'Touches .github/workflows/. The app token cannot push workflow changes, and upstream CI ' +
+        'is tuned to their labels, bots and release process, so each one needs reading rather than ' +
+        'replaying.',
+    };
+  }
+
   if (commit.files.some((f) => f.startsWith('src/NzbDrone.Core/Parser/'))) {
     return {
       gate: 'parser',
