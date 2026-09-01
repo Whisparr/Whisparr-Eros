@@ -26,15 +26,14 @@ Owns: **backend**. High-water mark: `68b93db78c`.
 
 ## sonarr — Sonarr/Sonarr `v5-develop`
 
-<!-- outstanding: 471 -->
+<!-- outstanding: 398 -->
 
-Owns: **frontend**. High-water mark: `550cf8d399`.
+Owns: **frontend**. High-water mark: `1178c98341`.
 
-**471 outstanding.**
+**398 outstanding.**
 
 | Month | Total | be | fe | be+fe | chore |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| 2025-11 | 73 | 46 | 21 | 6 | 0 |
 | 2025-12 | 74 | 46 | 19 | 7 | 2 |
 | 2026-01 | 62 | 37 | 15 | 10 | 0 |
 | 2026-02 | 19 | 12 | 4 | 2 | 1 |
@@ -43,82 +42,6 @@ Owns: **frontend**. High-water mark: `550cf8d399`.
 | 2026-05 | 82 | 48 | 20 | 5 | 9 |
 | 2026-06 | 30 | 16 | 5 | 3 | 6 |
 | 2026-07 | 36 | 19 | 7 | 6 | 4 |
-
-### 2025-11
-
-- `be   ` [`81c6f3ac7`](https://github.com/Sonarr/Sonarr/commit/81c6f3ac753e6a0b78e27b85f47ea71da96e101a) Multiple Translations updated by Weblate — *Weblate*
-- `be   ` [`52ba6f459`](https://github.com/Sonarr/Sonarr/commit/52ba6f4593077ff2876f5c29f5a6e44be1b0d23d) Automated API Docs update — *Sonarr*
-- `be   ` [`79f1d2e38`](https://github.com/Sonarr/Sonarr/commit/79f1d2e38c3e0497fc641b93389ccc97a6a6346d) Set known networks to RFC 1918 ranges during startup — *Mark McDowall*
-- `be   ` [`7ef3b6bd0`](https://github.com/Sonarr/Sonarr/commit/7ef3b6bd0ade59bebf9dfa289c1751fd38972114) Add private IPv6 networks — *Mark McDowall*
-- `be   ` [`a85419df1`](https://github.com/Sonarr/Sonarr/commit/a85419df15532da666b7adf4b94d588b76caad79) New: Minimum Score for MAL Import List — *Andrew Ukkonen*
-- `be   ` [`4f7425086`](https://github.com/Sonarr/Sonarr/commit/4f7425086ebacd3ff80e115e3f3bf218d8a84698) New: Parse 'F1RST' releases as Korean — *Harry Kim*
-- `be   ` [`fc0c26c2b`](https://github.com/Sonarr/Sonarr/commit/fc0c26c2b35955cc33653afdad0277eb85aa52b8) Add v5 System endpoints — *Mark McDowall*
-- `fe   ` [`49c52c2e1`](https://github.com/Sonarr/Sonarr/commit/49c52c2e1a467c8978bb5d10decf9d439ad59e77) Use react-query for System Status — *Mark McDowall*
-- `be   ` [`dacd46962`](https://github.com/Sonarr/Sonarr/commit/dacd4696274f63edbf8dd044f88a8cc23106a154) New: Parse 'jap' and 'jpn' as Japanese — *Mark McDowall*
-- `be   ` [`b803635b6`](https://github.com/Sonarr/Sonarr/commit/b803635b6ce370596fa5ec316f6e7e7d787ec254) Return maximum long value on overflow getting disk information — *Mark McDowall*
-- `be   ` [`8718f28fb`](https://github.com/Sonarr/Sonarr/commit/8718f28fbd652d3254873d197b0875859c508ae9) Fixed: Loading queue or processing releases slow with many Pending Releases — *Mark McDowall*
-- `fe   ` [`0ff644e84`](https://github.com/Sonarr/Sonarr/commit/0ff644e842168945db086afc29c06ac3b5cb37ee) Queue hiding when switching pages — *Mark McDowall*
-- `be   ` [`255f1c37c`](https://github.com/Sonarr/Sonarr/commit/255f1c37c3560fd13287e9def164c64c84e6fc3a) Fallback to host sqlite3 on FreeBSD and Linux — *Bogdan*
-- `be   ` [`4f149257c`](https://github.com/Sonarr/Sonarr/commit/4f149257c094f1c92949d8586b18e2bd4d13d608) Add finale type to on grab custom script notifications — *Stevie Robinson*
-- `be   ` [`beadc687a`](https://github.com/Sonarr/Sonarr/commit/beadc687ae47c6d90cba247f84595a692d79a736) Add reason to health check — *Mark McDowall*
-- `be   ` [`9bc9d6d40`](https://github.com/Sonarr/Sonarr/commit/9bc9d6d400ff479c8348deaf6755a6c4a7547d22) Add v5 health endpoints — *Mark McDowall*
-- `fe   ` [`0552a8118`](https://github.com/Sonarr/Sonarr/commit/0552a81180255027416dc3f8d98f1c3fb2cf19ec) Use react-query for Health UI — *Mark McDowall*
-- `be   ` [`2bc30037b`](https://github.com/Sonarr/Sonarr/commit/2bc30037bd149901992c2251861ef32c01e4d1df) Add v5 diskspace endpoint — *Mark McDowall*
-- `fe   ` [`871ae9555`](https://github.com/Sonarr/Sonarr/commit/871ae9555b918f0fd0229bb4082d83b38b25a648) Use react-query for disk space — *Mark McDowall*
-- `fe   ` [`b64cc6557`](https://github.com/Sonarr/Sonarr/commit/b64cc65579b40b20d4fc4f04a59dc65e4557f454) Remove updates, log files from app state — *Mark McDowall*
-- `be   ` [`0df0212b3`](https://github.com/Sonarr/Sonarr/commit/0df0212b3ad808e0c9ba70700514b57b2924febd) Multiple Translations updated by Weblate — *Weblate*
-- `be   ` [`08f0a5a96`](https://github.com/Sonarr/Sonarr/commit/08f0a5a960984efb5bb0c2c15f77958fce04fcd4) Automated API Docs update — *Sonarr*
-- `fe   ` [`910b85f37`](https://github.com/Sonarr/Sonarr/commit/910b85f37d41d928b08d97dcb5591972dbccdb82) New: Improve 'Select All' in Library Import — *Mark McDowall*
-- `be+fe` [`b5967425f`](https://github.com/Sonarr/Sonarr/commit/b5967425f1e80fef56a29dba74c57dfb414efd63) Convert select to SelectContext — *Mark McDowall*
-- `fe   ` [`7960bb8c7`](https://github.com/Sonarr/Sonarr/commit/7960bb8c7d8726fcf6fbffd5e094be709d2d0426) Fix episode status on wanted — *Mark McDowall*
-- `be   ` [`565f967f7`](https://github.com/Sonarr/Sonarr/commit/565f967f7a1bab9bf4edf163cb3cb218070c9f3a) Add v5 task endpoints — *Mark McDowall*
-- `fe   ` [`3091f40ca`](https://github.com/Sonarr/Sonarr/commit/3091f40ca813b7d72555d6e2dadbdd710a32f01a) Use react-query for tasks — *Mark McDowall*
-- `be   ` [`29170f17d`](https://github.com/Sonarr/Sonarr/commit/29170f17d2887eaf8dae3996d2db0f0d6bbaba4e) Add v5 backup endpoints — *Mark McDowall*
-- `fe   ` [`c295e24fc`](https://github.com/Sonarr/Sonarr/commit/c295e24fc69cd2024d76ec796b9b63255f5a1239) Use react-query for backups — *Mark McDowall*
-- `be   ` [`5867cd5f4`](https://github.com/Sonarr/Sonarr/commit/5867cd5f474e7e4d3c1b79fcff771c105cc66885) New: Ignore torrents from Flood with matching Post-Import Tags — *Mark McDowall*
-- `be   ` [`6a3e1278a`](https://github.com/Sonarr/Sonarr/commit/6a3e1278a58f47dad779b0e619e8d80ebb3e8e82) Add v5 calendar endpoints — *Mark McDowall*
-- `fe   ` [`ccb7f07c2`](https://github.com/Sonarr/Sonarr/commit/ccb7f07c261f8b5d063dc06164ac87b031215e04) Use react-query for Calendar UI — *Mark McDowall*
-- `be+fe` [`2098303e2`](https://github.com/Sonarr/Sonarr/commit/2098303e25df0fe1a743e96888891aff8ce97b9a) New: Improve Plex auth for Cross-Origin-Opener-Policy  support — *Mark McDowall*
-- `be   ` [`19a65d672`](https://github.com/Sonarr/Sonarr/commit/19a65d672f5cca14302d820289e5af161cf1d320) Add v5 parse endpoint — *Mark McDowall*
-- `fe   ` [`263f4839a`](https://github.com/Sonarr/Sonarr/commit/263f4839ab41d7b121293de9869d61e0f1f4f2e0) Use react-query for parse — *Mark McDowall*
-- `be   ` [`f10426825`](https://github.com/Sonarr/Sonarr/commit/f104268256ab757d0d3e6e6410480a05dccadc7d) Multiple Translations updated by Weblate — *Weblate*
-- `be   ` [`317cdf155`](https://github.com/Sonarr/Sonarr/commit/317cdf15582746bd4e713d6b99e17a21dcb8abeb) add TTL setting for pushover notifications — *Stevie Robinson*
-- `be   ` [`5a702dec1`](https://github.com/Sonarr/Sonarr/commit/5a702dec12a24a1b2f7c23a40079c563a31c2573) Add v5 episode, missing and cutoff unmet endpoints — *Mark McDowall*
-- `fe   ` [`407127818`](https://github.com/Sonarr/Sonarr/commit/4071278183fd80fdf522c5fe2d766a790766fae6) Use react-query for wanted missing and cutoff unmet — *Mark McDowall*
-- `be   ` [`e89d58985`](https://github.com/Sonarr/Sonarr/commit/e89d58985aad02ee72e8169984e29075a4fb93b2) Fix task endpoint — *Mark McDowall*
-- `be   ` [`20ad1b441`](https://github.com/Sonarr/Sonarr/commit/20ad1b44106581324a6f07e582df56cc6a93d868) Add v5 tag endpoints — *Mark McDowall*
-- `fe   ` [`0809a72ce`](https://github.com/Sonarr/Sonarr/commit/0809a72ce53e54da411a68daf5f9dbd5f8fc04a7) Use react-query for tags — *Mark McDowall*
-- `be   ` [`e1cfc5f55`](https://github.com/Sonarr/Sonarr/commit/e1cfc5f550fb65ae516021fb3d6a648e6b29d35b) Multiple Translations updated by Weblate — *Weblate*
-- `be   ` [`21592f3d6`](https://github.com/Sonarr/Sonarr/commit/21592f3d6900a7a4c3716ced455569efb49a0c99) Automated API Docs update — *Sonarr*
-- `fe   ` [`aac4760d3`](https://github.com/Sonarr/Sonarr/commit/aac4760d30303c20bd896c451837a4cfa0a4e8f1) Fix changing sort direction — *Mark McDowall*
-- `be   ` [`ae18ad61b`](https://github.com/Sonarr/Sonarr/commit/ae18ad61bd9865755b4067709de47c1404fd4078) Fixed: Testing qBittorrent after credentials change would always pass tests — *Mark McDowall*
-- `be   ` [`d4f14246f`](https://github.com/Sonarr/Sonarr/commit/d4f14246f16821aa60fc78fa079cd9e96899c9ef) New: Postgres Connection String option — *solidDoWant*
-- `be   ` [`7284898c7`](https://github.com/Sonarr/Sonarr/commit/7284898c7d3a36fa7cc62e025a3c8bd8dcb13fcf) New: Ignore extra files in theme-music and backdrop folders — *Mark McDowall*
-- `be   ` [`d2107e92f`](https://github.com/Sonarr/Sonarr/commit/d2107e92f374fb508db51701fc9d06bb5f8546f8) Episodes for queue item should not be null — *Mark McDowall*
-- `be   ` [`9cdf1bf72`](https://github.com/Sonarr/Sonarr/commit/9cdf1bf721c70c448897b31598f9ce099e5a25f9) Add v5 episode file endpoints — *Mark McDowall*
-- `fe   ` [`44fc1e0e8`](https://github.com/Sonarr/Sonarr/commit/44fc1e0e85b30cb535912ad120d9a7b624c4ffd8) Use react-query for episode files — *Mark McDowall*
-- `fe   ` [`6629ebc6e`](https://github.com/Sonarr/Sonarr/commit/6629ebc6e0bb3c4a4c24633242470ffa8d7e2fda) Fix manual import title when importing from Queue — *Mark McDowall*
-- `fe   ` [`a047053fa`](https://github.com/Sonarr/Sonarr/commit/a047053faeed47037b17def98c1dc1a63ae908b5) Change Manage Episodes import button to Apply — *Mark McDowall*
-- `be   ` [`84fbab6ab`](https://github.com/Sonarr/Sonarr/commit/84fbab6ab48e50c13f817aa1bfa1d1c2f720980c) Simplify StyleCop.Analyzers as dependency for all projects — *Bogdan*
-- `be   ` [`26934a5d8`](https://github.com/Sonarr/Sonarr/commit/26934a5d81e4bd16d15ddc3d1edbf073fe0decd9) Simplify GitHubActionsTestLogger as dependency to test projects — *Bogdan*
-- `be   ` [`dd84bcd91`](https://github.com/Sonarr/Sonarr/commit/dd84bcd9192d2edc5261c00ca3deb1687fb5a2ea) Bump Sentry to 5.16.2 — *Bogdan*
-- `be   ` [`449caa12e`](https://github.com/Sonarr/Sonarr/commit/449caa12e36a4810eff741cb1089a66f9aa7c578) Add v5 root folder endpoints — *Mark McDowall*
-- `be+fe` [`7a5157df2`](https://github.com/Sonarr/Sonarr/commit/7a5157df29f439ecac8aa763cec74332452a57fa) Use react-query for root folders — *Mark McDowall*
-- `be   ` [`f76ae1cce`](https://github.com/Sonarr/Sonarr/commit/f76ae1cce975cd98b819996020aba35f4895e17b) Fixed: Respect delay profile when repacks and propers aren't preferred — *Auggie*
-- `be   ` [`8e537cb62`](https://github.com/Sonarr/Sonarr/commit/8e537cb626b5e3e816e6aaaebf7823f14198c899) Don't send full paths to Skyhook for searches — *Mark McDowall*
-- `be   ` [`9b756df4b`](https://github.com/Sonarr/Sonarr/commit/9b756df4bfa55eca0524413e5bee2a9d5bfb8fc7) Add v5 release endpoints — *Mark McDowall*
-- `be+fe` [`8f95849e9`](https://github.com/Sonarr/Sonarr/commit/8f95849e9ba2341aa0da1c46af4f04a272861d7a) Use react-query for interactive search — *Mark McDowall*
-- `be   ` [`e4298d013`](https://github.com/Sonarr/Sonarr/commit/e4298d0135d398a9b70208b2d7b036a834e829f2) Add additional v5 history endpoints — *Mark McDowall*
-- `be+fe` [`4c556eacc`](https://github.com/Sonarr/Sonarr/commit/4c556eacc1566eea9d9c4296484abbba9da91574) New: Show grabbed/blocklisted releases in Interactive Search — *Mark McDowall*
-- `be   ` [`9db17883d`](https://github.com/Sonarr/Sonarr/commit/9db17883df420800a0f4e29bbe8acd55f9aa8c48) Automated API Docs update — *Sonarr*
-- `be   ` [`1ca148a7a`](https://github.com/Sonarr/Sonarr/commit/1ca148a7a9de905232074cf69333b79adc4d3c10) Multiple Translations updated by Weblate — *Weblate*
-- `be   ` [`2f119fefd`](https://github.com/Sonarr/Sonarr/commit/2f119fefd1222227545766325caf0b5acd4a012e) Add additional v5 filesystem endpoints — *Mark McDowall*
-- `fe   ` [`91b242902`](https://github.com/Sonarr/Sonarr/commit/91b242902d995e2cbd080b87ce289dbba84cfbdd) Use react-query for path input and file browser — *Mark McDowall*
-- `be+fe` [`7d2e01d51`](https://github.com/Sonarr/Sonarr/commit/7d2e01d5161f9f6610d073574e46418987183e9c) Use react-query for custom filters — *Mark McDowall*
-- `fe   ` [`d252fa8ed`](https://github.com/Sonarr/Sonarr/commit/d252fa8ed6523739f2347c4acbf78e6e52be3523) Improve backup mutations — *Mark McDowall*
-- `be   ` [`4959ef432`](https://github.com/Sonarr/Sonarr/commit/4959ef4321923b33170547d1afcf4cfb2f54295e) Automated API Docs update — *Sonarr*
-- `fe   ` [`a97f2c016`](https://github.com/Sonarr/Sonarr/commit/a97f2c016b81de3f56ba6aec616638545f5c6b25) Use react-query for episode selection — *Mark McDowall*
-- `fe   ` [`1178c9834`](https://github.com/Sonarr/Sonarr/commit/1178c98341f8f8f2d69f6f5b7645755fdf1c544f) Use react-query for episodes — *Mark McDowall*
 
 ### 2025-12
 
@@ -674,6 +597,79 @@ Commits reviewed and dispositioned. Skips carry their reason.
 | [`ff5e73273`](https://github.com/Sonarr/Sonarr/commit/ff5e73273b02f90be9ee03307cd6909e8b5fb8bd) | Use react-query for Log Files | `have` | We already have frontend/src/System/Logs/useLogFiles.ts and the redux systemActions.js this strips from never existed here. |
 | [`37dfad11f`](https://github.com/Sonarr/Sonarr/commit/37dfad11f26301c1d0dbfd944df1e4bdc0d44d89) | Remove v3 updates from UI | `have` | Drops the redux fetchUpdates dispatch in favour of react-query refetch. Our AppUpdatedModalContent already uses useUpdates() with refetch and useAppValues, with no redux anywhere in the tree. |
 | [`550cf8d39`](https://github.com/Sonarr/Sonarr/commit/550cf8d39963f30da7273b884c6007ce9da9cdf0) | New: Option to specify timezone for formatting times in the UI | `adapt` | Taken as its own PR because it is a feature, not a sync: a new dependency, a settings field and a config key. Adapted in two ways. Only moment-timezone was added -- upstream also pulls @types/moment-timezone, which npm marks as a deprecated stub since moment-timezone ships its own types. And the zone is deliberately not applied to date-only values: our getRelativeDate forces a UTC calendar for YYYY-MM-DD and midnight-UTC strings because scene and release dates carry no time of day, so converting them would move the calendar day rather than the clock. Applied wider than upstream's four consumers by threading it through the shared RelativeDateCell. |
+| [`81c6f3ac7`](https://github.com/Sonarr/Sonarr/commit/81c6f3ac753e6a0b78e27b85f47ea71da96e101a) | Multiple Translations updated by Weblate | `skip` | Weblate-owned translation updates; no en.json keys touched here. |
+| [`52ba6f459`](https://github.com/Sonarr/Sonarr/commit/52ba6f4593077ff2876f5c29f5a6e44be1b0d23d) | Automated API Docs update | `skip` | Automated API docs update for their V5 spec; our OpenAPI document is generated at runtime and served from /docs - there is no checked-in copy to sync. |
+| [`79f1d2e38`](https://github.com/Sonarr/Sonarr/commit/79f1d2e38c3e0497fc641b93389ccc97a6a6346d) | Set known networks to RFC 1918 ranges during startup | `have` | Our Startup.cs already registers the same RFC 1918 ranges in KnownNetworks (plus fc00::/7 and fe80::/10 from a2888696cc #645); Sonarr's rewrite of that block has no delta here. |
+| [`7ef3b6bd0`](https://github.com/Sonarr/Sonarr/commit/7ef3b6bd0ade59bebf9dfa289c1751fd38972114) | Add private IPv6 networks | `have` | a2888696cc (#645) added the fc00::/7 and fe80::/10 private IPv6 ranges to our KnownNetworks three days before upstream landed this; nothing to add. |
+| [`a85419df1`](https://github.com/Sonarr/Sonarr/commit/a85419df15532da666b7adf4b94d588b76caad79) | New: Minimum Score for MAL Import List | `skip` | Minimum Score knob for the MAL import list; we do not ship an MAL import list (only HttpImportListBase and the Whisparr importer), so there is nothing to attach it to. |
+| [`4f7425086`](https://github.com/Sonarr/Sonarr/commit/4f7425086ebacd3ff80e115e3f3bf218d8a84698) | New: Parse 'F1RST' releases as Korean | `skip` | Parser change under the skip-by-default rule; 'F1RST' -> Korean is a release-token addition that belongs in our own parser pass if scene titles need it. |
+| [`fc0c26c2b`](https://github.com/Sonarr/Sonarr/commit/fc0c26c2b35955cc33653afdad0277eb85aa52b8) | Add v5 System endpoints | `skip` | V5 System endpoints - the V5 API surface has no equivalent project in this tree. |
+| [`49c52c2e1`](https://github.com/Sonarr/Sonarr/commit/49c52c2e1a467c8978bb5d10decf9d439ad59e77) | Use react-query for System Status | `skip` | Post-port frontend: our pages already landed on react-query in the port snapshot; Sonarr's per-page migrations target pre-migration code that no longer exists here. |
+| [`dacd46962`](https://github.com/Sonarr/Sonarr/commit/dacd4696274f63edbf8dd044f88a8cc23106a154) | New: Parse 'jap' and 'jpn' as Japanese | `pick` | Adds 'jap' and 'jpn' tokens to the Japanese language match; applied as-is with a LanguageParserFixture TestCase row. |
+| [`b803635b6`](https://github.com/Sonarr/Sonarr/commit/b803635b6ce370596fa5ec316f6e7e7d787ec254) | Return maximum long value on overflow getting disk information | `have` | Overflow guard already present in src/NzbDrone.Mono/Disk/ProcMount.cs: TotalFreeSpace catches OverflowException, warns and returns long.MaxValue. No delta. |
+| [`8718f28fb`](https://github.com/Sonarr/Sonarr/commit/8718f28fbd652d3254873d197b0875859c508ae9) | Fixed: Loading queue or processing releases slow with many Pending Releases | `skip` | Caches pending-release resolution per app start / quality-profile update so queue loads stop re-parsing every held release. Every production file conflicts with our diverged PendingReleaseService tree (RemovePendingObsoleteFixture was removed locally); porting by hand is out of scope for a sync pass - revisit as its own change. |
+| [`0ff644e84`](https://github.com/Sonarr/Sonarr/commit/0ff644e842168945db086afc29c06ac3b5cb37ee) | Queue hiding when switching pages | `skip` | Post-port frontend fix to Queue.tsx/usePagedApiQuery; our queue page diverged from the v5-develop shape at port time and does not take this diff. |
+| [`255f1c37c`](https://github.com/Sonarr/Sonarr/commit/255f1c37c3560fd13287e9def164c64c84e6fc3a) | Fallback to host sqlite3 on FreeBSD and Linux | `have` | AssemblyLoader.LoadNativeLib already does the TryLoad-first sqlite3/e_sqlite3 path with the ThrowIfNullOrWhiteSpace guard; no delta. |
+| [`4f149257c`](https://github.com/Sonarr/Sonarr/commit/4f149257c094f1c92949d8586b18e2bd4d13d608) | Add finale type to on grab custom script notifications | `skip` | 'Finale' is an episode/series concept added to the on-grab custom script variables; movie grabs have no episode types, so nothing maps here. |
+| [`beadc687a`](https://github.com/Sonarr/Sonarr/commit/beadc687ae47c6d90cba247f84595a692d79a736) | Add reason to health check | `skip` | Feature: adds a Reason payload across every health check plus API/UI plumbing. Not part of this sync scope; can be requested on its own. |
+| [`9bc9d6d40`](https://github.com/Sonarr/Sonarr/commit/9bc9d6d400ff479c8348deaf6755a6c4a7547d22) | Add v5 health endpoints | `skip` | V5 health endpoints - V5 API surface only; nothing to sync. |
+| [`0552a8118`](https://github.com/Sonarr/Sonarr/commit/0552a81180255027416dc3f8d98f1c3fb2cf19ec) | Use react-query for Health UI | `skip` | Post-port frontend: Health page react-query migration targets pre-migration code not present here. |
+| [`2bc30037b`](https://github.com/Sonarr/Sonarr/commit/2bc30037bd149901992c2251861ef32c01e4d1df) | Add v5 diskspace endpoint | `skip` | V5 diskspace endpoint - V5 API surface only. |
+| [`871ae9555`](https://github.com/Sonarr/Sonarr/commit/871ae9555b918f0fd0229bb4082d83b38b25a648) | Use react-query for disk space | `skip` | Post-port frontend: disk space react-query migration; our pages already diverged at port time. |
+| [`b64cc6557`](https://github.com/Sonarr/Sonarr/commit/b64cc65579b40b20d4fc4f04a59dc65e4557f454) | Remove updates, log files from app state | `skip` | Removes updates/log-files from their redux app-state slice; that slice no longer exists in the ported frontend. |
+| [`0df0212b3`](https://github.com/Sonarr/Sonarr/commit/0df0212b3ad808e0c9ba70700514b57b2924febd) | Multiple Translations updated by Weblate | `skip` | Weblate-owned translation updates; no en.json keys touched here. |
+| [`08f0a5a96`](https://github.com/Sonarr/Sonarr/commit/08f0a5a960984efb5bb0c2c15f77958fce04fcd4) | Automated API Docs update | `skip` | Automated API docs update for their V5 spec; our OpenAPI document is generated at runtime and served from /docs - there is no checked-in copy to sync. |
+| [`910b85f37`](https://github.com/Sonarr/Sonarr/commit/910b85f37d41d928b08d97dcb5591972dbccdb82) | New: Improve 'Select All' in Library Import | `skip` | Deferred by user decision: the new App/Select foundation plus Library Import page migration is feature-scale work, out of scope for a sync pass. Revisit as its own change. |
+| [`b5967425f`](https://github.com/Sonarr/Sonarr/commit/b5967425f1e80fef56a29dba74c57dfb414efd63) | Convert select to SelectContext | `skip` | Part of the same deferred Select-foundation work (see 910b85f37). |
+| [`7960bb8c7`](https://github.com/Sonarr/Sonarr/commit/7960bb8c7d8726fcf6fbffd5e094be709d2d0426) | Fix episode status on wanted | `skip` | Episode status on the series-shaped wanted page; our ported Library pages do not share that shape. |
+| [`565f967f7`](https://github.com/Sonarr/Sonarr/commit/565f967f7a1bab9bf4edf163cb3cb218070c9f3a) | Add v5 task endpoints | `skip` | V5 task endpoints - V5 API surface only; nothing to sync. |
+| [`3091f40ca`](https://github.com/Sonarr/Sonarr/commit/3091f40ca813b7d72555d6e2dadbdd710a32f01a) | Use react-query for tasks | `skip` | Post-port frontend: tasks page react-query migration targets pre-migration code not present here. |
+| [`29170f17d`](https://github.com/Sonarr/Sonarr/commit/29170f17d2887eaf8dae3996d2db0f0d6bbaba4e) | Add v5 backup endpoints | `skip` | V5 backup endpoints - V5 API surface only. |
+| [`c295e24fc`](https://github.com/Sonarr/Sonarr/commit/c295e24fc69cd2024d76ec796b9b63255f5a1239) | Use react-query for backups | `skip` | Post-port frontend: backups page react-query migration targets pre-migration code not present here. |
+| [`5867cd5f4`](https://github.com/Sonarr/Sonarr/commit/5867cd5f474e7e4d3c1b79fcff771c105cc66885) | New: Ignore torrents from Flood with matching Post-Import Tags | `pick` | GetItems skips queue items already carrying all post-import tags and settings reject a post-import tag that is also an initial tag. The auto-tagging half of this feature landed earlier via the Radarr chain; only the filter, validation rule and help text were missing. |
+| [`6a3e1278a`](https://github.com/Sonarr/Sonarr/commit/6a3e1278a58f47dad779b0e619e8d80ebb3e8e82) | Add v5 calendar endpoints | `skip` | V5 calendar endpoints - V5 API surface only. |
+| [`ccb7f07c2`](https://github.com/Sonarr/Sonarr/commit/ccb7f07c261f8b5d063dc06164ac87b031215e04) | Use react-query for Calendar UI | `skip` | Post-port frontend: Calendar page react-query migration targets pre-migration code not present here. |
+| [`2098303e2`](https://github.com/Sonarr/Sonarr/commit/2098303e25df0fe1a743e96888891aff8ce97b9a) | New: Improve Plex auth for Cross-Origin-Opener-Policy  support | `skip` | Plex COOP auth support spans oauth.html/oAuthActions.js plus ImportLists/Plex, which we do not ship; it does not apply as a whole to our notification-only Plex surface. |
+| [`19a65d672`](https://github.com/Sonarr/Sonarr/commit/19a65d672f5cca14302d820289e5af161cf1d320) | Add v5 parse endpoint | `skip` | V5 parse endpoint - V5 API surface only. |
+| [`263f4839a`](https://github.com/Sonarr/Sonarr/commit/263f4839ab41d7b121293de9869d61e0f1f4f2e0) | Use react-query for parse | `skip` | Post-port frontend: parse page react-query migration targets pre-migration code not present here. |
+| [`f10426825`](https://github.com/Sonarr/Sonarr/commit/f104268256ab757d0d3e6e6410480a05dccadc7d) | Multiple Translations updated by Weblate | `skip` | Weblate-owned translation updates; no en.json keys touched here. |
+| [`317cdf155`](https://github.com/Sonarr/Sonarr/commit/317cdf15582746bd4e713d6b99e17a21dcb8abeb) | add TTL setting for pushover notifications | `skip` | New Pushover TTL setting - small feature not in scope for this pass. |
+| [`5a702dec1`](https://github.com/Sonarr/Sonarr/commit/5a702dec12a24a1b2f7c23a40079c563a31c2573) | Add v5 episode, missing and cutoff unmet endpoints | `skip` | V5 episode/missing/cutoff-unmet endpoints - V5 API surface only; episode-shaped anyway. |
+| [`407127818`](https://github.com/Sonarr/Sonarr/commit/4071278183fd80fdf522c5fe2d766a790766fae6) | Use react-query for wanted missing and cutoff unmet | `skip` | Post-port frontend: wanted/missing/cutoff pages' react-query migration; series-shaped surface we do not ship in this form. |
+| [`e89d58985`](https://github.com/Sonarr/Sonarr/commit/e89d58985aad02ee72e8169984e29075a4fb93b2) | Fix task endpoint | `skip` | Fix inside the V5 task controller; that surface does not exist here. |
+| [`20ad1b441`](https://github.com/Sonarr/Sonarr/commit/20ad1b44106581324a6f07e582df56cc6a93d868) | Add v5 tag endpoints | `skip` | V5 tag endpoints - V5 API surface only. |
+| [`0809a72ce`](https://github.com/Sonarr/Sonarr/commit/0809a72ce53e54da411a68daf5f9dbd5f8fc04a7) | Use react-query for tags | `skip` | Post-port frontend: tags page react-query migration targets pre-migration code not present here. |
+| [`e1cfc5f55`](https://github.com/Sonarr/Sonarr/commit/e1cfc5f550fb65ae516021fb3d6a648e6b29d35b) | Multiple Translations updated by Weblate | `skip` | Weblate-owned translation updates; no en.json keys touched here. |
+| [`21592f3d6`](https://github.com/Sonarr/Sonarr/commit/21592f3d6900a7a4c3716ced455569efb49a0c99) | Automated API Docs update | `skip` | Automated API docs update for their V5 spec; our OpenAPI document is generated at runtime and served from /docs - there is no checked-in copy to sync. |
+| [`aac4760d3`](https://github.com/Sonarr/Sonarr/commit/aac4760d30303c20bd896c451837a4cfa0a4e8f1) | Fix changing sort direction | `skip` | Sort-direction fix against their post-migration table component; our ported tables diverged and do not take the diff. |
+| [`ae18ad61b`](https://github.com/Sonarr/Sonarr/commit/ae18ad61bd9865755b4067709de47c1404fd4078) | Fixed: Testing qBittorrent after credentials change would always pass tests | `have` | Fix already present: QBittorrentProxyV2.BuildRequest sets StoreRequestCookie = false and no longer attaches BasicNetworkCredential to every request. No delta. |
+| [`d4f14246f`](https://github.com/Sonarr/Sonarr/commit/d4f14246f16821aa60fc78fa079cd9e96899c9ef) | New: Postgres Connection String option | `pick` | Allows a full PostgreSQL connection string in config (ConnectionStringFactory parses and validates it; ConfigFileProvider exposes the option). Applied with ConnectionStringFactoryFixture coverage; upstream's duplicated validation branch was dropped on apply. |
+| [`7284898c7`](https://github.com/Sonarr/Sonarr/commit/7284898c7d3a36fa7cc62e025a3c8bd8dcb13fcf) | New: Ignore extra files in theme-music and backdrop folders | `pick` | theme-music becomes an excluded extras subfolder on disk scans plus a housekeeping task that deletes stale other-extra DB rows for it and backdrops/ (files on disk untouched). Adapted from Sonarr's series shape: IMovieService/IOtherExtraFileRepository movie equivalents; the fixture guards the excluded-set logic. |
+| [`d2107e92f`](https://github.com/Sonarr/Sonarr/commit/d2107e92f374fb508db51701fc9d06bb5f8546f8) | Episodes for queue item should not be null | `skip` | Episode-list null guard for their queue payload; our QueueResource has no episode array in the movie shape. |
+| [`9cdf1bf72`](https://github.com/Sonarr/Sonarr/commit/9cdf1bf721c70c448897b31598f9ce099e5a25f9) | Add v5 episode file endpoints | `skip` | V5 episode file endpoints - V5 API surface only. |
+| [`44fc1e0e8`](https://github.com/Sonarr/Sonarr/commit/44fc1e0e85b30cb535912ad120d9a7b624c4ffd8) | Use react-query for episode files | `skip` | Post-port frontend: episode-files react-query migration; series-shaped surface we do not ship in this form. |
+| [`6629ebc6e`](https://github.com/Sonarr/Sonarr/commit/6629ebc6e0bb3c4a4c24633242470ffa8d7e2fda) | Fix manual import title when importing from Queue | `skip` | Manual-import title fix in their QueueRow.tsx; our queue row and import flow were adapted at port time. |
+| [`a047053fa`](https://github.com/Sonarr/Sonarr/commit/a047053faeed47037b17def98c1dc1a63ae908b5) | Change Manage Episodes import button to Apply | `skip` | Manage Episodes is a series-only page we do not ship. |
+| [`84fbab6ab`](https://github.com/Sonarr/Sonarr/commit/84fbab6ab48e50c13f817aa1bfa1d1c2f720980c) | Simplify StyleCop.Analyzers as dependency for all projects | `skip` | Build-tooling cleanup aimed at Sonarr's csproj layout; we centralize analyzers in Directory.Build.props with multi-RID publish config, so there is nothing to simplify here. |
+| [`26934a5d8`](https://github.com/Sonarr/Sonarr/commit/26934a5d81e4bd16d15ddc3d1edbf073fe0decd9) | Simplify GitHubActionsTestLogger as dependency to test projects | `skip` | Test projects already receive GitHubActionsTestLogger solely from the conditional ItemGroup in our Directory.Build.props; no per-project references remain to consolidate. |
+| [`dd84bcd91`](https://github.com/Sonarr/Sonarr/commit/dd84bcd9192d2edc5261c00ca3deb1687fb5a2ea) | Bump Sentry to 5.16.2 | `skip` | Bump of their older Sentry major; we are on Sentry 6.9.0 via Whisparr.Common.csproj and do not follow 5.x pins. |
+| [`449caa12e`](https://github.com/Sonarr/Sonarr/commit/449caa12e36a4810eff741cb1089a66f9aa7c578) | Add v5 root folder endpoints | `skip` | V5 root folder endpoints - V5 API surface only. |
+| [`7a5157df2`](https://github.com/Sonarr/Sonarr/commit/7a5157df29f439ecac8aa763cec74332452a57fa) | Use react-query for root folders | `skip` | Root folders react-query migration (be+fe); post-port divergence on both sides of this diff. |
+| [`f76ae1cce`](https://github.com/Sonarr/Sonarr/commit/f76ae1cce975cd98b819996020aba35f4895e17b) | Fixed: Respect delay profile when repacks and propers aren't preferred | `pick` | The existing-file revision bypass in DelaySpecification now only applies when DownloadPropersAndRepacks is PreferAndUpgrade, so Ignore/DoNotUpgrade still wait out the profile delay. Fixture adapted to movie shape and extended with should_be_false_when_repacks_are_not_preferred. |
+| [`8e537cb62`](https://github.com/Sonarr/Sonarr/commit/8e537cb626b5e3e816e6aaaebf7823f14198c899) | Don't send full paths to Skyhook for searches | `pick` | Skyhook searches no longer send full media paths (they were being rejected); new InvalidSearchTermException documents the case. Our SkyHookProxy shape matched, applied cleanly. |
+| [`9b756df4b`](https://github.com/Sonarr/Sonarr/commit/9b756df4bfa55eca0524413e5bee2a9d5bfb8fc7) | Add v5 release endpoints | `skip` | V5 release endpoints - V5 API surface only. |
+| [`8f95849e9`](https://github.com/Sonarr/Sonarr/commit/8f95849e9ba2341aa0da1c46af4f04a272861d7a) | Use react-query for interactive search | `skip` | Interactive search moves onto the new V5 history endpoints plus post-port frontend changes; neither surface exists here in that form. |
+| [`e4298d013`](https://github.com/Sonarr/Sonarr/commit/e4298d0135d398a9b70208b2d7b036a834e829f2) | Add additional v5 history endpoints | `skip` | Additional V5 history endpoints - V5 API surface only. |
+| [`4c556eacc`](https://github.com/Sonarr/Sonarr/commit/4c556eacc1566eea9d9c4296484abbba9da91574) | New: Show grabbed/blocklisted releases in Interactive Search | `skip` | Showing grabbed/blocklisted releases in Interactive Search rides on the V5 release/history surface we do not ship and post-port frontend code. |
+| [`9db17883d`](https://github.com/Sonarr/Sonarr/commit/9db17883df420800a0f4e29bbe8acd55f9aa8c48) | Automated API Docs update | `skip` | Automated API docs update for their V5 spec; our OpenAPI document is generated at runtime and served from /docs - there is no checked-in copy to sync. |
+| [`1ca148a7a`](https://github.com/Sonarr/Sonarr/commit/1ca148a7a9de905232074cf69333b79adc4d3c10) | Multiple Translations updated by Weblate | `skip` | Weblate-owned translation updates; no en.json keys touched here. |
+| [`2f119fefd`](https://github.com/Sonarr/Sonarr/commit/2f119fefd1222227545766325caf0b5acd4a012e) | Add additional v5 filesystem endpoints | `skip` | Additional V5 filesystem endpoints - V5 API surface only. |
+| [`91b242902`](https://github.com/Sonarr/Sonarr/commit/91b242902d995e2cbd080b87ce289dbba84cfbdd) | Use react-query for path input and file browser | `skip` | Post-port frontend: path input/file-browser react-query work targets components we reshaped in the port. |
+| [`7d2e01d51`](https://github.com/Sonarr/Sonarr/commit/7d2e01d5161f9f6610d073574e46418987183e9c) | Use react-query for custom filters | `skip` | Custom filters react-query work (be+fe) includes a V5-era file; our custom format UI diverged at port time. |
+| [`d252fa8ed`](https://github.com/Sonarr/Sonarr/commit/d252fa8ed6523739f2347c4acbf78e6e52be3523) | Improve backup mutations | `skip` | Backup mutations rework against their post-migration hooks; our backups UI diverged at port time. |
+| [`4959ef432`](https://github.com/Sonarr/Sonarr/commit/4959ef4321923b33170547d1afcf4cfb2f54295e) | Automated API Docs update | `skip` | Automated API docs update for their V5 spec; our OpenAPI document is generated at runtime and served from /docs - there is no checked-in copy to sync. |
+| [`a97f2c016`](https://github.com/Sonarr/Sonarr/commit/a97f2c016b81de3f56ba6aec616638545f5c6b25) | Use react-query for episode selection | `skip` | Episode selection is series-shaped; not part of our movie import surface. |
+| [`1178c9834`](https://github.com/Sonarr/Sonarr/commit/1178c98341f8f8f2d69f6f5b7645755fdf1c544f) | Use react-query for episodes | `skip` | Post-port frontend: episodes page react-query migration targets pre-migration code not present here. |
 | [`2fbeff438`](https://github.com/Sonarr/Sonarr/commit/2fbeff4383af3ced58aac72d2470b90572a27da0) | Multiple Translations updated by Weblate | `skip` | Weblate commit. Our translations come from Weblate directly, never from cherry-picks. |
 | [`8112b536a`](https://github.com/Sonarr/Sonarr/commit/8112b536a23b16c27900aca05437b5ff9661b5e9) | Improve accessibility of series status indicators | `adapt` | Applied to MovieStatusCell and SceneStatusCell, our equivalents of SeriesStatusCell. Also brought in Components/StatusIndicator, which upstream added in 71d9a5d57 (2026-07-12, behind our high-water mark) and we never ported. Verified on 6969: all 40 status icons on the movie table now carry announced text. |
 | [`650a452bf`](https://github.com/Sonarr/Sonarr/commit/650a452bf0aa7a1f93aec5a1528c8e08d19b29cf) | New: Sorting Blocklist, History and Queue by Quality | `skip` | Deferred to its own PR by decision on 2026-08-30, not skipped on merit. 21 files: a QualityProfileQualityRank table, repository and service, a DB migration (233 there, 242 here) and rank joins added to the Blocklist, History and Episode repositories. A schema change belongs in its own review, not in a 15-commit sync chunk. |
