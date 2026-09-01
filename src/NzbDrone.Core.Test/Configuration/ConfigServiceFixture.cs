@@ -50,6 +50,29 @@ namespace NzbDrone.Core.Test.Configuration
             Mocker.GetMock<IConfigRepository>().Verify(c => c.Insert(It.IsAny<Config>()), Times.Never());
         }
 
+        [Test]
+        public void should_default_enable_new_item_monitoring_to_true()
+        {
+            Subject.EnableNewItemMonitoring.Should().BeTrue();
+        }
+
+        [Test]
+        public void should_persist_and_read_back_disabled_enable_new_item_monitoring()
+        {
+            Subject.EnableNewItemMonitoring = false;
+
+            AssertUpsert("EnableNewItemMonitoring", false);
+
+            Mocker.GetMock<IConfigRepository>()
+                  .Setup(c => c.All())
+                  .Returns(new List<Config>
+                  {
+                      new Config { Id = 1, Key = "EnableNewItemMonitoring", Value = "False" }
+                  });
+
+            Subject.EnableNewItemMonitoring.Should().BeFalse();
+        }
+
         private void AssertUpsert(string key, object value)
         {
             Mocker.GetMock<IConfigRepository>().Verify(c => c.Upsert(key.ToLowerInvariant(), value.ToString()));

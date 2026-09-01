@@ -159,6 +159,11 @@ namespace NzbDrone.Core.Movies.Performers
             // Chunk the into smaller lists
             var chunkSize = 10;
 
+            // The global master switch overrides the performer's own setting, so
+            // turning it off leaves discovery intact but adds works unmonitored
+            // and without a search on add.
+            var monitorNewItems = _configService.EnableNewItemMonitoring && performer.MonitorNewItems;
+
             (List<string> StashdbIds, List<string> TpdbIds, List<int> TmdbIds) performerWork;
 
             try
@@ -192,10 +197,10 @@ namespace NzbDrone.Core.Movies.Performers
                         RootFolderPath = performer.RootFolderPath,
                         AddOptions = new AddMovieOptions
                         {
-                            SearchForMovie = performer.SearchOnAdd && performer.MonitorNewItems,
+                            SearchForMovie = performer.SearchOnAdd && monitorNewItems,
                             AddMethod = AddMovieMethod.Performer
                         },
-                        Monitored = performer.MonitorNewItems,
+                        Monitored = monitorNewItems,
                         Tags = performer.Tags
                     }).Chunk(chunkSize);
 
@@ -233,10 +238,10 @@ namespace NzbDrone.Core.Movies.Performers
                             RootFolderPath = performer.RootFolderPath,
                             AddOptions = new AddMovieOptions
                             {
-                                SearchForMovie = performer.SearchOnAdd && performer.MonitorNewItems,
+                                SearchForMovie = performer.SearchOnAdd && monitorNewItems,
                                 AddMethod = AddMovieMethod.Performer
                             },
-                            Monitored = performer.MonitorNewItems,
+                            Monitored = monitorNewItems,
                             Tags = performer.Tags
                         }).Chunk(chunkSize);
 
@@ -269,10 +274,10 @@ namespace NzbDrone.Core.Movies.Performers
                             RootFolderPath = performer.RootFolderPath,
                             AddOptions = new AddMovieOptions
                             {
-                                SearchForMovie = performer.SearchOnAdd && performer.MonitorNewItems,
+                                SearchForMovie = performer.SearchOnAdd && monitorNewItems,
                                 AddMethod = AddMovieMethod.Performer
                             },
-                            Monitored = performer.MonitorNewItems,
+                            Monitored = monitorNewItems,
                             Tags = performer.Tags
                         }).Chunk(chunkSize);
 

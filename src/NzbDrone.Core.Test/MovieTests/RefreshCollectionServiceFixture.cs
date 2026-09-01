@@ -6,6 +6,7 @@ using Moq;
 
 using NUnit.Framework;
 
+using NzbDrone.Core.Configuration;
 using NzbDrone.Core.ImportLists.ImportExclusions;
 using NzbDrone.Core.MetadataSource;
 using NzbDrone.Core.Movies;
@@ -80,6 +81,13 @@ namespace NzbDrone.Core.Test.MovieTests
             return collection;
         }
 
+        private void GivenGlobalNewItemMonitoring(bool enabled)
+        {
+            Mocker.GetMock<IConfigService>()
+                .Setup(s => s.EnableNewItemMonitoring)
+                .Returns(enabled);
+        }
+
         private List<Movie> GivenAddedMoviesAreCaptured()
         {
             var addedMovies = new List<Movie>();
@@ -99,6 +107,8 @@ namespace NzbDrone.Core.Test.MovieTests
             var collection = GivenCollection(monitorNewItems);
             var addedMovies = GivenAddedMoviesAreCaptured();
 
+            GivenGlobalNewItemMonitoring(true);
+
             Subject.Execute(new RefreshCollectionsCommand(new List<int> { collection.Id }));
 
             addedMovies.Should().HaveCount(1);
@@ -112,6 +122,8 @@ namespace NzbDrone.Core.Test.MovieTests
             var collection = GivenCollection(false);
             var addedMovies = GivenAddedMoviesAreCaptured();
 
+            GivenGlobalNewItemMonitoring(true);
+
             Subject.Execute(new RefreshCollectionsCommand(new List<int> { collection.Id }));
 
             Mocker.GetMock<IProvideMovieInfo>()
@@ -119,6 +131,41 @@ namespace NzbDrone.Core.Test.MovieTests
 
             addedMovies.Should().HaveCount(1);
             addedMovies.Should().OnlyContain(m => !m.Monitored);
+        }
+
+        // The global master switch overrides the collection's own setting, so a
+        // collection that asks to monitor new items still gets them unmonitored.
+        [Test]
+        public void should_not_monitor_new_movies_when_global_new_item_monitoring_is_disabled()
+        {
+            var collection = GivenCollection(true);
+            var addedMovies = GivenAddedMoviesAreCaptured();
+
+            GivenGlobalNewItemMonitoring(false);
+
+            Subject.Execute(new RefreshCollectionsCommand(new List<int> { collection.Id }));
+
+            addedMovies.Should().HaveCount(1);
+            addedMovies.Should().OnlyContain(m => !m.Monitored);
+            addedMovies.Should().OnlyContain(m => !m.AddOptions.SearchForMovie);
+        }
+
+        [Test]
+        public void should_still_discover_and_add_movies_when_global_new_item_monitoring_is_disabled()
+        {
+            var collection = GivenCollection(true);
+            var addedMovies = GivenAddedMoviesAreCaptured();
+
+            GivenGlobalNewItemMonitoring(false);
+
+            Subject.Execute(new RefreshCollectionsCommand(new List<int> { collection.Id }));
+
+            Mocker.GetMock<IProvideMovieInfo>()
+                .Verify(s => s.GetCollectionInfo(collection.TmdbId), Times.Once());
+
+            addedMovies.Should().HaveCount(1);
+            addedMovies.Should().OnlyContain(m => !m.Monitored);
+            addedMovies.Should().OnlyContain(m => !m.AddOptions.SearchForMovie);
         }
 
         [Test]

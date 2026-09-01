@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NLog;
 using NzbDrone.Common.Instrumentation.Extensions;
+using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Exceptions;
 using NzbDrone.Core.ImportLists.ImportExclusions;
 using NzbDrone.Core.Messaging.Commands;
@@ -21,6 +22,7 @@ namespace NzbDrone.Core.Movies
         private readonly IMovieService _movieService;
         private readonly IMovieMetadataService _movieMetadataService;
         private readonly IAddMovieService _addMovieService;
+        private readonly IConfigService _configService;
         private readonly IImportListExclusionService _importListExclusionService;
         private readonly IEventAggregator _eventAggregator;
 
@@ -31,6 +33,7 @@ namespace NzbDrone.Core.Movies
                                         IMovieService movieService,
                                         IMovieMetadataService movieMetadataService,
                                         IAddMovieService addMovieService,
+                                        IConfigService configService,
                                         IImportListExclusionService importListExclusionService,
                                         IEventAggregator eventAggregator,
                                         Logger logger)
@@ -40,6 +43,7 @@ namespace NzbDrone.Core.Movies
             _movieService = movieService;
             _movieMetadataService = movieMetadataService;
             _addMovieService = addMovieService;
+            _configService = configService;
             _importListExclusionService = importListExclusionService;
             _eventAggregator = eventAggregator;
             _logger = logger;
@@ -125,6 +129,11 @@ namespace NzbDrone.Core.Movies
         {
             if (collection.Monitored)
             {
+                // The global master switch overrides the collection's own
+                // setting, so turning it off leaves discovery intact but adds
+                // movies unmonitored and without a search on add.
+                var monitorNewItems = _configService.EnableNewItemMonitoring && collection.MonitorNewItems;
+
                 var collectionMovies = _movieMetadataService
                     .GetMoviesByCollectionTmdbId(collection.TmdbId)
                     .Where(m => m.Status is MovieStatusType.InCinemas or MovieStatusType.Released)
@@ -144,9 +153,9 @@ namespace NzbDrone.Core.Movies
                         RootFolderPath = collection.RootFolderPath,
                         AddOptions = new AddMovieOptions
                         {
-                            SearchForMovie = collection.SearchOnAdd && collection.MonitorNewItems,
+                            SearchForMovie = collection.SearchOnAdd && monitorNewItems,
                         },
-                        Monitored = collection.MonitorNewItems,
+                        Monitored = monitorNewItems,
                         Tags = collection.Tags
                     }).ToList(), true);
                 }

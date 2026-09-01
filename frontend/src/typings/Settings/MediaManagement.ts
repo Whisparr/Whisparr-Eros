@@ -21,4 +21,5 @@ export default interface MediaManagement {
   enableMediaInfo: boolean;
   whisparrFolderLimit: number;
   autoRenameFolders: boolean;
+  enableNewItemMonitoring: boolean;
 }

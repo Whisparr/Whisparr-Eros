@@ -350,6 +350,13 @@ namespace NzbDrone.Core.Configuration
             set { SetValue("RescanAfterRefresh", value); }
         }
 
+        public bool EnableNewItemMonitoring
+        {
+            get { return GetValueBoolean("EnableNewItemMonitoring", true); }
+
+            set { SetValue("EnableNewItemMonitoring", value); }
+        }
+
         public bool SetPermissionsLinux
         {
             get { return GetValueBoolean("SetPermissionsLinux", false); }

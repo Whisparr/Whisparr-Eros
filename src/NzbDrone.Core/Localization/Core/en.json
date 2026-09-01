@@ -1271,6 +1271,7 @@
   "MonitorMovie": "Monitor Movie",
   "MonitorMovies": "Monitor Movies",
   "MonitorNewItems": "Monitor New Items",
+  "MonitorNewItemsHelpText": "Global master switch for monitoring newly discovered works. When disabled, discovery continues and new works are still added to your library, but they are added unmonitored and automatic Search on Add is prevented. Manual search remains available.",
   "MonitorOptionsMovieAndScene": "Movie and Scene",
   "MonitorOptionsSceneOnly": "Scene Only",
   "MonitorSelected": "Monitor Selected",

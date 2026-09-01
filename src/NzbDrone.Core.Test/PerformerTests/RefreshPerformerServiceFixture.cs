@@ -180,6 +180,13 @@ namespace NzbDrone.Core.Test.PerformerTests
             return performer;
         }
 
+        private void GivenGlobalNewItemMonitoring(bool enabled)
+        {
+            Mocker.GetMock<IConfigService>()
+                .Setup(s => s.EnableNewItemMonitoring)
+                .Returns(enabled);
+        }
+
         private List<Movie> GivenAddedMoviesAreCaptured()
         {
             var addedMovies = new List<Movie>();
@@ -198,6 +205,8 @@ namespace NzbDrone.Core.Test.PerformerTests
         {
             var performer = GivenPerformer(monitorNewItems);
             var addedMovies = GivenAddedMoviesAreCaptured();
+
+            GivenGlobalNewItemMonitoring(true);
 
             Mocker.GetMock<IProvideMovieInfo>()
                 .Setup(s => s.GetPerformerWorks(performer.ForeignId))
@@ -219,6 +228,8 @@ namespace NzbDrone.Core.Test.PerformerTests
         {
             var performer = GivenPerformer(monitorNewItems);
             var addedMovies = GivenAddedMoviesAreCaptured();
+
+            GivenGlobalNewItemMonitoring(true);
 
             Mocker.GetMock<IConfigService>()
                 .Setup(s => s.WhisparrMovieMetadataSource)
@@ -245,6 +256,8 @@ namespace NzbDrone.Core.Test.PerformerTests
             var performer = GivenPerformer(monitorNewItems);
             var addedMovies = GivenAddedMoviesAreCaptured();
 
+            GivenGlobalNewItemMonitoring(true);
+
             Mocker.GetMock<IConfigService>()
                 .Setup(s => s.WhisparrMovieMetadataSource)
                 .Returns(MovieMetadataType.TPDB);
@@ -269,6 +282,8 @@ namespace NzbDrone.Core.Test.PerformerTests
             var performer = GivenPerformer(false);
             var addedMovies = GivenAddedMoviesAreCaptured();
 
+            GivenGlobalNewItemMonitoring(true);
+
             Mocker.GetMock<IConfigService>()
                 .Setup(s => s.WhisparrMovieMetadataSource)
                 .Returns(MovieMetadataType.TMDB);
@@ -287,6 +302,111 @@ namespace NzbDrone.Core.Test.PerformerTests
 
             addedMovies.Should().HaveCount(2);
             addedMovies.Should().OnlyContain(m => !m.Monitored);
+        }
+
+        // The global master switch wins over the performer's own setting, so a
+        // performer that asks to monitor new items still gets them unmonitored.
+        [Test]
+        public void should_not_monitor_new_scenes_when_global_new_item_monitoring_is_disabled()
+        {
+            var performer = GivenPerformer(true);
+            var addedMovies = GivenAddedMoviesAreCaptured();
+
+            GivenGlobalNewItemMonitoring(false);
+
+            Mocker.GetMock<IProvideMovieInfo>()
+                .Setup(s => s.GetPerformerWorks(performer.ForeignId))
+                .Returns((
+                    new List<string> { "new-scene" },
+                    new List<string>(),
+                    new List<int>()));
+
+            Subject.Execute(new RefreshPerformersCommand(new List<int> { performer.Id }));
+
+            addedMovies.Should().HaveCount(1);
+            addedMovies.Should().OnlyContain(m => !m.Monitored);
+            addedMovies.Should().OnlyContain(m => !m.AddOptions.SearchForMovie);
+        }
+
+        [Test]
+        public void should_not_monitor_new_tmdb_movies_when_global_new_item_monitoring_is_disabled()
+        {
+            var performer = GivenPerformer(true);
+            var addedMovies = GivenAddedMoviesAreCaptured();
+
+            GivenGlobalNewItemMonitoring(false);
+
+            Mocker.GetMock<IConfigService>()
+                .Setup(s => s.WhisparrMovieMetadataSource)
+                .Returns(MovieMetadataType.TMDB);
+
+            Mocker.GetMock<IProvideMovieInfo>()
+                .Setup(s => s.GetPerformerWorks(performer.ForeignId))
+                .Returns((
+                    new List<string>(),
+                    new List<string>(),
+                    new List<int> { 123456 }));
+
+            Subject.Execute(new RefreshPerformersCommand(new List<int> { performer.Id }));
+
+            addedMovies.Should().HaveCount(1);
+            addedMovies.Should().OnlyContain(m => !m.Monitored);
+            addedMovies.Should().OnlyContain(m => !m.AddOptions.SearchForMovie);
+        }
+
+        [Test]
+        public void should_not_monitor_new_tpdb_movies_when_global_new_item_monitoring_is_disabled()
+        {
+            var performer = GivenPerformer(true);
+            var addedMovies = GivenAddedMoviesAreCaptured();
+
+            GivenGlobalNewItemMonitoring(false);
+
+            Mocker.GetMock<IConfigService>()
+                .Setup(s => s.WhisparrMovieMetadataSource)
+                .Returns(MovieMetadataType.TPDB);
+
+            Mocker.GetMock<IProvideMovieInfo>()
+                .Setup(s => s.GetPerformerWorks(performer.ForeignId))
+                .Returns((
+                    new List<string>(),
+                    new List<string> { "654321" },
+                    new List<int>()));
+
+            Subject.Execute(new RefreshPerformersCommand(new List<int> { performer.Id }));
+
+            addedMovies.Should().HaveCount(1);
+            addedMovies.Should().OnlyContain(m => !m.Monitored);
+            addedMovies.Should().OnlyContain(m => !m.AddOptions.SearchForMovie);
+        }
+
+        [Test]
+        public void should_still_discover_and_add_works_when_global_new_item_monitoring_is_disabled()
+        {
+            var performer = GivenPerformer(true);
+            var addedMovies = GivenAddedMoviesAreCaptured();
+
+            GivenGlobalNewItemMonitoring(false);
+
+            Mocker.GetMock<IConfigService>()
+                .Setup(s => s.WhisparrMovieMetadataSource)
+                .Returns(MovieMetadataType.TMDB);
+
+            Mocker.GetMock<IProvideMovieInfo>()
+                .Setup(s => s.GetPerformerWorks(performer.ForeignId))
+                .Returns((
+                    new List<string> { "new-scene" },
+                    new List<string>(),
+                    new List<int> { 123456 }));
+
+            Subject.Execute(new RefreshPerformersCommand(new List<int> { performer.Id }));
+
+            Mocker.GetMock<IProvideMovieInfo>()
+                .Verify(s => s.GetPerformerWorks(performer.ForeignId), Times.Once());
+
+            addedMovies.Should().HaveCount(2);
+            addedMovies.Should().OnlyContain(m => !m.Monitored);
+            addedMovies.Should().OnlyContain(m => !m.AddOptions.SearchForMovie);
         }
 
         [Test]

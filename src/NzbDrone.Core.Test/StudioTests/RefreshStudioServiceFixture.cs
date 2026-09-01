@@ -118,6 +118,13 @@ namespace NzbDrone.Core.Test.StudioTests
             return studio;
         }
 
+        private void GivenGlobalNewItemMonitoring(bool enabled)
+        {
+            Mocker.GetMock<IConfigService>()
+                .Setup(s => s.EnableNewItemMonitoring)
+                .Returns(enabled);
+        }
+
         private List<Movie> GivenAddedMoviesAreCaptured()
         {
             var addedMovies = new List<Movie>();
@@ -136,6 +143,8 @@ namespace NzbDrone.Core.Test.StudioTests
         {
             var studio = GivenStudio(monitorNewItems);
             var addedMovies = GivenAddedMoviesAreCaptured();
+
+            GivenGlobalNewItemMonitoring(true);
 
             Mocker.GetMock<IProvideMovieInfo>()
                 .Setup(s => s.GetStudioWorks(studio.ForeignId))
@@ -157,6 +166,8 @@ namespace NzbDrone.Core.Test.StudioTests
         {
             var studio = GivenStudio(monitorNewItems);
             var addedMovies = GivenAddedMoviesAreCaptured();
+
+            GivenGlobalNewItemMonitoring(true);
 
             Mocker.GetMock<IConfigService>()
                 .Setup(s => s.WhisparrMovieMetadataSource)
@@ -183,6 +194,8 @@ namespace NzbDrone.Core.Test.StudioTests
             var studio = GivenStudio(monitorNewItems);
             var addedMovies = GivenAddedMoviesAreCaptured();
 
+            GivenGlobalNewItemMonitoring(true);
+
             Mocker.GetMock<IConfigService>()
                 .Setup(s => s.WhisparrMovieMetadataSource)
                 .Returns(MovieMetadataType.TPDB);
@@ -207,6 +220,8 @@ namespace NzbDrone.Core.Test.StudioTests
             var studio = GivenStudio(false);
             var addedMovies = GivenAddedMoviesAreCaptured();
 
+            GivenGlobalNewItemMonitoring(true);
+
             Mocker.GetMock<IConfigService>()
                 .Setup(s => s.WhisparrMovieMetadataSource)
                 .Returns(MovieMetadataType.TMDB);
@@ -225,6 +240,111 @@ namespace NzbDrone.Core.Test.StudioTests
 
             addedMovies.Should().HaveCount(2);
             addedMovies.Should().OnlyContain(m => !m.Monitored);
+        }
+
+        // The global master switch overrides the studio's own setting, so a
+        // studio that asks to monitor new items still gets them unmonitored.
+        [Test]
+        public void should_not_monitor_new_scenes_when_global_new_item_monitoring_is_disabled()
+        {
+            var studio = GivenStudio(true);
+            var addedMovies = GivenAddedMoviesAreCaptured();
+
+            GivenGlobalNewItemMonitoring(false);
+
+            Mocker.GetMock<IProvideMovieInfo>()
+                .Setup(s => s.GetStudioWorks(studio.ForeignId))
+                .Returns((
+                    new List<string> { "new-scene" },
+                    new List<string>(),
+                    new List<int>()));
+
+            Subject.Execute(new RefreshStudiosCommand(new List<int> { studio.Id }));
+
+            addedMovies.Should().HaveCount(1);
+            addedMovies.Should().OnlyContain(m => !m.Monitored);
+            addedMovies.Should().OnlyContain(m => !m.AddOptions.SearchForMovie);
+        }
+
+        [Test]
+        public void should_not_monitor_new_tmdb_movies_when_global_new_item_monitoring_is_disabled()
+        {
+            var studio = GivenStudio(true);
+            var addedMovies = GivenAddedMoviesAreCaptured();
+
+            GivenGlobalNewItemMonitoring(false);
+
+            Mocker.GetMock<IConfigService>()
+                .Setup(s => s.WhisparrMovieMetadataSource)
+                .Returns(MovieMetadataType.TMDB);
+
+            Mocker.GetMock<IProvideMovieInfo>()
+                .Setup(s => s.GetStudioWorks(studio.ForeignId))
+                .Returns((
+                    new List<string>(),
+                    new List<string>(),
+                    new List<int> { 123456 }));
+
+            Subject.Execute(new RefreshStudiosCommand(new List<int> { studio.Id }));
+
+            addedMovies.Should().HaveCount(1);
+            addedMovies.Should().OnlyContain(m => !m.Monitored);
+            addedMovies.Should().OnlyContain(m => !m.AddOptions.SearchForMovie);
+        }
+
+        [Test]
+        public void should_not_monitor_new_tpdb_movies_when_global_new_item_monitoring_is_disabled()
+        {
+            var studio = GivenStudio(true);
+            var addedMovies = GivenAddedMoviesAreCaptured();
+
+            GivenGlobalNewItemMonitoring(false);
+
+            Mocker.GetMock<IConfigService>()
+                .Setup(s => s.WhisparrMovieMetadataSource)
+                .Returns(MovieMetadataType.TPDB);
+
+            Mocker.GetMock<IProvideMovieInfo>()
+                .Setup(s => s.GetStudioWorks(studio.ForeignId))
+                .Returns((
+                    new List<string>(),
+                    new List<string> { "654321" },
+                    new List<int>()));
+
+            Subject.Execute(new RefreshStudiosCommand(new List<int> { studio.Id }));
+
+            addedMovies.Should().HaveCount(1);
+            addedMovies.Should().OnlyContain(m => !m.Monitored);
+            addedMovies.Should().OnlyContain(m => !m.AddOptions.SearchForMovie);
+        }
+
+        [Test]
+        public void should_still_discover_and_add_works_when_global_new_item_monitoring_is_disabled()
+        {
+            var studio = GivenStudio(true);
+            var addedMovies = GivenAddedMoviesAreCaptured();
+
+            GivenGlobalNewItemMonitoring(false);
+
+            Mocker.GetMock<IConfigService>()
+                .Setup(s => s.WhisparrMovieMetadataSource)
+                .Returns(MovieMetadataType.TMDB);
+
+            Mocker.GetMock<IProvideMovieInfo>()
+                .Setup(s => s.GetStudioWorks(studio.ForeignId))
+                .Returns((
+                    new List<string> { "new-scene" },
+                    new List<string>(),
+                    new List<int> { 123456 }));
+
+            Subject.Execute(new RefreshStudiosCommand(new List<int> { studio.Id }));
+
+            Mocker.GetMock<IProvideMovieInfo>()
+                .Verify(s => s.GetStudioWorks(studio.ForeignId), Times.Once());
+
+            addedMovies.Should().HaveCount(2);
+            addedMovies.Should().OnlyContain(m => !m.Monitored);
+            addedMovies.Should().OnlyContain(m => !m.AddOptions.SearchForMovie);
         }
 
         [Test]
