@@ -12,8 +12,8 @@
       "repo": "Sonarr/Sonarr",
       "branch": "v5-develop",
       "owns": "frontend",
-      "highWater": "1915ec281c19248718c7c6d5973f13ee3e231ece",
-      "highWaterNote": "2026-05 tip, 'Multiple Translations updated by Weblate' (1915ec281). All 82 commits of 2026-05 are dispositioned, so everything at or before this mark is settled. Next chunk is 2026-06."
+      "highWater": "519dfa2c8ca0ae38496db67d619a8fa1fffca5a7",
+      "highWaterNote": "2026-06-24 'Remove issue from template if there is no issue'. Held deliberately short of the end of 2026-06: d2f4f2d03 (Custom Filters for Wanted) and 49df353fa (Statistics Page) are feature builds rather than sync picks and are being taken as their own PRs, so they stay undispositioned and outstanding. Everything at or before this mark is settled. Advance past them only once those PRs land."
     }
   },
   "dispositions": {
@@ -3541,6 +3541,174 @@
         "month": "2026-05",
         "disposition": "skip",
         "reason": "Right idea -- ReadonlyArray<T> on react-query data stops callers mutating the cache in place -- but it is a 37-file typing sweep against a tree whose file set diverges from theirs, and the payoff is uniform only if it is done everywhere. Worth its own PR rather than riding along in a month's sync."
+      },
+      "98202ad7a61e4fe0c3006668eb6ea071546ea26a": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-06",
+        "disposition": "skip",
+        "reason": "Weblate translation import. Those files come from Weblate, not from cherry-picks, and our en.json is sorted case-insensitively while upstream's is not."
+      },
+      "94a8b673cc2d62f371f0c90a34dc2430792df035": {
+        "subject": "Automated API Docs update",
+        "month": "2026-06",
+        "disposition": "skip",
+        "reason": "Regenerates src/Sonarr.Api.V5/openapi.json only. We retired our checked-in API docs along with the workflow that produced them, so it rewrites a file we do not have."
+      },
+      "846872a6b0d7d1184e87714d08db03eb8a32232b": {
+        "subject": "Fallback matching grabbed/blocklisted releases by info URL in Interactive Search",
+        "month": "2026-06",
+        "disposition": "skip",
+        "reason": "V5-only: the whole change is in src/Sonarr.Api.V5/Release/ReleaseController.cs. Our Whisparr.Api.V3 ReleaseController has no AddHistory/grabbed-history matching at all, so there is nothing here to fall back from."
+      },
+      "43797d65c8f710ec18906a87ae27c08381efafb3": {
+        "subject": "Fix marking as failed for grabbed history events",
+        "month": "2026-06",
+        "disposition": "have",
+        "reason": "Both halves are already in our tree: FailedDownloadService.MarkAsFailed has no throw after the grabbed-history branch, so the missing-return fallthrough cannot occur here, and MovieHistoryRow.tsx already calls setIsMarkAsFailedModalOpen(false) on confirm."
+      },
+      "1de3fb96631a71f4e030ddefe92229f832b82faa": {
+        "subject": "Fixed: Loading eligible pending releases on when RSS sync runs",
+        "month": "2026-06",
+        "disposition": "skip",
+        "reason": "Swaps JsonClone for MemberwiseClone in PendingReleaseService.AddMany to speed up their in-memory _pendingReleases cache. We have no such cache: our AddMany reads _repository.AllByMovieId(movie.Id) per movie and clones nothing, so there is no call site to fix."
+      },
+      "07af80c503659172005cdbcbe7d68f7399fd7324": {
+        "subject": "New: Support for VVC/H266 in media info",
+        "month": "2026-06",
+        "disposition": "adapt",
+        "reason": "Picked. The x266/vvc branches in FormatVideoCodec transfer as-is, but our MediaInfoFormatter takes the flat MediaInfoModel rather than their per-stream MediaInfoAudioStreamModel, so their test rewrite does not apply. Wrote our own cases in the packed-string shape the fixture already uses; all seven fail without the code change."
+      },
+      "547cd5b48363422093142fafce4deb9aa443052c": {
+        "subject": "New: Support for parsing release titles with H.266",
+        "month": "2026-06",
+        "disposition": "skip",
+        "reason": "Parser change, and it does not reproduce here. Added H.266 scene-title cases to our QualityParserFixture and every one passed unchanged: our webdl alternation already matches via WEB-DL and (\\d{3,4}0p)[-. ]WEB[-. ], and our ResolutionRegex makes the codec suffix after 4k optional, so 4k.H266 already resolves to 2160p. The only real divergence left is SimpleTitleRegex stripping 26[45] but not x266 during title cleaning, which is a release-matching regex we do not touch on spec alone for a codec that does not appear in our content."
+      },
+      "edba5ce84cf8016ba9b945396d155f4ab2ead66e": {
+        "subject": "Fix filename builder for files without streams",
+        "month": "2026-06",
+        "disposition": "skip",
+        "reason": "Guards against a null MediaInfoAudioStreamModel, which is a shape we do not have; our formatters read AudioFormat/AudioChannels straight off MediaInfoModel, and AudioChannels is a non-nullable int. The null-to-empty return change is also a no-op here because FileNameBuilder already guards MediaInfo == null and null-coalesces both formatter results to string.Empty."
+      },
+      "3e1de5fcf6c50e1f16d9bf76da16f03650a7c2b2": {
+        "subject": "Fix invalid season error when season number is not yet defined in manual import",
+        "month": "2026-06",
+        "disposition": "skip",
+        "reason": "The ManualImportService half gates the custom-format calculation on item.SeasonNumber.HasValue, and we have no season concept. The ImportApprovedEpisodes half is a pure style refactor collapsing a nested if into an && with no behaviour change."
+      },
+      "30b35764c7a3378e66915ec6da5b5195f3959634": {
+        "subject": "Fixed: Basic auth for qBittorrent",
+        "month": "2026-06",
+        "disposition": "have",
+        "reason": "QBittorrentProxyV2.BuildRequest already sets a BasicNetworkCredential when username or password is set, in the same else-if position."
+      },
+      "c45015c83782e801ec328274841f16acd55d3a6e": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-06",
+        "disposition": "skip",
+        "reason": "Weblate translation import. Same reason as 98202ad7a."
+      },
+      "be3b015b9a4699f580b188def9ba0b8dc4437c50": {
+        "subject": "Clean up signalR",
+        "month": "2026-06",
+        "disposition": "skip",
+        "reason": "Hoists a `version < 5` early return to the top of the SignalR message handler, where 5 is Sonarr's API version. Ours is v3 and our SignalRListener carries no version gating at all, so picking this would drop every message we receive."
+      },
+      "8a68c860a1939c5bdc40d350ab782b9babdb0087": {
+        "subject": "Convert CaptchaInput to React Query",
+        "month": "2026-06",
+        "disposition": "have",
+        "reason": "We already have frontend/src/Components/Form/useCaptcha.ts and no Store/Actions/captchaActions.js; the conversion landed with our own React Query migration."
+      },
+      "e13e1e6d7964fedc1a81471a6881ed482dbb3613": {
+        "subject": "Refactor and clean up old dispatches",
+        "month": "2026-06",
+        "disposition": "have",
+        "reason": "No useDispatch or react-redux import remains anywhere under frontend/src, and both renamed files are already at their post-change locations (Helpers/scrollPositions.ts, Helpers/selectSettings.ts)."
+      },
+      "0460281f57b675f9e73bdd4026d442a5c44567df": {
+        "subject": "Goodbye Redux",
+        "month": "2026-06",
+        "disposition": "have",
+        "reason": "frontend/src/Store no longer exists here and package.json carries no redux, react-redux or redux-* dependency. Our REDUX_MIGRATION.md work removed all of it."
+      },
+      "1cd5bc2e6d8c3643803805a7e3167435b3d12347": {
+        "subject": "Fix parsing already imported items from download clients",
+        "month": "2026-06",
+        "disposition": "have",
+        "reason": "TrackedDownloadService already maps an imported download against the known movie: `downloadHistory is { EventType: DownloadHistoryEventType.DownloadImported } ? _parsingService.Map(parsedMovieInfo, downloadHistory.MovieId) : ...`, with the download-history lookup already ordered before the parse."
+      },
+      "5ef066352f9b8e826f31033b9c4c58de6fde7bc5": {
+        "subject": "Fix parsing Celdra as release group",
+        "month": "2026-06",
+        "disposition": "skip",
+        "reason": "Parser change under the skip-by-default rule. Adds Celdra to ExceptionReleaseGroupRegexExact; it is an x265 encode group for movies and TV, not one we need to carry. Same reasoning as GiLG in 2025-12."
+      },
+      "b268b5ecfac94f823a8db5b876ef481addc55ebb": {
+        "subject": "Bump .NET to 10.0.9",
+        "month": "2026-06",
+        "disposition": "have",
+        "reason": "We are already past it: NUnit is 4.6.1 here, and our global.json pins SDK 10.0.101 with rollForward latestFeature rather than their exact 10.0.301, so there is nothing to bump. The csproj renames are all Sonarr.*.csproj files we do not have."
+      },
+      "7e7d6ac1db53e8a38bd5f62bca62083c93389b5f": {
+        "subject": "Bump FFprobe to 8.1.2",
+        "month": "2026-06",
+        "disposition": "have",
+        "reason": "We carry Openur.FFprobeStatic 9.0.1.492, ahead of the 8.1.2 this bumps to."
+      },
+      "56931254b140a235b5ae27418c3149ef2bbdaf94": {
+        "subject": "Fix log message for MinCustomFormatScore rejection",
+        "month": "2026-06",
+        "disposition": "have",
+        "reason": "Our UpgradableSpecification already uses the correct {2}/{3}/{4} format indices in the MinCustomFormatScore rejection message."
+      },
+      "500b430d24989e8031cab9561dfbdb2f2bfca978": {
+        "subject": "Improve incomplete issues and autopilot PR handling",
+        "month": "2026-06",
+        "disposition": "skip",
+        "reason": "Sonarr's own issue-triage and autopilot CI. We have none of close_invalid_issues.yml, close_incomplete_issues.yml, label_invalid_issues.yml or no_autopilot.yml."
+      },
+      "519dfa2c8ca0ae38496db67d619a8fa1fffca5a7": {
+        "subject": "Remove issue from template if there is no issue",
+        "month": "2026-06",
+        "disposition": "skip",
+        "reason": "Adds a 'remove if there is no issue' hint to their PR template. Ours is a different file with its own guidance comment and the fully-qualified `Fixes whisparr/whisparr#XXXX` form we need from this remote."
+      },
+      "eb489728dbbcd9b0d4a08f90d55030289c2c65af": {
+        "subject": "Switch dotnet devcontainer to base version",
+        "month": "2026-06",
+        "disposition": "adapt",
+        "reason": "Picked. Upstream moved from the 1-10.0 tag to the unversioned 10.0 one; ours was still pinned to 1-8.0 while the build targets .NET 10, so we land on 10.0 and fix the staleness at the same time."
+      },
+      "3d7c1b705066ea9998366130f188e6c51918bf79": {
+        "subject": "Bump use-debounce to 10.1.1",
+        "month": "2026-06",
+        "disposition": "have",
+        "reason": "package.json already pins use-debounce 10.1.1."
+      },
+      "59c4aee0462c5720aedec46c6f0511f84a887d41": {
+        "subject": "Debounce quality profile score changes",
+        "month": "2026-06",
+        "disposition": "skip",
+        "reason": "Applied it, then dropped it: the debounce silently loses score edits. Verified in the app on 6969 with two custom formats - typing 111 then 222 about 300ms apart and saving persists SyncTestAlpha=0, SyncTestBravo=222, while the same edits 2s apart both save. The debounced callback rebuilds formatItems from a render that never saw the earlier edit, and our updateValue takes a value rather than an updater, so there is nothing to merge against. Upstream ships it this way; fixing it would mean our own ref-accumulating implementation, which is not a sync pick. Our un-debounced handler is correct, so we keep it."
+      },
+      "ad661cc76cf097295f88652a4e04258f8e8b0b86": {
+        "subject": "Fixed: Exclude streaming extensions for probing media info",
+        "month": "2026-06",
+        "disposition": "have",
+        "reason": "MediaFileExtensions already exposes StreamingExtensions and VideoFileInfoReader already concats it onto DiskExtensions before probing. The rest of the commit restyles an extension dictionary whose contents we have diverged from (our defaults are WEBDL480p, not SDTV)."
+      },
+      "3e2c1a89c035b7c71fcf74513717eb0b6f839488": {
+        "subject": "Skip autopilot for Translations PR and use PAT",
+        "month": "2026-06",
+        "disposition": "skip",
+        "reason": "Edits .github/workflows/no_autopilot.yml, which we do not have."
+      },
+      "5392d61b4d2b71f0c2856ebdf2b3f16bba0aaaa4": {
+        "subject": "Follow PR template for API docs PRs",
+        "month": "2026-06",
+        "disposition": "skip",
+        "reason": "Edits .github/workflows/api_docs.yml, which we retired along with the generated openapi.json."
       }
     }
   }
