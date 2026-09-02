@@ -8,7 +8,8 @@
 //   --report   regenerate UPSTREAM_SYNC.md
 //   --issue    print the tracking issue body for --upstream <name>
 //   --check    exit non-zero if the report is stale, a disposition lacks a
-//              reason, or en.json is not sorted case-insensitively
+//              reason, a defer lacks a blockedBy, or en.json is not sorted
+//              case-insensitively
 //   --attempt  cherry-pick the ungated part of one upstream's backlog onto a
 //              branch and write the PR and issue bodies for it
 
@@ -208,6 +209,52 @@ function renderUpstream(name, upstream, commits, { detailMonths = Infinity } = {
   return lines.join('\n');
 }
 
+// Deferred is not a soft skip. A skip is closed - not applicable, gated out,
+// not wanted. A defer says we want the commit and something concrete is in the
+// way, so it has to stay visible after the backlog reaches zero. Without this
+// the two collapse into one table row and the prerequisite is rediscovered
+// from scratch a year later, which is the failure this file exists to prevent.
+function renderDeferred(state) {
+  const lines = [];
+
+  for (const [name, upstream] of Object.entries(state.upstreams)) {
+    const entries = Object.entries(state.dispositions[name] ?? {}).filter(
+      ([, d]) => d.disposition === 'defer'
+    );
+
+    if (entries.length === 0) {
+      continue;
+    }
+
+    lines.push(`### ${name}`, '');
+    lines.push('| Commit | Subject | Blocked by |', '| --- | --- | --- |');
+
+    entries.sort(([, a], [, b]) => (a.month ?? '').localeCompare(b.month ?? ''));
+
+    for (const [sha, d] of entries) {
+      const url = `https://github.com/${upstream.repo}/commit/${sha}`;
+      lines.push(
+        `| [\`${sha.slice(0, 9)}\`](${url}) | ${d.subject} | ${d.blockedBy} |`
+      );
+    }
+
+    lines.push('');
+  }
+
+  if (lines.length === 0) {
+    return '';
+  }
+
+  return [
+    '## Deferred',
+    '',
+    'Wanted, blocked on a prerequisite. These are **not** closed - each carries',
+    'what has to land first. The reason field in `state.json` has the detail.',
+    '',
+    ...lines,
+  ].join('\n');
+}
+
 function renderSettled(state) {
   const lines = ['## Settled', '', 'Commits reviewed and dispositioned. Skips carry their reason.', ''];
 
@@ -269,6 +316,7 @@ async function render(state, heads) {
     parts.push(renderUpstream(name, upstream, commits), '');
   }
 
+  parts.push(renderDeferred(state));
   parts.push(renderSettled(state));
   return parts.join('\n').replace(/\n{3,}/g, '\n\n');
 }
@@ -537,7 +585,7 @@ function checkEnJson() {
 }
 
 function checkDispositions(state) {
-  const valid = new Set(['pick', 'adapt', 'skip', 'have']);
+  const valid = new Set(['pick', 'adapt', 'skip', 'have', 'defer']);
   const problems = [];
 
   for (const [name, settled] of Object.entries(state.dispositions)) {
@@ -554,6 +602,11 @@ function checkDispositions(state) {
 
       if (!d.subject) {
         problems.push(`${at}: missing subject`);
+      }
+
+      // A defer with no prerequisite named is a skip wearing a better word.
+      if (d.disposition === 'defer' && (!d.blockedBy || d.blockedBy.trim().length < 10)) {
+        problems.push(`${at}: defer needs a "blockedBy" naming what has to land first`);
       }
     }
   }

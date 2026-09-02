@@ -3845,8 +3845,9 @@
       "aea7ea7438447fd468c03cb1652084e05fd82608": {
         "subject": "Send full certificate chain",
         "month": "2026-07",
-        "disposition": "skip",
-        "reason": "Serving the full certificate chain is worth having, but it is built on PEM certificate support we never ported: our Bootstrap.ValidateSslCertificate takes no key path and still uses the obsolete X509Certificate2 ctor, and HostConfigResource has no SslKeyPath. Taking this means first porting PEM support plus a config field and API surface - a prerequisite, not part of this chunk."
+        "disposition": "defer",
+        "blockedBy": "PEM certificate support: Bootstrap.ValidateSslCertificate takes no key path, HostConfigResource has no SslKeyPath, and we still use the obsolete X509Certificate2 ctor. Port that first, then this applies.",
+        "reason": "Serving the full certificate chain rather than just the leaf is worth having - a client that needs an intermediate currently cannot build a path to our cert. Deferred rather than skipped: nothing about it is inapplicable to Whisparr, it just sits on top of PEM support we never took. Revisit when that lands."
       },
       "51e217b7fea14a365af77b77679f4394bc8aedba": {
         "subject": "New: Option to grab season packs before all episodes have aired",
@@ -3881,8 +3882,9 @@
       "a29f15e92bd2c21e646d065d9d78066952cac05d": {
         "subject": "New: Import list option to add tags to existing series while processing",
         "month": "2026-07",
-        "disposition": "skip",
-        "reason": "New import list option (TagExisting) with its own DB migration, built on Sonarr's series-lineage ImportListSyncService. Ours is Radarr-lineage over ImportListMovies and shares no structure, so this is a feature to design rather than a sync pick."
+        "disposition": "defer",
+        "blockedBy": "A product decision on whether import lists should tag movies already in the library, then a design against our lineage. Sonarr built this on their series-lineage ImportListSyncService; ours is Radarr-lineage over ImportListMovies and shares no structure, so it is a fresh implementation plus its own migration, not a port.",
+        "reason": "New import list option (TagExisting) letting a list tag items already in the library instead of skipping them. Deferred rather than skipped: the feature is plausibly wanted here, but it is a feature decision with a DB migration, not a sync pick, so it should not ride in on a sync PR."
       },
       "0799cd5bef7fdbd1a9ecdbe9844db85c1b7c0a78": {
         "subject": "Multiple Translations updated by Weblate",
@@ -3924,7 +3926,7 @@
         "subject": "Fixed: Improve caching of images without re-reading files from the disk",
         "month": "2026-07",
         "disposition": "skip",
-        "reason": "Replaces the disk-based lastWrite cache-buster with a hash of the remote URL to avoid re-reading files. We already avoid that read with the batch fileInfos dictionary threaded through ConvertToLocal{Movie,Performer,Studio}Urls, and the hash would change cache-busting semantics for three entity types (a locally re-resized cover would no longer bust) for no gain."
+        "reason": "Replaces the disk-based lastWrite cache-buster with a hash of the remote URL to avoid re-reading files. We already solved this, and more bulk-efficiently: the batch fileInfos dictionary threaded through ConvertToLocal{Movie,Performer,Studio}Urls does one directory read for a whole page rather than a stat per cover, which is a deliberate choice for library sizes well past Sonarr's. Upstream's hash would also change cache-busting semantics for three entity types - a locally re-resized cover would no longer bust - so it is a regression here, not an improvement. Do not re-litigate."
       },
       "fb3012d4f4cc4d871f2fcaf0ecd2fa9f8eee1adb": {
         "subject": "Fix status icon for completed tasks without a message",
