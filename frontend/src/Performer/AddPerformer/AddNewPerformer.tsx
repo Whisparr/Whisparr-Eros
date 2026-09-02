@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useRef } from 'react';
 import Alert from 'Components/Alert';
 import TextInput from 'Components/Form/TextInput';
 import Icon from 'Components/Icon';
@@ -25,12 +25,19 @@ function AddNewPerformer() {
     onClearPerformerLookupPress,
   } = useAddNewPerformer();
 
-  const handleInputChange = React.useCallback(
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  const handleInputChange = useCallback(
     (e: { name: string; value: string }) => {
       onPerformerLookupChange(e.value);
     },
     [onPerformerLookupChange]
   );
+
+  const handleClearPress = useCallback(() => {
+    onClearPerformerLookupPress();
+    searchInputRef.current?.focus();
+  }, [onClearPerformerLookupPress]);
 
   return (
     <PageContent title={translate('AddNewScene')}>
@@ -41,6 +48,7 @@ function AddNewPerformer() {
           </div>
 
           <TextInput
+            ref={searchInputRef}
             className={styles.searchInput}
             name="movieLookup"
             value={term}
@@ -51,7 +59,7 @@ function AddNewPerformer() {
 
           <Button
             className={styles.clearLookupButton}
-            onPress={onClearPerformerLookupPress}
+            onPress={handleClearPress}
           >
             <Icon name={icons.REMOVE} size={20} />
           </Button>

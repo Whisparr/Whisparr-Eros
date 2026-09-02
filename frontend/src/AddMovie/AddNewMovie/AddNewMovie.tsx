@@ -1,5 +1,5 @@
 // TODO: This foldeer needs to be re-organized by object domain/data boundary.
-import React, { useCallback } from 'react';
+import React, { useCallback, useRef } from 'react';
 import Alert from 'Components/Alert';
 import TextInput from 'Components/Form/TextInput';
 import Icon from 'Components/Icon';
@@ -26,6 +26,8 @@ function AddNewMovie() {
     onClearLookup,
   } = useAddNewMovie('movie');
 
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
   const onSearchInputChange = useCallback(
     ({ value }: { value: string }) => {
       onLookupChange(value);
@@ -35,6 +37,7 @@ function AddNewMovie() {
 
   const onClearMovieLookupPress = useCallback(() => {
     onClearLookup();
+    searchInputRef.current?.focus();
   }, [onClearLookup]);
 
   return (
@@ -46,6 +49,7 @@ function AddNewMovie() {
           </div>
 
           <TextInput
+            ref={searchInputRef}
             className={styles.searchInput}
             name="movieLookup"
             value={term}
