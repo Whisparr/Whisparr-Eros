@@ -28,11 +28,11 @@ namespace NzbDrone.Core.Movies
         List<Movie> GetByStudioForeignId(string studioForeignId);
         List<Movie> GetByPerformerForeignId(string performerForeignId);
         List<Movie> MoviesBetweenDates(DateTime start, DateTime end, bool includeUnmonitored);
-        PagingSpec<Movie> MoviesWithoutFiles(PagingSpec<Movie> pagingSpec);
+        PagingSpec<Movie> MoviesWithoutFiles(PagingSpec<Movie> pagingSpec, HashSet<int> movieTags = null);
         List<Movie> GetMoviesByFileId(int fileId);
         List<Movie> GetMoviesByFileId(IEnumerable<int> fileId);
         List<Movie> GetMoviesByCollectionTmdbId(int collectionId);
-        PagingSpec<Movie> MoviesWhereCutoffUnmet(PagingSpec<Movie> pagingSpec, List<QualitiesBelowCutoff> qualitiesBelowCutoff);
+        PagingSpec<Movie> MoviesWhereCutoffUnmet(PagingSpec<Movie> pagingSpec, List<QualitiesBelowCutoff> qualitiesBelowCutoff, HashSet<int> movieTags = null, List<int> quality = null);
         Movie FindByPath(string path);
         Dictionary<int, string> AllMoviePaths();
         List<int> AllMovieIds();
@@ -429,30 +429,55 @@ namespace NzbDrone.Core.Movies
             return Query(builder);
         }
 
-        public SqlBuilder MoviesWithoutFilesBuilder() => Builder()
-            .Where<Movie>(x => x.MovieFileId == 0)
-            .Where<Movie>(m => m.MovieMetadata.Value.Year > 0)
-            .GroupBy<Movie>(m => m.Id)
-            .GroupBy<MovieMetadata>(m => m.Id);
-
-        public PagingSpec<Movie> MoviesWithoutFiles(PagingSpec<Movie> pagingSpec)
+        public SqlBuilder MoviesWithoutFilesBuilder(HashSet<int> movieTags = null)
         {
-            pagingSpec.Records = GetPagedRecords(MoviesWithoutFilesBuilder(), pagingSpec, PagedQuery);
-            pagingSpec.TotalRecords = GetPagedRecordCount(MoviesWithoutFilesBuilder().SelectCountDistinct<Movie>(x => x.Id), pagingSpec);
+            var builder = Builder()
+                .Where<Movie>(x => x.MovieFileId == 0)
+                .Where<Movie>(m => m.MovieMetadata.Value.Year > 0);
+
+            if (movieTags is { Count: > 0 })
+            {
+                builder = builder.Where(BuildMovieTagsWhereClause(movieTags));
+            }
+
+            return builder
+                .GroupBy<Movie>(m => m.Id)
+                .GroupBy<MovieMetadata>(m => m.Id);
+        }
+
+        public PagingSpec<Movie> MoviesWithoutFiles(PagingSpec<Movie> pagingSpec, HashSet<int> movieTags = null)
+        {
+            pagingSpec.Records = GetPagedRecords(MoviesWithoutFilesBuilder(movieTags), pagingSpec, PagedQuery);
+            pagingSpec.TotalRecords = GetPagedRecordCount(MoviesWithoutFilesBuilder(movieTags).SelectCountDistinct<Movie>(x => x.Id), pagingSpec);
 
             return pagingSpec;
         }
 
-        public SqlBuilder MoviesWhereCutoffUnmetBuilder(List<QualitiesBelowCutoff> qualitiesBelowCutoff) => Builder()
-            .Where<Movie>(x => x.MovieFileId != 0)
-            .Where(BuildQualityCutoffWhereClause(qualitiesBelowCutoff))
-            .GroupBy<Movie>(m => m.Id)
-            .GroupBy<MovieMetadata>(m => m.Id);
-
-        public PagingSpec<Movie> MoviesWhereCutoffUnmet(PagingSpec<Movie> pagingSpec, List<QualitiesBelowCutoff> qualitiesBelowCutoff)
+        public SqlBuilder MoviesWhereCutoffUnmetBuilder(List<QualitiesBelowCutoff> qualitiesBelowCutoff, HashSet<int> movieTags = null, List<int> qualities = null)
         {
-            pagingSpec.Records = GetPagedRecords(MoviesWhereCutoffUnmetBuilder(qualitiesBelowCutoff), pagingSpec, PagedQuery);
-            pagingSpec.TotalRecords = GetPagedRecordCount(MoviesWhereCutoffUnmetBuilder(qualitiesBelowCutoff).SelectCountDistinct<Movie>(x => x.Id), pagingSpec);
+            var builder = Builder()
+                .Where<Movie>(x => x.MovieFileId != 0)
+                .Where(BuildQualityCutoffWhereClause(qualitiesBelowCutoff));
+
+            if (movieTags is { Count: > 0 })
+            {
+                builder = builder.Where(BuildMovieTagsWhereClause(movieTags));
+            }
+
+            if (qualities is { Count: > 0 })
+            {
+                builder = builder.Where(BuildQualityFilterWhereClause(qualities));
+            }
+
+            return builder
+                .GroupBy<Movie>(m => m.Id)
+                .GroupBy<MovieMetadata>(m => m.Id);
+        }
+
+        public PagingSpec<Movie> MoviesWhereCutoffUnmet(PagingSpec<Movie> pagingSpec, List<QualitiesBelowCutoff> qualitiesBelowCutoff, HashSet<int> movieTags = null, List<int> quality = null)
+        {
+            pagingSpec.Records = GetPagedRecords(MoviesWhereCutoffUnmetBuilder(qualitiesBelowCutoff, movieTags, quality), pagingSpec, PagedQuery);
+            pagingSpec.TotalRecords = GetPagedRecordCount(MoviesWhereCutoffUnmetBuilder(qualitiesBelowCutoff, movieTags, quality).SelectCountDistinct<Movie>(x => x.Id), pagingSpec);
 
             return pagingSpec;
         }
@@ -468,6 +493,38 @@ namespace NzbDrone.Core.Movies
                     clauses.Add(string.Format($"(\"{_table}\".\"QualityProfileId\" = {profile.ProfileId} AND \"MovieFiles\".\"Quality\" LIKE '%_quality_: {belowCutoff},%')"));
                 }
             }
+
+            return string.Format("({0})", string.Join(" OR ", clauses));
+        }
+
+        // Tags live as a JSON array on the Movies row rather than in a join table,
+        // so membership has to be tested by expanding the array in SQL. The two
+        // engines spell that differently.
+        private string BuildMovieTagsWhereClause(HashSet<int> tagIds)
+        {
+            var ids = string.Join(",", tagIds);
+
+            if (_database.DatabaseType == DatabaseType.PostgreSQL)
+            {
+                return string.Format(
+                    "EXISTS (SELECT 1 FROM jsonb_array_elements_text(\"{0}\".\"Tags\"::jsonb) AS elem WHERE elem::int IN ({1}))",
+                    _table,
+                    ids);
+            }
+
+            return string.Format(
+                "EXISTS (SELECT 1 FROM json_each(\"{0}\".\"Tags\") WHERE json_each.value IN ({1}))",
+                _table,
+                ids);
+        }
+
+        // Matches BuildQualityCutoffWhereClause: the quality column holds a serialised
+        // revision object, so the id is matched inside the JSON text.
+        private string BuildQualityFilterWhereClause(List<int> qualityIds)
+        {
+            var clauses = qualityIds
+                .Select(id => string.Format("\"MovieFiles\".\"Quality\" LIKE '%_quality_: {0},%'", id))
+                .ToList();
 
             return string.Format("({0})", string.Join(" OR ", clauses));
         }

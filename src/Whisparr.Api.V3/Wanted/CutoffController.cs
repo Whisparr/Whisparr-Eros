@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.CustomFormats;
@@ -41,7 +42,7 @@ namespace Whisparr.Api.V3.Wanted
 
         [HttpGet]
         [Produces("application/json")]
-        public PagingResource<MovieResource> GetCutoffUnmetMovies([FromQuery] PagingRequestResource paging, bool monitored = true)
+        public PagingResource<MovieResource> GetCutoffUnmetMovies([FromQuery] PagingRequestResource paging, bool monitored = true, [FromQuery] List<int> movieIds = null, [FromQuery] List<int> qualityProfileIds = null, [FromQuery] List<int> movieTags = null, [FromQuery] List<int> quality = null)
         {
             var pagingResource = new PagingResource<MovieResource>(paging);
             var pagingSpec = pagingResource.MapToPagingSpec<MovieResource, Movie>(
@@ -57,7 +58,19 @@ namespace Whisparr.Api.V3.Wanted
 
             pagingSpec.FilterExpressions.Add(v => v.Monitored == monitored);
 
-            var resource = pagingSpec.ApplyToPage(_movieCutoffService.MoviesWhereCutoffUnmet, v => MapToResource(v));
+            if (movieIds?.Any() == true)
+            {
+                pagingSpec.FilterExpressions.Add(m => movieIds.Contains(m.Id));
+            }
+
+            if (qualityProfileIds?.Any() == true)
+            {
+                pagingSpec.FilterExpressions.Add(m => qualityProfileIds.Contains(m.QualityProfileId));
+            }
+
+            var tags = movieTags?.Any() == true ? new HashSet<int>(movieTags) : null;
+
+            var resource = pagingSpec.ApplyToPage(spec => _movieCutoffService.MoviesWhereCutoffUnmet(spec, tags, quality), v => MapToResource(v));
 
             return resource;
         }

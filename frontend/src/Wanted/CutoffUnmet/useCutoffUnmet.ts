@@ -1,6 +1,7 @@
 import { keepPreviousData } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { Filter } from 'Filters/Filter';
+import { useCustomFiltersList } from 'Filters/useCustomFilters';
 import usePage from 'Helpers/Hooks/usePage';
 import usePagedApiQuery from 'Helpers/Hooks/usePagedApiQuery';
 import { filterTypes } from 'Helpers/Props';
@@ -39,11 +40,11 @@ const useCutoffUnmet = () => {
   const { pageSize, selectedFilterKey, sortKey, sortDirection } =
     useCutoffUnmetOptions();
 
-  // Neither wanted page offers custom filters, so there is nothing to merge
-  // into the two built-ins.
+  const customFilters = useCustomFiltersList('wanted.cutoffUnmet');
+
   const filters = useMemo(() => {
-    return findSelectedFilters(selectedFilterKey, FILTERS, []);
-  }, [selectedFilterKey]);
+    return findSelectedFilters(selectedFilterKey, FILTERS, customFilters);
+  }, [selectedFilterKey, customFilters]);
 
   const query = usePagedApiQuery<Movie>({
     path: '/wanted/cutoff',
