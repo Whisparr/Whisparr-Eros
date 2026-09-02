@@ -106,13 +106,13 @@ export const useSaveProviderSettings = <T extends ModelBase>(
       onSuccess: (updatedProvider: T) => {
         lastSaveData.current = null;
 
-        queryClient.setQueryData<T[]>([path], (providers = []) => {
-          return id === 0
-            ? [...providers, updatedProvider]
-            : providers.map((provider) =>
+        queryClient.setQueryData<T[]>([path], (providers = []) =>
+          providers.some((provider) => provider.id === updatedProvider.id)
+            ? providers.map((provider) =>
                 provider.id === updatedProvider.id ? updatedProvider : provider
-              );
-        });
+              )
+            : [...providers, updatedProvider]
+        );
 
         onSuccess?.();
       },

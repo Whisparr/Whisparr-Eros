@@ -118,6 +118,7 @@ function MonitorToggleButton(props: MonitorToggleButtonProps) {
       name={iconName}
       size={size}
       title={title}
+      aria-label={title}
       isDisabled={isDisabled}
       isSpinning={isSaving}
       {...otherProps}

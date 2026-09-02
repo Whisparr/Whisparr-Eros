@@ -88,9 +88,9 @@ namespace NzbDrone.Core.Indexers
         {
             var all = All();
             var indexerByName = name.IsNullOrWhiteSpace() ? null : all.FirstOrDefault(i => i.Name.EqualsIgnoreCase(name));
-            var indexerById = id.HasValue ? all.FirstOrDefault(i => i.Id == id.Value) : null;
+            var indexerById = id is > 0 ? all.FirstOrDefault(i => i.Id == id.Value) : null;
 
-            if (id.HasValue && indexerById == null)
+            if (id is > 0 && indexerById == null)
             {
                 throw new ResolveIndexerException("Indexer with ID '{0}' could not be found", id.Value);
             }

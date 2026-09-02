@@ -310,6 +310,7 @@ function QueueRow(props: QueueRowProps) {
               {showInteractiveImport ? (
                 <IconButton
                   name={icons.INTERACTIVE}
+                  aria-label={translate('ManualImport')}
                   onPress={handleInteractiveImportPress}
                 />
               ) : null}
