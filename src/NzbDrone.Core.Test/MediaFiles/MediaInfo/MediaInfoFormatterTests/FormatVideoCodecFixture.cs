@@ -38,6 +38,10 @@ namespace NzbDrone.Core.Test.MediaFiles.MediaInfo.MediaInfoFormatterTests
         [TestCase("mpeg4, FMP4", "", "")]
         [TestCase("mpeg4, MP42", "", "")]
         [TestCase("mpeg4, mp43", "Series the Title.S01E13.480p.WEB-DL.H.264-BTN-Custom", "")]
+        [TestCase("vvc, ", "", "h266")]
+        [TestCase("vvc, ", "Studio.Name.26.09.01.Performer.Name.1080p.WEB-DL.DD5.1.VVC-NTb", "VVC")]
+        [TestCase("vvc, ", "Studio.Name.26.09.01.Performer.Name.1080p.WEB-DL.DD5.1.H266-NTb", "h266")]
+        [TestCase("vvc, x266", "Studio.Name.26.09.01.Performer.Name.1080p.WEB-DL.DD5.1.H266-NTb", "x266")]
         public void should_format_video_format(string videoFormatPack, string sceneName, string expectedFormat)
         {
             var split = videoFormatPack.Split(new string[] { ", " }, System.StringSplitOptions.None);
@@ -56,6 +60,9 @@ namespace NzbDrone.Core.Test.MediaFiles.MediaInfo.MediaInfoFormatterTests
         [TestCase("hevc, ", "Some.Video.S01E01.x265", "x265")] // Not seen in practice, but honor tag if otherwise unknown
         [TestCase("h264, ", "Some.Video.S01E01", "h264")] // Default value
         [TestCase("hevc, ", "Some.Video.S01E01", "h265")] // Default value
+        [TestCase("vvc, x266", "Some.Video.S01E01.h266", "x266")] // Force mediainfo tag
+        [TestCase("vvc, ", "Some.Video.S01E01.x266", "x266")] // Not seen in practice, but honor tag if otherwise unknown
+        [TestCase("vvc, ", "Some.Video.S01E01", "h266")] // Default value
         public void should_format_video_format_fallbacks(string videoFormatPack, string sceneName, string expectedFormat)
         {
             var split = videoFormatPack.Split(new string[] { ", " }, System.StringSplitOptions.None);
