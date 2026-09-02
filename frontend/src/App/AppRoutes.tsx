@@ -28,6 +28,7 @@ import Quality from 'Settings/Quality/Quality';
 import Settings from 'Settings/Settings';
 import TagSettings from 'Settings/Tags/TagSettings';
 import UISettings from 'Settings/UI/UISettings';
+import Statistics from 'Statistics/Statistics';
 import AddNewStudio from 'Studio/AddNewStudio/AddNewStudio';
 import StudioDetails from 'Studio/Details/StudioDetails';
 import StudioIndex from 'Studio/Index/StudioIndex';
@@ -86,6 +87,8 @@ function AppRoutes() {
       */}
 
       <Route path="/calendar" element={<CalendarPage />} />
+
+      <Route path="/statistics" element={<Statistics />} />
 
       {/*
         Activity

@@ -149,6 +149,12 @@ let LINKS: SidebarItem[] = [
   },
 
   {
+    iconName: icons.CHART,
+    title: () => translate('Statistics'),
+    to: '/statistics',
+  },
+
+  {
     iconName: icons.SETTINGS,
     title: () => translate('Settings'),
     to: '/settings',
