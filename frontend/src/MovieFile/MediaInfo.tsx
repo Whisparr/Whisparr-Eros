@@ -1,10 +1,13 @@
 import React from 'react';
+import useLanguageName from 'Language/useLanguageName';
 import MediaInfoData from 'typings/MediaInfo';
-import getLanguageName from 'Utilities/String/getLanguageName';
 import translate from 'Utilities/String/translate';
 import { useSingleMovieFile } from './useMovieFile';
 
-export function formatLanguages(languages: string | undefined) {
+export function formatLanguages(
+  languages: string | undefined,
+  getLanguageName: (code: string) => string
+) {
   if (!languages) {
     return null;
   }
@@ -43,6 +46,8 @@ export function MediaInfoDisplay({
   mediaInfo,
   type,
 }: Readonly<MediaInfoDisplayProps>) {
+  const getLanguageName = useLanguageName();
+
   if (!mediaInfo) {
     return null;
   }
@@ -69,11 +74,11 @@ export function MediaInfoDisplay({
   }
 
   if (type === 'audioLanguages') {
-    return formatLanguages(audioLanguages);
+    return formatLanguages(audioLanguages, getLanguageName);
   }
 
   if (type === 'subtitles') {
-    return formatLanguages(subtitles);
+    return formatLanguages(subtitles, getLanguageName);
   }
 
   if (type === 'video') {
