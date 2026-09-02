@@ -41,7 +41,7 @@ $hoverScale: 1.05;
   display: block;
   object-fit: cover;
 
-  background-color: var(--defaultColor);
+  background-color: var(--movieBackgroundColor);
 }
 
 .overlayTitle {
@@ -158,7 +158,7 @@ $hoverScale: 1.05;
 
   position: relative;
   display: block;
-  background-color: var(--defaultColor);
+  background-color: var(--movieBackgroundColor);
 }
 
 .nextAiring {
