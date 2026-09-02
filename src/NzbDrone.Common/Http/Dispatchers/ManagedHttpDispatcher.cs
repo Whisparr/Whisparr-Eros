@@ -51,7 +51,7 @@ namespace NzbDrone.Common.Http.Dispatchers
             _logger = logger;
         }
 
-        public async Task<HttpResponse> GetResponseAsync(HttpRequest request, CookieContainer cookies)
+        public async Task<HttpResponse> GetResponseAsync(HttpRequest request, CookieContainer cookies, CancellationToken cancellationToken = default)
         {
             using var requestMessage = new HttpRequestMessage(request.Method, (Uri)request.Url);
             requestMessage.Version = HttpVersion.Version20;
@@ -65,7 +65,8 @@ namespace NzbDrone.Common.Http.Dispatchers
                 requestMessage.Headers.Add("Cookie", cookieHeader);
             }
 
-            using var cts = new CancellationTokenSource();
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+
             if (request.RequestTimeout != TimeSpan.Zero)
             {
                 cts.CancelAfter(request.RequestTimeout);
