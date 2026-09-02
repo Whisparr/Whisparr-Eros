@@ -10,24 +10,11 @@ Backlogs below are as of radarr `39c172d827`, sonarr `b84a621e99`. Run `--report
 
 ## radarr — Radarr/Radarr `develop`
 
-<!-- outstanding: 2 -->
+<!-- outstanding: 0 -->
 
-Owns: **backend**. High-water mark: `68b93db78c`.
+Owns: **backend**. High-water mark: `39c172d827`.
 
-**2 outstanding.**
-
-| Month | Total | be | fe | be+fe | chore |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| 2026-08 | 1 | 0 | 0 | 1 | 0 |
-| 2026-09 | 1 | 1 | 0 | 0 | 0 |
-
-### 2026-08
-
-- `be+fe` [`e80abdd60`](https://github.com/Radarr/Radarr/commit/e80abdd603ffbdcfc48615f824488f7c7402424f) Improve external restart handling — *TypNull*
-
-### 2026-09
-
-- `be   ` [`39c172d82`](https://github.com/Radarr/Radarr/commit/39c172d827a3738af4a2d9e951c7c52ce7153d77) Bump NUnit to 4.5.1 — *Bogdan*
+Caught up — nothing outstanding.
 
 ## sonarr — Sonarr/Sonarr `v5-develop`
 
@@ -41,6 +28,12 @@ Caught up — nothing outstanding.
 
 Wanted, blocked on a prerequisite. These are **not** closed - each carries
 what has to land first. The reason field in `state.json` has the detail.
+
+### radarr
+
+| Commit | Subject | Blocked by |
+| --- | --- | --- |
+| [`e80abdd60`](https://github.com/Radarr/Radarr/commit/e80abdd603ffbdcfc48615f824488f7c7402424f) | Improve external restart handling | Upstream's own wiring. The commit adds src/NzbDrone.Host/RestartableServiceLifetime.cs (249 lines) and simultaneously deletes the .UseWindowsService() call from Bootstrap.Start, but never registers the new lifetime: on Radarr develop today RestartableServiceLifetime appears in exactly one file - its own definition - and UseWindowsService appears in none. IsSystemdService is likewise declared on IRuntimeInfo and consumed nowhere. Take it once upstream lands the follow-up that actually installs the lifetime on the host builder. |
 
 ### sonarr
 
@@ -161,6 +154,8 @@ Commits reviewed and dispositioned. Skips carry their reason.
 | [`9910767f5`](https://github.com/Radarr/Radarr/commit/9910767f58b0d9beb3b7fa671ed4695487d917d3) | Fixed: Unexpected languages stored in DB will be treated as Unknown | `pick` | Identical converter here. A null language column made GetInt32 throw, so one bad row took down whatever was deserializing it instead of degrading to Unknown. |
 | [`45da623c7`](https://github.com/Radarr/Radarr/commit/45da623c777c2451bff5684718832952925f2be3) | Fixed: Re-grabbing a torrent that was already imported should re-import | `pick` | Same gap here: nothing evicted a tracked download on a new grab, so re-grabbing a release we had already imported kept the old terminal state and the new download was never imported. |
 | [`68b93db78`](https://github.com/Radarr/Radarr/commit/68b93db78cb7a648d61a486d94eae703242e1e36) | Fixed: Importing single files from Freebox | `pick` | Freebox drops a single-file torrent straight into the download root, so there is no folder to identify it by and the import matched the wrong thing. Now each task gets its own folder named for the release. Updated the three existing fixture assertions, which encoded the old paths - that path change is the fix, not a workaround. |
+| [`e80abdd60`](https://github.com/Radarr/Radarr/commit/e80abdd603ffbdcfc48615f824488f7c7402424f) | Improve external restart handling | `defer` | We want this: the in-process restart loop (Bootstrap.RunHostUntilShutdown + NzbDroneLogger.ResetAllTargets) replaces spawning a detached child process, which is the right shape under Docker/Podman/systemd restart policies, and the IsContainerized/IsPodman detection plus the LifecycleEventAttribute shutdown guard in EventAggregator are all portable to our tree as-is. Not skipped on the merits - it is half-landed upstream. Concretely, with UseWindowsService() gone the IHostLifetime is never a WindowsServiceLifetime, so RuntimeInfo.IsWindowsService is permanently false; that flag gates five real behaviours here (FileSystemLookupService network-drive lookup, DownloadedMovieImportService, MappedNetworkDriveValidator, LifecycleService service stop/restart, AppLifetime restart spawn), so picking it now would silently flip all of them on Windows service installs while the replacement lifetime sits dead in the tree. The commit is also three days old on develop and has not been through a release. Revisit at the follow-up. |
+| [`39c172d82`](https://github.com/Radarr/Radarr/commit/39c172d827a3738af4a2d9e951c7c52ce7153d77) | Bump NUnit to 4.5.1 | `have` | We are already on NUnit 4 and ahead of it. src/Directory.Build.props pins NUnit 4.6.1 (upstream 4.5.1), NUnit3TestAdapter 6.3.0 and NunitXml.TestLogger 8.0.0 - the same versions this commit moves to - and src/NzbDrone.Test.Common/Whisparr.Test.Common.csproj is on NUnit 4.6.1 too. The test-file half is moot as well: our migration left no classic assertions to convert, so the tree has zero occurrences of CollectionAssert, StringAssert, ClassicAssert or the Assert.AreEqual family, and needs neither upstream's Assert.That rewrites nor their NUnit.Framework.Legacy.ClassicAssert aliases. |
 
 ### sonarr
 
