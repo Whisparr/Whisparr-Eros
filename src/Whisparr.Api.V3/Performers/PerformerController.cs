@@ -290,6 +290,11 @@ namespace Whisparr.Api.V3.Performers
         {
             var resource = MapToResource(message.Performer);
 
+            // PerformerService fills the counts in on its own IHandle for this event, but
+            // neither handler is ordered, so it may not have run yet. Link the movies here
+            // so the broadcast never zeroes the counts out in the client's cache.
+            FetchAndLinkMovies(resource);
+
             BroadcastResourceChange(ModelAction.Updated, resource);
         }
 
@@ -359,6 +364,22 @@ namespace Whisparr.Api.V3.Performers
             }
 
             return performerResources;
+        }
+
+        private void FetchAndLinkMovies(PerformerResource resource)
+        {
+            var movies = _moviesService.GetByPerformerForeignId(resource.ForeignId);
+            var movieStats = _movieStatisticsService.MovieStatistics(movies.Select(x => x.Id).ToList());
+
+            resource.MovieCount = movieStats
+                .Where(stat => movies.Any(m => m.Id == stat.MovieId && m.MovieMetadata.Value.ItemType == ItemType.Movie))
+                .Sum(stat => stat.MovieFileCount);
+            resource.SceneCount = movieStats
+                .Where(stat => movies.Any(m => m.Id == stat.MovieId && m.MovieMetadata.Value.ItemType == ItemType.Scene))
+                .Sum(stat => stat.MovieFileCount);
+            resource.TotalMovieCount = movies.Count(x => x.MovieMetadata.Value.ItemType == ItemType.Movie);
+            resource.TotalSceneCount = movies.Count(x => x.MovieMetadata.Value.ItemType == ItemType.Scene);
+            resource.SizeOnDisk = movieStats.Sum(x => x.SizeOnDisk);
         }
 
         private PerformerResource MapToResource(Performer performer)
