@@ -9,7 +9,6 @@ declare namespace ModalCssNamespace {
     modalBackdrop: string;
     modalContainer: string;
     modalOpen: string;
-    modalOpenIOS: string;
     small: string;
   }
 }
