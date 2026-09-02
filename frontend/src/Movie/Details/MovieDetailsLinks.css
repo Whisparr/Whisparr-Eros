@@ -8,8 +8,25 @@
   white-space: nowrap;
 }
 
-.linkLabel {
+.linkBlock {
+  display: flex;
+  margin: 3px;
+}
+
+.soleLinkLabel {
   composes: label from 'Components/Label.css';
 
-  cursor: pointer;
+  margin: 0;
+
+  &:hover {
+    cursor: pointer;
+  }
+}
+
+/* Squared off against the copy button sitting flush to its right. */
+.linkLabel {
+  composes: soleLinkLabel;
+
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
 }

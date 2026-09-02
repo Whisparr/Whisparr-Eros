@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import Label from 'Components/Label';
+import ClipboardButton from 'Components/Link/ClipboardButton';
 import Link from 'Components/Link/Link';
 import { kinds, sizes } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
@@ -12,67 +13,81 @@ interface MovieDetailsLinksProps {
   website?: string;
 }
 
-function MovieDetailsLinks(props: MovieDetailsLinksProps) {
-  const { tmdbId, tpdbId, stashId, website } = props;
+interface MovieDetailsLink {
+  name: string;
+  url: string;
+  // The id the link is built from, when there is one worth copying. The
+  // homepage is a bare URL, so it has none.
+  externalId?: string;
+}
+
+function MovieDetailsLinks({
+  tmdbId,
+  tpdbId,
+  stashId,
+  website,
+}: Readonly<MovieDetailsLinksProps>) {
+  const links = useMemo(() => {
+    const validLinks: MovieDetailsLink[] = [];
+
+    if (website) {
+      validLinks.push({
+        name: translate('Homepage'),
+        url: website,
+      });
+    }
+
+    if (tmdbId) {
+      validLinks.push({
+        name: translate('TMDb'),
+        url: `https://www.themoviedb.org/movie/${tmdbId}`,
+        externalId: `${tmdbId}`,
+      });
+    }
+
+    if (tpdbId) {
+      validLinks.push({
+        name: translate('TPDb'),
+        url: `https://theporndb.net/movies/${tpdbId}`,
+        externalId: tpdbId,
+      });
+    }
+
+    if (stashId && stashId !== tmdbId?.toString()) {
+      validLinks.push({
+        name: translate('StashDB'),
+        url: `https://stashdb.org/scenes/${stashId}/`,
+        externalId: stashId,
+      });
+    }
+
+    return validLinks;
+  }, [tmdbId, tpdbId, stashId, website]);
 
   return (
     <div className={styles.links}>
-      {!!website && (
-        <Link className={styles.link} to={website}>
-          <Label
-            className={styles.linkLabel}
-            kind={kinds.INFO}
-            size={sizes.LARGE}
-          >
-            {translate('Homepage')}
-          </Label>
-        </Link>
-      )}
+      {links.map(({ name, url, externalId }) => (
+        <div key={name} className={styles.linkBlock}>
+          <Link className={styles.link} to={url}>
+            <Label
+              className={externalId ? styles.linkLabel : styles.soleLinkLabel}
+              kind={kinds.INFO}
+              size={sizes.LARGE}
+            >
+              {name}
+            </Label>
+          </Link>
 
-      {!!tmdbId && (
-        <Link
-          className={styles.link}
-          to={`https://www.themoviedb.org/movie/${tmdbId}`}
-        >
-          <Label
-            className={styles.linkLabel}
-            kind={kinds.INFO}
-            size={sizes.LARGE}
-          >
-            {translate('TMDb')}
-          </Label>
-        </Link>
-      )}
-
-      {!!tpdbId && (
-        <Link
-          className={styles.link}
-          to={`https://theporndb.net/movies/${tpdbId}`}
-        >
-          <Label
-            className={styles.linkLabel}
-            kind={kinds.INFO}
-            size={sizes.LARGE}
-          >
-            {translate('TPDb')}
-          </Label>
-        </Link>
-      )}
-
-      {!!stashId && stashId !== tmdbId?.toString() && (
-        <Link
-          className={styles.link}
-          to={`https://stashdb.org/scenes/${stashId}/`}
-        >
-          <Label
-            className={styles.linkLabel}
-            kind={kinds.INFO}
-            size={sizes.LARGE}
-          >
-            {translate('StashDB')}
-          </Label>
-        </Link>
-      )}
+          {externalId ? (
+            <ClipboardButton
+              value={externalId}
+              title={translate('CopyToClipboard')}
+              kind={kinds.DEFAULT}
+              size={sizes.SMALL}
+            />
+          ) : null}
+        </div>
+      ))}
     </div>
   );
 }
