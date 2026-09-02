@@ -2,7 +2,7 @@ import classNames from 'classnames';
 import React, { useCallback } from 'react';
 import { ConnectDragSource } from 'react-dnd';
 import Icon from 'Components/Icon';
-import Link from 'Components/Link/Link';
+import IconButton from 'Components/Link/IconButton';
 import ConfirmModal from 'Components/Modal/ConfirmModal';
 import TagList from 'Components/TagList';
 import useModalOpenState from 'Helpers/Hooks/useModalOpenState';
@@ -112,14 +112,15 @@ function DelayProfile({
       <TagList tags={tags} tagList={tagList} />
 
       <div className={styles.actions}>
-        <Link
+        <IconButton
+          name={icons.EDIT}
           className={
             id === DEFAULT_DELAY_PROFILE_ID ? styles.editButton : undefined
           }
+          aria-label={translate('EditDelayProfile')}
+          title={translate('EditDelayProfile')}
           onPress={setEditDelayProfileModalOpen}
-        >
-          <Icon name={icons.EDIT} />
-        </Link>
+        />
 
         {id === DEFAULT_DELAY_PROFILE_ID
           ? null
