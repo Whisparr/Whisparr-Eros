@@ -93,6 +93,17 @@ export const FILTERS: Filter[] = [
       },
     ],
   },
+  {
+    key: 'diskScanImported',
+    label: () => translate('DiskScanImported'),
+    filters: [
+      {
+        key: 'eventType',
+        value: '10',
+        type: filterTypes.EQUAL,
+      },
+    ],
+  },
 ];
 
 export const FILTER_BUILDER: FilterBuilderProp<History>[] = [
