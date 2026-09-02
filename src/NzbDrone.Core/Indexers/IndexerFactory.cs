@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using FluentValidation.Results;
 using NLog;
+using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.ThingiProvider;
 
@@ -13,6 +14,7 @@ namespace NzbDrone.Core.Indexers
         List<IIndexer> RssEnabled(bool filterBlockedIndexers = true);
         List<IIndexer> AutomaticSearchEnabled(bool filterBlockedIndexers = true);
         List<IIndexer> InteractiveSearchEnabled(bool filterBlockedIndexers = true);
+        IndexerDefinition ResolveIndexer(int? id, string name);
     }
 
     public class IndexerFactory : ProviderFactory<IIndexer, IndexerDefinition>, IIndexerFactory
@@ -80,6 +82,35 @@ namespace NzbDrone.Core.Indexers
             }
 
             return enabledIndexers.ToList();
+        }
+
+        public IndexerDefinition ResolveIndexer(int? id, string name)
+        {
+            var all = All();
+            var indexerByName = name.IsNullOrWhiteSpace() ? null : all.FirstOrDefault(i => i.Name.EqualsIgnoreCase(name));
+            var indexerById = id.HasValue ? all.FirstOrDefault(i => i.Id == id.Value) : null;
+
+            if (id.HasValue && indexerById == null)
+            {
+                throw new ResolveIndexerException("Indexer with ID '{0}' could not be found", id.Value);
+            }
+
+            if (name.IsNotNullOrWhiteSpace() && indexerByName == null)
+            {
+                throw new ResolveIndexerException("Indexer with name '{0}' could not be found", name);
+            }
+
+            if (indexerByName == null && indexerById == null)
+            {
+                return null;
+            }
+
+            if (indexerByName != null && indexerById != null && indexerByName.Id != indexerById.Id)
+            {
+                throw new ResolveIndexerException("Indexer with name '{0}' does not match indexer with ID '{1}'", name, id.Value);
+            }
+
+            return indexerById ?? indexerByName;
         }
 
         private IEnumerable<IIndexer> FilterBlockedIndexers(IEnumerable<IIndexer> indexers)

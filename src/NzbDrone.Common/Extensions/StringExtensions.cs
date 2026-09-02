@@ -99,6 +99,20 @@ namespace NzbDrone.Common.Extensions
             return CollapseSpace.Replace(text, " ").Trim();
         }
 
+        /// <summary>
+        /// Strips carriage returns and line feeds so a value that came from a request
+        /// body or a filename cannot forge extra lines when written to the log.
+        /// </summary>
+        public static string ForLog(this string text)
+        {
+            if (text == null)
+            {
+                return null;
+            }
+
+            return text.Replace("\r", string.Empty).Replace("\n", string.Empty);
+        }
+
         public static bool IsNullOrWhiteSpace(this string text)
         {
             return string.IsNullOrWhiteSpace(text);

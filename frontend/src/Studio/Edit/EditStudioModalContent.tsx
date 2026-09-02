@@ -180,6 +180,7 @@ function EditStudioModalContent({
                 className={styles.poster}
                 images={studio.images}
                 size={250}
+                title={studio.title}
               />
             </div>
           )}

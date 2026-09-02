@@ -18,7 +18,7 @@ $hoverScale: 1.05;
 .poster {
   position: relative;
   display: block;
-  background-color: var(--defaultColor);
+  background-color: var(--movieBackgroundColor);
   object-fit: cover;
 }
 

@@ -60,6 +60,7 @@ function AddNewStudioModalContent(props: AddNewStudioModalContentProps) {
                 size={250}
                 overflow={true}
                 lazy={true}
+                title={title}
               />
             </div>
           )}

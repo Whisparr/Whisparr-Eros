@@ -77,6 +77,7 @@ function PerformerIndexPoster(props: PerformerIndexPosterProps) {
           <IconButton
             name={icons.EDIT}
             title={translate('EditPerformer')}
+            tabIndex={-1}
             onPress={onEditPerformerPress}
           />
 
@@ -99,6 +100,7 @@ function PerformerIndexPoster(props: PerformerIndexPosterProps) {
               size={250}
               lazy={true}
               overflow={true}
+              title={performer.fullName}
               onError={onPosterLoadError}
               onLoad={onPosterLoad}
             />

@@ -26,7 +26,7 @@ $hoverScale: 1.05;
 .poster {
   position: relative;
   display: block;
-  background-color: var(--defaultColor);
+  background-color: var(--movieBackgroundColor);
 }
 
 .overlayTitle {
@@ -111,7 +111,7 @@ $hoverScale: 1.05;
 
   position: relative;
   display: block;
-  background-color: var(--defaultColor);
+  background-color: var(--movieBackgroundColor);
 }
 
 .nextAiring {

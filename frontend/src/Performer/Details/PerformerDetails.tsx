@@ -322,6 +322,7 @@ function PerformerDetails() {
               images={images}
               size={250}
               lazy={false}
+              title={fullName}
             />
             <div className={styles.info}>
               <div className={styles.titleRow}>

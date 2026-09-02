@@ -201,6 +201,10 @@ function MovieSearchInput() {
       }
       if (event.key !== 'Tab' && event.key !== 'Enter') return;
       if (!autosuggestRef.current) return;
+
+      // Tab in an empty box should move focus, not run a search for nothing.
+      if (!inputRef.current?.value) return;
+
       const { highlightedSectionIndex, highlightedSuggestionIndex } =
         autosuggestRef.current.state;
       if (!suggestions.length || highlightedSectionIndex) {

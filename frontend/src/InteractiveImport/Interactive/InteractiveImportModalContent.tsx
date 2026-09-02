@@ -475,6 +475,7 @@ function InteractiveImportModalContent(
         name: commandNames.INTERACTIVE_IMPORT,
         files,
         importMode: finalImportMode,
+        priority: 'high',
       });
 
       shouldClose = true;
