@@ -47,6 +47,13 @@ namespace NzbDrone.Api.Test.Authentication
             return context.HasSucceeded;
         }
 
+        private void GivenDisabledForLocalhost()
+        {
+            Mocker.GetMock<IConfigFileProvider>()
+                  .SetupGet(c => c.AuthenticationRequired)
+                  .Returns(AuthenticationRequiredType.DisabledForLocalhost);
+        }
+
         [TestCase("127.0.0.1")]
         [TestCase("192.168.1.50")]
         [TestCase("10.0.0.5")]
@@ -85,6 +92,36 @@ namespace NzbDrone.Api.Test.Authentication
         public void should_not_bypass_authentication_for_a_truncated_proxy_chain()
         {
             IsAuthorized(GetHttpContext("10.0.0.2", "203.0.113.9")).Should().BeFalse();
+        }
+
+        [TestCase("127.0.0.1")]
+        [TestCase("::1")]
+        public void should_bypass_authentication_for_loopback_when_disabled_for_localhost(string address)
+        {
+            GivenDisabledForLocalhost();
+
+            IsAuthorized(GetHttpContext(address, null)).Should().BeTrue();
+        }
+
+        [TestCase("192.168.1.50")]
+        [TestCase("10.0.0.5")]
+        [TestCase("203.0.113.66")]
+        public void should_not_bypass_authentication_for_non_loopback_when_disabled_for_localhost(string address)
+        {
+            GivenDisabledForLocalhost();
+
+            IsAuthorized(GetHttpContext(address, null)).Should().BeFalse();
+        }
+
+        // A reverse proxy on the same host makes every remote request arrive from
+        // loopback, so an unconsumed X-Forwarded-For means the real client is
+        // someone else. Same guard the local addresses branch carries.
+        [Test]
+        public void should_not_bypass_authentication_for_loopback_behind_an_untrusted_proxy()
+        {
+            GivenDisabledForLocalhost();
+
+            IsAuthorized(GetHttpContext("127.0.0.1", "203.0.113.9")).Should().BeFalse();
         }
 
         [Test]

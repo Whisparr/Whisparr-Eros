@@ -38,6 +38,16 @@ namespace NzbDrone.Http.Authentication
                     }
                 }
             }
+            else if (_authenticationRequired == AuthenticationRequiredType.DisabledForLocalhost)
+            {
+                if (context.Resource is HttpContext httpContext &&
+                    IPAddress.TryParse(httpContext.GetRemoteIP(), out var ipAddress) &&
+                    IsClientAddressKnown(httpContext) &&
+                    IPAddress.IsLoopback(ipAddress))
+                {
+                    context.Succeed(requirement);
+                }
+            }
 
             return Task.CompletedTask;
         }
