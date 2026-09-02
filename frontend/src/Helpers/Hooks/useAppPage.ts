@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import useTranslations from 'App/useTranslations';
 import useCommands from 'Commands/useCommands';
 import useCustomFilters from 'Filters/useCustomFilters';
+import { useInitializeLanguage } from 'Language/useLanguageName';
 import { useLanguages } from 'Language/useLanguages';
 import { useImportLists } from 'Settings/ImportLists/ImportLists/useImportLists';
 import { useIndexerFlags } from 'Settings/Indexers/useIndexerFlags';
@@ -73,6 +74,11 @@ const useAppPage = () => {
   // commands now that the slice's per-command removal timer is gone. The app does not
   // wait on this -- nothing renders differently for want of the command list.
   useCommands();
+
+  // The UI language identifier feeds Intl.DisplayNames in MediaInfo. Kicked off
+  // here rather than waited on: the hook falls back to English display names
+  // until it lands, exactly as the module-level singleton it replaces did.
+  useInitializeLanguage();
 
   const isPopulated =
     isImportListsPopulated &&
