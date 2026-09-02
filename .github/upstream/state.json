@@ -12,8 +12,8 @@
       "repo": "Sonarr/Sonarr",
       "branch": "v5-develop",
       "owns": "frontend",
-      "highWater": "5487aa74f5306bbec980432e9a5293d4bf19c903",
-      "highWaterNote": "2026-01 'Multiple Translations updated by Weblate' (5487aa74f). Stops deliberately short of the month tip: 164441965 'Selecting multiple indexers per release profile' is the next commit and was deferred rather than dispositioned, so the mark cannot pass it. Every other 2026-01 commit is settled - 61 of 62 - and those dispositions are recorded below even where they sit after the mark. Advance past 5487aa74f only once 164441965 itself is settled."
+      "highWater": "164441965c6dda985523c85ce272f958defc32a8",
+      "highWaterNote": "2026-01 tip, 'Selecting multiple indexers per release profile' (164441965), adapted here. This was the one 2026-01 commit left deferred when the rest of the month was settled; with it dispositioned the mark clears 2026-01 entirely and every commit at or before it is settled. Next chunk is 2026-02."
     }
   },
   "dispositions": {
@@ -2359,6 +2359,12 @@
         "month": "2026-01",
         "disposition": "have",
         "reason": "Corrects the alt-text key for banners from 'Banner' to 'ImageBanner' in Sonarr's SeriesImage. Our MovieImage alt text was written in this chunk and already uses ImageBanner, with keys authored in sorted position."
+      },
+      "164441965c6dda985523c85ce272f958defc32a8": {
+        "subject": "New: Selecting multiple indexers per release profile",
+        "month": "2026-01",
+        "disposition": "adapt",
+        "reason": "Same feature -- ReleaseProfile.IndexerId becomes a List<int> IndexerIds, migration 242 here (upstream 224). Two adaptations. (1) Upstream left V3 on the singular indexerId and pointed their frontend at the new V5 resource; we have no V5, so indexerIds goes on Whisparr.Api.V3 and indexerId stays as a deprecated compat field. It is nullable there on purpose: the fallback to indexerId keys on indexerIds being absent, not empty, because our own UI PUTs the whole GET body back and so sends a stale indexerId alongside an emptied indexerIds -- treating empty as absent silently re-pins the profile, verified against the live API. That also sidesteps upstream's V3 ToModel producing [0] for indexerId 0, which EnabledForTags reads as a specific indexer rather than 'any'. (2) Dropped the src/Sonarr.Api.V5 half and the ExcludedTags hunks, which we do not have. Help text is our own key pair (ReleaseProfileIndexersHelpText/Warning) replacing the singular ones, per the localization rule; the '(Any)' select option goes away since an empty list now means any indexer."
       }
     }
   }

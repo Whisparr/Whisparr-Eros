@@ -26,25 +26,20 @@ Owns: **backend**. High-water mark: `68b93db78c`.
 
 ## sonarr — Sonarr/Sonarr `v5-develop`
 
-<!-- outstanding: 263 -->
+<!-- outstanding: 262 -->
 
-Owns: **frontend**. High-water mark: `5487aa74f5`.
+Owns: **frontend**. High-water mark: `164441965c`.
 
-**263 outstanding.**
+**262 outstanding.**
 
 | Month | Total | be | fe | be+fe | chore |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| 2026-01 | 1 | 0 | 0 | 1 | 0 |
 | 2026-02 | 19 | 12 | 4 | 2 | 1 |
 | 2026-03 | 43 | 23 | 9 | 7 | 4 |
 | 2026-04 | 52 | 27 | 17 | 7 | 1 |
 | 2026-05 | 82 | 48 | 20 | 5 | 9 |
 | 2026-06 | 30 | 16 | 5 | 3 | 6 |
 | 2026-07 | 36 | 19 | 7 | 6 | 4 |
-
-### 2026-01
-
-- `be+fe` [`164441965`](https://github.com/Sonarr/Sonarr/commit/164441965c6dda985523c85ce272f958defc32a8) New: Selecting multiple indexers per release profile — *Bogdan*
 
 ### 2026-02
 
@@ -666,6 +661,7 @@ Commits reviewed and dispositioned. Skips carry their reason.
 | [`b88b7e15c`](https://github.com/Sonarr/Sonarr/commit/b88b7e15c1b64e723f7898cf58a3227eb5cf69a5) | Fixed: Reduce data transfer when reading video stream from files | `have` | Picks the ffprobe -select_streams index by position within VideoStreams rather than by absolute stream index, so HDR frame analysis reads the right stream. VideoFileInfoReader already carries the final form of this, refined by 302b0f356. |
 | [`302b0f356`](https://github.com/Sonarr/Sonarr/commit/302b0f356e7c26de8c90bc874ca63ba3bb862d8d) | Fallback to video stream 0 when reading primary video for frame analysis | `have` | Falls back to video stream 0 when the primary video stream is not found in VideoStreams. Already present verbatim in our VideoFileInfoReader. |
 | [`1033849d3`](https://github.com/Sonarr/Sonarr/commit/1033849d399535f981d88c7bc637cdb4180d129c) | Fix translation key for banner in SeriesImage component | `have` | Corrects the alt-text key for banners from 'Banner' to 'ImageBanner' in Sonarr's SeriesImage. Our MovieImage alt text was written in this chunk and already uses ImageBanner, with keys authored in sorted position. |
+| [`164441965`](https://github.com/Sonarr/Sonarr/commit/164441965c6dda985523c85ce272f958defc32a8) | New: Selecting multiple indexers per release profile | `adapt` | Same feature -- ReleaseProfile.IndexerId becomes a List<int> IndexerIds, migration 242 here (upstream 224). Two adaptations. (1) Upstream left V3 on the singular indexerId and pointed their frontend at the new V5 resource; we have no V5, so indexerIds goes on Whisparr.Api.V3 and indexerId stays as a deprecated compat field. It is nullable there on purpose: the fallback to indexerId keys on indexerIds being absent, not empty, because our own UI PUTs the whole GET body back and so sends a stale indexerId alongside an emptied indexerIds -- treating empty as absent silently re-pins the profile, verified against the live API. That also sidesteps upstream's V3 ToModel producing [0] for indexerId 0, which EnabledForTags reads as a specific indexer rather than 'any'. (2) Dropped the src/Sonarr.Api.V5 half and the ExcludedTags hunks, which we do not have. Help text is our own key pair (ReleaseProfileIndexersHelpText/Warning) replacing the singular ones, per the localization rule; the '(Any)' select option goes away since an empty list now means any indexer. |
 | [`2fbeff438`](https://github.com/Sonarr/Sonarr/commit/2fbeff4383af3ced58aac72d2470b90572a27da0) | Multiple Translations updated by Weblate | `skip` | Weblate commit. Our translations come from Weblate directly, never from cherry-picks. |
 | [`8112b536a`](https://github.com/Sonarr/Sonarr/commit/8112b536a23b16c27900aca05437b5ff9661b5e9) | Improve accessibility of series status indicators | `adapt` | Applied to MovieStatusCell and SceneStatusCell, our equivalents of SeriesStatusCell. Also brought in Components/StatusIndicator, which upstream added in 71d9a5d57 (2026-07-12, behind our high-water mark) and we never ported. Verified on 6969: all 40 status icons on the movie table now carry announced text. |
 | [`650a452bf`](https://github.com/Sonarr/Sonarr/commit/650a452bf0aa7a1f93aec5a1528c8e08d19b29cf) | New: Sorting Blocklist, History and Queue by Quality | `skip` | Deferred to its own PR by decision on 2026-08-30, not skipped on merit. 21 files: a QualityProfileQualityRank table, repository and service, a DB migration (233 there, 242 here) and rank joins added to the Blocklist, History and Episode repositories. A schema change belongs in its own review, not in a 15-commit sync chunk. |
