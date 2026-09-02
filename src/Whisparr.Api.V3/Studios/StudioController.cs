@@ -282,7 +282,10 @@ namespace Whisparr.Api.V3.Studios
 
             _studioResourceCache.Remove(updatedStudio.ForeignId);
 
-            return Accepted(updatedStudio);
+            // Pass the id, not the model: `Accepted(Studio)` binds to ControllerBase's
+            // object overload and serialises the raw model, which has no HasMovies /
+            // HasScenes / Years. Clients replace their cached studio with the response.
+            return Accepted(updatedStudio.Id);
         }
 
         [RestDeleteById]
@@ -326,6 +329,12 @@ namespace Whisparr.Api.V3.Studios
         public void Handle(StudioUpdatedEvent message)
         {
             var resource = MapToResource(message.Studio);
+
+            // The counts on the model are transient -- they are only filled in by the
+            // IHandleAsync side of this event, which has not run yet. Link the movies
+            // here so the broadcast carries the same HasMovies/HasScenes/Years the
+            // clients would get from a GET, instead of a resource that reads as empty.
+            FetchAndLinkMovies(resource);
 
             BroadcastResourceChange(ModelAction.Updated, resource);
         }
