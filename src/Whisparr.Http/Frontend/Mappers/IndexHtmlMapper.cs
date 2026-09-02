@@ -29,6 +29,13 @@ namespace Whisparr.Http.Frontend.Mappers
 
         protected override string FolderPath => _folderPath;
 
+        // Applied outside the base's cached copy: Theme is a config value that can change without
+        // a restart, and the cached text keeps the placeholder so each request re-substitutes it.
+        protected override string GetHtmlText()
+        {
+            return base.GetHtmlText().Replace("_THEME_", _configFileProvider.Theme);
+        }
+
         protected override string MapPath(string resourceUrl)
         {
             return HtmlPath;
