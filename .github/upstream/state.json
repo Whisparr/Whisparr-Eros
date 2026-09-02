@@ -12,8 +12,8 @@
       "repo": "Sonarr/Sonarr",
       "branch": "v5-develop",
       "owns": "frontend",
-      "highWater": "5bde9242393b988d8b5f154b0b935f6289af9f6d",
-      "highWaterNote": "2026-03 tip, 'New: Info icon for Quality Profiles that are in use' (5bde92423). All 43 commits of 2026-03 are dispositioned, so everything at or before this mark is settled. Next chunk is 2026-04."
+      "highWater": "bf5d48c76a6a793b7d2adc540bb11d9c51bcc3cb",
+      "highWaterNote": "2026-04 tip, 'Focus add series search input after clearing' (bf5d48c76). All 52 commits of 2026-04 are dispositioned, so everything at or before this mark is settled. Next chunk is 2026-05."
     }
   },
   "dispositions": {
@@ -2112,7 +2112,7 @@
         "subject": "New: Parse non-ASCII release groups",
         "month": "2026-01",
         "disposition": "adapt",
-        "reason": "Widens the release-group character class to Latin-1 letters. Reproduced against our parser first: '-Hveðrungr' and '-Báleygr' were truncated. Applied to our variant of the regex; new assertions use scene-shaped titles rather than the upstream series ones."
+        "reason": "Widens the release-group character class to Latin-1 letters. Reproduced against our parser first: '-Hve\u00f0rungr' and '-B\u00e1leygr' were truncated. Applied to our variant of the regex; new assertions use scene-shaped titles rather than the upstream series ones."
       },
       "8f5f3070ace856ddcb285a7358cf8e71cac9858a": {
         "subject": "Fixed: Login with credentials on Qbittorrent 5.2",
@@ -2737,6 +2737,318 @@
         "month": "2026-03",
         "disposition": "skip",
         "reason": "Splits useQualityProfileInUse into seriesCount/importListCount to drive a usage popover. Ours cannot produce the movie/performer/studio side of that count without fetching the whole library, which is exactly what GET /qualityprofile/{id}/inuse would fix -- already filed as Whisparr/Whisparr#1138. Blocked on that endpoint."
+      },
+      "e4173077dc34a2cf6d7abbd09db32d56ce25c8c1": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-04",
+        "disposition": "skip",
+        "reason": "Multiple Translations updated by Weblate. Automatic skip: those files come from Weblate, not from cherry-picks."
+      },
+      "caeb31df28ad0b3c88d7110eb6cf136c254afaa8": {
+        "subject": "Automated API Docs update",
+        "month": "2026-04",
+        "disposition": "skip",
+        "reason": "Regenerates src/Sonarr.Api.V5/openapi.json only. We retired our checked-in openapi.json along with the workflow that produced it, so there is no such file here."
+      },
+      "0a76d7789ea40025c63184775e182d056e762210": {
+        "subject": "Fixed: Season action menu not working after switching from desktop to mobile",
+        "month": "2026-04",
+        "disposition": "pick",
+        "reason": "Same bug here: Menu.tsx applied the `maxHeight` state unconditionally, but it is only recomputed when `enforceMaxHeight` is set, so a menu that opts out rendered with `max-height: 0` and showed nothing. Now only applied when it is being maintained."
+      },
+      "01fcc160dd470414fedc910a23082164fef2947a": {
+        "subject": "Fanart not rendering on series details page",
+        "month": "2026-04",
+        "disposition": "adapt",
+        "reason": "Same stacking-context bug: `.backdrop` is `position: absolute; z-index: -1` inside a `.header` that was `position: relative` with no `z-index`, so the backdrop escaped to the root stacking context and painted behind the opaque page background. Verified live on 6969 -- with the header's z-index removed the layer renders as page background, with `z-index: 0` it paints. Applied to all four headers of that shape here (movie, scene, performer, studio), not just the one upstream fixes."
+      },
+      "be4a564456818fc18138bded9d981c93bb2cdd14": {
+        "subject": "Prevent overflow exception for big numbers in SizeSuffix and Fluent.Round",
+        "month": "2026-04",
+        "disposition": "have",
+        "reason": "Already here via the Radarr 2026-04 sync (8e874811ec, #566): NumberExtensions.SizeSuffix carries the long.MinValue special case and Math.Abs, and Fluent.Round ceilings for negatives. Both files match the post-change form exactly."
+      },
+      "9a0e23a93faaa21ba2cc264b30603aff4d10216e": {
+        "subject": "Load initial paths for file browser",
+        "month": "2026-04",
+        "disposition": "adapt",
+        "reason": "Took the FileBrowserModalContent half only: the load failure was a bare <div> where the table would be, now the danger Alert the modal already uses for its mapped-drives warning. The `enabled` guard this removes from usePaths was never added here -- our usePaths carries a comment saying an empty path is what the browser opens on -- and our V3 FileSystemController is not in a nullable-annotation context, so its `path` parameter needs no change."
+      },
+      "dfd5e4ba37db50edcaae4116d616e76660e64cf1": {
+        "subject": "Fixed: Unexpected languages stored in DB will be treated as Unknown",
+        "month": "2026-04",
+        "disposition": "have",
+        "reason": "Already here via the Radarr 2026-08 sync (5c0a55c2e7, #571): LanguageIntConverter already overrides HandleNull and returns Language.Unknown on a null token."
+      },
+      "c07dbef2c4fdcc28f90d8064312bd1bb8405aeea": {
+        "subject": "Display protocol for download clients in UI",
+        "month": "2026-04",
+        "disposition": "pick",
+        "reason": "Applies as-is in shape: the download client card and the manage-clients table said nothing about usenet vs torrent. Both now carry the ProtocolLabel the queue uses and the table gains a sortable Protocol column. DownloadClient already carried `protocol` and the `Protocol` key already exists in en.json, so no JSON change was needed."
+      },
+      "a1260fa5f4dbb4950165fb3e0572f3e314c3ad11": {
+        "subject": "Display protocol for indexers in UI",
+        "month": "2026-04",
+        "disposition": "pick",
+        "reason": "Same change on the indexer side, applied in the same commit as c07dbef2c. Indexer already carried `protocol`."
+      },
+      "5e5f1835f510ff4509da0b300e69247564fb41f7": {
+        "subject": "Fixed: Parsing date-based releases with 3 digit number in episode title",
+        "month": "2026-04",
+        "disposition": "skip",
+        "reason": "Parser change under the skip-by-default gate, and it does not reproduce. The fix is a reordering: the airdate regex moves above the 103/113 season-episode regex so a three-digit number in an episode title stops being read as a season and episode. We have no 103/113 regex and no season or episode concept; our airdate regexes are studio-anchored and sit in a different order for different reasons."
+      },
+      "536d292838379af8e415044c82276e9a1e9ffbeb": {
+        "subject": "Prevent duplicating providers when adding a new provider",
+        "month": "2026-04",
+        "disposition": "adapt",
+        "reason": "Same bug, different shape. useSaveProviderSettings branched on `id === 0` -- the id the form posts with, not the id the server answers with -- so a create always appended, and a list already refetched with the new provider in it got two rows for the same id. Rewritten to key off what is in the cache, matching useCommands/useTags/useRootFolders here."
+      },
+      "113d0c474904c28fae0b0b37f5868e5cdcb09622": {
+        "subject": "Add v5 Import List Exclusion endpoints",
+        "month": "2026-04",
+        "disposition": "skip",
+        "reason": "V5-only: all four files under src/Sonarr.Api.V5/ImportLists/. We have only src/Whisparr.Api.V3/, so this would land as files nothing compiles."
+      },
+      "b0fac1529dbdc7ac13c07e60ea47b1341b9af0f1": {
+        "subject": "Use react-query for Import List Exclusions",
+        "month": "2026-04",
+        "disposition": "have",
+        "reason": "Our import list exclusions were already moved to react-query -- frontend/src/Settings/ImportLists/ImportListExclusions/useImportListExclusions.ts exists and the Store/Actions/Settings/importListExclusions.js slice this deletes does not."
+      },
+      "2b3f0d837db13e29383a51e61bb58fe0ed015219": {
+        "subject": "Bump FFprobe to 8.1.0",
+        "month": "2026-04",
+        "disposition": "have",
+        "reason": "Openur.FFprobeStatic is at 9.0.1.492 here, ahead of the 8.1.0.334 this moves to."
+      },
+      "1449b8152545171a6f628a0e2ce6292e4c420da8": {
+        "subject": "Bump Microsoft.Data.SqlClient and System.Data.SQLite",
+        "month": "2026-04",
+        "disposition": "have",
+        "reason": "Both already ahead: Microsoft.Data.SqlClient 7.0.2 > 7.0.0, System.Data.SQLite 2.0.4 > 2.0.3."
+      },
+      "33a5ccd7944ccb771615d154432e65ef8f3c7c48": {
+        "subject": "Bump MailKit to 4.16.0",
+        "month": "2026-04",
+        "disposition": "have",
+        "reason": "MailKit is at 4.17.0 here, ahead of the version this moves to."
+      },
+      "ffaaf5270d69b425d8dca262a58c919d1f700e13": {
+        "subject": "New: Screen reader Accessibility Improvements",
+        "month": "2026-04",
+        "disposition": "adapt",
+        "reason": "Took the shared-component half and found our own call sites. IconButton gave every icon button the label 'Table Options Button', so info, edit, remove and manual-import buttons were all announced as table options; the default is gone, the icon is aria-hidden, and the 24 call sites that had neither a title nor a label were found by scanning and given one. Also: modals become a labelled dialog via a new ModalContext that hands ModalHeader the aria-labelledby id, the sidebar becomes a labelled nav with aria-current on the active item, sortable headers get scope and aria-sort, the pager's arrows get labels, MonitorToggleButton mirrors its title. Upstream's Series-specific call sites have no counterpart. Translation keys are ours in sorted position; AdvancedSettings was not added because the existing TableOptionsButton key says the same thing and would otherwise go dead."
+      },
+      "424f8e9e8dad1680d10493f4431f2bd4a7d1b90d": {
+        "subject": "Log media info title used to augment quality",
+        "month": "2026-04",
+        "disposition": "have",
+        "reason": "Already here via the Radarr 2026-04 sync (8e874811ec, #566): AugmentQualityFromMediaInfo already trims the title once and logs it at Debug before parsing."
+      },
+      "10192460acb2670dae852a0daa3542078059fa3f": {
+        "subject": "Automated API Docs update",
+        "month": "2026-04",
+        "disposition": "skip",
+        "reason": "Regenerates src/Sonarr.Api.V5/openapi.json only. We do not have that file."
+      },
+      "c6f394ccd7b5a97909787999216bce0d6bc2c740": {
+        "subject": "New: Average Size per Episode column on Series list",
+        "month": "2026-04",
+        "disposition": "skip",
+        "reason": "Adds a series-list column computing sizeOnDisk / episodeFileCount. There is no episode count here -- a movie or scene is one file -- so the quotient is the file size we already show."
+      },
+      "bf46ea8ffe1658ade0642bf1efb6be4db5233bed": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-04",
+        "disposition": "skip",
+        "reason": "Multiple Translations updated by Weblate (ar.json). Automatic skip."
+      },
+      "24d780b77ffa787e6da18060ffeee2e86976fee4": {
+        "subject": "Bump .NET to 10.0.6",
+        "month": "2026-04",
+        "disposition": "have",
+        "reason": "Our Microsoft.Extensions.*, System.* and Microsoft.AspNetCore.* references are at 10.0.11, ahead of the 10.0.6 this moves to; global.json is on SDK 10.0.101 with rollForward latestFeature."
+      },
+      "e8e31def9bad02d7a493ecdcc65fb07dd2db7a6c": {
+        "subject": "New: Special Seasons filtering for Wanted Missing",
+        "month": "2026-04",
+        "disposition": "skip",
+        "reason": "Adds an includeSpecials filter to Wanted/Missing, threaded through EpisodeService and the missing controller. There are no seasons here, so there is no special season to include or exclude."
+      },
+      "5c5b53d341ec57b3d8732ec4ebbbbb80c785160f": {
+        "subject": "New: Filter series by episode file quality",
+        "month": "2026-04",
+        "disposition": "skip",
+        "reason": "Aggregates the distinct qualities of a series' episode files into SeasonStatistics/SeriesStatistics to drive a new index column and filter. We have no SeriesStats project and no per-season aggregation -- a movie or scene has one file with one quality, which the index already shows -- so there is nothing to aggregate."
+      },
+      "e38a2af1ad03898566aa23bea8a4bd6c62cb9866": {
+        "subject": "Stop tracking downloads after they're removed from the download client",
+        "month": "2026-04",
+        "disposition": "pick",
+        "reason": "Applies as-is; all four files were in the pre-change form. DownloadClientItem.Removed was set on the item held by the tracked download after RemoveItem succeeded, but the tracked download stayed in the cache and the next refresh replaced that item, so the flag either vanished or lingered. The tracked download is now stopped outright and the flag goes with it."
+      },
+      "1c09c6005cffa1bcfdf5a4c6b750c7ef3f9d4e57": {
+        "subject": "Propagate Trakt token refresh failures instead of swallowing exceptions",
+        "month": "2026-04",
+        "disposition": "skip",
+        "reason": "Reworks TraktImportBase.RefreshToken. We have no src/NzbDrone.Core/ImportLists/Trakt/ -- no Trakt import list here."
+      },
+      "9454f2940e2ae2d3b2a026b4c42a1d0ef33d1f24": {
+        "subject": "Migrate mediainfo per episode file one at the time to avoid OOM",
+        "month": "2026-04",
+        "disposition": "skip",
+        "reason": "Changes migration 225_mediainfo_multiple_streams to update EpisodeFiles one row at a time. We have no such migration and no multi-stream media info model -- MediaInfoModel here still carries flat AudioLanguages/Subtitles lists."
+      },
+      "6131f1debd7c94a2968d52020236edaa7c73e61c": {
+        "subject": "Fix getting series by alias title and year",
+        "month": "2026-04",
+        "disposition": "skip",
+        "reason": "Adds a null check to ParsingService.GetSeriesAliasTitleAndYear. We have no such method -- no alias-title lookup at all -- and our TryGetMovieByTmdbId already null-checks the result of FindByTmdbId."
+      },
+      "62e5078aeb0471cd5afcfa0fa55c58b08a30f380": {
+        "subject": "Refetch page after clearing blocklist and refreshing events",
+        "month": "2026-04",
+        "disposition": "adapt",
+        "reason": "Took the blocklist half: ClearBlocklist fired and nothing was told to reload, so the table kept rendering rows the server had deleted. Now goes to page 1 and refetches on commandFinished. The LogsTable half is already here -- ours reloads on both refresh and clear."
+      },
+      "f33abc7b85841cf12f54c26663e8bd137a8d32c4": {
+        "subject": "Fix 'All' filter for calendar page",
+        "month": "2026-04",
+        "disposition": "have",
+        "reason": "Upstream's 'All' filter carried no unmonitored entry, so the reduce default of includeUnmonitored: false made it exclude unmonitored items. Ours declares `unmonitored: [true]` on the 'all' filter explicitly, so the reduce sets it to true and the default is never what 'All' lands on."
+      },
+      "92f4354d76eee84dc04854b0bdfbf04cae4780d2": {
+        "subject": "Fix series ending year on details page",
+        "month": "2026-04",
+        "disposition": "skip",
+        "reason": "Builds a running-years range from SeriesStatus 'ended' and statistics.lastAired. We have no series status and no last-aired date; a movie or scene carries a single release date, already rendered as one year."
+      },
+      "2d08abde8105e8047244e8342687c27eba5a02e1": {
+        "subject": "Bump Microsoft.AspNetCore.Cryptography.KeyDerivation to 10.0.6",
+        "month": "2026-04",
+        "disposition": "have",
+        "reason": "Already at 10.0.11 here, ahead of the version this moves to."
+      },
+      "eb97bb563b2861eff65b9a4677315b34fcffdba0": {
+        "subject": "Fix getting series by TVDB ID from v5 API",
+        "month": "2026-04",
+        "disposition": "skip",
+        "reason": "The bug is in V5's SeriesController -- ToResource() called on a null FindByTvdbId result. The only non-V5 file is a nullable annotation on IEnumerableExtensions.AddIfNotNull added so the V5 caller can pass a `?` expression; with no V5 project here it changes nothing, and AddIfNotNull already returns early on null."
+      },
+      "92334b3fb97a8fba66c71648dea795bb83fefb23": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-04",
+        "disposition": "skip",
+        "reason": "Multiple Translations updated by Weblate. Automatic skip."
+      },
+      "f4a160cb2902a37df8b0fabd83f1659119136af8": {
+        "subject": "TypedResults for API v5 endpoints",
+        "month": "2026-04",
+        "disposition": "skip",
+        "reason": "Moves the V5 surface to TypedResults so it can describe its own responses. The non-V5 half is signature churn to keep V3 controllers compiling against the changed RestController base, plus TypedAccepted/TypedCreated helpers only V5 calls, plus a ConfigureHttpJsonOptions that only matters once endpoints return TypedResults and bypass MVC's formatters. No behaviour change here, so it would be a rewrite of every V3 controller for nothing."
+      },
+      "91c8d9fa50317778390a9c7dc580775b9fe428ed": {
+        "subject": "Bump .NET to 10.0.7",
+        "month": "2026-04",
+        "disposition": "have",
+        "reason": "Same as 24d780b77: our references are at 10.0.11, ahead of this."
+      },
+      "b3e815e341ec78d1b69a273d51d85bb41e1e83c6": {
+        "subject": "Default to `und` for audio streams with no language tag",
+        "month": "2026-04",
+        "disposition": "skip",
+        "reason": "The fix is to the multi-stream media info model -- migration 225 and MediaInfoAudioStreamModel -- where dropping an untagged stream loses its format, bitrate and channels too. We are still on the flat AudioLanguages list, where an untagged stream only shortens the list, and our MediaInfo cell already renders 'und' as Unknown."
+      },
+      "581e118532191a487bf6c3d3f872806c891bbff8": {
+        "subject": "Display 'None' for empty subtitles streams",
+        "month": "2026-04",
+        "disposition": "skip",
+        "reason": "Renders 'None' in the episode summary's subtitles DescriptionListItem, which reads as a labelled field. Ours is a table cell in MovieFile/MediaInfo.tsx that renders empty; putting 'None' in every row without subtitles is noise on that surface."
+      },
+      "970c0de62f9fbe6e9ab1a5625f67334d089a57b5": {
+        "subject": "Fixed queue details counter",
+        "month": "2026-04",
+        "disposition": "skip",
+        "reason": "Counts episodeIds and episodesWithFilesCount per queue item after the queue moved to a multi-episode model. A queue item maps to one movie or scene here, and we have no QueueDetailsProvider."
+      },
+      "8e258a36c134464da4cfa14522aefdb3ba27594a": {
+        "subject": "Fix episode air date column styling in queue",
+        "month": "2026-04",
+        "disposition": "skip",
+        "reason": "Replaces two RelativeDateCell components with one span so a first-to-last episode air date range styles as one cell. There is no episode range in our queue -- one item, one date."
+      },
+      "0826686dd7f14e8938cd8102d23f661594a63c2b": {
+        "subject": "Fix loading Map objects on older browsers",
+        "month": "2026-04",
+        "disposition": "skip",
+        "reason": "Adds `import 'core-js/actual/iterator'` to frontend/src/polyfills.js. Our polyfills.ts pulls in no core-js at all -- every guard in it is feature-detected and inert -- so this would introduce a runtime core-js import the bundle does not currently carry."
+      },
+      "710737f2e2319bdfc775f7d4cf89112ff4d3a5ed": {
+        "subject": "Fixed: Scroll position not reset when navigating on small screens",
+        "month": "2026-04",
+        "disposition": "adapt",
+        "reason": "Same gap: below the breakpoint the window is the scroll container and nothing reset it on a route change, so a page opened from halfway down a list started halfway down -- we had no window.scrollTo anywhere. useScrollPosition resets on PUSH/REPLACE and restores on POP, and replaces the withScrollPosition HOC; PageContentBody takes a scrollPositionKey and both stores and restores. Collection was the HOC's only caller and moves over, dropping the redundant scrollTop it passed to CollectionOverviews. Adapted to react-router v7: useNavigationType/useLocation rather than upstream's useHistory. PerformerIndex had an initialScrollTop prop nothing passed, dropped with the HOC."
+      },
+      "710a6ea078ec0f98c20fac55c60bb35361f345ba": {
+        "subject": "Auto close stale Draft PRs",
+        "month": "2026-04",
+        "disposition": "skip",
+        "reason": "A scheduled workflow closing draft PRs untouched for 90 days, gated on `github.repository == 'Sonarr/Sonarr'`. Actively wrong here: upstream-watch keeps a long-lived draft PR open on purpose as the landing place for clean cherry-picks, and this would close it."
+      },
+      "6d3ef494b4cf2dac88ffc348f40567c363fa7620": {
+        "subject": "Add useCombinedRefs hook",
+        "month": "2026-04",
+        "disposition": "pick",
+        "reason": "New file, no conflict. Merges a forwarded ref with a component's own internal ref; needed by the TextInput change in bf5d48c76."
+      },
+      "04d98098e00ef95b42d50afe72e92768181d81ca": {
+        "subject": "New: Ensure housekeeping task doesn't run while other tasks are running",
+        "month": "2026-04",
+        "disposition": "pick",
+        "reason": "Applies as-is: Command.IsExclusive already exists here and HousekeepingCommand did not override it. Housekeeping vacuums, deletes orphans and rebuilds indexes across the whole database, so running it alongside a refresh or import competes for the same rows."
+      },
+      "6214803a5a74dc62f071eeb10283abb625108b75": {
+        "subject": "Don't throw error on pushed releases with empty indexer or download client IDs",
+        "month": "2026-04",
+        "disposition": "adapt",
+        "reason": "Same bug: a push to /release/push that omits indexerId or downloadClientId arrives as 0, not null, so `id.HasValue` was true and the lookup threw for an id that was never supplied. Both factories now resolve only a positive id. Only the two guards are taken -- the 'Indexerwith' typo upstream also fixes is already spelled correctly here."
+      },
+      "d8b16d79263668d26f3f35d019cf742ab6177e61": {
+        "subject": "Wrap bulk UpdateMany/SetFields in a transaction",
+        "month": "2026-04",
+        "disposition": "have",
+        "reason": "Already here via the Radarr 2026-07 sync (a774c0bacf, #570): BasicRepository.UpdateMany and the list overload of SetFields both open a ReadCommitted transaction and commit it."
+      },
+      "53eb9d85456b0e65c6d50028298045f6b7dc9e64": {
+        "subject": "Fix toggle monitored for seasons",
+        "month": "2026-04",
+        "disposition": "skip",
+        "reason": "One line in src/Sonarr.Api.V5/Series/SeriesController.cs. V5-only, and there are no seasons here."
+      },
+      "39f043a96c017c19e6a65d2475466be66d6beea2": {
+        "subject": "New: Filter series by episode release types",
+        "month": "2026-04",
+        "disposition": "skip",
+        "reason": "Aggregates distinct episode release types into SeasonStatistics/SeriesStatistics to drive an index column and filter. Release type is a season/episode concept -- standard, special, midseason -- with no counterpart here, and we have no SeriesStats project to aggregate into."
+      },
+      "1c349778416c9abbc5ca06a8a68353a78d76715c": {
+        "subject": "Produce distinct values in aggregated series stats from Postgres",
+        "month": "2026-04",
+        "disposition": "skip",
+        "reason": "Adds DISTINCT to three string_agg calls in SeriesStatisticsRepository. We have no SeriesStats project; MovieStatisticsRepository aggregates only ReleaseGroup, and MovieStatistics.ReleaseGroups already applies .Distinct() in C# before the value is used."
+      },
+      "510cbe54e8c761cd5602e5ebeb98a17cf0070ecc": {
+        "subject": "Prevent duplicated items in state on create",
+        "month": "2026-04",
+        "disposition": "have",
+        "reason": "Extracts an addOrUpdateQueryClientItem helper and points five mutations at it. Four of those already upsert here -- useCommands, useTags and both useRootFolders writers all check for an existing id first -- so the helper would be refactor churn against code that already behaves. The fifth, useSaveProviderSettings, was the one real gap and is fixed under 536d29283."
+      },
+      "bf5d48c76a6a793b7d2adc540bb11d9c51bcc3cb": {
+        "subject": "Focus add series search input after clearing",
+        "month": "2026-04",
+        "disposition": "adapt",
+        "reason": "Same gap: clearing the lookup emptied the term but left focus on the button, so the next keystroke went nowhere. TextInput becomes a forwardRef using useCombinedRefs and each clear handler puts focus back. Upstream has one add page; we have four -- movie, scene, studio and performer -- and all four had it. Kept our React 19 useRef initialisers rather than upstream's bare useRef<T>()."
       }
     }
   }
