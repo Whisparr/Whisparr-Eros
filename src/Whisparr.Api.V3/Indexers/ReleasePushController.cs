@@ -52,7 +52,7 @@ namespace Whisparr.Api.V3.Indexers
         [Produces("application/json")]
         public ActionResult<List<ReleaseResource>> Create([FromBody] ReleaseResource release)
         {
-            _logger.Info("Release pushed: {0} - {1}", release.Title, release.DownloadUrl ?? release.MagnetUrl);
+            _logger.Info("Release pushed: {0} - {1}", release.Title.ForLog(), (release.DownloadUrl ?? release.MagnetUrl).ForLog());
 
             ValidateResource(release);
 
@@ -93,7 +93,7 @@ namespace Whisparr.Api.V3.Indexers
             }
 
             // Return the decision(s) (will include rejection info, if any)
-            _logger.Info("Release push processing completed: {0} - {1}", release.Title, decision.Approved ? "Approved" : "Rejected");
+            _logger.Info("Release push processing completed: {0} - {1}", release.Title.ForLog(), decision.Approved ? "Approved" : "Rejected");
             return MapDecisions(new[] { decision });
         }
 
@@ -106,11 +106,11 @@ namespace Whisparr.Api.V3.Indexers
 
             if (indexer == null)
             {
-                _logger.Debug("Push Release {0} not associated with an indexer.", release.Title);
+                _logger.Debug("Push Release {0} not associated with an indexer.", release.Title.ForLog());
             }
             else
             {
-                _logger.Debug("Push Release {0} associated with indexer '{1}' ({2})", release.Title, indexer.Name, indexer.Id);
+                _logger.Debug("Push Release {0} associated with indexer '{1}' ({2})", release.Title.ForLog(), indexer.Name.ForLog(), indexer.Id);
 
                 release.IndexerId = indexer.Id;
                 release.Indexer = indexer.Name;
@@ -123,11 +123,11 @@ namespace Whisparr.Api.V3.Indexers
 
             if (downloadClient == null)
             {
-                _logger.Debug("Push Release {0} not associated with a download client.", release.Title);
+                _logger.Debug("Push Release {0} not associated with a download client.", release.Title.ForLog());
             }
             else
             {
-                _logger.Debug("Push Release {0} associated with download client '{1}' ({2})", release.Title, downloadClient.Name, downloadClient.Id);
+                _logger.Debug("Push Release {0} associated with download client '{1}' ({2})", release.Title.ForLog(), downloadClient.Name.ForLog(), downloadClient.Id);
             }
 
             return downloadClient?.Id;
