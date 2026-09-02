@@ -40,6 +40,12 @@ const EVENT_TYPE_OPTIONS = [
       return translate('Ignored');
     },
   },
+  {
+    id: 10,
+    get name() {
+      return translate('DiskScanImported');
+    },
+  },
 ];
 
 function HistoryEventTypeFilterBuilderRowValue(
