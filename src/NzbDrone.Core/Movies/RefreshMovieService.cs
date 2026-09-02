@@ -46,6 +46,7 @@ namespace NzbDrone.Core.Movies
         private readonly IAutoTaggingService _autoTaggingService;
         private readonly IRenameMovieFileService _renameMovieFileService;
         private readonly IManageCommandQueue _commandQueueManager;
+        private readonly ICommandResultReporter _commandResultReporter;
         private readonly Logger _logger;
 
         public RefreshMovieService(IProvideMovieInfo movieInfo,
@@ -66,6 +67,7 @@ namespace NzbDrone.Core.Movies
                                     IAutoTaggingService autoTaggingService,
                                     IRenameMovieFileService renameMovieFileService,
                                     IManageCommandQueue commandQueueManager,
+                                    ICommandResultReporter commandResultReporter,
                                     Logger logger)
         {
             _movieInfo = movieInfo;
@@ -86,6 +88,7 @@ namespace NzbDrone.Core.Movies
             _autoTaggingService = autoTaggingService;
             _renameMovieFileService = renameMovieFileService;
             _commandQueueManager = commandQueueManager;
+            _commandResultReporter = commandResultReporter;
             _logger = logger;
         }
 
@@ -377,13 +380,20 @@ namespace NzbDrone.Core.Movies
                     catch (MovieNotFoundException)
                     {
                         _logger.Error("Movie '{0}' (TMDb {1}) was not found, it may have been removed from The Movie Database.", movie.Title, movie.ForeignId);
+
+                        // Mark the result as indeterminate so it's not marked as a full success,
+                        // but we can still process the remaining movies.
+                        _commandResultReporter.Report(CommandResult.Indeterminate);
                     }
                     catch (Exception e)
                     {
                         _logger.Error(e, "Couldn't refresh info for {0}", movie);
                         UpdateTags(movie, isNew);
                         RescanMovie(movie, isNew, trigger);
-                        throw;
+
+                        // Mark the result as indeterminate so it's not marked as a full success,
+                        // but we can still process the remaining movies.
+                        _commandResultReporter.Report(CommandResult.Indeterminate);
                     }
                 }
             }
