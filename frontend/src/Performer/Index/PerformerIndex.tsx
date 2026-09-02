@@ -29,10 +29,6 @@ import PerformerIndexTableOptions from './Table/PerformerIndexTableOptions';
 import { usePerformerIndex } from './usePerformerIndex';
 import styles from './PerformerIndex.css';
 
-interface PerformerIndexProps {
-  initialScrollTop?: number;
-}
-
 function SelectModeReinitializer({
   isSelectMode,
   items,
@@ -51,7 +47,7 @@ function SelectModeReinitializer({
   return null;
 }
 
-function PerformerIndex(_: Readonly<PerformerIndexProps>): React.JSX.Element {
+function PerformerIndex(): React.JSX.Element {
   const {
     items,
     totalItems,
