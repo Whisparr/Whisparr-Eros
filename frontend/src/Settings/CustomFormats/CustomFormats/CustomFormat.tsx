@@ -66,6 +66,7 @@ export default function CustomFormat({
     <Card
       className={styles.customFormat}
       overlayContent={true}
+      aria-label={translate('EditCustomFormatName', { name })}
       onPress={onEditPress}
     >
       <div className={styles.nameContainer}>

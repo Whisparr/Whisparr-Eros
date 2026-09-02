@@ -135,7 +135,7 @@ It is a quarter of the Sonarr backlog — 120 of 471 outstanding, 68 V5-only and
 
 
 
-One of four, and **every one needs a reason** — `--check` rejects a bare or
+One of five, and **every one needs a reason** — `--check` rejects a bare or
 stub reason:
 
 - **`pick`** — applies as-is.
@@ -143,13 +143,29 @@ stub reason:
   Sonarr `Series`/`Episode` vs our `Movie`/`Scene`/`Performer`/`Studio`.
 - **`skip`** — upstream-specific, gated out, or not wanted. Say which.
 - **`have`** — already in our tree.
+- **`defer`** — we want it, something concrete is in the way. Needs a
+  `blockedBy` field naming what has to land first; `--check` rejects a stub.
 
 Write each into `.github/upstream/state.json` as you go. "Not applicable to
 Whisparr" is precisely the knowledge that gets lost and re-litigated a year
 later, so the reason has to say *why*.
 
+### `defer` is not a soft `skip`
+
+A `skip` is closed. A `defer` is open, and the difference has to survive the
+backlog reaching zero — once a month is settled, a `skip` is a row in a table
+nobody reads again. Reach for `defer` when the commit is genuinely wanted here
+and a *named* prerequisite blocks it: an unported dependency
+(`sonarr@aea7ea743` needs PEM certificate support first), or a product decision
+you are not authorised to make (`sonarr@a29f15e92` adds an import-list feature
+with its own migration).
+
+If you cannot name what unblocks it, it is a `skip` — `defer` without a real
+`blockedBy` is a skip wearing a better word, and `--check` will say so.
+
 Anything that is a feature decision rather than a sync decision — a new download
-client, a new list integration — is not yours to wave through. Stop and ask.
+client, a new list integration — is not yours to wave through. `defer` it with
+the decision named, and raise it at handoff.
 
 ## 5. Apply the picks
 

@@ -55,6 +55,7 @@ function ReleaseProfileItem(props: Readonly<ReleaseProfileProps>) {
     <Card
       className={styles.releaseProfile}
       overlayContent={true}
+      aria-label={translate('EditReleaseProfileName', { name: name ?? id })}
       onPress={setEditReleaseProfileModalOpen}
     >
       {name ? <div className={styles.name}>{name}</div> : null}

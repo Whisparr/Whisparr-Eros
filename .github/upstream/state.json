@@ -12,8 +12,8 @@
       "repo": "Sonarr/Sonarr",
       "branch": "v5-develop",
       "owns": "frontend",
-      "highWater": "519dfa2c8ca0ae38496db67d619a8fa1fffca5a7",
-      "highWaterNote": "2026-06-24 'Remove issue from template if there is no issue'. Held deliberately short of the end of 2026-06: d2f4f2d03 (Custom Filters for Wanted) and 49df353fa (Statistics Page) are feature builds rather than sync picks and are being taken as their own PRs, so they stay undispositioned and outstanding. Everything at or before this mark is settled. Advance past them only once those PRs land."
+      "highWater": "7e627f69470b1a1d20560e31968cf281e711cc2e",
+      "highWaterNote": "2026-07-31 'Fixed: rqbit output path mapping'. Everything at or before this mark is settled: 2026-06 closed when d2f4f2d03 (Custom Filters, #606) and 49df353fa (Statistics Page, #607) landed as their own PRs, and all 36 commits of 2026-07 are dispositioned. Advance only when everything at or before the new mark is settled."
     }
   },
   "dispositions": {
@@ -3709,6 +3709,236 @@
         "month": "2026-06",
         "disposition": "skip",
         "reason": "Edits .github/workflows/api_docs.yml, which we retired along with the generated openapi.json."
+      },
+      "d2f4f2d03dc6b6f6a64b05a8ac559a849d7cb5c3": {
+        "subject": "New: Custom Filters for Wanted Missing and Cutoff Unmet",
+        "month": "2026-06",
+        "disposition": "pick",
+        "reason": "Landed as its own PR (#606) rather than inside a sync chunk: adapted from Sonarr's series/episode Wanted views onto our Movie/Scene ones. Held out of the 2026-06 sync deliberately; the high-water mark waited on it."
+      },
+      "49df353fa14c453929b79f32144b2c8c86d94b09": {
+        "subject": "New: Statistics Page",
+        "month": "2026-06",
+        "disposition": "pick",
+        "reason": "Landed as its own PR (#607) rather than inside a sync chunk: adapted from Sonarr's series statistics onto our movie/scene/performer/studio counts. Held out of the 2026-06 sync deliberately; the high-water mark waited on it."
+      },
+      "a332cc0e3ce171229008558d380a59054d901617": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-07",
+        "disposition": "skip",
+        "reason": "Weblate translation import. Those files come from Weblate, not from cherry-picks."
+      },
+      "62d3b0a749ea73061db83dbd2c8df3e400a430d2": {
+        "subject": "Automated API Docs update",
+        "month": "2026-07",
+        "disposition": "skip",
+        "reason": "Bot-regenerated src/Sonarr.Api.V5/openapi.json. We have no V5 project and retired our generated openapi.json with the workflow that produced it."
+      },
+      "60d1d8493487582d5aedc099bed1642bc71421c6": {
+        "subject": "Add label to settings cards for screen readers",
+        "month": "2026-07",
+        "disposition": "adapt",
+        "reason": "Real accessibility fix and every target file exists here: settings cards were unlabelled Links wrapping their whole body, so a screen reader read the card contents as the link text. Adapted for our handler names (setEditXModalOpen vs handleEditXPress) and our own en.json keys in sorted position; EditConnectionName follows our Connections wording rather than upstream's Notification."
+      },
+      "a309d04fc44b9838e140ebb8bf1e0b77722685ac": {
+        "subject": "Add label to table selection checkboxes for screen readers",
+        "month": "2026-07",
+        "disposition": "adapt",
+        "reason": "Row select checkboxes were named only by row id. Frontend applied as-is; en.json carries our own SelectRow key rather than the upstream hunk."
+      },
+      "5821e40d4956683e62f71a65a5e5c393460bb8ab": {
+        "subject": "Fixed: Improve media info in Kodi metadata",
+        "month": "2026-07",
+        "disposition": "adapt",
+        "reason": "Kodi expects its own codec identifiers in streamdetails (dtshd_ma, truehd_atmos), not the display names our UI shows, so the nfo was unreadable to Kodi. XbmcMetadataFormatter rewritten against our flat MediaInfoModel; upstream's MediaInfoAudioStreamModel per-stream model does not exist here. Fixture written against ours."
+      },
+      "61a73d04f5da94db70661dcb97d1fbe9dd0cf6d6": {
+        "subject": "Fixed: Parse DTS-HD MA + DTS:X as DTS-X in media info",
+        "month": "2026-07",
+        "disposition": "adapt",
+        "reason": "The plain 'DTS-HD MA + DTS:X' profile fell through to DTS; only the IMAX variant was mapped. One-line code change applies verbatim; the test case needed our fixture's single-string TestCase shape rather than upstream's string[]."
+      },
+      "c4c14920577bee42375fecedd5ed3d13a700d66c": {
+        "subject": "Fix select inputs not working on mobile",
+        "month": "2026-07",
+        "disposition": "skip",
+        "reason": "Fixes floating-ui's onOpenChange closing the mobile select modal. Our EnhancedSelectInput is still popper-based and already guards isMobile in handleWindowClick, so the defect is specific to their floating-ui migration, which we have not taken."
+      },
+      "67a39a3a8674beeedb223b6482c31a998a5898e6": {
+        "subject": "Add additional information for CustomFormat:FormatName naming token",
+        "month": "2026-07",
+        "disposition": "adapt",
+        "reason": "The {Custom Format:FormatName} token takes a format name, not a value, and the 'AMZN' example read like a value. Our NamingModal uses a boolean footNote per fieldset rather than upstream's numbered other-tokens list, so the footnote hangs off our Custom Formats fieldset; en.json carries our own CustomFormatFootNote key."
+      },
+      "6d5ef6ddb0f71af37f882ae7f5a5d43d45bc0863": {
+        "subject": "Fix tooltip for existing episodes monitoring",
+        "month": "2026-07",
+        "disposition": "skip",
+        "reason": "en.json-only change to MonitorExistingEpisodesDescription. Localization gate: we never take an upstream en.json hunk, and the string describes episode monitoring, which has no counterpart here."
+      },
+      "95c42a92b960e44748f43c40d8f2b44fc3e87196": {
+        "subject": "Fixed: Slow monitoring changes on series with many episodes",
+        "month": "2026-07",
+        "disposition": "skip",
+        "reason": "Rewrites EpisodeMonitoredService/EpisodeRepository around MonitorTypes and SeasonNumber SQL predicates. We have no src/NzbDrone.Core/Tv, no seasons and no episode monitoring - nothing to port onto."
+      },
+      "f9e18a7c4475345f325237670d7e71ceac97038b": {
+        "subject": "Fixed: Validate source and resolution specifications",
+        "month": "2026-07",
+        "disposition": "have",
+        "reason": "Our ResolutionSpecification and SourceSpecification already validate with Enum.IsDefined; only upstream's cosmetic 'new()' target-typed constructor differs."
+      },
+      "6b158b660593fab30f1ce2a9706a04137c0f32ed": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-07",
+        "disposition": "skip",
+        "reason": "Weblate translation import."
+      },
+      "4d0e36ab79e7a1eb4fbbdb7861935000595828a4": {
+        "subject": "Add label to icon-only settings actions",
+        "month": "2026-07",
+        "disposition": "adapt",
+        "reason": "Edit and add controls on remote path mappings and delay profiles were bare Icons inside a Link with no accessible name. Applied by hand against our handler names; all four translate keys already existed here."
+      },
+      "71d9a5d57b9867321e5e9dc067ee952306f4bb73": {
+        "subject": "Add labels to episode statuses",
+        "month": "2026-07",
+        "disposition": "have",
+        "reason": "We already added the identical StatusIndicator component in 8aebfc0cb7 'Fix: Announce movie and scene status icons' and applied it to our Movie/Scene status. The EpisodeStatus half has no counterpart here."
+      },
+      "5215d7384115d03b96e24bf1426718779b2c4b76": {
+        "subject": "Bump npm packages to address alerts",
+        "month": "2026-07",
+        "disposition": "have",
+        "reason": "npm security bumps (qs, @babel/core). Dependabot keeps us ahead: we carry qs 6.15.3 and @babel/core 7.29.7 against their 6.15.2 and 7.29.6."
+      },
+      "9a94807a1cf932ae3e3e6e55cf8f5ad924d2fdd8": {
+        "subject": "Fixed: Error when fetching non-existing tags in import script",
+        "month": "2026-07",
+        "disposition": "have",
+        "reason": "Our ScriptImportDecider already uses _tagRepository.GetTags(movie.Tags) rather than a per-tag Get() that throws on a missing tag."
+      },
+      "df2b0af4ec0c9139f564baba9f5be29a2d15f0d3": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-07",
+        "disposition": "skip",
+        "reason": "Weblate translation import."
+      },
+      "2f9e12a579540ba6d24fb53441dff59b309ac608": {
+        "subject": "Fixed: Re-grabbing a torrent that was already imported should re-import",
+        "month": "2026-07",
+        "disposition": "have",
+        "reason": "Our TrackedDownloadService already handles MovieGrabbedEvent and drops cached downloads in a terminal state (Imported/Failed/Ignored) so a re-grab re-imports."
+      },
+      "ce4676f8afba51bdf4c9cc8d41457d6f2e07a793": {
+        "subject": "Bump .NET to 10.0.10",
+        "month": "2026-07",
+        "disposition": "have",
+        "reason": ".NET 10.0.10 package bumps. Dependabot keeps us ahead: we are on Microsoft.Extensions.* 10.0.11 and SourceGear.sqlite3 3.53.4 against their 10.0.10 and 3.53.3."
+      },
+      "e8cac84c22235d3f3af0f6807f3feff385e55a9f": {
+        "subject": "Fix malformed cookie test",
+        "month": "2026-07",
+        "disposition": "have",
+        "reason": "Upstream re-hardcodes the malformed cookie's expiry (13-Jul-26 -> 16-Jul-46) because theirs expired. Ours already generates the date from DateTime.UtcNow.AddYears(1), so it cannot expire in the first place."
+      },
+      "aea7ea7438447fd468c03cb1652084e05fd82608": {
+        "subject": "Send full certificate chain",
+        "month": "2026-07",
+        "disposition": "defer",
+        "blockedBy": "PEM certificate support: Bootstrap.ValidateSslCertificate takes no key path, HostConfigResource has no SslKeyPath, and we still use the obsolete X509Certificate2 ctor. Port that first, then this applies.",
+        "reason": "Serving the full certificate chain rather than just the leaf is worth having - a client that needs an intermediate currently cannot build a path to our cert. Deferred rather than skipped: nothing about it is inapplicable to Whisparr, it just sits on top of PEM support we never took. Revisit when that lands."
+      },
+      "51e217b7fea14a365af77b77679f4394bc8aedba": {
+        "subject": "New: Option to grab season packs before all episodes have aired",
+        "month": "2026-07",
+        "disposition": "skip",
+        "reason": "Adds a FullSeasonSpecification option to grab season packs before all episodes have aired. No seasons, no episodes and no air dates here."
+      },
+      "a7eea45efb23e07f58eb27a42e64fd74398dafce": {
+        "subject": "Improve autopilot detection",
+        "month": "2026-07",
+        "disposition": "skip",
+        "reason": "Edits .github/workflows/label_invalid_issues.yml and no_autopilot.yml. We have neither workflow."
+      },
+      "0bfe736eb3582dfcf0c552dbc0c7dba03765775f": {
+        "subject": "Improve bug report template",
+        "month": "2026-07",
+        "disposition": "skip",
+        "reason": "Rewords Sonarr's own bug report template, including their wiki link. Ours is separately maintained."
+      },
+      "fdb9e3f9fbd36b9f8dae94915534f8fadd8a39f4": {
+        "subject": "Dispose of logging targets",
+        "month": "2026-07",
+        "disposition": "skip",
+        "reason": "Wraps NLog targets in 'using' after registering them in the live configuration. RegisterAuthLogger disposes the shared console/appFileInfo targets that stay registered, which is only harmless because NLog has not initialised them yet at that point. A latent closed-target hazard in exchange for a static-analysis win we do not have a rule for."
+      },
+      "974d5377cb87f0ff7f486b9ce613fea003b3d7ae": {
+        "subject": "Fixed: Improve parsing of some anime season packs",
+        "month": "2026-07",
+        "disposition": "skip",
+        "reason": "Parser gate: reorders an anime season-pack regex ahead of the absolute-episode patterns in Parser.cs. Absolute episode numbers and seasons do not exist in our grammar, and it does not reproduce here."
+      },
+      "a29f15e92bd2c21e646d065d9d78066952cac05d": {
+        "subject": "New: Import list option to add tags to existing series while processing",
+        "month": "2026-07",
+        "disposition": "defer",
+        "blockedBy": "A product decision on whether import lists should tag movies already in the library, then a design against our lineage. Sonarr built this on their series-lineage ImportListSyncService; ours is Radarr-lineage over ImportListMovies and shares no structure, so it is a fresh implementation plus its own migration, not a port.",
+        "reason": "New import list option (TagExisting) letting a list tag items already in the library instead of skipping them. Deferred rather than skipped: the feature is plausibly wanted here, but it is a feature decision with a DB migration, not a sync pick, so it should not ride in on a sync PR."
+      },
+      "0799cd5bef7fdbd1a9ecdbe9844db85c1b7c0a78": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-07",
+        "disposition": "skip",
+        "reason": "Weblate translation import."
+      },
+      "535fb01bf29850e42d7149fd2d52bcc35bbcda47": {
+        "subject": "Automated API Docs update",
+        "month": "2026-07",
+        "disposition": "skip",
+        "reason": "Bot-regenerated src/Sonarr.Api.V5/openapi.json."
+      },
+      "4bb999c08306277de1af13919156c3366d3b63ab": {
+        "subject": "Add labels to add settings cards",
+        "month": "2026-07",
+        "disposition": "adapt",
+        "reason": "The remaining add-implementation cards hand-rolled the same underlay Link that Card provides and announced nothing. Reused Card by hand; our .css.d.ts files use a different generator format, so the underlay key was dropped in ours rather than taking their regenerated files. All translate keys already existed."
+      },
+      "e71cfc51c9462dfa37541ed011a0118353c793c6": {
+        "subject": "Add labels to selection checkboxes",
+        "month": "2026-07",
+        "disposition": "adapt",
+        "reason": "Select-all header checkboxes and organize preview rows had no accessible name. Applied on top of the CheckInput ariaLabel prop from a309d04fc; one import-block conflict resolved to keep our SelectStateInputProps."
+      },
+      "9dd58cc9a7c80f5b4fdc83b16036ece37ebf64b8": {
+        "subject": "Add label to override autopilot",
+        "month": "2026-07",
+        "disposition": "skip",
+        "reason": "Edits .github/workflows/no_autopilot.yml, which we do not have."
+      },
+      "4f530984f725291e09fbc62dce19b3b22919f634": {
+        "subject": "Fixed sorting on manage modals",
+        "month": "2026-07",
+        "disposition": "have",
+        "reason": "Upstream's manage modals read sortKey from an options store but never passed it to the sort, so the column header did nothing. Our three manage modals hold sortKey/sortDirection in modal-local state and apply both, so the defect is already absent."
+      },
+      "cecb4052e49399d0407b22af7bd6555a57e4b6be": {
+        "subject": "Fixed: Improve caching of images without re-reading files from the disk",
+        "month": "2026-07",
+        "disposition": "skip",
+        "reason": "Replaces the disk-based lastWrite cache-buster with a hash of the remote URL to avoid re-reading files. We already solved this, and more bulk-efficiently: the batch fileInfos dictionary threaded through ConvertToLocal{Movie,Performer,Studio}Urls does one directory read for a whole page rather than a stat per cover, which is a deliberate choice for library sizes well past Sonarr's. Upstream's hash would also change cache-busting semantics for three entity types - a locally re-resized cover would no longer bust - so it is a regression here, not an improvement. Do not re-litigate."
+      },
+      "fb3012d4f4cc4d871f2fcaf0ecd2fa9f8eee1adb": {
+        "subject": "Fix status icon for completed tasks without a message",
+        "month": "2026-07",
+        "disposition": "pick",
+        "reason": "A completed task with no message showed 'title: null' in its status tooltip; the guard compared against the literal string 'Completed' instead of null. Applied verbatim."
+      },
+      "7e627f69470b1a1d20560e31968cf281e711cc2e": {
+        "subject": "Fixed: rqbit output path mapping",
+        "month": "2026-07",
+        "disposition": "skip",
+        "reason": "Fixes output path mapping in the rqbit download client. We have no RQBit client under src/NzbDrone.Core/Download/Clients."
       }
     }
   }
