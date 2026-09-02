@@ -60,7 +60,17 @@ namespace NzbDrone.Core.IndexerSearch
 
             pagingSpec.FilterExpressions.Add(v => v.Monitored == true);
 
-            var movies = _movieService.MoviesWithoutFiles(pagingSpec).Records.ToList();
+            if (message.MovieIds?.Any() == true)
+            {
+                pagingSpec.FilterExpressions.Add(m => message.MovieIds.Contains(m.Id));
+            }
+
+            if (message.QualityProfileIds?.Any() == true)
+            {
+                pagingSpec.FilterExpressions.Add(m => message.QualityProfileIds.Contains(m.QualityProfileId));
+            }
+
+            var movies = _movieService.MoviesWithoutFiles(pagingSpec, message.MovieTags).Records.ToList();
 
             var queue = _queueService.GetQueue().Where(q => q.Movie != null).Select(q => q.Movie.Id);
             var missing = movies.Where(e => !queue.Contains(e.Id)).ToList();
@@ -80,7 +90,17 @@ namespace NzbDrone.Core.IndexerSearch
 
             pagingSpec.FilterExpressions.Add(v => v.Monitored == true);
 
-            var movies = _movieCutoffService.MoviesWhereCutoffUnmet(pagingSpec).Records.ToList();
+            if (message.MovieIds?.Any() == true)
+            {
+                pagingSpec.FilterExpressions.Add(m => message.MovieIds.Contains(m.Id));
+            }
+
+            if (message.QualityProfileIds?.Any() == true)
+            {
+                pagingSpec.FilterExpressions.Add(m => message.QualityProfileIds.Contains(m.QualityProfileId));
+            }
+
+            var movies = _movieCutoffService.MoviesWhereCutoffUnmet(pagingSpec, message.MovieTags, message.Quality).Records.ToList();
 
             var queue = _queueService.GetQueue().Where(q => q.Movie != null).Select(q => q.Movie.Id);
             var missing = movies.Where(e => !queue.Contains(e.Id)).ToList();

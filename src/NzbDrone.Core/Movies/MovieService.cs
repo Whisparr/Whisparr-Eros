@@ -57,7 +57,7 @@ namespace NzbDrone.Core.Movies
         List<Movie> GetMoviesByFileId(IEnumerable<int> fileId);
         List<Movie> GetMoviesByCollectionTmdbId(int collectionId);
         List<Movie> GetMoviesBetweenDates(DateTime start, DateTime end, bool includeUnmonitored);
-        PagingSpec<Movie> MoviesWithoutFiles(PagingSpec<Movie> pagingSpec);
+        PagingSpec<Movie> MoviesWithoutFiles(PagingSpec<Movie> pagingSpec, HashSet<int> movieTags = null);
         void DeleteMovie(int movieId, bool deleteFiles, bool addImportListExclusion = false);
         void DeleteMovies(List<int> movieIds, bool deleteFiles, bool addImportListExclusion = false);
         List<Movie> GetAllMovies();
@@ -601,10 +601,11 @@ namespace NzbDrone.Core.Movies
 
         /// <summary> Get a paged list of movies without associated files. </summary>
         /// <param name="pagingSpec">The paging specification for the query.</param>
+        /// <param name="movieTags">When set, restrict the results to movies carrying at least one of these tag ids.</param>
         /// <returns>A paged list of movies without associated files.</returns>
-        public PagingSpec<Movie> MoviesWithoutFiles(PagingSpec<Movie> pagingSpec)
+        public PagingSpec<Movie> MoviesWithoutFiles(PagingSpec<Movie> pagingSpec, HashSet<int> movieTags = null)
         {
-            var movieResult = _movieRepository.MoviesWithoutFiles(pagingSpec);
+            var movieResult = _movieRepository.MoviesWithoutFiles(pagingSpec, movieTags);
 
             return movieResult;
         }
