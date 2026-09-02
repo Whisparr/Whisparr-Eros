@@ -56,6 +56,9 @@ export default function Specification({
     <Card
       className={styles.customFormat}
       overlayContent={true}
+      aria-label={translate('EditConditionImplementation', {
+        implementationName,
+      })}
       onPress={onEditPress}
     >
       <div className={styles.nameContainer}>

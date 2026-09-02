@@ -69,6 +69,7 @@ function ImportList({
     <Card
       className={styles.list}
       overlayContent={true}
+      aria-label={translate('EditImportListName', { name })}
       onPress={setEditImportListModalOpen}
     >
       <div className={styles.nameContainer}>

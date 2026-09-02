@@ -48,6 +48,7 @@ function DownloadClient({ downloadClient }: Readonly<DownloadClientProps>) {
     <Card
       className={styles.downloadClient}
       overlayContent={true}
+      aria-label={translate('EditDownloadClientName', { name })}
       onPress={setEditDownloadClientModalOpen}
     >
       <div className={styles.name}>{name}</div>

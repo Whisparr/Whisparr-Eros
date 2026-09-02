@@ -63,6 +63,7 @@ export default function AutoTagging({
     <Card
       className={styles.autoTagging}
       overlayContent={true}
+      aria-label={translate('EditAutoTagName', { name })}
       onPress={onEditPress}
     >
       <div className={styles.nameContainer}>
