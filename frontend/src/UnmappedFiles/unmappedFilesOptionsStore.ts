@@ -23,7 +23,7 @@ const { useOptions, setOptions, setSort } =
             columnLabel: 'Select',
             isSortable: false,
             isVisible: true,
-            isModifiable: false,
+            isModifiable: 'disabled',
           },
           {
             name: 'path',
@@ -54,7 +54,7 @@ const { useOptions, setOptions, setSort } =
             label: '',
             columnLabel: () => translate('Actions'),
             isVisible: true,
-            isModifiable: false,
+            isModifiable: 'disabled',
           },
         ],
       };

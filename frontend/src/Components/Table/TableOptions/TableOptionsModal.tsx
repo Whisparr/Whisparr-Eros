@@ -205,17 +205,17 @@ function TableOptionsModal({
                             label,
                             columnLabel,
                             isVisible,
-                            isModifiable,
+                            isModifiable = 'enabled',
                           } = column;
 
-                          if (isModifiable !== false) {
+                          if (isModifiable !== 'disabled') {
                             return (
                               <TableOptionsColumnDragSource
                                 key={name}
                                 name={name}
                                 label={columnLabel || label}
                                 isVisible={isVisible}
-                                isModifiable={true}
+                                isModifiable={isModifiable}
                                 index={index}
                                 isDraggingUp={isDraggingUp}
                                 isDraggingDown={isDraggingDown}
@@ -232,7 +232,7 @@ function TableOptionsModal({
                               name={name}
                               label={columnLabel || label}
                               isVisible={isVisible}
-                              isModifiable={false}
+                              isModifiable={isModifiable}
                               onVisibleChange={handleVisibleChange}
                             />
                           );

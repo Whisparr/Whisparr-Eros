@@ -201,6 +201,33 @@ namespace NzbDrone.Core.Test.Download
             AssertImported();
         }
 
+        [Test]
+        public void should_block_import_and_publish_manual_interaction_event_for_dangerous_file_that_is_not_failed()
+        {
+            Mocker.GetMock<IDownloadedMovieImportService>()
+                  .Setup(v => v.ProcessPath(It.IsAny<string>(), It.IsAny<ImportMode>(), It.IsAny<Movie>(), It.IsAny<DownloadClientItem>()))
+                  .Returns(new List<ImportResult>
+                           {
+                               new ImportResult(
+                                   new ImportDecision(
+                                       new LocalMovie { Path = @"C:\TestPath\Droned.exe" },
+                                       new ImportRejection(ImportRejectionReason.DangerousFile, "Caution: Found potentially dangerous file with extension: .exe")),
+                                   "Caution: Found potentially dangerous file with extension: .exe")
+                           });
+
+            Mocker.GetMock<IRejectedImportService>()
+                  .Setup(s => s.Process(It.IsAny<TrackedDownload>(), It.IsAny<ImportResult>()))
+                  .Callback<TrackedDownload, ImportResult>((td, ir) => td.Warn(new TrackedDownloadStatusMessage(td.DownloadItem.Title, ir.Errors)))
+                  .Returns(true);
+
+            Subject.Import(_trackedDownload);
+
+            _trackedDownload.State.Should().Be(TrackedDownloadState.ImportBlocked);
+
+            Mocker.GetMock<IEventAggregator>()
+                  .Verify(v => v.PublishEvent(It.IsAny<ManualInteractionRequiredEvent>()), Times.Once());
+        }
+
         private void AssertNotImported()
         {
             Mocker.GetMock<IEventAggregator>()

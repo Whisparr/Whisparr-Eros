@@ -46,7 +46,7 @@ const { useOptions, useOption, setOptions, setOption, setSort } =
           label: '',
           columnLabel: () => translate('Actions'),
           isVisible: true,
-          isModifiable: false,
+          isModifiable: 'onlyPosition',
         },
       ],
     };

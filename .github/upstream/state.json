@@ -12,8 +12,8 @@
       "repo": "Sonarr/Sonarr",
       "branch": "v5-develop",
       "owns": "frontend",
-      "highWater": "bf5d48c76a6a793b7d2adc540bb11d9c51bcc3cb",
-      "highWaterNote": "2026-04 tip, 'Focus add series search input after clearing' (bf5d48c76). All 52 commits of 2026-04 are dispositioned, so everything at or before this mark is settled. Next chunk is 2026-05."
+      "highWater": "1915ec281c19248718c7c6d5973f13ee3e231ece",
+      "highWaterNote": "2026-05 tip, 'Multiple Translations updated by Weblate' (1915ec281). All 82 commits of 2026-05 are dispositioned, so everything at or before this mark is settled. Next chunk is 2026-06."
     }
   },
   "dispositions": {
@@ -2112,7 +2112,7 @@
         "subject": "New: Parse non-ASCII release groups",
         "month": "2026-01",
         "disposition": "adapt",
-        "reason": "Widens the release-group character class to Latin-1 letters. Reproduced against our parser first: '-Hve\u00f0rungr' and '-B\u00e1leygr' were truncated. Applied to our variant of the regex; new assertions use scene-shaped titles rather than the upstream series ones."
+        "reason": "Widens the release-group character class to Latin-1 letters. Reproduced against our parser first: '-Hveðrungr' and '-Báleygr' were truncated. Applied to our variant of the regex; new assertions use scene-shaped titles rather than the upstream series ones."
       },
       "8f5f3070ace856ddcb285a7358cf8e71cac9858a": {
         "subject": "Fixed: Login with credentials on Qbittorrent 5.2",
@@ -3049,6 +3049,498 @@
         "month": "2026-04",
         "disposition": "adapt",
         "reason": "Same gap: clearing the lookup emptied the term but left focus on the button, so the next keystroke went nowhere. TextInput becomes a forwardRef using useCombinedRefs and each clear handler puts focus back. Upstream has one add page; we have four -- movie, scene, studio and performer -- and all four had it. Kept our React 19 useRef initialisers rather than upstream's bare useRef<T>()."
+      },
+      "2b127e7a0f8ac1abe413cb14d924bf5b01065fbe": {
+        "subject": "Increase border-radius for medium and large labels",
+        "month": "2026-05",
+        "disposition": "pick",
+        "reason": "Label.css base is byte-identical to upstream's, so the 4px/6px radii on .medium and .large apply as written. Verified on 6969: medium labels compute to 4px."
+      },
+      "fb7f3badd3357f871976421d55c2408e470c87e1": {
+        "subject": "Fix modals on iOS",
+        "month": "2026-05",
+        "disposition": "pick",
+        "reason": "Our Modal.tsx had the same modalOpenIOS class fighting setScrollLock over the scroll position. Applied as-is; only Modal.css.d.ts needed hand-resolving because our generator emits a different declaration shape."
+      },
+      "036aeadd37b863de59c8b02ac7e733b341597d2d": {
+        "subject": "Defer deserialize JSON response resource with Lazy",
+        "month": "2026-05",
+        "disposition": "pick",
+        "reason": "HttpResponse<T> is shared verbatim; deferring the deserialize to Lazy<T> means a caller that only reads the status code or headers never parses the body."
+      },
+      "cd7c831903ee852965526cfb2fe5da933a75cc50": {
+        "subject": "Rename isSchemaFetching to isSchemaLoading",
+        "month": "2026-05",
+        "disposition": "adapt",
+        "reason": "Not just a rename: isFetching -> isLoading is the fix. react-query sets isFetching on every background refetch, and the Add Indexer / Import List / Download Client / Notification / Specification modals swap their content for a LoadingIndicator while it is set, so a background refetch blanked a modal the user was reading. Applied to our useProviderSchema and useQualityProfileSchema, and to the 12 call sites."
+      },
+      "5477cd26288158c5056f2df16887ed399568771e": {
+        "subject": "Add CancellationToken to HttpClient async methods",
+        "month": "2026-05",
+        "disposition": "adapt",
+        "reason": "TorrentClientBase and UsenetClientBase discarded the token Polly's RetryStrategy hands the callback, so a cancelled pipeline could not stop its own HTTP call. Threaded through IHttpClient to ManagedHttpDispatcher, linked into the timeout CTS. RemoteEpisode -> RemoteMovie. Our fixtures needed the same lambda-arity churn upstream carried -- Moq validates the callback signature, so Returns<HttpRequest> on the now-two-parameter async methods becomes Returns<HttpRequest, CancellationToken>."
+      },
+      "90f5d9713bb51214b24f2efa2ca33b687ace6a84": {
+        "subject": "New: Send Manual Interaction event for Potentially Dangerous Extensions that aren't failed",
+        "month": "2026-05",
+        "disposition": "adapt",
+        "reason": "CompletedDownloadService returned early on a handled rejection without leaving Downloading, so a download held back for a dangerous extension sat in the queue with no manual-interaction prompt. Test adapted to the movie model (IDownloadedMovieImportService, LocalMovie); it fails against the previous service and passes after."
+      },
+      "6be6a7e70f79023869134c27a9f84b2906efbc24": {
+        "subject": "Improve queue removal message for queue items not matched to a series",
+        "month": "2026-05",
+        "disposition": "adapt",
+        "reason": "Our RemoveQueueItemModal and QueueRow match upstream's shape; QueueRow already had downloadClient to pass down. Translation key is ours, authored in sorted position, saying 'movie' where upstream says 'series'. Verified served by /api/v3/localization on 6969."
+      },
+      "ba9d00c8e63c39cf29b1453b60902a1727c5e779": {
+        "subject": "New: Add custom headers to Ntfy.sh connection",
+        "month": "2026-05",
+        "disposition": "adapt",
+        "reason": "We have the Ntfy connection and FieldType.KeyValueList, and field slot 8 was free. Self-hosted ntfy behind a reverse proxy or auth gateway needs its own header. Verified on 6969: the notification schema returns ('headers','keyValueList','Headers')."
+      },
+      "64105f98a02dccb8302fcc66821f811d9343e99d": {
+        "subject": "Fixed: Importing multiple extra files with the same extension",
+        "month": "2026-05",
+        "disposition": "adapt",
+        "reason": "Real data loss, not cosmetic: every matching extra imported to the same destination name, so two .mka tracks in separate folders both wrote to 'Movie Title - 2022.mka' and the second overwrote the first. Ported to LocalMovie/MovieFile with five fixture cases; four fail against the previous OtherExtraService, the fifth guards the single-match path staying unsuffixed."
+      },
+      "f334bbb4d9a558bd017faf924681629732ffdf21": {
+        "subject": "New: Allow Actions column to be reordered in tables",
+        "month": "2026-05",
+        "disposition": "adapt",
+        "reason": "isModifiable becomes 'enabled'/'disabled'/'onlyPosition' so an always-visible column can still be dragged. Enabled where upstream enabled it -- blocklist, history, queue, cutoff unmet, missing. Our index and detail tables stay 'disabled': they render columns positionally in the row component, the same reason upstream left its series and episode tables alone. Verified on 6969: the Missing table's Actions column now has a drag handle with its checkbox still disabled."
+      },
+      "0ea943cdb5c5fdeeedd6e94f64e8e6d3b1dea958": {
+        "subject": "New: Allow bypassing authentication for Localhost",
+        "month": "2026-05",
+        "disposition": "adapt",
+        "reason": "Taken on paul's call -- a new auth-bypass mode is a product decision, not a sync one. Two deviations. (1) The loopback branch carries our IsClientAddressKnown guard, which our sibling local-addresses branch already has and upstream does not; without it a reverse proxy on the same host makes every remote request loopback, and the narrower mode would be the more permissive one. (2) The select key is disabledForLocalhost -- upstream wrote disabledForLocalHost, which does not match the camelCased enum the API returns, so the dropdown would not show the saved value. Verified on 6969: the value round-trips as disabledForLocalhost, loopback gets 200 unauthenticated, loopback with an unconsumed X-Forwarded-For gets 302."
+      },
+      "e79077d5fd33d2ee7cb025f13858785f4473e8b3": {
+        "subject": "New: Optional end-to-end encryption setting for Pushover",
+        "month": "2026-05",
+        "disposition": "adapt",
+        "reason": "Taken on paul's call, with the tests upstream did not write. PushoverProxyFixture implements the Pushover client side independently -- it decrypts what the proxy sent, verifies the HMAC and asserts the plaintext round-trips including non-ASCII -- and pins a fresh IV per field, plaintext with no 'encrypted' flag for a blank key, and the validator rejecting a key HexStringToBytes would throw on. Verified on 6969: the schema returns ('encryptionKey','textbox','Encryption Key')."
+      },
+      "16f9344e2a9b01558bc2fb031be5c8632ddba31d": {
+        "subject": "Bump ghcr.io/devcontainers/features/node from 1.7.1 to 2.0.0",
+        "month": "2026-05",
+        "disposition": "have",
+        "reason": "Our .devcontainer/devcontainer.json already pins ghcr.io/devcontainers/features/node:2."
+      },
+      "d39e597a7746e9333872994783918115077da592": {
+        "subject": "Bump github actions",
+        "month": "2026-05",
+        "disposition": "have",
+        "reason": "We are ahead on every action it bumps: download-artifact v8 across .github/actions and deploy.yml, volta-cli v5 in build_v3/upstream-check/upstream-watch. The build_v5.yml half is a workflow we do not have."
+      },
+      "96ed1015f18d7542345cf5b9c008d58acf44d7ce": {
+        "subject": "Bump github actions",
+        "month": "2026-05",
+        "disposition": "have",
+        "reason": "labeler is v7 here against their v6, lock-threads is v6, and our lock.yml and labeler.yml already scope permissions to the job. The setup-dotnet and discord-webhook halves are api_docs.yml and build_v5.yml, neither of which we have."
+      },
+      "0cd2f06a7621fddfa005ddcb503a52c8b16b4cc1": {
+        "subject": "Bump FluentAssertions to 7.2.2",
+        "month": "2026-05",
+        "disposition": "have",
+        "reason": "FluentAssertions is 8.10.0 here against their 7.2.2."
+      },
+      "89d4d3f70a1489e439859356452874cf6f8207fb": {
+        "subject": "Bump NUnit to 4.5.1",
+        "month": "2026-05",
+        "disposition": "have",
+        "reason": "NUnit 4.6.1 / NUnit3TestAdapter 6.3.0 / NunitXml.TestLogger 8.0.0 here against their 4.5.1 / 6.2.0 / 8.0.0."
+      },
+      "9905637db1311a807f33543a36e9ea0950c125fa": {
+        "subject": "Bump Ical.Net to 5.2.1",
+        "month": "2026-05",
+        "disposition": "have",
+        "reason": "Ical.Net is 5.2.3 here against their 5.2.1, and our CalendarFeedController already uses the v5 API surface."
+      },
+      "9cb8eb9f20460c82fb6ff2f64286029f8db0fd84": {
+        "subject": "Bump .NET to 10.0.8",
+        "month": "2026-05",
+        "disposition": "have",
+        "reason": "Every Microsoft.Extensions / System.* reference is 10.0.11 here against their 10.0.8, Microsoft.Data.SqlClient 7.0.2 against 7.0.1, and global.json is on 10.0.101."
+      },
+      "537bef707be45e3bf52cdb82fc39bc571ed3590d": {
+        "subject": "Bump FFprobe to 8.1.1",
+        "month": "2026-05",
+        "disposition": "have",
+        "reason": "Openur.FFprobeStatic is 9.0.1.492 here against their 8.1.1.343."
+      },
+      "e95b4d8e5b10803a3e5f27102a8a7cacbd6047c5": {
+        "subject": "Cleanup Post-Backup Temporary Files",
+        "month": "2026-05",
+        "disposition": "have",
+        "reason": "BackupService already calls Cleanup() after CreateZip."
+      },
+      "4642d1a7a22d3ba4e602c25325d84b00f5cb1793": {
+        "subject": "Reuse authentification cookies for qBittorrent calls",
+        "month": "2026-05",
+        "disposition": "have",
+        "reason": "QBittorrentProxyV2.ProcessRequest already builds the API-key request separately and defers the authenticated Build() until after AuthenticateClient."
+      },
+      "8ed9a3c532f927155b53ed1c82cd4de1367fd471": {
+        "subject": "Fixed: Don't log error when missing some translation files",
+        "month": "2026-05",
+        "disposition": "have",
+        "reason": "Different solve, same outcome: our LocalizationService logs a missing resource at Trace unconditionally, so the error spam this fixes does not exist here and the logMissing flag would have nothing to gate."
+      },
+      "b4b415731807a4edab41b1b2fef1a2409bc186fe": {
+        "subject": "Upgrade React Router from v5 to v7",
+        "month": "2026-05",
+        "disposition": "have",
+        "reason": "package.json is already on react-router ^7 and react-router-dom ^7."
+      },
+      "3a487c1f1af0a660b23e63e69318af8ca6660ec5": {
+        "subject": "Display external ID only for main series link group and update Trakt link",
+        "month": "2026-05",
+        "disposition": "have",
+        "reason": "MovieDetailsLinks already uses the optional-externalId shape with a conditional ClipboardButton. The sort and the Trakt link move are specific to upstream's TVDB/Trakt/IMDb grouping; our providers are TMDb, TPDb and StashDB and each already carries the id worth copying."
+      },
+      "a1abe179a5074f59d32296b57ec76474b984a76c": {
+        "subject": "Fix calculating custom score using renamed filename before manual importing",
+        "month": "2026-05",
+        "disposition": "have",
+        "reason": "The bug cannot exist here: our ParseCustomFormat(LocalMovie) takes no fileName parameter and already derives SimpleReleaseTitle from Path.GetFileName(localMovie.Path), so a renamed filename never reaches custom format scoring. The LocalEpisode.cs half is a collection-expression cleanup."
+      },
+      "0ebda892bc0db4adc87e8f7a1aeaaddc351cde55": {
+        "subject": "Use react-query for Auto Tagging",
+        "month": "2026-05",
+        "disposition": "have",
+        "reason": "Done in our own Redux migration -- Settings/Tags/AutoTagging/useAutoTaggings.ts exists and frontend/src/Store is gone. See REDUX_MIGRATION.md."
+      },
+      "ba7b6b0394621e0c185a0aa58b1fe7d93f14ce1e": {
+        "subject": "Use react-query for Import List Options",
+        "month": "2026-05",
+        "disposition": "have",
+        "reason": "Done in our own Redux migration -- Settings/ImportLists/Options/useImportListOptions.ts exists."
+      },
+      "75d1a9588df3c58e9809ff69468836ec740af5a1": {
+        "subject": "Use react-query for Import Lists",
+        "month": "2026-05",
+        "disposition": "have",
+        "reason": "Done in our own Redux migration -- Settings/ImportLists/ImportLists/useImportLists.ts exists."
+      },
+      "06aa7d570d54c5f1a6e765b53a0d368136bfb1b0": {
+        "subject": "Use react-query for Custom Formats",
+        "month": "2026-05",
+        "disposition": "have",
+        "reason": "Done in our own Redux migration -- Settings/CustomFormats/CustomFormats/useCustomFormats.ts exists."
+      },
+      "ed1d92c50ea9a214bd3a650983a535ea19363e1d": {
+        "subject": "Use react-query for Delay Profiles",
+        "month": "2026-05",
+        "disposition": "have",
+        "reason": "Done in our own Redux migration -- Settings/Profiles/Delay/useDelayProfiles.ts exists."
+      },
+      "d04e29967f16466d228e9327a9ff5faa601f5b91": {
+        "subject": "Use react-query for Download Client options",
+        "month": "2026-05",
+        "disposition": "have",
+        "reason": "Done in our own Redux migration -- Settings/DownloadClients/Options/useDownloadClientOptions.ts exists."
+      },
+      "7be32b0c65c569e0efb16de74721b465115e7910": {
+        "subject": "Use react-query for Download Clients",
+        "month": "2026-05",
+        "disposition": "have",
+        "reason": "Done in our own Redux migration -- Settings/DownloadClients/DownloadClients/useDownloadClients.ts exists."
+      },
+      "388ba2dfd9d9ef08ad4c9241089a27b6d8a27c1d": {
+        "subject": "Improve HTTP file mappers",
+        "month": "2026-05",
+        "disposition": "have",
+        "reason": "The path-traversal hardening is already in our tree and then some: StaticResourceMapperBase has the FolderPath/MapPath split with the escape check, StaticResourceController has the InvalidPathRegex guard, CacheBreakerProvider null-checks the mapped path, and HtmlMapperBase holds _urlBase from IConfigFileProvider. Ours additionally compares case-sensitively and cleanses the resource url before logging it (ForLog)."
+      },
+      "12d318009e57af5f706c6a3ccc0e7d0e4668f08c": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "Weblate translation import, not a cherry-pick. Our en.json is sorted case-insensitively and shares keys with different text."
+      },
+      "e5aefc474ef2ba13e064b86d471479a9d869c52b": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "Weblate translation import, not a cherry-pick."
+      },
+      "4a5ae9d7448ec5a8e96a7999734cb0db15b16e34": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "Weblate translation import, not a cherry-pick."
+      },
+      "087ea798675143809583e41586092ad7f6522bfd": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "Weblate translation import, not a cherry-pick."
+      },
+      "242d9e1ebd34cca2665b37f31a223ace62d90e8d": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "Weblate translation import, not a cherry-pick."
+      },
+      "53ea2f847a67bebadc38b26430ed00d5afcb7f81": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "Weblate translation import, not a cherry-pick."
+      },
+      "1915ec281c19248718c7c6d5973f13ee3e231ece": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "Weblate translation import, not a cherry-pick."
+      },
+      "20c72abf5efe38621afc84a45735b74b12112a2b": {
+        "subject": "Automated API Docs update",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "Bot regeneration of src/Sonarr.Api.V5/openapi.json. We retired our checked-in openapi.json along with the workflow that produced it."
+      },
+      "51768fe8ecf18df0b74d2368b550a1d824b810ab": {
+        "subject": "Automated API Docs update",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "Bot regeneration of src/Sonarr.Api.V5/openapi.json; we do not have that file."
+      },
+      "dfb157382b20a2d4eb5f5828a6c1e276c0d6b160": {
+        "subject": "Automated API Docs update",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "Bot regeneration of src/Sonarr.Api.V5/openapi.json; we do not have that file."
+      },
+      "444c5cb31cb7219c40120151be12c3e93541f5f2": {
+        "subject": "Automated API Docs update",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "Bot regeneration of src/Sonarr.Api.V5/openapi.json; we do not have that file."
+      },
+      "8ede7b593e6a1d3c82a0d227bb6d7a0e2ada44a6": {
+        "subject": "Add missing TypedResults",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "All 13 files are controllers under src/Sonarr.Api.V5/. We have only Whisparr.Api.V3, whose controllers do not use TypedResults."
+      },
+      "890348abead6234428766199af7728f561b5a14b": {
+        "subject": "Fix listing media files for specific series with Manage Episodes",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "V5-only, and the bug does not exist in our V3 controller: theirs binds a downloadIds string[] whose position broke query binding, ours takes a single string downloadId."
+      },
+      "3a1aa120086b6e099b9676ca59a68e6d3818fa3b": {
+        "subject": "Remove deprecated fallback to body ID from API v5",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "V5-only -- src/Sonarr.Api.V5/Provider/ProviderControllerBase.cs, a file we do not have."
+      },
+      "69069248ee23dd7f8bac74dc91274d538e396582": {
+        "subject": "Add v5 Auto Tagging endpoints",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "V5-only: adds src/Sonarr.Api.V5/AutoTagging/ endpoints. No counterpart project here; it would cherry-pick clean and build green as dead files."
+      },
+      "f10e99f13b1fcebc366910b6f4aef9ca589a324e": {
+        "subject": "Add v5 Import List Options endpoints",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "V5-only: adds src/Sonarr.Api.V5/Settings/ImportListSettings* endpoints."
+      },
+      "bdd04d7dceabf0103853b09f1ed283b56389d516": {
+        "subject": "Add v5 Import List endpoints",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "V5-only: adds src/Sonarr.Api.V5/ImportLists/ endpoints."
+      },
+      "c5a0130353b29050456fe651c652e397519786bd": {
+        "subject": "Add v5 Custom Format endpoints",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "V5-only: adds src/Sonarr.Api.V5/CustomFormats/ endpoints."
+      },
+      "8bced0351305e367e549963c784888e81fcdedfc": {
+        "subject": "Add v5 Delay Profile endpoints",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "V5-only: adds src/Sonarr.Api.V5/Profiles/Delay/ endpoints."
+      },
+      "1825cda1dc5fdcafcbf55ca3c839acc21c2e5de7": {
+        "subject": "Add v5 Download Client Options endpoints",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "V5-only: adds src/Sonarr.Api.V5/Settings/DownloadClientSettings* endpoints."
+      },
+      "114a37907831eb99f585795351d0d86de0e7f3dc": {
+        "subject": "Add v5 Download Client endpoints",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "V5-only: adds src/Sonarr.Api.V5/DownloadClient/ endpoints."
+      },
+      "4f12057e7026a5c3511e23bef97f56cd1e53ae58": {
+        "subject": "Generate calendar feed link with V5 API",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "Points the calendar feed link at /feed/v5/. We serve only /feed/v3/."
+      },
+      "ef13265f446e5578bce3ffd8f5885e19b0274d2d": {
+        "subject": "Fix indexer flags for interactive search with v5 API",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "Shaped by the V5 release resource, which nests publishDate and indexerFlags under `release`; our V3 resource has them at the top level, so moving the frontend destructuring would break it. The backend half drops a property from a V5 file we do not have."
+      },
+      "e25ce88072bca98bcadfe7e6223b200d4bb0a9bd": {
+        "subject": "Comment on PRs that target the wrong branch",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "Adds a wrong-base-branch commenter workflow. Upstream repo policy, and a bot that comments on contributor PRs is a decision for this repo to make on its own terms, not a sync pick."
+      },
+      "606009b1969beec78df7424a1872d0771431ac43": {
+        "subject": "Skip branch check for PRs against redesign branch",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "Exempts Sonarr's v5-redesign branch from the workflow above; we have neither."
+      },
+      "7c41dcbe23fcf51cad2186956dd173ad294c19af": {
+        "subject": "Run build for PRs against redesign branch",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "Adds Sonarr's v5-redesign branch to build_v5.yml; we have neither the branch nor the workflow."
+      },
+      "37746a8260dcb5d11cc0e8aad426df3d91b018ae": {
+        "subject": "Update contributing information",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "Rewrites Sonarr's PR template, CONTRIBUTING and AGENTS.md and adds a no-autopilot workflow. Ours are our own and diverge deliberately."
+      },
+      "d3d949d7d4c1a5334d03aef481ffad921ff9bd52": {
+        "subject": "Update contributing information",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "Follow-up fixing a link in Sonarr's own PR template to a Sonarr/Sonarr URL."
+      },
+      "fa1e696f47e490e4a3e4355bd97c1f63749f81a3": {
+        "subject": "Bump fontawesome, lodash, qs, babel, core-js and postcss",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "npm version bumps. Dependabot owns this here -- .github/dependabot.yml groups the babel and fontawesome families deliberately, and picking a bulk bump would fight it."
+      },
+      "c52f5a3b11a992bd832137398fb221bb543e04ba": {
+        "subject": "Enable Call async methods when in an async method",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "Turns CA1849 on as a warning. We build with TreatWarningsAsErrors, so this breaks the build wherever the rule fires -- a lint sweep across our tree, not a sync pick. Upstream paired it with #pragma suppressions in HappyEyeballs, which we do not have; the IntegrationTestBase half exists only to satisfy the new rule."
+      },
+      "a12872a9bbc687f46e3aaecfcfbc4257ac3cb045": {
+        "subject": "Improve nullable analysis for IsNullOrWhiteSpace and IsNotNullOrWhiteSpace",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "[NotNullWhen] only affects flow analysis in nullable-enabled code. We have no <Nullable> property and zero '#nullable enable' files, so it changes nothing here. Revisit if we ever enable nullable. The other file is V5."
+      },
+      "b71955c8e09c5b5b7473062eb7103d8de631ded1": {
+        "subject": "Create styles.css for integration tests once",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "Refactors EnsureUiContent into a SetUpFixture. We never had EnsureUiContent -- our NzbDroneRunner has no dummy styles.css step, so there is nothing to move."
+      },
+      "931f8d5162609770a01a931233a353cc9b86b474": {
+        "subject": "Fixed: Anime Lists from Simkl",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "We have no Simkl import list. src/NzbDrone.Core/ImportLists/Simkl does not exist; ours are RSSImport, Rss, StashDB, TMDb and Whisparr."
+      },
+      "4f64b65c3c9ad25adf6cf279eec3c66f09920029": {
+        "subject": "Cleanup Simkl import list",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "We have no Simkl import list."
+      },
+      "9c69d3ec2e89637e35321f794c51946c4e24a5ad": {
+        "subject": "Avoid DNS resolution for IP addresses in Happy Eyeballs",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "We have no Happy Eyeballs implementation -- src/NzbDrone.Common/Http/HappyEyeballs does not exist."
+      },
+      "e1471581f9880d0c90c24e33abcd18e161720d70": {
+        "subject": "Standardize Trakt Import List Settings",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "We have no Trakt import list, so TraktSettingsBase, TraktQueryHelper and the three request generators have no counterpart."
+      },
+      "b81de85706410107520fb4ac9621e4e4030789e4": {
+        "subject": "Add logging when searching for recently aired episodes after refresh",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "EpisodeRefreshedService has no counterpart -- there is no MovieRefreshedService, and the search it logs is the absolute-episode-number backfill, a concept we do not have."
+      },
+      "e1f6c091ac2b8a9b30ff5765ab3cb5f363df164c": {
+        "subject": "Add missing new series to state",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "Our SignalRListener takes a different approach for movies -- invalidateQueries against '/movie/...' keys rather than updateQueryClientItem with an add flag -- so there is no call site to flip."
+      },
+      "61770bb7d637b3225867d9626fe7104a3d49ba99": {
+        "subject": "Increase width on actions column for episode file details",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "Episode/Summary/EpisodeFileRow.css has no counterpart; our only *FileRow.css is MovieFile/Extras/ExtraFileRow.css."
+      },
+      "d75ebf93a723cb6fcb79531d21c7c51e551d44c9": {
+        "subject": "Fix vertical alignment for ratings on series table",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "Our MovieIndexRow.css has no .ratings rule -- the movie index has no ratings column to misalign."
+      },
+      "31ecc075aa0f468f9ee3e07dbfac1585ad142542": {
+        "subject": "Simplify sort and filtering predicates for series",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "Cosmetic tidy of Series/useSeries.ts sort and filter predicates -- destructuring and ternaries, no behaviour change. Our useMovies has its own predicates and would gain nothing."
+      },
+      "211895c2ac79bb900fb9742985a5e768dafce513": {
+        "subject": "Fixed: Showing alternate season titles",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "Utilities/Series/filterAlternateTitles.ts has no counterpart; alternate season titles with a scene origin are a series concept."
+      },
+      "5eaeb2c6accc56ce9393f3f889d8efd6253dcbbb": {
+        "subject": "New: Parse releases with 3 digit season number",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "Parser gate: adds a regex for three-digit season numbers (S093E081). We have no season or episode grammar at all."
+      },
+      "109a4c22ba28bab2ef5ee5c59e234ea0377eb1f2": {
+        "subject": "Improve error handling for quality profile size limits",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "Downstream of a feature we do not have: it surfaces validation failures for per-quality-item min/max/preferred size limits, which arrived in their migration 207. We have no QualityProfileItemSize component and no size fields on quality profile items."
+      },
+      "838b25d0962108de0b5232f6957c9473b6fc6c9d": {
+        "subject": "Improve Mark as Failed for non-grabbed history events",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "Broken as landed -- both new blocks throw InvalidOperationException unconditionally after publishing the event, so marking a download failed would always 400. Upstream fixed it in 43797d65c8 a month later. Separately, our FailedDownloadService has neither the message/source parameters nor the grabbedHistory aggregation this builds on, so it is a port of two commits, not a cherry-pick. Reconsider as a pair when 2026-06 is worked."
+      },
+      "dfc37be76e061d321ef82e88bd4c82da416018d6": {
+        "subject": "Fixed: Parsing quality from some WEB releases",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "Parser gate: does not reproduce. Adds ATVP to the WEB-DL provider alternation in QualityParser's SourceRegex. Probed against our parser on this branch -- 'Movie.Title.2020.MULTi.1080p.ATVP.WEB.Atmos.H.265-TFA' and the same title without the codec both already parse as QualitySource.Web, so no test fails before the change. Our SourceRegex reaches Web by a different branch than theirs."
+      },
+      "fe7d8e1218a02179b8bc0f2a413f03f3cb9af000": {
+        "subject": "Enforce new lines around multi-line blocks",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "Adopting padding-line-between-statements would be an eslint sweep over our whole frontend, not the 26 files upstream touched, and our config is flat (eslint.config.js) not their .eslintrc.js. Worth its own PR if we want the rule."
+      },
+      "9bed77c68d6b0e117265a8a65c80b0bf7e81d4be": {
+        "subject": "Avoid mutation for react-query data",
+        "month": "2026-05",
+        "disposition": "skip",
+        "reason": "Right idea -- ReadonlyArray<T> on react-query data stops callers mutating the cache in place -- but it is a 37-file typing sweep against a tree whose file set diverges from theirs, and the payoff is uniform only if it is done everywhere. Worth its own PR rather than riding along in a month's sync."
       }
     }
   }

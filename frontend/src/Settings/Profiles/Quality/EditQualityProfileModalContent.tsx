@@ -86,7 +86,7 @@ function EditQualityProfileModalContent({
     item,
     isSaving,
     saveError,
-    isSchemaFetching,
+    isSchemaLoading,
     isSchemaFetched,
     schemaError,
     validationErrors,
@@ -534,9 +534,9 @@ function EditQualityProfileModalContent({
       <ModalBody>
         <Measure onMeasure={handleBodyMeasure}>
           <div>
-            {isSchemaFetching ? <LoadingIndicator /> : null}
+            {isSchemaLoading ? <LoadingIndicator /> : null}
 
-            {!isSchemaFetching && schemaError ? (
+            {!isSchemaLoading && schemaError ? (
               <Alert kind={kinds.DANGER}>
                 {translate('AddQualityProfileError')}
               </Alert>

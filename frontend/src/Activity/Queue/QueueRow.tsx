@@ -350,6 +350,7 @@ function QueueRow(props: QueueRowProps) {
         canChangeCategory={!!downloadClientHasPostImportCategory}
         canIgnore={!!movie}
         isPending={isPending}
+        downloadClient={downloadClient}
         onRemovePress={handleRemoveQueueItemModalConfirmed}
         onModalClose={handleRemoveQueueItemModalClose}
       />
