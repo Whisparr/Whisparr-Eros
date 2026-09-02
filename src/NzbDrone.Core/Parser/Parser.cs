@@ -645,7 +645,7 @@ namespace NzbDrone.Core.Parser
                 return title;
             }
 
-            return ReplaceGermanUmlauts(NormalizeRegex.Replace(title, string.Empty).ToLowerInvariant()).RemoveAccent();
+            return ReplaceGermanUmlauts(NormalizeRegex.Replace(title, string.Empty).ToLowerInvariant()).RemoveDiacritics();
         }
 
         public static string CleanEpisodeTitle(this string title)

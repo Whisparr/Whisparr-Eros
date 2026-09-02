@@ -1,8 +1,10 @@
 declare namespace MovieDetailsLinksCssNamespace {
   export interface IMovieDetailsLinksCss {
     link: string;
+    linkBlock: string;
     linkLabel: string;
     links: string;
+    soleLinkLabel: string;
   }
 }
 

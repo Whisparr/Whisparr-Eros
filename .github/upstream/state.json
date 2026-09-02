@@ -12,8 +12,8 @@
       "repo": "Sonarr/Sonarr",
       "branch": "v5-develop",
       "owns": "frontend",
-      "highWater": "c8f15ae1989cfb7d83cc580409a972e9fdd44a7c",
-      "highWaterNote": "2026-02 tip, 'Close issues that don't follow issue templates' (c8f15ae19). All 19 commits of 2026-02 are dispositioned, so everything at or before this mark is settled. Next chunk is 2026-03."
+      "highWater": "5bde9242393b988d8b5f154b0b935f6289af9f6d",
+      "highWaterNote": "2026-03 tip, 'New: Info icon for Quality Profiles that are in use' (5bde92423). All 43 commits of 2026-03 are dispositioned, so everything at or before this mark is settled. Next chunk is 2026-04."
     }
   },
   "dispositions": {
@@ -2479,6 +2479,264 @@
         "month": "2026-02",
         "disposition": "skip",
         "reason": "Adds a workflow that auto-closes any issue opened without labels. Repo-policy automation rather than a sync change, and issues for both Whisparr repos are filed on Whisparr/Whisparr, so on Whisparr-Eros it would police the wrong repo's issue tracker. Put to the maintainer and declined."
+      },
+      "eda676f9a29565e1ed002d048dd60685fb8f5f87": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-03",
+        "disposition": "skip",
+        "reason": "Multiple Translations updated by Weblate. Automatic skip: those files come from Weblate, not from cherry-picks."
+      },
+      "f93bc57426788915bde4bfd7408f9e414cb97b1a": {
+        "subject": "Automated API Docs update",
+        "month": "2026-03",
+        "disposition": "skip",
+        "reason": "Regenerates src/Sonarr.Api.V5/openapi.json only. We retired our checked-in openapi.json along with the workflow that produced it, so there is no such file here."
+      },
+      "33fb0a4e880a5a5a3dc3d04e26d85b0a22c73552": {
+        "subject": "New: Calculate custom score using renamed filename before importing",
+        "month": "2026-03",
+        "disposition": "skip",
+        "reason": "Extracts a LocalEpisodeCustomFormatCalculationService and threads FileNameUsedForCustomFormatCalculation through ImportDecisionMaker, ImportApprovedEpisodes, ManualImportService, UpdateMediaInfoService and UpgradeSpecification -- 283 changed lines of core plus a new ImportRejectionReason. We have no counterpart service, and it changes what an import decision is scored on. That is a feature port with its own blast radius, not a sync pick; worth doing on its own PR."
+      },
+      "ac1c74105f4a739ec61636dc3817a4e942309434": {
+        "subject": "Cleanup settings controllers",
+        "month": "2026-03",
+        "disposition": "pick",
+        "reason": "Mixed commit. Took the non-V5 half: ConfigFileProvider and ConfigService now track whether any value actually changed and only publish ConfigFileSavedEvent/ConfigSavedEvent when one did -- the settings form re-sends every field, so a no-op save was waking every handler. Dropped the four src/Sonarr.Api.V5/Settings files; no counterpart project here."
+      },
+      "dd6533c18a2aca1d7af48599b43f2d45462dbdb2": {
+        "subject": "Add v5 General settings endpoints",
+        "month": "2026-03",
+        "disposition": "skip",
+        "reason": "V5-only: every file is under src/Sonarr.Api.V5/. We have only src/Whisparr.Api.V3/, so this would land as files nothing compiles."
+      },
+      "6764cf1c22645e933baecc4971e9912f5e9edd29": {
+        "subject": "Use react-query for General settings",
+        "month": "2026-03",
+        "disposition": "have",
+        "reason": "Our General settings were already moved to react-query -- frontend/src/Settings/General/useGeneralSettings.ts exists and frontend/src/Store/Actions/Settings/ does not, so there is no general.js slice left to remove."
+      },
+      "bcceb22512b2a94bf8456425a80279d0a1aa45aa": {
+        "subject": "Add v5 Indexer endpoints",
+        "month": "2026-03",
+        "disposition": "skip",
+        "reason": "V5-only: all five files under src/Sonarr.Api.V5/Indexers/. No counterpart project here."
+      },
+      "c4c0ec25acef7855cc25f38648bfc1649c322e87": {
+        "subject": "Use react-query for Indexers",
+        "month": "2026-03",
+        "disposition": "have",
+        "reason": "Our Indexers settings were already moved to react-query (frontend/src/Settings/Indexers/Indexers/, useIndexers.ts) and the Redux settings slices this deletes do not exist in our tree."
+      },
+      "1c805bded0edce2f34ec16075aed86ec7005b488": {
+        "subject": "Clean up SignalRListener",
+        "month": "2026-03",
+        "disposition": "have",
+        "reason": "Factors the repeated queryClient.setQueriesData blocks in SignalRListener into an updateQueryClientItem helper. Ours is already factored the equivalent way, with updatePagedItem and updateCalendarQueryCache, and carries one setQueriesData call rather than the several this collapses."
+      },
+      "d5434270122442016886ae323af35b12fdf6dcd1": {
+        "subject": "New: Improve acceptable size rejection messaging for multi-episode releases",
+        "month": "2026-03",
+        "disposition": "skip",
+        "reason": "Rewords the rejection to '{n} episodes totalling {runtime}min' for multi-episode releases. Our AcceptableSizeSpecification has no episode count -- runtimeMessage is just subject.Movie.Title -- because a release maps to one movie or scene here."
+      },
+      "7add5aafad8314011ae9c3a60c8e9e4a96d6b3eb": {
+        "subject": "Bump lodash, qs, rimraf, html-webpack-plugin and webpack",
+        "month": "2026-03",
+        "disposition": "have",
+        "reason": "Dependency bump we are already past: lodash 4.18.1 > 4.17.23, qs 6.15.3 > 6.15.0, webpack 5.109.2 > 5.105.2, html-webpack-plugin 5.6.8 > 5.6.6, rimraf already 6.1.3, @types/lodash 4.17.25 > 4.14.202."
+      },
+      "965b6144e303bc5e6d492187025897bc68ad2e72": {
+        "subject": "New: Improve parsing of releases with contain multiple titles",
+        "month": "2026-03",
+        "disposition": "skip",
+        "reason": "Adds a year fallback to ParsingService.GetSeriesByAllTitles. We have neither that method nor SeriesTitleInfo.AllTitles -- our ParsingService has no all-titles lookup at all, so there is no code path for this to fix."
+      },
+      "da6340e421cd432d88c2eac73850b0b6eda55471": {
+        "subject": "New: Add Original Country information",
+        "month": "2026-03",
+        "disposition": "skip",
+        "reason": "Adds an OriginalCountry field sourced from TVDB's ShowResource via SkyHookProxy, with DB migration 227 and an auto-tagging specification. Our metadata comes from TPDB/StashDB, which does not carry it, so the field would have nothing to populate it."
+      },
+      "2a5667e634b35b0794aea6b61c1c7719975d3425": {
+        "subject": "Fixed: Consistent diacrital removal from clean titles",
+        "month": "2026-03",
+        "disposition": "adapt",
+        "reason": "Same two-implementation split existed here: a hand-rolled RemoveAccent in Common and Diacritical's RemoveDiacritics used by FileNameBuilder and the auth instance name. Moved Diacritical.Net to Whisparr.Common.csproj, added AdditionalDiacriticsProvider (eth and thorn, plus the capitals), and switched CleanMovieTitle and GetCleanSceneTitle to RemoveDiacritics so o-slash, l-stroke, ash, eszett and d-stroke reach the ASCII spelling a release uses. Six new NormalizeTitleFixture cases fail before and pass after. Deviation: ToUrlSlug keeps RemoveAccent -- SlugParserFixture asserts eszett, oe-ligature and o-slash drop out of a slug entirely, and the gate forbids rewriting an existing assertion to go green. It has no production callers, so nothing is lost by leaving it."
+      },
+      "6c329e8a6fa4f9df23dd562da953d427ae754c17": {
+        "subject": "Remove English limitation for aliases",
+        "month": "2026-03",
+        "disposition": "skip",
+        "reason": "Drops the IsEnglish filter from SceneMappingService.GetSceneNames. We have no src/NzbDrone.Core/DataAugmentation/ at all -- no scene mappings, no XEM."
+      },
+      "d99f8b5685b78868b7c70f054ada19951112dd6b": {
+        "subject": "New: Warning on add series list for Import list exclusions",
+        "month": "2026-03",
+        "disposition": "have",
+        "reason": "We already flag excluded items on lookup: MovieResource.IsExcluded is set in MovieLookupController, SearchController, ImportListMoviesController and CollectionController, and the add-movie search result renders the warning from it."
+      },
+      "f91ebd4c072d8027c474ae5208a3480e34d7713e": {
+        "subject": "New: Do not automatically import multi-season releases",
+        "month": "2026-03",
+        "disposition": "skip",
+        "reason": "Blocks automatic import when ParsedEpisodeInfo.IsMultiSeason, adding a MultiSeason rejection reason and threading downloadClientItemInfo through GetImportDecisions. There are no seasons here, so there is no multi-season release to detect."
+      },
+      "147f11dece5010b8bd1cbe01fab9ac20fe5752aa": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-03",
+        "disposition": "skip",
+        "reason": "Multiple Translations updated by Weblate (ca.json). Automatic skip."
+      },
+      "db9ef92a80f2f3c27ecfad72437182aa6223c1d8": {
+        "subject": "Automated API Docs update",
+        "month": "2026-03",
+        "disposition": "skip",
+        "reason": "Regenerates src/Sonarr.Api.V5/openapi.json only. We do not have that file."
+      },
+      "7f971d47ac032c8f5731303b3a29dac5cf90c9d3": {
+        "subject": "New: Include External IDs for series with links",
+        "month": "2026-03",
+        "disposition": "adapt",
+        "reason": "Took the idea, not the diff: MovieDetailsLinks now builds its links from an array and gives each id-backed link a ClipboardButton, so the TMDb/TPDb/StashDB id can be copied out of the tooltip. Skipped the ClipboardButton `label` prop the upstream commit adds -- it renders the id text inside the button, which works for a short tvdbId but not for our UUID-shaped tpdbId and stashId. The homepage link has no id and keeps its plain label."
+      },
+      "0723459122aad919b14186748fa63bfc2c241708": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-03",
+        "disposition": "skip",
+        "reason": "Multiple Translations updated by Weblate. Automatic skip."
+      },
+      "f9f71d3f2a6c071c1c37dfb5e6f6e53674f97161": {
+        "subject": "Bump terser-webpack-plugin",
+        "month": "2026-03",
+        "disposition": "have",
+        "reason": "terser-webpack-plugin is already at 5.6.1 here, ahead of the version this bumps to."
+      },
+      "f7c7f8db8c72e51a211655671a0040bfb71b3899": {
+        "subject": "Remove postcss-url",
+        "month": "2026-03",
+        "disposition": "pick",
+        "reason": "postcss-url was declared in package.json but absent from frontend/postcss.config.js, so it was never in the pipeline. Removed with yarn, which also drops cuint, make-dir, mime and xxhashjs from the lockfile -- the same set the upstream commit removes."
+      },
+      "01c7d06da4fc08f1e7fb7d990416a436c5109364": {
+        "subject": "Bump Dapper, MailKit, Polly, Swashbuckle and NLog.Layouts.ClefJsonLayout",
+        "month": "2026-03",
+        "disposition": "have",
+        "reason": "Dependency bump we are already past: Dapper 2.1.79, MailKit 4.17.0, Polly 8.7.0, Swashbuckle 10.2.3, NLog.Layouts.ClefJsonLayout 1.0.5 all at or ahead of the versions this moves to."
+      },
+      "0e5ccbebc732c14e24466841af59229b3110caa7": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-03",
+        "disposition": "skip",
+        "reason": "Multiple Translations updated by Weblate. Automatic skip."
+      },
+      "e56dd15928253552584e6e170828cbddaec5bb6d": {
+        "subject": "Automated API Docs update",
+        "month": "2026-03",
+        "disposition": "skip",
+        "reason": "Regenerates src/Sonarr.Api.V5/openapi.json only. We do not have that file."
+      },
+      "c64f4adfc435347da071e2fbd69847c9bb3e64ff": {
+        "subject": "New: Delete files for Select Series",
+        "month": "2026-03",
+        "disposition": "skip",
+        "reason": "Adds bulk 'delete files' for a series-index selection: a new DeleteSeriesFilesCommand, an IExecute handler on MediaFileDeletionService, three V5 endpoints and a new modal. That is a feature, not a sync pick. It also carries a real fix we do not take here -- DeleteEpisodeFile switching from _diskProvider.GetParentFolder to _rootFolderService.GetBestRootFolderPath, which matters when the item sits in a nested folder under the root. Lifting one line out of a feature commit into our file-deletion and recycle-bin path is not a drive-by worth making; flagged for its own PR."
+      },
+      "b135e5a2a43de73a382c7d505263d4318c00d647": {
+        "subject": "New: Replace HTML Encoded values in release titles",
+        "month": "2026-03",
+        "disposition": "pick",
+        "reason": "RssParser.GetTitle now HtmlDecodes. An indexer that double-encodes its RSS title hands us '&amp;' where the release has '&', and we then match on a title the release never had. Applies as-is; the fixture and its encoded_title.xml were reshaped to a scene-style release title, and our csproj already globs Files/**/*.* so it needs no entry."
+      },
+      "209087f20579aff7bac2af4b43d03cfe4d5ef5b5": {
+        "subject": "Fixed: Trakt import lists with null IDs",
+        "month": "2026-03",
+        "disposition": "skip",
+        "reason": "Makes TraktSeriesIdsResource.Trakt nullable. We have no src/NzbDrone.Core/ImportLists/Trakt/ -- no Trakt import list here."
+      },
+      "d7769866c787f6edc2ddf0d379c7c02defb01a34": {
+        "subject": "Improve validation and test skipping in v5 API",
+        "month": "2026-03",
+        "disposition": "skip",
+        "reason": "Reworks V5's ProviderControllerBase to take skipTesting/skipValidation as query params and points useProviderSettings at them. Our V3 ProviderControllerBase uses the compile-time [SkipValidation] attribute instead; the frontend half alone would send params the V3 API ignores."
+      },
+      "5b79ee6d112ea17726c0355d966b5bf0f1521d38": {
+        "subject": "Add v5 Indexer options endpoints",
+        "month": "2026-03",
+        "disposition": "skip",
+        "reason": "V5-only: both files under src/Sonarr.Api.V5/Settings/. No counterpart project here."
+      },
+      "7a455dd0f880ed1b0dbc8e9a5104a958cb8d6099": {
+        "subject": "Use react-query for Indexers Options",
+        "month": "2026-03",
+        "disposition": "have",
+        "reason": "Our indexer options were already moved to react-query -- frontend/src/Settings/Indexers/Options/useIndexerOptions.ts exists and the indexerOptions.js slice this deletes does not."
+      },
+      "fbb70519b15364a8b674edb9f1031b3ee4ecfbc8": {
+        "subject": "Use react-query for Indexers Flags",
+        "month": "2026-03",
+        "disposition": "have",
+        "reason": "Our indexer flags were already moved to react-query -- frontend/src/Settings/Indexers/useIndexerFlags.ts carries both the query and the bitmask unpacking, and createIndexerFlagsSelector is long gone."
+      },
+      "526ef5428d0d443c9104481d3bd73501dad35fea": {
+        "subject": "Improve scene mapping updating",
+        "month": "2026-03",
+        "disposition": "skip",
+        "reason": "Adds a mapping id to scene mappings with DB migration 230. We have no src/NzbDrone.Core/DataAugmentation/ -- no SceneMapping table to migrate."
+      },
+      "fa69c485e96c43b2d67b4dfec63a4deedccb0287": {
+        "subject": "Maintain relative path when reprocessing items in manual import",
+        "month": "2026-03",
+        "disposition": "skip",
+        "reason": "V5's ManualImportController builds a fresh resource for each reprocessed item, so RelativePath was being lost and had to be carried on the request. Our V3 controller mutates and returns the incoming resource, which has no RelativePath property, and the frontend merges the response over its fetched rows -- so the value it would restore is never dropped in the first place."
+      },
+      "494f446b05cece4e7df505ad8edbaab503553497": {
+        "subject": "New: Show error if manual import has the same episode assigned multiple times",
+        "month": "2026-03",
+        "disposition": "skip",
+        "reason": "Rejects a manual import that assigns the same episode to more than one file. A file maps to one movie or scene here, so there is no duplicate to detect; what is left is a button-order tweak not worth the churn."
+      },
+      "cd1aeefc4fa589098fbf6b82acdf4cd6463f11a0": {
+        "subject": "Fix v5 language select and filtering",
+        "month": "2026-03",
+        "disposition": "have",
+        "reason": "Already fixed independently, and our useLanguages.ts names Sonarr's version of the bug in a comment: the filter keys were includeAny/includeOriginal/includeUnknown while the predicate tested them against language.name ('Any'), so nothing was ever excluded. Ours takes the excluded names directly."
+      },
+      "15c6fa8f0e09d943a6e1a1132fbf53942757eac4": {
+        "subject": "Theme specific metadata source images",
+        "month": "2026-03",
+        "disposition": "adapt",
+        "reason": "Took the useTheme half. useState(selectedTheme) held the literal 'auto' until the effect ran after first paint, so anything reading the theme during that render got a value that is not a theme -- useThemeColor indexes themes by it. Now resolved in the state initialiser. Dropped the rest: it swaps in theme-specific TheTVDB artwork, which is not our metadata source. Verified live on 6969 under both prefers-color-scheme values."
+      },
+      "d7ffa030be6c78089b26b22c962e0995e6fa0b3b": {
+        "subject": "Fix first column reordering",
+        "month": "2026-03",
+        "disposition": "have",
+        "reason": "TableOptionsModal already reads `didDrop && dropIndex !== null && dragIndex !== null`; the truthiness bug that made the first column undraggable does not exist here."
+      },
+      "3fec81ad44f38a3f83e4b59199130858a6f8af62": {
+        "subject": "Bump .NET to 10.0.5",
+        "month": "2026-03",
+        "disposition": "have",
+        "reason": "Bumps .NET to 10.0.5. Our Microsoft.Extensions.*, System.* and Npgsql references are at 10.0.11/10.0.3, ahead of the versions this moves to."
+      },
+      "0953e9c1984fb70a2d0bf09af1856909234aaf5c": {
+        "subject": "Bump github actions",
+        "month": "2026-03",
+        "disposition": "have",
+        "reason": "Bumps checkout to v6 and the artifact actions to v7/v8. We are already on actions/checkout@v7, actions/upload-artifact@v7 and actions/download-artifact@v8 across every workflow and composite action."
+      },
+      "6147a7bcaa419e7249969d221f9bb7d98f894383": {
+        "subject": "Update Repack specification tests for consistent call",
+        "month": "2026-03",
+        "disposition": "skip",
+        "reason": "Rewrites ten RepackSpecificationFixture calls from IsSatisfiedBy(x, null) to IsSatisfiedBy(x, new()) and collapses the assertion chains onto one line. Pure formatting -- no behaviour and no coverage change -- so it is churn against a fixture we would otherwise leave alone."
+      },
+      "5bde9242393b988d8b5f154b0b935f6289af9f6d": {
+        "subject": "New: Info icon for Quality Profiles that are in use",
+        "month": "2026-03",
+        "disposition": "skip",
+        "reason": "Splits useQualityProfileInUse into seriesCount/importListCount to drive a usage popover. Ours cannot produce the movie/performer/studio side of that count without fetching the whole library, which is exactly what GET /qualityprofile/{id}/inuse would fix -- already filed as Whisparr/Whisparr#1138. Blocked on that endpoint."
       }
     }
   }
