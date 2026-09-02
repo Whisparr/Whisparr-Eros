@@ -6,12 +6,19 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
+using Diacritical;
+using NzbDrone.Common.Globalization;
 
 namespace NzbDrone.Common.Extensions
 {
     public static class StringExtensions
     {
         private static readonly Regex CamelCaseRegex = new Regex("(?<!^)[A-Z]", RegexOptions.Compiled, RegexDefaults.Timeout);
+
+        static StringExtensions()
+        {
+            DiacriticMap.AddProviders(new AdditionalDiacriticsProvider());
+        }
 
         public static string NullSafe(this string target)
         {
@@ -62,6 +69,11 @@ namespace NzbDrone.Common.Extensions
             return text;
         }
 
+        // Decomposes to NFD and drops the combining marks, which reaches only the
+        // letters that decompose. `SlugParserFixture` asserts that the ones that
+        // do not -- ß, œ, ø -- fall out of a slug entirely, so this stays behind
+        // `ToUrlSlug`; everything that has to match a release title wants
+        // `RemoveDiacritics` instead.
         public static string RemoveAccent(this string text)
         {
             var normalizedString = text.Normalize(NormalizationForm.FormD);
@@ -77,6 +89,14 @@ namespace NzbDrone.Common.Extensions
             }
 
             return stringBuilder.ToString().Normalize(NormalizationForm.FormC);
+        }
+
+        // Transliterates rather than decomposes, so ø, ł, æ, ß and đ -- none of
+        // which are a base letter plus a mark -- reach the ASCII spelling a
+        // release actually uses.
+        public static string RemoveDiacritics(this string text)
+        {
+            return Diacritical.StringExtensions.RemoveDiacritics(text);
         }
 
         public static string TrimEnd(this string text, string postfix)
@@ -97,6 +117,20 @@ namespace NzbDrone.Common.Extensions
         public static string CleanSpaces(this string text)
         {
             return CollapseSpace.Replace(text, " ").Trim();
+        }
+
+        /// <summary>
+        /// Strips carriage returns and line feeds so a value that came from a request
+        /// body or a filename cannot forge extra lines when written to the log.
+        /// </summary>
+        public static string ForLog(this string text)
+        {
+            if (text == null)
+            {
+                return null;
+            }
+
+            return text.Replace("\r", string.Empty).Replace("\n", string.Empty);
         }
 
         public static bool IsNullOrWhiteSpace(this string text)

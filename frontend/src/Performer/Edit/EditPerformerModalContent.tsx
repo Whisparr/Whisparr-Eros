@@ -167,6 +167,7 @@ function EditPerformerModalContent({
                 className={styles.poster}
                 images={performer.images}
                 size={250}
+                title={performer.fullName}
               />
             </div>
           )}

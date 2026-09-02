@@ -80,5 +80,88 @@ namespace NzbDrone.Core.Test.Extras.Others
 
             results.Count.Should().Be(1);
         }
+
+        [Test]
+        [TestCase(@"audio_folder_1\Movie.Title.2022.mka", @"audio_folder_2\Movie.Title.2022.mka", "Movie Title - 2022.1.mka", "Movie Title - 2022.2.mka")]
+        public void should_import_all_files_with_same_name(string firstExtraFilePath, string secondExtraFilePath, string firstOutputPath, string secondOutputPath)
+        {
+            var files = new List<string>
+            {
+                Path.Combine(_releaseFolder, firstExtraFilePath).AsOsAgnostic(),
+                Path.Combine(_releaseFolder, secondExtraFilePath).AsOsAgnostic()
+            };
+
+            var results = Subject.ImportFiles(_localMovie, _movieFile, files, true).ToList();
+
+            results.Count.Should().Be(2);
+
+            results[0].RelativePath.AsOsAgnostic().PathEquals(firstOutputPath.AsOsAgnostic()).Should().Be(true);
+            results[1].RelativePath.AsOsAgnostic().PathEquals(secondOutputPath.AsOsAgnostic()).Should().Be(true);
+        }
+
+        [Test]
+        public void should_increment_suffix_for_each_duplicate_file()
+        {
+            var files = new List<string>
+            {
+                Path.Combine(_releaseFolder, @"audio_folder_1\Movie.Title.2022.mka").AsOsAgnostic(),
+                Path.Combine(_releaseFolder, @"audio_folder_2\Movie.Title.2022.mka").AsOsAgnostic(),
+                Path.Combine(_releaseFolder, @"audio_folder_3\Movie.Title.2022.mka").AsOsAgnostic(),
+            };
+
+            var results = Subject.ImportFiles(_localMovie, _movieFile, files, true).ToList();
+
+            results.Count.Should().Be(3);
+            results[0].RelativePath.AsOsAgnostic().PathEquals("Movie Title - 2022.1.mka".AsOsAgnostic()).Should().Be(true);
+            results[1].RelativePath.AsOsAgnostic().PathEquals("Movie Title - 2022.2.mka".AsOsAgnostic()).Should().Be(true);
+            results[2].RelativePath.AsOsAgnostic().PathEquals("Movie Title - 2022.3.mka".AsOsAgnostic()).Should().Be(true);
+        }
+
+        [Test]
+        public void should_suffix_files_matched_by_filename_prefix()
+        {
+            var files = new List<string>
+            {
+                Path.Combine(_releaseFolder, "Movie.Title.2022.behind_scenes.mka").AsOsAgnostic(),
+                Path.Combine(_releaseFolder, "Movie.Title.2022.commentary.mka").AsOsAgnostic(),
+            };
+
+            var results = Subject.ImportFiles(_localMovie, _movieFile, files, true).ToList();
+
+            results.Count.Should().Be(2);
+            results[0].RelativePath.AsOsAgnostic().PathEquals("Movie Title - 2022.1.mka".AsOsAgnostic()).Should().Be(true);
+            results[1].RelativePath.AsOsAgnostic().PathEquals("Movie Title - 2022.2.mka".AsOsAgnostic()).Should().Be(true);
+        }
+
+        [Test]
+        public void should_suffix_files_matched_by_both_filename_and_movie_info()
+        {
+            var files = new List<string>
+            {
+                Path.Combine(_releaseFolder, "Movie.Title.2022.behind_scenes.mka").AsOsAgnostic(),
+                Path.Combine(_releaseFolder, @"extras\Movie Title 2022.mka").AsOsAgnostic(),
+            };
+
+            var results = Subject.ImportFiles(_localMovie, _movieFile, files, true).ToList();
+
+            results.Count.Should().Be(2);
+            results[0].RelativePath.AsOsAgnostic().PathEquals("Movie Title - 2022.1.mka".AsOsAgnostic()).Should().Be(true);
+            results[1].RelativePath.AsOsAgnostic().PathEquals("Movie Title - 2022.2.mka".AsOsAgnostic()).Should().Be(true);
+        }
+
+        [Test]
+        public void should_not_suffix_when_other_files_do_not_match_movie()
+        {
+            var files = new List<string>
+            {
+                Path.Combine(_releaseFolder, "Movie.Title.2022.mka").AsOsAgnostic(),
+                Path.Combine(_releaseFolder, "Other.Movie.2019.mka").AsOsAgnostic(),
+            };
+
+            var results = Subject.ImportFiles(_localMovie, _movieFile, files, true).ToList();
+
+            results.Count.Should().Be(1);
+            results[0].RelativePath.AsOsAgnostic().PathEquals("Movie Title - 2022.mka".AsOsAgnostic()).Should().Be(true);
+        }
     }
 }

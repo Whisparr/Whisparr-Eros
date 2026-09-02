@@ -193,6 +193,7 @@ function MovieIndexPoster(props: Readonly<MovieIndexPosterProps>) {
             name={icons.REFRESH}
             title={translate('RefreshMovie')}
             isSpinning={isRefreshingMovie}
+            tabIndex={-1}
             onPress={onRefreshPress}
           />
 
@@ -202,6 +203,7 @@ function MovieIndexPoster(props: Readonly<MovieIndexPosterProps>) {
               name={icons.SEARCH}
               title={translate('SearchForMovie')}
               isSpinning={isSearchingMovie}
+              tabIndex={-1}
               onPress={onSearchPress}
             />
           ) : null}
@@ -209,6 +211,7 @@ function MovieIndexPoster(props: Readonly<MovieIndexPosterProps>) {
           <IconButton
             name={icons.EDIT}
             title={translate('EditMovie')}
+            tabIndex={-1}
             onPress={onEditMoviePress}
           />
 
@@ -240,6 +243,7 @@ function MovieIndexPoster(props: Readonly<MovieIndexPosterProps>) {
             size={250}
             lazy={true}
             overflow={true}
+            title={title}
             onError={onPosterLoadError}
             onLoad={onPosterLoad}
           />

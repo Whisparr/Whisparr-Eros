@@ -310,6 +310,7 @@ function QueueRow(props: QueueRowProps) {
               {showInteractiveImport ? (
                 <IconButton
                   name={icons.INTERACTIVE}
+                  aria-label={translate('ManualImport')}
                   onPress={handleInteractiveImportPress}
                 />
               ) : null}
@@ -349,6 +350,7 @@ function QueueRow(props: QueueRowProps) {
         canChangeCategory={!!downloadClientHasPostImportCategory}
         canIgnore={!!movie}
         isPending={isPending}
+        downloadClient={downloadClient}
         onRemovePress={handleRemoveQueueItemModalConfirmed}
         onModalClose={handleRemoveQueueItemModalClose}
       />

@@ -250,7 +250,11 @@ const editionTokens = [
 
 const customFormatTokens = [
   { token: '{Custom Formats}', example: 'Surround Sound x264' },
-  { token: '{Custom Format:FormatName}', example: 'AMZN' },
+  {
+    token: '{Custom Format:FormatName}',
+    example: 'Surround Sound',
+    footNote: true,
+  },
 ];
 
 const originalTokens = [
@@ -601,18 +605,24 @@ function NamingModal(props: NamingModalProps) {
 
               <FieldSet legend={translate('CustomFormats')}>
                 <div className={styles.groups}>
-                  {customFormatTokens.map(({ token, example }) => {
+                  {customFormatTokens.map(({ token, example, footNote }) => {
                     return (
                       <NamingOption
                         key={token}
                         token={token}
                         example={example}
+                        footNote={footNote}
                         tokenSeparator={tokenSeparator}
                         tokenCase={tokenCase}
                         onPress={handleOptionPress}
                       />
                     );
                   })}
+                </div>
+
+                <div className={styles.footNote}>
+                  <Icon className={styles.icon} name={icons.FOOTNOTE} />
+                  <InlineMarkdown data={translate('CustomFormatFootNote')} />
                 </div>
               </FieldSet>
 

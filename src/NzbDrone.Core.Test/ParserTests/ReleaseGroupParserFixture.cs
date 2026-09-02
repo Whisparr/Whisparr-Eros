@@ -186,6 +186,21 @@ namespace NzbDrone.Core.Test.ParserTests
             Parser.ReleaseGroupParser.ParseReleaseGroup(title).Should().BeNull();
         }
 
+        [TestCase("Studio Name 26 09 01 Performer Name 1080p WEB x265 EAC3 -Hveðrungr", "Hveðrungr")]
+        [TestCase("Studio Name 26 09 01 Performer Name 1080p BD x265 Opus AAC -Báleygr", "Báleygr")]
+        public void should_parse_non_ascii_release_group(string title, string expected)
+        {
+            Parser.ReleaseGroupParser.ParseReleaseGroup(title).Should().Be(expected);
+        }
+
+        [TestCase("Studio Name (2026) - 26.09.01 - Hart-Shaped Scene [SDTV][AAC 2.0][x264]")]
+        [TestCase("Studio Name (2026) - 26.09.01 - Hart-Shaped Scene [HDTV-480p][AAC 2.0][x264]")]
+        [TestCase("Studio Name (2026) - 26.09.01 - Hart-Shaped Scene [480p-HDTV][AAC 2.0][x264]")]
+        public void should_not_parse_scene_title_containing_a_dash_as_release_group(string title)
+        {
+            Parser.ReleaseGroupParser.ParseReleaseGroup(title).Should().BeNull();
+        }
+
         [TestCase("[Deeper] Key Mistress - Jessi Rae - 2025-12-18 - 1080p")]
         [TestCase("[BellesaFilms] The Sister - Ashley Lane, Mannie Coco (2025-09-28) [2160p]")]
         [TestCase("[Blacked] - 2025-11-24 - BBC-Queen Violet Takes On Three Cocks - Violet Myers - 1080p")]

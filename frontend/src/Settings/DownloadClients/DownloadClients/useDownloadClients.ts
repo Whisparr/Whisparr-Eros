@@ -87,7 +87,7 @@ export const useManageDownloadClient = (
 
   // Same query key as the lookup inside `useSelectedSchema`, so this reads the
   // one request rather than making a second.
-  const { isSchemaFetching, isSchemaFetched, schemaError } =
+  const { isSchemaLoading, isSchemaFetched, schemaError } =
     useDownloadClientSchema(isAdding);
 
   const defaultDownloadClient = useMemo(() => {
@@ -113,7 +113,7 @@ export const useManageDownloadClient = (
 
     // Only the add-from-schema case has anything to wait for; an edit comes
     // from the list the page already loaded.
-    isFetching: isAdding && isSchemaFetching,
+    isFetching: isAdding && isSchemaLoading,
     isFetched: isAdding ? isSchemaFetched : true,
     error: isAdding ? schemaError : null,
   };

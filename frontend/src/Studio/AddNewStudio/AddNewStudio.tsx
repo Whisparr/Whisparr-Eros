@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import Alert from 'Components/Alert';
 import TextInput from 'Components/Form/TextInput';
 import Icon from 'Components/Icon';
@@ -28,6 +28,7 @@ function AddNewStudio(props: AddNewStudioProps) {
   } = useAddNewStudio();
 
   const [term, setTerm] = useState(props.term || '');
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
     if (props.term && props.term !== term) {
@@ -52,6 +53,7 @@ function AddNewStudio(props: AddNewStudioProps) {
   const onClearPress = useCallback(() => {
     setTerm('');
     onClearStudioLookupPress();
+    searchInputRef.current?.focus();
   }, [onClearStudioLookupPress]);
 
   return (
@@ -63,6 +65,7 @@ function AddNewStudio(props: AddNewStudioProps) {
           </div>
 
           <TextInput
+            ref={searchInputRef}
             className={styles.searchInput}
             name="studioLookup"
             value={term}

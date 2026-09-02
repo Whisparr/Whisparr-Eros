@@ -34,7 +34,7 @@ namespace NzbDrone.Core.IndexerSearch.Definitions
 
             // remove any repeating +s
             cleanTitle = Regex.Replace(cleanTitle, @"\+{2,}", "+", RegexOptions.None, RegexDefaults.Timeout);
-            cleanTitle = cleanTitle.RemoveAccent();
+            cleanTitle = cleanTitle.RemoveDiacritics();
             return cleanTitle.Trim('+', ' ');
         }
     }

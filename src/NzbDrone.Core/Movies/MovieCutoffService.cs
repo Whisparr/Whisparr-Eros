@@ -10,7 +10,7 @@ namespace NzbDrone.Core.Movies
 {
     public interface IMovieCutoffService
     {
-        PagingSpec<Movie> MoviesWhereCutoffUnmet(PagingSpec<Movie> pagingSpec);
+        PagingSpec<Movie> MoviesWhereCutoffUnmet(PagingSpec<Movie> pagingSpec, HashSet<int> movieTags = null, List<int> quality = null);
     }
 
     public class MovieCutoffService : IMovieCutoffService
@@ -24,7 +24,7 @@ namespace NzbDrone.Core.Movies
             _qualityProfileService = qualityProfileService;
         }
 
-        public PagingSpec<Movie> MoviesWhereCutoffUnmet(PagingSpec<Movie> pagingSpec)
+        public PagingSpec<Movie> MoviesWhereCutoffUnmet(PagingSpec<Movie> pagingSpec, HashSet<int> movieTags = null, List<int> quality = null)
         {
             var qualitiesBelowCutoff = new List<QualitiesBelowCutoff>();
             var profiles = _qualityProfileService.All();
@@ -49,7 +49,7 @@ namespace NzbDrone.Core.Movies
                 return pagingSpec;
             }
 
-            return _movieRepository.MoviesWhereCutoffUnmet(pagingSpec, qualitiesBelowCutoff);
+            return _movieRepository.MoviesWhereCutoffUnmet(pagingSpec, qualitiesBelowCutoff, movieTags, quality);
         }
     }
 }

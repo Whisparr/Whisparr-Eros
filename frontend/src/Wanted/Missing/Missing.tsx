@@ -16,6 +16,7 @@ import TableBody from 'Components/Table/TableBody';
 import TableOptionsModalWrapper from 'Components/Table/TableOptions/TableOptionsModalWrapper';
 import TablePager from 'Components/Table/TablePager';
 import { Filter as AppStateFilter } from 'Filters/Filter';
+import { useCustomFiltersList } from 'Filters/useCustomFilters';
 import useSelectState from 'Helpers/Hooks/useSelectState';
 import { align, icons, kinds } from 'Helpers/Props';
 import { SortDirection } from 'Helpers/Props/sortDirections';
@@ -26,7 +27,9 @@ import { TableOptionsChangePayload } from 'typings/Table';
 import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
 import getMonitoredValue from 'Wanted/getMonitoredValue';
+import toWantedSearchCommandBody from 'Wanted/toWantedSearchCommandBody';
 import useToggleMoviesMonitored from 'Wanted/useToggleMoviesMonitored';
+import MissingFilterModal from './MissingFilterModal';
 import {
   setMissingOption,
   setMissingOptions,
@@ -38,6 +41,7 @@ import useMissing, { FILTERS } from './useMissing';
 
 function Missing() {
   const executeCommand = useExecuteCommand();
+  const customFilters = useCustomFiltersList('wanted.missing');
 
   const { columns, pageSize, selectedFilterKey, sortKey, sortDirection } =
     useMissingOptions();
@@ -123,14 +127,14 @@ function Missing() {
 
   const handleSearchAllMissingConfirmed = useCallback(() => {
     executeCommand({
-      name: commandNames.MISSING_MOVIES_SEARCH,
+      ...toWantedSearchCommandBody(commandNames.MISSING_MOVIES_SEARCH, filters),
       commandFinished: () => {
         refetch();
       },
     });
 
     setIsConfirmSearchAllModalOpen(false);
-  }, [refetch, executeCommand]);
+  }, [filters, refetch, executeCommand]);
 
   const handleToggleSelectedPress = useCallback(() => {
     toggleMoviesMonitored({
@@ -246,7 +250,8 @@ function Missing() {
             alignMenu={align.RIGHT}
             selectedFilterKey={selectedFilterKey}
             filters={FILTERS as unknown as AppStateFilter[]}
-            customFilters={[]}
+            customFilters={customFilters}
+            filterModalConnectorComponent={MissingFilterModal}
             onFilterSelect={handleFilterSelect}
           />
         </PageToolbarSection>

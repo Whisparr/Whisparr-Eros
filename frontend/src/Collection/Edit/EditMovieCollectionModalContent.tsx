@@ -156,6 +156,7 @@ function EditMovieCollectionModalContent({
                 className={styles.poster}
                 images={collection.images}
                 size={250}
+                title={collection.title}
               />
             </div>
           )}

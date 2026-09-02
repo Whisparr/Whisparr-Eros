@@ -168,7 +168,7 @@ namespace NzbDrone.Core.Parser
             new Regex(@"[\[\(\{](?<code>[A-Z]{2,5}[- _.][0-9]{3,5})[\]\)\}]", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout),
 
             // Final check that it is a video
-            new Regex(@"^(?<title>.+?)?(480|540|576|720|1080|2160)p", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout),
+            new Regex(@"^(?<title>.+?)?(480|540|576|720|1080|1440|2160)p", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout),
         };
 
         private static readonly Regex[] ReportTitleFolderRegex = new[]
@@ -224,11 +224,11 @@ namespace NzbDrone.Core.Parser
         private static readonly Regex ReportImdbId = new Regex(@"(?<imdbid>tt\d{7,8})", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout);
         private static readonly Regex ReportTmdbId = new Regex(@"tmdb(id)?-(?<tmdbid>\d+)", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout);
 
-        private static readonly RegexReplace SimpleTitleRegex = new RegexReplace(@"(?:(480|540|576|720|1080|2160)[ip]|[xh][\W_]?26[45]|DD\W?5\W1|[<>?*]|848x480|1280x720|1920x1080|3840x2160|4096x2160|(8|10)b(it)?|10-bit)\s*?(?![a-b0-9])",
+        private static readonly RegexReplace SimpleTitleRegex = new RegexReplace(@"(?:(480|540|576|720|1080|1440|2160)[ip]|[xh][\W_]?26[45]|DD\W?5\W1|[<>?*]|848x480|1280x720|1920x1080|3840x2160|4096x2160|(8|10)b(it)?|10-bit)\s*?(?![a-b0-9])",
                                                                 string.Empty,
                                                                 RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-        private static readonly Regex SpecialEpisodeTitleRegex = new Regex(@"(?<episodetitle>.+?)(?:\[.*(?:480p|720p|1080p|2160p|HDTV|WEB|WEBRip|WEB-?DL).*\]|[. ]XXX[. ](?:480p|720p|1080p|2160p|HDTV|WEB|WEBRip|WEB-?DL).*|(?:480p|720p|1080p|2160p|HDTV|WEB|WEBRip|WEB-?DL)|$)",
+        private static readonly Regex SpecialEpisodeTitleRegex = new Regex(@"(?<episodetitle>.+?)(?:\[.*(?:480p|720p|1080p|1440p|2160p|HDTV|WEB|WEBRip|WEB-?DL).*\]|[. ]XXX[. ](?:480p|720p|1080p|1440p|2160p|HDTV|WEB|WEBRip|WEB-?DL).*|(?:480p|720p|1080p|1440p|2160p|HDTV|WEB|WEBRip|WEB-?DL)|$)",
                           RegexOptions.Compiled,
                           RegexDefaults.Timeout);
 
@@ -645,7 +645,7 @@ namespace NzbDrone.Core.Parser
                 return title;
             }
 
-            return ReplaceGermanUmlauts(NormalizeRegex.Replace(title, string.Empty).ToLowerInvariant()).RemoveAccent();
+            return ReplaceGermanUmlauts(NormalizeRegex.Replace(title, string.Empty).ToLowerInvariant()).RemoveDiacritics();
         }
 
         public static string CleanEpisodeTitle(this string title)

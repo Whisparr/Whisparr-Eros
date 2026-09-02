@@ -15,6 +15,27 @@ interface GetRelativeDateOptions {
   ignoreTimezone?: boolean;
 }
 
+function getDayOfWeek(dayNumber: number) {
+  switch (dayNumber) {
+    case 0:
+      return translate('Sunday');
+    case 1:
+      return translate('Monday');
+    case 2:
+      return translate('Tuesday');
+    case 3:
+      return translate('Wednesday');
+    case 4:
+      return translate('Thursday');
+    case 5:
+      return translate('Friday');
+    case 6:
+      return translate('Saturday');
+    default:
+      return '';
+  }
+}
+
 function getRelativeDate({
   date,
   shortDateFormat,
@@ -107,7 +128,7 @@ function getRelativeDate({
 
   const diffDays = m.startOf('day').diff(now.startOf('day'), 'days');
   if (diffDays > 0 && diffDays <= 7) {
-    const day = m.format('dddd');
+    const day = getDayOfWeek(m.day());
     return includeTime ? translate('DayOfWeekAt', { day, time }) : day;
   }
 

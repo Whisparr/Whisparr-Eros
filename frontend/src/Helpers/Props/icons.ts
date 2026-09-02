@@ -42,6 +42,7 @@ import {
   faCalculator as fasCalculator,
   faCalendarAlt as fasCalendarAlt,
   faCaretDown as fasCaretDown,
+  faChartPie as fasChartPie,
   faCheck as fasCheck,
   faCheckCircle as fasCheckCircle,
   faChevronCircleDown as fasChevronCircleDown,
@@ -148,6 +149,7 @@ export const CAKE = faBirthdayCake;
 export const CALENDAR = fasCalendarAlt;
 export const CALENDAR_O = farCalendar;
 export const CARET_DOWN = fasCaretDown;
+export const CHART = fasChartPie;
 export const CHECK = fasCheck;
 export const CHECK_INDETERMINATE = fasMinus;
 export const CHECK_CIRCLE = fasCheckCircle;

@@ -184,13 +184,19 @@ class UnmappedFilesTableRow extends Component<
           if (name === 'actions') {
             return (
               <VirtualTableRowCell key={name} className={cellClass}>
-                <IconButton name={icons.INFO} onPress={this.onDetailsPress} />
+                <IconButton
+                  name={icons.INFO}
+                  aria-label={translate('Details')}
+                  onPress={this.onDetailsPress}
+                />
                 <IconButton
                   name={icons.INTERACTIVE}
+                  aria-label={translate('ManualImport')}
                   onPress={this.onInteractiveImportPress}
                 />
                 <IconButton
                   name={icons.DELETE}
+                  aria-label={translate('Delete')}
                   onPress={this.onDeleteFilePress}
                 />
               </VirtualTableRowCell>

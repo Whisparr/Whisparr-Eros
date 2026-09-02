@@ -8,6 +8,7 @@ import VirtualTableSelectAllHeaderCell from 'Components/Table/VirtualTableSelect
 import { icons } from 'Helpers/Props';
 import { SortDirection } from 'Helpers/Props/sortDirections';
 import { TableOptionsChangePayload } from 'typings/Table';
+import translate from 'Utilities/String/translate';
 import styles from './UnmappedFilesTableHeader.css';
 
 export interface UnmappedFilesTableHeaderProps {
@@ -63,7 +64,10 @@ function UnmappedFilesTableHeader({
                 columns={columns}
                 onTableOptionChange={onTableOptionChange}
               >
-                <IconButton name={icons.ADVANCED_SETTINGS} />
+                <IconButton
+                  name={icons.ADVANCED_SETTINGS}
+                  aria-label={translate('TableOptionsButton')}
+                />
               </TableOptionsModalWrapper>
             </VirtualTableHeaderCell>
           );

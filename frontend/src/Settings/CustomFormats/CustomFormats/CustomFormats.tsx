@@ -55,7 +55,11 @@ export default function CustomFormats() {
             );
           })}
 
-          <Card className={styles.addCustomFormat} onPress={handleAddPress}>
+          <Card
+            className={styles.addCustomFormat}
+            aria-label={translate('AddCustomFormat')}
+            onPress={handleAddPress}
+          >
             <div className={styles.center}>
               <Icon name={icons.ADD} size={45} />
             </div>

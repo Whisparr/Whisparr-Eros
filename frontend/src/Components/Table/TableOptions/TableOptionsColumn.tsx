@@ -3,7 +3,7 @@ import React from 'react';
 import { ConnectDragSource } from 'react-dnd';
 import CheckInput from 'Components/Form/CheckInput';
 import Icon from 'Components/Icon';
-import Column from 'Components/Table/Column';
+import Column, { IsModifiable } from 'Components/Table/Column';
 import { icons } from 'Helpers/Props';
 import { CheckInputChanged } from 'typings/inputs';
 import styles from './TableOptionsColumn.css';
@@ -12,7 +12,7 @@ export interface TableOptionsColumnProps {
   name: string;
   label: Column['label'];
   isVisible: boolean;
-  isModifiable: boolean;
+  isModifiable: IsModifiable;
   isDragging?: boolean;
   // The drag preview renders the column without a drag handle to connect.
   connectDragSource?: ConnectDragSource;
@@ -28,8 +28,10 @@ function TableOptionsColumn({
   connectDragSource,
   onVisibleChange,
 }: Readonly<TableOptionsColumnProps>) {
+  const isDraggable = isModifiable !== 'disabled';
+
   return (
-    <div className={isModifiable ? undefined : styles.notDragable}>
+    <div className={isDraggable ? undefined : styles.notDragable}>
       <div
         className={classNames(styles.column, isDragging && styles.isDragging)}
       >
@@ -38,13 +40,14 @@ function TableOptionsColumn({
             containerClassName={styles.checkContainer}
             name={name}
             value={isVisible}
-            isDisabled={isModifiable === false}
+            isDisabled={isModifiable !== 'enabled'}
             onChange={onVisibleChange}
           />
           {typeof label === 'function' ? label() : label}
         </label>
 
-        {!!connectDragSource &&
+        {isDraggable &&
+          !!connectDragSource &&
           connectDragSource(
             <div className={styles.dragHandle}>
               <Icon className={styles.dragIcon} name={icons.REORDER} />
