@@ -30,7 +30,7 @@ namespace NzbDrone.Core.Movies.Studios
         public DateTime Added { get; set; }
         public bool Monitored { get; set; }
         public bool MoviesMonitored { get; set; }
-        public bool MonitorNewItems { get; set; } = true;
+        public bool WhisparrMonitorNewItems { get; set; } = true;
         public StudioStatus Status { get; set; }
         public DateTime? AfterDate { get; set; }
         public int QualityProfileId { get; set; }
@@ -51,7 +51,7 @@ namespace NzbDrone.Core.Movies.Studios
             SearchOnAdd = otherStudio.SearchOnAdd;
             Monitored = otherStudio.Monitored;
             MoviesMonitored = otherStudio.MoviesMonitored;
-            MonitorNewItems = otherStudio.MonitorNewItems;
+            WhisparrMonitorNewItems = otherStudio.WhisparrMonitorNewItems;
             Status = otherStudio.Status;
             AfterDate = otherStudio.AfterDate;
             RootFolderPath = otherStudio.RootFolderPath;

@@ -33,7 +33,7 @@ interface MovieCollection extends ModelBase {
   images: Image[];
   overview: string;
   monitored: boolean;
-  monitorNewItems: boolean;
+  whisparrMonitorNewItems: boolean;
   rootFolderPath: string;
   qualityProfileId: number;
   searchOnAdd: boolean;

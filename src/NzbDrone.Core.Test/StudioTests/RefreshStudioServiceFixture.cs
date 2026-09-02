@@ -95,7 +95,7 @@ namespace NzbDrone.Core.Test.StudioTests
                 .With(s => s.Monitored = true)
                 .With(s => s.MoviesMonitored = true)
                 .With(s => s.SearchOnAdd = true)
-                .With(s => s.MonitorNewItems = monitorNewItems)
+                .With(s => s.WhisparrMonitorNewItems = monitorNewItems)
                 .Build();
 
             Mocker.GetMock<IStudioService>()
@@ -121,7 +121,7 @@ namespace NzbDrone.Core.Test.StudioTests
         private void GivenGlobalNewItemMonitoring(bool enabled)
         {
             Mocker.GetMock<IConfigService>()
-                .Setup(s => s.EnableNewItemMonitoring)
+                .Setup(s => s.WhisparrMonitorNewItems)
                 .Returns(enabled);
         }
 
@@ -350,7 +350,7 @@ namespace NzbDrone.Core.Test.StudioTests
         [Test]
         public void should_default_monitor_new_items_to_true_for_new_studios()
         {
-            new Studio().MonitorNewItems.Should().BeTrue();
+            new Studio().WhisparrMonitorNewItems.Should().BeTrue();
         }
 
         [Test]

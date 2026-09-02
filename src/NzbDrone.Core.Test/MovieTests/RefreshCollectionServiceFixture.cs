@@ -29,7 +29,7 @@ namespace NzbDrone.Core.Test.MovieTests
                 CleanTitle = "collectionwithmovies",
                 Monitored = true,
                 SearchOnAdd = true,
-                MonitorNewItems = monitorNewItems,
+                WhisparrMonitorNewItems = monitorNewItems,
                 QualityProfileId = 1,
                 RootFolderPath = "/movies"
             };
@@ -84,7 +84,7 @@ namespace NzbDrone.Core.Test.MovieTests
         private void GivenGlobalNewItemMonitoring(bool enabled)
         {
             Mocker.GetMock<IConfigService>()
-                .Setup(s => s.EnableNewItemMonitoring)
+                .Setup(s => s.WhisparrMonitorNewItems)
                 .Returns(enabled);
         }
 
@@ -171,7 +171,7 @@ namespace NzbDrone.Core.Test.MovieTests
         [Test]
         public void should_default_monitor_new_items_to_true_for_new_collections()
         {
-            new MovieCollection().MonitorNewItems.Should().BeTrue();
+            new MovieCollection().WhisparrMonitorNewItems.Should().BeTrue();
         }
     }
 }

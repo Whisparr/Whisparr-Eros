@@ -51,26 +51,26 @@ namespace NzbDrone.Core.Test.Configuration
         }
 
         [Test]
-        public void should_default_enable_new_item_monitoring_to_true()
+        public void should_default_whisparr_monitor_new_items_to_true()
         {
-            Subject.EnableNewItemMonitoring.Should().BeTrue();
+            Subject.WhisparrMonitorNewItems.Should().BeTrue();
         }
 
         [Test]
-        public void should_persist_and_read_back_disabled_enable_new_item_monitoring()
+        public void should_persist_and_read_back_disabled_whisparr_monitor_new_items()
         {
-            Subject.EnableNewItemMonitoring = false;
+            Subject.WhisparrMonitorNewItems = false;
 
-            AssertUpsert("EnableNewItemMonitoring", false);
+            AssertUpsert("WhisparrMonitorNewItems", false);
 
             Mocker.GetMock<IConfigRepository>()
                   .Setup(c => c.All())
                   .Returns(new List<Config>
                   {
-                      new Config { Id = 1, Key = "EnableNewItemMonitoring", Value = "False" }
+                      new Config { Id = 1, Key = "WhisparrMonitorNewItems", Value = "False" }
                   });
 
-            Subject.EnableNewItemMonitoring.Should().BeFalse();
+            Subject.WhisparrMonitorNewItems.Should().BeFalse();
         }
 
         private void AssertUpsert(string key, object value)

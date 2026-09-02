@@ -148,7 +148,7 @@ namespace NzbDrone.Core.Test.PerformerTests
                 .With(p => p.Monitored = true)
                 .With(p => p.MoviesMonitored = true)
                 .With(p => p.SearchOnAdd = true)
-                .With(p => p.MonitorNewItems = monitorNewItems)
+                .With(p => p.WhisparrMonitorNewItems = monitorNewItems)
                 .With(p => p.MergedIntoId = null)
                 .Build();
 
@@ -183,7 +183,7 @@ namespace NzbDrone.Core.Test.PerformerTests
         private void GivenGlobalNewItemMonitoring(bool enabled)
         {
             Mocker.GetMock<IConfigService>()
-                .Setup(s => s.EnableNewItemMonitoring)
+                .Setup(s => s.WhisparrMonitorNewItems)
                 .Returns(enabled);
         }
 
@@ -412,7 +412,7 @@ namespace NzbDrone.Core.Test.PerformerTests
         [Test]
         public void should_default_monitor_new_items_to_true_for_new_performers()
         {
-            new Performer().MonitorNewItems.Should().BeTrue();
+            new Performer().WhisparrMonitorNewItems.Should().BeTrue();
         }
 
         // The scheduled refresh takes the other branch of Execute, which walks

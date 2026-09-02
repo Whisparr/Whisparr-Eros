@@ -130,7 +130,7 @@ namespace NzbDrone.Core.Movies.Performers
                     {
                         ForeignId = performerInfo.MergedIntoId,
                         Monitored = performer.Monitored,
-                        MonitorNewItems = performer.MonitorNewItems,
+                        WhisparrMonitorNewItems = performer.WhisparrMonitorNewItems,
                         QualityProfileId = performer.QualityProfileId,
                         RootFolderPath = performer.RootFolderPath,
                         SearchOnAdd = performer.SearchOnAdd,
@@ -162,7 +162,7 @@ namespace NzbDrone.Core.Movies.Performers
             // The global master switch overrides the performer's own setting, so
             // turning it off leaves discovery intact but adds works unmonitored
             // and without a search on add.
-            var monitorNewItems = _configService.EnableNewItemMonitoring && performer.MonitorNewItems;
+            var monitorNewItems = _configService.WhisparrMonitorNewItems && performer.WhisparrMonitorNewItems;
 
             (List<string> StashdbIds, List<string> TpdbIds, List<int> TmdbIds) performerWork;
 

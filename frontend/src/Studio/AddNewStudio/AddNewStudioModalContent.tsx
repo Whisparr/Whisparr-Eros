@@ -108,13 +108,12 @@ function AddNewStudioModalContent(props: AddNewStudioModalContentProps) {
               </FormGroup>
 
               <FormGroup>
-                <FormLabel>{translate('MonitorNewItems')}</FormLabel>
+                <FormLabel>{translate('WhisparrMonitorNewItems')}</FormLabel>
                 <FormInputGroup
                   type={inputTypes.CHECK}
-                  name="monitorNewItems"
-                  helpText={translate('MonitorNewItemsEntityHelpText')}
-                  {...settings.monitorNewItems}
-                  errors={settings.monitorNewItems?.errors}
+                  name="whisparrMonitorNewItems"
+                  helpText={translate('WhisparrMonitorNewItemsEntityHelpText')}
+                  {...settings.whisparrMonitorNewItems}
                   onChange={onInputChange}
                 />
               </FormGroup>

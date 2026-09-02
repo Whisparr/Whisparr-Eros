@@ -8,9 +8,9 @@ namespace NzbDrone.Core.Datastore.Migration
     {
         protected override void MainDbUpgrade()
         {
-            Alter.Table("Performers").AddColumn("MonitorNewItems").AsBoolean().NotNullable().WithDefaultValue(true);
-            Alter.Table("Studios").AddColumn("MonitorNewItems").AsBoolean().NotNullable().WithDefaultValue(true);
-            Alter.Table("Collections").AddColumn("MonitorNewItems").AsBoolean().NotNullable().WithDefaultValue(true);
+            Alter.Table("Performers").AddColumn("WhisparrMonitorNewItems").AsBoolean().NotNullable().WithDefaultValue(true);
+            Alter.Table("Studios").AddColumn("WhisparrMonitorNewItems").AsBoolean().NotNullable().WithDefaultValue(true);
+            Alter.Table("Collections").AddColumn("WhisparrMonitorNewItems").AsBoolean().NotNullable().WithDefaultValue(true);
         }
     }
 }

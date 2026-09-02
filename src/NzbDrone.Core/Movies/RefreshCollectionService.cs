@@ -132,7 +132,7 @@ namespace NzbDrone.Core.Movies
                 // The global master switch overrides the collection's own
                 // setting, so turning it off leaves discovery intact but adds
                 // movies unmonitored and without a search on add.
-                var monitorNewItems = _configService.EnableNewItemMonitoring && collection.MonitorNewItems;
+                var monitorNewItems = _configService.WhisparrMonitorNewItems && collection.WhisparrMonitorNewItems;
 
                 var collectionMovies = _movieMetadataService
                     .GetMoviesByCollectionTmdbId(collection.TmdbId)

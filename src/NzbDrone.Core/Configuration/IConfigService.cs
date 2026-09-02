@@ -42,7 +42,6 @@ namespace NzbDrone.Core.Configuration
         string ExtraFileExtensions { get; set; }
         RescanAfterRefreshType RescanAfterRefresh { get; set; }
         bool AutoRenameFolders { get; set; }
-        bool EnableNewItemMonitoring { get; set; }
 
         // Permissions (Media Management)
         bool SetPermissionsLinux { get; set; }
@@ -123,6 +122,7 @@ namespace NzbDrone.Core.Configuration
         bool WhisparrCacheStudioAPI { get; }
         bool WhisparrCorruptFileDetection { get; }
         int WhisparrFuzzyTitleMatchingThreshold { get; }
+        bool WhisparrMonitorNewItems { get; set; }
         MovieMetadataType WhisparrMovieMetadataSource { get; }
         bool WhisparrValidateRuntime { get; }
         int WhisparrValidateRuntimeLimit { get; }

@@ -16,7 +16,6 @@ namespace Whisparr.Api.V3.Config
         public FileDateType FileDate { get; set; }
         public RescanAfterRefreshType RescanAfterRefresh { get; set; }
         public bool AutoRenameFolders { get; set; }
-        public bool EnableNewItemMonitoring { get; set; }
         public bool PathsDefaultStatic { get; set; }
 
         public bool SetPermissionsLinux { get; set; }
@@ -50,7 +49,6 @@ namespace Whisparr.Api.V3.Config
                 FileDate = model.FileDate,
                 RescanAfterRefresh = model.RescanAfterRefresh,
                 AutoRenameFolders = model.AutoRenameFolders,
-                EnableNewItemMonitoring = model.EnableNewItemMonitoring,
 
                 SetPermissionsLinux = model.SetPermissionsLinux,
                 ChmodFolder = model.ChmodFolder,

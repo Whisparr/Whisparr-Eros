@@ -28,6 +28,7 @@ function WhisparrSettings({
     whisparrCacheStudioAPI,
     whisparrCorruptFileDetection,
     whisparrFuzzyTitleMatchingThreshold,
+    whisparrMonitorNewItems,
     whisparrMovieMetadataSource,
     whisparrValidateRuntime,
     whisparrValidateRuntimeLimit,
@@ -157,6 +158,18 @@ function WhisparrSettings({
           helpText={translate('WhisparrValidateRuntimeLimitHelpText')}
           onChange={onInputChange}
           {...whisparrValidateRuntimeLimit}
+        />
+      </FormGroup>
+
+      <FormGroup>
+        <FormLabel>{translate('WhisparrMonitorNewItems')}</FormLabel>
+
+        <FormInputGroup
+          type={inputTypes.CHECK}
+          name="whisparrMonitorNewItems"
+          helpText={translate('WhisparrMonitorNewItemsHelpText')}
+          onChange={onInputChange}
+          {...whisparrMonitorNewItems}
         />
       </FormGroup>
 

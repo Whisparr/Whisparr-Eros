@@ -17,13 +17,13 @@ namespace NzbDrone.Api.Test.v3.Collections
                 Id = 1,
                 TmdbId = 100,
                 Title = "Some Collection",
-                MonitorNewItems = monitorNewItems
+                WhisparrMonitorNewItems = monitorNewItems
             };
 
             var resource = model.ToResource();
 
-            resource.MonitorNewItems.Should().Be(monitorNewItems);
-            resource.ToModel().MonitorNewItems.Should().Be(monitorNewItems);
+            resource.WhisparrMonitorNewItems.Should().Be(monitorNewItems);
+            resource.ToModel().WhisparrMonitorNewItems.Should().Be(monitorNewItems);
         }
 
         [TestCase(true)]
@@ -35,13 +35,13 @@ namespace NzbDrone.Api.Test.v3.Collections
                 Id = 1,
                 TmdbId = 100,
                 Title = "Some Collection",
-                MonitorNewItems = !monitorNewItems
+                WhisparrMonitorNewItems = !monitorNewItems
             };
 
             var resource = existing.ToResource();
-            resource.MonitorNewItems = monitorNewItems;
+            resource.WhisparrMonitorNewItems = monitorNewItems;
 
-            resource.ToModel(existing).MonitorNewItems.Should().Be(monitorNewItems);
+            resource.ToModel(existing).WhisparrMonitorNewItems.Should().Be(monitorNewItems);
         }
     }
 }

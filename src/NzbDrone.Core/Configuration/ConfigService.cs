@@ -350,11 +350,11 @@ namespace NzbDrone.Core.Configuration
             set { SetValue("RescanAfterRefresh", value); }
         }
 
-        public bool EnableNewItemMonitoring
+        public bool WhisparrMonitorNewItems
         {
-            get { return GetValueBoolean("EnableNewItemMonitoring", true); }
+            get { return GetValueBoolean("WhisparrMonitorNewItems", true); }
 
-            set { SetValue("EnableNewItemMonitoring", value); }
+            set { SetValue("WhisparrMonitorNewItems", value); }
         }
 
         public bool SetPermissionsLinux

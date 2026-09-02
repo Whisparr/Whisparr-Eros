@@ -112,7 +112,7 @@ namespace NzbDrone.Core.Movies.Studios
             // The global master switch overrides the studio's own setting, so
             // turning it off leaves discovery intact but adds works unmonitored
             // and without a search on add.
-            var monitorNewItems = _configService.EnableNewItemMonitoring && studio.MonitorNewItems;
+            var monitorNewItems = _configService.WhisparrMonitorNewItems && studio.WhisparrMonitorNewItems;
 
             (List<string> StashdbIds, List<string> TpdbIds, List<int> TmdbIds) studioWork;
 

@@ -46,7 +46,7 @@ namespace Whisparr.Api.V3.Collections
         /// <summary>
         /// Whether newly discovered movies in the collection are added monitored.
         /// </summary>
-        public bool MonitorNewItems { get; set; }
+        public bool WhisparrMonitorNewItems { get; set; } = true;
 
         /// <summary>
         /// The configured root folder path where movies for this collection are stored.
@@ -96,7 +96,7 @@ namespace Whisparr.Api.V3.Collections
                 Overview = model.Overview,
                 SortTitle = model.SortTitle,
                 Monitored = model.Monitored,
-                MonitorNewItems = model.MonitorNewItems,
+                WhisparrMonitorNewItems = model.WhisparrMonitorNewItems,
                 Images = model.Images,
                 QualityProfileId = model.QualityProfileId,
                 RootFolderPath = model.RootFolderPath,
@@ -125,7 +125,7 @@ namespace Whisparr.Api.V3.Collections
                 SortTitle = resource.SortTitle,
                 Overview = resource.Overview,
                 Monitored = resource.Monitored,
-                MonitorNewItems = resource.MonitorNewItems,
+                WhisparrMonitorNewItems = resource.WhisparrMonitorNewItems,
                 QualityProfileId = resource.QualityProfileId,
                 RootFolderPath = resource.RootFolderPath,
                 SearchOnAdd = resource.SearchOnAdd,

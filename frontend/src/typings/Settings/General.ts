@@ -54,6 +54,7 @@ export default interface General {
   whisparrCacheStudioAPI: boolean;
   whisparrCorruptFileDetection: boolean;
   whisparrFuzzyTitleMatchingThreshold: number;
+  whisparrMonitorNewItems: boolean;
   whisparrMovieMetadataSource: string;
   whisparrValidateRuntime: boolean;
   whisparrValidateRuntimeLimit: number;

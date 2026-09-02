@@ -28,10 +28,10 @@ namespace NzbDrone.Core.Test.Datastore.Migration
                 });
             });
 
-            var items = db.Query<MonitorNewItems026>("SELECT \"MonitorNewItems\" FROM \"Performers\"");
+            var items = db.Query<WhisparrMonitorNewItems026>("SELECT \"WhisparrMonitorNewItems\" FROM \"Performers\"");
 
             items.Should().HaveCount(1);
-            items.First().MonitorNewItems.Should().BeTrue();
+            items.First().WhisparrMonitorNewItems.Should().BeTrue();
         }
 
         [Test]
@@ -61,10 +61,10 @@ namespace NzbDrone.Core.Test.Datastore.Migration
                 });
             });
 
-            var items = db.Query<MonitorNewItems026>("SELECT \"MonitorNewItems\" FROM \"Studios\"");
+            var items = db.Query<WhisparrMonitorNewItems026>("SELECT \"WhisparrMonitorNewItems\" FROM \"Studios\"");
 
             items.Should().HaveCount(1);
-            items.First().MonitorNewItems.Should().BeTrue();
+            items.First().WhisparrMonitorNewItems.Should().BeTrue();
         }
 
         [Test]
@@ -83,15 +83,15 @@ namespace NzbDrone.Core.Test.Datastore.Migration
                 });
             });
 
-            var items = db.Query<MonitorNewItems026>("SELECT \"MonitorNewItems\" FROM \"Collections\"");
+            var items = db.Query<WhisparrMonitorNewItems026>("SELECT \"WhisparrMonitorNewItems\" FROM \"Collections\"");
 
             items.Should().HaveCount(1);
-            items.First().MonitorNewItems.Should().BeTrue();
+            items.First().WhisparrMonitorNewItems.Should().BeTrue();
         }
 
-        private class MonitorNewItems026
+        private class WhisparrMonitorNewItems026
         {
-            public bool MonitorNewItems { get; set; }
+            public bool WhisparrMonitorNewItems { get; set; }
         }
     }
 }

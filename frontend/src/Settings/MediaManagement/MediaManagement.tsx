@@ -372,18 +372,6 @@ function MediaManagement() {
 
             <FieldSet legend={translate('FileManagement')}>
               <FormGroup size={sizes.MEDIUM}>
-                <FormLabel>{translate('MonitorNewItems')}</FormLabel>
-
-                <FormInputGroup
-                  type={inputTypes.CHECK}
-                  name="enableNewItemMonitoring"
-                  helpText={translate('MonitorNewItemsHelpText')}
-                  onChange={handleInputChange}
-                  {...settings.enableNewItemMonitoring}
-                />
-              </FormGroup>
-
-              <FormGroup size={sizes.MEDIUM}>
                 <FormLabel>{translate('UnmonitorDeletedMovies')}</FormLabel>
 
                 <FormInputGroup
