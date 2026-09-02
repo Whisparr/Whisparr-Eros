@@ -27,7 +27,7 @@ const { useOption, setOptions, setSort } =
           columnLabel: () => translate('Monitored'),
           label: '',
           isVisible: true,
-          isModifiable: false,
+          isModifiable: 'disabled',
         },
         {
           name: 'title',
@@ -80,7 +80,7 @@ const { useOption, setOptions, setSort } =
           columnLabel: () => translate('Actions'),
           label: '',
           isVisible: true,
-          isModifiable: false,
+          isModifiable: 'disabled',
         },
       ],
     };

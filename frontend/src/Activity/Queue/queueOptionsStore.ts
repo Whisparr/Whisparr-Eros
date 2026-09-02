@@ -29,7 +29,7 @@ const { useOptions, useOption, setOptions, setOption, setSort } =
           columnLabel: () => translate('Status'),
           isSortable: true,
           isVisible: true,
-          isModifiable: false,
+          isModifiable: 'onlyPosition',
         },
         {
           name: 'movies.sortTitle',
@@ -131,7 +131,7 @@ const { useOptions, useOption, setOptions, setOption, setSort } =
           columnLabel: () => translate('Actions'),
           isSortable: false,
           isVisible: true,
-          isModifiable: false,
+          isModifiable: 'onlyPosition',
         },
       ],
     };
