@@ -35,6 +35,9 @@ function EditMovieCollectionModalContent({
   const isSmallScreen = useAppDimension('isSmallScreen');
 
   const [monitored, setMonitored] = useState(collection.monitored);
+  const [whisparrMonitorNewItems, setWhisparrMonitorNewItems] = useState(
+    collection.whisparrMonitorNewItems
+  );
   const [qualityProfileId, setQualityProfileId] = useState(
     collection.qualityProfileId
   );
@@ -56,6 +59,10 @@ function EditMovieCollectionModalContent({
       changes.monitored = monitored;
     }
 
+    if (whisparrMonitorNewItems !== collection.whisparrMonitorNewItems) {
+      changes.whisparrMonitorNewItems = whisparrMonitorNewItems;
+    }
+
     if (qualityProfileId !== collection.qualityProfileId) {
       changes.qualityProfileId = qualityProfileId;
     }
@@ -75,6 +82,7 @@ function EditMovieCollectionModalContent({
     return changes;
   }, [
     monitored,
+    whisparrMonitorNewItems,
     qualityProfileId,
     rootFolderPath,
     searchOnAdd,
@@ -86,6 +94,7 @@ function EditMovieCollectionModalContent({
     return selectSettings(
       {
         monitored: collection.monitored,
+        whisparrMonitorNewItems: collection.whisparrMonitorNewItems,
         qualityProfileId: collection.qualityProfileId,
         rootFolderPath: collection.rootFolderPath,
         searchOnAdd: collection.searchOnAdd,
@@ -100,6 +109,9 @@ function EditMovieCollectionModalContent({
     switch (name) {
       case 'monitored':
         setMonitored(value as boolean);
+        break;
+      case 'whisparrMonitorNewItems':
+        setWhisparrMonitorNewItems(value as boolean);
         break;
       case 'qualityProfileId':
         setQualityProfileId(value as number);
@@ -164,6 +176,18 @@ function EditMovieCollectionModalContent({
                   name="monitored"
                   helpText={translate('MonitoredCollectionHelpText')}
                   {...settings.monitored}
+                  onChange={handleInputChange}
+                />
+              </FormGroup>
+
+              <FormGroup>
+                <FormLabel>{translate('WhisparrMonitorNewItems')}</FormLabel>
+
+                <FormInputGroup
+                  type={inputTypes.CHECK}
+                  name="whisparrMonitorNewItems"
+                  helpText={translate('WhisparrMonitorNewItemsEntityHelpText')}
+                  {...settings.whisparrMonitorNewItems}
                   onChange={handleInputChange}
                 />
               </FormGroup>

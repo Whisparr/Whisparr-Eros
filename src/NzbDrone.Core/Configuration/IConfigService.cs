@@ -122,6 +122,7 @@ namespace NzbDrone.Core.Configuration
         bool WhisparrCacheStudioAPI { get; }
         bool WhisparrCorruptFileDetection { get; }
         int WhisparrFuzzyTitleMatchingThreshold { get; }
+        bool WhisparrMonitorNewItems { get; set; }
         MovieMetadataType WhisparrMovieMetadataSource { get; }
         bool WhisparrValidateRuntime { get; }
         int WhisparrValidateRuntimeLimit { get; }

@@ -4,6 +4,7 @@ export interface AddPerformerDefaults {
   rootFolderPath: string;
   monitored: boolean;
   moviesMonitored: boolean;
+  whisparrMonitorNewItems: boolean;
   qualityProfileId: number;
   searchForMovie: boolean;
   tags: number[];
@@ -18,6 +19,7 @@ const addPerformerDefaultsStore = createPersist<AddPerformerDefaults>(
     rootFolderPath: '',
     monitored: true,
     moviesMonitored: false,
+    whisparrMonitorNewItems: true,
     qualityProfileId: 0,
     searchForMovie: false,
     tags: [],

@@ -109,6 +109,11 @@ namespace NzbDrone.Core.Movies.Studios
             // Chunk the into smaller lists
             var chunkSize = 10;
 
+            // The global master switch overrides the studio's own setting, so
+            // turning it off leaves discovery intact but adds works unmonitored
+            // and without a search on add.
+            var monitorNewItems = _configService.WhisparrMonitorNewItems && studio.WhisparrMonitorNewItems;
+
             (List<string> StashdbIds, List<string> TpdbIds, List<int> TmdbIds) studioWork;
 
             try
@@ -142,10 +147,10 @@ namespace NzbDrone.Core.Movies.Studios
                         RootFolderPath = studio.RootFolderPath,
                         AddOptions = new AddMovieOptions
                         {
-                            SearchForMovie = studio.SearchOnAdd,
+                            SearchForMovie = studio.SearchOnAdd && monitorNewItems,
                             AddMethod = AddMovieMethod.Studio
                         },
-                        Monitored = true,
+                        Monitored = monitorNewItems,
                         Tags = studio.Tags
                     }).Chunk(chunkSize);
 
@@ -187,10 +192,10 @@ namespace NzbDrone.Core.Movies.Studios
                             RootFolderPath = studio.RootFolderPath,
                             AddOptions = new AddMovieOptions
                             {
-                                SearchForMovie = studio.SearchOnAdd,
+                                SearchForMovie = studio.SearchOnAdd && monitorNewItems,
                                 AddMethod = AddMovieMethod.Studio
                             },
-                            Monitored = true,
+                            Monitored = monitorNewItems,
                             Tags = studio.Tags
                         }).Chunk(chunkSize);
 
@@ -224,10 +229,10 @@ namespace NzbDrone.Core.Movies.Studios
                             RootFolderPath = studio.RootFolderPath,
                             AddOptions = new AddMovieOptions
                             {
-                                SearchForMovie = studio.SearchOnAdd,
+                                SearchForMovie = studio.SearchOnAdd && monitorNewItems,
                                 AddMethod = AddMovieMethod.Studio
                             },
-                            Monitored = true,
+                            Monitored = monitorNewItems,
                             Tags = studio.Tags
                         }).Chunk(chunkSize);
 

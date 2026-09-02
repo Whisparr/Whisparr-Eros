@@ -36,6 +36,9 @@ function EditStudioModalContent({
   const [moviesMonitored, setMoviesMonitored] = useState(
     studio.moviesMonitored
   );
+  const [whisparrMonitorNewItems, setWhisparrMonitorNewItems] = useState(
+    studio.whisparrMonitorNewItems
+  );
   const [afterDate, setAfterDate] = useState(studio.afterDate ?? '');
   const [qualityProfileId, setQualityProfileId] = useState(
     studio.qualityProfileId
@@ -58,6 +61,10 @@ function EditStudioModalContent({
 
     if (moviesMonitored !== studio.moviesMonitored) {
       changes.moviesMonitored = moviesMonitored;
+    }
+
+    if (whisparrMonitorNewItems !== studio.whisparrMonitorNewItems) {
+      changes.whisparrMonitorNewItems = whisparrMonitorNewItems;
     }
 
     if (afterDate !== (studio.afterDate ?? '')) {
@@ -88,6 +95,7 @@ function EditStudioModalContent({
   }, [
     monitored,
     moviesMonitored,
+    whisparrMonitorNewItems,
     afterDate,
     qualityProfileId,
     rootFolderPath,
@@ -102,6 +110,7 @@ function EditStudioModalContent({
       {
         monitored: studio.monitored,
         moviesMonitored: studio.moviesMonitored,
+        whisparrMonitorNewItems: studio.whisparrMonitorNewItems,
         afterDate: studio.afterDate ?? '',
         qualityProfileId: studio.qualityProfileId,
         rootFolderPath: studio.rootFolderPath,
@@ -132,6 +141,9 @@ function EditStudioModalContent({
         break;
       case 'moviesMonitored':
         setMoviesMonitored(value as boolean);
+        break;
+      case 'whisparrMonitorNewItems':
+        setWhisparrMonitorNewItems(value as boolean);
         break;
       case 'afterDate':
         setAfterDate(value as string);
@@ -213,6 +225,17 @@ function EditStudioModalContent({
                   />
                 </FormGroup>
               ) : null}
+
+              <FormGroup>
+                <FormLabel>{translate('WhisparrMonitorNewItems')}</FormLabel>
+                <FormInputGroup
+                  type={inputTypes.CHECK}
+                  name="whisparrMonitorNewItems"
+                  helpText={translate('WhisparrMonitorNewItemsEntityHelpText')}
+                  {...settings.whisparrMonitorNewItems}
+                  onChange={handleInputChange}
+                />
+              </FormGroup>
 
               <FormGroup>
                 <FormLabel>{translate('MonitorAfter')}</FormLabel>

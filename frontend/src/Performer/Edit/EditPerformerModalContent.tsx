@@ -38,6 +38,9 @@ function EditPerformerModalContent({
   const [moviesMonitored, setMoviesMonitored] = useState(
     performer.moviesMonitored
   );
+  const [whisparrMonitorNewItems, setWhisparrMonitorNewItems] = useState(
+    performer.whisparrMonitorNewItems
+  );
   const [qualityProfileId, setQualityProfileId] = useState(
     performer.qualityProfileId
   );
@@ -63,6 +66,10 @@ function EditPerformerModalContent({
       changes.moviesMonitored = moviesMonitored;
     }
 
+    if (whisparrMonitorNewItems !== performer.whisparrMonitorNewItems) {
+      changes.whisparrMonitorNewItems = whisparrMonitorNewItems;
+    }
+
     if (qualityProfileId !== performer.qualityProfileId) {
       changes.qualityProfileId = qualityProfileId;
     }
@@ -83,6 +90,7 @@ function EditPerformerModalContent({
   }, [
     monitored,
     moviesMonitored,
+    whisparrMonitorNewItems,
     qualityProfileId,
     rootFolderPath,
     tags,
@@ -95,6 +103,7 @@ function EditPerformerModalContent({
       {
         monitored: performer.monitored,
         moviesMonitored: performer.moviesMonitored,
+        whisparrMonitorNewItems: performer.whisparrMonitorNewItems,
         qualityProfileId: performer.qualityProfileId,
         rootFolderPath: performer.rootFolderPath,
         tags: performer.tags ?? [],
@@ -112,6 +121,9 @@ function EditPerformerModalContent({
         break;
       case 'moviesMonitored':
         setMoviesMonitored(value as boolean);
+        break;
+      case 'whisparrMonitorNewItems':
+        setWhisparrMonitorNewItems(value as boolean);
         break;
       case 'qualityProfileId':
         setQualityProfileId(value as number);
@@ -188,6 +200,17 @@ function EditPerformerModalContent({
                   />
                 </FormGroup>
               ) : null}
+
+              <FormGroup>
+                <FormLabel>{translate('WhisparrMonitorNewItems')}</FormLabel>
+                <FormInputGroup
+                  type={inputTypes.CHECK}
+                  name="whisparrMonitorNewItems"
+                  helpText={translate('WhisparrMonitorNewItemsEntityHelpText')}
+                  {...settings.whisparrMonitorNewItems}
+                  onChange={handleInputChange}
+                />
+              </FormGroup>
 
               <FormGroup>
                 <FormLabel>{translate('QualityProfile')}</FormLabel>

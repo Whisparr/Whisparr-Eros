@@ -109,6 +109,17 @@ function AddNewStudioModalContent(props: AddNewStudioModalContentProps) {
               </FormGroup>
 
               <FormGroup>
+                <FormLabel>{translate('WhisparrMonitorNewItems')}</FormLabel>
+                <FormInputGroup
+                  type={inputTypes.CHECK}
+                  name="whisparrMonitorNewItems"
+                  helpText={translate('WhisparrMonitorNewItemsEntityHelpText')}
+                  {...settings.whisparrMonitorNewItems}
+                  onChange={onInputChange}
+                />
+              </FormGroup>
+
+              <FormGroup>
                 <FormLabel>{translate('QualityProfile')}</FormLabel>
                 <FormInputGroup
                   type={inputTypes.QUALITY_PROFILE_SELECT}
