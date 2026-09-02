@@ -190,7 +190,7 @@ function Menu({
                 forwardedRef: ref,
                 style: {
                   ...style,
-                  maxHeight,
+                  maxHeight: enforceMaxHeight ? maxHeight : undefined,
                 },
                 isOpen: isMenuOpen,
               }
