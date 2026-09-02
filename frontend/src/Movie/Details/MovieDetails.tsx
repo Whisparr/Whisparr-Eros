@@ -285,6 +285,7 @@ function MovieDetails(props: Readonly<Partial<Props>>) {
               size={500}
               lazy={true}
               placeholder={posterPlaceholder}
+              title={title}
             />
             <div className={styles.info}>
               <Measure onMeasure={handleTitleMeasure}>

@@ -52,6 +52,7 @@ function MovieSearchResult(props: MovieSearchResultProps) {
             lazy={false}
             overflow={true}
             safeForWorkMode={false}
+            title={title}
           />
         </div>
       ) : (
@@ -62,6 +63,7 @@ function MovieSearchResult(props: MovieSearchResultProps) {
             size={250}
             lazy={false}
             overflow={true}
+            title={title}
           />
         </div>
       )}

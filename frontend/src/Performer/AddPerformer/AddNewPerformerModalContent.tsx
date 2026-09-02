@@ -75,6 +75,7 @@ function AddNewPerformerModalContent({
                 size={250}
                 overflow={true}
                 lazy={true}
+                title={fullName}
               />
             </div>
           )}

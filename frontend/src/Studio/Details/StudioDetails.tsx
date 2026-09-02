@@ -371,6 +371,7 @@ function StudioDetails() {
               images={imageList}
               size={250}
               lazy={false}
+              title={studio.title}
             />
             <div className={styles.info}>
               <Measure onMeasure={handleTitleMeasure}>

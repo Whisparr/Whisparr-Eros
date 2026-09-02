@@ -76,6 +76,7 @@ function StudioIndexPoster(props: Readonly<StudioIndexPosterProps>) {
           <IconButton
             name={icons.EDIT}
             title={translate('EditStudio')}
+            tabIndex={-1}
             onPress={onEditStudioPress}
           />
 
@@ -102,6 +103,7 @@ function StudioIndexPoster(props: Readonly<StudioIndexPosterProps>) {
             images={images}
             size={250}
             lazy={true}
+            title={title}
             onPosterLoad={onPosterLoad}
             onPosterLoadError={onPosterLoadError}
           />

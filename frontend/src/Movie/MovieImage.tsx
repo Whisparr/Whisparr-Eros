@@ -1,4 +1,11 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import translate from 'Utilities/String/translate';
 import { CoverType, Image } from './Movie';
 import styles from './MovieImage.css';
 
@@ -32,6 +39,7 @@ export interface MovieImageProps {
   size?: number;
   lazy?: boolean;
   overflow?: boolean;
+  title: string;
   onError?: () => void;
   onLoad?: () => void;
 }
@@ -47,6 +55,7 @@ function MovieImage({
   safeForWorkMode,
   size = 250,
   lazy = true,
+  title,
   onError,
   onLoad,
 }: MovieImageProps) {
@@ -54,6 +63,23 @@ function MovieImage({
   const [hasError, setHasError] = useState(false);
   const image = useRef<Image | null>(null);
   const triedRemote = useRef(false);
+
+  const alt = useMemo(() => {
+    switch (coverType) {
+      case 'banner':
+        return `${title} ${translate('ImageBanner')}`;
+      case 'fanart':
+        return `${title} ${translate('ImageFanart')}`;
+      case 'screenshot':
+        return `${title} ${translate('ImageScreenshot')}`;
+      case 'headshot':
+        return `${title} ${translate('ImageHeadshot')}`;
+      case 'clearlogo':
+        return `${title} ${translate('ImageLogo')}`;
+      default:
+        return `${title} ${translate('ImagePoster')}`;
+    }
+  }, [title, coverType]);
 
   const handleLoad = useCallback(() => {
     setHasError(false);
@@ -101,12 +127,15 @@ function MovieImage({
   }, []);
 
   if (hasError || !url) {
-    return <img className={className} style={style} src={placeholder} />;
+    return (
+      <img alt={alt} className={className} style={style} src={placeholder} />
+    );
   }
 
   const blurClass = safeForWorkMode ? styles.blur : 'blur';
   return (
     <img
+      alt={alt}
       className={`${className ?? ''} ${blurClass}`}
       style={style}
       src={url ?? placeholder}
