@@ -5,8 +5,8 @@
       "repo": "Radarr/Radarr",
       "branch": "develop",
       "owns": "backend",
-      "highWater": "68b93db78cb7a648d61a486d94eae703242e1e36",
-      "highWaterNote": "2025-10-02 'Use react-query for Blocklist UI'. Rolled back here from b84a621e99 on 2026-08-31: the old mark was seeded at the 2026-08 tip, so ten months of v5-develop were never walked and 486 commits sat outside the window - not skipped on the merits, invisible by construction. This matches the Radarr baseline (its own walk starts 2025-10-04), which is as far back as we claim to have reviewed. Advance only when everything at or before the new mark is settled."
+      "highWater": "39c172d827a3738af4a2d9e951c7c52ce7153d77",
+      "highWaterNote": "2026-09 'Bump NUnit to 4.5.1', the current tip of Radarr develop. Everything at or before this mark is dispositioned: the ten-month walk opened by the 68b93db78c rollback is closed, and the last two outstanding commits are settled here - 39c172d82 as `have` (we are ahead on NUnit) and e80abdd60 as `defer` (wanted, blocked on upstream wiring RestartableServiceLifetime, which it adds but never registers). Advance only when everything at or before the new mark is settled."
     },
     "sonarr": {
       "repo": "Sonarr/Sonarr",
@@ -641,6 +641,19 @@
         "month": "2026-08",
         "disposition": "pick",
         "reason": "Freebox drops a single-file torrent straight into the download root, so there is no folder to identify it by and the import matched the wrong thing. Now each task gets its own folder named for the release. Updated the three existing fixture assertions, which encoded the old paths - that path change is the fix, not a workaround."
+      },
+      "e80abdd603ffbdcfc48615f824488f7c7402424f": {
+        "subject": "Improve external restart handling",
+        "month": "2026-08",
+        "disposition": "defer",
+        "blockedBy": "Upstream's own wiring. The commit adds src/NzbDrone.Host/RestartableServiceLifetime.cs (249 lines) and simultaneously deletes the .UseWindowsService() call from Bootstrap.Start, but never registers the new lifetime: on Radarr develop today RestartableServiceLifetime appears in exactly one file - its own definition - and UseWindowsService appears in none. IsSystemdService is likewise declared on IRuntimeInfo and consumed nowhere. Take it once upstream lands the follow-up that actually installs the lifetime on the host builder.",
+        "reason": "We want this: the in-process restart loop (Bootstrap.RunHostUntilShutdown + NzbDroneLogger.ResetAllTargets) replaces spawning a detached child process, which is the right shape under Docker/Podman/systemd restart policies, and the IsContainerized/IsPodman detection plus the LifecycleEventAttribute shutdown guard in EventAggregator are all portable to our tree as-is. Not skipped on the merits - it is half-landed upstream. Concretely, with UseWindowsService() gone the IHostLifetime is never a WindowsServiceLifetime, so RuntimeInfo.IsWindowsService is permanently false; that flag gates five real behaviours here (FileSystemLookupService network-drive lookup, DownloadedMovieImportService, MappedNetworkDriveValidator, LifecycleService service stop/restart, AppLifetime restart spawn), so picking it now would silently flip all of them on Windows service installs while the replacement lifetime sits dead in the tree. The commit is also three days old on develop and has not been through a release. Revisit at the follow-up."
+      },
+      "39c172d827a3738af4a2d9e951c7c52ce7153d77": {
+        "subject": "Bump NUnit to 4.5.1",
+        "month": "2026-09",
+        "disposition": "have",
+        "reason": "We are already on NUnit 4 and ahead of it. src/Directory.Build.props pins NUnit 4.6.1 (upstream 4.5.1), NUnit3TestAdapter 6.3.0 and NunitXml.TestLogger 8.0.0 - the same versions this commit moves to - and src/NzbDrone.Test.Common/Whisparr.Test.Common.csproj is on NUnit 4.6.1 too. The test-file half is moot as well: our migration left no classic assertions to convert, so the tree has zero occurrences of CollectionAssert, StringAssert, ClassicAssert or the Assert.AreEqual family, and needs neither upstream's Assert.That rewrites nor their NUnit.Framework.Legacy.ClassicAssert aliases."
       }
     },
     "sonarr": {
