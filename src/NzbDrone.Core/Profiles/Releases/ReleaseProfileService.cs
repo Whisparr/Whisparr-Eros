@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using NLog;
 using NzbDrone.Common.Extensions;
 
 namespace NzbDrone.Core.Profiles.Releases
@@ -20,12 +19,10 @@ namespace NzbDrone.Core.Profiles.Releases
     public class ReleaseProfileService : IReleaseProfileService
     {
         private readonly IReleaseProfileRepository _repo;
-        private readonly Logger _logger;
 
-        public ReleaseProfileService(IReleaseProfileRepository repo, Logger logger)
+        public ReleaseProfileService(IReleaseProfileRepository repo)
         {
             _repo = repo;
-            _logger = logger;
         }
 
         public List<ReleaseProfile> All()
@@ -49,7 +46,8 @@ namespace NzbDrone.Core.Profiles.Releases
         {
             return AllForTags(tagIds)
                 .Where(r => r.Enabled)
-                .Where(r => r.IndexerId == indexerId || r.IndexerId == 0).ToList();
+                .Where(r => r.IndexerIds.Empty() || r.IndexerIds.Contains(indexerId))
+                .ToList();
         }
 
         public ReleaseProfile Get(int id)
