@@ -1,12 +1,12 @@
 using System;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Diacritical;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 using NzbDrone.Common;
+using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Authentication;
 using NzbDrone.Core.Configuration;
 
