@@ -115,9 +115,15 @@ function Blocklist() {
   }, [setIsConfirmClearModalOpen]);
 
   const handleClearBlocklistConfirmed = useCallback(() => {
-    executeCommand({ name: commandNames.CLEAR_BLOCKLIST });
+    executeCommand({
+      name: commandNames.CLEAR_BLOCKLIST,
+      commandFinished: () => {
+        goToPage(1);
+        refetch();
+      },
+    });
     setIsConfirmClearModalOpen(false);
-  }, [setIsConfirmClearModalOpen, executeCommand]);
+  }, [setIsConfirmClearModalOpen, executeCommand, goToPage, refetch]);
 
   const handleConfirmClearModalClose = useCallback(() => {
     setIsConfirmClearModalOpen(false);
