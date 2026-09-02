@@ -12,8 +12,8 @@
       "repo": "Sonarr/Sonarr",
       "branch": "v5-develop",
       "owns": "frontend",
-      "highWater": "21ca65a0151944a3a46303c7c4d3aa16220a57cd",
-      "highWaterNote": "2025-12 'Use react-query for Quality Profiles' (21ca65a01). Everything on Sonarr v5-develop at or before this point is dispositioned -- 2025-11 and 2025-12 complete. Advance only when everything at or before the new mark is settled."
+      "highWater": "5487aa74f5306bbec980432e9a5293d4bf19c903",
+      "highWaterNote": "2026-01 'Multiple Translations updated by Weblate' (5487aa74f). Stops deliberately short of the month tip: 164441965 'Selecting multiple indexers per release profile' is the next commit and was deferred rather than dispositioned, so the mark cannot pass it. Every other 2026-01 commit is settled - 61 of 62 - and those dispositions are recorded below even where they sit after the mark. Advance past 5487aa74f only once 164441965 itself is settled."
     }
   },
   "dispositions": {
@@ -1993,6 +1993,372 @@
         "month": "2025-12",
         "disposition": "adapt",
         "reason": "Same white-flash on a dark-theme load. Our HtmlMapperBase has no HttpContext-taking GetHtmlText, so the substitution is an override of the no-arg one, applied outside the base's cached copy so a Theme change takes effect without a restart. Verified live on 6969: auto -> dark re-substitutes without restarting."
+      },
+      "8b438c21975f58872c7a5044da4479b950e6c5f8": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-01",
+        "disposition": "skip",
+        "reason": "Weblate translation sync. Those files come from Weblate, not from cherry-picks."
+      },
+      "ac5b9b14eeb87b8c95db3ed1d43742fc1076c63d": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-01",
+        "disposition": "skip",
+        "reason": "Weblate translation sync. Those files come from Weblate, not from cherry-picks."
+      },
+      "3e8a85ad26ded2a65dd90a49dc2d20f331f06e79": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-01",
+        "disposition": "skip",
+        "reason": "Weblate translation sync. Those files come from Weblate, not from cherry-picks."
+      },
+      "5487aa74f5306bbec980432e9a5293d4bf19c903": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-01",
+        "disposition": "skip",
+        "reason": "Weblate translation sync. Those files come from Weblate, not from cherry-picks."
+      },
+      "0d521c078b516489c870fdd165bf5edc2051bad4": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-01",
+        "disposition": "skip",
+        "reason": "Weblate translation sync. Those files come from Weblate, not from cherry-picks."
+      },
+      "15fb99959781d7de17379593010da990f7366632": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-01",
+        "disposition": "skip",
+        "reason": "Weblate translation sync. Those files come from Weblate, not from cherry-picks."
+      },
+      "e0abca8360fb9009b9cb0723cdda144e9deaff66": {
+        "subject": "Automated API Docs update",
+        "month": "2026-01",
+        "disposition": "skip",
+        "reason": "Bot-regenerated Sonarr.Api.V5/openapi.json. We retired our checked-in openapi.json along with the workflow that produced it, so this rewrites a file we do not have."
+      },
+      "da6985b40c39e0694d16515b82d3fd5e3c94d4b2": {
+        "subject": "Automated API Docs update",
+        "month": "2026-01",
+        "disposition": "skip",
+        "reason": "Bot-regenerated Sonarr.Api.V5/openapi.json. We retired our checked-in openapi.json along with the workflow that produced it, so this rewrites a file we do not have."
+      },
+      "243a3057aea3b6df0b8c11aa6167094eb22140c2": {
+        "subject": "Add v5 Quality Definition endpoints",
+        "month": "2026-01",
+        "disposition": "skip",
+        "reason": "V5-only: adds Sonarr.Api.V5/Qualities. We have only Whisparr.Api.V3, so this would cherry-pick clean into a directory nothing compiles."
+      },
+      "4bf02221e67c53ea5e8de6615c3a9a2ddfe5fc5a": {
+        "subject": "Prevent NullRefs in series event handlers",
+        "month": "2026-01",
+        "disposition": "skip",
+        "reason": "V5-only: null guards in Sonarr.Api.V5/Series/SeriesController.cs. No counterpart project here, and the guarded handlers are series-specific."
+      },
+      "8b8cd148340e09665449d339d5e64d598cd0089e": {
+        "subject": "Add v5 Metadata endpoints",
+        "month": "2026-01",
+        "disposition": "skip",
+        "reason": "V5-only: adds Sonarr.Api.V5/Metadata. No counterpart project here."
+      },
+      "0ddc2a34e50a199e2dbe148c41de9a2a3a8c14a5": {
+        "subject": "Add v5 Naming endpoints",
+        "month": "2026-01",
+        "disposition": "skip",
+        "reason": "V5 Naming endpoints. The one non-V5 file renames a NamingConfigController parameter from 'config' to 'settings' to line up with the V5 naming work - cosmetic, and it does not travel without the V5 half."
+      },
+      "52ce33a97a6d0aac243791f846d95f4ebf76d5a6": {
+        "subject": "Fix manual import when season number is provided during reprocessing",
+        "month": "2026-01",
+        "disposition": "skip",
+        "reason": "Fixes season-number reprocessing in Sonarr.Api.V5/ManualImport. Both halves are series-shaped (season numbers) and the controller has no counterpart here."
+      },
+      "e06c6ba649a367098f92ab45778fe9b7b0b13542": {
+        "subject": "Fixed: Parsing multiple subtitle languages",
+        "month": "2026-01",
+        "disposition": "skip",
+        "reason": "Restructures the upstream LanguageRegex so the '(?![-_. ]subs?)' lookahead spans a chain of language tokens. Our LanguageRegex is a different regex written in IgnorePatternWhitespace form with a different language set and no such lookahead anywhere, so there is nothing here to generalise and the ported regex would replace our grammar wholesale."
+      },
+      "63431917feddec910d369a245463ceeb2d4cbe53": {
+        "subject": "Fixed: Improve parsing of WEB 2160p releases",
+        "month": "2026-01",
+        "disposition": "have",
+        "reason": "Widens the WEB-DL source alternation from 'DDP?5[. ]1' to 'DDP?[ .]?5[. ]1'. Does not reproduce: our SourceRegex already resolves 'Studio.Name.26.09.01.Performer.Name.2160p.NF.SDR.WEB.DDP.5.1.Atmos.h265-FRESH' to QualitySource.Web at R2160p. A passing assertion for that shape was added to QualityParserFixture alongside the release-group work."
+      },
+      "107e474f9c4c3be14db03f95ffaa22c46246a191": {
+        "subject": "Parse additional reversed filename format",
+        "month": "2026-01",
+        "disposition": "skip",
+        "reason": "Extends ReversedTitleRegex to match a reversed 'S01E02' token ('\\d{2,3}E-?\\d{2}S'). Our ReversedTitleRegex carries only the p027/p0801 resolution markers - scenes have no season/episode token to reverse."
+      },
+      "7b0db46c25f82a4e26a2de75563c2cc1a4e9f73a": {
+        "subject": "New: Improve parsing of non-mini series releases containing \"Part #\" in the episode name",
+        "month": "2026-01",
+        "disposition": "skip",
+        "reason": "Improves parsing of 'Part #' in an episode name for non-mini series. Episode titles and mini-series are series grammar; we parse scenes by date, performer and studio."
+      },
+      "1ef034af35caaa131dd98172b70e2a49938652b1": {
+        "subject": "Skip absolute + standard parsing when hash is not present",
+        "month": "2026-01",
+        "disposition": "skip",
+        "reason": "Skips the combined absolute + standard parsing pass when no hash is present. There is no absolute episode numbering concept here, so the pass being skipped does not exist."
+      },
+      "b16743bddaa0406144d0213b0a62aed6ac2e2148": {
+        "subject": "Fixed: Don't parse release group from episode title when it contains a dash",
+        "month": "2026-01",
+        "disposition": "adapt",
+        "reason": "Adds HDTV/SDTV to the ReleaseGroupRegex lookahead and lookbehind. Reproduced against our parser first: 'Studio Name (2026) - 26.09.01 - Hart-Shaped Scene [SDTV][AAC 2.0][x264]' yielded 'Shaped' as the release group. Applied to our regex, which differs from upstream's (extra -ENG/-JAP/-HDRip/tmdbid/imdbid alternatives). New ReleaseGroupParserFixture assertions written against our own title grammar."
+      },
+      "bee7e4325f8d3c79572f2a088e661d2133f15158": {
+        "subject": "New: Parse non-ASCII release groups",
+        "month": "2026-01",
+        "disposition": "adapt",
+        "reason": "Widens the release-group character class to Latin-1 letters. Reproduced against our parser first: '-Hveðrungr' and '-Báleygr' were truncated. Applied to our variant of the regex; new assertions use scene-shaped titles rather than the upstream series ones."
+      },
+      "8f5f3070ace856ddcb285a7358cf8e71cac9858a": {
+        "subject": "Fixed: Login with credentials on Qbittorrent 5.2",
+        "month": "2026-01",
+        "disposition": "have",
+        "reason": "Removes an explicit BasicNetworkCredential from the qBittorrent auth request. Our AuthenticateClient already builds the login POST through BuildRequest, which is where upstream ended up after the API-key commit - the two files are functionally identical, differing only in a temporary variable and whitespace."
+      },
+      "6a6639105ededc4d24ebc963bb8be4e677792a0d": {
+        "subject": "New: API key support for qBittorrent",
+        "month": "2026-01",
+        "disposition": "have",
+        "reason": "qBittorrent API key support. QBittorrentSettings.ApiKey and the Bearer header in BuildRequest are already here."
+      },
+      "e747ec8f5c3496cd0fd5c223925d9b4e2bdbf9f3": {
+        "subject": "Fix disposing of the HttpRequestMessage",
+        "month": "2026-01",
+        "disposition": "have",
+        "reason": "ManagedHttpDispatcher already uses 'using var requestMessage' with the flattened response block."
+      },
+      "12ed8cdc26f4af24c369fd806d7886007ce32407": {
+        "subject": "Bump BusyTimeout for SQLite to 1000ms",
+        "month": "2026-01",
+        "disposition": "have",
+        "reason": "ConnectionStringFactory already sets BusyTimeout = 1000."
+      },
+      "c409ee81bd55f37d1ab901175318ad4e23892001": {
+        "subject": "Bump FFprobeStatic to v8.0.1 (build 302)",
+        "month": "2026-01",
+        "disposition": "have",
+        "reason": "FFprobeStatic bump. We are ahead on a different package - Openur.FFprobeStatic 9.0.1.492."
+      },
+      "0ed53874c6a0914b3826f8d97c4d239c2cf50811": {
+        "subject": "Bump .NET to 10.0.2",
+        "month": "2026-01",
+        "disposition": "have",
+        "reason": ".NET 10.0.2 bump. global.json already pins SDK 10.0.101 with rollForward latestFeature and every project targets net10.0."
+      },
+      "210c20f8e944b83fea360b4f98cea6d28c9a8cef": {
+        "subject": "Bump FluentMigrator to 8.0.1",
+        "month": "2026-01",
+        "disposition": "have",
+        "reason": "FluentMigrator 8.0.1. Already at 8.0.1 for Runner.Core, Runner.SQLite and Runner.Postgres."
+      },
+      "cf593b1f5d1441a31cb74e5d3ee43a2b4aae21b7": {
+        "subject": "Use react-query for Quality Definitions",
+        "month": "2026-01",
+        "disposition": "have",
+        "reason": "react-query migration for Quality Definitions. Our useQualityDefinitions.ts already exists and Store/Actions/Settings/qualityDefinitions.js does not - the redux code this converts was replaced by our port."
+      },
+      "6d49b41dd26ca9bc61bda119698debcb960612e1": {
+        "subject": "Use react-query for Connections",
+        "month": "2026-01",
+        "disposition": "have",
+        "reason": "react-query migration for Connections. We have Settings/Notifications/useNotifications.ts and no Store/Actions/Settings/notifications.js. Sonarr's rename of Notifications to Connections is their terminology, not ours."
+      },
+      "677c588a3b7235ce4cbc37c3015512c03b31a66f": {
+        "subject": "Use react-query for Naming settings",
+        "month": "2026-01",
+        "disposition": "have",
+        "reason": "react-query migration for Naming settings. useNamingSettings.ts is already here and Store/Actions/Settings/naming.js is not."
+      },
+      "c0a565861e944978dbc0dbcb0acc728bfbb56981": {
+        "subject": "Use react-query for Metadata",
+        "month": "2026-01",
+        "disposition": "have",
+        "reason": "react-query migration for Metadata. useMetadata.ts is already here and Store/Actions/Settings/metadata.js is not."
+      },
+      "c60a978eb8bf95f47e6c8356948ecc8c2ca09a2b": {
+        "subject": "Fix fetching indexers for release profiles",
+        "month": "2026-01",
+        "disposition": "have",
+        "reason": "Dispatches a redux fetchIndexers so release profiles can resolve indexer names. Our ReleaseProfiles.tsx already reads them through the useIndexers() react-query hook, so there is no fetch to add."
+      },
+      "77612810d8f77dba73f8dab34e7f2541504a3ddc": {
+        "subject": "Fix finding last command run",
+        "month": "2026-01",
+        "disposition": "have",
+        "reason": "Switches useCommand from find to findLast so the most recent run of a command wins. Our useCommand already goes through Utilities/Command/findCommand, which is lodash findLast."
+      },
+      "0149886b688117cad7e0f61bed565e4b204b1f64": {
+        "subject": "Remove Custom Filters from fetch server collection",
+        "month": "2026-01",
+        "disposition": "have",
+        "reason": "Drops custom filters from createFetchServerSideCollectionHandler. That file does not exist here - the redux server-side collection handlers went with the react-query migration."
+      },
+      "54dafdb8d34cc946c03b572cc253f1532e7eaa64": {
+        "subject": "Reenable column selection for series",
+        "month": "2026-01",
+        "disposition": "have",
+        "reason": "Repairs an 'ignore columns for now' stub Sonarr left in its own series index migration. Our MovieIndexTableHeader forwards the whole payload to setMovieIndexTableOption, which handles columns and tableOptions - the stub never existed here."
+      },
+      "f2fc1e933235e11ca8301fd7862c74bf9c067bf1": {
+        "subject": "Display ratings when sorting on series posters index component",
+        "month": "2026-01",
+        "disposition": "have",
+        "reason": "Shows the rating in poster info when sorting by rating. MovieIndexPosterInfo already renders TmdbRating when sortKey is tmdbRating."
+      },
+      "e8020b7289ed567aaa327142ab0014697e069efc": {
+        "subject": "Fix sorting direction on series index component",
+        "month": "2026-01",
+        "disposition": "have",
+        "reason": "Makes setSort's sortDirection optional so a sort-key change stops re-applying a stale direction. useOptionsStore already declares 'sortDirection?: SortDirection' and guards with !('sortKey' in state), and our index stores already call setSort({ sortKey })."
+      },
+      "5d29c16bf38d2265a6378175f76ac72ce6cd2650": {
+        "subject": "Fix missing translations",
+        "month": "2026-01",
+        "disposition": "have",
+        "reason": "Two string fixes. We already use the correct 'BlocklistedAt' key; the rest renames Notifications to Connections and strips the Email fieldset, which is Sonarr's terminology and layout, not ours."
+      },
+      "1839aa7907448da005819b377c0bc13977fe3009": {
+        "subject": "Add Threshold to translations",
+        "month": "2026-01",
+        "disposition": "skip",
+        "reason": "Adds a 'Threshold' key to upstream en.json and nothing else. Localization gate: we author our own keys in case-insensitive sorted position rather than taking upstream en.json hunks, and nothing here needs the string."
+      },
+      "a79234de484aafa48b367409f4a6f812dd926dc7": {
+        "subject": "Remove constraint for TvRageId from Series table",
+        "month": "2026-01",
+        "disposition": "skip",
+        "reason": "Edits Sonarr migration 034 to drop a TvRageId constraint from the Series table. We have no Series table and no such migration."
+      },
+      "98fbe694e47b7a882c0cfc8e2fe38a340f7dcfe2": {
+        "subject": "Validate Special Folder Format doesn't match excluded folder",
+        "month": "2026-01",
+        "disposition": "skip",
+        "reason": "Validates that the Special Folder Format does not collide with an excluded folder. Specials folders are series-only - our FileNameValidation has no ValidSpecialsFolderFormat rule to attach the new validator to."
+      },
+      "7ea20335ed109ad35dec590e2b8a5495b2feec51": {
+        "subject": "Fixed: undefined absolute episode numbers on select episode modal",
+        "month": "2026-01",
+        "disposition": "skip",
+        "reason": "Hides undefined absolute episode numbers in the select-episode modal. No absolute episode numbers and no episode selection here."
+      },
+      "e20b4c4f5da8597a4f3bc5cf198ab82a447f2d15": {
+        "subject": "Update error message when connections fail to load",
+        "month": "2026-01",
+        "disposition": "skip",
+        "reason": "Swaps NotificationsLoadError for ConnectionsLoadError. Part of Sonarr's Notifications-to-Connections rename; our UI and keys still say Notifications."
+      },
+      "97d3a4940d7e23366b57f90cda364774bcc34a09": {
+        "subject": "Add focus border to buttons",
+        "month": "2026-01",
+        "disposition": "skip",
+        "reason": "Two halves, neither applies. Button.css already carries the &:focus border rules for all five kinds. The other half deletes the ACCEPT_CONFIRM_MODAL shortcut as dead, but ours is live - ConfirmModal.tsx still binds 'acceptConfirmModal' - so removing it would drop a working shortcut from the help modal."
+      },
+      "5d8d2d66a4c27d480d952c75962f5ea00650b930": {
+        "subject": "Use Happy Eyeballs for HTTP socket address selection",
+        "month": "2026-01",
+        "disposition": "skip",
+        "reason": "Adds Happy Eyeballs (RFC 8305) dual-stack socket selection to ManagedHttpDispatcher, changing how every outbound HTTP connection is established. Raised as a product decision, not a sync decision: our backend follows Radarr and Radarr has not adopted it. Revisit if it lands there."
+      },
+      "ee83b81be902e502101044f9f8411adc044d1343": {
+        "subject": "Reduce log noise in HttpHappyEyeballs",
+        "month": "2026-01",
+        "disposition": "skip",
+        "reason": "Log-noise follow-up to the Happy Eyeballs work, which we did not take."
+      },
+      "6cd1ab3764587f1a6784f0d46efc2fc749149056": {
+        "subject": "Improve external restart handling",
+        "month": "2026-01",
+        "disposition": "skip",
+        "reason": "External restart handling: new RestartableServiceLifetime, LifecycleEventAttribute and the SystemResource/About plumbing. Radarr has the same change outstanding as e80abdd60 in 2026-08, and the backend half is Radarr's to own - taking the Sonarr copy now would guarantee a conflicting second port. Deferred to the Radarr chunk so both halves land together."
+      },
+      "f3b39ba4f7abd8e454c16d0469086c09f66aff6f": {
+        "subject": "New: Display multiple audio and subtitles streams in media info",
+        "month": "2026-01",
+        "disposition": "skip",
+        "reason": "Multiple audio and subtitle streams in media info: migration 225 restructures MediaInfoModel into per-stream models and rewrites FileNameBuilder tokens, XBMC metadata and the Discord/Trakt/CustomScript/Webhook payloads. Raised as a product decision, not a sync decision, and declined for this chunk."
+      },
+      "c70de927a5113a3029478c539ca0f7f3095e07e9": {
+        "subject": "Avoid unique constraints for primary keys in SQLite migrations",
+        "month": "2026-01",
+        "disposition": "pick",
+        "reason": "SqliteSchemaDumper marked primary-key columns UNIQUE when rebuilding a table from its dumped schema, adding an index SQLite already provides implicitly."
+      },
+      "0d80c093ffd4f07bd46249ab7d48a9e5272fda62": {
+        "subject": "Prevent empty path from breaking custom script validation",
+        "month": "2026-01",
+        "disposition": "adapt",
+        "reason": "An empty custom script Path fell through IsValidPath into SystemFolderValidator, which threw instead of reporting a validation failure. Cascade on first failure and reject empty up front. Adapted for our generic SystemFolderValidator<T>."
+      },
+      "06c6062531d87f77787e435d57366c34bd8f2f79": {
+        "subject": "Add v5 Connection endpoints",
+        "month": "2026-01",
+        "disposition": "adapt",
+        "reason": "Took the non-V5 half only: the Plex Server Port field now declares FieldType.Number so it renders as a number input. The Sonarr.Api.V5 Connections endpoints have no counterpart project here."
+      },
+      "b2f2c21a61eea3eec213af045853b5a5d27a754f": {
+        "subject": "New: Return error if invalid indexer or download client provided for pushed releases",
+        "month": "2026-01",
+        "disposition": "adapt",
+        "reason": "/api/v3/release/push silently ignored an unknown indexer or download client name. Added ResolveIndexer/ResolveDownloadClient to the factories with 400-returning exceptions, rewired our V3 ReleasePushController, and ported both fixtures. Two deliberate departures: ReleaseInfo.IndexerId is a non-nullable int, so an omitted indexer arrives as 0 and upstream's straight pass-through would reject the push - mapped to null here; and the duplicate ResolveDownloadClient upstream also added to DownloadClientProvider is left out, since it is not on IProvideDownloadClient and nothing calls it."
+      },
+      "399ca1661fccfd38723caf4ec79f8775751426ac": {
+        "subject": "New: Ability to set command priority when starting command via API",
+        "month": "2026-01",
+        "disposition": "adapt",
+        "reason": "Command priority becomes a property of the posted resource instead of a hardcoded ManualImportCommand special case. Adapted to our V3 CommandController, whose code was identical to upstream's pre-change V5. The interactive import modal asks for High so the UI path keeps the priority it had; other API clients posting ManualImport without a priority now get Normal, which is the point of the change."
+      },
+      "41b0ecb08c6dbf4de9d986791a6b42e1a93af9db": {
+        "subject": "Increase width of Organize and Rename modal",
+        "month": "2026-01",
+        "disposition": "pick",
+        "reason": "Organize and Rename modal widened to EXTRA_EXTRA_LARGE."
+      },
+      "70678510eed5d7dd19e4f54f99b394b4c38581e4": {
+        "subject": "Use theme appropriate colors for image background on initial load",
+        "month": "2026-01",
+        "disposition": "adapt",
+        "reason": "Poster and headshot placeholders painted --defaultColor, a foreground colour, so every grid flashed dark tiles before images resolved. Switched to --movieBackgroundColor, which already tracks the theme. Applied across the movie, scene, performer and studio grids plus collection and credit posters; the MovieIndexPosterSelect check circle keeps --defaultColor because it is a deliberate contrast chip, not an image placeholder."
+      },
+      "28300ffb2b57936b554724d9b339b76dd837114b": {
+        "subject": "Add aria-labels to sidebar status",
+        "month": "2026-01",
+        "disposition": "adapt",
+        "reason": "The sidebar queue and health counters rendered a bare number with no accessible name. PageSidebarStatus now forwards span props to Label. The four en.json keys were authored here in sorted position rather than taken from the upstream hunk."
+      },
+      "276e67b5fa5dba1ee55909da3f72335a3a484e49": {
+        "subject": "Add alt text for series images",
+        "month": "2026-01",
+        "disposition": "adapt",
+        "reason": "MovieImage rendered every image with no alt attribute. Added a required title prop and a cover-type-aware alt string, updating all twenty call sites across movie, scene, performer, studio and collection. Cover types differ from upstream's (screenshot, headshot and clearlogo instead of season), so the alt keys are ours and authored in sorted position."
+      },
+      "ae13ce4ac6df6851db1740471761783adb35b182": {
+        "subject": "Improve tab behaviour",
+        "month": "2026-01",
+        "disposition": "adapt",
+        "reason": "Tab in an empty search box ran a search for the empty string and blurred the input instead of moving focus; the hover-only poster action buttons stayed in the tab order behind an invisible overlay. Applied to MovieSearchInput and all four index posters."
+      },
+      "b88b7e15c1b64e723f7898cf58a3227eb5cf69a5": {
+        "subject": "Fixed: Reduce data transfer when reading video stream from files",
+        "month": "2026-01",
+        "disposition": "have",
+        "reason": "Picks the ffprobe -select_streams index by position within VideoStreams rather than by absolute stream index, so HDR frame analysis reads the right stream. VideoFileInfoReader already carries the final form of this, refined by 302b0f356."
+      },
+      "302b0f356e7c26de8c90bc874ca63ba3bb862d8d": {
+        "subject": "Fallback to video stream 0 when reading primary video for frame analysis",
+        "month": "2026-01",
+        "disposition": "have",
+        "reason": "Falls back to video stream 0 when the primary video stream is not found in VideoStreams. Already present verbatim in our VideoFileInfoReader."
+      },
+      "1033849d399535f981d88c7bc637cdb4180d129c": {
+        "subject": "Fix translation key for banner in SeriesImage component",
+        "month": "2026-01",
+        "disposition": "have",
+        "reason": "Corrects the alt-text key for banners from 'Banner' to 'ImageBanner' in Sonarr's SeriesImage. Our MovieImage alt text was written in this chunk and already uses ImageBanner, with keys authored in sorted position."
       }
     }
   }
