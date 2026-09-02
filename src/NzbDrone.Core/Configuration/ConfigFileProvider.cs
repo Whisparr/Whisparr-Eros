@@ -140,6 +140,7 @@ namespace NzbDrone.Core.Configuration
             _cache.Clear();
 
             var allWithDefaults = GetConfigDictionary();
+            var hasUpdated = false;
 
             foreach (var configValue in configValues)
             {
@@ -158,11 +159,15 @@ namespace NzbDrone.Core.Configuration
 
                 if (!equal)
                 {
+                    hasUpdated = true;
                     SetValue(configValue.Key.FirstCharToUpper(), configValue.Value.ToString());
                 }
             }
 
-            _eventAggregator.PublishEvent(new ConfigFileSavedEvent());
+            if (hasUpdated)
+            {
+                _eventAggregator.PublishEvent(new ConfigFileSavedEvent());
+            }
         }
 
         public string BindAddress
