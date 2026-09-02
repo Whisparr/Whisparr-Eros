@@ -1,0 +1,23 @@
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.tile {
+  flex: 1 0 160px;
+  margin: 10px;
+  padding: 15px;
+  border: 1px solid var(--borderColor);
+  border-radius: 4px;
+  background-color: var(--cardBackgroundColor);
+}
+
+.value {
+  font-size: 28px;
+  font-weight: 300;
+}
+
+.label {
+  color: var(--helpTextColor);
+  font-size: 13px;
+}
