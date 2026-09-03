@@ -135,7 +135,7 @@ function AddNewScene() {
               {translate('HaveNotAddedMovies')}
             </div>
             <div>
-              <Button to="/add/import" kind={kinds.PRIMARY}>
+              <Button to="/add/import/scenes" kind={kinds.PRIMARY}>
                 {translate('ImportExistingMovies')}
               </Button>
             </div>

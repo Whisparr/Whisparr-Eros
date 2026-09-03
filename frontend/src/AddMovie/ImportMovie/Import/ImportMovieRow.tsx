@@ -4,7 +4,11 @@ import VirtualTableRowCell from 'Components/Table/Cells/VirtualTableRowCell';
 import VirtualTableSelectCell from 'Components/Table/Cells/VirtualTableSelectCell';
 import { inputTypes } from 'Helpers/Props';
 import { SelectStateInputProps } from 'typings/props';
-import { ImportItem, MovieLookupResult } from '../ImportMovieTypes';
+import {
+  ImportItem,
+  ImportItemType,
+  MovieLookupResult,
+} from '../ImportMovieTypes';
 import ImportMovieSelectMovie from './SelectMovie/ImportMovieSelectMovie';
 import styles from './ImportMovieRow.css';
 
@@ -16,7 +20,7 @@ interface ImportMovieRowProps {
   readonly onLookup: (opts: {
     id: string;
     term: string;
-    itemType: 'movie' | 'scene';
+    itemType?: ImportItemType;
     topOfQueue: boolean;
   }) => void;
   readonly onMovieSelect: (id: string, movie: MovieLookupResult) => void;

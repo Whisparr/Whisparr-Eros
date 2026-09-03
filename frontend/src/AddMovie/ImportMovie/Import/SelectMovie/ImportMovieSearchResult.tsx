@@ -24,6 +24,8 @@ function ImportMovieSearchResult({
     year,
     releaseDate,
     studioTitle,
+    performerNames,
+    searchCredits,
     isExisting,
   } = item;
 
@@ -42,6 +44,8 @@ function ImportMovieSearchResult({
           year={year}
           releaseDate={releaseDate}
           studioTitle={studioTitle}
+          performerNames={performerNames}
+          searchCredits={searchCredits}
           isExistingMovie={isExisting}
         />
       </Link>

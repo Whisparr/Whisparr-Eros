@@ -8,7 +8,11 @@ import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import Portal from 'Components/Portal';
 import { icons, kinds } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import { ImportItem, MovieLookupResult } from '../../ImportMovieTypes';
+import {
+  ImportItem,
+  ImportItemType,
+  MovieLookupResult,
+} from '../../ImportMovieTypes';
 import ImportMovieSearchResult from './ImportMovieSearchResult';
 import ImportMovieTitle from './ImportMovieTitle';
 import styles from './ImportMovieSelectMovie.css';
@@ -19,7 +23,7 @@ interface ImportMovieSelectMovieProps {
   readonly onLookup: (opts: {
     id: string;
     term: string;
-    itemType: 'movie' | 'scene';
+    itemType?: ImportItemType;
     topOfQueue: boolean;
   }) => void;
   readonly onMovieSelect: (id: string, movie: MovieLookupResult) => void;
@@ -134,6 +138,8 @@ function ImportMovieSelectMovie({
                   year={selectedMovie.year}
                   releaseDate={selectedMovie.releaseDate}
                   studioTitle={selectedMovie.studioTitle}
+                  performerNames={selectedMovie.performerNames}
+                  searchCredits={selectedMovie.searchCredits}
                   isExistingMovie={selectedMovie.isExisting}
                 />
               ) : null}

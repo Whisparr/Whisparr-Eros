@@ -2,18 +2,23 @@ import React from 'react';
 import VirtualTableHeader from 'Components/Table/VirtualTableHeader';
 import VirtualTableHeaderCell from 'Components/Table/VirtualTableHeaderCell';
 import VirtualTableSelectAllHeaderCell from 'Components/Table/VirtualTableSelectAllHeaderCell';
+import { SortDirection } from 'Helpers/Props/sortDirections';
 import translate from 'Utilities/String/translate';
 import styles from './ImportMovieHeader.css';
 
 interface ImportMovieHeaderProps {
   allSelected: boolean;
   allUnselected: boolean;
+  sortDirection: SortDirection;
+  onSortPress: () => void;
   onSelectAllChange: (opts: { value: boolean }) => void;
 }
 
 function ImportMovieHeader({
   allSelected,
   allUnselected,
+  sortDirection,
+  onSortPress,
   onSelectAllChange,
 }: Readonly<ImportMovieHeaderProps>) {
   return (
@@ -24,7 +29,14 @@ function ImportMovieHeader({
         onSelectAllChange={onSelectAllChange}
       />
 
-      <VirtualTableHeaderCell className={styles.folder} name="folder">
+      <VirtualTableHeaderCell
+        className={styles.folder}
+        name="folder"
+        isSortable={true}
+        sortKey="folder"
+        sortDirection={sortDirection}
+        onSortPress={onSortPress}
+      >
         {translate('RelativePath')}
       </VirtualTableHeaderCell>
 

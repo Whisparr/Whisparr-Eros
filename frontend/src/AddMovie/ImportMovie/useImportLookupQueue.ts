@@ -1,12 +1,16 @@
 import React, { useCallback, useRef, useState } from 'react';
 import fetchJson from 'Utilities/Fetch/fetchJson';
 import getQueryPath from 'Utilities/Fetch/getQueryPath';
-import { ImportAction, MovieLookupResult } from './ImportMovieTypes';
+import {
+  ImportAction,
+  ImportItemType,
+  MovieLookupResult,
+} from './ImportMovieTypes';
 
 interface QueueEntry {
   id: string;
   term: string;
-  itemType: 'movie' | 'scene';
+  itemType?: ImportItemType;
 }
 
 interface UseImportLookupQueueResult {
@@ -15,7 +19,7 @@ interface UseImportLookupQueueResult {
     items: {
       id: string;
       term: string;
-      itemType: 'movie' | 'scene';
+      itemType?: ImportItemType;
       isPopulated: boolean;
     }[]
   ) => void;
@@ -49,10 +53,13 @@ function useImportLookupQueue(
     const controller = new AbortController();
     abortRef.current = controller;
 
-    const params = new URLSearchParams({
-      term: entry.term,
-      itemType: entry.itemType,
-    });
+    // An unset itemType is left off the query so the server infers it from
+    // the file name rather than forcing a movie search.
+    const params = new URLSearchParams({ term: entry.term });
+
+    if (entry.itemType) {
+      params.set('itemType', entry.itemType);
+    }
 
     try {
       const results = await fetchJson<MovieLookupResult[], never>({
@@ -129,7 +136,7 @@ function useImportLookupQueue(
       items: {
         id: string;
         term: string;
-        itemType: 'movie' | 'scene';
+        itemType?: ImportItemType;
         isPopulated: boolean;
       }[]
     ) => {

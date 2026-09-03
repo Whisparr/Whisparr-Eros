@@ -5,7 +5,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Alert from 'Components/Alert';
 import FieldSet from 'Components/FieldSet';
 import FileBrowserModal from 'Components/FileBrowser/FileBrowserModal';
@@ -25,6 +25,7 @@ import useRootFolders, {
   useSortedRootFolders,
 } from 'RootFolder/useRootFolders';
 import translate from 'Utilities/String/translate';
+import { ImportItemType } from '../ImportMovieTypes';
 import ImportMovieRootFolderRow from './ImportMovieRootFolderRow';
 import styles from './ImportMovieSelectFolder.css';
 
@@ -39,9 +40,12 @@ const rootFolderColumns = [
   { name: 'actions', label: () => '', isVisible: true },
 ];
 
-function ImportMovieSelectFolder() {
+interface ImportMovieSelectFolderProps {
+  readonly itemType: ImportItemType;
+}
+
+function ImportMovieSelectFolder({ itemType }: ImportMovieSelectFolderProps) {
   const navigate = useNavigate();
-  const location = useLocation();
 
   const { isFetching, isFetched, error } = useRootFolders();
   const items = useSortedRootFolders();
@@ -60,7 +64,7 @@ function ImportMovieSelectFolder() {
 
   const previousIsAddingRootFolder = usePrevious(isAddingRootFolder);
 
-  const isMovies = location.pathname === '/add/import/movies';
+  const isMovies = itemType === 'movie';
   const importTitle = isMovies ? 'ImportMovies' : 'ImportScenes';
   const hasRootFolders = items.length > 0;
 
@@ -98,9 +102,12 @@ function ImportMovieSelectFolder() {
       !addRootFolderError &&
       newRootFolder
     ) {
-      navigate(`/add/import/movies/${newRootFolder.id}`);
+      navigate(
+        `/add/import/${isMovies ? 'movies' : 'scenes'}/${newRootFolder.id}`
+      );
     }
   }, [
+    isMovies,
     navigate,
     previousIsAddingRootFolder,
     isAddingRootFolder,
@@ -154,6 +161,7 @@ function ImportMovieSelectFolder() {
                           path={rootFolder.path}
                           freeSpace={rootFolder.freeSpace}
                           importFiles={rootFolder.importFiles}
+                          itemType={itemType}
                         />
                       ))}
                     </TableBody>

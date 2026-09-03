@@ -1,8 +1,13 @@
 import React, { useEffect, useRef } from 'react';
 import Scroller from 'Components/Scroller/Scroller';
 import { HORIZONTAL } from 'Helpers/Props/scrollDirections';
+import { SortDirection } from 'Helpers/Props/sortDirections';
 import { SelectStateInputProps } from 'typings/props';
-import { ImportItem, MovieLookupResult } from '../ImportMovieTypes';
+import {
+  ImportItem,
+  ImportItemType,
+  MovieLookupResult,
+} from '../ImportMovieTypes';
 import ImportMovieHeader from './ImportMovieHeader';
 import ImportMovieRow from './ImportMovieRow';
 import styles from './ImportMovieTable.css';
@@ -13,13 +18,15 @@ interface ImportMovieTableProps {
   readonly allSelected: boolean;
   readonly allUnselected: boolean;
   readonly selectedState: Record<string, boolean>;
+  readonly sortDirection: SortDirection;
+  readonly onSortPress: () => void;
   readonly onSelectAllChange: (opts: { value: boolean }) => void;
   readonly onSelectedChange: (opts: SelectStateInputProps) => void;
   readonly onRemoveSelectedStateItem: (id: string) => void;
   readonly onLookup: (opts: {
     id: string;
     term: string;
-    itemType: 'movie' | 'scene';
+    itemType?: ImportItemType;
     topOfQueue: boolean;
   }) => void;
   readonly onMovieSelect: (id: string, movie: MovieLookupResult) => void;
@@ -36,6 +43,8 @@ function ImportMovieTable({
   allSelected,
   allUnselected,
   selectedState,
+  sortDirection,
+  onSortPress,
   onSelectAllChange,
   onSelectedChange,
   onRemoveSelectedStateItem,
@@ -96,6 +105,8 @@ function ImportMovieTable({
         <ImportMovieHeader
           allSelected={allSelected}
           allUnselected={allUnselected}
+          sortDirection={sortDirection}
+          onSortPress={onSortPress}
           onSelectAllChange={onSelectAllChange}
         />
 
