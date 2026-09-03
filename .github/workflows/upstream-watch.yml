@@ -40,7 +40,7 @@ jobs:
       # actor, so CI runs on the PR normally.
       - name: Mint app token
         id: app
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ secrets.CI_APP_ID }}
           private-key: ${{ secrets.CI_APP_KEY }}
