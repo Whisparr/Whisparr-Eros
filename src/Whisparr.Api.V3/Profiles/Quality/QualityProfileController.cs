@@ -105,5 +105,14 @@ namespace Whisparr.Api.V3.Profiles.Quality
         {
             return _qualityProfileService.All().ToResource();
         }
+
+        // The delete guard refuses on movies, performers, studios, import lists or the
+        // fallback flag. Only the import-list half is askable from the client without
+        // downloading a collection per term, so the counts are answered here instead.
+        [HttpGet("{id:int}/inuse")]
+        public QualityProfileInUseResource GetInUse(int id)
+        {
+            return _qualityProfileService.GetInUse(id).ToResource();
+        }
     }
 }

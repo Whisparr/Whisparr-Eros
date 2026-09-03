@@ -429,7 +429,8 @@ move to the list query, and the boot gate lost its quality-profile term. The
 *"Quality profile in use"* thread does **not** close with it — Sonarr's
 `useQualityProfileInUse` counts series client-side, which here means the whole-library
 fetch the thread above rejects, so the hook arrived with the import-list half only and the
-`GET /qualityprofile/{id}/inuse` endpoint is still the answer.
+`GET /qualityprofile/{id}/inuse` endpoint was the answer. That endpoint has since been
+built and the thread is closed; see it below.
 
 ~~**Next: section 4** — Connections (Notifications).~~ **Done, #521.** A provider list
 section like section 2, and the first one whose rows edit `fields`, so
@@ -1962,21 +1963,19 @@ and belongs to whoever wants monitor modes to work.
   same shape `GET /movie/list` already has for ids alone. Backend plus a one-line hook
   change, and its own PR. Until then the hook carries a five-minute stale time and is
   excluded from SignalR invalidation, both for the same reason.
-- **"Quality profile in use" only checks import lists** — `createProfileInUseSelector` asked
-  the `movies` slice whether any movie used the profile, and that slice has been empty since
-  the indexes went paged, so the movie half of the answer has been inert for some time; #515
-  dropped the dead term rather than leave it reading a retired slice. Deleting a profile that
-  movies use is still guarded server-side, so this only affects whether the modal warns
-  first. Answering it client-side would mean the same whole-library fetch as the thread
-  above; a `GET /qualityprofile/{id}/inuse` is the better shape. **Still open after #520**,
-  which was where §7 put it: the selector became `useQualityProfileInUse` and kept the
-  import-list half verbatim, because Sonarr's version of that hook answers the other half by
-  fetching every series. The server refuses the delete on movies, performers, studios,
-  import lists or the fallback flag, so the endpoint would want to return all five counts;
-  it is a backend PR, not a frontend one. **Filed as
-  [Whisparr/Whisparr#1138](https://github.com/Whisparr/Whisparr/issues/1138)** — deferred
-  rather than dropped, and the divergence from Sonarr is deliberate: their hook fetches
-  every series, which here is the 46MB library read.
+- ~~**"Quality profile in use" only checks import lists**~~ — **closed.**
+  `createProfileInUseSelector` asked the `movies` slice whether any movie used the profile,
+  and that slice has been empty since the indexes went paged, so the movie half of the
+  answer had been inert for some time; #515 dropped the dead term and #520 carried the
+  import-list half into `useQualityProfileInUse` verbatim. The server refuses the delete on
+  movies, performers, studios, import lists or the fallback flag, and only the last two are
+  askable from the client without downloading a collection per term — Sonarr answers the
+  equivalent question by fetching every series, which here is the 46MB library read. So the
+  question moved to the server: `GET /qualityprofile/{id}/inuse` returns the five terms as
+  counts, `useQualityProfileInUse` is a query on it, and the modal names which of them is
+  holding the profile instead of saying only "in use". The delete guard itself was rebuilt
+  on the same counts, which took three whole-table reads out of every delete.
+  [Whisparr/Whisparr#1138](https://github.com/Whisparr/Whisparr/issues/1138).
 
 - **Blocklist's two API filters 500** — `BlocklistController` builds
   `movieIds.Contains(b.MovieId)` and `protocols.Contains(b.Protocol)`, and

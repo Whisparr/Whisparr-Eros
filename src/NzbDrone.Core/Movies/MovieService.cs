@@ -61,6 +61,7 @@ namespace NzbDrone.Core.Movies
         void DeleteMovie(int movieId, bool deleteFiles, bool addImportListExclusion = false);
         void DeleteMovies(List<int> movieIds, bool deleteFiles, bool addImportListExclusion = false);
         List<Movie> GetAllMovies();
+        int CountByQualityProfile(int qualityProfileId);
         Dictionary<int, List<int>> AllMovieTags();
         Movie UpdateMovie(Movie movie);
         List<Movie> UpdateMovie(List<Movie> movies, bool useExistingRelativeFolder);
@@ -417,6 +418,14 @@ namespace NzbDrone.Core.Movies
         public List<Movie> GetAllMovies()
         {
             return _movieRepository.All().ToList();
+        }
+
+        /// <summary> Count the movies assigned to a quality profile. </summary>
+        /// <param name="qualityProfileId">The quality profile to count against.</param>
+        /// <returns>The number of movies using the profile.</returns>
+        public int CountByQualityProfile(int qualityProfileId)
+        {
+            return _movieRepository.Count(m => m.QualityProfileId == qualityProfileId);
         }
 
         /// <summary> Get a dictionary of all tag IDs assigned to movies. </summary>

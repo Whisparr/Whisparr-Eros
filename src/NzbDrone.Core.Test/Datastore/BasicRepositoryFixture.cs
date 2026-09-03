@@ -61,6 +61,25 @@ namespace NzbDrone.Core.Test.Datastore
         }
 
         [Test]
+        public void should_be_able_to_get_count_matching_a_predicate()
+        {
+            _basicList[0].Interval = 5;
+            _basicList[1].Interval = 5;
+
+            Subject.InsertMany(_basicList);
+
+            Subject.Count(x => x.Interval == 5).Should().Be(2);
+        }
+
+        [Test]
+        public void should_get_count_of_zero_when_nothing_matches_the_predicate()
+        {
+            Subject.InsertMany(_basicList);
+
+            Subject.Count(x => x.Interval == 99).Should().Be(0);
+        }
+
+        [Test]
         public void should_be_able_to_find_by_id()
         {
             Subject.InsertMany(_basicList);

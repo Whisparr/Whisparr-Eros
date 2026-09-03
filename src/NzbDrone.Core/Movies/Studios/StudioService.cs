@@ -28,6 +28,7 @@ namespace NzbDrone.Core.Movies.Studios
         void RemoveStudio(Studio studio);
         PagingSpec<Studio> Paged(PagingSpec<Studio> pagingSpec);
         public int Count();
+        int CountByQualityProfile(int qualityProfileId);
     }
 
     public class StudioService : IStudioService
@@ -174,6 +175,11 @@ namespace NzbDrone.Core.Movies.Studios
         public int Count()
         {
             return _studioRepo.Count();
+        }
+
+        public int CountByQualityProfile(int qualityProfileId)
+        {
+            return _studioRepo.Count(s => s.QualityProfileId == qualityProfileId);
         }
 
         private void RemoveStudioResourcesCache(string foreignId)

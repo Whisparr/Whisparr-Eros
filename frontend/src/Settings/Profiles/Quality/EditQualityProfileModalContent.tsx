@@ -95,7 +95,7 @@ function EditQualityProfileModalContent({
     saveProvider,
   } = useManageQualityProfile(id, cloneId);
 
-  const isInUse = useQualityProfileInUse(id);
+  const { isInUse, inUseMessage } = useQualityProfileInUse(id);
   const wasSaving = usePrevious(isSaving);
 
   const [editGroups, setEditGroups] = useState(false);
@@ -722,11 +722,7 @@ function EditQualityProfileModalContent({
           {id ? (
             <div
               className={styles.deleteButtonContainer}
-              title={
-                isInUse
-                  ? translate('QualityProfileInUseMovieListCollection')
-                  : undefined
-              }
+              title={isInUse ? inUseMessage : undefined}
             >
               <Button
                 kind={kinds.DANGER}
