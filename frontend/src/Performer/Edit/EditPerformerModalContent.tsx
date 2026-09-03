@@ -11,6 +11,7 @@ import ModalBody from 'Components/Modal/ModalBody';
 import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
+import { useMovieMonitorAvailability } from 'Helpers/Hooks/useMovieMonitorAvailability';
 import { inputTypes } from 'Helpers/Props';
 import selectSettings from 'Helpers/selectSettings';
 import MovieHeadshot from 'Movie/MovieHeadshot';
@@ -22,13 +23,11 @@ import styles from './EditPerformerModalContent.css';
 
 export interface EditPerformerModalContentProps {
   performer: Performer;
-  showMovieMonitor: boolean;
   onModalClose: () => void;
 }
 
 function EditPerformerModalContent({
   performer,
-  showMovieMonitor,
   onModalClose,
 }: Readonly<EditPerformerModalContentProps>) {
   const { isSmallScreen } = useAppDimensions();
@@ -114,6 +113,25 @@ function EditPerformerModalContent({
     );
   }, [performer, pendingChanges, savePerformer.error]);
 
+  // Movie monitoring only means something when the metadata source can supply
+  // movies at all, so the toggle follows the configured source. When the
+  // source is set but this performer isn't linked to it on stashdb.org the
+  // toggle stays visible and disabled, with the reason underneath it.
+  const {
+    isSupported: isMovieMonitorSupported,
+    isLinked: isMovieMonitorLinked,
+    unavailableMessage: movieMonitorUnavailableMessage,
+  } = useMovieMonitorAvailability(
+    'performer',
+    performer.tmdbId,
+    performer.tpdbId
+  );
+
+  // A performer can already be monitored and later lose their link, so leave
+  // the toggle usable in that direction — otherwise there'd be no way to clear
+  // a value the server now rejects on every save.
+  const isMovieMonitorDisabled = !isMovieMonitorLinked && !moviesMonitored;
+
   const handleInputChange = useCallback(({ name, value }: InputChanged) => {
     switch (name) {
       case 'monitored':
@@ -188,13 +206,15 @@ function EditPerformerModalContent({
                 />
               </FormGroup>
 
-              {showMovieMonitor ? (
+              {isMovieMonitorSupported ? (
                 <FormGroup>
                   <FormLabel>{translate('MonitoredMovie')}</FormLabel>
                   <FormInputGroup
                     type={inputTypes.CHECK}
                     name="moviesMonitored"
                     helpText={translate('MonitoredPerformerMovieHelpText')}
+                    helpTextWarning={movieMonitorUnavailableMessage}
+                    isDisabled={isMovieMonitorDisabled}
                     {...settings.moviesMonitored}
                     onChange={handleInputChange}
                   />

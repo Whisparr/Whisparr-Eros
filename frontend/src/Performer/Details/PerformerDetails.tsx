@@ -19,7 +19,7 @@ import PageToolbarSection from 'Components/Page/Toolbar/PageToolbarSection';
 import PageToolbarSeparator from 'Components/Page/Toolbar/PageToolbarSeparator';
 import { PosterOptionChange } from 'Components/PosterOptionsForm';
 import Tooltip from 'Components/Tooltip/Tooltip';
-import { useShowMovieMonitorToggleButton } from 'Helpers/Hooks/useShowMovieMonitorToggleButton';
+import { useMovieMonitorAvailability } from 'Helpers/Hooks/useMovieMonitorAvailability';
 import { icons, kinds, sizes, tooltipPositions } from 'Helpers/Props';
 import MovieHeadshot from 'Movie/MovieHeadshot';
 import DeletePerformerModal from 'Performer/Delete/DeletePerformerModal';
@@ -70,7 +70,12 @@ function PerformerDetails() {
     onYearRefreshPress,
   } = usePerformerDetails(performerForeignId as string);
 
-  const showMovieMonitorToggle = useShowMovieMonitorToggleButton(
+  const {
+    isSupported: isMovieMonitorSupported,
+    isLinked: isMovieMonitorLinked,
+    unavailableMessage: movieMonitorUnavailableMessage,
+  } = useMovieMonitorAvailability(
+    'performer',
     performer?.tmdbId,
     performer?.tpdbId
   );
@@ -198,6 +203,10 @@ function PerformerDetails() {
   const sceneCount = performer.sceneCount ?? 0;
   const sizeOnDisk = performer.sizeOnDisk ?? 0;
   // Computed variables
+  // A performer can already be monitored and later lose their link, so leave
+  // the toggle usable in that direction — otherwise there'd be no way to clear
+  // a value the server now rejects on every save.
+  const isMovieMonitorDisabled = !isMovieMonitorLinked && !moviesMonitored;
   const isSaving = false;
   const isRefreshing = false;
   const isSearching = false;
@@ -342,7 +351,7 @@ function PerformerDetails() {
                       onPress={handleMonitorTogglePress}
                     />
 
-                    {showMovieMonitorToggle ? (
+                    {isMovieMonitorSupported ? (
                       <MonitorToggleButton
                         className={
                           moviesMonitored
@@ -353,6 +362,12 @@ function PerformerDetails() {
                         moviesMonitored={moviesMonitored}
                         type="movieMonitor"
                         isSaving={isSaving}
+                        isDisabled={isMovieMonitorDisabled}
+                        tooltip={
+                          isMovieMonitorDisabled
+                            ? movieMonitorUnavailableMessage
+                            : undefined
+                        }
                         size={30}
                         onPress={handleMonitorTogglePress}
                       />
@@ -544,6 +559,10 @@ function PerformerDetails() {
           </div>
         </div>
         <div className={styles.contentContainer}>
+          {movieMonitorUnavailableMessage ? (
+            <Alert kind={kinds.WARNING}>{movieMonitorUnavailableMessage}</Alert>
+          ) : null}
+
           {!isFetching && moviesError ? (
             <Alert kind={kinds.DANGER}>
               {translate('LoadingMoviesFailed')}
@@ -588,7 +607,6 @@ function PerformerDetails() {
         <EditPerformerModal
           isOpen={isEditMovieModalOpen}
           performer={performer}
-          showMovieMonitor={showMovieMonitorToggle}
           onModalClose={handleEditMovieModalClose}
         />
       </PageContentBody>
