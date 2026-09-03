@@ -36,7 +36,7 @@ import PageToolbarSeparator from 'Components/Page/Toolbar/PageToolbarSeparator';
 import { PosterOptionChange } from 'Components/PosterOptionsForm';
 import posterPlaceholder from 'Components/posterPlaceholder';
 import Tooltip from 'Components/Tooltip/Tooltip';
-import { useShowMovieMonitorToggleButton } from 'Helpers/Hooks/useShowMovieMonitorToggleButton';
+import { useMovieMonitorAvailability } from 'Helpers/Hooks/useMovieMonitorAvailability';
 import { align, icons, kinds, sizes, tooltipPositions } from 'Helpers/Props';
 import QualityProfileName from 'Settings/Profiles/Quality/QualityProfileName';
 import DeleteStudioModal from 'Studio/Delete/DeleteStudioModal';
@@ -128,10 +128,17 @@ function StudioDetails() {
     onYearRefreshPress,
   } = useStudioDetails(studioForeignId);
 
-  const showMovieMonitorToggle = useShowMovieMonitorToggleButton(
-    studio?.tmdbId,
-    studio?.tpdbId
-  );
+  const {
+    isSupported: isMovieMonitorSupported,
+    isLinked: isMovieMonitorLinked,
+    unavailableMessage: movieMonitorUnavailableMessage,
+  } = useMovieMonitorAvailability('studio', studio?.tmdbId, studio?.tpdbId);
+
+  // A studio can already be monitored and later lose its link, so leave the
+  // toggle usable in that direction — otherwise there'd be no way to clear a
+  // value the server now rejects on every save.
+  const isMovieMonitorDisabled =
+    !isMovieMonitorLinked && !studio?.moviesMonitored;
 
   const studioTags = useStudioTags(studio?.tags || []);
   const studioId = studio?.id;
@@ -394,7 +401,7 @@ function StudioDetails() {
                         />
                       </div>
 
-                      {showMovieMonitorToggle ? (
+                      {isMovieMonitorSupported ? (
                         <div className={styles.toggleMoviesMonitoredContainer}>
                           <MonitorToggleButton
                             className={
@@ -406,6 +413,12 @@ function StudioDetails() {
                             moviesMonitored={studio.moviesMonitored}
                             type="movieMonitor"
                             isSaving={isSaving}
+                            isDisabled={isMovieMonitorDisabled}
+                            tooltip={
+                              isMovieMonitorDisabled
+                                ? movieMonitorUnavailableMessage
+                                : undefined
+                            }
                             size={30}
                             onPress={onMonitorTogglePress}
                           />
@@ -561,6 +574,10 @@ function StudioDetails() {
         </div>
 
         <div className={styles.contentContainer}>
+          {movieMonitorUnavailableMessage ? (
+            <Alert kind={kinds.WARNING}>{movieMonitorUnavailableMessage}</Alert>
+          ) : null}
+
           {!isWorksFetching && moviesError && (
             <Alert kind={kinds.DANGER}>
               {translate('LoadingMoviesFailed')}

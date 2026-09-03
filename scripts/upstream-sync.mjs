@@ -625,12 +625,7 @@ if (mode === '--check') {
 
   const enBad = checkEnJson();
   if (enBad.length > 0) {
-    // One pre-existing violation is tracked separately; anything more is new.
-    if (enBad.length > 1) {
-      fail(`en.json is not sorted case-insensitively:\n  ${enBad.join('\n  ')}`);
-    } else {
-      console.warn(`warning: known en.json ordering issue: ${enBad[0]}`);
-    }
+    fail(`en.json is not sorted case-insensitively:\n  ${enBad.join('\n  ')}`);
   }
 
   let current = '';
