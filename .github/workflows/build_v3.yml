@@ -106,6 +106,9 @@ jobs:
     needs: prepare
     permissions:
       contents: read
+      # The build action adds the private gh-openur feed authenticated with
+      # github.token; without this the freebsd-x64 runtime packs 403.
+      packages: read
     strategy:
       fail-fast: false
       matrix:
