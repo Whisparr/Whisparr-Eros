@@ -5,7 +5,7 @@
 <ItemGroup>
   <PackageReference Include="Selenium.WebDriver" Version="4.48.0" />
   <PackageReference Include="Selenium.Support" Version="4.48.0" />
-  <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="152.0.7977.6400" />
+  <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="152.0.7977.7500" />
 </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NzbDrone.Test.Common\Whisparr.Test.Common.csproj" />
