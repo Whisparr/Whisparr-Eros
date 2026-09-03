@@ -120,8 +120,9 @@ namespace NzbDrone.Common.Extensions
         }
 
         /// <summary>
-        /// Strips carriage returns and line feeds so a value that came from a request
-        /// body or a filename cannot forge extra lines when written to the log.
+        /// Strips control characters - carriage returns and line feeds among them - so a
+        /// value that came from a request, a release name or a filename cannot forge extra
+        /// lines when written to the log, or repaint one with an escape sequence.
         /// </summary>
         public static string ForLog(this string text)
         {
@@ -130,7 +131,23 @@ namespace NzbDrone.Common.Extensions
                 return null;
             }
 
-            return text.Replace("\r", string.Empty).Replace("\n", string.Empty);
+            var cleaned = new StringBuilder(text.Length);
+
+            foreach (var c in text)
+            {
+                if (!char.IsControl(c))
+                {
+                    cleaned.Append(c);
+                }
+            }
+
+            // The loop has already dropped CR and LF. The explicit Replace pair is
+            // redundant to a reader but not to CodeQL: cs/log-forging recognises
+            // String.Replace as a sanitiser and does not model the loop, so this is
+            // what marks the value clean. Every caller returns through this one path -
+            // an early "return text" for the common case would hand the query an
+            // unsanitised route from the argument straight to the result.
+            return cleaned.ToString().Replace("\r", string.Empty).Replace("\n", string.Empty);
         }
 
         public static bool IsNullOrWhiteSpace(this string text)

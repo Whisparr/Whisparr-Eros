@@ -34,6 +34,8 @@ env:
 jobs:
   prepare:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       framework: ${{ steps.variables.outputs.framework }}
       major_version: ${{ steps.variables.outputs.major_version }}
@@ -102,6 +104,11 @@ jobs:
 
   backend:
     needs: prepare
+    permissions:
+      contents: read
+      # The build action adds the private gh-openur feed authenticated with
+      # github.token; without this the freebsd-x64 runtime packs 403.
+      packages: read
     strategy:
       fail-fast: false
       matrix:
@@ -154,6 +161,8 @@ jobs:
 
   frontend:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Check out
         uses: actions/checkout@v7
@@ -181,6 +190,8 @@ jobs:
 
   unit_test:
     needs: backend
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -221,6 +232,8 @@ jobs:
   unit_test_postgres:
     needs: backend
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -241,6 +254,8 @@ jobs:
 
   integration_test:
     needs: [prepare, backend]
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
