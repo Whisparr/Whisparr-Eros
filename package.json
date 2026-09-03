@@ -52,7 +52,7 @@
     "mousetrap": "1.6.5",
     "normalize.css": "8.0.1",
     "prop-types": "15.8.1",
-    "qs": "6.15.3",
+    "qs": "6.16.0",
     "react": "19.2.8",
     "react-addons-shallow-compare": "15.6.3",
     "react-async-script": "1.2.0",
