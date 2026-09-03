@@ -50,7 +50,9 @@ function DiskSpace() {
             {data.map((item) => {
               const { freeSpace, totalSpace } = item;
 
-              const diskUsage = 100 - (freeSpace / totalSpace) * 100;
+              const diskUsage = totalSpace
+                ? 100 - (freeSpace / totalSpace) * 100
+                : 0;
               let diskUsageKind: Kind = 'primary';
 
               if (diskUsage > 90) {
