@@ -21,6 +21,7 @@ namespace NzbDrone.Core.Datastore
     {
         IEnumerable<TModel> All();
         int Count();
+        int Count(Expression<Func<TModel, bool>> predicate);
         TModel Get(int id);
         TModel Find(int id);
         TModel Insert(TModel model);
@@ -104,6 +105,21 @@ namespace NzbDrone.Core.Datastore
             using (var conn = _database.OpenConnection())
             {
                 return conn.ExecuteScalar<int>($"SELECT COUNT(*) FROM \"{_table}\"");
+            }
+        }
+
+        // Counted in SQL rather than by materialising the rows: the callers only want the
+        // number, and the tables this is asked about are the library-sized ones.
+        public int Count(Expression<Func<TModel, bool>> predicate)
+        {
+            var sql = new SqlBuilder(_database.DatabaseType)
+                .SelectCount()
+                .Where(predicate)
+                .AddPageCountTemplate(typeof(TModel));
+
+            using (var conn = _database.OpenConnection())
+            {
+                return conn.ExecuteScalar<int>(sql.RawSql, sql.Parameters);
             }
         }
 

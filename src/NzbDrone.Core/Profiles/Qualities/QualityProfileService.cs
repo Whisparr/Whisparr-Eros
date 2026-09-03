@@ -19,6 +19,7 @@ namespace NzbDrone.Core.Profiles.Qualities
         QualityProfile Add(QualityProfile profile);
         void Update(QualityProfile profile);
         void Delete(int id);
+        QualityProfileInUse GetInUse(int id);
         List<QualityProfile> All();
         QualityProfile Get(int id);
         bool Exists(int id);
@@ -68,13 +69,30 @@ namespace NzbDrone.Core.Profiles.Qualities
 
         public void Delete(int id)
         {
-            if (_movieService.GetAllMovies().Any(c => c.QualityProfileId == id) || _importListFactory.All().Any(c => c.QualityProfileId == id) ||
-                _performerService.GetAllPerformers().Any(c => c.QualityProfileId == id) || _studioService.GetAllStudios().Any(c => c.QualityProfileId == id) || _profileRepository.Get(id)?.Fallback == true)
+            if (GetInUse(id).IsInUse)
             {
                 throw new QualityProfileInUseException(id);
             }
 
             _profileRepository.Delete(id);
+        }
+
+        // The counts the delete guard refuses on, so the client can ask before the modal
+        // offers the button. Movies, performers and studios are counted in SQL: the guard
+        // used to load all three tables to answer a boolean, and the movie table alone is
+        // the whole library. Import lists are provider definitions and already in memory.
+        // `Get` rather than `Find` for the fallback flag, so an unknown id is a 404 here
+        // and stays a 404 on delete.
+        public QualityProfileInUse GetInUse(int id)
+        {
+            return new QualityProfileInUse
+            {
+                MovieCount = _movieService.CountByQualityProfile(id),
+                PerformerCount = _performerService.CountByQualityProfile(id),
+                StudioCount = _studioService.CountByQualityProfile(id),
+                ImportListCount = _importListFactory.All().Count(c => c.QualityProfileId == id),
+                IsFallback = _profileRepository.Get(id)?.Fallback == true
+            };
         }
 
         public List<QualityProfile> All()
