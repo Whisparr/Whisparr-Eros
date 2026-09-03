@@ -5,9 +5,14 @@
   white-space: nowrap;
 }
 
+/* No max-width: a stashdb foreign ID is a fixed-length 36-character UUID, which
+   needs ~282px. Capping the cell at 250px did not shrink the text -- nowrap has
+   no wrap opportunity and nothing clips it -- so the UUID painted over the Type
+   column. The column sizes to its content instead, which is bounded: UUIDs are
+   the widest value it ever holds, and TMDB ids are shorter. Truncating is not an
+   option here; the foreign ID is an identifier users copy out of this table. */
 .foreignId {
   composes: cell from 'Components/Table/Cells/TableRowCell.css';
 
-  max-width: 250px;
   white-space: nowrap;
 }
