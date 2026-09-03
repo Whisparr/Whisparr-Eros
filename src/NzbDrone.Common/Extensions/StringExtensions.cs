@@ -120,17 +120,28 @@ namespace NzbDrone.Common.Extensions
         }
 
         /// <summary>
-        /// Strips carriage returns and line feeds so a value that came from a request
-        /// body or a filename cannot forge extra lines when written to the log.
+        /// Strips control characters - carriage returns and line feeds among them - so a
+        /// value that came from a request, a release name or a filename cannot forge extra
+        /// lines when written to the log.
         /// </summary>
         public static string ForLog(this string text)
         {
-            if (text == null)
+            if (text == null || !text.Any(char.IsControl))
             {
-                return null;
+                return text;
             }
 
-            return text.Replace("\r", string.Empty).Replace("\n", string.Empty);
+            var cleaned = new StringBuilder(text.Length);
+
+            foreach (var c in text)
+            {
+                if (!char.IsControl(c))
+                {
+                    cleaned.Append(c);
+                }
+            }
+
+            return cleaned.ToString();
         }
 
         public static bool IsNullOrWhiteSpace(this string text)

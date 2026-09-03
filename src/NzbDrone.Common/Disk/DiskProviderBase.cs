@@ -549,7 +549,7 @@ namespace NzbDrone.Common.Disk
             }
             catch (Exception ex)
             {
-                Logger.Debug(ex, $"Failed to get mount for path {path}");
+                Logger.Debug(ex, $"Failed to get mount for path {path.ForLog()}");
                 return null;
             }
         }

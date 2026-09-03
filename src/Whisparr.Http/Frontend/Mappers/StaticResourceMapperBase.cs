@@ -50,7 +50,7 @@ namespace Whisparr.Http.Frontend.Mappers
 
             if (filePath == null)
             {
-                _logger.Warn("Resource {0} resolves outside of {1}", ForLog(resourceUrl), FolderPath);
+                _logger.Warn("Resource {0} resolves outside of {1}", resourceUrl.ForLog(), FolderPath);
 
                 return Task.FromResult<IActionResult>(null);
             }
@@ -68,28 +68,9 @@ namespace Whisparr.Http.Frontend.Mappers
                 }));
             }
 
-            _logger.Warn("File {0} not found", filePath);
+            _logger.Warn("File {0} not found", filePath.ForLog());
 
             return Task.FromResult<IActionResult>(null);
-        }
-
-        // The resource url comes straight from the request, so strip anything that could
-        // forge a new log line before it reaches the log.
-        private static string ForLog(string resourceUrl)
-        {
-            if (resourceUrl.IsNullOrWhiteSpace())
-            {
-                return string.Empty;
-            }
-
-            var cleaned = new StringBuilder(resourceUrl.Length);
-
-            foreach (var c in resourceUrl)
-            {
-                cleaned.Append(char.IsControl(c) ? '_' : c);
-            }
-
-            return cleaned.ToString();
         }
 
         protected virtual Stream GetContentStream(string filePath)
