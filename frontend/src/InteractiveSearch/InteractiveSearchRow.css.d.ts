@@ -5,6 +5,7 @@ declare namespace InteractiveSearchRowCssNamespace {
     customFormatScore: string;
     download: string;
     downloadIcon: string;
+    exclusion: string;
     history: string;
     indexer: string;
     indexerFlags: string;

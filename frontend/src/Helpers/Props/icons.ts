@@ -50,6 +50,7 @@ import {
   faChevronCircleUp as fasChevronCircleUp,
   faCircle as fasCircle,
   faCircleDown as fasCircleDown,
+  faCircleMinus as fasCircleMinus,
   faCirclePlay as fasCirclePlay,
   faCloud as fasCloud,
   faCloudDownloadAlt as fasCloudDownloadAlt,
@@ -174,6 +175,7 @@ export const DOWNLOADING = fasCloudDownloadAlt;
 export const DRIVE = farHdd;
 export const EDIT = fasWrench;
 export const MOVIE_FILE = farFileVideo;
+export const EXCLUDE = fasCircleMinus;
 export const EXPAND = fasChevronCircleDown;
 export const EXPAND_INDETERMINATE = fasChevronCircleRight;
 export const EXPORT = fasFileExport;
