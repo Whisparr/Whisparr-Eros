@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.DecisionEngine.Specifications;
@@ -14,12 +15,14 @@ namespace Whisparr.Api.V3.Performers
         private readonly IPerformerService _performerService;
         private readonly IManageCommandQueue _commandQueueManager;
         private readonly IUpgradableSpecification _upgradableSpecification;
+        private readonly PerformerEditorValidator _performerEditorValidator;
 
-        public PerformerEditorController(IPerformerService performerService, IManageCommandQueue commandQueueManager, IUpgradableSpecification upgradableSpecification)
+        public PerformerEditorController(IPerformerService performerService, IManageCommandQueue commandQueueManager, IUpgradableSpecification upgradableSpecification, PerformerEditorValidator performerEditorValidator)
         {
             _performerService = performerService;
             _commandQueueManager = commandQueueManager;
             _upgradableSpecification = upgradableSpecification;
+            _performerEditorValidator = performerEditorValidator;
         }
 
         /// <summary>
@@ -78,6 +81,13 @@ namespace Whisparr.Api.V3.Performers
                             performer.Tags = new HashSet<int>(newTags);
                             break;
                     }
+                }
+
+                var validationResult = _performerEditorValidator.Validate(performer);
+
+                if (!validationResult.IsValid)
+                {
+                    throw new ValidationException(validationResult.Errors);
                 }
             }
 

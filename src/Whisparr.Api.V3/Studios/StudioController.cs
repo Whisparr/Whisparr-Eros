@@ -18,6 +18,8 @@ using NzbDrone.Core.Movies;
 using NzbDrone.Core.Movies.Studios;
 using NzbDrone.Core.Movies.Studios.Events;
 using NzbDrone.Core.MovieStats;
+using NzbDrone.Core.Validation;
+using NzbDrone.Core.Validation.Paths;
 using NzbDrone.SignalR;
 using Whisparr.Api.V3.Movies;
 using Whisparr.Api.V3.Studios.Helpers;
@@ -64,6 +66,8 @@ namespace Whisparr.Api.V3.Studios
                                 IImportListExclusionService exclusionService,
                                 ICacheManager cacheManager,
                                 IConfigService configService,
+                                QualityProfileExistsValidator<StudioResource> qualityProfileExistsValidator,
+                                RootFolderExistsValidator<StudioResource> rootFolderExistsValidator,
                                 Logger logger,
                                 IBroadcastSignalRMessage signalRBroadcaster)
         : base(signalRBroadcaster)
@@ -77,6 +81,15 @@ namespace Whisparr.Api.V3.Studios
             _useCache = configService.WhisparrCacheStudioAPI;
             _studioResourceCache = cacheManager.GetCache<StudioResource>(typeof(StudioResource), "studioResources");
             _logger = logger;
+
+            SharedValidator.RuleFor(s => s.QualityProfileId).Cascade(CascadeMode.Stop)
+                .ValidId()
+                .SetValidator(qualityProfileExistsValidator);
+
+            SharedValidator.RuleFor(s => s.RootFolderPath).Cascade(CascadeMode.Stop)
+                .IsValidPath()
+                .SetValidator(rootFolderExistsValidator)
+                .When(s => s.RootFolderPath.IsNotNullOrWhiteSpace());
 
             if (configService.WhisparrMovieMetadataSource == MovieMetadataType.TMDB)
             {
