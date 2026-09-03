@@ -16,12 +16,15 @@ import { icons, kinds, tooltipPositions } from 'Helpers/Props';
 import MovieFormats from 'Movie/MovieFormats';
 import MovieLanguages from 'Movie/MovieLanguages';
 import MovieQuality from 'Movie/MovieQuality';
+import { useMovie } from 'Movie/useMovie';
+import { useImportListExclusionByForeignId } from 'Settings/ImportLists/ImportListExclusions/useImportListExclusions';
 import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import Release from 'typings/Release';
 import formatDateTime from 'Utilities/Date/formatDateTime';
 import formatAge from 'Utilities/Number/formatAge';
 import formatBytes from 'Utilities/Number/formatBytes';
 import formatCustomFormatScore from 'Utilities/Number/formatCustomFormatScore';
+import camelCaseToString from 'Utilities/String/camelCaseToString';
 import translate from 'Utilities/String/translate';
 import InteractiveSearchPayload from './InteractiveSearchPayload';
 import OverrideMatchModal from './OverrideMatch/OverrideMatchModal';
@@ -112,6 +115,24 @@ function useReleaseHistory(guid: string, movieId: number) {
   }, [guid, movieHistory, movieBlocklist]);
 }
 
+// Whether the searched item is excluded from import lists. Unlike the two reads
+// above this is a fact about the item, not the release, so it marks every row
+// the same way -- an exclusion and a grab are separate decisions that can
+// disagree, and the search is where that shows up.
+//
+// The exclusions table is keyed by foreign ID rather than movie id, hence the
+// hop through the movie. Both requests are already in flight for the search:
+// the modal that opened it reads the same movie, and the exclusion is keyed by
+// a value every row shares.
+function useMovieExclusion(movieId: number) {
+  const { data: movie } = useMovie(movieId);
+  const { data: exclusion } = useImportListExclusionByForeignId(
+    movie?.foreignId
+  );
+
+  return exclusion;
+}
+
 interface InteractiveSearchRowProps extends Release {
   searchPayload: InteractiveSearchPayload;
 }
@@ -150,6 +171,8 @@ function InteractiveSearchRow(props: InteractiveSearchRowProps) {
 
   const { historyGrabbedData, historyFailedData, blocklistedData } =
     useReleaseHistory(guid, searchPayload.movieId);
+
+  const importListExclusion = useMovieExclusion(searchPayload.movieId);
 
   const [isConfirmGrabModalOpen, setIsConfirmGrabModalOpen] = useState(false);
   const [isOverrideModalOpen, setIsOverrideModalOpen] = useState(false);
@@ -268,6 +291,21 @@ function InteractiveSearchRow(props: InteractiveSearchRowProps) {
                 timeFormat,
                 { includeSeconds: true }
               ),
+            })}
+          />
+        ) : null}
+
+        {importListExclusion ? (
+          <Icon
+            className={
+              historyGrabbedData || historyFailedData || blocklistedData
+                ? styles.exclusion
+                : ''
+            }
+            name={icons.EXCLUDE}
+            kind={kinds.WARNING}
+            title={translate('ExcludedFromImportListsReason', {
+              reason: camelCaseToString(importListExclusion.reason),
             })}
           />
         ) : null}

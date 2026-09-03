@@ -745,6 +745,7 @@
   "Example": "Example",
   "Exception": "Exception",
   "Excluded": "Excluded",
+  "ExcludedFromImportListsReason": "Excluded from import lists ({reason})",
   "ExcludeMovie": "Exclude Movie",
   "ExcludeTitle": "Exclude {0}? This will prevent {appName} from automatically adding via list sync.",
   "ExclusionTitle": "Title",

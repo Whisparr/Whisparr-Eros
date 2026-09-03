@@ -64,7 +64,8 @@
   width: 75px;
 }
 
-.blocklist {
+.blocklist,
+.exclusion {
   margin-left: 5px;
 }
 
