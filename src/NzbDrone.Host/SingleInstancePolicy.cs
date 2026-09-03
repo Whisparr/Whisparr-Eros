@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NLog;
+using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Processes;
 
 namespace NzbDrone.Host
@@ -17,14 +18,17 @@ namespace NzbDrone.Host
     {
         private readonly IProcessProvider _processProvider;
         private readonly IBrowserService _browserService;
+        private readonly IStartupContext _startupContext;
         private readonly Logger _logger;
 
         public SingleInstancePolicy(IProcessProvider processProvider,
                                     IBrowserService browserService,
+                                    IStartupContext startupContext,
                                     Logger logger)
         {
             _processProvider = processProvider;
             _browserService = browserService;
+            _startupContext = startupContext;
             _logger = logger;
         }
 
@@ -33,7 +37,12 @@ namespace NzbDrone.Host
             if (IsAlreadyRunning())
             {
                 _logger.Warn("Another instance of Whisparr is already running.");
-                _browserService.LaunchWebUI();
+
+                if (!_startupContext.Flags.Contains(StartupContext.NO_BROWSER))
+                {
+                    _browserService.LaunchWebUI();
+                }
+
                 throw new TerminateApplicationException("Another instance is already running");
             }
         }
