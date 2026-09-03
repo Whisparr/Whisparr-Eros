@@ -32,8 +32,11 @@ function ProgressBar({
   kind = 'primary',
   size = 'medium',
   width,
-}: ProgressBarProps) {
-  const progressPercent = `${progress.toFixed(precision)}%`;
+}: Readonly<ProgressBarProps>) {
+  const safeProgress = Number.isFinite(progress)
+    ? Math.min(Math.max(progress, 0), 100)
+    : 0;
+  const progressPercent = `${safeProgress.toFixed(precision)}%`;
   const progressText = text || progressPercent;
   const actualWidth = width ? `${width}px` : '100%';
 
@@ -67,10 +70,10 @@ function ProgressBar({
               aria-label={
                 ariaLabel ??
                 translate('ProgressBarProgress', {
-                  progress: progress.toFixed(0),
+                  progress: safeProgress.toFixed(0),
                 })
               }
-              aria-valuenow={Math.floor(progress)}
+              aria-valuenow={Math.floor(safeProgress)}
               aria-valuemin={0}
               aria-valuemax={100}
               style={{ width: progressPercent }}
