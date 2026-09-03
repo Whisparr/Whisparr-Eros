@@ -117,13 +117,7 @@ const movieTokens = [
   { token: '{Movie TitleThe}', example: "Movie's Title, The", footNote: true },
   {
     token: '{Movie CleanTitleThe}',
-    example: 'Movies Title, The',
-    footNote: true,
-  },
-  { token: '{Movie OriginalTitle}', example: 'Τίτλος ταινίας', footNote: true },
-  {
-    token: '{Movie CleanOriginalTitle}',
-    example: 'Τίτλος ταινίας',
+    example: 'Movies Title The',
     footNote: true,
   },
   { token: '{Movie TitleFirstCharacter}', example: 'M' },
@@ -133,7 +127,6 @@ const movieTokens = [
     example: 'The Movie Collection',
     footNote: true,
   },
-  { token: '{Movie Certification}', example: 'R' },
   { token: '{Release Year}', example: '2009' },
 ];
 

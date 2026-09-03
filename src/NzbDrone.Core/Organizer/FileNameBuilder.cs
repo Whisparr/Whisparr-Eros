@@ -360,7 +360,9 @@ namespace NzbDrone.Core.Organizer
             tokenHandlers["{Movie Title}"] = m => Truncate(GetLanguageTitle(movie, m.CustomFormat), m.CustomFormat);
             tokenHandlers["{Movie CleanTitle}"] = m => Truncate(CleanTitle(GetLanguageTitle(movie, m.CustomFormat)), m.CustomFormat);
             tokenHandlers["{Movie TitleThe}"] = m => Truncate(TitleThe(movie.Title), m.CustomFormat);
+            tokenHandlers["{Movie CleanTitleThe}"] = m => Truncate(CleanTitle(TitleThe(movie.Title)), m.CustomFormat);
             tokenHandlers["{Movie TitleFirstCharacter}"] = m => TitleFirstCharacter(TitleThe(GetLanguageTitle(movie, m.CustomFormat)));
+            tokenHandlers["{Movie Collection}"] = m => Truncate(movie.MovieMetadata.Value.CollectionTitle, m.CustomFormat);
         }
 
         private void AddStudioTokens(Dictionary<string, Func<TokenMatch, string>> tokenHandlers, Movie movie)

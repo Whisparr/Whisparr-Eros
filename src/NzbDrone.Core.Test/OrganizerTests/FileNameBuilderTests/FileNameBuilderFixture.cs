@@ -424,12 +424,33 @@ namespace NzbDrone.Core.Test.OrganizerTests.FileNameBuilderTests
         }
 
         [Test]
+        public void should_replace_movie_collection()
+        {
+            _namingConfig.StandardMovieFormat = "{Movie Collection}";
+            _movie.MovieMetadata.Value.CollectionTitle = "South Park Collection";
+
+            Subject.BuildFileName(_movie, _movieFile)
+                   .Should().Be("South Park Collection");
+        }
+
+        [Test]
         public void should_be_empty_for_null_collection()
         {
             _namingConfig.StandardMovieFormat = "{Movie Collection}";
+            _movie.MovieMetadata.Value.CollectionTitle = null;
 
             Subject.BuildFileName(_movie, _movieFile)
                    .Should().BeEmpty();
+        }
+
+        [Test]
+        public void should_replace_movie_clean_title_the()
+        {
+            _namingConfig.StandardMovieFormat = "{Movie CleanTitleThe}";
+            _movie.Title = "The Movie's Title";
+
+            Subject.BuildFileName(_movie, _movieFile)
+                   .Should().Be("Movies Title The");
         }
 
         [Test]
