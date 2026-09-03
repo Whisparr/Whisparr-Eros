@@ -1,5 +1,4 @@
 import React, { useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
 import IconButton from 'Components/Link/IconButton';
 import Link from 'Components/Link/Link';
 import TableRowCell from 'Components/Table/Cells/TableRowCell';
@@ -9,6 +8,7 @@ import { useRefreshRootFolder } from 'RootFolder/useRootFolders';
 import { useNamingSettings } from 'Settings/MediaManagement/Naming/useNamingSettings';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
+import { ImportItemType } from '../ImportMovieTypes';
 import styles from './ImportMovieRootFolderRow.css';
 
 interface ImportFile {
@@ -20,6 +20,7 @@ interface ImportMovieRootFolderRowProps {
   path: string;
   freeSpace?: number;
   importFiles: ImportFile[];
+  itemType: ImportItemType;
 }
 
 function ImportMovieRootFolderRow({
@@ -27,15 +28,15 @@ function ImportMovieRootFolderRow({
   path,
   freeSpace,
   importFiles,
+  itemType,
 }: Readonly<ImportMovieRootFolderRowProps>) {
-  const location = useLocation();
   const { refreshRootFolder } = useRefreshRootFolder();
   const { data: naming } = useNamingSettings();
 
-  const isMovies = location.pathname === '/add/import/movies';
-  const linkTo = isMovies
-    ? `/add/import/movies/${id}`
-    : `/add/import/scenes/${id}`;
+  const linkTo =
+    itemType === 'movie'
+      ? `/add/import/movies/${id}`
+      : `/add/import/scenes/${id}`;
   const importFilesCount = importFiles.length || '-';
 
   const handleRefreshPress = useCallback(() => {
