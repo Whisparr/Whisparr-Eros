@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using FluentAssertions;
 using Moq;
 using NUnit.Framework;
@@ -11,10 +12,13 @@ using NzbDrone.Core.Movies;
 using NzbDrone.Core.Movies.Performers;
 using NzbDrone.Core.Movies.Performers.Events;
 using NzbDrone.Core.MovieStats;
+using NzbDrone.Core.Profiles.Qualities;
+using NzbDrone.Core.RootFolders;
 using NzbDrone.SignalR;
 using NzbDrone.Test.Common;
 using Whisparr.Api.V3.Performers;
 using Whisparr.Http;
+using Whisparr.Http.REST;
 
 namespace NzbDrone.Api.Test.v3.Performers
 {
@@ -22,6 +26,7 @@ namespace NzbDrone.Api.Test.v3.Performers
     public class PerformerControllerFixture : TestBase<PerformerController>
     {
         private const string ForeignId = "performer-foreign-id";
+        private static readonly string RootFolder = @"C:\Movies".AsOsAgnostic();
         private Dictionary<string, FileInfo> _coverFileInfos;
 
         [SetUp]
@@ -90,6 +95,75 @@ namespace NzbDrone.Api.Test.v3.Performers
                         It.Is<IEnumerable<Tuple<int, IEnumerable<MediaCover>>>>(items => !items.Any()),
                         _coverFileInfos),
                     Times.Once());
+        }
+
+        // The rules live in the controller's constructor and ValidateResource is only
+        // reachable through the MVC pipeline, so read the validator back directly.
+        private ResourceValidator<PerformerResource> SharedValidator()
+        {
+            return (ResourceValidator<PerformerResource>)typeof(RestController<PerformerResource>)
+                .GetProperty("SharedValidator", BindingFlags.Instance | BindingFlags.NonPublic)
+                .GetValue(Subject);
+        }
+
+        private PerformerResource GivenResource(int qualityProfileId = 1, string rootFolderPath = null)
+        {
+            return new PerformerResource
+            {
+                Id = 1,
+                ForeignId = ForeignId,
+                QualityProfileId = qualityProfileId,
+                RootFolderPath = rootFolderPath
+            };
+        }
+
+        [Test]
+        public void should_accept_an_existing_quality_profile_and_root_folder()
+        {
+            GivenProfileAndRootFolder();
+
+            SharedValidator().Validate(GivenResource(rootFolderPath: RootFolder)).IsValid.Should().BeTrue();
+        }
+
+        [Test]
+        public void should_reject_a_quality_profile_that_does_not_exist()
+        {
+            GivenProfileAndRootFolder();
+
+            var result = SharedValidator().Validate(GivenResource(9999, RootFolder));
+
+            result.IsValid.Should().BeFalse();
+            result.Errors.Should().Contain(e => e.PropertyName == "QualityProfileId" && e.ErrorCode == "QualityProfileExistsValidator");
+        }
+
+        [Test]
+        public void should_reject_a_root_folder_that_does_not_exist()
+        {
+            GivenProfileAndRootFolder();
+
+            var result = SharedValidator().Validate(GivenResource(rootFolderPath: @"C:\Nonexistent\Bogus".AsOsAgnostic()));
+
+            result.IsValid.Should().BeFalse();
+            result.Errors.Should().Contain(e => e.PropertyName == "RootFolderPath" && e.ErrorCode == "RootFolderExistsValidator");
+        }
+
+        [Test]
+        public void should_skip_the_root_folder_check_when_it_is_not_set()
+        {
+            GivenProfileAndRootFolder();
+
+            SharedValidator().Validate(GivenResource()).IsValid.Should().BeTrue();
+        }
+
+        private void GivenProfileAndRootFolder()
+        {
+            Mocker.GetMock<IQualityProfileService>()
+                .Setup(s => s.Exists(1))
+                .Returns(true);
+
+            Mocker.GetMock<IRootFolderService>()
+                .Setup(s => s.All())
+                .Returns(new List<RootFolder> { new RootFolder { Path = RootFolder } });
         }
     }
 }

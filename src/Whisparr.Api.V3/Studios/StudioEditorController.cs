@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.DecisionEngine.Specifications;
@@ -14,12 +15,14 @@ namespace Whisparr.Api.V3.Studios
         private readonly IStudioService _studioService;
         private readonly IManageCommandQueue _commandQueueManager;
         private readonly IUpgradableSpecification _upgradableSpecification;
+        private readonly StudioEditorValidator _studioEditorValidator;
 
-        public StudioEditorController(IStudioService studioService, IManageCommandQueue commandQueueManager, IUpgradableSpecification upgradableSpecification)
+        public StudioEditorController(IStudioService studioService, IManageCommandQueue commandQueueManager, IUpgradableSpecification upgradableSpecification, StudioEditorValidator studioEditorValidator)
         {
             _studioService = studioService;
             _commandQueueManager = commandQueueManager;
             _upgradableSpecification = upgradableSpecification;
+            _studioEditorValidator = studioEditorValidator;
         }
 
         /// <summary>
@@ -73,6 +76,13 @@ namespace Whisparr.Api.V3.Studios
                             studios.Tags = new HashSet<int>(newTags);
                             break;
                     }
+                }
+
+                var validationResult = _studioEditorValidator.Validate(studios);
+
+                if (!validationResult.IsValid)
+                {
+                    throw new ValidationException(validationResult.Errors);
                 }
             }
 
