@@ -105,7 +105,6 @@
     "@types/react-virtualized": "9.22.3",
     "@types/react-window": "1.8.8",
     "@types/react-world-flags": "1.6.0",
-    "@types/webpack-livereload-plugin": "2.3.6",
     "@typescript-eslint/eslint-plugin": "8.68.0",
     "@typescript-eslint/parser": "8.68.0",
     "autoprefixer": "10.5.4",

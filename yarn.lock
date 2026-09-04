@@ -1639,23 +1639,6 @@
   dependencies:
     "@types/node" "*"
 
-"@types/source-list-map@*":
-  version "0.1.6"
-  resolved "https://registry.yarnpkg.com/@types/source-list-map/-/source-list-map-0.1.6.tgz#164e169dd061795b50b83c19e4d3be09f8d3a454"
-  integrity sha512-5JcVt1u5HDmlXkwOD2nslZVllBBc7HDuOICfiZah2Z0is8M8g+ddAEawbmd3VjedfDHBzxCaXLs07QEmb7y54g==
-
-"@types/tapable@^1":
-  version "1.0.12"
-  resolved "https://registry.yarnpkg.com/@types/tapable/-/tapable-1.0.12.tgz#bc2cab12e87978eee89fb21576b670350d6d86ab"
-  integrity sha512-bTHG8fcxEqv1M9+TD14P8ok8hjxoOCkfKc8XXLaaD05kI7ohpeI956jtDOD3XHKBQrlyPughUtzm1jtVhHpA5Q==
-
-"@types/uglify-js@*":
-  version "3.17.5"
-  resolved "https://registry.yarnpkg.com/@types/uglify-js/-/uglify-js-3.17.5.tgz#905ce03a3cbbf2e31cbefcbc68d15497ee2e17df"
-  integrity sha512-TU+fZFBTBcXj/GpDpDaBmgWk/gn96kMZ+uocaFUlV2f8a6WdMzzI44QBCmGcCiYR0Y6ZlNRiyUyKKt5nl/lbzQ==
-  dependencies:
-    source-map "^0.6.1"
-
 "@types/unist@*", "@types/unist@^3.0.0":
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/@types/unist/-/unist-3.0.3.tgz#acaab0f919ce69cce629c2d4ed2eb4adc1b6c20c"
@@ -1665,34 +1648,6 @@
   version "2.0.11"
   resolved "https://registry.yarnpkg.com/@types/unist/-/unist-2.0.11.tgz#11af57b127e32487774841f7a4e54eab166d03c4"
   integrity sha512-CmBKiL6NNo/OqgmMn95Fk9Whlp2mtvIv+KNpQKN2F4SjvrEesubTRWGYSg+BnWZOnlCaSTU1sMpsBOzgbYhnsA==
-
-"@types/webpack-livereload-plugin@2.3.6":
-  version "2.3.6"
-  resolved "https://registry.yarnpkg.com/@types/webpack-livereload-plugin/-/webpack-livereload-plugin-2.3.6.tgz#2c3ccefc8858525f40aeb8be0f784d5027144e23"
-  integrity sha512-H8nZSOWSiY/6kCpOmbutZPu7Sai1xyEXo/SrXQPCymMPNBwpYWAdOsjKqr32d+IrVjnn9GGgKSYY34TEPRxJ/A==
-  dependencies:
-    "@types/webpack" "^4"
-
-"@types/webpack-sources@*":
-  version "3.2.3"
-  resolved "https://registry.yarnpkg.com/@types/webpack-sources/-/webpack-sources-3.2.3.tgz#b667bd13e9fa15a9c26603dce502c7985418c3d8"
-  integrity sha512-4nZOdMwSPHZ4pTEZzSp0AsTM4K7Qmu40UKW4tJDiOVs20UzYF9l+qUe4s0ftfN0pin06n+5cWWDJXH+sbhAiDw==
-  dependencies:
-    "@types/node" "*"
-    "@types/source-list-map" "*"
-    source-map "^0.7.3"
-
-"@types/webpack@^4":
-  version "4.41.38"
-  resolved "https://registry.yarnpkg.com/@types/webpack/-/webpack-4.41.38.tgz#5a40ac81bdd052bf405e8bdcf3e1236f6db6dc26"
-  integrity sha512-oOW7E931XJU1mVfCnxCVgv8GLFL768pDO5u2Gzk82i8yTIgX6i7cntyZOkZYb/JtYM8252SN9bQp9tgkVDSsRw==
-  dependencies:
-    "@types/node" "*"
-    "@types/tapable" "^1"
-    "@types/uglify-js" "*"
-    "@types/webpack-sources" "*"
-    anymatch "^3.0.0"
-    source-map "^0.6.0"
 
 "@typescript-eslint/eslint-plugin@8.68.0":
   version "8.68.0"
@@ -2016,7 +1971,7 @@ ansi-styles@^6.1.0:
   resolved "https://registry.yarnpkg.com/ansi-styles/-/ansi-styles-6.2.3.tgz#c044d5dcc521a076413472597a1acb1f103c4041"
   integrity sha512-4Dj6M28JB+oAH8kFkTLUo+a2jwOFkuqb3yucU0CANcRRUbxS0cP0nZYCGjcc3BNXwRIsUVmDGgzawme7zvJHvg==
 
-anymatch@^3.0.0, anymatch@^3.1.1:
+anymatch@^3.1.1:
   version "3.1.3"
   resolved "https://registry.yarnpkg.com/anymatch/-/anymatch-3.1.3.tgz#790c58b19ba1720a84205b57c618d5ad8524973e"
   integrity sha512-KMReFUr0B4t+D+OBkjR3KYqvocp2XaSzO55UcB6mgQMd3KbcE+mWTyvVV7D/zsdEbNnV6acZUutkiHQXvTr1Rw==
