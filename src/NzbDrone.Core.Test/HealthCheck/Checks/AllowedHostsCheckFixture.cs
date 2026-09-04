@@ -2,6 +2,7 @@ using Moq;
 using NUnit.Framework;
 using NzbDrone.Core.Authentication;
 using NzbDrone.Core.Configuration;
+using NzbDrone.Core.HealthCheck;
 using NzbDrone.Core.HealthCheck.Checks;
 using NzbDrone.Core.Localization;
 using NzbDrone.Core.Test.Framework;
@@ -48,7 +49,7 @@ namespace NzbDrone.Core.Test.HealthCheck.Checks
         {
             GivenAuthenticationRequired(AuthenticationRequiredType.DisabledForLocalAddresses);
 
-            Subject.Check().ShouldBeWarning();
+            Subject.Check().ShouldBeWarning(reason: HealthCheckReason.AllowedHostsNotConfigured);
 
             ExceptionVerification.ExpectedWarns(1);
         }

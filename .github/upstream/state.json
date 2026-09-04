@@ -561,8 +561,8 @@
       "72ae0c011dc3297b6b5b9feb8971da28977f510c": {
         "subject": "Add reason to health check",
         "month": "2026-08",
-        "disposition": "skip",
-        "reason": "Deferred to its own PR by decision on 2026-08-30. A diagnostics feature rather than a fix, touching all 33 health checks plus the HealthCheck model."
+        "disposition": "adapt",
+        "reason": "Adapted: 65 reporting call sites across 33 checks, not the 108 recorded (the other 43 are the Ok constructor, which takes no reason). Enum drops PTPOldSettings, MetadataKometaDeprecated and NamingConfigDeprecatedToken, which have no check here, and adds AllowedHostsNotConfigured and MetadataUrlMismatch for ours. RemovedMovieCheck merges movie and scene messages into a single check, so it gets one RemovedMovie reason rather than upstream's Single/Multiple pair. Added a None = 0 member upstream lacks, so the Ok constructor does not default to whichever reason sorts first. Neither upstream nor this touches HealthResource or the frontend; the reason is internal."
       },
       "91c6dc4eac9883e8389145ff4728858442502212": {
         "subject": "New: Add hostname validation",
