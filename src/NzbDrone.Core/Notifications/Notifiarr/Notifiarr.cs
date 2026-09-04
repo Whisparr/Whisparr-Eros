@@ -6,6 +6,7 @@ using NzbDrone.Core.Localization;
 using NzbDrone.Core.MediaCover;
 using NzbDrone.Core.MediaFiles;
 using NzbDrone.Core.Movies;
+using NzbDrone.Core.Movies.Studios;
 using NzbDrone.Core.Notifications.Webhook;
 using NzbDrone.Core.Tags;
 using NzbDrone.Core.Validation;
@@ -16,8 +17,8 @@ namespace NzbDrone.Core.Notifications.Notifiarr
     {
         private readonly INotifiarrProxy _proxy;
 
-        public Notifiarr(INotifiarrProxy proxy, IConfigFileProvider configFileProvider, IConfigService configService, ILocalizationService localizationService, ITagRepository tagRepository, IMapCoversToLocal mediaCoverService)
-            : base(configFileProvider, configService, localizationService, tagRepository, mediaCoverService)
+        public Notifiarr(INotifiarrProxy proxy, IConfigFileProvider configFileProvider, IConfigService configService, ILocalizationService localizationService, ITagRepository tagRepository, IMapCoversToLocal mediaCoverService, IStudioService studioService)
+            : base(configFileProvider, configService, localizationService, tagRepository, mediaCoverService, studioService)
         {
             _proxy = proxy;
         }

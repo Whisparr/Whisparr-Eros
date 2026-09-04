@@ -17,8 +17,14 @@ namespace NzbDrone.Core.Notifications.Webhook
         public int TmdbId { get; set; }
         public string ImdbId { get; set; }
         public string StashId { get; set; }
+        public string TpdbId { get; set; }
         public string Overview { get; set; }
         public string ItemType { get; set; }
+        public int Runtime { get; set; }
+        public string Website { get; set; }
+        public string StudioTitle { get; set; }
+        public string Network { get; set; }
+        public List<string> Performers { get; set; }
         public List<string> Genres { get; set; }
         public List<WebhookImage> Images { get; set; }
         public List<string> Tags { get; set; }
@@ -27,25 +33,31 @@ namespace NzbDrone.Core.Notifications.Webhook
         {
         }
 
-        public WebhookMovie(Movie movie, List<string> tags)
+        public WebhookMovie(Movie movie, List<string> tags, string network)
         {
             Id = movie.Id;
             Title = movie.Title;
             Year = movie.Year;
-            ReleaseDate = movie.MovieMetadata.Value.ReleaseDateUtc.Value.ToString("yyyy-MM-dd");
+            ReleaseDate = movie.MovieMetadata.Value.ReleaseDateUtc?.ToString("yyyy-MM-dd");
             FolderPath = movie.Path;
             TmdbId = movie.TmdbId;
             ImdbId = movie.ImdbId;
             StashId = movie.MovieMetadata.Value.StashId;
+            TpdbId = movie.MovieMetadata.Value.TpdbId;
             Overview = movie.MovieMetadata.Value.Overview;
+            Runtime = movie.MovieMetadata.Value.Runtime;
+            Website = movie.MovieMetadata.Value.Website;
+            StudioTitle = movie.MovieMetadata.Value.StudioTitle;
+            Network = network;
+            Performers = movie.MovieMetadata.Value.PerformerNames;
             Genres = movie.MovieMetadata.Value.Genres;
             Images = movie.MovieMetadata.Value.Images.Select(i => new WebhookImage(i)).ToList();
             Tags = tags;
             ItemType = movie.MovieMetadata.Value.ItemType.ToString();
         }
 
-        public WebhookMovie(Movie movie, MovieFile movieFile, List<string> tags)
-            : this(movie, tags)
+        public WebhookMovie(Movie movie, MovieFile movieFile, List<string> tags, string network)
+            : this(movie, tags, network)
         {
             FilePath = Path.Combine(movie.Path, movieFile.RelativePath);
         }
