@@ -267,8 +267,8 @@
       "16c4ab2b0da866c1a72e14ed747fb0893628a716": {
         "subject": "New: Postgres Connection String option",
         "month": "2026-05",
-        "disposition": "skip",
-        "reason": "Feature decision, deferred. Adds PostgresMainDbConnectionString/PostgresLogDbConnectionString as an alternative to the discrete Postgres settings. Worth having for managed-Postgres deployments, but upstream's GetConnectionStringType ships two if-branches testing the identical condition and never rejects main-set-without-log, so it wants rewriting rather than picking. Raise separately if wanted."
+        "disposition": "have",
+        "reason": "Landed 2026-09-01 in d46045f1f3, taken from the Sonarr twin d4f14246f rather than from here. Upstream's GetConnectionStringType ships two if-branches testing the identical condition, so a log-only setting slips through silently; ours checks the complementary case instead, with ConnectionStringFactoryFixture covering the dispatch and each validation path."
       },
       "cf3775621be8e39c011cdff63f6939400a108bb5": {
         "subject": "Bump dessant github actions to fix token issues",
@@ -304,7 +304,7 @@
         "subject": "Upgrade StyleCop.Analyzers to Unstable 1.2.0.556",
         "month": "2026-06",
         "disposition": "skip",
-        "reason": "Deferred to its own PR, not skipped on merit. Two blockers: 1.2.0.556 is not on nuget.org (a trial bump fails with NU1102) so it needs a package source we do not configure, and the upgrade churns 160 files including Parser.cs, where our fork has diverged furthest. Not something to fold into a sync chunk."
+        "reason": "Deferred to its own PR, not skipped on merit. The nuget blocker recorded here earlier was wrong: upstream references the StyleCop.Analyzers.Unstable package, and 1.2.0.556 is on nuget.org under that id - the NU1102 came from bumping the version on StyleCop.Analyzers, which only publishes 1.2.0-beta.556. No extra package source is needed. What remains is the cost: the upgrade churns 160 files including Parser.cs, where our fork has diverged furthest, so it is not something to fold into a sync chunk. Still on 1.1.118."
       },
       "c97100c1c8f3cdf839be3adca42835684cc92c36": {
         "subject": "Bump version to 6.3.0",
@@ -376,7 +376,7 @@
         "subject": "Fixed: Improve cache busting for covers using a hash instead of file modification time",
         "month": "2026-07",
         "disposition": "skip",
-        "reason": "Wanted, but deferred to its own PR by decision on 2026-08-30. Radarr's pick of Sonarr cecb4052e. Replaces the per-cover disk stat with a hash of the remote URL - a real win here because we have three of these loops (movie, performer, studio) and the studio one lists a directory per cover and creates folders as a side effect of a GET. Too large for a bug-fix chunk: it changes IMapCoversToLocal across 17 call sites and needs live verification on 6969."
+        "reason": "Wanted, but deferred to its own PR by decision on 2026-08-30. Radarr's pick of Sonarr cecb4052e. Replaces the per-cover disk stat with a hash of the remote URL - a real win here because we have three of these loops (movie, performer, studio) and the studio one lists a directory per cover and creates folders as a side effect of a GET. Too large for a bug-fix chunk: it changes IMapCoversToLocal across 22 files and needs live verification on 6969."
       },
       "9d814137c12dae035e95ee14e3a2c079ce7d20db": {
         "subject": "Wrap bulk UpdateMany/SetFields in a transaction",
@@ -388,7 +388,7 @@
         "subject": "Avoid suppresing search for movies errors",
         "month": "2026-07",
         "disposition": "skip",
-        "reason": "Our SkyHookProxy talks to api.whisparr.com and sets SuppressHttpError on all ten of its call sites. Unsuppressing one of them is inconsistent, and upstream also drops AllowAutoRedirect, which we cannot verify against an endpoint we do not control. Worth its own PR if we want search failures to report their status code."
+        "reason": "Our SkyHookProxy talks to api.whisparr.com and sets SuppressHttpError on all 22 of its call sites. Unsuppressing one of them is inconsistent, and upstream also drops AllowAutoRedirect, which we cannot verify against an endpoint we do not control. Worth its own PR if we want search failures to report their status code."
       },
       "f3bb6321cdee98cf8f22c80acc26d847bd4ecba8": {
         "subject": "Ignore case for rating type enums",
@@ -532,7 +532,7 @@
         "subject": "Fixed: Don't allow pushed releases to bypass pending releases that recently expired",
         "month": "2026-08",
         "disposition": "skip",
-        "reason": "Wanted, but deferred to its own PR by decision on 2026-08-30. Real bug, but the new PendingSpecification needs to know a release was pushed, so it changes IDownloadDecisionEngineSpecification from (RemoteMovie, SearchCriteria) to (RemoteMovie, ReleaseDecisionInformation) across ~25 specifications and ~25 fixtures. 65 files wants its own review."
+        "reason": "Wanted, but deferred to its own PR by decision on 2026-08-30. Real bug, but the new PendingSpecification needs to know a release was pushed, so it changes IDownloadDecisionEngineSpecification from (RemoteMovie, SearchCriteria) to (RemoteMovie, ReleaseDecisionInformation) across 28 specifications and the 22 fixtures in DecisionEngineTests. 65 files upstream; wants its own review."
       },
       "dbcb327a1134d26d2feb9b4589ee8c7b2dafb1ae": {
         "subject": "New: Include External IDs for movies with links",
@@ -562,7 +562,7 @@
         "subject": "Add reason to health check",
         "month": "2026-08",
         "disposition": "skip",
-        "reason": "Deferred to its own PR by decision on 2026-08-30. A diagnostics feature rather than a fix, touching all 36 health checks plus the HealthCheck model."
+        "reason": "Deferred to its own PR by decision on 2026-08-30. A diagnostics feature rather than a fix, touching all 33 health checks plus the HealthCheck model."
       },
       "91c6dc4eac9883e8389145ff4728858442502212": {
         "subject": "New: Add hostname validation",
@@ -673,7 +673,7 @@
         "subject": "New: Sorting Blocklist, History and Queue by Quality",
         "month": "2026-07",
         "disposition": "skip",
-        "reason": "Deferred to its own PR by decision on 2026-08-30, not skipped on merit. 21 files: a QualityProfileQualityRank table, repository and service, a DB migration (233 there, 242 here) and rank joins added to the Blocklist, History and Episode repositories. A schema change belongs in its own review, not in a 15-commit sync chunk."
+        "reason": "Deferred to its own PR by decision on 2026-08-30, not skipped on merit. 21 files: a QualityProfileQualityRank table, repository and service, a DB migration (233 there, 244 here - 242 and 243 are now taken) and rank joins added to the Blocklist, History and Episode repositories. A schema change belongs in its own review, not in a 15-commit sync chunk."
       },
       "34b201aafadb579c7c48bea05ca6253c302db8ca": {
         "subject": "New: Option to skip free space check when grabbing",
