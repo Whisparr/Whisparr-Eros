@@ -786,7 +786,7 @@ namespace NzbDrone.Core.Movies
 
             // Try fuzzy release token matching if we've made it this far
             // Use Levenshtein Distance to find the closest match above 80%
-            var fuzzyMatchMoviesWithScores = new List<(Movie movie, int score)>();
+            var fuzzyMatchMoviesWithScores = new List<(Movie Movie, int Score)>();
             var fuzzyTitleMatchingThreshold = _configService.WhisparrFuzzyTitleMatchingThreshold;
             if (fuzzyTitleMatchingThreshold >= 70)
             {
@@ -806,7 +806,7 @@ namespace NzbDrone.Core.Movies
 
                     var fuzzyMatch = FuzzyMatchReleaseTokens(releaseTokens, movie);
 
-                    if (fuzzyMatch.score >= fuzzyTitleMatchingThreshold)
+                    if (fuzzyMatch.Score >= fuzzyTitleMatchingThreshold)
                     {
                         fuzzyMatchMoviesWithScores.Add(fuzzyMatch);
                     }
@@ -820,9 +820,9 @@ namespace NzbDrone.Core.Movies
             if (fuzzyMatchMoviesWithScores.Any())
             {
                 // There can be only one
-                var highest = fuzzyMatchMoviesWithScores.OrderByDescending(m => m.score).First();
-                _logger.Trace("{0}: Returning fuzzy matched movie [{1} - {2}]", methodName, highest.movie.Title, highest.movie.ForeignId);
-                return highest.movie;
+                var highest = fuzzyMatchMoviesWithScores.OrderByDescending(m => m.Score).First();
+                _logger.Trace("{0}: Returning fuzzy matched movie [{1} - {2}]", methodName, highest.Movie.Title, highest.Movie.ForeignId);
+                return highest.Movie;
             }
 
             if (hasReleaseDate)
@@ -1250,8 +1250,8 @@ namespace NzbDrone.Core.Movies
         /// <summary>Returns the Levenshtein Distance score (0-100) between releaseTokens striung and Movie, using FuzzySharp's WeightedRatio.</summary>
         /// <param name="releaseTokens">The title string to compare.  Will be normalized.</param>
         /// <param name="movie">Movie object to compare against</param>
-        /// <returns>(Movie movie, int score) local variable</returns>
-        public (Movie movie, int score) FuzzyMatchReleaseTokens(string releaseTokens, Movie movie)
+        /// <returns>(Movie Movie, int Score) local variable</returns>
+        public (Movie Movie, int Score) FuzzyMatchReleaseTokens(string releaseTokens, Movie movie)
         {
             var methodName = "FuzzyMatchReleaseTokens";
             var normalizedTitle = releaseTokens.CleanMovieTitle().StripSpaces();

@@ -77,7 +77,8 @@ namespace NzbDrone.Core.Notifications.Emby
                     }
 
                     return MediaBrowserMatchQuality.None;
-                }, item => item.Path).OrderBy(group => (int)group.Key).First();
+                },
+                item => item.Path).OrderBy(group => (int)group.Key).First();
 
                 if (paths.Key == MediaBrowserMatchQuality.None)
                 {
