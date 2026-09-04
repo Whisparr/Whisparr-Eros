@@ -6,7 +6,7 @@
       "baseUrl": "src",
       "jsx": "react",
       "module": "esnext",
-      "moduleResolution": "node",
+      "moduleResolution": "bundler",
       "allowSyntheticDefaultImports": true,
       "forceConsistentCasingInFileNames": true,
       "noEmit": true,
