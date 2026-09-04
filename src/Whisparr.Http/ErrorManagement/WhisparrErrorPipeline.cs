@@ -56,6 +56,13 @@ namespace Whisparr.Http.ErrorManagement
             {
                 statusCode = clientException.StatusCode;
             }
+            else if (exception is ExcludedException excludedException)
+            {
+                _logger.Info("Request refused by exclusion rules. {0} {1}: {2}", context.Request.Method, context.Request.Path, excludedException.Message);
+
+                errorModel.Description = null;
+                statusCode = HttpStatusCode.Conflict;
+            }
             else if (exception is ModelNotFoundException)
             {
                 statusCode = HttpStatusCode.NotFound;
