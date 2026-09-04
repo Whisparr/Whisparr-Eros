@@ -42,6 +42,7 @@ namespace NzbDrone.Core.Movies.Performers
         public List<string> Tattoos { get; set; }
         public List<string> Piercings { get; set; }
         public PerformerStatus Status { get; set; }
+        public DateTime? AfterDate { get; set; }
         public string RootFolderPath { get; set; }
         public DateTime Added { get; set; }
         public bool Monitored { get; set; }
@@ -76,6 +77,7 @@ namespace NzbDrone.Core.Movies.Performers
             Monitored = otherPerformer.Monitored;
             MoviesMonitored = otherPerformer.MoviesMonitored;
             WhisparrMonitorNewItems = otherPerformer.WhisparrMonitorNewItems;
+            AfterDate = otherPerformer.AfterDate;
             RootFolderPath = otherPerformer.RootFolderPath;
             Tags = otherPerformer.Tags;
         }

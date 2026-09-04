@@ -66,7 +66,8 @@ namespace NzbDrone.Api.Test.v3.Studios
 
             Subject.SaveAll(resource);
 
-            _studios.Should().OnlyContain(s => s.AfterDate == new DateTime(2024, 6, 1));
+            _studios.Should().OnlyContain(s => s.AfterDate == new DateTime(2024, 6, 1, 0, 0, 0, DateTimeKind.Utc));
+            _studios.Should().OnlyContain(s => s.AfterDate.Value.Kind == DateTimeKind.Utc);
         }
 
         [Test]

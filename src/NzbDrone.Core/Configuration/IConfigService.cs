@@ -112,6 +112,7 @@ namespace NzbDrone.Core.Configuration
         // Whisparr
         string WhisparrAlwaysExcludeCollectionsTag { get; }
         string WhisparrAlwaysExcludePerformersTag { get; }
+        string WhisparrAlwaysExcludePerformersAfterTag { get; }
         string WhisparrAlwaysExcludeStudiosTag { get; }
         string WhisparrAlwaysExcludeStudiosAfterTag { get; }
         string WhisparrAlwaysExcludeTagsTag { get; }

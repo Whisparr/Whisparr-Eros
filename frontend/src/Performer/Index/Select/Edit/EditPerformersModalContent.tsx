@@ -18,6 +18,7 @@ interface SavePayload {
   qualityProfileId?: number;
   rootFolderPath?: string;
   searchOnAdd?: boolean;
+  afterDate?: string;
 }
 
 interface EditPerformersModalContentProps {
@@ -27,6 +28,8 @@ interface EditPerformersModalContentProps {
 }
 
 const NO_CHANGE = 'noChange';
+const SET_DATE = 'setDate';
+const CLEAR_DATE = 'clearDate';
 
 const monitoredOptions = [
   {
@@ -71,7 +74,34 @@ const searchOnAddOptions = [
     },
   },
 ];
-function EditPerformersModalContent(props: EditPerformersModalContentProps) {
+// A date box on its own can't say whether a blank means "leave every performer alone"
+// or "clear them all", so the choice is made in a select and the box only appears
+// once the user has asked to set a date.
+const afterDateOptions = [
+  {
+    key: NO_CHANGE,
+    get value() {
+      return translate('NoChange');
+    },
+    disabled: true,
+  },
+  {
+    key: SET_DATE,
+    get value() {
+      return translate('SetDate');
+    },
+  },
+  {
+    key: CLEAR_DATE,
+    get value() {
+      return translate('Clear');
+    },
+  },
+];
+
+function EditPerformersModalContent(
+  props: Readonly<EditPerformersModalContentProps>
+) {
   const { performerIds, onSavePress, onModalClose } = props;
 
   const [monitored, setMonitored] = useState<string | number>(NO_CHANGE);
@@ -88,6 +118,11 @@ function EditPerformersModalContent(props: EditPerformersModalContentProps) {
     NO_CHANGE
   );
   const [searchOnAdd, setSearchOnAdd] = useState<string | number>(NO_CHANGE);
+
+  const [afterDateMode, setAfterDateMode] = useState<string | number>(
+    NO_CHANGE
+  );
+  const [afterDate, setAfterDate] = useState('');
 
   const save = useCallback(() => {
     let hasChanges = false;
@@ -118,6 +153,14 @@ function EditPerformersModalContent(props: EditPerformersModalContentProps) {
       payload.searchOnAdd = searchOnAdd === 'true';
     }
 
+    if (afterDateMode === CLEAR_DATE) {
+      hasChanges = true;
+      payload.afterDate = '';
+    } else if (afterDateMode === SET_DATE && afterDate) {
+      hasChanges = true;
+      payload.afterDate = afterDate;
+    }
+
     if (hasChanges) {
       onSavePress(payload);
     }
@@ -129,6 +172,8 @@ function EditPerformersModalContent(props: EditPerformersModalContentProps) {
     qualityProfileId,
     rootFolderPath,
     searchOnAdd,
+    afterDateMode,
+    afterDate,
     onSavePress,
     onModalClose,
   ]);
@@ -150,6 +195,12 @@ function EditPerformersModalContent(props: EditPerformersModalContentProps) {
           break;
         case 'searchOnAdd':
           setSearchOnAdd(value);
+          break;
+        case 'afterDateMode':
+          setAfterDateMode(value);
+          break;
+        case 'afterDate':
+          setAfterDate(value as string);
           break;
         default:
           console.warn('EditPerformersModalContent Unknown Input');
@@ -235,6 +286,32 @@ function EditPerformersModalContent(props: EditPerformersModalContentProps) {
             onChange={onInputChange}
           />
         </FormGroup>
+
+        <FormGroup>
+          <FormLabel>{translate('MonitorAfter')}</FormLabel>
+
+          <FormInputGroup
+            type={inputTypes.SELECT}
+            name="afterDateMode"
+            value={afterDateMode}
+            values={afterDateOptions}
+            onChange={onInputChange}
+          />
+        </FormGroup>
+
+        {afterDateMode === SET_DATE ? (
+          <FormGroup>
+            <FormLabel>{translate('Date')}</FormLabel>
+
+            <FormInputGroup
+              type={inputTypes.DATE}
+              name="afterDate"
+              helpText={translate('MonitorAfterPerformerHelpText')}
+              value={afterDate}
+              onChange={onInputChange}
+            />
+          </FormGroup>
+        ) : null}
       </ModalBody>
 
       <ModalFooter className={styles.modalFooter}>

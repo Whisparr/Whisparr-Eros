@@ -8,6 +8,7 @@ namespace NzbDrone.Core.ImportLists.ImportExclusions
         StudioExclusion,
         StudioAfterDate,
         TagExclusion,
-        CollectionExclusion
+        CollectionExclusion,
+        PerformerAfterDate
     }
 }

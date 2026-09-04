@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Text.Json.Serialization;
 using NzbDrone.Core.MediaCover;
 using NzbDrone.Core.Movies.Studios;
 using NzbDrone.Core.Parser;
@@ -23,6 +25,14 @@ namespace Whisparr.Api.V3.Studios
         public bool MoviesMonitored { get; set; }
         public bool WhisparrMonitorNewItems { get; set; } = true;
         public StudioStatus Status { get; set; }
+
+        /// <remarks>
+        /// Serialized even when null. The global WhenWritingNull default would drop the key
+        /// entirely once the date is cleared, and the SignalR cache merge spreads the payload
+        /// over the cached studio — an absent key cannot overwrite, so the edit modal kept
+        /// showing the old date after a mass edit until a full refetch.
+        /// </remarks>
+        [JsonIgnore(Condition = JsonIgnoreCondition.Never)]
         public string AfterDate { get; set; }
         public string RootFolderPath { get; set; }
         public int QualityProfileId { get; set; }
@@ -86,6 +96,24 @@ namespace Whisparr.Api.V3.Studios
             return collections.Select(ToResource).ToList();
         }
 
+        /// <summary>Parses a yyyy-MM-dd after date as midnight UTC</summary>
+        /// <remarks>
+        /// The column is a DateTimeOffset, so a date parsed with an unspecified kind is
+        /// written as the machine's local midnight and read back as UTC — east of UTC that
+        /// lands on the previous day and the date the user picked drifts on every save.
+        /// </remarks>
+        /// <param name="afterDate">The date as yyyy-MM-dd, or null/empty for no date</param>
+        /// <returns>The date at midnight UTC, or null</returns>
+        public static DateTime? ParseAfterDate(string afterDate)
+        {
+            if (string.IsNullOrWhiteSpace(afterDate))
+            {
+                return null;
+            }
+
+            return DateTime.Parse(afterDate, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal);
+        }
+
         public static Studio ToModel(this StudioResource resource)
         {
             if (resource == null)
@@ -107,7 +135,7 @@ namespace Whisparr.Api.V3.Studios
                 MoviesMonitored = resource.MoviesMonitored,
                 WhisparrMonitorNewItems = resource.WhisparrMonitorNewItems,
                 Status = resource.Status,
-                AfterDate = string.IsNullOrWhiteSpace(resource.AfterDate) ? null : DateTime.Parse(resource.AfterDate),
+                AfterDate = ParseAfterDate(resource.AfterDate),
                 QualityProfileId = resource.QualityProfileId,
                 RootFolderPath = resource.RootFolderPath,
                 SearchOnAdd = resource.SearchOnAdd,

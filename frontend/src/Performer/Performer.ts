@@ -3,6 +3,7 @@ import { Image } from 'Movie/Movie';
 
 interface Performer extends ModelBase {
   foreignId: string;
+  afterDate?: string | null;
   tmdbId?: number;
   tpdbId?: string;
   name: string;
