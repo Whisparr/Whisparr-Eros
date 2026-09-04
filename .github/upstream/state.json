@@ -948,8 +948,8 @@
       "2b790672480b472df8d465658b186f305b542356": {
         "subject": "New: Option to reject and blocklist torrents containing rejected extensions at grab time",
         "month": "2026-08",
-        "disposition": "skip",
-        "reason": "Feature decision, deferred to its own PR: a new per-indexer setting across eight settings classes plus grab-time torrent inspection in TorrentClientBase."
+        "disposition": "adapt",
+        "reason": "Adapted: we have no UserRejectedExtensions config and no FailDownloads.UserDefinedExtensions, so the user-extension branch, FileExtensions.ParseExtensions and the import-service refactor are dropped. Our Blocklist has no Source column, so Block takes message only. Five torrent settings classes here, not eight."
       },
       "bcb333fd8c1829d2278ab9f76e7847e34d863a37": {
         "subject": "Localize examples for date and time settings",
