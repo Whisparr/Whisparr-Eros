@@ -943,7 +943,6 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                     .Build();
 
                 request.AllowAutoRedirect = true;
-                request.SuppressHttpError = true;
 
                 var httpResponse = _httpClient.Get<List<MovieResource>>(request);
 
@@ -1048,7 +1047,6 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                     .Build();
 
                 request.AllowAutoRedirect = true;
-                request.SuppressHttpError = true;
 
                 var httpResponse = _httpClient.Get<List<MovieResource>>(request);
 
@@ -1134,7 +1132,6 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                     .Build();
 
                 request.AllowAutoRedirect = true;
-                request.SuppressHttpError = true;
 
                 var httpResponse = _httpClient.Get<List<MovieResource>>(request);
 
@@ -1232,7 +1229,6 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                     .Build();
 
                 request.AllowAutoRedirect = true;
-                request.SuppressHttpError = true;
 
                 var httpResponse = _httpClient.Get<List<PerformerResource>>(request);
 
@@ -1316,7 +1312,6 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                     .Build();
 
                 request.AllowAutoRedirect = true;
-                request.SuppressHttpError = true;
 
                 var httpResponse = _httpClient.Get<List<StudioResource>>(request);
 

@@ -387,8 +387,8 @@
       "2089d4a33f2ffe0151cbab5ebb3b7ec48af3c34c": {
         "subject": "Avoid suppresing search for movies errors",
         "month": "2026-07",
-        "disposition": "skip",
-        "reason": "Our SkyHookProxy talks to api.whisparr.com and sets SuppressHttpError on all 22 of its call sites. Unsuppressing one of them is inconsistent, and upstream also drops AllowAutoRedirect, which we cannot verify against an endpoint we do not control. Worth its own PR if we want search failures to report their status code."
+        "disposition": "adapt",
+        "reason": "Landed 2026-09-04 as its own PR. The count recorded here earlier was wrong twice over: SkyHookProxy has 22 SuppressHttpError call sites, not ten, and they are not one decision. 17 of them are followed by an explicit HasHttpError check that maps 404 to MovieNotFoundException, rethrows as HttpException, or logs URL and status - those keep the suppression. The five search routes checked nothing, so a 4xx/5xx never threw and the catch (HttpException) that reports an unreachable API was dead; the lazy Resource then failed to deserialize and the generic handler blamed the payload. Suppression removed on those five only. Adapted rather than picked: upstream also drops AllowAutoRedirect and we keep it, because HttpRequest flips that default to false outside production, so removing the explicit assignment would stop following redirects in builds run from source. Covered by SkyHookProxySearchErrorFixture."
       },
       "f3bb6321cdee98cf8f22c80acc26d847bd4ecba8": {
         "subject": "Ignore case for rating type enums",
