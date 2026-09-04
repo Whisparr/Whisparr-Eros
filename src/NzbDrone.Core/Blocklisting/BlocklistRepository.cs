@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using NzbDrone.Core.Datastore;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Movies;
+using NzbDrone.Core.Profiles.Qualities;
 
 namespace NzbDrone.Core.Blocklisting
 {
@@ -50,19 +52,29 @@ namespace NzbDrone.Core.Blocklisting
 
         public override PagingSpec<Blocklist> GetPaged(PagingSpec<Blocklist> pagingSpec)
         {
-            pagingSpec.Records = GetPagedRecords(PagedBuilder(), pagingSpec, PagedQuery);
+            var sortingByQuality = string.Equals(pagingSpec.SortKey, "quality", StringComparison.OrdinalIgnoreCase);
+            var customSortExpression = sortingByQuality ? QualityRankJoin.SortExpression : null;
+
+            pagingSpec.Records = GetPagedRecords(PagedBuilder(sortingByQuality), pagingSpec, PagedQuery, customSortExpression);
 
             var countTemplate = $"SELECT COUNT(*) FROM (SELECT /**select**/ FROM \"{TableMapping.Mapper.TableNameMapping(typeof(Blocklist))}\" /**join**/ /**innerjoin**/ /**leftjoin**/ /**where**/ /**groupby**/ /**having**/) AS \"Inner\"";
-            pagingSpec.TotalRecords = GetPagedRecordCount(PagedBuilder().Select(typeof(Blocklist)), pagingSpec, countTemplate);
+            pagingSpec.TotalRecords = GetPagedRecordCount(PagedBuilder(sortingByQuality).Select(typeof(Blocklist)), pagingSpec, countTemplate);
 
             return pagingSpec;
         }
 
-        protected override SqlBuilder PagedBuilder()
+        protected override SqlBuilder PagedBuilder() => PagedBuilder(false);
+
+        private SqlBuilder PagedBuilder(bool joinQualityRanks)
         {
             var builder = Builder()
                 .Join<Blocklist, Movie>((b, m) => b.MovieId == m.Id)
                 .LeftJoin<Movie, MovieMetadata>((m, mm) => m.MovieMetadataId == mm.Id);
+
+            if (joinQualityRanks)
+            {
+                builder.LeftJoin(QualityRankJoin.Build(_database.DatabaseType, "Blocklist", "Movies"));
+            }
 
             return builder;
         }

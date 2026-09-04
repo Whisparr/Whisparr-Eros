@@ -463,7 +463,7 @@ namespace NzbDrone.Core.Datastore
             }
         }
 
-        protected List<TModel> GetPagedRecords(SqlBuilder builder, PagingSpec<TModel> pagingSpec, Func<SqlBuilder, IEnumerable<TModel>> queryFunc)
+        protected List<TModel> GetPagedRecords(SqlBuilder builder, PagingSpec<TModel> pagingSpec, Func<SqlBuilder, IEnumerable<TModel>> queryFunc, string customSortExpression = null)
         {
             AddFilters(builder, pagingSpec);
 
@@ -472,28 +472,35 @@ namespace NzbDrone.Core.Datastore
                 pagingSpec.SortKey = $"{_table}.{_keyProperty.Name}";
             }
 
-            var orderByClause = BuildOrderByClause(pagingSpec);
+            var orderByClause = BuildOrderByClause(pagingSpec, customSortExpression);
             builder.OrderBy(orderByClause);
 
             return queryFunc(builder).ToList();
         }
 
-        private string BuildOrderByClause(PagingSpec<TModel> pagingSpec)
+        // customSortExpression replaces the mapped column for callers whose sort key has no column
+        // to sort on - "quality" is a rank the caller joins in, not a value stored on the row.
+        // Unlike upstream, the default sort keys still apply as tiebreakers, so rows sharing a rank
+        // keep a stable order instead of falling back to whatever the database returns.
+        private string BuildOrderByClause(PagingSpec<TModel> pagingSpec, string customSortExpression = null)
         {
             var pagingOffset = Math.Max(pagingSpec.Page - 1, 0) * pagingSpec.PageSize;
 
-            var sortKey = TableMapping.Mapper.GetSortKey(pagingSpec.SortKey);
+            (string Table, string Column)? sortKey = customSortExpression == null ? TableMapping.Mapper.GetSortKey(pagingSpec.SortKey) : null;
             var sortDirection = pagingSpec.SortDirection == SortDirection.Descending ? "DESC" : "ASC";
 
             var sbOrderByClause = new StringBuilder(null);
 
-            sbOrderByClause.Append($"\"{sortKey.Table ?? _table}\".\"{sortKey.Column}\" {sortDirection}");
+            sbOrderByClause.Append(customSortExpression != null
+                ? $"{customSortExpression} {sortDirection}"
+                : $"\"{sortKey.Value.Table ?? _table}\".\"{sortKey.Value.Column}\" {sortDirection}");
+
             if (pagingSpec.DefaultSortKeys?.Any() == true)
             {
                 foreach (var defaultSortKey in pagingSpec.DefaultSortKeys)
                 {
                     var key = TableMapping.Mapper.GetSortKey(defaultSortKey);
-                    if (key.Column == sortKey.Column && key.Table == sortKey.Table)
+                    if (sortKey.HasValue && key.Column == sortKey.Value.Column && key.Table == sortKey.Value.Table)
                     {
                         continue;
                     }

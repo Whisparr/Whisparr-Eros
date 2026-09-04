@@ -7,6 +7,7 @@ import TableRow from 'Components/Table/TableRow';
 import MovieSearchCell from 'Movie/MovieSearchCell';
 import MovieStatus from 'Movie/MovieStatus';
 import MovieTitleLink from 'Movie/MovieTitleLink';
+import MovieFileQuality from 'MovieFile/MovieFileQuality';
 import { SelectStateInputProps } from 'typings/props';
 import styles from './CutoffUnmetRow.css';
 
@@ -84,6 +85,14 @@ function CutoffUnmetRow({
               date={lastSearchTime}
               includeSeconds={true}
             />
+          );
+        }
+
+        if (name === 'quality') {
+          return (
+            <TableRowCell key={name}>
+              <MovieFileQuality movieFileId={movieFileId} />
+            </TableRowCell>
           );
         }
 

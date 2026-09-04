@@ -13,7 +13,6 @@ using NzbDrone.Core.Indexers;
 using NzbDrone.Core.Languages;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Profiles.Qualities;
-using NzbDrone.Core.Qualities;
 using NzbDrone.Core.Queue;
 using NzbDrone.SignalR;
 using Whisparr.Http;
@@ -30,7 +29,7 @@ namespace Whisparr.Api.V3.Queue
         private readonly IQueueService _queueService;
         private readonly IPendingReleaseService _pendingReleaseService;
 
-        private readonly QualityModelComparer _qualityComparer;
+        private readonly IQualityProfileRankService _rankService;
         private readonly ITrackedDownloadService _trackedDownloadService;
         private readonly IFailedDownloadService _failedDownloadService;
         private readonly IIgnoredDownloadService _ignoredDownloadService;
@@ -40,7 +39,7 @@ namespace Whisparr.Api.V3.Queue
         public QueueController(IBroadcastSignalRMessage broadcastSignalRMessage,
                            IQueueService queueService,
                            IPendingReleaseService pendingReleaseService,
-                           QualityProfileService qualityProfileService,
+                           IQualityProfileRankService rankService,
                            ITrackedDownloadService trackedDownloadService,
                            IFailedDownloadService failedDownloadService,
                            IIgnoredDownloadService ignoredDownloadService,
@@ -56,7 +55,7 @@ namespace Whisparr.Api.V3.Queue
             _downloadClientProvider = downloadClientProvider;
             _blocklistService = blocklistService;
 
-            _qualityComparer = new QualityModelComparer(qualityProfileService.GetDefaultProfile(string.Empty));
+            _rankService = rankService;
         }
 
         [NonAction]
@@ -253,9 +252,14 @@ namespace Whisparr.Api.V3.Queue
             }
             else if (pagingSpec.SortKey == "quality")
             {
+                // Queue items are not rows, so this cannot use the SQL rank join the paged
+                // repositories use; it reads the same ranks through the service instead.
+                double rankOf(NzbDrone.Core.Queue.Queue q) =>
+                    _rankService.GetRank(q.Movie?.QualityProfileId, q.Quality?.Quality?.Id);
+
                 ordered = ascending
-                    ? fullQueue.OrderBy(q => q.Quality, _qualityComparer)
-                    : fullQueue.OrderByDescending(q => q.Quality, _qualityComparer);
+                    ? fullQueue.OrderBy(rankOf)
+                    : fullQueue.OrderByDescending(rankOf);
             }
             else if (pagingSpec.SortKey == "languages")
             {
