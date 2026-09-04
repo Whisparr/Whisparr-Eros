@@ -303,8 +303,8 @@
       "c3849dbcb02f6e38cb6206e672ca6e2313962b8c": {
         "subject": "Upgrade StyleCop.Analyzers to Unstable 1.2.0.556",
         "month": "2026-06",
-        "disposition": "skip",
-        "reason": "Deferred to its own PR, not skipped on merit. The nuget blocker recorded here earlier was wrong: upstream references the StyleCop.Analyzers.Unstable package, and 1.2.0.556 is on nuget.org under that id - the NU1102 came from bumping the version on StyleCop.Analyzers, which only publishes 1.2.0-beta.556. No extra package source is needed. What remains is the cost: the upgrade churns 160 files including Parser.cs, where our fork has diverged furthest, so it is not something to fold into a sync chunk. Still on 1.1.118."
+        "disposition": "adapt",
+        "reason": "Landed 2026-09-04 as its own PR, as the earlier skip reason intended. The nuget blocker recorded here was wrong: upstream references StyleCop.Analyzers.Unstable, whose 1.2.0.556 is on nuget.org - the NU1102 came from bumping the version on StyleCop.Analyzers, which publishes the same build as the prerelease 1.2.0-beta.556. The 160-file churn did not materialise either: our .editorconfig was already tuned for this analyzer, having arrived through Radarr syncs while we still ran 1.1.118 from 2019. The solution surfaced 28 diagnostics across 3 rules (SA1117 x23, SA1316 x4, SA1141 x1), fixed by hand since SA1117 ships no code fix. Adapted rather than picked: we keep $(MSBuildThisFileDirectory) for AdditionalFiles, and the SA1316 sites are Whisparr-only fuzzy-matching code with no upstream counterpart."
       },
       "c97100c1c8f3cdf839be3adca42835684cc92c36": {
         "subject": "Bump version to 6.3.0",
