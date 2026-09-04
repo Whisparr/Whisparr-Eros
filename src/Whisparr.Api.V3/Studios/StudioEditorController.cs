@@ -1,5 +1,8 @@
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.DecisionEngine.Specifications;
@@ -37,11 +40,31 @@ namespace Whisparr.Api.V3.Studios
         {
             var studiosToUpdate = _studioService.GetStudios(resource.StudioIds);
 
+            // A bulk date has three states the wire can't express with a plain DateTime?:
+            // absent leaves each studio's own date alone, empty clears it, and anything
+            // else has to parse here rather than silently clearing every selected studio.
+            DateTime? afterDate = null;
+
+            if (resource.AfterDate.IsNotNullOrWhiteSpace())
+            {
+                if (!DateTime.TryParse(resource.AfterDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedAfterDate))
+                {
+                    throw new ValidationException(new[] { new ValidationFailure(nameof(resource.AfterDate), $"Invalid after date: {resource.AfterDate}") });
+                }
+
+                afterDate = parsedAfterDate;
+            }
+
             foreach (var studios in studiosToUpdate)
             {
                 if (resource.Monitored.HasValue)
                 {
                     studios.Monitored = resource.Monitored.Value;
+                }
+
+                if (resource.MoviesMonitored.HasValue)
+                {
+                    studios.MoviesMonitored = resource.MoviesMonitored.Value;
                 }
 
                 if (resource.QualityProfileId.HasValue)
@@ -57,6 +80,11 @@ namespace Whisparr.Api.V3.Studios
                 if (resource.SearchOnAdd.HasValue)
                 {
                     studios.SearchOnAdd = resource.SearchOnAdd.Value;
+                }
+
+                if (resource.AfterDate != null)
+                {
+                    studios.AfterDate = afterDate;
                 }
 
                 if (resource.Tags != null)

@@ -64,7 +64,7 @@ namespace Whisparr.Api.V3.Studios
                 MoviesMonitored = model.MoviesMonitored,
                 WhisparrMonitorNewItems = model.WhisparrMonitorNewItems,
                 Status = model.Status,
-                AfterDate = model.AfterDate?.ToLocalTime().ToString("yyyy-MM-dd"),
+                AfterDate = model.AfterDate?.ToString("yyyy-MM-dd"),
                 Images = model.Images,
                 QualityProfileId = model.QualityProfileId,
                 RootFolderPath = model.RootFolderPath,
