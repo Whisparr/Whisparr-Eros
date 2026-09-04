@@ -1077,6 +1077,8 @@
   "IndexerSettingsPasskey": "Passkey",
   "IndexerSettingsRejectBlocklistedTorrentHashes": "Reject Blocklisted Torrent Hashes While Grabbing",
   "IndexerSettingsRejectBlocklistedTorrentHashesHelpText": "If a torrent is blocked by hash it may not properly be rejected during RSS/Search for some indexers, enabling this will allow it to be rejected after the torrent is grabbed, but before it is sent to the client.",
+  "IndexerSettingsRejectTorrentFilesWithBlockedExtensions": "Reject Torrent Files with Blocked Extensions",
+  "IndexerSettingsRejectTorrentFilesWithBlockedExtensionsHelpText": "Also apply 'Fail Downloads' setting when grabbing torrent files. This will reject torrents that contain any blocked extension regardless of a valid media file being present.",
   "IndexerSettingsRemoveYear": "Remove year from search query",
   "IndexerSettingsRemoveYearHelpText": "Should {appName} remove the year after the title when searching this indexer?",
   "IndexerSettingsRequiredFlags": "Required Flags",
