@@ -310,10 +310,7 @@ namespace Whisparr.Api.V3.Movies
                 return NotFound();
             }
 
-            var stats = _movieStatisticsService.MovieStatistics(resource.Id);
-            LinkMovieStatistics(resource, stats);
-            _coverMapper.ConvertToLocalUrls(resource.Id, resource.Images);
-            return resource;
+            return EnrichResource(resource);
         }
 
         /// <summary>GET /movie/{id}</summary>
@@ -328,7 +325,23 @@ namespace Whisparr.Api.V3.Movies
                 .FindByForeignId(id.ToString())
                 ?? _moviesService.GetMovie(id);
 
-            return movie?.ToResource(_configService.AvailabilityDelay, _qualityUpgradableSpecification);
+            return EnrichResource(movie?.ToResource(_configService.AvailabilityDelay, _qualityUpgradableSpecification));
+        }
+
+        // Both single-movie routes have to link statistics and map cover URLs. The base class
+        // route GET {id:int} is the more specific match, so a numeric request lands here rather
+        // than in GetMovieById, whose numeric branch is unreachable at runtime.
+        private MovieResource EnrichResource(MovieResource resource)
+        {
+            if (resource == null || resource.Id == 0)
+            {
+                return resource;
+            }
+
+            LinkMovieStatistics(resource, _movieStatisticsService.MovieStatistics(resource.Id));
+            MapCoversToLocal(resource);
+
+            return resource;
         }
 
         /// <summary>POST /movie/list</summary>
