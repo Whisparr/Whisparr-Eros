@@ -172,10 +172,10 @@ namespace Whisparr.Api.V3.Studios
                 }
             }
 
-            var coverFileInfos = _coverMapper.GetMovieCoverFileInfos();
-            _coverMapper.ConvertToLocalUrls(
-                movieResources.Select(x => Tuple.Create(x.Id, x.Images.AsEnumerable())),
-                coverFileInfos);
+            foreach (var movieResource in movieResources)
+            {
+                _coverMapper.ConvertToLocalUrls(movieResource.Id, movieResource.Images);
+            }
 
             return movieResources;
         }
@@ -264,9 +264,10 @@ namespace Whisparr.Api.V3.Studios
                     studioResources = _studioService.GetAllStudios().ToResource();
                 }
 
-                var coverFileInfos = _coverMapper.GetStudioCoverFileInfos();
-
-                _coverMapper.ConvertToLocalStudioUrls(studioResources.Select(x => Tuple.Create(x.Id, x.Images.AsEnumerable())), coverFileInfos);
+                foreach (var studioResource in studioResources)
+                {
+                    _coverMapper.ConvertToLocalStudioUrls(studioResource.Id, studioResource.Images);
+                }
 
                 LinkMovies(studioResources);
             }
@@ -514,9 +515,10 @@ namespace Whisparr.Api.V3.Studios
                             studioResources.AddIfNotNull(MapToResource(studio));
                         }
 
-                        var coverFileInfos = _coverMapper.GetStudioCoverFileInfos();
-
-                        _coverMapper.ConvertToLocalStudioUrls(studioResources.Select(x => Tuple.Create(x.Id, x.Images.AsEnumerable())), coverFileInfos);
+                        foreach (var studioResource in studioResources)
+                {
+                    _coverMapper.ConvertToLocalStudioUrls(studioResource.Id, studioResource.Images);
+                }
 
                         LinkMovies(studioResources);
 
@@ -571,8 +573,10 @@ namespace Whisparr.Api.V3.Studios
             var resources = page.Select(s => s.ToResource()).ToList();
 
             // Bulk load file info once for all studios on page
-            var coverFileInfos = _coverMapper.GetStudioCoverFileInfos();
-            _coverMapper.ConvertToLocalStudioUrls(resources.Select(x => Tuple.Create(x.Id, x.Images.AsEnumerable())), coverFileInfos);
+            foreach (var studioResource in resources)
+            {
+                _coverMapper.ConvertToLocalStudioUrls(studioResource.Id, studioResource.Images);
+            }
 
             var result = new PagingResource<StudioResource>(request)
             {
@@ -586,13 +590,10 @@ namespace Whisparr.Api.V3.Studios
         {
             Paging.ApplyStudioFiltersToPagingSpec(request.Filters, pageSpec);
 
-            // Get file info once for bulk operation
-            var coverFileInfos = _coverMapper.GetStudioCoverFileInfos();
-
             return pageSpec.ApplyToPage(_studioService.Paged, resource =>
             {
                 var studioResource = resource.ToResource();
-                _coverMapper.ConvertToLocalStudioUrls(studioResource.Id, studioResource.Images, coverFileInfos);
+                _coverMapper.ConvertToLocalStudioUrls(studioResource.Id, studioResource.Images);
                 return studioResource;
             });
         }

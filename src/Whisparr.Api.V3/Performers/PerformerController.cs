@@ -193,10 +193,10 @@ namespace Whisparr.Api.V3.Performers
                 }
             }
 
-            var coverFileInfos = _coverMapper.GetMovieCoverFileInfos();
-            _coverMapper.ConvertToLocalUrls(
-                movieResources.Select(x => Tuple.Create(x.Id, x.Images.AsEnumerable())),
-                coverFileInfos);
+            foreach (var movieResource in movieResources)
+            {
+                _coverMapper.ConvertToLocalUrls(movieResource.Id, movieResource.Images);
+            }
 
             return movieResources;
         }
@@ -221,9 +221,10 @@ namespace Whisparr.Api.V3.Performers
                 performerResources = _performerService.GetAllPerformers().ToResource();
             }
 
-            var coverFileInfos = _coverMapper.GetPerformerCoverFileInfos();
-
-            _coverMapper.ConvertToLocalPerformerUrls(performerResources.Select(x => Tuple.Create(x.Id, x.Images.AsEnumerable())), coverFileInfos);
+            foreach (var performerResource in performerResources)
+            {
+                _coverMapper.ConvertToLocalPerformerUrls(performerResource.Id, performerResource.Images);
+            }
 
             return performerResources;
         }
@@ -477,9 +478,10 @@ namespace Whisparr.Api.V3.Performers
                             performerResources.AddIfNotNull(performer.ToResource());
                         }
 
-                        var coverFileInfos = _coverMapper.GetPerformerCoverFileInfos();
-
-                        _coverMapper.ConvertToLocalPerformerUrls(performerResources.Select(x => Tuple.Create(x.Id, x.Images.AsEnumerable())), coverFileInfos);
+                        foreach (var performerResource in performerResources)
+                        {
+                            _coverMapper.ConvertToLocalPerformerUrls(performerResource.Id, performerResource.Images);
+                        }
 
                         foreach (var performerResource in performerResources)
                         {
@@ -543,13 +545,10 @@ namespace Whisparr.Api.V3.Performers
         {
             Paging.ApplyPerformerFiltersToPagingSpec(request.Filters, pageSpec);
 
-            // Get file info once for bulk operation
-            var coverFileInfos = _coverMapper.GetPerformerCoverFileInfos();
-
             return pageSpec.ApplyToPage(_performerService.Paged, resource =>
             {
                 var performerResource = resource.ToResource();
-                _coverMapper.ConvertToLocalPerformerUrls(performerResource.Id, performerResource.Images, coverFileInfos);
+                _coverMapper.ConvertToLocalPerformerUrls(performerResource.Id, performerResource.Images);
                 return performerResource;
             });
         }
@@ -580,9 +579,10 @@ namespace Whisparr.Api.V3.Performers
 
             var resources = page.Select(p => p.ToResource()).ToList();
 
-            // Bulk load file info once for all performers on page
-            var coverFileInfos = _coverMapper.GetPerformerCoverFileInfos();
-            _coverMapper.ConvertToLocalPerformerUrls(resources.Select(x => Tuple.Create(x.Id, x.Images.AsEnumerable())), coverFileInfos);
+            foreach (var performerResource in resources)
+            {
+                _coverMapper.ConvertToLocalPerformerUrls(performerResource.Id, performerResource.Images);
+            }
 
             var result = new PagingResource<PerformerResource>(request)
             {
