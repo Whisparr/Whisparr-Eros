@@ -870,8 +870,8 @@
       "59468add52f1d91b65c1a93b8a72cdaf63620cc0": {
         "subject": "Bump node.js to 24 LTS",
         "month": "2026-08",
-        "disposition": "skip",
-        "reason": "Our toolchain versions are ours to move. Node 22 is still in LTS here and the bump touches the devcontainer and yarn.lock, so it belongs in its own PR rather than a sync chunk."
+        "disposition": "adapt",
+        "reason": "Landed 2026-09-04 as its own PR rather than in a sync chunk, as the earlier skip reason intended. Applied to our files rather than picked: volta node 24.19.0 and yarn 1.22.22, the packageManager pin, and the devcontainer node feature - which was on 20, two majors behind the volta pin it was meant to match. CI needed no change; volta-cli/action in build_v3.yml reads the volta pin. @types/node moved 26.4.0 -> 24.13.3 to match the runtime, with a resolutions entry we need and Sonarr does not: something here still asks for @types/node@*, so the downgrade alone left two copies and 15 duplicate-identifier errors in tsc."
       },
       "30661f86befba905955cded7dd947a1f41825828": {
         "subject": "Bump .NET to 10.0.11",
