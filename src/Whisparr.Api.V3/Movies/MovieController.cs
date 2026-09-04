@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using DryIoc.ImTools;
@@ -206,8 +205,6 @@ namespace Whisparr.Api.V3.Movies
         {
             var moviesResources = new List<MovieResource>();
 
-            Dictionary<string, FileInfo> coverFileInfos = null;
-
             if (tmdbId.HasValue)
             {
                 var movie = _moviesService.FindByTmdbId(tmdbId.Value);
@@ -246,7 +243,6 @@ namespace Whisparr.Api.V3.Movies
 
                 if (!excludeLocalCovers)
                 {
-                    coverFileInfos = _coverMapper.GetMovieCoverFileInfos();
                 }
 
                 var movies = movieTask.GetAwaiter().GetResult();
@@ -259,7 +255,7 @@ namespace Whisparr.Api.V3.Movies
 
                 if (!excludeLocalCovers)
                 {
-                    MapCoversToLocal(moviesResources, coverFileInfos);
+                    MapCoversToLocal(moviesResources);
                 }
 
                 LinkMovieStatistics(moviesResources, sdict);
@@ -421,7 +417,6 @@ namespace Whisparr.Api.V3.Movies
             var moviesResources = new List<MovieResource>();
 
             var movieStats = _movieStatisticsService.MovieStatistics(ids);
-            var coverFileInfos = _coverMapper.GetMovieCoverFileInfos();
             var sdict = movieStats.ToDictionary(x => x.MovieId);
             var availDelay = _configService.AvailabilityDelay;
             var movies = _moviesService.FindByIds(ids);
@@ -432,7 +427,7 @@ namespace Whisparr.Api.V3.Movies
             }
 
             LinkMovieStatistics(moviesResources, sdict);
-            MapCoversToLocal(moviesResources, coverFileInfos);
+            MapCoversToLocal(moviesResources);
 
             var rootFolders = _rootFolderService.All();
 
@@ -584,12 +579,11 @@ namespace Whisparr.Api.V3.Movies
             var availDelay = _configService.AvailabilityDelay;
             var movieStats = _movieStatisticsService.MovieStatistics(movies.Select(m => m.Id).ToList());
             var sdict = movieStats.ToDictionary(x => x.MovieId);
-            var coverFileInfos = _coverMapper.GetMovieCoverFileInfos();
             var rootFolders = _rootFolderService.All();
 
             var resources = movies.Select(m => m.ToResource(availDelay, _qualityUpgradableSpecification)).ToList();
             LinkMovieStatistics(resources, sdict);
-            MapCoversToLocal(resources, coverFileInfos);
+            MapCoversToLocal(resources);
             resources.ForEach(m => m.RootFolderPath = _rootFolderService.GetBestRootFolderPath(m.Path, rootFolders));
             return resources;
         }
@@ -646,14 +640,17 @@ namespace Whisparr.Api.V3.Movies
             }
         }
 
-        private void MapCoversToLocal(IEnumerable<MovieResource> movies, Dictionary<string, FileInfo> coverFileInfos)
+        private void MapCoversToLocal(IEnumerable<MovieResource> movies)
         {
             // Workaround for bulk API failing here and crashing app web loading
             // Will be addressed in future via pagination API re-work
             // If failures happen, worst case is covers are hotlinked from StashDB
             try
             {
-                _coverMapper.ConvertToLocalUrls(movies.Select(x => Tuple.Create(x.Id, x.Images.AsEnumerable())), coverFileInfos);
+                foreach (var movie in movies)
+                {
+                    _coverMapper.ConvertToLocalUrls(movie.Id, movie.Images);
+                }
             }
             catch (Exception ex)
             {
@@ -708,7 +705,6 @@ namespace Whisparr.Api.V3.Movies
                 var moviesResources = new List<MovieResource>();
                 var movieStats = _movieStatisticsService.MovieStatistics(ids);
 
-                var coverFileInfos = _coverMapper.GetMovieCoverFileInfos();
                 var sdict = movieStats.ToDictionary(x => x.MovieId);
                 var availDelay = _configService.AvailabilityDelay;
                 var movies = _moviesService.FindByIds(ids);
@@ -800,7 +796,6 @@ namespace Whisparr.Api.V3.Movies
 
                     if (getIds.Count > 0)
                     {
-                        var coverFileInfos = _coverMapper.GetMovieCoverFileInfos();
                         var availDelay = _configService.AvailabilityDelay;
 
                         var movies = _moviesService.FindByIds(getIds);
@@ -820,7 +815,7 @@ namespace Whisparr.Api.V3.Movies
                         }
 
                         LinkMovieStatistics(moviesResources, sdict);
-                        MapCoversToLocal(moviesResources, coverFileInfos);
+                        MapCoversToLocal(moviesResources);
 
                         var rootFolders = _rootFolderService.All();
 
@@ -882,12 +877,11 @@ namespace Whisparr.Api.V3.Movies
             var availDelay = _configService.AvailabilityDelay;
             var movieStats = _movieStatisticsService.MovieStatistics(page.Select(m => m.Id).ToList());
             var sdict = movieStats.ToDictionary(x => x.MovieId);
-            var coverFileInfos = _coverMapper.GetMovieCoverFileInfos();
             var rootFolders = _rootFolderService.All();
 
             var resources = page.Select(m => m.ToResource(availDelay, _qualityUpgradableSpecification)).ToList();
             LinkMovieStatistics(resources, sdict);
-            MapCoversToLocal(resources, coverFileInfos);
+            MapCoversToLocal(resources);
             resources.ForEach(m => m.RootFolderPath = _rootFolderService.GetBestRootFolderPath(m.Path, rootFolders));
 
             var result = new PagingResource<MovieResource>(request)
@@ -907,12 +901,11 @@ namespace Whisparr.Api.V3.Movies
             var availDelay = _configService.AvailabilityDelay;
             var movieStats = _movieStatisticsService.MovieStatistics(paged.Records.Select(m => m.Id).ToList());
             var sdict = movieStats.ToDictionary(x => x.MovieId);
-            var coverFileInfos = _coverMapper.GetMovieCoverFileInfos();
             var rootFolders = _rootFolderService.All();
 
             var resources = paged.Records.Select(m => m.ToResource(availDelay, _qualityUpgradableSpecification)).ToList();
             LinkMovieStatistics(resources, sdict);
-            MapCoversToLocal(resources, coverFileInfos);
+            MapCoversToLocal(resources);
 
             var result = new PagingResource<MovieResource>(request)
             {

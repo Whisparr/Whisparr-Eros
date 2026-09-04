@@ -5,14 +5,11 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using NLog;
-using NzbDrone.Common;
-using NzbDrone.Common.Cache;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
 using NzbDrone.Core.Configuration;
-using NzbDrone.Core.Lifecycle;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Movies;
 using NzbDrone.Core.Movies.Events;
@@ -25,22 +22,15 @@ namespace NzbDrone.Core.MediaCover
 {
     public interface IMapCoversToLocal
     {
-        Dictionary<string, FileInfo> GetMovieCoverFileInfos();
-        Dictionary<string, FileInfo> GetPerformerCoverFileInfos();
-        Dictionary<string, FileInfo> GetStudioCoverFileInfos();
-        void ConvertToLocalUrls(int movieId, IEnumerable<MediaCover> covers, Dictionary<string, FileInfo> fileInfos = null);
-        void ConvertToLocalPerformerUrls(int performerId, IEnumerable<MediaCover> covers, Dictionary<string, FileInfo> fileInfos = null);
-        void ConvertToLocalStudioUrls(int studioId, IEnumerable<MediaCover> covers, Dictionary<string, FileInfo> fileInfos = null);
-        void ConvertToLocalUrls(IEnumerable<Tuple<int, IEnumerable<MediaCover>>> items, Dictionary<string, FileInfo> coverFileInfos);
-        void ConvertToLocalPerformerUrls(IEnumerable<Tuple<int, IEnumerable<MediaCover>>> items, Dictionary<string, FileInfo> coverFileInfos);
-        void ConvertToLocalStudioUrls(IEnumerable<Tuple<int, IEnumerable<MediaCover>>> items, Dictionary<string, FileInfo> coverFileInfos);
+        void ConvertToLocalUrls(int movieId, IEnumerable<MediaCover> covers);
+        void ConvertToLocalPerformerUrls(int performerId, IEnumerable<MediaCover> covers);
+        void ConvertToLocalStudioUrls(int studioId, IEnumerable<MediaCover> covers);
         string GetMovieCoverPath(int movieId, MediaCoverTypes coverType, int? height = null);
         string GetPerformerCoverPath(int performerId, MediaCoverTypes coverType, int? height = null);
         string GetStudioCoverPath(int studioId, MediaCoverTypes coverType, int? height = null);
     }
 
     public class MediaCoverService :
-        IHandle<ApplicationStartedEvent>,
         IHandleAsync<MovieUpdatedEvent>,
         IHandleAsync<PerformerUpdatedEvent>,
         IHandleAsync<StudioUpdatedEvent>,
@@ -49,7 +39,8 @@ namespace NzbDrone.Core.MediaCover
         IHandleAsync<StudiosDeletedEvent>,
         IMapCoversToLocal
     {
-        private const string CoverFileInfosCacheKey = "all";
+        private const string DefaultStudioCoverExtension = ".jpg";
+
         private readonly IMediaCoverProxy _mediaCoverProxy;
         private readonly IImageResizer _resizer;
         private readonly IHttpClient _httpClient;
@@ -60,11 +51,6 @@ namespace NzbDrone.Core.MediaCover
         private readonly Logger _logger;
 
         private readonly string _coverRootFolder;
-
-        private readonly ICached<Dictionary<string, FileInfo>> _movieCoverFileInfosCache;
-        private readonly ICached<Dictionary<string, FileInfo>> _performerCoverFileInfosCache;
-        private readonly ICached<Dictionary<string, FileInfo>> _studioCoverFileInfosCache;
-        private static readonly TimeSpan CoverFileInfosCacheTtl = TimeSpan.FromSeconds(900);
 
         // ImageSharp is slow on ARM (no hardware acceleration on mono yet)
         // So limit the number of concurrent resizing tasks
@@ -78,7 +64,6 @@ namespace NzbDrone.Core.MediaCover
                                  ICoverExistsSpecification coverExistsSpecification,
                                  IConfigFileProvider configFileProvider,
                                  IEventAggregator eventAggregator,
-                                 ICacheManager cacheManager,
                                  Logger logger)
         {
             _mediaCoverProxy = mediaCoverProxy;
@@ -91,10 +76,6 @@ namespace NzbDrone.Core.MediaCover
             _logger = logger;
 
             _coverRootFolder = appFolderInfo.GetMediaCoverPath();
-
-            _movieCoverFileInfosCache = cacheManager.GetCache<Dictionary<string, FileInfo>>(GetType(), "movieCoverFileInfos");
-            _performerCoverFileInfosCache = cacheManager.GetCache<Dictionary<string, FileInfo>>(GetType(), "performerCoverFileInfos");
-            _studioCoverFileInfosCache = cacheManager.GetCache<Dictionary<string, FileInfo>>(GetType(), "studioCoverFileInfos");
         }
 
         public string GetMovieCoverPath(int movieId, MediaCoverTypes coverType, int? height = null)
@@ -118,193 +99,112 @@ namespace NzbDrone.Core.MediaCover
             return Path.Combine(GetStudioCoverPath(studioId), coverType.ToString().ToLower() + heightSuffix + GetExtension(coverType));
         }
 
-        public Dictionary<string, FileInfo> GetMovieCoverFileInfos()
-        {
-            return _movieCoverFileInfosCache.Get(CoverFileInfosCacheKey, () => GetCoverFileInfos("movie"), CoverFileInfosCacheTtl);
-        }
-
-        public Dictionary<string, FileInfo> GetPerformerCoverFileInfos()
-        {
-            return _performerCoverFileInfosCache.Get(CoverFileInfosCacheKey, () => GetCoverFileInfos("performer"), CoverFileInfosCacheTtl);
-        }
-
-        public Dictionary<string, FileInfo> GetStudioCoverFileInfos()
-        {
-            return _studioCoverFileInfosCache.Get(CoverFileInfosCacheKey, () => GetCoverFileInfos("studio"), CoverFileInfosCacheTtl);
-        }
-
-        public void ConvertToLocalUrls(int movieId, IEnumerable<MediaCover> covers, Dictionary<string, FileInfo> fileInfos = null)
+        public void ConvertToLocalUrls(int movieId, IEnumerable<MediaCover> covers)
         {
             if (movieId == 0)
             {
-                // Movie isn't in Whisparr yet, map via a proxy to circument referrer issues
+                // Movie isn't in Whisparr yet, map via a proxy to circumvent referrer issues
                 foreach (var mediaCover in covers)
                 {
                     mediaCover.Url = _mediaCoverProxy.RegisterUrl(mediaCover.RemoteUrl);
                 }
+
+                return;
             }
-            else
+
+            foreach (var mediaCover in covers)
             {
-                foreach (var mediaCover in covers)
+                if (mediaCover.CoverType == MediaCoverTypes.Unknown)
                 {
-                    if (mediaCover.CoverType == MediaCoverTypes.Unknown)
-                    {
-                        continue;
-                    }
-
-                    var filePath = GetMovieCoverPath(movieId, mediaCover.CoverType);
-
-                    FileInfo file;
-                    var fileExists = false;
-                    if (fileInfos != null)
-                    {
-                        fileExists = fileInfos.TryGetValue(filePath, out file);
-                    }
-                    else
-                    {
-                        file = _diskProvider.GetFileInfo(filePath);
-                        fileExists = file.Exists;
-                    }
-
-                    mediaCover.Url = _configFileProvider.UrlBase + @"/MediaCover/movie/" + movieId + "/" + mediaCover.CoverType.ToString().ToLower() + GetExtension(mediaCover.CoverType);
-
-                    if (fileExists)
-                    {
-                        var lastWrite = file.LastWriteTimeUtc;
-                        mediaCover.Url += "?lastWrite=" + lastWrite.Ticks;
-                    }
+                    continue;
                 }
+
+                mediaCover.Url = _configFileProvider.UrlBase + @"/MediaCover/movie/" + movieId + "/" + mediaCover.CoverType.ToString().ToLower() + GetExtension(mediaCover.CoverType);
+
+                AppendCacheBuster(mediaCover);
             }
         }
 
-        public void ConvertToLocalPerformerUrls(int performerId, IEnumerable<MediaCover> covers, Dictionary<string, FileInfo> fileInfos = null)
+        public void ConvertToLocalPerformerUrls(int performerId, IEnumerable<MediaCover> covers)
         {
             if (performerId == 0)
             {
-                // Movie isn't in Whisparr yet, map via a proxy to circument referrer issues
+                // Performer isn't in Whisparr yet, map via a proxy to circumvent referrer issues
                 foreach (var mediaCover in covers)
                 {
                     mediaCover.Url = _mediaCoverProxy.RegisterUrl(mediaCover.RemoteUrl);
                 }
+
+                return;
             }
-            else
+
+            foreach (var mediaCover in covers)
             {
-                foreach (var mediaCover in covers)
+                if (mediaCover.CoverType == MediaCoverTypes.Unknown)
                 {
-                    if (mediaCover.CoverType == MediaCoverTypes.Unknown)
-                    {
-                        continue;
-                    }
-
-                    var filePath = GetPerformerCoverPath(performerId, mediaCover.CoverType);
-
-                    FileInfo file;
-                    var fileExists = false;
-                    if (fileInfos != null)
-                    {
-                        fileExists = fileInfos.TryGetValue(filePath, out file);
-                    }
-                    else
-                    {
-                        file = _diskProvider.GetFileInfo(filePath);
-                        fileExists = file.Exists;
-                    }
-
-                    mediaCover.Url = _configFileProvider.UrlBase + @"/MediaCover/performer/" + performerId + "/" + mediaCover.CoverType.ToString().ToLower() + GetExtension(mediaCover.CoverType);
-
-                    if (fileExists)
-                    {
-                        var lastWrite = file.LastWriteTimeUtc;
-                        mediaCover.Url += "?lastWrite=" + lastWrite.Ticks;
-                    }
+                    continue;
                 }
+
+                mediaCover.Url = _configFileProvider.UrlBase + @"/MediaCover/performer/" + performerId + "/" + mediaCover.CoverType.ToString().ToLower() + GetExtension(mediaCover.CoverType);
+
+                AppendCacheBuster(mediaCover);
             }
         }
 
-        public void ConvertToLocalStudioUrls(int studioId, IEnumerable<MediaCover> covers, Dictionary<string, FileInfo> fileInfos = null)
+        public void ConvertToLocalStudioUrls(int studioId, IEnumerable<MediaCover> covers)
         {
             if (studioId == 0)
             {
-                // Movie isn't in Whisparr yet, map via a proxy to circument referrer issues
+                // Studio isn't in Whisparr yet, map via a proxy to circumvent referrer issues
                 foreach (var mediaCover in covers)
                 {
                     mediaCover.Url = _mediaCoverProxy.RegisterUrl(mediaCover.RemoteUrl);
                 }
+
+                return;
             }
-            else
+
+            // Studio covers are written with an extension taken from the download's Content-Type
+            // rather than from the cover type, so the folder has to be read to find out which.
+            var extension = GetStudioCoverExtension(studioId);
+
+            foreach (var mediaCover in covers)
             {
-                foreach (var mediaCover in covers)
+                if (mediaCover.CoverType == MediaCoverTypes.Unknown)
                 {
-                    if (mediaCover.CoverType == MediaCoverTypes.Unknown)
-                    {
-                        continue;
-                    }
-
-                    var filePath = GetStudioCoverPath(studioId);
-                    var extension = GetExtension(mediaCover.CoverType);
-
-                    // get files in studio folder
-                    var pathExists = _diskProvider.FolderExists(filePath);
-                    if (!pathExists)
-                    {
-                        _logger.Trace("Studio folder didn't exist, creating {0}", filePath);
-                        _diskProvider.CreateFolder(filePath);
-                    }
-
-                    var files = _diskProvider.GetFiles(filePath, false);
-                    if (files.Any())
-                    {
-                        var info = _diskProvider.GetFileInfo(files.First());
-                        extension = info.Extension;
-                    }
-
-                    FileInfo file;
-                    var fileExists = false;
-                    var testPath = Path.Join(filePath, mediaCover.CoverType.ToString() + extension);
-                    if (fileInfos != null)
-                    {
-                        fileExists = fileInfos.TryGetValue(testPath, out file);
-                    }
-                    else
-                    {
-                        file = _diskProvider.GetFileInfo(testPath);
-                        fileExists = file.Exists;
-                    }
-
-                    mediaCover.Url = _configFileProvider.UrlBase + @"/MediaCover/studio/" + studioId + "/" + mediaCover.CoverType.ToString().ToLower() + extension;
-
-                    if (fileExists)
-                    {
-                        var lastWrite = file.LastWriteTimeUtc;
-                        _logger.Trace("Studio cover already exists, last write time {0}", lastWrite);
-                        mediaCover.Url += "?lastWrite=" + lastWrite.Ticks;
-                    }
+                    continue;
                 }
+
+                mediaCover.Url = _configFileProvider.UrlBase + @"/MediaCover/studio/" + studioId + "/" + mediaCover.CoverType.ToString().ToLower() + extension;
+
+                AppendCacheBuster(mediaCover);
             }
         }
 
-        public void ConvertToLocalUrls(IEnumerable<Tuple<int, IEnumerable<MediaCover>>> items, Dictionary<string, FileInfo> coverFileInfos)
+        // Keyed on the remote URL rather than the file's modification time: our metadata sources
+        // address images by content (a StashDB image UUID, a TPDB content hash), so the URL changes
+        // when and only when the image does. A modification time changes whenever the file is
+        // rewritten with identical bytes, and does not change until the local file catches up.
+        private static void AppendCacheBuster(MediaCover mediaCover)
         {
-            foreach (var movie in items)
+            if (mediaCover.RemoteUrl.IsNotNullOrWhiteSpace())
             {
-                ConvertToLocalUrls(movie.Item1, movie.Item2, coverFileInfos);
+                mediaCover.Url += "?h=" + mediaCover.RemoteUrl.SHA256Hash()[..20];
             }
         }
 
-        public void ConvertToLocalPerformerUrls(IEnumerable<Tuple<int, IEnumerable<MediaCover>>> items, Dictionary<string, FileInfo> coverFileInfos)
+        private string GetStudioCoverExtension(int studioId)
         {
-            foreach (var movie in items)
-            {
-                ConvertToLocalPerformerUrls(movie.Item1, movie.Item2, coverFileInfos);
-            }
-        }
+            var folder = GetStudioCoverPath(studioId);
 
-        public void ConvertToLocalStudioUrls(IEnumerable<Tuple<int, IEnumerable<MediaCover>>> items, Dictionary<string, FileInfo> coverFileInfos)
-        {
-            foreach (var movie in items)
+            if (!_diskProvider.FolderExists(folder))
             {
-                ConvertToLocalStudioUrls(movie.Item1, movie.Item2, coverFileInfos);
+                return DefaultStudioCoverExtension;
             }
+
+            var files = _diskProvider.GetFiles(folder, false).ToList();
+
+            return files.Any() ? _diskProvider.GetFileInfo(files.First()).Extension : DefaultStudioCoverExtension;
         }
 
         private string GetMovieCoverPath(int movieId)
@@ -693,25 +593,6 @@ namespace NzbDrone.Core.MediaCover
                 MediaCoverTypes.Clearlogo => ".png",
                 _ => ".jpg"
             };
-        }
-
-        private Dictionary<string, FileInfo> GetCoverFileInfos(string subFolder)
-        {
-            if (!_diskProvider.FolderExists(Path.Combine(_coverRootFolder, subFolder)))
-            {
-                return new Dictionary<string, FileInfo>();
-            }
-
-            return _diskProvider
-                    .GetFileInfos(Path.Combine(_coverRootFolder, subFolder), true)
-                    .ToDictionary(x => x.FullName, PathEqualityComparer.Instance);
-        }
-
-        public void Handle(ApplicationStartedEvent message)
-        {
-            GetMovieCoverFileInfos();
-            GetPerformerCoverFileInfos();
-            GetStudioCoverFileInfos();
         }
 
         public void HandleAsync(MovieUpdatedEvent message)

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using FizzWare.NBuilder;
 using FluentAssertions;
@@ -18,6 +17,8 @@ namespace NzbDrone.Core.Test.MediaCoverTests
     [TestFixture]
     public class MediaCoverServiceFixture : CoreTest<MediaCoverService>
     {
+        private const string RemoteUrl = "https://stashdb.org/images/e9be2754-f9de-4db7-8cac-a64afd2a5126";
+
         private Movie _movie;
 
         [SetUp]
@@ -33,84 +34,102 @@ namespace NzbDrone.Core.Test.MediaCoverTests
             Mocker.GetMock<IMovieService>().Setup(m => m.GetMovie(It.Is<int>(id => id == _movie.Id))).Returns(_movie);
         }
 
+        // The remote URL's hash, truncated the same way MediaCoverService truncates it.
+        private static string ExpectedHash => RemoteUrl.SHA256Hash()[..20];
+
+        private static List<MediaCover.MediaCover> GivenCovers(string remoteUrl = RemoteUrl)
+        {
+            return new List<MediaCover.MediaCover>
+            {
+                new () { CoverType = MediaCoverTypes.Banner, RemoteUrl = remoteUrl }
+            };
+        }
+
         [Test]
         public void should_convert_cover_urls_to_local()
         {
-            var covers = new List<MediaCover.MediaCover>
-                {
-                    new MediaCover.MediaCover { CoverType = MediaCoverTypes.Banner }
-                };
-
-            var path = Path.Combine(TestContext.CurrentContext.TestDirectory, "Files", "Media", "H264_sample.mp4");
-            var fileInfo = new FileInfo(path);
-
-            Mocker.GetMock<IDiskProvider>()
-                .Setup(c => c.GetFileInfo(It.IsAny<string>()))
-                .Returns(fileInfo);
+            var covers = GivenCovers();
 
             Subject.ConvertToLocalUrls(12, covers);
 
-            covers.Single().Url.Should().Be($"/MediaCover/movie/12/banner.jpg?lastWrite={fileInfo.LastWriteTimeUtc.Ticks}");
+            covers.Single().Url.Should().Be($"/MediaCover/movie/12/banner.jpg?h={ExpectedHash}");
         }
 
         [Test]
         public void should_convert_performer_cover_urls_to_local()
         {
-            var covers = new List<MediaCover.MediaCover>
-                {
-                    new MediaCover.MediaCover { CoverType = MediaCoverTypes.Banner }
-                };
-
-            var path = Path.Combine(TestContext.CurrentContext.TestDirectory, "Files", "Media", "H264_sample.mp4");
-            var fileInfo = new FileInfo(path);
-
-            Mocker.GetMock<IDiskProvider>()
-                .Setup(c => c.GetFileInfo(It.IsAny<string>()))
-                .Returns(fileInfo);
+            var covers = GivenCovers();
 
             Subject.ConvertToLocalPerformerUrls(12, covers);
 
-            covers.Single().Url.Should().Be($"/MediaCover/performer/12/banner.jpg?lastWrite={fileInfo.LastWriteTimeUtc.Ticks}");
+            covers.Single().Url.Should().Be($"/MediaCover/performer/12/banner.jpg?h={ExpectedHash}");
         }
 
         [Test]
         public void should_convert_studio_cover_urls_to_local()
         {
-            var covers = new List<MediaCover.MediaCover>
-                {
-                    new MediaCover.MediaCover { CoverType = MediaCoverTypes.Banner }
-                };
-
-            var path = Path.Combine(TestContext.CurrentContext.TestDirectory, "Files", "Media", "H264_sample.mp4");
-            var fileInfo = new FileInfo(path);
-
-            Mocker.GetMock<IDiskProvider>()
-                .Setup(c => c.GetFileInfo(It.IsAny<string>()))
-                .Returns(fileInfo);
+            var covers = GivenCovers();
 
             Subject.ConvertToLocalStudioUrls(12, covers);
 
-            covers.Single().Url.Should().Be($"/MediaCover/studio/12/banner.jpg?lastWrite={fileInfo.LastWriteTimeUtc.Ticks}");
+            covers.Single().Url.Should().Be($"/MediaCover/studio/12/banner.jpg?h={ExpectedHash}");
         }
 
         [Test]
-        public void should_convert_media_urls_to_local_without_time_if_file_doesnt_exist()
+        public void should_convert_media_urls_to_local_without_a_hash_when_there_is_no_remote_url()
         {
-            var covers = new List<MediaCover.MediaCover>
-                {
-                    new MediaCover.MediaCover { CoverType = MediaCoverTypes.Banner }
-                };
-
-            var path = Path.Combine(TestContext.CurrentContext.TestDirectory, "Files", "Media", "NonExistant.mp4");
-            var fileInfo = new FileInfo(path);
-
-            Mocker.GetMock<IDiskProvider>()
-                .Setup(c => c.GetFileInfo(It.IsAny<string>()))
-                .Returns(fileInfo);
+            var covers = GivenCovers(null);
 
             Subject.ConvertToLocalUrls(12, covers);
 
             covers.Single().Url.Should().Be("/MediaCover/movie/12/banner.jpg");
+        }
+
+        [Test]
+        public void should_not_touch_disk_to_build_movie_cover_urls()
+        {
+            Subject.ConvertToLocalUrls(12, GivenCovers());
+
+            Mocker.GetMock<IDiskProvider>().Verify(v => v.GetFileInfo(It.IsAny<string>()), Times.Never());
+            Mocker.GetMock<IDiskProvider>().Verify(v => v.FileGetLastWrite(It.IsAny<string>()), Times.Never());
+        }
+
+        [Test]
+        public void should_not_create_the_studio_folder_while_building_urls()
+        {
+            Mocker.GetMock<IDiskProvider>()
+                  .Setup(v => v.FolderExists(It.IsAny<string>()))
+                  .Returns(false);
+
+            Subject.ConvertToLocalStudioUrls(12, GivenCovers());
+
+            Mocker.GetMock<IDiskProvider>().Verify(v => v.CreateFolder(It.IsAny<string>()), Times.Never());
+        }
+
+        [Test]
+        public void should_give_two_covers_of_the_same_type_distinct_urls()
+        {
+            var covers = new List<MediaCover.MediaCover>
+            {
+                new () { CoverType = MediaCoverTypes.Screenshot, RemoteUrl = "https://stashdb.org/images/bac219ec-204e-4d7c-8909-5f258d7ed218" },
+                new () { CoverType = MediaCoverTypes.Screenshot, RemoteUrl = "https://stashdb.org/images/6b073398-6ffc-4690-8bfd-ae160ecc214e" }
+            };
+
+            Subject.ConvertToLocalUrls(12, covers);
+
+            covers[0].Url.Should().NotBe(covers[1].Url);
+        }
+
+        [Test]
+        public void should_change_the_url_when_the_remote_url_changes()
+        {
+            var before = GivenCovers();
+            var after = GivenCovers("https://stashdb.org/images/6b073398-6ffc-4690-8bfd-ae160ecc214e");
+
+            Subject.ConvertToLocalUrls(12, before);
+            Subject.ConvertToLocalUrls(12, after);
+
+            after.Single().Url.Should().NotBe(before.Single().Url);
         }
 
         [Test]

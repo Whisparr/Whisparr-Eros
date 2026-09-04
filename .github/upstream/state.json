@@ -375,8 +375,8 @@
       "69f8ceaeb59021be314d7790a5eb1f38b99f10da": {
         "subject": "Fixed: Improve cache busting for covers using a hash instead of file modification time",
         "month": "2026-07",
-        "disposition": "skip",
-        "reason": "Wanted, but deferred to its own PR by decision on 2026-08-30. Radarr's pick of Sonarr cecb4052e. Replaces the per-cover disk stat with a hash of the remote URL - a real win here because we have three of these loops (movie, performer, studio) and the studio one lists a directory per cover and creates folders as a side effect of a GET. Too large for a bug-fix chunk: it changes IMapCoversToLocal across 22 files and needs live verification on 6969."
+        "disposition": "adapt",
+        "reason": "Adapted: we have three of these loops (movie, performer, studio) rather than one, and our Get*CoverFileInfos accessors sat behind a 900s cache that was never invalidated, so a replaced cover kept serving the old ?lastWrite= for up to 15 minutes. Both halves reproduced on 6969 before the change. The studio loop still lists its folder to find the extension, because studio covers are written with an extension taken from the download's Content-Type rather than the cover type; only the CreateFolder side effect of a GET is removed."
       },
       "9d814137c12dae035e95ee14e3a2c079ce7d20db": {
         "subject": "Wrap bulk UpdateMany/SetFields in a transaction",
