@@ -5,6 +5,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using NLog;
+using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Serializer;
 using NzbDrone.Core.Datastore;
 using NzbDrone.Core.Exceptions;
@@ -58,7 +59,7 @@ namespace Whisparr.Http.ErrorManagement
             }
             else if (exception is ExcludedException excludedException)
             {
-                _logger.Info("Request refused by exclusion rules. {0} {1}: {2}", context.Request.Method, context.Request.Path, excludedException.Message);
+                _logger.Info("Request refused by exclusion rules. {0} {1}: {2}", context.Request.Method.ForLog(), context.Request.Path.ToString().ForLog(), excludedException.Message.ForLog());
 
                 errorModel.Description = null;
                 statusCode = HttpStatusCode.Conflict;
