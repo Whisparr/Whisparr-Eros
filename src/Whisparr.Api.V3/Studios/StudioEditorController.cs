@@ -47,7 +47,7 @@ namespace Whisparr.Api.V3.Studios
 
             if (resource.AfterDate.IsNotNullOrWhiteSpace())
             {
-                if (!DateTime.TryParse(resource.AfterDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedAfterDate))
+                if (!DateTime.TryParse(resource.AfterDate, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal, out var parsedAfterDate))
                 {
                     throw new ValidationException(new[] { new ValidationFailure(nameof(resource.AfterDate), $"Invalid after date: {resource.AfterDate}") });
                 }

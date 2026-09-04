@@ -50,6 +50,7 @@ namespace Whisparr.Api.V3.Config
         public bool TrustCgnatIpAddresses { get; set; }
         public string WhisparrAlwaysExcludeCollectionsTag { get; set; }
         public string WhisparrAlwaysExcludePerformersTag { get; set; }
+        public string WhisparrAlwaysExcludePerformersAfterTag { get; set; }
         public string WhisparrAlwaysExcludeStudiosTag { get; set; }
         public string WhisparrAlwaysExcludeStudiosAfterTag { get; set; }
         public string WhisparrAlwaysExcludeTagsTag { get; set; }
@@ -113,6 +114,7 @@ namespace Whisparr.Api.V3.Config
                 ApplicationUrl = configService.ApplicationUrl,
                 WhisparrAlwaysExcludeCollectionsTag = configService.WhisparrAlwaysExcludeCollectionsTag,
                 WhisparrAlwaysExcludePerformersTag = configService.WhisparrAlwaysExcludePerformersTag,
+                WhisparrAlwaysExcludePerformersAfterTag = configService.WhisparrAlwaysExcludePerformersAfterTag,
                 WhisparrAlwaysExcludeStudiosTag = configService.WhisparrAlwaysExcludeStudiosTag,
                 WhisparrAlwaysExcludeStudiosAfterTag = configService.WhisparrAlwaysExcludeStudiosAfterTag,
                 WhisparrAlwaysExcludeTagsTag = configService.WhisparrAlwaysExcludeTagsTag,

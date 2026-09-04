@@ -1,5 +1,8 @@
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.DecisionEngine.Specifications;
@@ -37,6 +40,21 @@ namespace Whisparr.Api.V3.Performers
         {
             var performersToUpdate = _performerService.GetPerformers(resource.PerformerIds);
 
+            // A bulk date has three states the wire can't express with a plain DateTime?:
+            // absent leaves each performer's own date alone, empty clears it, and anything
+            // else has to parse here rather than silently clearing every selected performer.
+            DateTime? afterDate = null;
+
+            if (resource.AfterDate.IsNotNullOrWhiteSpace())
+            {
+                if (!DateTime.TryParse(resource.AfterDate, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal, out var parsedAfterDate))
+                {
+                    throw new ValidationException(new[] { new ValidationFailure(nameof(resource.AfterDate), $"Invalid after date: {resource.AfterDate}") });
+                }
+
+                afterDate = parsedAfterDate;
+            }
+
             foreach (var performer in performersToUpdate)
             {
                 if (resource.Monitored.HasValue)
@@ -62,6 +80,11 @@ namespace Whisparr.Api.V3.Performers
                 if (resource.SearchOnAdd.HasValue)
                 {
                     performer.SearchOnAdd = resource.SearchOnAdd.Value;
+                }
+
+                if (resource.AfterDate != null)
+                {
+                    performer.AfterDate = afterDate;
                 }
 
                 if (resource.Tags != null)

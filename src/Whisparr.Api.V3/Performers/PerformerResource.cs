@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Text.Json.Serialization;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.MediaCover;
 using NzbDrone.Core.Movies.Performers;
@@ -103,6 +105,16 @@ namespace Whisparr.Api.V3.Performers
         /// <summary>Whether newly discovered works are added monitored</summary>
         public bool WhisparrMonitorNewItems { get; set; } = true;
 
+        /// <summary>Only add this performer's items released on or after this date, as yyyy-MM-dd</summary>
+        /// <remarks>
+        /// Serialized even when null. The global WhenWritingNull default would drop the key
+        /// entirely once the date is cleared, and the SignalR cache merge spreads the payload
+        /// over the cached performer — an absent key cannot overwrite, so the edit modal kept
+        /// showing the old date until a full refetch.
+        /// </remarks>
+        [JsonIgnore(Condition = JsonIgnoreCondition.Never)]
+        public string AfterDate { get; set; }
+
         /// <summary>Root folder path where performer content is stored</summary>
         public string RootFolderPath { get; set; }
 
@@ -200,6 +212,7 @@ namespace Whisparr.Api.V3.Performers
                 Monitored = model.Monitored,
                 MoviesMonitored = model.MoviesMonitored,
                 WhisparrMonitorNewItems = model.WhisparrMonitorNewItems,
+                AfterDate = model.AfterDate?.ToString("yyyy-MM-dd"),
                 Images = model.Images,
                 QualityProfileId = model.QualityProfileId,
                 RootFolderPath = model.RootFolderPath,
@@ -221,6 +234,24 @@ namespace Whisparr.Api.V3.Performers
             return collections.Select(ToResource).ToList();
         }
 
+        /// <summary>Parses a yyyy-MM-dd after date as midnight UTC</summary>
+        /// <remarks>
+        /// The column is a DateTimeOffset, so a date parsed with an unspecified kind is
+        /// written as the machine's local midnight and read back as UTC — east of UTC that
+        /// lands on the previous day and the date the user picked drifts on every save.
+        /// </remarks>
+        /// <param name="afterDate">The date as yyyy-MM-dd, or null/empty for no date</param>
+        /// <returns>The date at midnight UTC, or null</returns>
+        public static DateTime? ParseAfterDate(string afterDate)
+        {
+            if (string.IsNullOrWhiteSpace(afterDate))
+            {
+                return null;
+            }
+
+            return DateTime.Parse(afterDate, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal);
+        }
+
         /// <summary>Maps a PerformerResource to a Performer model</summary>
         /// <param name="resource">The PerformerResource to map</param>
         /// <returns>The mapped Performer model</returns>
@@ -239,6 +270,7 @@ namespace Whisparr.Api.V3.Performers
                 Monitored = resource.Monitored,
                 MoviesMonitored = resource.MoviesMonitored,
                 WhisparrMonitorNewItems = resource.WhisparrMonitorNewItems,
+                AfterDate = ParseAfterDate(resource.AfterDate),
                 QualityProfileId = resource.QualityProfileId,
                 RootFolderPath = resource.RootFolderPath,
                 SearchOnAdd = resource.SearchOnAdd,

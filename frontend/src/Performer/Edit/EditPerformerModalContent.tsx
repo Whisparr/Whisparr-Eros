@@ -46,6 +46,7 @@ function EditPerformerModalContent({
   const [rootFolderPath, setRootFolderPath] = useState(
     performer.rootFolderPath
   );
+  const [afterDate, setAfterDate] = useState(performer.afterDate ?? '');
   const [tags, setTags] = useState(performer.tags ?? []);
   const [searchOnAdd, setSearchOnAdd] = useState(performer.searchOnAdd);
 
@@ -77,6 +78,10 @@ function EditPerformerModalContent({
       changes.rootFolderPath = rootFolderPath;
     }
 
+    if (afterDate !== (performer.afterDate ?? '')) {
+      changes.afterDate = afterDate;
+    }
+
     if (JSON.stringify(tags) !== JSON.stringify(performer.tags ?? [])) {
       changes.tags = tags;
     }
@@ -92,6 +97,7 @@ function EditPerformerModalContent({
     whisparrMonitorNewItems,
     qualityProfileId,
     rootFolderPath,
+    afterDate,
     tags,
     searchOnAdd,
     performer,
@@ -105,6 +111,7 @@ function EditPerformerModalContent({
         whisparrMonitorNewItems: performer.whisparrMonitorNewItems,
         qualityProfileId: performer.qualityProfileId,
         rootFolderPath: performer.rootFolderPath,
+        afterDate: performer.afterDate ?? '',
         tags: performer.tags ?? [],
         searchOnAdd: performer.searchOnAdd,
       },
@@ -148,6 +155,9 @@ function EditPerformerModalContent({
         break;
       case 'rootFolderPath':
         setRootFolderPath(value as string);
+        break;
+      case 'afterDate':
+        setAfterDate(value as string);
         break;
       case 'tags':
         setTags(value as number[]);
@@ -228,6 +238,17 @@ function EditPerformerModalContent({
                   name="whisparrMonitorNewItems"
                   helpText={translate('WhisparrMonitorNewItemsEntityHelpText')}
                   {...settings.whisparrMonitorNewItems}
+                  onChange={handleInputChange}
+                />
+              </FormGroup>
+
+              <FormGroup>
+                <FormLabel>{translate('MonitorAfter')}</FormLabel>
+                <FormInputGroup
+                  type={inputTypes.DATE}
+                  name="afterDate"
+                  helpText={translate('MonitorAfterPerformerHelpText')}
+                  {...settings.afterDate}
                   onChange={handleInputChange}
                 />
               </FormGroup>

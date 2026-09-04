@@ -18,6 +18,7 @@ function WhisparrSettings({
   const {
     whisparrAlwaysExcludeCollectionsTag,
     whisparrAlwaysExcludePerformersTag,
+    whisparrAlwaysExcludePerformersAfterTag,
     whisparrAlwaysExcludeStudiosTag,
     whisparrAlwaysExcludeStudiosAfterTag,
     whisparrAlwaysExcludeTagsTag,
@@ -209,6 +210,22 @@ function WhisparrSettings({
           helpText={translate('WhisparrAlwaysExcludePerformersTagHelpText')}
           onChange={onInputChange}
           {...whisparrAlwaysExcludePerformersTag}
+        />
+      </FormGroup>
+
+      <FormGroup>
+        <FormLabel>
+          {translate('WhisparrAlwaysExcludePerformersAfterTag')}
+        </FormLabel>
+
+        <FormInputGroup
+          type={inputTypes.TEXT}
+          name="whisparrAlwaysExcludePerformersAfterTag"
+          helpText={translate(
+            'WhisparrAlwaysExcludePerformersAfterTagHelpText'
+          )}
+          onChange={onInputChange}
+          {...whisparrAlwaysExcludePerformersAfterTag}
         />
       </FormGroup>
 

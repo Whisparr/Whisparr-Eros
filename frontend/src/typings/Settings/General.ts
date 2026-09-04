@@ -44,6 +44,7 @@ export default interface General {
   id: number;
   whisparrAlwaysExcludeCollectionsTag: string;
   whisparrAlwaysExcludePerformersTag: string;
+  whisparrAlwaysExcludePerformersAfterTag: string;
   whisparrAlwaysExcludeStudiosTag: string;
   whisparrAlwaysExcludeStudiosAfterTag: string;
   whisparrAlwaysExcludeTagsTag: string;
