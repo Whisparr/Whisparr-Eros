@@ -67,7 +67,7 @@ namespace NzbDrone.Core.HealthCheck.Checks
             // The wiki only documents removal from TMDb; there is no section for StashDB scenes yet.
             var wikiFragment = scenes.Empty() ? "#movie-was-removed-from-tmdb" : null;
 
-            return new HealthCheck(GetType(), HealthCheckResult.Error, messages.Join("; "), wikiFragment);
+            return new HealthCheck(GetType(), HealthCheckResult.Error, HealthCheckReason.RemovedMovie, messages.Join("; "), wikiFragment);
         }
 
         public bool ShouldCheckOnEvent(MoviesDeletedEvent message)

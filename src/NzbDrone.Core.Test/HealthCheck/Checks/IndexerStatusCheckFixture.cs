@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Moq;
 using NUnit.Framework;
+using NzbDrone.Core.HealthCheck;
 using NzbDrone.Core.HealthCheck.Checks;
 using NzbDrone.Core.Indexers;
 using NzbDrone.Core.Localization;
@@ -68,7 +69,7 @@ namespace NzbDrone.Core.Test.HealthCheck.Checks
             GivenIndexer(1, 2.0, 4.0);
             GivenIndexer(2, 0.0, 0.0);
 
-            Subject.Check().ShouldBeWarning();
+            Subject.Check().ShouldBeWarning(reason: HealthCheckReason.IndexerStatusUnavailable);
         }
 
         [Test]
@@ -76,7 +77,7 @@ namespace NzbDrone.Core.Test.HealthCheck.Checks
         {
             GivenIndexer(1, 2.0, 4.0);
 
-            Subject.Check().ShouldBeError();
+            Subject.Check().ShouldBeError(reason: HealthCheckReason.IndexerStatusAllUnavailable);
         }
 
         [Test]

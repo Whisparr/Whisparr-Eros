@@ -20,7 +20,7 @@ namespace NzbDrone.Core.HealthCheck.Checks
             var whisparrMetadata = _configFileService.WhisparrMetadata;
             if (whisparrMetadata == "https://api.whisparr.com/v3/{route}")
             {
-                return new HealthCheck(GetType(), HealthCheckResult.Error, string.Format(_localizationService.GetLocalizedString("MetadataIncorrectUrlWarning"), _configFileService.Branch), "#config-metadata-url-mismatch");
+                return new HealthCheck(GetType(), HealthCheckResult.Error, HealthCheckReason.MetadataUrlMismatch, string.Format(_localizationService.GetLocalizedString("MetadataIncorrectUrlWarning"), _configFileService.Branch), "#config-metadata-url-mismatch");
             }
 
             return new HealthCheck(GetType());
