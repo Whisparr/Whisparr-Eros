@@ -170,7 +170,8 @@ namespace NzbDrone.Core.Movies
                     QualityProfileId = movie.QualityProfileId,
                     RootFolderPath = _folderService.GetBestRootFolderPath(movie.Path).GetCleanPath(),
                     Tags = movie.Tags
-                }, true);
+                },
+                true);
 
                 if (newCollection != null)
                 {
