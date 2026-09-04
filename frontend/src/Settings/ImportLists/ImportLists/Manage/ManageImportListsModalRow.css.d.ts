@@ -6,6 +6,7 @@ declare namespace ManageImportListsModalRowCssNamespace {
     name: string;
     qualityProfileId: string;
     rootFolderPath: string;
+    tagExisting: string;
     tags: string;
   }
 }
