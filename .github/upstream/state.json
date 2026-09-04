@@ -532,7 +532,7 @@
         "subject": "Fixed: Don't allow pushed releases to bypass pending releases that recently expired",
         "month": "2026-08",
         "disposition": "skip",
-        "reason": "Wanted, but deferred to its own PR by decision on 2026-08-30. Real bug, but the new PendingSpecification needs to know a release was pushed, so it changes IDownloadDecisionEngineSpecification from (RemoteMovie, SearchCriteria) to (RemoteMovie, ReleaseDecisionInformation) across 28 specifications and the 22 fixtures in DecisionEngineTests. 65 files upstream; wants its own review."
+        "reason": "Declined by user decision on 2026-09-04: the bug is pushed releases bypassing recently expired pending releases, and adult releases are not commonly announced in advance, so the pending-release window carries little value here. Not worth a 28-specification signature change through the release decision path."
       },
       "dbcb327a1134d26d2feb9b4589ee8c7b2dafb1ae": {
         "subject": "New: Include External IDs for movies with links",
@@ -672,8 +672,8 @@
       "650a452bf0aa7a1f93aec5a1528c8e08d19b29cf": {
         "subject": "New: Sorting Blocklist, History and Queue by Quality",
         "month": "2026-07",
-        "disposition": "skip",
-        "reason": "Deferred to its own PR by decision on 2026-08-30, not skipped on merit. 21 files: a QualityProfileQualityRank table, repository and service, a DB migration (233 there, 244 here - 242 and 243 are now taken) and rank joins added to the Blocklist, History and Episode repositories. A schema change belongs in its own review, not in a 15-commit sync chunk."
+        "disposition": "adapt",
+        "reason": "Adapted: migration 244 here, indexing MovieFiles rather than EpisodeFiles. Our BasicRepository already factors the ORDER BY into BuildOrderByClause and supports DefaultSortKeys, so the custom sort expression slots in there and keeps the tiebreakers upstream loses. The join is shared in QualityRankJoin rather than copied into three repositories. Blocklist and History already shipped isSortable on the quality column, so for those two this is a fix, not a feature: the sort existed and ordered by the raw Quality JSON text. Cutoff Unmet gains the column plus a MovieFileQuality component. Upstream's API changes are Sonarr.Api.V5, ported to our V3 QueueController."
       },
       "34b201aafadb579c7c48bea05ca6253c302db8ca": {
         "subject": "New: Option to skip free space check when grabbing",

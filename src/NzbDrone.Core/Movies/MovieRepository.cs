@@ -453,7 +453,7 @@ namespace NzbDrone.Core.Movies
             return pagingSpec;
         }
 
-        public SqlBuilder MoviesWhereCutoffUnmetBuilder(List<QualitiesBelowCutoff> qualitiesBelowCutoff, HashSet<int> movieTags = null, List<int> qualities = null)
+        public SqlBuilder MoviesWhereCutoffUnmetBuilder(List<QualitiesBelowCutoff> qualitiesBelowCutoff, HashSet<int> movieTags = null, List<int> qualities = null, bool joinQualityRanks = false)
         {
             var builder = Builder()
                 .Where<Movie>(x => x.MovieFileId != 0)
@@ -469,15 +469,27 @@ namespace NzbDrone.Core.Movies
                 builder = builder.Where(BuildQualityFilterWhereClause(qualities));
             }
 
-            return builder
+            builder = builder
                 .GroupBy<Movie>(m => m.Id)
                 .GroupBy<MovieMetadata>(m => m.Id);
+
+            if (joinQualityRanks)
+            {
+                builder.LeftJoin(QualityRankJoin.Build(_database.DatabaseType, "MovieFiles", "Movies"));
+            }
+
+            return builder;
         }
 
         public PagingSpec<Movie> MoviesWhereCutoffUnmet(PagingSpec<Movie> pagingSpec, List<QualitiesBelowCutoff> qualitiesBelowCutoff, HashSet<int> movieTags = null, List<int> quality = null)
         {
-            pagingSpec.Records = GetPagedRecords(MoviesWhereCutoffUnmetBuilder(qualitiesBelowCutoff, movieTags, quality), pagingSpec, PagedQuery);
-            pagingSpec.TotalRecords = GetPagedRecordCount(MoviesWhereCutoffUnmetBuilder(qualitiesBelowCutoff, movieTags, quality).SelectCountDistinct<Movie>(x => x.Id), pagingSpec);
+            var sortingByQuality = string.Equals(pagingSpec.SortKey, "quality", StringComparison.OrdinalIgnoreCase);
+
+            // The rows are grouped by movie, so the rank has to be aggregated rather than selected.
+            var customSortExpression = sortingByQuality ? $"MAX({QualityRankJoin.SortExpression})" : null;
+
+            pagingSpec.Records = GetPagedRecords(MoviesWhereCutoffUnmetBuilder(qualitiesBelowCutoff, movieTags, quality, sortingByQuality), pagingSpec, PagedQuery, customSortExpression);
+            pagingSpec.TotalRecords = GetPagedRecordCount(MoviesWhereCutoffUnmetBuilder(qualitiesBelowCutoff, movieTags, quality, sortingByQuality).SelectCountDistinct<Movie>(x => x.Id), pagingSpec);
 
             return pagingSpec;
         }

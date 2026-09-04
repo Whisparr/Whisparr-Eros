@@ -38,6 +38,7 @@ namespace NzbDrone.Core.Profiles.Qualities
         private readonly IImportListFactory _importListFactory;
         private readonly IPerformerService _performerService;
         private readonly IStudioService _studioService;
+        private readonly IQualityProfileRankService _rankService;
         private readonly Logger _logger;
 
         public QualityProfileService(IQualityProfileRepository profileRepository,
@@ -46,6 +47,7 @@ namespace NzbDrone.Core.Profiles.Qualities
                               IImportListFactory importListFactory,
                               IPerformerService performerService,
                               IStudioService studioService,
+                              IQualityProfileRankService rankService,
                               Logger logger)
         {
             _profileRepository = profileRepository;
@@ -54,17 +56,22 @@ namespace NzbDrone.Core.Profiles.Qualities
             _importListFactory = importListFactory;
             _performerService = performerService;
             _studioService = studioService;
+            _rankService = rankService;
             _logger = logger;
         }
 
         public QualityProfile Add(QualityProfile profile)
         {
-            return _profileRepository.Insert(profile);
+            var saved = _profileRepository.Insert(profile);
+            _rankService.UpdateRanksForProfile(saved);
+
+            return saved;
         }
 
         public void Update(QualityProfile profile)
         {
             _profileRepository.Update(profile);
+            _rankService.UpdateRanksForProfile(profile);
         }
 
         public void Delete(int id)
@@ -75,6 +82,7 @@ namespace NzbDrone.Core.Profiles.Qualities
             }
 
             _profileRepository.Delete(id);
+            _rankService.DeleteRanksForProfile(id);
         }
 
         // The counts the delete guard refuses on, so the client can ask before the modal
@@ -144,8 +152,13 @@ namespace NzbDrone.Core.Profiles.Qualities
 
         public void Handle(ApplicationStartedEvent message)
         {
-            if (All().Any())
+            var profiles = All();
+
+            if (profiles.Any())
             {
+                // Ranks are derived state, so profiles that predate the migration need seeding.
+                _rankService.SeedAll(profiles);
+
                 return;
             }
 
