@@ -702,6 +702,16 @@ namespace NzbDrone.Core.Movies
                 result = FindByTitle(parsedMovieInfo.Code);
             }
 
+            // Only the scene parse path assigns StudioTitle, so a release that parsed as a
+            // movie arrives here with none. Looking that up matches on studio title alone and
+            // fans a studio-catalog query out across every hit, none of which can match a
+            // release we have no studio for.
+            if (result == null && parsedMovieInfo.StudioTitle.IsNullOrWhiteSpace())
+            {
+                _logger.Debug("No Studio name parsed from release, skipping studio and release date matching.");
+                return null;
+            }
+
             if (result == null)
             {
                 var studios = _studioService.FindAllByTitle(parsedMovieInfo.StudioTitle);
@@ -827,13 +837,8 @@ namespace NzbDrone.Core.Movies
 
             if (hasReleaseDate)
             {
-                _logger.Debug("{0}: DB query for for movies for Studio ForeignID: [{1}] and Date: [{2}].", methodName, studioForeignId, releaseDate);
-                movies = _movieRepository.FindByStudioAndDate(studioForeignId, releaseDate);
-
-                if (movies == null || !movies.Any())
-                {
-                    movies = new List<Movie>();
-                }
+                // Already queried above for the fuzzy pass, which does not mutate the list,
+                // so the same studio and date would return the same rows a second time.
 
                 // movies with release date if missing day
                 if (releaseDate.EndsWith("-01"))

@@ -1,6 +1,5 @@
 import moment from 'moment';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { CommandBody } from 'Commands/Command';
 import { useCancelCommand } from 'Commands/useCommands';
 import Icon, { IconProps } from 'Components/Icon';
 import IconButton from 'Components/Link/IconButton';
@@ -98,7 +97,6 @@ export interface QueuedTaskRowProps {
   status: string;
   duration?: string;
   message?: string;
-  body: CommandBody;
   clientUserAgent?: string;
 }
 
@@ -113,7 +111,6 @@ export default function QueuedTaskRow(props: QueuedTaskRowProps) {
     status,
     duration,
     message,
-    body,
     clientUserAgent,
   } = props;
 
@@ -191,7 +188,7 @@ export default function QueuedTaskRow(props: QueuedTaskRowProps) {
 
       <QueuedTaskRowNameCell
         commandName={commandName}
-        body={body}
+        message={message}
         clientUserAgent={clientUserAgent}
       />
 

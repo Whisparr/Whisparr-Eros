@@ -110,7 +110,19 @@ namespace NzbDrone.Core.IndexerSearch
 
         private async Task SearchForBulkMovies(List<Movie> movies, bool userInvokedSearch)
         {
-            _logger.ProgressInfo("Performing search for {0} movies", movies.Count);
+            // The queued task row shows this message, so a single-movie search -- what the
+            // search button on a movie produces -- names the movie rather than counting it.
+            var isSingleMovie = movies.Count == 1;
+
+            if (isSingleMovie)
+            {
+                _logger.ProgressInfo("Performing search for {0}", movies[0].Title);
+            }
+            else
+            {
+                _logger.ProgressInfo("Performing search for {0} movies", movies.Count);
+            }
+
             var downloadedCount = 0;
 
             foreach (var movieId in movies.GroupBy(e => e.Id).OrderBy(g => g.Min(m => m.LastSearchTime ?? DateTime.MinValue)))
@@ -132,7 +144,14 @@ namespace NzbDrone.Core.IndexerSearch
                 downloadedCount += processDecisions.Grabbed.Count;
             }
 
-            _logger.ProgressInfo("Completed search for {0} movies. {1} reports downloaded.", movies.Count, downloadedCount);
+            if (isSingleMovie)
+            {
+                _logger.ProgressInfo("Completed search for {0}. {1} reports downloaded.", movies[0].Title, downloadedCount);
+            }
+            else
+            {
+                _logger.ProgressInfo("Completed search for {0} movies. {1} reports downloaded.", movies.Count, downloadedCount);
+            }
         }
     }
 }
