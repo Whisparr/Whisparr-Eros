@@ -328,10 +328,10 @@ namespace NzbDrone.Core.Test.MediaCoverTests
 
             releaseInitialWorkers.Set();
             oldWaiterAcquiredSlot.Wait(5000).Should().BeTrue();
+            releaseSecondWave.Set();
             newer.Wait(5000).Should().BeTrue();
             releaseOldWaiter.Set();
             older.Wait(5000).Should().BeTrue();
-            releaseSecondWave.Set();
 
             newestCompleted.Wait(15000).Should().BeTrue();
             completedUrl.Should().Be("https://example.com/new-waiter");
@@ -392,6 +392,234 @@ namespace NzbDrone.Core.Test.MediaCoverTests
             Thread.Sleep(200);
 
             completions.Should().Equal("https://example.com/latest");
+        }
+
+        [Test]
+        public void should_drop_a_queued_movie_cover_when_the_movie_is_deleted()
+        {
+            const int deletedMovieId = 12200;
+            const int survivorMovieId = 12201;
+            var workerCount = MediaCoverService.MovieCoverWorkerCount;
+            var workersStarted = new CountdownEvent(workerCount);
+            var releaseWorkers = new ManualResetEventSlim();
+            var survivorCompleted = new ManualResetEventSlim();
+            var deletedMovieProcessed = new ManualResetEventSlim();
+            var deletedMovie = GivenMovie(deletedMovieId, "https://example.com/deleted");
+
+            Mocker.GetMock<ICoverExistsSpecification>()
+                  .Setup(v => v.AlreadyExists(It.IsAny<string>(), It.IsAny<string>()))
+                  .Callback<string, string>((remoteUrl, _) =>
+                  {
+                      if (remoteUrl.StartsWith("https://example.com/delete-block-"))
+                      {
+                          workersStarted.Signal();
+                          releaseWorkers.Wait();
+                      }
+                      else if (remoteUrl == "https://example.com/deleted")
+                      {
+                          deletedMovieProcessed.Set();
+                      }
+                  })
+                  .Returns(true);
+            Mocker.GetMock<IDiskProvider>().Setup(v => v.FileExists(It.IsAny<string>())).Returns(true);
+            Mocker.GetMock<IDiskProvider>().Setup(v => v.GetFileSize(It.IsAny<string>())).Returns(1000);
+            Mocker.GetMock<IEventAggregator>()
+                  .Setup(v => v.PublishEvent(It.IsAny<MediaCoversUpdatedEvent>()))
+                  .Callback<MediaCoversUpdatedEvent>(message =>
+                  {
+                      if (message.Movie.Id == survivorMovieId)
+                      {
+                          survivorCompleted.Set();
+                      }
+                  });
+
+            Subject.Handle(new ApplicationStartedEvent());
+
+            for (var i = 0; i < workerCount; i++)
+            {
+                Subject.Handle(new MovieUpdatedEvent(GivenMovie(12100 + i, $"https://example.com/delete-block-{i}")));
+            }
+
+            workersStarted.Wait(5000).Should().BeTrue();
+            Subject.Handle(new MovieUpdatedEvent(deletedMovie));
+            Subject.MovieCoverQueueTest.PendingUniqueCount.Should().Be(1);
+
+            Subject.HandleAsync(new MoviesDeletedEvent(new List<Movie> { deletedMovie }, false, false));
+            Subject.MovieCoverQueueTest.PendingUniqueCount.Should().Be(0);
+            Subject.MovieCoverQueueTest.HasHighWaterSequence(deletedMovieId).Should().BeFalse();
+
+            releaseWorkers.Set();
+            Subject.Handle(new MovieUpdatedEvent(GivenMovie(survivorMovieId, "https://example.com/survivor")));
+
+            survivorCompleted.Wait(5000).Should().BeTrue();
+            deletedMovieProcessed.IsSet.Should().BeFalse();
+        }
+
+        [Test]
+        public void should_restore_queue_capacity_after_multiple_queued_movies_are_deleted()
+        {
+            const int deletedMovieId = 12500;
+            const int replacementMovieId = 12600;
+            const int deletedMovieCount = 3;
+            var workerCount = MediaCoverService.MovieCoverWorkerCount;
+            var workersStarted = new CountdownEvent(workerCount);
+            var releaseWorkers = new ManualResetEventSlim();
+
+            Mocker.GetMock<ICoverExistsSpecification>()
+                  .Setup(v => v.AlreadyExists(It.IsAny<string>(), It.IsAny<string>()))
+                  .Callback<string, string>((remoteUrl, _) =>
+                  {
+                      if (remoteUrl.StartsWith("https://example.com/capacity-block-"))
+                      {
+                          workersStarted.Signal();
+                          releaseWorkers.Wait();
+                      }
+                  })
+                  .Returns(true);
+            Mocker.GetMock<IDiskProvider>().Setup(v => v.FileExists(It.IsAny<string>())).Returns(true);
+            Mocker.GetMock<IDiskProvider>().Setup(v => v.GetFileSize(It.IsAny<string>())).Returns(1000);
+
+            Subject.Handle(new ApplicationStartedEvent());
+
+            for (var i = 0; i < workerCount; i++)
+            {
+                Subject.Handle(new MovieUpdatedEvent(GivenMovie(12000 + i, $"https://example.com/capacity-block-{i}")));
+            }
+
+            workersStarted.Wait(5000).Should().BeTrue();
+
+            try
+            {
+                for (var i = 0; i < MediaCoverService.MovieCoverQueueCapacity; i++)
+                {
+                    Subject.Handle(new MovieUpdatedEvent(GivenMovie(deletedMovieId + i)));
+                }
+
+                Subject.MovieCoverQueueTest.PendingUniqueCount.Should().Be(MediaCoverService.MovieCoverQueueCapacity);
+                var deletedMovies = Enumerable.Range(0, deletedMovieCount).Select(i => GivenMovie(deletedMovieId + i)).ToList();
+                Subject.HandleAsync(new MoviesDeletedEvent(deletedMovies, false, false));
+                Subject.MovieCoverQueueTest.PendingUniqueCount.Should().Be(MediaCoverService.MovieCoverQueueCapacity - deletedMovieCount);
+
+                var replacements = Enumerable.Range(0, deletedMovieCount)
+                                             .Select(i => Task.Run(() => Subject.Handle(new MovieUpdatedEvent(GivenMovie(replacementMovieId + i)))))
+                                             .ToArray();
+
+                Task.WaitAll(replacements, 5000).Should().BeTrue();
+                Subject.MovieCoverQueueTest.BlockedProducerCount.Should().Be(0);
+                Subject.MovieCoverQueueTest.PendingUniqueCount.Should().Be(MediaCoverService.MovieCoverQueueCapacity);
+            }
+            finally
+            {
+                releaseWorkers.Set();
+            }
+        }
+
+        [Test]
+        public void should_reject_a_pre_deletion_producer_after_it_acquires_capacity()
+        {
+            const int deletedMovieId = 12300;
+            const int survivorMovieId = 12301;
+            var producerAcquiredSlot = new ManualResetEventSlim();
+            var releaseProducer = new ManualResetEventSlim();
+            var survivorCompleted = new ManualResetEventSlim();
+            var deletedMovieProcessed = new ManualResetEventSlim();
+            var deletedMovie = GivenMovie(deletedMovieId, "https://example.com/deleted-in-flight");
+
+            Mocker.GetMock<ICoverExistsSpecification>()
+                  .Setup(v => v.AlreadyExists(It.IsAny<string>(), It.IsAny<string>()))
+                  .Callback<string, string>((remoteUrl, _) =>
+                  {
+                      if (remoteUrl.StartsWith("https://example.com/deleted-in-flight"))
+                      {
+                          deletedMovieProcessed.Set();
+                      }
+                  })
+                  .Returns(true);
+            Mocker.GetMock<IDiskProvider>().Setup(v => v.FileExists(It.IsAny<string>())).Returns(true);
+            Mocker.GetMock<IDiskProvider>().Setup(v => v.GetFileSize(It.IsAny<string>())).Returns(1000);
+            Mocker.GetMock<IEventAggregator>()
+                  .Setup(v => v.PublishEvent(It.IsAny<MediaCoversUpdatedEvent>()))
+                  .Callback<MediaCoversUpdatedEvent>(message =>
+                  {
+                      if (message.Movie.Id == survivorMovieId)
+                      {
+                          survivorCompleted.Set();
+                      }
+                  });
+            Subject.MovieCoverQueueTest.SlotAcquired = (movie, _) =>
+            {
+                if (movie.Id == deletedMovieId)
+                {
+                    producerAcquiredSlot.Set();
+                    releaseProducer.Wait();
+                }
+            };
+
+            Subject.Handle(new ApplicationStartedEvent());
+            var producer = Task.Run(() => Subject.Handle(new MovieUpdatedEvent(deletedMovie)));
+            producerAcquiredSlot.Wait(5000).Should().BeTrue();
+
+            Subject.HandleAsync(new MoviesDeletedEvent(new List<Movie> { deletedMovie }, false, false));
+            Subject.Handle(new MovieUpdatedEvent(GivenMovie(deletedMovieId, "https://example.com/deleted-in-flight-after-delete")));
+            releaseProducer.Set();
+            producer.Wait(5000).Should().BeTrue();
+
+            Subject.Handle(new MovieUpdatedEvent(GivenMovie(survivorMovieId, "https://example.com/survivor-after-delete")));
+
+            survivorCompleted.Wait(5000).Should().BeTrue();
+            deletedMovieProcessed.IsSet.Should().BeFalse();
+            Subject.MovieCoverQueueTest.PendingUniqueCount.Should().Be(0);
+            Subject.MovieCoverQueueTest.HasHighWaterSequence(deletedMovieId).Should().BeFalse();
+        }
+
+        [Test]
+        public void should_remove_covers_recreated_by_active_work_after_movie_deletion()
+        {
+            const int deletedMovieId = 12400;
+            var coverStarted = new ManualResetEventSlim();
+            var releaseCover = new ManualResetEventSlim();
+            var coverCompleted = new ManualResetEventSlim();
+            var folderPresent = 1;
+            var deleteCalls = 0;
+            var deletedMovie = GivenMovie(deletedMovieId, "https://example.com/deleted-active");
+
+            Mocker.GetMock<ICoverExistsSpecification>()
+                  .Setup(v => v.AlreadyExists(It.IsAny<string>(), It.IsAny<string>()))
+                  .Callback(() =>
+                  {
+                      coverStarted.Set();
+                      releaseCover.Wait();
+                      Volatile.Write(ref folderPresent, 1);
+                  })
+                  .Returns(true);
+            Mocker.GetMock<IDiskProvider>()
+                  .Setup(v => v.FolderExists(It.IsAny<string>()))
+                  .Returns(() => Volatile.Read(ref folderPresent) == 1);
+            Mocker.GetMock<IDiskProvider>()
+                  .Setup(v => v.DeleteFolder(It.IsAny<string>(), true))
+                  .Callback(() =>
+                  {
+                      Volatile.Write(ref folderPresent, 0);
+                      Interlocked.Increment(ref deleteCalls);
+                  });
+            Mocker.GetMock<IDiskProvider>().Setup(v => v.FileExists(It.IsAny<string>())).Returns(true);
+            Mocker.GetMock<IDiskProvider>().Setup(v => v.GetFileSize(It.IsAny<string>())).Returns(1000);
+            Mocker.GetMock<IEventAggregator>()
+                  .Setup(v => v.PublishEvent(It.IsAny<MediaCoversUpdatedEvent>()))
+                  .Callback(coverCompleted.Set);
+
+            Subject.Handle(new ApplicationStartedEvent());
+            Subject.Handle(new MovieUpdatedEvent(deletedMovie));
+            coverStarted.Wait(5000).Should().BeTrue();
+
+            Subject.HandleAsync(new MoviesDeletedEvent(new List<Movie> { deletedMovie }, false, false));
+            Volatile.Read(ref folderPresent).Should().Be(0);
+            releaseCover.Set();
+
+            coverCompleted.Wait(5000).Should().BeTrue();
+            SpinWait.SpinUntil(() => Volatile.Read(ref deleteCalls) >= 2, 5000).Should().BeTrue();
+            Volatile.Read(ref folderPresent).Should().Be(0);
+            SpinWait.SpinUntil(() => !Subject.MovieCoverQueueTest.HasHighWaterSequence(deletedMovieId), 5000).Should().BeTrue();
         }
 
         [Test]
