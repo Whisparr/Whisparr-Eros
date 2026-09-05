@@ -3895,9 +3895,8 @@
       "a29f15e92bd2c21e646d065d9d78066952cac05d": {
         "subject": "New: Import list option to add tags to existing series while processing",
         "month": "2026-07",
-        "disposition": "defer",
-        "blockedBy": "A product decision on whether import lists should tag movies already in the library, then a design against our lineage. Sonarr built this on their series-lineage ImportListSyncService; ours is Radarr-lineage over ImportListMovies and shares no structure, so it is a fresh implementation plus its own migration, not a port.",
-        "reason": "New import list option (TagExisting) letting a list tag items already in the library instead of skipping them. Deferred rather than skipped: the feature is plausibly wanted here, but it is a feature decision with a DB migration, not a sync pick, so it should not ride in on a sync PR."
+        "disposition": "adapt",
+        "reason": "Adapted: same TagExisting flag and migration (245 here, upstream 231), reimplemented against our Radarr-lineage ImportListSyncService, which shares no structure with Sonarr's. Extended past upstream by decision on 2026-09-04: tagging an existing scene also tags its studio and performers, because RefreshMovieService already seeds both from the movie's tags when it creates them, so scene-only tagging would leave the three out of step on a library that already holds the scene. Two supporting changes the upstream shape assumes: our global DistinctBy dropped a movie's second copy before it was attributed to a list, so it is now per-list, and the queued Movie no longer shares the definition's HashSet, which the cross-list tag merge would otherwise mutate."
       },
       "0799cd5bef7fdbd1a9ecdbe9844db85c1b7c0a78": {
         "subject": "Multiple Translations updated by Weblate",
