@@ -663,6 +663,7 @@ namespace NzbDrone.Core.MediaCover
                     return;
                 }
 
+                _movieCoverHighWaterSequences[message.Movie.Id] = sequence;
                 intakeCancellation = _movieCoverIntakeCancellation.Token;
             }
 
@@ -691,7 +692,7 @@ namespace NzbDrone.Core.MediaCover
                     return;
                 }
 
-                if (_movieCoverHighWaterSequences.TryGetValue(message.Movie.Id, out var highWaterSequence) && sequence <= highWaterSequence)
+                if (_movieCoverHighWaterSequences.TryGetValue(message.Movie.Id, out var highWaterSequence) && sequence < highWaterSequence)
                 {
                     _movieCoverQueueSlots.Release();
                     return;
