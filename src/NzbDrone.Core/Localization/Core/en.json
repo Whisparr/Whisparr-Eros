@@ -2219,6 +2219,8 @@
   "TablePageSizeMinMaxHelpText": "Min: {min}, Max: {max}",
   "TagCannotBeDeletedWhileInUse": "Cannot be deleted while in use",
   "TagDetails": "Tag Details - {label}",
+  "TagExisting": "Tag Existing",
+  "TagExistingHelpText": "Apply this list's tags to the scenes, performers and studios it matches that are already in {appName}",
   "TagIsNotUsedAndCanBeDeleted": "Tag is not used and can be deleted",
   "Tags": "Tags",
   "TagsLoadError": "Unable to load Tags",

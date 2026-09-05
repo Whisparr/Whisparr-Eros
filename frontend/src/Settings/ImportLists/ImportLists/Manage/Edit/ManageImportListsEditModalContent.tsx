@@ -17,6 +17,7 @@ interface SavePayload {
   enableAuto?: boolean;
   qualityProfileId?: number;
   rootFolderPath?: string;
+  tagExisting?: boolean;
 }
 
 interface ManageImportListsEditModalContentProps {
@@ -60,6 +61,7 @@ function ManageImportListsEditModalContent(
     NO_CHANGE
   );
   const [rootFolderPath, setRootFolderPath] = useState(NO_CHANGE);
+  const [tagExisting, setTagExisting] = useState(NO_CHANGE);
 
   const save = useCallback(() => {
     let hasChanges = false;
@@ -85,6 +87,11 @@ function ManageImportListsEditModalContent(
       payload.rootFolderPath = rootFolderPath;
     }
 
+    if (tagExisting !== NO_CHANGE) {
+      hasChanges = true;
+      payload.tagExisting = tagExisting === 'enabled';
+    }
+
     if (hasChanges) {
       onSavePress(payload);
     }
@@ -95,6 +102,7 @@ function ManageImportListsEditModalContent(
     enableAuto,
     qualityProfileId,
     rootFolderPath,
+    tagExisting,
     onSavePress,
     onModalClose,
   ]);
@@ -112,6 +120,9 @@ function ManageImportListsEditModalContent(
         break;
       case 'rootFolderPath':
         setRootFolderPath(value as string);
+        break;
+      case 'tagExisting':
+        setTagExisting(value as string);
         break;
       default:
         console.warn(`EditImportListModalContent Unknown Input: '${name}'`);
@@ -172,6 +183,18 @@ function ManageImportListsEditModalContent(
             includeNoChange={true}
             includeNoChangeDisabled={false}
             selectedValueOptions={{ includeFreeSpace: false }}
+            onChange={onInputChange}
+          />
+        </FormGroup>
+
+        <FormGroup>
+          <FormLabel>{translate('TagExisting')}</FormLabel>
+
+          <FormInputGroup
+            type={inputTypes.SELECT}
+            name="tagExisting"
+            value={tagExisting}
+            values={enableOptions}
             onChange={onInputChange}
           />
         </FormGroup>

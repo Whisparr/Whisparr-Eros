@@ -9,6 +9,7 @@ namespace Whisparr.Api.V3.ImportLists
         public bool? EnableAuto { get; set; }
         public string RootFolderPath { get; set; }
         public int? QualityProfileId { get; set; }
+        public bool? TagExisting { get; set; }
     }
 
     public class ImportListBulkResourceMapper : ProviderBulkResourceMapper<ImportListBulkResource, ImportListDefinition>
@@ -26,6 +27,7 @@ namespace Whisparr.Api.V3.ImportLists
                 existing.EnableAuto = resource.EnableAuto ?? existing.EnableAuto;
                 existing.RootFolderPath = resource.RootFolderPath ?? existing.RootFolderPath;
                 existing.QualityProfileId = resource.QualityProfileId ?? existing.QualityProfileId;
+                existing.TagExisting = resource.TagExisting ?? existing.TagExisting;
             });
 
             return existingDefinitions;
