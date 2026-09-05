@@ -48,55 +48,7 @@ namespace NzbDrone.Core.MediaCover
 
         internal static int MovieCoverWorkerCount => (int)Math.Ceiling(Environment.ProcessorCount / 2.0);
 
-        internal TimeSpan MovieCoverShutdownTimeout { get; set; } = TimeSpan.FromSeconds(30);
-
-        internal Action<Movie, long> MovieCoverQueueSlotAcquired { get; set; }
-
-        internal int MovieCoverBlockedProducerCount => Volatile.Read(ref _movieCoverBlockedProducerCount);
-
-        internal int MovieCoverPendingUniqueCount
-        {
-            get
-            {
-                lock (_movieCoverQueueLock)
-                {
-                    return _pendingMovieCovers.Count;
-                }
-            }
-        }
-
-        internal bool MovieCoverStopping
-        {
-            get
-            {
-                lock (_movieCoverQueueLock)
-                {
-                    return _movieCoverLifecycleState == MovieCoverLifecycleState.Stopping;
-                }
-            }
-        }
-
-        internal int MovieCoverWorkerPoolSize
-        {
-            get
-            {
-                lock (_movieCoverQueueLock)
-                {
-                    return _movieCoverWorkers.Count;
-                }
-            }
-        }
-
-        internal int MovieCoverWorkerCountAlive
-        {
-            get
-            {
-                lock (_movieCoverQueueLock)
-                {
-                    return _movieCoverWorkers.Count(v => v.IsAlive);
-                }
-            }
-        }
+        internal MovieCoverQueueTestSeam MovieCoverQueueTest { get; }
 
         private readonly IMediaCoverProxy _mediaCoverProxy;
         private readonly IImageResizer _resizer;
@@ -110,6 +62,10 @@ namespace NzbDrone.Core.MediaCover
         private readonly object _movieCoverQueueLock;
         private readonly Queue<int> _movieCoverQueue;
         private readonly Dictionary<int, PendingMovieCover> _pendingMovieCovers;
+
+        // Retain admitted sequence high-water marks for the service lifetime. Removing one
+        // on dequeue or completion would let an older blocked producer overwrite newer work.
+        private readonly Dictionary<int, long> _movieCoverHighWaterSequences;
         private readonly SemaphoreSlim _queuedMovieCovers;
         private readonly SemaphoreSlim _movieCoverQueueSlots;
         private readonly int _movieCoverWorkerCount;
@@ -117,10 +73,10 @@ namespace NzbDrone.Core.MediaCover
 
         private readonly string _coverRootFolder;
 
-        private CancellationTokenSource _movieCoverIntakeCancellation;
+        private readonly CancellationTokenSource _movieCoverIntakeCancellation;
 
+        private TimeSpan _movieCoverShutdownTimeout = TimeSpan.FromSeconds(5);
         private MovieCoverLifecycleState _movieCoverLifecycleState;
-        private long _movieCoverGeneration;
         private long _movieCoverSequence;
         private int _movieCoverBlockedProducerCount;
 
@@ -153,11 +109,12 @@ namespace NzbDrone.Core.MediaCover
             _movieCoverQueueLock = new object();
             _movieCoverQueue = new Queue<int>();
             _pendingMovieCovers = new Dictionary<int, PendingMovieCover>();
+            _movieCoverHighWaterSequences = new Dictionary<int, long>();
             _queuedMovieCovers = new SemaphoreSlim(0);
             _movieCoverQueueSlots = new SemaphoreSlim(MovieCoverQueueCapacity, MovieCoverQueueCapacity);
             _movieCoverWorkers = new List<Thread>();
             _movieCoverIntakeCancellation = new CancellationTokenSource();
-            MovieCoverQueueSlotAcquired = (_, _) => { };
+            MovieCoverQueueTest = new MovieCoverQueueTestSeam(this);
         }
 
         public string GetMovieCoverPath(int movieId, MediaCoverTypes coverType, int? height = null)
@@ -681,7 +638,6 @@ namespace NzbDrone.Core.MediaCover
         {
             var sequence = Interlocked.Increment(ref _movieCoverSequence);
             CancellationToken intakeCancellation;
-            long generation;
 
             lock (_movieCoverQueueLock)
             {
@@ -691,17 +647,22 @@ namespace NzbDrone.Core.MediaCover
                     return;
                 }
 
+                if (_movieCoverHighWaterSequences.TryGetValue(message.Movie.Id, out var highWaterSequence) && sequence <= highWaterSequence)
+                {
+                    return;
+                }
+
                 if (_pendingMovieCovers.TryGetValue(message.Movie.Id, out var pending))
                 {
                     if (sequence > pending.Sequence)
                     {
                         _pendingMovieCovers[message.Movie.Id] = new PendingMovieCover(message.Movie, sequence);
+                        _movieCoverHighWaterSequences[message.Movie.Id] = sequence;
                     }
 
                     return;
                 }
 
-                generation = _movieCoverGeneration;
                 intakeCancellation = _movieCoverIntakeCancellation.Token;
             }
 
@@ -720,11 +681,17 @@ namespace NzbDrone.Core.MediaCover
                 Interlocked.Decrement(ref _movieCoverBlockedProducerCount);
             }
 
-            MovieCoverQueueSlotAcquired(message.Movie, sequence);
+            MovieCoverQueueTest.InvokeSlotAcquired(message.Movie, sequence);
 
             lock (_movieCoverQueueLock)
             {
-                if (_movieCoverLifecycleState != MovieCoverLifecycleState.Running || generation != _movieCoverGeneration)
+                if (_movieCoverLifecycleState != MovieCoverLifecycleState.Running)
+                {
+                    _movieCoverQueueSlots.Release();
+                    return;
+                }
+
+                if (_movieCoverHighWaterSequences.TryGetValue(message.Movie.Id, out var highWaterSequence) && sequence <= highWaterSequence)
                 {
                     _movieCoverQueueSlots.Release();
                     return;
@@ -735,6 +702,7 @@ namespace NzbDrone.Core.MediaCover
                     if (sequence > pending.Sequence)
                     {
                         _pendingMovieCovers[message.Movie.Id] = new PendingMovieCover(message.Movie, sequence);
+                        _movieCoverHighWaterSequences[message.Movie.Id] = sequence;
                     }
 
                     _movieCoverQueueSlots.Release();
@@ -742,6 +710,7 @@ namespace NzbDrone.Core.MediaCover
                 }
 
                 _pendingMovieCovers.Add(message.Movie.Id, new PendingMovieCover(message.Movie, sequence));
+                _movieCoverHighWaterSequences[message.Movie.Id] = sequence;
                 _movieCoverQueue.Enqueue(message.Movie.Id);
                 _queuedMovieCovers.Release();
             }
@@ -751,14 +720,12 @@ namespace NzbDrone.Core.MediaCover
         {
             lock (_movieCoverQueueLock)
             {
-                if (_movieCoverLifecycleState != MovieCoverLifecycleState.Stopped)
+                if (_movieCoverLifecycleState != MovieCoverLifecycleState.NotStarted)
                 {
                     return;
                 }
 
-                _movieCoverGeneration++;
                 _movieCoverLifecycleState = MovieCoverLifecycleState.Running;
-                _movieCoverIntakeCancellation = new CancellationTokenSource();
 
                 _logger.Info("Starting {0} media cover workers with a queue capacity of {1}", _movieCoverWorkerCount, MovieCoverQueueCapacity);
 
@@ -779,6 +746,7 @@ namespace NzbDrone.Core.MediaCover
         public void Handle(ApplicationShutdownRequested message)
         {
             Thread[] workers;
+            int abandonedMovieCovers;
 
             lock (_movieCoverQueueLock)
             {
@@ -790,6 +758,15 @@ namespace NzbDrone.Core.MediaCover
                 _movieCoverLifecycleState = MovieCoverLifecycleState.Stopping;
                 _movieCoverIntakeCancellation.Cancel();
                 workers = _movieCoverWorkers.ToArray();
+                abandonedMovieCovers = _pendingMovieCovers.Count;
+                _movieCoverQueue.Clear();
+                _pendingMovieCovers.Clear();
+                _movieCoverHighWaterSequences.Clear();
+            }
+
+            if (abandonedMovieCovers > 0)
+            {
+                _movieCoverQueueSlots.Release(abandonedMovieCovers);
             }
 
             _queuedMovieCovers.Release(workers.Length);
@@ -799,7 +776,7 @@ namespace NzbDrone.Core.MediaCover
 
             foreach (var worker in workers)
             {
-                var remaining = MovieCoverShutdownTimeout - shutdownTimer.Elapsed;
+                var remaining = _movieCoverShutdownTimeout - shutdownTimer.Elapsed;
 
                 if (remaining <= TimeSpan.Zero || !worker.Join(remaining))
                 {
@@ -820,8 +797,7 @@ namespace NzbDrone.Core.MediaCover
             {
                 lock (_movieCoverQueueLock)
                 {
-                    _movieCoverLifecycleState = MovieCoverLifecycleState.ShutdownTimedOut;
-                    ReconcileTimedOutShutdown();
+                    ReconcileShutdown();
                 }
 
                 _logger.Warn("Media cover shutdown deadline elapsed with {0} worker(s) still running", workers.Count(v => v.IsAlive));
@@ -874,14 +850,14 @@ namespace NzbDrone.Core.MediaCover
             {
                 lock (_movieCoverQueueLock)
                 {
-                    ReconcileTimedOutShutdown(Thread.CurrentThread);
+                    ReconcileShutdown(Thread.CurrentThread);
                 }
             }
         }
 
-        private void ReconcileTimedOutShutdown(Thread exitingWorker = null)
+        private void ReconcileShutdown(Thread exitingWorker = null)
         {
-            if (_movieCoverLifecycleState != MovieCoverLifecycleState.ShutdownTimedOut ||
+            if (_movieCoverLifecycleState != MovieCoverLifecycleState.Stopping ||
                 _movieCoverWorkers.Any(worker => worker != exitingWorker && worker.IsAlive))
             {
                 return;
@@ -893,10 +869,86 @@ namespace NzbDrone.Core.MediaCover
 
         private enum MovieCoverLifecycleState
         {
-            Stopped,
+            NotStarted,
             Running,
             Stopping,
-            ShutdownTimedOut
+            Stopped
+        }
+
+        internal sealed class MovieCoverQueueTestSeam
+        {
+            private readonly MediaCoverService _owner;
+
+            internal MovieCoverQueueTestSeam(MediaCoverService owner)
+            {
+                _owner = owner;
+                SlotAcquired = (_, _) => { };
+            }
+
+            internal TimeSpan ShutdownTimeout
+            {
+                get => _owner._movieCoverShutdownTimeout;
+                set => _owner._movieCoverShutdownTimeout = value;
+            }
+
+            internal Action<Movie, long> SlotAcquired { get; set; }
+            internal int BlockedProducerCount => Volatile.Read(ref _owner._movieCoverBlockedProducerCount);
+
+            internal int PendingUniqueCount
+            {
+                get
+                {
+                    lock (_owner._movieCoverQueueLock)
+                    {
+                        return _owner._pendingMovieCovers.Count;
+                    }
+                }
+            }
+
+            internal bool Stopping
+            {
+                get
+                {
+                    lock (_owner._movieCoverQueueLock)
+                    {
+                        return _owner._movieCoverLifecycleState == MovieCoverLifecycleState.Stopping;
+                    }
+                }
+            }
+
+            internal int WorkerPoolSize
+            {
+                get
+                {
+                    lock (_owner._movieCoverQueueLock)
+                    {
+                        return _owner._movieCoverWorkers.Count;
+                    }
+                }
+            }
+
+            internal int WorkerCountAlive
+            {
+                get
+                {
+                    lock (_owner._movieCoverQueueLock)
+                    {
+                        return _owner._movieCoverWorkers.Count(worker => worker.IsAlive);
+                    }
+                }
+            }
+
+            internal void InvokeSlotAcquired(Movie movie, long sequence)
+            {
+                try
+                {
+                    SlotAcquired(movie, sequence);
+                }
+                catch (Exception ex)
+                {
+                    _owner._logger.Error(ex, "Error in media cover queue test hook");
+                }
+            }
         }
 
         private sealed class PendingMovieCover

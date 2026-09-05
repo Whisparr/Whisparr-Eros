@@ -297,7 +297,7 @@ namespace NzbDrone.Core.Test.MediaCoverTests
                       }
                   });
 
-            Subject.MovieCoverQueueSlotAcquired = (movie, _) =>
+            Subject.MovieCoverQueueTest.SlotAcquired = (movie, _) =>
             {
                 if (movie.MovieMetadata.Value.Images.Single().RemoteUrl == "https://example.com/old-waiter")
                 {
@@ -322,9 +322,9 @@ namespace NzbDrone.Core.Test.MediaCoverTests
             }
 
             var older = Task.Run(() => Subject.Handle(new MovieUpdatedEvent(GivenMovie(9000, "https://example.com/old-waiter"))));
-            SpinWait.SpinUntil(() => Subject.MovieCoverBlockedProducerCount == 1, 5000).Should().BeTrue();
+            SpinWait.SpinUntil(() => Subject.MovieCoverQueueTest.BlockedProducerCount == 1, 5000).Should().BeTrue();
             var newer = Task.Run(() => Subject.Handle(new MovieUpdatedEvent(GivenMovie(9000, "https://example.com/new-waiter"))));
-            SpinWait.SpinUntil(() => Subject.MovieCoverBlockedProducerCount == 2, 5000).Should().BeTrue();
+            SpinWait.SpinUntil(() => Subject.MovieCoverQueueTest.BlockedProducerCount == 2, 5000).Should().BeTrue();
 
             releaseInitialWorkers.Set();
             oldWaiterAcquiredSlot.Wait(5000).Should().BeTrue();
@@ -335,6 +335,90 @@ namespace NzbDrone.Core.Test.MediaCoverTests
 
             newestCompleted.Wait(15000).Should().BeTrue();
             completedUrl.Should().Be("https://example.com/new-waiter");
+        }
+
+        [Test]
+        public void should_skip_an_older_producer_after_the_latest_update_has_been_dequeued()
+        {
+            const int movieId = 12000;
+            var oldProducerAcquiredSlot = new ManualResetEventSlim();
+            var releaseOldProducer = new ManualResetEventSlim();
+            var latestCompleted = new ManualResetEventSlim();
+            var completions = new ConcurrentQueue<string>();
+
+            Mocker.GetMock<ICoverExistsSpecification>()
+                  .Setup(v => v.AlreadyExists(It.IsAny<string>(), It.IsAny<string>()))
+                  .Returns(true);
+            Mocker.GetMock<IDiskProvider>()
+                  .Setup(v => v.FileExists(It.IsAny<string>()))
+                  .Returns(true);
+            Mocker.GetMock<IDiskProvider>()
+                  .Setup(v => v.GetFileSize(It.IsAny<string>()))
+                  .Returns(1000);
+            Mocker.GetMock<IEventAggregator>()
+                  .Setup(v => v.PublishEvent(It.IsAny<MediaCoversUpdatedEvent>()))
+                  .Callback<MediaCoversUpdatedEvent>(message =>
+                  {
+                      if (message.Movie.Id == movieId)
+                      {
+                          var remoteUrl = message.Movie.MovieMetadata.Value.Images.Single().RemoteUrl;
+                          completions.Enqueue(remoteUrl);
+
+                          if (remoteUrl == "https://example.com/latest")
+                          {
+                              latestCompleted.Set();
+                          }
+                      }
+                  });
+
+            Subject.MovieCoverQueueTest.SlotAcquired = (movie, _) =>
+            {
+                if (movie.Id == movieId && movie.MovieMetadata.Value.Images.Single().RemoteUrl == "https://example.com/old")
+                {
+                    oldProducerAcquiredSlot.Set();
+                    releaseOldProducer.Wait();
+                }
+            };
+
+            Subject.Handle(new ApplicationStartedEvent());
+            var oldProducer = Task.Run(() => Subject.Handle(new MovieUpdatedEvent(GivenMovie(movieId, "https://example.com/old"))));
+            oldProducerAcquiredSlot.Wait(5000).Should().BeTrue();
+
+            Subject.Handle(new MovieUpdatedEvent(GivenMovie(movieId, "https://example.com/latest")));
+            latestCompleted.Wait(5000).Should().BeTrue();
+
+            releaseOldProducer.Set();
+            oldProducer.Wait(5000).Should().BeTrue();
+            Thread.Sleep(200);
+
+            completions.Should().Equal("https://example.com/latest");
+        }
+
+        [Test]
+        public void should_isolate_slot_hook_failures_without_losing_the_movie_cover_update()
+        {
+            var completed = new ManualResetEventSlim();
+
+            Mocker.GetMock<ICoverExistsSpecification>()
+                  .Setup(v => v.AlreadyExists(It.IsAny<string>(), It.IsAny<string>()))
+                  .Returns(true);
+            Mocker.GetMock<IDiskProvider>()
+                  .Setup(v => v.FileExists(It.IsAny<string>()))
+                  .Returns(true);
+            Mocker.GetMock<IDiskProvider>()
+                  .Setup(v => v.GetFileSize(It.IsAny<string>()))
+                  .Returns(1000);
+            Mocker.GetMock<IEventAggregator>()
+                  .Setup(v => v.PublishEvent(It.IsAny<MediaCoversUpdatedEvent>()))
+                  .Callback(completed.Set);
+            Subject.MovieCoverQueueTest.SlotAcquired = (_, _) => throw new InvalidOperationException("synthetic slot hook failure");
+
+            Subject.Handle(new ApplicationStartedEvent());
+
+            var intake = () => Subject.Handle(new MovieUpdatedEvent(GivenMovie(12100)));
+            intake.Should().NotThrow();
+            completed.Wait(5000).Should().BeTrue();
+            Subject.MovieCoverQueueTest.PendingUniqueCount.Should().Be(0);
         }
 
         [Test]
@@ -402,14 +486,14 @@ namespace NzbDrone.Core.Test.MediaCoverTests
                     handler.Handle(new MovieUpdatedEvent(GivenMovie(movieId, remoteUrl)));
                 }
 
-                Subject.MovieCoverPendingUniqueCount.Should().BeLessThanOrEqualTo(MediaCoverService.MovieCoverQueueCapacity);
+                Subject.MovieCoverQueueTest.PendingUniqueCount.Should().BeLessThanOrEqualTo(MediaCoverService.MovieCoverQueueCapacity);
             }
 
-            Subject.MovieCoverPendingUniqueCount.Should().Be(uniquePendingMovies);
+            Subject.MovieCoverQueueTest.PendingUniqueCount.Should().Be(uniquePendingMovies);
             releaseCovers.Set();
             completed.Wait(15000).Should().BeTrue();
 
-            Subject.MovieCoverPendingUniqueCount.Should().Be(0);
+            Subject.MovieCoverQueueTest.PendingUniqueCount.Should().Be(0);
             var pendingCompletionCounts = completionCounts.Where(v => v.Key >= firstPendingMovieId).ToDictionary(v => v.Key, v => v.Value);
             pendingCompletionCounts.Should().HaveCount(uniquePendingMovies);
             pendingCompletionCounts.Should().OnlyContain(v => v.Value == 1);
@@ -485,10 +569,10 @@ namespace NzbDrone.Core.Test.MediaCoverTests
             for (var i = 0; i < MediaCoverService.MovieCoverQueueCapacity; i++)
             {
                 handler.Handle(new MovieUpdatedEvent(GivenMovie(2000 + i)));
-                Subject.MovieCoverPendingUniqueCount.Should().BeLessThanOrEqualTo(MediaCoverService.MovieCoverQueueCapacity);
+                Subject.MovieCoverQueueTest.PendingUniqueCount.Should().BeLessThanOrEqualTo(MediaCoverService.MovieCoverQueueCapacity);
             }
 
-            Subject.MovieCoverPendingUniqueCount.Should().Be(MediaCoverService.MovieCoverQueueCapacity);
+            Subject.MovieCoverQueueTest.PendingUniqueCount.Should().Be(MediaCoverService.MovieCoverQueueCapacity);
             var overflowIntake = Task.Run(() => handler.Handle(new MovieUpdatedEvent(GivenMovie(3000))));
 
             try
@@ -569,28 +653,28 @@ namespace NzbDrone.Core.Test.MediaCoverTests
             for (var i = 0; i < MediaCoverService.MovieCoverQueueCapacity; i++)
             {
                 Subject.Handle(new MovieUpdatedEvent(GivenMovie(11000 + i, $"https://example.com/overflow-queued-{i}")));
-                Subject.MovieCoverPendingUniqueCount.Should().BeLessThanOrEqualTo(MediaCoverService.MovieCoverQueueCapacity);
+                Subject.MovieCoverQueueTest.PendingUniqueCount.Should().BeLessThanOrEqualTo(MediaCoverService.MovieCoverQueueCapacity);
             }
 
             var overflow = new List<Task>
             {
                 Task.Run(() => Subject.Handle(new MovieUpdatedEvent(GivenMovie(12000, "https://example.com/overflow-duplicate-old"))))
             };
-            SpinWait.SpinUntil(() => Subject.MovieCoverBlockedProducerCount == 1, 5000).Should().BeTrue();
+            SpinWait.SpinUntil(() => Subject.MovieCoverQueueTest.BlockedProducerCount == 1, 5000).Should().BeTrue();
             overflow.Add(Task.Run(() => Subject.Handle(new MovieUpdatedEvent(GivenMovie(12001, "https://example.com/overflow-unique")))));
-            SpinWait.SpinUntil(() => Subject.MovieCoverBlockedProducerCount == 2, 5000).Should().BeTrue();
+            SpinWait.SpinUntil(() => Subject.MovieCoverQueueTest.BlockedProducerCount == 2, 5000).Should().BeTrue();
             overflow.Add(Task.Run(() => Subject.Handle(new MovieUpdatedEvent(GivenMovie(12000, "https://example.com/overflow-duplicate-latest")))));
-            SpinWait.SpinUntil(() => Subject.MovieCoverBlockedProducerCount == 3, 5000).Should().BeTrue();
+            SpinWait.SpinUntil(() => Subject.MovieCoverQueueTest.BlockedProducerCount == 3, 5000).Should().BeTrue();
 
             overflow.Should().OnlyContain(task => !task.IsCompleted);
-            Subject.MovieCoverPendingUniqueCount.Should().Be(MediaCoverService.MovieCoverQueueCapacity);
+            Subject.MovieCoverQueueTest.PendingUniqueCount.Should().Be(MediaCoverService.MovieCoverQueueCapacity);
 
             releaseFirstWorkers.Set();
             Task.WaitAll(overflow.ToArray(), 5000).Should().BeTrue();
             firstWaveCompleted.Wait(15000).Should().BeTrue();
 
-            Subject.MovieCoverBlockedProducerCount.Should().Be(0);
-            Subject.MovieCoverPendingUniqueCount.Should().Be(0);
+            Subject.MovieCoverQueueTest.BlockedProducerCount.Should().Be(0);
+            Subject.MovieCoverQueueTest.PendingUniqueCount.Should().Be(0);
             completionCounts.Should().ContainKey(12000).WhoseValue.Should().Be(1);
             completionCounts.Should().ContainKey(12001).WhoseValue.Should().Be(1);
             completedUrls.Should().ContainKey(12000).WhoseValue.Should().Be("https://example.com/overflow-duplicate-latest");
@@ -605,16 +689,16 @@ namespace NzbDrone.Core.Test.MediaCoverTests
             for (var i = 0; i < MediaCoverService.MovieCoverQueueCapacity; i++)
             {
                 Subject.Handle(new MovieUpdatedEvent(GivenMovie(14000 + i, $"https://example.com/recovery-queued-{i}")));
-                Subject.MovieCoverPendingUniqueCount.Should().BeLessThanOrEqualTo(MediaCoverService.MovieCoverQueueCapacity);
+                Subject.MovieCoverQueueTest.PendingUniqueCount.Should().BeLessThanOrEqualTo(MediaCoverService.MovieCoverQueueCapacity);
             }
 
-            Subject.MovieCoverPendingUniqueCount.Should().Be(MediaCoverService.MovieCoverQueueCapacity);
+            Subject.MovieCoverQueueTest.PendingUniqueCount.Should().Be(MediaCoverService.MovieCoverQueueCapacity);
             releaseRecoveryWorkers.Set();
             recoveryWaveCompleted.Wait(15000).Should().BeTrue();
-            Subject.MovieCoverPendingUniqueCount.Should().Be(0);
+            Subject.MovieCoverQueueTest.PendingUniqueCount.Should().Be(0);
 
             Subject.Handle(new ApplicationShutdownRequested());
-            Subject.MovieCoverWorkerPoolSize.Should().Be(0);
+            Subject.MovieCoverQueueTest.WorkerPoolSize.Should().Be(0);
         }
 
         [Test]
@@ -622,7 +706,7 @@ namespace NzbDrone.Core.Test.MediaCoverTests
         {
             var coverStarted = new ManualResetEventSlim();
             var releaseCover = new ManualResetEventSlim();
-            Subject.MovieCoverShutdownTimeout = TimeSpan.FromMilliseconds(200);
+            Subject.MovieCoverQueueTest.ShutdownTimeout = TimeSpan.FromMilliseconds(200);
 
             Mocker.GetMock<ICoverExistsSpecification>()
                   .Setup(v => v.AlreadyExists(It.IsAny<string>(), It.IsAny<string>()))
@@ -644,84 +728,39 @@ namespace NzbDrone.Core.Test.MediaCoverTests
                 stopwatch.Stop();
 
                 stopwatch.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(1));
-                Subject.MovieCoverWorkerCountAlive.Should().BeGreaterThan(0);
+                Subject.MovieCoverQueueTest.WorkerCountAlive.Should().BeGreaterThan(0);
             }
             finally
             {
                 releaseCover.Set();
             }
+
+            SpinWait.SpinUntil(() => Subject.MovieCoverQueueTest.WorkerPoolSize == 0, 5000).Should().BeTrue();
+            Subject.MovieCoverQueueTest.WorkerCountAlive.Should().Be(0);
         }
 
         [Test]
-        public void should_restart_after_timed_out_workers_exit()
+        public void should_start_the_movie_cover_worker_pool_only_once()
         {
-            var coverStarted = new ManualResetEventSlim();
-            var releaseCover = new ManualResetEventSlim();
-            var restartedMovieCompleted = new ManualResetEventSlim();
             var workerCount = MediaCoverService.MovieCoverWorkerCount;
-            Subject.MovieCoverShutdownTimeout = TimeSpan.FromMilliseconds(200);
-
-            Mocker.GetMock<ICoverExistsSpecification>()
-                  .Setup(v => v.AlreadyExists(It.IsAny<string>(), It.IsAny<string>()))
-                  .Callback<string, string>((remoteUrl, _) =>
-                  {
-                      if (remoteUrl == "https://example.com/stuck-before-restart")
-                      {
-                          coverStarted.Set();
-                          releaseCover.Wait();
-                      }
-                  })
-                  .Returns(true);
-
-            Mocker.GetMock<IDiskProvider>()
-                  .Setup(v => v.FileExists(It.IsAny<string>()))
-                  .Returns(true);
-            Mocker.GetMock<IDiskProvider>()
-                  .Setup(v => v.GetFileSize(It.IsAny<string>()))
-                  .Returns(1000);
-            Mocker.GetMock<IEventAggregator>()
-                  .Setup(v => v.PublishEvent(It.IsAny<MediaCoversUpdatedEvent>()))
-                  .Callback<MediaCoversUpdatedEvent>(message =>
-                  {
-                      if (message.Movie.Id == 3961)
-                      {
-                          restartedMovieCompleted.Set();
-                      }
-                  });
 
             Subject.Handle(new ApplicationStartedEvent());
-            Subject.Handle(new MovieUpdatedEvent(GivenMovie(3960, "https://example.com/stuck-before-restart")));
-            coverStarted.Wait(5000).Should().BeTrue();
+            Subject.MovieCoverQueueTest.WorkerPoolSize.Should().Be(workerCount);
 
-            var stopwatch = Stopwatch.StartNew();
             Subject.Handle(new ApplicationShutdownRequested());
-            stopwatch.Stop();
-
-            stopwatch.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(1));
-            Subject.MovieCoverWorkerCountAlive.Should().BeGreaterThan(0);
-
-            releaseCover.Set();
-            SpinWait.SpinUntil(() => Subject.MovieCoverWorkerPoolSize == 0, 5000).Should().BeTrue();
-            Subject.MovieCoverWorkerCountAlive.Should().Be(0);
+            Subject.MovieCoverQueueTest.WorkerPoolSize.Should().Be(0);
 
             Subject.Handle(new ApplicationStartedEvent());
-            Subject.MovieCoverWorkerPoolSize.Should().Be(workerCount);
-            Subject.MovieCoverWorkerCountAlive.Should().Be(workerCount);
-            Subject.Handle(new MovieUpdatedEvent(GivenMovie(3961, "https://example.com/after-restart")));
-            restartedMovieCompleted.Wait(5000).Should().BeTrue();
-
-            Subject.Handle(new ApplicationShutdownRequested());
-            Subject.MovieCoverWorkerPoolSize.Should().Be(0);
-            Subject.MovieCoverWorkerCountAlive.Should().Be(0);
+            Subject.MovieCoverQueueTest.WorkerPoolSize.Should().Be(0);
+            Subject.MovieCoverQueueTest.WorkerCountAlive.Should().Be(0);
         }
 
         [Test]
-        public void should_reject_an_old_lifecycle_producer_after_restart()
+        public void should_reject_a_delayed_producer_after_shutdown()
         {
             var oldProducerAcquiredSlot = new ManualResetEventSlim();
             var releaseOldProducer = new ManualResetEventSlim();
             var staleMovieProcessed = new ManualResetEventSlim();
-            var freshMovieProcessed = new ManualResetEventSlim();
 
             Mocker.GetMock<ICoverExistsSpecification>()
                   .Setup(v => v.AlreadyExists(It.IsAny<string>(), It.IsAny<string>()))
@@ -740,13 +779,9 @@ namespace NzbDrone.Core.Test.MediaCoverTests
                       {
                           staleMovieProcessed.Set();
                       }
-                      else if (message.Movie.Id == 3971)
-                      {
-                          freshMovieProcessed.Set();
-                      }
                   });
 
-            Subject.MovieCoverQueueSlotAcquired = (movie, _) =>
+            Subject.MovieCoverQueueTest.SlotAcquired = (movie, _) =>
             {
                 if (movie.Id == 3970)
                 {
@@ -760,19 +795,13 @@ namespace NzbDrone.Core.Test.MediaCoverTests
             oldProducerAcquiredSlot.Wait(5000).Should().BeTrue();
 
             Subject.Handle(new ApplicationShutdownRequested());
-            Subject.Handle(new ApplicationStartedEvent());
             releaseOldProducer.Set();
             oldProducer.Wait(5000).Should().BeTrue();
 
             staleMovieProcessed.Wait(1000).Should().BeFalse();
-            Subject.MovieCoverPendingUniqueCount.Should().Be(0);
-
-            Subject.Handle(new MovieUpdatedEvent(GivenMovie(3971, "https://example.com/fresh-lifecycle")));
-            freshMovieProcessed.Wait(5000).Should().BeTrue();
-
-            Subject.Handle(new ApplicationShutdownRequested());
-            Subject.MovieCoverWorkerPoolSize.Should().Be(0);
-            Subject.MovieCoverWorkerCountAlive.Should().Be(0);
+            Subject.MovieCoverQueueTest.PendingUniqueCount.Should().Be(0);
+            Subject.MovieCoverQueueTest.WorkerPoolSize.Should().Be(0);
+            Subject.MovieCoverQueueTest.WorkerCountAlive.Should().Be(0);
         }
 
         [Test]
@@ -781,7 +810,7 @@ namespace NzbDrone.Core.Test.MediaCoverTests
             var coverStarted = new ManualResetEventSlim();
             var releaseCover = new ManualResetEventSlim();
             var workerCount = MediaCoverService.MovieCoverWorkerCount;
-            Subject.MovieCoverShutdownTimeout = TimeSpan.FromMilliseconds(200);
+            Subject.MovieCoverQueueTest.ShutdownTimeout = TimeSpan.FromMilliseconds(200);
 
             Mocker.GetMock<ICoverExistsSpecification>()
                   .Setup(v => v.AlreadyExists(It.IsAny<string>(), It.IsAny<string>()))
@@ -797,13 +826,15 @@ namespace NzbDrone.Core.Test.MediaCoverTests
             coverStarted.Wait(5000).Should().BeTrue();
 
             var shutdown = Task.Run(() => Subject.Handle(new ApplicationShutdownRequested()));
-            SpinWait.SpinUntil(() => Subject.MovieCoverStopping, 5000).Should().BeTrue();
+            SpinWait.SpinUntil(() => Subject.MovieCoverQueueTest.Stopping, 5000).Should().BeTrue();
             Subject.Handle(new ApplicationStartedEvent());
             shutdown.Wait(5000).Should().BeTrue();
             Subject.Handle(new ApplicationStartedEvent());
 
-            Subject.MovieCoverWorkerPoolSize.Should().Be(workerCount);
+            Subject.MovieCoverQueueTest.WorkerPoolSize.Should().Be(workerCount);
             releaseCover.Set();
+            SpinWait.SpinUntil(() => Subject.MovieCoverQueueTest.WorkerPoolSize == 0, 5000).Should().BeTrue();
+            Subject.MovieCoverQueueTest.WorkerCountAlive.Should().Be(0);
         }
 
         [Test]
@@ -812,7 +843,7 @@ namespace NzbDrone.Core.Test.MediaCoverTests
             var workerCount = MediaCoverService.MovieCoverWorkerCount;
             var workersStarted = new CountdownEvent(workerCount);
             var releaseWorkers = new ManualResetEventSlim();
-            Subject.MovieCoverShutdownTimeout = TimeSpan.FromMilliseconds(200);
+            Subject.MovieCoverQueueTest.ShutdownTimeout = TimeSpan.FromMilliseconds(200);
 
             Mocker.GetMock<ICoverExistsSpecification>()
                   .Setup(v => v.AlreadyExists(It.IsAny<string>(), It.IsAny<string>()))
@@ -844,13 +875,13 @@ namespace NzbDrone.Core.Test.MediaCoverTests
                 Task.Run(() => Subject.Handle(new MovieUpdatedEvent(GivenMovie(8000, "https://example.com/new-duplicate"))))
             };
 
-            SpinWait.SpinUntil(() => Subject.MovieCoverBlockedProducerCount == blocked.Length, 5000).Should().BeTrue();
+            SpinWait.SpinUntil(() => Subject.MovieCoverQueueTest.BlockedProducerCount == blocked.Length, 5000).Should().BeTrue();
 
             try
             {
                 Subject.Handle(new ApplicationShutdownRequested());
                 Task.WaitAll(blocked, 1000).Should().BeTrue();
-                Subject.MovieCoverBlockedProducerCount.Should().Be(0);
+                Subject.MovieCoverQueueTest.BlockedProducerCount.Should().Be(0);
             }
             finally
             {
@@ -859,50 +890,66 @@ namespace NzbDrone.Core.Test.MediaCoverTests
         }
 
         [Test]
-        public void should_stop_accepting_and_drain_movie_cover_updates_before_shutdown_returns()
+        public void should_abandon_queued_movie_covers_when_shutdown_starts()
         {
-            var coverStarted = new ManualResetEventSlim();
-            var releaseCover = new ManualResetEventSlim();
+            var workerCount = MediaCoverService.MovieCoverWorkerCount;
+            var workersStarted = new CountdownEvent(workerCount);
+            var activeCompleted = new CountdownEvent(workerCount);
+            var releaseWorkers = new ManualResetEventSlim();
             var completedIds = new ConcurrentDictionary<int, int>();
-            var handler = (IHandle<MovieUpdatedEvent>)Subject;
+            Subject.MovieCoverQueueTest.ShutdownTimeout = TimeSpan.FromMilliseconds(200);
 
             Mocker.GetMock<ICoverExistsSpecification>()
                   .Setup(v => v.AlreadyExists(It.IsAny<string>(), It.IsAny<string>()))
-                  .Callback(() =>
+                  .Callback<string, string>((remoteUrl, _) =>
                   {
-                      coverStarted.Set();
-                      releaseCover.Wait();
+                      if (remoteUrl.StartsWith("https://example.com/active-"))
+                      {
+                          workersStarted.Signal();
+                          releaseWorkers.Wait();
+                      }
                   })
                   .Returns(true);
-
             Mocker.GetMock<IDiskProvider>()
                   .Setup(v => v.FileExists(It.IsAny<string>()))
                   .Returns(true);
-
             Mocker.GetMock<IDiskProvider>()
                   .Setup(v => v.GetFileSize(It.IsAny<string>()))
                   .Returns(1000);
-
             Mocker.GetMock<IEventAggregator>()
                   .Setup(v => v.PublishEvent(It.IsAny<MediaCoversUpdatedEvent>()))
-                  .Callback<MediaCoversUpdatedEvent>(message => completedIds.AddOrUpdate(message.Movie.Id, 1, (_, count) => count + 1));
+                  .Callback<MediaCoversUpdatedEvent>(message =>
+                  {
+                      completedIds.AddOrUpdate(message.Movie.Id, 1, (_, count) => count + 1);
+
+                      if (message.Movie.Id >= 4000 && message.Movie.Id < 4000 + workerCount)
+                      {
+                          activeCompleted.Signal();
+                      }
+                  });
 
             Subject.Handle(new ApplicationStartedEvent());
-            handler.Handle(new MovieUpdatedEvent(GivenMovie(4000)));
-            coverStarted.Wait(5000).Should().BeTrue();
-            handler.Handle(new MovieUpdatedEvent(GivenMovie(4001)));
 
-            var shutdown = Task.Run(() => Subject.Handle(new ApplicationShutdownRequested()));
-            var shutdownCompletedWhileWorkWasBlocked = shutdown.Wait(200);
+            for (var i = 0; i < workerCount; i++)
+            {
+                Subject.Handle(new MovieUpdatedEvent(GivenMovie(4000 + i, $"https://example.com/active-{i}")));
+            }
 
-            handler.Handle(new MovieUpdatedEvent(GivenMovie(4002)));
-            releaseCover.Set();
-            shutdown.Wait(15000).Should().BeTrue();
+            workersStarted.Wait(5000).Should().BeTrue();
+            Subject.Handle(new MovieUpdatedEvent(GivenMovie(4999, "https://example.com/queued")));
 
-            shutdownCompletedWhileWorkWasBlocked.Should().BeFalse();
-            completedIds.Should().ContainKey(4000).WhoseValue.Should().Be(1);
-            completedIds.Should().ContainKey(4001).WhoseValue.Should().Be(1);
-            completedIds.Should().NotContainKey(4002);
+            var stopwatch = Stopwatch.StartNew();
+            Subject.Handle(new ApplicationShutdownRequested());
+            stopwatch.Stop();
+
+            stopwatch.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(1));
+            Subject.MovieCoverQueueTest.PendingUniqueCount.Should().Be(0);
+
+            releaseWorkers.Set();
+            activeCompleted.Wait(5000).Should().BeTrue();
+            Thread.Sleep(200);
+
+            completedIds.Should().NotContainKey(4999);
         }
 
         [Test]
