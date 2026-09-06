@@ -131,7 +131,7 @@ namespace NzbDrone.Host
 
                 c.AddSecurityRequirement(doc => new OpenApiSecurityRequirement
                 {
-                    { new OpenApiSecuritySchemeReference("X-Api-Key"), new List<string>() }
+                    { new OpenApiSecuritySchemeReference("X-Api-Key", doc), new List<string>() }
                 });
 
                 var apikeyQuery = new OpenApiSecurityScheme
@@ -157,7 +157,7 @@ namespace NzbDrone.Host
 
                 c.AddSecurityRequirement(doc => new OpenApiSecurityRequirement
                 {
-                    { new OpenApiSecuritySchemeReference("apikey"), new List<string>() }
+                    { new OpenApiSecuritySchemeReference("apikey", doc), new List<string>() }
                 });
 
                 c.DescribeAllParametersInCamelCase();
