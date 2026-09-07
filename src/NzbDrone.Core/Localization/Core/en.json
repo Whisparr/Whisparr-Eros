@@ -83,6 +83,7 @@
   "AllowedHosts": "Allowed Hosts",
   "AllowedHostsHelpText": "Comma separated list of hostnames and IP addresses that {appName} will accept requests for. Use '*.' as a wildcard for subdomains. Leave empty to allow all hosts.",
   "AllowedHostsNotConfiguredHealthCheckMessage": "Allowed Hosts is not configured, {appName} will accept requests for any hostname. Set Allowed Hosts in General settings to restrict which hostnames can be used to reach {appName}.",
+  "AllowedHostsWildcardHealthCheckMessage": "Allowed Hosts is set to '*', {appName} will accept requests for any hostname. Replace it with the hostnames used to reach {appName} in General settings to restrict which hostnames can be used.",
   "AllowHardcodedSubs": "Allow Hardcoded Subs",
   "AllowHardcodedSubsHelpText": "Detected hardcoded subs will be automatically downloaded",
   "AllPerformersHiddenDueToFilter": "All performers are hidden due to applied filter.",

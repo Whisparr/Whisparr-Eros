@@ -24,24 +24,36 @@ namespace NzbDrone.Core.HealthCheck.Checks
         public override HealthCheck Check()
         {
             var allowedHosts = AllowedHostsParser.Parse(_configFileProvider.AllowedHosts);
+            var isWildcard = allowedHosts.Contains("*");
 
-            if (allowedHosts.Count > 0 && !allowedHosts.Contains("*"))
+            if (allowedHosts.Count > 0 && !isWildcard)
             {
                 return new HealthCheck(GetType());
             }
 
-            if (_configFileProvider.AuthenticationRequired != AuthenticationRequiredType.Enabled)
+            if (_configFileProvider.AuthenticationRequired == AuthenticationRequiredType.Enabled)
             {
-                _logger.Warn("Allowed Hosts is not configured, requests for any hostname will be accepted. You can set this via settings or the config file");
+                return new HealthCheck(GetType());
+            }
+
+            if (isWildcard)
+            {
+                _logger.Warn("Allowed Hosts is set to '*', requests for any hostname will be accepted. You can set this via settings or the config file");
 
                 return new HealthCheck(GetType(),
                     HealthCheckResult.Warning,
-                    HealthCheckReason.AllowedHostsNotConfigured,
-                    _localizationService.GetLocalizedString("AllowedHostsNotConfiguredHealthCheckMessage"),
+                    HealthCheckReason.AllowedHostsWildcard,
+                    _localizationService.GetLocalizedString("AllowedHostsWildcardHealthCheckMessage"),
                     "#allowed-hosts-not-configured");
             }
 
-            return new HealthCheck(GetType());
+            _logger.Warn("Allowed Hosts is not configured, requests for any hostname will be accepted. You can set this via settings or the config file");
+
+            return new HealthCheck(GetType(),
+                HealthCheckResult.Warning,
+                HealthCheckReason.AllowedHostsNotConfigured,
+                _localizationService.GetLocalizedString("AllowedHostsNotConfiguredHealthCheckMessage"),
+                "#allowed-hosts-not-configured");
         }
     }
 }
