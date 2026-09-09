@@ -164,6 +164,11 @@ namespace NzbDrone.Core.Parser
                     }
                 }
 
+                if (result == null && parsedMovieInfo.Year >= 1800)
+                {
+                    result = TryGetMovieByFuzzyYear(parsedMovieInfo, searchCriteria);
+                }
+
                 if (result == null)
                 {
                     _logger.Debug($"No matching movie for titles '{string.Join(", ", parsedMovieInfo.MovieTitles)} ({parsedMovieInfo.Year})'");
@@ -210,6 +215,34 @@ namespace NzbDrone.Core.Parser
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Fallback for releases that carry a leading category tag (e.g. "GAY:") or otherwise fail exact-title matching but parse to a reliable release year. Delegates the Levenshtein scoring and margin disambiguation to MovieService.
+        /// </summary>
+        /// <remarks>During a search the fuzzy result is only accepted when it is the movie that was searched for - a near-miss on some other library entry is not a reason to attribute this release to it.</remarks>
+        private FindMovieResult TryGetMovieByFuzzyYear(ParsedMovieInfo parsedMovieInfo, SearchCriteriaBase searchCriteria)
+        {
+            var title = parsedMovieInfo.PrimaryMovieTitle;
+            if (title.IsNullOrWhiteSpace())
+            {
+                return null;
+            }
+
+            var movie = _movieService.FindFuzzyMovieByYear(title, parsedMovieInfo.Year);
+            if (movie == null || movie.MovieMetadata?.Value.ItemType != ItemType.Movie)
+            {
+                return null;
+            }
+
+            if (searchCriteria?.Movie != null && movie.Id != searchCriteria.Movie.Id)
+            {
+                _logger.Debug("Fuzzy match found [{0}] but [{1}] was searched for, ignoring", movie.Title, searchCriteria.Movie.Title);
+
+                return null;
+            }
+
+            return new FindMovieResult(movie, MovieMatchType.FuzzyTitle);
         }
 
         private static FindMovieResult TryGetMovieBySearchCriteria(ParsedMovieInfo parsedMovieInfo, string imdbId, int tmdbId, SearchCriteriaBase searchCriteria)
