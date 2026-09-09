@@ -292,7 +292,6 @@ function PerformerIndexRow(props: PerformerIndexRowProps) {
       <EditPerformerModal
         isOpen={isEditPerformerModalOpen}
         performer={performer}
-        showMovieMonitor={showMovieMonitorToggle}
         onModalClose={onEditPerformerModalClose}
       />
     </TableRowCell>

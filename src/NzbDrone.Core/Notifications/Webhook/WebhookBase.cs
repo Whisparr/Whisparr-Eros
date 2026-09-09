@@ -7,6 +7,7 @@ using NzbDrone.Core.Localization;
 using NzbDrone.Core.MediaCover;
 using NzbDrone.Core.MediaFiles;
 using NzbDrone.Core.Movies;
+using NzbDrone.Core.Movies.Studios;
 using NzbDrone.Core.Tags;
 
 namespace NzbDrone.Core.Notifications.Webhook
@@ -19,14 +20,16 @@ namespace NzbDrone.Core.Notifications.Webhook
         protected readonly ILocalizationService _localizationService;
         private readonly ITagRepository _tagRepository;
         private readonly IMapCoversToLocal _mediaCoverService;
+        private readonly IStudioService _studioService;
 
-        protected WebhookBase(IConfigFileProvider configFileProvider, IConfigService configService, ILocalizationService localizationService, ITagRepository tagRepository, IMapCoversToLocal mediaCoverService)
+        protected WebhookBase(IConfigFileProvider configFileProvider, IConfigService configService, ILocalizationService localizationService, ITagRepository tagRepository, IMapCoversToLocal mediaCoverService, IStudioService studioService)
         {
             _configFileProvider = configFileProvider;
             _configService = configService;
             _localizationService = localizationService;
             _tagRepository = tagRepository;
             _mediaCoverService = mediaCoverService;
+            _studioService = studioService;
         }
 
         protected WebhookGrabPayload BuildOnGrabPayload(GrabMessage message)
@@ -217,6 +220,13 @@ namespace NzbDrone.Core.Notifications.Webhook
                     Year = 1970,
                     FolderPath = "C:\\testpath",
                     ReleaseDate = "1970-01-01",
+                    ItemType = ItemType.Scene.ToString(),
+                    Runtime = 42,
+                    Website = "https://example.com/test-title",
+                    StudioTitle = "Test Studio",
+                    Network = "Test Network",
+                    Performers = new List<string> { "Test Performer" },
+                    Genres = new List<string> { "test-genre" },
                     Tags = new List<string> { "test-tag" }
                 },
                 RemoteMovie = new WebhookRemoteMovie
@@ -247,7 +257,19 @@ namespace NzbDrone.Core.Notifications.Webhook
 
             _mediaCoverService.ConvertToLocalUrls(movie.Id, movie.MovieMetadata.Value.Images);
 
-            return new WebhookMovie(movie, GetTagLabels(movie));
+            return new WebhookMovie(movie, GetTagLabels(movie), GetNetwork(movie));
+        }
+
+        private string GetNetwork(Movie movie)
+        {
+            var studioForeignId = movie.MovieMetadata.Value.StudioForeignId;
+
+            if (studioForeignId.IsNullOrWhiteSpace())
+            {
+                return null;
+            }
+
+            return _studioService.FindByForeignId(studioForeignId)?.Network;
         }
 
         private List<string> GetTagLabels(Movie movie)

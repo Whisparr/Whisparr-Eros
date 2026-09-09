@@ -4,7 +4,6 @@ using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using NLog;
 using NzbDrone.Common.Extensions;
-using NzbDrone.Core.Datastore;
 using NzbDrone.Core.DecisionEngine;
 using NzbDrone.Core.Download;
 using NzbDrone.Core.Indexers;
@@ -53,7 +52,7 @@ namespace Whisparr.Api.V3.Indexers
         [Produces("application/json")]
         public ActionResult<List<ReleaseResource>> Create([FromBody] ReleaseResource release)
         {
-            _logger.Info("Release pushed: {0} - {1}", release.Title, release.DownloadUrl ?? release.MagnetUrl);
+            _logger.Info("Release pushed: {0} - {1}", release.Title.ForLog(), (release.DownloadUrl ?? release.MagnetUrl).ForLog());
 
             ValidateResource(release);
 
@@ -94,65 +93,44 @@ namespace Whisparr.Api.V3.Indexers
             }
 
             // Return the decision(s) (will include rejection info, if any)
-            _logger.Info("Release push processing completed: {0} - {1}", release.Title, decision.Approved ? "Approved" : "Rejected");
+            _logger.Info("Release push processing completed: {0} - {1}", release.Title.ForLog(), decision.Approved ? "Approved" : "Rejected");
             return MapDecisions(new[] { decision });
         }
 
         private void ResolveIndexer(ReleaseInfo release)
         {
-            if (release.IndexerId == 0 && release.Indexer.IsNotNullOrWhiteSpace())
-            {
-                var indexer = _indexerFactory.All().FirstOrDefault(v => v.Name.EqualsIgnoreCase(release.Indexer));
+            // ReleaseInfo.IndexerId is a non-nullable int, so an omitted indexer arrives as 0.
+            // Passing that straight through would have the factory reject the push outright.
+            var indexerId = release.IndexerId == 0 ? (int?)null : release.IndexerId;
+            var indexer = _indexerFactory.ResolveIndexer(indexerId, release.Indexer);
 
-                if (indexer != null)
-                {
-                    release.IndexerId = indexer.Id;
-                    _logger.Debug("Push Release {0} associated with indexer {1} - {2}.", release.Title, release.IndexerId, release.Indexer);
-                }
-                else
-                {
-                    _logger.Debug("Push Release {0} not associated with known indexer {1}.", release.Title, release.Indexer);
-                }
-            }
-            else if (release.IndexerId != 0 && release.Indexer.IsNullOrWhiteSpace())
+            if (indexer == null)
             {
-                try
-                {
-                    var indexer = _indexerFactory.Get(release.IndexerId);
-                    release.Indexer = indexer.Name;
-                    _logger.Debug("Push Release {0} associated with indexer {1} - {2}.", release.Title, release.IndexerId, release.Indexer);
-                }
-                catch (ModelNotFoundException)
-                {
-                    _logger.Debug("Push Release {0} not associated with known indexer {1}.", release.Title, release.IndexerId);
-                    release.IndexerId = 0;
-                }
+                _logger.Debug("Push Release {0} not associated with an indexer.", release.Title.ForLog());
             }
             else
             {
-                _logger.Debug("Push Release {0} not associated with an indexer.", release.Title);
+                _logger.Debug("Push Release {0} associated with indexer '{1}' ({2})", release.Title.ForLog(), indexer.Name.ForLog(), indexer.Id);
+
+                release.IndexerId = indexer.Id;
+                release.Indexer = indexer.Name;
             }
         }
 
         private int? ResolveDownloadClientId(ReleaseResource release)
         {
-            var downloadClientId = release.DownloadClientId.GetValueOrDefault();
+            var downloadClient = _downloadClientFactory.ResolveDownloadClient(release.DownloadClientId, release.DownloadClient);
 
-            if (downloadClientId == 0 && release.DownloadClient.IsNotNullOrWhiteSpace())
+            if (downloadClient == null)
             {
-                var downloadClient = _downloadClientFactory.All().FirstOrDefault(v => v.Name.EqualsIgnoreCase(release.DownloadClient));
-
-                if (downloadClient != null)
-                {
-                    _logger.Debug("Push Release {0} associated with download client {1} - {2}.", release.Title, downloadClientId, release.DownloadClient);
-
-                    return downloadClient.Id;
-                }
-
-                _logger.Debug("Push Release {0} not associated with known download client {1}.", release.Title, release.DownloadClient);
+                _logger.Debug("Push Release {0} not associated with a download client.", release.Title.ForLog());
+            }
+            else
+            {
+                _logger.Debug("Push Release {0} associated with download client '{1}' ({2})", release.Title.ForLog(), downloadClient.Name.ForLog(), downloadClient.Id);
             }
 
-            return release.DownloadClientId;
+            return downloadClient?.Id;
         }
     }
 }

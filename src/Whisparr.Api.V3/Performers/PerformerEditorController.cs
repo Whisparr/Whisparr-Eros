@@ -1,4 +1,8 @@
+using System;
 using System.Collections.Generic;
+using System.Globalization;
+using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.DecisionEngine.Specifications;
@@ -14,12 +18,14 @@ namespace Whisparr.Api.V3.Performers
         private readonly IPerformerService _performerService;
         private readonly IManageCommandQueue _commandQueueManager;
         private readonly IUpgradableSpecification _upgradableSpecification;
+        private readonly PerformerEditorValidator _performerEditorValidator;
 
-        public PerformerEditorController(IPerformerService performerService, IManageCommandQueue commandQueueManager, IUpgradableSpecification upgradableSpecification)
+        public PerformerEditorController(IPerformerService performerService, IManageCommandQueue commandQueueManager, IUpgradableSpecification upgradableSpecification, PerformerEditorValidator performerEditorValidator)
         {
             _performerService = performerService;
             _commandQueueManager = commandQueueManager;
             _upgradableSpecification = upgradableSpecification;
+            _performerEditorValidator = performerEditorValidator;
         }
 
         /// <summary>
@@ -33,6 +39,21 @@ namespace Whisparr.Api.V3.Performers
         public IActionResult SaveAll([FromBody] PerformerEditorResource resource)
         {
             var performersToUpdate = _performerService.GetPerformers(resource.PerformerIds);
+
+            // A bulk date has three states the wire can't express with a plain DateTime?:
+            // absent leaves each performer's own date alone, empty clears it, and anything
+            // else has to parse here rather than silently clearing every selected performer.
+            DateTime? afterDate = null;
+
+            if (resource.AfterDate.IsNotNullOrWhiteSpace())
+            {
+                if (!DateTime.TryParse(resource.AfterDate, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal, out var parsedAfterDate))
+                {
+                    throw new ValidationException(new[] { new ValidationFailure(nameof(resource.AfterDate), $"Invalid after date: {resource.AfterDate}") });
+                }
+
+                afterDate = parsedAfterDate;
+            }
 
             foreach (var performer in performersToUpdate)
             {
@@ -61,6 +82,11 @@ namespace Whisparr.Api.V3.Performers
                     performer.SearchOnAdd = resource.SearchOnAdd.Value;
                 }
 
+                if (resource.AfterDate != null)
+                {
+                    performer.AfterDate = afterDate;
+                }
+
                 if (resource.Tags != null)
                 {
                     var newTags = resource.Tags;
@@ -78,6 +104,13 @@ namespace Whisparr.Api.V3.Performers
                             performer.Tags = new HashSet<int>(newTags);
                             break;
                     }
+                }
+
+                var validationResult = _performerEditorValidator.Validate(performer);
+
+                if (!validationResult.IsValid)
+                {
+                    throw new ValidationException(validationResult.Errors);
                 }
             }
 

@@ -209,9 +209,11 @@ function invalidateMoviePagedQueryCache() {
   });
 }
 
-// The by-id list behind the tag details modal and the queued task rows. It is
-// keyed on the requested ids, so a deleted movie changes which records come
-// back, not just their contents, and patching in place would not cover it.
+// The by-id list behind the tag details modal, now its only caller -- the queued
+// task rows read the command's own progress message instead. It is keyed on the
+// requested ids, so a deleted movie changes which records come back, not just
+// their contents, and patching in place would not cover it. Updates are not
+// invalidated: the modal shows titles, and a scan emits a movie event per record.
 //
 // `useAllMovies`'s `/movie` is left alone on purpose. It is the whole library in
 // one response, and a scan emits a movie event per record -- invalidating it
@@ -400,7 +402,10 @@ function SignalRListener() {
         }
 
         invalidateMoviePagedQueryCache();
-        invalidateMovieBulkQueryCache();
+
+        if (body.action === 'deleted') {
+          invalidateMovieBulkQueryCache();
+        }
 
         if (body.action === 'updated') {
           invalidateWantedQueries();
@@ -420,7 +425,10 @@ function SignalRListener() {
       }
 
       invalidateMoviePagedQueryCache();
-      invalidateMovieBulkQueryCache();
+
+      if (body.action === 'deleted') {
+        invalidateMovieBulkQueryCache();
+      }
 
       if (body.action === 'updated') {
         invalidateWantedQueries();

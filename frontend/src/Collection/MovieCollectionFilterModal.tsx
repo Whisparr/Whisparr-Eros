@@ -1,12 +1,12 @@
 import React, { useCallback } from 'react';
-import FilterModal from 'Components/Filter/FilterModal';
+import FilterModal, {
+  FilterModalPassthroughProps,
+} from 'Components/Filter/FilterModal';
 import { COLLECTION_FILTER_BUILDER_PROPS } from './collectionFilters';
 import { setCollectionFilter } from './collectionOptionsStore';
 import { useMovieCollections } from './useMovieCollections';
 
-interface MovieCollectionFilterModalProps {
-  isOpen: boolean;
-}
+type MovieCollectionFilterModalProps = FilterModalPassthroughProps;
 
 export default function MovieCollectionFilterModal(
   props: MovieCollectionFilterModalProps

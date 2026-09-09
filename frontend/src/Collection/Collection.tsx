@@ -16,11 +16,9 @@ import PageToolbar from 'Components/Page/Toolbar/PageToolbar';
 import PageToolbarButton from 'Components/Page/Toolbar/PageToolbarButton';
 import PageToolbarSection from 'Components/Page/Toolbar/PageToolbarSection';
 import PageToolbarSeparator from 'Components/Page/Toolbar/PageToolbarSeparator';
-import withScrollPosition from 'Components/withScrollPosition';
 import { Filter as AppStateFilter } from 'Filters/Filter';
 import useSelectState from 'Helpers/Hooks/useSelectState';
 import { align, icons, kinds, sortDirections } from 'Helpers/Props';
-import scrollPositions from 'Helpers/scrollPositions';
 import styles from 'Movie/Index/MovieIndex.css';
 import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
@@ -38,11 +36,7 @@ import CollectionOverviews from './Overview/CollectionOverviews';
 import CollectionOverviewOptionsModal from './Overview/Options/CollectionOverviewOptionsModal';
 import { useCollectionItems } from './useCollectionItems';
 
-interface CollectionProps {
-  initialScrollTop: number;
-}
-
-function Collection({ initialScrollTop }: CollectionProps) {
+function Collection() {
   const scrollerRef = useRef<HTMLDivElement>(null);
 
   const { items, totalItems, isFetching, isLoading, error, customFilters } =
@@ -107,10 +101,6 @@ function Collection({ initialScrollTop }: CollectionProps) {
 
   const handleFilterSelect = useCallback((key: string | number) => {
     setCollectionFilter(key);
-  }, []);
-
-  const handleScroll = useCallback(({ scrollTop }: { scrollTop: number }) => {
-    scrollPositions.movieCollections = scrollTop;
   }, []);
 
   const handleRefreshPress = useCallback(() => {
@@ -221,7 +211,7 @@ function Collection({ initialScrollTop }: CollectionProps) {
         <PageContentBody
           ref={scrollerRef}
           className={styles.contentBody}
-          onScroll={handleScroll}
+          scrollPositionKey="movieCollections"
         >
           {isFetching && isLoading ? <LoadingIndicator /> : null}
 
@@ -238,7 +228,6 @@ function Collection({ initialScrollTop }: CollectionProps) {
                 items={items}
                 jumpToCharacter={jumpToCharacter}
                 selectedState={selectedState}
-                scrollTop={initialScrollTop}
                 onSelectedChange={handleSelectedChange}
               />
             </div>
@@ -267,4 +256,4 @@ function Collection({ initialScrollTop }: CollectionProps) {
   );
 }
 
-export default withScrollPosition(Collection, 'movieCollections');
+export default Collection;

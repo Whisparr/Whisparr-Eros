@@ -99,20 +99,30 @@ namespace NzbDrone.Core.History
 
         public PagingSpec<MovieHistory> GetPaged(PagingSpec<MovieHistory> pagingSpec, int[] languages, int[] qualities)
         {
-            pagingSpec.Records = GetPagedRecords(PagedBuilder(languages, qualities), pagingSpec, PagedQuery);
+            var sortingByQuality = string.Equals(pagingSpec.SortKey, "quality", StringComparison.OrdinalIgnoreCase);
+            var customSortExpression = sortingByQuality ? QualityRankJoin.SortExpression : null;
+
+            pagingSpec.Records = GetPagedRecords(PagedBuilder(languages, qualities, sortingByQuality), pagingSpec, PagedQuery, customSortExpression);
 
             var countTemplate = $"SELECT COUNT(*) FROM (SELECT /**select**/ FROM \"{TableMapping.Mapper.TableNameMapping(typeof(MovieHistory))}\" /**join**/ /**innerjoin**/ /**leftjoin**/ /**where**/ /**groupby**/ /**having**/) AS \"Inner\"";
-            pagingSpec.TotalRecords = GetPagedRecordCount(PagedBuilder(languages, qualities).Select(typeof(MovieHistory)), pagingSpec, countTemplate);
+            pagingSpec.TotalRecords = GetPagedRecordCount(PagedBuilder(languages, qualities, sortingByQuality).Select(typeof(MovieHistory)), pagingSpec, countTemplate);
 
             return pagingSpec;
         }
 
-        private SqlBuilder PagedBuilder(int[] languages, int[] qualities)
+        private SqlBuilder PagedBuilder(int[] languages, int[] qualities) => PagedBuilder(languages, qualities, false);
+
+        private SqlBuilder PagedBuilder(int[] languages, int[] qualities, bool joinQualityRanks)
         {
             var builder = Builder()
                 .Join<MovieHistory, Movie>((h, m) => h.MovieId == m.Id)
                 .Join<Movie, QualityProfile>((m, p) => m.QualityProfileId == p.Id)
                 .LeftJoin<Movie, MovieMetadata>((m, mm) => m.MovieMetadataId == mm.Id);
+
+            if (joinQualityRanks)
+            {
+                builder.LeftJoin(QualityRankJoin.Build(_database.DatabaseType, "History", "Movies"));
+            }
 
             if (languages is { Length: > 0 })
             {

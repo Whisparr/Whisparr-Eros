@@ -1,0 +1,33 @@
+name: 'Upstream sync check'
+description: Guard the generated backlog report, the disposition reasons and the en.json sort order
+
+on:
+  pull_request:
+    branches:
+      - eros-develop
+      - eros
+
+# Deliberately no paths-ignore. The build workflow ignores
+# src/NzbDrone.Core/Localization/Core/**, so a PR touching only en.json skips it
+# entirely - which is exactly the PR the sort-order guard exists to catch.
+
+permissions: {}
+
+jobs:
+  check:
+    permissions:
+      contents: read
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Volta
+        uses: volta-cli/action@v5
+
+      - name: Check
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/upstream-sync.mjs --check

@@ -69,7 +69,7 @@ namespace NzbDrone.Core.MediaFiles.MediaInfo
             {
                 return audioProfile switch
                 {
-                    "DTS:X" or "DTS-HD MA + DTS:X IMAX" => "DTS-X",
+                    "DTS:X" or "DTS-HD MA + DTS:X" or "DTS-HD MA + DTS:X IMAX" => "DTS-X",
                     "DTS-HD MA" => "DTS-HD MA",
                     "DTS-ES" => "DTS-ES",
                     "DTS-HD HRA" => "DTS-HD HRA",
@@ -189,6 +189,16 @@ namespace NzbDrone.Core.MediaFiles.MediaInfo
             if (videoFormat == "hevc")
             {
                 return GetSceneNameMatch(sceneName, "HEVC", "x265", "h265");
+            }
+
+            if (videoCodecID == "x266")
+            {
+                return "x266";
+            }
+
+            if (videoFormat == "vvc")
+            {
+                return GetSceneNameMatch(sceneName, "VVC", "x266", "h266");
             }
 
             if (videoFormat == "mpeg2video")

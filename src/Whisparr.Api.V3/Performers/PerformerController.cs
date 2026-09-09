@@ -18,6 +18,8 @@ using NzbDrone.Core.Movies;
 using NzbDrone.Core.Movies.Performers;
 using NzbDrone.Core.Movies.Performers.Events;
 using NzbDrone.Core.MovieStats;
+using NzbDrone.Core.Validation;
+using NzbDrone.Core.Validation.Paths;
 using NzbDrone.SignalR;
 using Whisparr.Api.V3.Movies;
 using Whisparr.Api.V3.Performers.Helpers;
@@ -68,6 +70,8 @@ namespace Whisparr.Api.V3.Performers
                                    IImportListExclusionService exclusionService,
                                    ICacheManager cacheManager,
                                    IConfigService configService,
+                                   QualityProfileExistsValidator<PerformerResource> qualityProfileExistsValidator,
+                                   RootFolderExistsValidator<PerformerResource> rootFolderExistsValidator,
                                    Logger logger,
                                    IBroadcastSignalRMessage signalRBroadcaster)
         : base(signalRBroadcaster)
@@ -82,6 +86,15 @@ namespace Whisparr.Api.V3.Performers
             _useCache = _configService.WhisparrCachePerformerAPI;
             _performerResourceCache = cacheManager.GetCache<PerformerResource>(typeof(PerformerResource), "performerResources");
             _logger = logger;
+
+            SharedValidator.RuleFor(s => s.QualityProfileId).Cascade(CascadeMode.Stop)
+                .ValidId()
+                .SetValidator(qualityProfileExistsValidator);
+
+            SharedValidator.RuleFor(s => s.RootFolderPath).Cascade(CascadeMode.Stop)
+                .IsValidPath()
+                .SetValidator(rootFolderExistsValidator)
+                .When(s => s.RootFolderPath.IsNotNullOrWhiteSpace());
 
             if (configService.WhisparrMovieMetadataSource == MovieMetadataType.TMDB)
             {
@@ -180,10 +193,10 @@ namespace Whisparr.Api.V3.Performers
                 }
             }
 
-            var coverFileInfos = _coverMapper.GetMovieCoverFileInfos();
-            _coverMapper.ConvertToLocalUrls(
-                movieResources.Select(x => Tuple.Create(x.Id, x.Images.AsEnumerable())),
-                coverFileInfos);
+            foreach (var movieResource in movieResources)
+            {
+                _coverMapper.ConvertToLocalUrls(movieResource.Id, movieResource.Images);
+            }
 
             return movieResources;
         }
@@ -208,9 +221,10 @@ namespace Whisparr.Api.V3.Performers
                 performerResources = _performerService.GetAllPerformers().ToResource();
             }
 
-            var coverFileInfos = _coverMapper.GetPerformerCoverFileInfos();
-
-            _coverMapper.ConvertToLocalPerformerUrls(performerResources.Select(x => Tuple.Create(x.Id, x.Images.AsEnumerable())), coverFileInfos);
+            foreach (var performerResource in performerResources)
+            {
+                _coverMapper.ConvertToLocalPerformerUrls(performerResource.Id, performerResource.Images);
+            }
 
             return performerResources;
         }
@@ -290,6 +304,11 @@ namespace Whisparr.Api.V3.Performers
         {
             var resource = MapToResource(message.Performer);
 
+            // PerformerService fills the counts in on its own IHandle for this event, but
+            // neither handler is ordered, so it may not have run yet. Link the movies here
+            // so the broadcast never zeroes the counts out in the client's cache.
+            FetchAndLinkMovies(resource);
+
             BroadcastResourceChange(ModelAction.Updated, resource);
         }
 
@@ -359,6 +378,22 @@ namespace Whisparr.Api.V3.Performers
             }
 
             return performerResources;
+        }
+
+        private void FetchAndLinkMovies(PerformerResource resource)
+        {
+            var movies = _moviesService.GetByPerformerForeignId(resource.ForeignId);
+            var movieStats = _movieStatisticsService.MovieStatistics(movies.Select(x => x.Id).ToList());
+
+            resource.MovieCount = movieStats
+                .Where(stat => movies.Any(m => m.Id == stat.MovieId && m.MovieMetadata.Value.ItemType == ItemType.Movie))
+                .Sum(stat => stat.MovieFileCount);
+            resource.SceneCount = movieStats
+                .Where(stat => movies.Any(m => m.Id == stat.MovieId && m.MovieMetadata.Value.ItemType == ItemType.Scene))
+                .Sum(stat => stat.MovieFileCount);
+            resource.TotalMovieCount = movies.Count(x => x.MovieMetadata.Value.ItemType == ItemType.Movie);
+            resource.TotalSceneCount = movies.Count(x => x.MovieMetadata.Value.ItemType == ItemType.Scene);
+            resource.SizeOnDisk = movieStats.Sum(x => x.SizeOnDisk);
         }
 
         private PerformerResource MapToResource(Performer performer)
@@ -443,9 +478,10 @@ namespace Whisparr.Api.V3.Performers
                             performerResources.AddIfNotNull(performer.ToResource());
                         }
 
-                        var coverFileInfos = _coverMapper.GetPerformerCoverFileInfos();
-
-                        _coverMapper.ConvertToLocalPerformerUrls(performerResources.Select(x => Tuple.Create(x.Id, x.Images.AsEnumerable())), coverFileInfos);
+                        foreach (var performerResource in performerResources)
+                        {
+                            _coverMapper.ConvertToLocalPerformerUrls(performerResource.Id, performerResource.Images);
+                        }
 
                         foreach (var performerResource in performerResources)
                         {
@@ -509,13 +545,10 @@ namespace Whisparr.Api.V3.Performers
         {
             Paging.ApplyPerformerFiltersToPagingSpec(request.Filters, pageSpec);
 
-            // Get file info once for bulk operation
-            var coverFileInfos = _coverMapper.GetPerformerCoverFileInfos();
-
             return pageSpec.ApplyToPage(_performerService.Paged, resource =>
             {
                 var performerResource = resource.ToResource();
-                _coverMapper.ConvertToLocalPerformerUrls(performerResource.Id, performerResource.Images, coverFileInfos);
+                _coverMapper.ConvertToLocalPerformerUrls(performerResource.Id, performerResource.Images);
                 return performerResource;
             });
         }
@@ -546,9 +579,10 @@ namespace Whisparr.Api.V3.Performers
 
             var resources = page.Select(p => p.ToResource()).ToList();
 
-            // Bulk load file info once for all performers on page
-            var coverFileInfos = _coverMapper.GetPerformerCoverFileInfos();
-            _coverMapper.ConvertToLocalPerformerUrls(resources.Select(x => Tuple.Create(x.Id, x.Images.AsEnumerable())), coverFileInfos);
+            foreach (var performerResource in resources)
+            {
+                _coverMapper.ConvertToLocalPerformerUrls(performerResource.Id, performerResource.Images);
+            }
 
             var result = new PagingResource<PerformerResource>(request)
             {

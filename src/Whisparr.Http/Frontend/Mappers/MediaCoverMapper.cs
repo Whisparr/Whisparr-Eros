@@ -23,7 +23,9 @@ namespace Whisparr.Http.Frontend.Mappers
             _diskProvider = diskProvider;
         }
 
-        public override string Map(string resourceUrl)
+        protected override string FolderPath => _appFolderInfo.GetAppDataPath();
+
+        protected override string MapPath(string resourceUrl)
         {
             var path = resourceUrl.Replace('/', Path.DirectorySeparatorChar);
             path = path.Trim(Path.DirectorySeparatorChar);

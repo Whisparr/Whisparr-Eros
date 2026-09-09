@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Moq;
 using NUnit.Framework;
+using NzbDrone.Core.HealthCheck;
 using NzbDrone.Core.HealthCheck.Checks;
 using NzbDrone.Core.Indexers;
 using NzbDrone.Core.Localization;
@@ -61,7 +62,7 @@ namespace NzbDrone.Core.Test.HealthCheck.Checks
         [Test]
         public void should_return_error_when_no_indexer_present()
         {
-            Subject.Check().ShouldBeError();
+            Subject.Check().ShouldBeError(reason: HealthCheckReason.IndexerRssNoIndexersEnabled);
         }
 
         [Test]

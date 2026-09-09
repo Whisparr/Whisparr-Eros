@@ -1,31 +1,14 @@
-import AppError from 'typings/AppError';
 import { ApiError } from 'Utilities/Fetch/fetchJson';
 
 function getErrorMessage(
-  error: AppError | ApiError | undefined | null,
+  error: ApiError | undefined | null,
   fallbackErrorMessage = ''
 ) {
-  if (!error) {
+  if (!error?.statusBody) {
     return fallbackErrorMessage;
   }
 
-  if (error instanceof ApiError) {
-    if (!error.statusBody) {
-      return fallbackErrorMessage;
-    }
-
-    return error.statusBody.message;
-  }
-
-  if (!error.responseJSON) {
-    return fallbackErrorMessage;
-  }
-
-  if ('message' in error.responseJSON && error.responseJSON.message) {
-    return error.responseJSON.message;
-  }
-
-  return fallbackErrorMessage;
+  return error.statusBody.message ?? fallbackErrorMessage;
 }
 
 export default getErrorMessage;

@@ -170,6 +170,7 @@ function MovieIndexOverview(props: Readonly<MovieIndexOverviewProps>) {
                 size={250}
                 lazy={true}
                 overflow={true}
+                title={title}
               />
             </Link>
           </div>

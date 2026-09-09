@@ -1,5 +1,6 @@
 import ModelBase from 'App/ModelBase';
 import { FilterBuilderTypes } from 'Helpers/Props/filterBuilderTypes';
+import { FilterBuilderValueType } from 'Helpers/Props/filterBuilderValueTypes';
 import { DateFilterValue, FilterType } from 'Helpers/Props/filterTypes';
 
 export interface FilterBuilderPropOption {
@@ -11,7 +12,10 @@ export interface FilterBuilderProp<T> {
   name: string;
   label: string | (() => string);
   type: FilterBuilderTypes;
-  valueType?: string;
+  valueType?: FilterBuilderValueType;
+  // Read by `FilterBuilderRowValue` when it parses a typed-in number. No
+  // filter declares one, so every number filter rounds to a whole number.
+  numberFractionDigits?: number;
   optionsSelector?: (items: T[]) => FilterBuilderPropOption[];
 }
 

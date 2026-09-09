@@ -167,6 +167,7 @@ export default function EditAutoTaggingModalContent({
 
               <Card
                 className={styles.addSpecification}
+                aria-label={translate('AddCondition')}
                 onPress={handleAddSpecificationPress}
               >
                 <div className={styles.center}>

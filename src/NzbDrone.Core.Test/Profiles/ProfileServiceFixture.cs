@@ -53,18 +53,27 @@ namespace NzbDrone.Core.Test.Profiles
         [Test]
         public void should_not_be_able_to_delete_profile_if_assigned_to_movie()
         {
-            var movieList = Builder<Movie>.CreateListOfSize(3)
-                                            .Random(1)
-                                            .With(c => c.QualityProfileId = 2)
-                                            .Build().ToList();
+            GivenProfileInUseBy(movieCount: 1);
 
-            var importList = Builder<ImportListDefinition>.CreateListOfSize(3)
-                                                            .All()
-                                                            .With(c => c.QualityProfileId = 1)
-                                                            .Build().ToList();
+            Assert.Throws<QualityProfileInUseException>(() => Subject.Delete(2));
 
-            Mocker.GetMock<IMovieService>().Setup(c => c.GetAllMovies()).Returns(movieList);
-            Mocker.GetMock<IImportListFactory>().Setup(c => c.All()).Returns(importList);
+            Mocker.GetMock<IQualityProfileRepository>().Verify(c => c.Delete(It.IsAny<int>()), Times.Never());
+        }
+
+        [Test]
+        public void should_not_be_able_to_delete_profile_if_assigned_to_performer()
+        {
+            GivenProfileInUseBy(performerCount: 1);
+
+            Assert.Throws<QualityProfileInUseException>(() => Subject.Delete(2));
+
+            Mocker.GetMock<IQualityProfileRepository>().Verify(c => c.Delete(It.IsAny<int>()), Times.Never());
+        }
+
+        [Test]
+        public void should_not_be_able_to_delete_profile_if_assigned_to_studio()
+        {
+            GivenProfileInUseBy(studioCount: 1);
 
             Assert.Throws<QualityProfileInUseException>(() => Subject.Delete(2));
 
@@ -74,18 +83,7 @@ namespace NzbDrone.Core.Test.Profiles
         [Test]
         public void should_not_be_able_to_delete_profile_if_assigned_to_list()
         {
-            var movieList = Builder<Movie>.CreateListOfSize(3)
-                .All()
-                .With(c => c.QualityProfileId = 1)
-                .Build().ToList();
-
-            var importList = Builder<ImportListDefinition>.CreateListOfSize(3)
-                .Random(1)
-                .With(c => c.QualityProfileId = 2)
-                .Build().ToList();
-
-            Mocker.GetMock<IMovieService>().Setup(c => c.GetAllMovies()).Returns(movieList);
-            Mocker.GetMock<IImportListFactory>().Setup(c => c.All()).Returns(importList);
+            GivenProfileInUseBy(importListCount: 1);
 
             Assert.Throws<QualityProfileInUseException>(() => Subject.Delete(2));
 
@@ -93,36 +91,77 @@ namespace NzbDrone.Core.Test.Profiles
         }
 
         [Test]
-        public void should_delete_profile_if_not_assigned_to_movie_or_list()
+        public void should_not_be_able_to_delete_profile_if_it_is_the_fallback()
         {
-            var movieList = Builder<Movie>.CreateListOfSize(3)
-                                            .All()
-                                            .With(c => c.QualityProfileId = 2)
-                                            .Build().ToList();
+            GivenProfileInUseBy(fallback: true);
 
-            var importList = Builder<ImportListDefinition>.CreateListOfSize(3)
-                                                            .All()
-                                                            .With(c => c.QualityProfileId = 2)
-                                                            .Build().ToList();
+            Assert.Throws<QualityProfileInUseException>(() => Subject.Delete(2));
 
-            var performerList = Builder<Performer>.CreateListOfSize(3)
-                                                            .All()
-                                                            .With(c => c.QualityProfileId = 2)
-                                                            .Build().ToList();
+            Mocker.GetMock<IQualityProfileRepository>().Verify(c => c.Delete(It.IsAny<int>()), Times.Never());
+        }
 
-            var studioList = Builder<Studio>.CreateListOfSize(3)
-                                                            .All()
-                                                            .With(c => c.QualityProfileId = 2)
-                                                            .Build().ToList();
+        [Test]
+        public void should_delete_profile_if_not_in_use()
+        {
+            GivenProfileInUseBy();
 
-            Mocker.GetMock<IMovieService>().Setup(c => c.GetAllMovies()).Returns(movieList);
-            Mocker.GetMock<IImportListFactory>().Setup(c => c.All()).Returns(importList);
-            Mocker.GetMock<IPerformerService>().Setup(c => c.GetAllPerformers()).Returns(performerList);
-            Mocker.GetMock<IStudioService>().Setup(c => c.GetAllStudios()).Returns(studioList);
+            Subject.Delete(2);
 
-            Subject.Delete(1);
+            Mocker.GetMock<IQualityProfileRepository>().Verify(c => c.Delete(2), Times.Once());
+        }
 
-            Mocker.GetMock<IQualityProfileRepository>().Verify(c => c.Delete(1), Times.Once());
+        [Test]
+        public void get_in_use_should_return_the_counts_the_delete_guard_checks()
+        {
+            GivenProfileInUseBy(movieCount: 3, performerCount: 2, studioCount: 1, importListCount: 2, fallback: true);
+
+            var inUse = Subject.GetInUse(2);
+
+            inUse.MovieCount.Should().Be(3);
+            inUse.PerformerCount.Should().Be(2);
+            inUse.StudioCount.Should().Be(1);
+            inUse.ImportListCount.Should().Be(2);
+            inUse.IsFallback.Should().BeTrue();
+            inUse.IsInUse.Should().BeTrue();
+        }
+
+        [Test]
+        public void get_in_use_should_not_be_in_use_when_nothing_holds_the_profile()
+        {
+            GivenProfileInUseBy();
+
+            var inUse = Subject.GetInUse(2);
+
+            inUse.IsInUse.Should().BeFalse();
+        }
+
+        [Test]
+        public void get_in_use_should_count_only_the_lists_using_the_profile()
+        {
+            GivenProfileInUseBy();
+
+            var importLists = Builder<ImportListDefinition>.CreateListOfSize(3)
+                .All()
+                .With(c => c.QualityProfileId = 1)
+                .Random(1)
+                .With(c => c.QualityProfileId = 2)
+                .Build().ToList();
+
+            Mocker.GetMock<IImportListFactory>().Setup(c => c.All()).Returns(importLists);
+
+            Subject.GetInUse(2).ImportListCount.Should().Be(1);
+        }
+
+        [Test]
+        public void get_in_use_should_not_load_the_library_to_answer()
+        {
+            GivenProfileInUseBy(movieCount: 1);
+
+            Subject.GetInUse(2);
+
+            Mocker.GetMock<IMovieService>().Verify(c => c.GetAllMovies(), Times.Never());
+            Mocker.GetMock<IPerformerService>().Verify(c => c.GetAllPerformers(), Times.Never());
+            Mocker.GetMock<IStudioService>().Verify(c => c.GetAllStudios(), Times.Never());
         }
 
         [Test]
@@ -163,6 +202,26 @@ namespace NzbDrone.Core.Test.Profiles
             languages.Count.Should().Be(2);
             languages.Should().Contain(Language.German);
             languages.Should().Contain(Language.French);
+        }
+
+        private void GivenProfileInUseBy(int movieCount = 0, int performerCount = 0, int studioCount = 0, int importListCount = 0, bool fallback = false)
+        {
+            Mocker.GetMock<IMovieService>().Setup(c => c.CountByQualityProfile(2)).Returns(movieCount);
+            Mocker.GetMock<IPerformerService>().Setup(c => c.CountByQualityProfile(2)).Returns(performerCount);
+            Mocker.GetMock<IStudioService>().Setup(c => c.CountByQualityProfile(2)).Returns(studioCount);
+
+            Mocker.GetMock<IImportListFactory>()
+                .Setup(c => c.All())
+                .Returns(Builder<ImportListDefinition>.CreateListOfSize(importListCount + 1)
+                    .All()
+                    .With(c => c.QualityProfileId = 2)
+                    .TheLast(1)
+                    .With(c => c.QualityProfileId = 1)
+                    .Build().ToList());
+
+            Mocker.GetMock<IQualityProfileRepository>()
+                .Setup(c => c.Get(2))
+                .Returns(Builder<QualityProfile>.CreateNew().With(c => c.Fallback = fallback).Build());
         }
     }
 }

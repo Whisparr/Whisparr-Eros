@@ -28,7 +28,7 @@ export const useQualityProfile = (qualityProfileId: number) => {
 };
 
 export const useQualityProfileSchema = (enabled = true) => {
-  const { isFetching, isFetched, error, data } = useApiQuery<QualityProfile>({
+  const { isLoading, isFetched, error, data } = useApiQuery<QualityProfile>({
     path: QUALITY_PROFILE_SCHEMA_PATH,
     queryOptions: {
       enabled,
@@ -36,7 +36,7 @@ export const useQualityProfileSchema = (enabled = true) => {
   });
 
   return {
-    isSchemaFetching: isFetching,
+    isSchemaLoading: isLoading,
     isSchemaFetched: isFetched,
     schemaError: error,
     schema: data ?? NO_SCHEMA,
@@ -63,14 +63,14 @@ function flattenQualities(items: QualityProfileItem[] | undefined) {
 // the schema out of the slice first, so the fetch and the flattening travel
 // together now.
 export const useQualities = () => {
-  const { schema, isSchemaFetching, isSchemaFetched, schemaError } =
+  const { schema, isSchemaLoading, isSchemaFetched, schemaError } =
     useQualityProfileSchema();
 
   const qualities = useMemo(() => flattenQualities(schema.items), [schema]);
 
   return {
     qualities,
-    isFetching: isSchemaFetching,
+    isFetching: isSchemaLoading,
     isFetched: isSchemaFetched,
     error: schemaError,
   };
@@ -84,7 +84,7 @@ export const useManageQualityProfile = (
   // row out of the list query and a clone reads the profile it is copying.
   const needsSchema = !id && cloneId == null;
 
-  const { schema, isSchemaFetching, isSchemaFetched, schemaError } =
+  const { schema, isSchemaLoading, isSchemaFetched, schemaError } =
     useQualityProfileSchema(needsSchema);
 
   const profileToClone = useQualityProfile(cloneId ?? 0);
@@ -114,7 +114,7 @@ export const useManageQualityProfile = (
 
   return {
     ...manage,
-    isSchemaFetching: needsSchema ? isSchemaFetching : false,
+    isSchemaLoading: needsSchema ? isSchemaLoading : false,
     isSchemaFetched: needsSchema ? isSchemaFetched : true,
     schemaError: needsSchema ? schemaError : null,
   };

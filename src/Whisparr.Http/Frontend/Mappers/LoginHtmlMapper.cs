@@ -10,6 +10,7 @@ namespace Whisparr.Http.Frontend.Mappers
     public class LoginHtmlMapper : HtmlMapperBase
     {
         private readonly IConfigFileProvider _configFileProvider;
+        private readonly string _folderPath;
 
         public LoginHtmlMapper(IAppFolderInfo appFolderInfo,
                                IDiskProvider diskProvider,
@@ -19,11 +20,15 @@ namespace Whisparr.Http.Frontend.Mappers
             : base(diskProvider, cacheBreakProviderFactory, logger)
         {
             _configFileProvider = configFileProvider;
-            HtmlPath = Path.Combine(appFolderInfo.StartUpFolder, configFileProvider.UiFolder, "login.html");
+            _folderPath = Path.Combine(appFolderInfo.StartUpFolder, configFileProvider.UiFolder);
+
+            HtmlPath = Path.Combine(_folderPath, "login.html");
             UrlBase = configFileProvider.UrlBase;
         }
 
-        public override string Map(string resourceUrl)
+        protected override string FolderPath => _folderPath;
+
+        protected override string MapPath(string resourceUrl)
         {
             return HtmlPath;
         }

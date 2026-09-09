@@ -161,6 +161,7 @@ function SceneIndexOverview(props: Readonly<SceneIndexOverviewProps>) {
                 lazy={false}
                 overflow={true}
                 safeForWorkMode={safeForWorkMode}
+                title={title}
               />
             </Link>
           </div>

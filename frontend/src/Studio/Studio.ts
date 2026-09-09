@@ -19,6 +19,7 @@ interface Studio extends ModelBase {
   hasScenes: boolean;
   images: Image[];
   monitored: boolean;
+  whisparrMonitorNewItems: boolean;
   movieCount: number;
   moviesMonitored: boolean;
   network: string;

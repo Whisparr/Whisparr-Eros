@@ -57,10 +57,11 @@ namespace NzbDrone.Core.Movies
         List<Movie> GetMoviesByFileId(IEnumerable<int> fileId);
         List<Movie> GetMoviesByCollectionTmdbId(int collectionId);
         List<Movie> GetMoviesBetweenDates(DateTime start, DateTime end, bool includeUnmonitored);
-        PagingSpec<Movie> MoviesWithoutFiles(PagingSpec<Movie> pagingSpec);
+        PagingSpec<Movie> MoviesWithoutFiles(PagingSpec<Movie> pagingSpec, HashSet<int> movieTags = null);
         void DeleteMovie(int movieId, bool deleteFiles, bool addImportListExclusion = false);
         void DeleteMovies(List<int> movieIds, bool deleteFiles, bool addImportListExclusion = false);
         List<Movie> GetAllMovies();
+        int CountByQualityProfile(int qualityProfileId);
         Dictionary<int, List<int>> AllMovieTags();
         Movie UpdateMovie(Movie movie);
         List<Movie> UpdateMovie(List<Movie> movies, bool useExistingRelativeFolder);
@@ -419,6 +420,14 @@ namespace NzbDrone.Core.Movies
             return _movieRepository.All().ToList();
         }
 
+        /// <summary> Count the movies assigned to a quality profile. </summary>
+        /// <param name="qualityProfileId">The quality profile to count against.</param>
+        /// <returns>The number of movies using the profile.</returns>
+        public int CountByQualityProfile(int qualityProfileId)
+        {
+            return _movieRepository.Count(m => m.QualityProfileId == qualityProfileId);
+        }
+
         /// <summary> Get a dictionary of all tag IDs assigned to movies. </summary>
         /// <returns>A dictionary mapping movie IDs to lists of tag IDs.</returns>
         public Dictionary<int, List<int>> AllMovieTags()
@@ -601,10 +610,11 @@ namespace NzbDrone.Core.Movies
 
         /// <summary> Get a paged list of movies without associated files. </summary>
         /// <param name="pagingSpec">The paging specification for the query.</param>
+        /// <param name="movieTags">When set, restrict the results to movies carrying at least one of these tag ids.</param>
         /// <returns>A paged list of movies without associated files.</returns>
-        public PagingSpec<Movie> MoviesWithoutFiles(PagingSpec<Movie> pagingSpec)
+        public PagingSpec<Movie> MoviesWithoutFiles(PagingSpec<Movie> pagingSpec, HashSet<int> movieTags = null)
         {
-            var movieResult = _movieRepository.MoviesWithoutFiles(pagingSpec);
+            var movieResult = _movieRepository.MoviesWithoutFiles(pagingSpec, movieTags);
 
             return movieResult;
         }
@@ -692,6 +702,16 @@ namespace NzbDrone.Core.Movies
                 result = FindByTitle(parsedMovieInfo.Code);
             }
 
+            // Only the scene parse path assigns StudioTitle, so a release that parsed as a
+            // movie arrives here with none. Looking that up matches on studio title alone and
+            // fans a studio-catalog query out across every hit, none of which can match a
+            // release we have no studio for.
+            if (result == null && parsedMovieInfo.StudioTitle.IsNullOrWhiteSpace())
+            {
+                _logger.Debug("No Studio name parsed from release, skipping studio and release date matching.");
+                return null;
+            }
+
             if (result == null)
             {
                 var studios = _studioService.FindAllByTitle(parsedMovieInfo.StudioTitle);
@@ -776,7 +796,7 @@ namespace NzbDrone.Core.Movies
 
             // Try fuzzy release token matching if we've made it this far
             // Use Levenshtein Distance to find the closest match above 80%
-            var fuzzyMatchMoviesWithScores = new List<(Movie movie, int score)>();
+            var fuzzyMatchMoviesWithScores = new List<(Movie Movie, int Score)>();
             var fuzzyTitleMatchingThreshold = _configService.WhisparrFuzzyTitleMatchingThreshold;
             if (fuzzyTitleMatchingThreshold >= 70)
             {
@@ -796,7 +816,7 @@ namespace NzbDrone.Core.Movies
 
                     var fuzzyMatch = FuzzyMatchReleaseTokens(releaseTokens, movie);
 
-                    if (fuzzyMatch.score >= fuzzyTitleMatchingThreshold)
+                    if (fuzzyMatch.Score >= fuzzyTitleMatchingThreshold)
                     {
                         fuzzyMatchMoviesWithScores.Add(fuzzyMatch);
                     }
@@ -810,20 +830,15 @@ namespace NzbDrone.Core.Movies
             if (fuzzyMatchMoviesWithScores.Any())
             {
                 // There can be only one
-                var highest = fuzzyMatchMoviesWithScores.OrderByDescending(m => m.score).First();
-                _logger.Trace("{0}: Returning fuzzy matched movie [{1} - {2}]", methodName, highest.movie.Title, highest.movie.ForeignId);
-                return highest.movie;
+                var highest = fuzzyMatchMoviesWithScores.OrderByDescending(m => m.Score).First();
+                _logger.Trace("{0}: Returning fuzzy matched movie [{1} - {2}]", methodName, highest.Movie.Title, highest.Movie.ForeignId);
+                return highest.Movie;
             }
 
             if (hasReleaseDate)
             {
-                _logger.Debug("{0}: DB query for for movies for Studio ForeignID: [{1}] and Date: [{2}].", methodName, studioForeignId, releaseDate);
-                movies = _movieRepository.FindByStudioAndDate(studioForeignId, releaseDate);
-
-                if (movies == null || !movies.Any())
-                {
-                    movies = new List<Movie>();
-                }
+                // Already queried above for the fuzzy pass, which does not mutate the list,
+                // so the same studio and date would return the same rows a second time.
 
                 // movies with release date if missing day
                 if (releaseDate.EndsWith("-01"))
@@ -1240,8 +1255,8 @@ namespace NzbDrone.Core.Movies
         /// <summary>Returns the Levenshtein Distance score (0-100) between releaseTokens striung and Movie, using FuzzySharp's WeightedRatio.</summary>
         /// <param name="releaseTokens">The title string to compare.  Will be normalized.</param>
         /// <param name="movie">Movie object to compare against</param>
-        /// <returns>(Movie movie, int score) local variable</returns>
-        public (Movie movie, int score) FuzzyMatchReleaseTokens(string releaseTokens, Movie movie)
+        /// <returns>(Movie Movie, int Score) local variable</returns>
+        public (Movie Movie, int Score) FuzzyMatchReleaseTokens(string releaseTokens, Movie movie)
         {
             var methodName = "FuzzyMatchReleaseTokens";
             var normalizedTitle = releaseTokens.CleanMovieTitle().StripSpaces();

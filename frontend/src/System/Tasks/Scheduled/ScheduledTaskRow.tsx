@@ -36,8 +36,13 @@ function ScheduledTaskRow(props: ScheduledTaskRowProps) {
 
   const executeCommand = useExecuteCommand();
 
-  const { showRelativeDates, longDateFormat, shortDateFormat, timeFormat } =
-    useUiSettingsValues();
+  const {
+    showRelativeDates,
+    longDateFormat,
+    shortDateFormat,
+    timeFormat,
+    timeZone,
+  } = useUiSettingsValues();
   const command = useCommand(taskName);
 
   const [time, setTime] = useState(Date.now());
@@ -103,7 +108,9 @@ function ScheduledTaskRow(props: ScheduledTaskRowProps) {
 
       <TableRowCell
         className={styles.lastExecution}
-        title={formatDateTime(lastExecution, longDateFormat, timeFormat)}
+        title={formatDateTime(lastExecution, longDateFormat, timeFormat, {
+          timeZone,
+        })}
       >
         {lastExecutionTime}
       </TableRowCell>
@@ -133,6 +140,7 @@ function ScheduledTaskRow(props: ScheduledTaskRowProps) {
           className={styles.nextExecution}
           title={formatDateTime(nextExecution, longDateFormat, timeFormat, {
             includeSeconds: true,
+            timeZone,
           })}
         >
           {nextExecutionTime}

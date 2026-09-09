@@ -30,6 +30,7 @@ namespace NzbDrone.Core.Movies.Performers
         void DeletePerformers(List<int> performerIds, bool deleteFiles, bool addImportExclusion = false);
         PagingSpec<Performer> Paged(PagingSpec<Performer> pagingSpec);
         public int Count();
+        int CountByQualityProfile(int qualityProfileId);
     }
 
     public class PerformerService : IPerformerService
@@ -209,6 +210,11 @@ namespace NzbDrone.Core.Movies.Performers
         public int Count()
         {
             return _performerRepo.Count();
+        }
+
+        public int CountByQualityProfile(int qualityProfileId)
+        {
+            return _performerRepo.Count(p => p.QualityProfileId == qualityProfileId);
         }
 
         private void RemovePerformerResourcesCache(string cacheKey)

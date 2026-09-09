@@ -19,7 +19,9 @@ jobs:
           github-token: ${{ github.token }}
           issue-inactive-days: '90'
           exclude-issue-created-before: ''
-          exclude-any-issue-labels: ''
+          # The upstream tracking issues are long-lived by design; locking them
+          # after 90 quiet days would silence the backlog they exist to show.
+          exclude-any-issue-labels: 'upstream'
           add-issue-labels: ''
           issue-comment: ''
           issue-lock-reason: 'resolved'

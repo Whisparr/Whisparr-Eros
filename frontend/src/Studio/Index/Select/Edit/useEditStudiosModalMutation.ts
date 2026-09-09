@@ -9,6 +9,7 @@ interface StudioEditorPayload {
   qualityProfileId?: number;
   rootFolderPath?: string;
   searchOnAdd?: boolean;
+  afterDate?: string;
   tags?: number[];
   applyTags?: 'add' | 'remove' | 'replace';
 }

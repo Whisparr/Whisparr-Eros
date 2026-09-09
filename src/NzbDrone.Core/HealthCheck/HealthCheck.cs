@@ -12,6 +12,7 @@ namespace NzbDrone.Core.HealthCheck
 
         public Type Source { get; set; }
         public HealthCheckResult Type { get; set; }
+        public HealthCheckReason Reason { get; set; }
         public string Message { get; set; }
         public HttpUri WikiUrl { get; set; }
 
@@ -25,10 +26,11 @@ namespace NzbDrone.Core.HealthCheck
             Type = HealthCheckResult.Ok;
         }
 
-        public HealthCheck(Type source, HealthCheckResult type, string message, string wikiFragment = null)
+        public HealthCheck(Type source, HealthCheckResult type, HealthCheckReason reason, string message, string wikiFragment = null)
         {
             Source = source;
             Type = type;
+            Reason = reason;
             Message = message;
             WikiUrl = MakeWikiUrl(wikiFragment ?? MakeWikiFragment(message));
         }
@@ -50,5 +52,75 @@ namespace NzbDrone.Core.HealthCheck
         Notice = 1,
         Warning = 2,
         Error = 3
+    }
+
+    public enum HealthCheckReason
+    {
+        // Diverges from Radarr, which has no zero member. Without it the 43 call sites that
+        // report Ok via HealthCheck(Type) would default to whichever reason sorts first.
+        None = 0,
+
+        AllowedHostsNotConfigured,
+        AppDataLocation,
+        DownloadClientCheckNoneAvailable,
+        DownloadClientCheckUnableToCommunicate,
+        DownloadClientRemovesCompletedDownloads,
+        DownloadClientRootFolder,
+        DownloadClientSorting,
+        DownloadClientStatusAllClients,
+        DownloadClientStatusSingleClient,
+        ImportListRootFolderMissing,
+        ImportListRootFolderMultipleMissing,
+        ImportListStatusAllUnavailable,
+        ImportListStatusUnavailable,
+        ImportMechanismHandlingDisabled,
+        IndexerDownloadClient,
+        IndexerJackettAll,
+        IndexerLongTermStatusAllUnavailable,
+        IndexerLongTermStatusUnavailable,
+        IndexerRssNoIndexersAvailable,
+        IndexerRssNoIndexersEnabled,
+        IndexerSearchNoAutomatic,
+        IndexerSearchNoAvailableIndexers,
+        IndexerSearchNoInteractive,
+        IndexerStatusAllUnavailable,
+        IndexerStatusUnavailable,
+        MetadataUrlMismatch,
+        MinimumApiKeyLength,
+        MountMovies,
+        NotificationStatusAll,
+        NotificationStatusSingle,
+        Package,
+        ProxyBadRequest,
+        ProxyFailed,
+        ProxyResolveIp,
+        RecycleBinUnableToWrite,
+        ReleaseBranch,
+        RemotePathMappingBadDockerPath,
+        RemotePathMappingDockerFolderMissing,
+        RemotePathMappingDownloadPermissionsMovie,
+        RemotePathMappingFileRemoved,
+        RemotePathMappingFilesBadDockerPath,
+        RemotePathMappingFilesGenericPermissions,
+        RemotePathMappingFilesLocalWrongOSPath,
+        RemotePathMappingFilesWrongOSPath,
+        RemotePathMappingFolderPermissions,
+        RemotePathMappingGenericPermissions,
+        RemotePathMappingImportMovieFailed,
+        RemotePathMappingLocalFolderMissing,
+        RemotePathMappingLocalWrongOSPath,
+        RemotePathMappingRemoteDownloadClient,
+        RemotePathMappingWrongOSPath,
+        RemovedMovie,
+        RootFolderMissing,
+        RootFolderMultipleMissing,
+        ServerNotification,
+        SlackUrl,
+        SqliteVersion,
+        SystemTime,
+        UpdateAvailable,
+        UpdateStartupNotWritable,
+        UpdateStartupTranslocation,
+        UpdateUiNotWritable,
     }
 }

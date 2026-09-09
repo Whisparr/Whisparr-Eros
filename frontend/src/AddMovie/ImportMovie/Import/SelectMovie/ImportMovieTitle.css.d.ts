@@ -1,6 +1,8 @@
 declare namespace ImportMovieTitleCssNamespace {
   export interface IImportMovieTitleCss {
     existing: string;
+    performerIcon: string;
+    performers: string;
     title: string;
     titleContainer: string;
     year: string;

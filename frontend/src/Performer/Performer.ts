@@ -3,6 +3,7 @@ import { Image } from 'Movie/Movie';
 
 interface Performer extends ModelBase {
   foreignId: string;
+  afterDate?: string | null;
   tmdbId?: number;
   tpdbId?: string;
   name: string;
@@ -20,6 +21,7 @@ interface Performer extends ModelBase {
   hasScenes: boolean;
   images: Image[];
   monitored: boolean;
+  whisparrMonitorNewItems: boolean;
   movieCount: number;
   moviesMonitored: boolean;
   qualityProfileId: number;

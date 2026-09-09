@@ -25,11 +25,8 @@ namespace NzbDrone.Core.Test.Download.DownloadClientTests.FreeboxDownloadTests
         protected FreeboxDownloadTask _task;
 
         protected string _defaultDestination = @"/some/path";
-        protected string _encodedDefaultDestination = "L3NvbWUvcGF0aA==";
         protected string _category = "somecat";
-        protected string _encodedDefaultDestinationAndCategory = "L3NvbWUvcGF0aC9zb21lY2F0";
         protected string _destinationDirectory = @"/path/to/media";
-        protected string _encodedDestinationDirectory = "L3BhdGgvdG8vbWVkaWE=";
         protected OsPath _physicalPath = new OsPath("/mnt/sdb1/mydata");
         protected string _downloadURL => "magnet:?xt=urn:btih:5dee65101db281ac9c46344cd6b175cdcad53426&dn=download";
 
@@ -51,7 +48,7 @@ namespace NzbDrone.Core.Test.Download.DownloadClientTests.FreeboxDownloadTests
 
             _downloadConfiguration = new FreeboxDownloadConfiguration()
             {
-                DownloadDirectory = _encodedDefaultDestination
+                DownloadDirectory = _defaultDestination.EncodeBase64()
             };
 
             _task = new FreeboxDownloadTask()
@@ -157,7 +154,7 @@ namespace NzbDrone.Core.Test.Download.DownloadClientTests.FreeboxDownloadTests
             await Subject.Download(remoteMovie, CreateIndexer());
 
             Mocker.GetMock<IFreeboxDownloadProxy>()
-                  .Verify(v => v.AddTaskFromUrl(It.IsAny<string>(), _encodedDestinationDirectory, It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<double?>(), It.IsAny<FreeboxDownloadSettings>()), Times.Once());
+                  .Verify(v => v.AddTaskFromUrl(It.IsAny<string>(), $"{_destinationDirectory}/{_title}".EncodeBase64(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<double?>(), It.IsAny<FreeboxDownloadSettings>()), Times.Once());
         }
 
         [Test]
@@ -172,7 +169,7 @@ namespace NzbDrone.Core.Test.Download.DownloadClientTests.FreeboxDownloadTests
             await Subject.Download(remoteMovie, CreateIndexer());
 
             Mocker.GetMock<IFreeboxDownloadProxy>()
-                  .Verify(v => v.AddTaskFromUrl(It.IsAny<string>(), _encodedDefaultDestinationAndCategory, It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<double?>(), It.IsAny<FreeboxDownloadSettings>()), Times.Once());
+                  .Verify(v => v.AddTaskFromUrl(It.IsAny<string>(), $"{_defaultDestination}/{_category}/{_title}".EncodeBase64(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<double?>(), It.IsAny<FreeboxDownloadSettings>()), Times.Once());
         }
 
         [Test]
@@ -186,7 +183,7 @@ namespace NzbDrone.Core.Test.Download.DownloadClientTests.FreeboxDownloadTests
             await Subject.Download(remoteMovie, CreateIndexer());
 
             Mocker.GetMock<IFreeboxDownloadProxy>()
-                  .Verify(v => v.AddTaskFromUrl(It.IsAny<string>(), _encodedDefaultDestination, It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<double?>(), It.IsAny<FreeboxDownloadSettings>()), Times.Once());
+                  .Verify(v => v.AddTaskFromUrl(It.IsAny<string>(), $"{_defaultDestination}/{_title}".EncodeBase64(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<double?>(), It.IsAny<FreeboxDownloadSettings>()), Times.Once());
         }
 
         [TestCase(false, false)]

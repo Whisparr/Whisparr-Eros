@@ -1,5 +1,6 @@
 import React from 'react';
 import Icon from 'Components/Icon';
+import StatusIndicator from 'Components/StatusIndicator';
 import VirtualTableRowCell from 'Components/Table/Cells/TableRowCell';
 import { icons } from 'Helpers/Props';
 import { getSceneStatusDetails } from 'Scene/SceneStatus';
@@ -32,17 +33,21 @@ function SceneStatusCell(props: SceneStatusCellProps) {
 
   return (
     <Component className={className} {...otherProps}>
-      <Icon
+      <StatusIndicator
         className={styles.statusIcon}
-        name={monitored ? icons.SCENE : icons.SCENEUNMONITOR}
+        label={monitored ? translate('Monitored') : translate('Unmonitored')}
         title={monitored ? translate('Monitored') : translate('Unmonitored')}
-      />
+      >
+        <Icon name={monitored ? icons.SCENE : icons.SCENEUNMONITOR} />
+      </StatusIndicator>
 
-      <Icon
+      <StatusIndicator
         className={styles.statusIcon}
-        name={statusDetails.icon}
+        label={statusDetails.message}
         title={`${statusDetails.title}: ${statusDetails.message}`}
-      />
+      >
+        <Icon name={statusDetails.icon} />
+      </StatusIndicator>
     </Component>
   );
 }

@@ -179,10 +179,7 @@ function SceneIndexRow(props: Readonly<SceneIndexRowProps>) {
               <SceneStudioTitleLink
                 studioForeignId={studioForeignId}
                 studioTitle={studioTitle}
-                className={styles[name]}
-              >
-                {studioTitle}
-              </SceneStudioTitleLink>
+              />
             </VirtualTableRowCell>
           );
         }

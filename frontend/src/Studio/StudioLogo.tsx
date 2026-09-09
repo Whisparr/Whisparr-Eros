@@ -5,6 +5,7 @@ import MovieImage from 'Movie/MovieImage';
 
 export interface StudioLogoProps {
   images: Image[];
+  title: string;
   coverType?: string;
   placeholder?: string;
   overflow?: boolean;

@@ -2,11 +2,20 @@ import { useEffect, useState } from 'react';
 import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import themes from 'Styles/Themes';
 
-const useTheme = () => {
+const systemTheme = () =>
+  window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+
+const useTheme = (): 'dark' | 'light' => {
   // `theme` is undefined until `/config/ui` resolves, and the server hands the
   // page its own copy in `window.Whisparr.theme` for exactly that window.
   const selectedTheme = useUiSettingsValues().theme || window.Whisparr.theme;
-  const [resolvedTheme, setResolvedTheme] = useState(selectedTheme);
+
+  // Resolve `auto` here rather than leaving it to the effect: the effect runs
+  // after the first paint, so anything reading the theme during that render --
+  // `useThemeColor` indexes `themes` by it -- got `auto`, which is not a theme.
+  const [resolvedTheme, setResolvedTheme] = useState(() =>
+    selectedTheme === 'auto' ? systemTheme() : selectedTheme
+  );
 
   useEffect(() => {
     if (selectedTheme !== 'auto') {
@@ -15,11 +24,7 @@ const useTheme = () => {
     }
 
     const applySystemTheme = () => {
-      setResolvedTheme(
-        window.matchMedia('(prefers-color-scheme: dark)').matches
-          ? 'dark'
-          : 'light'
-      );
+      setResolvedTheme(systemTheme());
     };
 
     applySystemTheme();

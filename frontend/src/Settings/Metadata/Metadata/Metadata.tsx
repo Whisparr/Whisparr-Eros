@@ -29,6 +29,7 @@ function Metadata({ metadata }: Readonly<MetadataProps>) {
     <Card
       className={styles.metadata}
       overlayContent={true}
+      aria-label={translate('MetadataName', { name })}
       onPress={setEditMetadataModalOpen}
     >
       <div className={styles.name}>{name}</div>

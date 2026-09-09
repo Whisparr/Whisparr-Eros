@@ -106,7 +106,7 @@ export default function ImportCustomFormatModalContent({
   onImport,
   onModalClose,
 }: Readonly<ImportCustomFormatModalContentProps>) {
-  const { schema, isSchemaFetching, isSchemaFetched, schemaError } =
+  const { schema, isSchemaLoading, isSchemaFetched, schemaError } =
     useCustomFormatSpecificationSchema();
 
   const [json, setJson] = useState('');
@@ -138,9 +138,9 @@ export default function ImportCustomFormatModalContent({
 
       <ModalBody>
         <div>
-          {isSchemaFetching ? <LoadingIndicator /> : null}
+          {isSchemaLoading ? <LoadingIndicator /> : null}
 
-          {!isSchemaFetching && !!schemaError ? (
+          {!isSchemaLoading && !!schemaError ? (
             <Alert kind={kinds.DANGER}>
               {translate('CustomFormatsLoadError')}
             </Alert>

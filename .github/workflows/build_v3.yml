@@ -6,19 +6,21 @@ on:
     branches:
       - eros-develop
       - eros
-    paths-ignore:
-      - "src/Whisparr.Api.*/openapi.json"
   pull_request:
     branches:
       - eros-develop
       - eros
     paths-ignore:
       - "src/NzbDrone.Core/Localization/Core/**"
-      - "src/Whisparr.Api.*/openapi.json"
 
 concurrency:
-  group: ${{ github.workflow }}-pr-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
+  # pull_request.number is empty on push, so keying on it alone put every push
+  # run - eros and eros-develop alike - in one group named "Build-pr-", where
+  # each merge cancelled whatever was building on the other branch.
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  # Superseding a PR run is useful; killing a half-finished release build that
+  # packages 11 runtimes and publishes a release is not.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   FRAMEWORK: net10.0
@@ -32,6 +34,8 @@ env:
 jobs:
   prepare:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       framework: ${{ steps.variables.outputs.framework }}
       major_version: ${{ steps.variables.outputs.major_version }}
@@ -73,6 +77,20 @@ jobs:
             echo "Base version ${BASE} (from VERSION_FALLBACK; no vX.Y.Z tag reachable)"
           fi
 
+          # Deleting a base tag that CI has already built from walks the version
+          # backwards without failing anything: the next run just resolves the
+          # next tag down and publishes a release that looks like a downgrade to
+          # every updater in the field. Every CI-minted tag records the base it
+          # came from, so compare against the highest of those and stop instead.
+          PUBLISHED=$(git tag --merged HEAD 2>/dev/null \
+            | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+-(develop|release)\.[0-9]+$' \
+            | sed -E 's/^v([0-9]+\.[0-9]+\.[0-9]+)-.*$/\1/' \
+            | sort -V | tail -n1 || true)
+          if [ -n "$PUBLISHED" ] && [ "$(printf '%s\n%s\n' "$BASE" "$PUBLISHED" | sort -V | tail -n1)" != "$BASE" ]; then
+            echo "::error::Base version ${BASE} is behind ${PUBLISHED}, which this branch has already published. The v${PUBLISHED} base tag is missing - restore it with 'git push origin v${PUBLISHED}' before merging."
+            exit 1
+          fi
+
           if [[ "${{ github.ref_name }}" == "eros-develop" ]]; then
             SEMVER_LABEL="develop"
           else
@@ -86,6 +104,11 @@ jobs:
 
   backend:
     needs: prepare
+    permissions:
+      contents: read
+      # The build action adds the private gh-openur feed authenticated with
+      # github.token; without this the freebsd-x64 runtime packs 403.
+      packages: read
     strategy:
       fail-fast: false
       matrix:
@@ -138,6 +161,8 @@ jobs:
 
   frontend:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Check out
         uses: actions/checkout@v7
@@ -165,6 +190,8 @@ jobs:
 
   unit_test:
     needs: backend
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -205,6 +232,8 @@ jobs:
   unit_test_postgres:
     needs: backend
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -225,6 +254,8 @@ jobs:
 
   integration_test:
     needs: [prepare, backend]
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:

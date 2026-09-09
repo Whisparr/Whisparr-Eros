@@ -66,6 +66,7 @@ function AddNewStudioSearchResult({
                 images={images}
                 size={250}
                 overflow={true}
+                title={title}
               />
             </div>
           </div>

@@ -10,6 +10,7 @@ import VirtualTableSelectAllHeaderCell from 'Components/Table/VirtualTableSelect
 import { icons } from 'Helpers/Props';
 import { SortDirection } from 'Helpers/Props/sortDirections';
 import { CheckInputChanged } from 'typings/inputs';
+import translate from 'Utilities/String/translate';
 import {
   SceneIndexTableOptions as SceneIndexTableOptionsState,
   setSceneIndexSort,
@@ -82,7 +83,10 @@ function SceneIndexTableHeader(props: SceneIndexTableHeaderProps) {
                 optionsComponent={SceneIndexTableOptions}
                 onTableOptionChange={onTableOptionChange}
               >
-                <IconButton name={icons.ADVANCED_SETTINGS} />
+                <IconButton
+                  name={icons.ADVANCED_SETTINGS}
+                  aria-label={translate('TableOptionsButton')}
+                />
               </TableOptionsModalWrapper>
             </VirtualTableHeaderCell>
           );

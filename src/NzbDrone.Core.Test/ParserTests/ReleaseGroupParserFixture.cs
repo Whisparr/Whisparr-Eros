@@ -32,6 +32,7 @@ namespace NzbDrone.Core.Test.ParserTests
         [TestCase("Movie.Name.S01E01.INTERNAL.720p.HDTV.x264-aAF-RakuvUS-Obfuscated", "aAF")]
         [TestCase("Movie.Name.2018.720p.WEBRip.DDP5.1.x264-NTb-postbot", "NTb")]
         [TestCase("Movie.Name.2018.720p.WEBRip.DDP5.1.x264-NTb-xpost", "NTb")]
+        [TestCase("Movie.Name.2018.1080p.AMZN.WEB-DL.DDP2.0.H.264-ToonsHub.mkv-[N-Z-B]-xpost", "ToonsHub")]
         [TestCase("Movie.Name.S02E24.1080p.AMZN.WEBRip.DD5.1.x264-CasStudio-AsRequested", "CasStudio")]
         [TestCase("Movie.Name.S04E11.Lamster.1080p.AMZN.WEB-DL.DDP5.1.H.264-NTb-AlternativeToRequested", "NTb")]
         [TestCase("Movie.Name.S16E04.Third.Wheel.1080p.AMZN.WEB-DL.DDP5.1.H.264-NTb-GEROV", "NTb")]
@@ -181,6 +182,21 @@ namespace NzbDrone.Core.Test.ParserTests
 
         [TestCase("Terrible.Anime.Title.2020.DBOX.480p.x264-iKaos [v3] [6AFFEF6B]")]
         public void should_not_parse_anime_hash_as_release_group(string title)
+        {
+            Parser.ReleaseGroupParser.ParseReleaseGroup(title).Should().BeNull();
+        }
+
+        [TestCase("Studio Name 26 09 01 Performer Name 1080p WEB x265 EAC3 -Hveðrungr", "Hveðrungr")]
+        [TestCase("Studio Name 26 09 01 Performer Name 1080p BD x265 Opus AAC -Báleygr", "Báleygr")]
+        public void should_parse_non_ascii_release_group(string title, string expected)
+        {
+            Parser.ReleaseGroupParser.ParseReleaseGroup(title).Should().Be(expected);
+        }
+
+        [TestCase("Studio Name (2026) - 26.09.01 - Hart-Shaped Scene [SDTV][AAC 2.0][x264]")]
+        [TestCase("Studio Name (2026) - 26.09.01 - Hart-Shaped Scene [HDTV-480p][AAC 2.0][x264]")]
+        [TestCase("Studio Name (2026) - 26.09.01 - Hart-Shaped Scene [480p-HDTV][AAC 2.0][x264]")]
+        public void should_not_parse_scene_title_containing_a_dash_as_release_group(string title)
         {
             Parser.ReleaseGroupParser.ParseReleaseGroup(title).Should().BeNull();
         }

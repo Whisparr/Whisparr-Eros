@@ -10,7 +10,7 @@ export interface ReleaseProfile extends ModelBase {
   enabled: boolean;
   required: string[];
   ignored: string[];
-  indexerId: number;
+  indexerIds: number[];
   tags: number[];
 }
 
@@ -22,7 +22,7 @@ const NEW_RELEASE_PROFILE: ReleaseProfile = {
   enabled: true,
   required: [],
   ignored: [],
-  indexerId: 0,
+  indexerIds: [],
   tags: [],
 };
 

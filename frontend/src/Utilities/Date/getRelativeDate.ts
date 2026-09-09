@@ -1,5 +1,6 @@
-import moment from 'moment';
+import moment from 'moment-timezone';
 import translate from 'Utilities/String/translate';
+import { convertToTimezone } from './convertToTimezone';
 import formatDateTime from './formatDateTime';
 
 interface GetRelativeDateOptions {
@@ -7,10 +8,32 @@ interface GetRelativeDateOptions {
   shortDateFormat: string;
   showRelativeDates: boolean;
   timeFormat?: string;
+  timeZone?: string;
   includeSeconds?: boolean;
   timeForToday?: boolean;
   includeTime?: boolean;
   ignoreTimezone?: boolean;
+}
+
+function getDayOfWeek(dayNumber: number) {
+  switch (dayNumber) {
+    case 0:
+      return translate('Sunday');
+    case 1:
+      return translate('Monday');
+    case 2:
+      return translate('Tuesday');
+    case 3:
+      return translate('Wednesday');
+    case 4:
+      return translate('Thursday');
+    case 5:
+      return translate('Friday');
+    case 6:
+      return translate('Saturday');
+    default:
+      return '';
+  }
 }
 
 function getRelativeDate({
@@ -18,6 +41,7 @@ function getRelativeDate({
   shortDateFormat,
   showRelativeDates,
   timeFormat,
+  timeZone = '',
   includeSeconds = false,
   timeForToday = false,
   includeTime = false,
@@ -41,9 +65,20 @@ function getRelativeDate({
 
   const useUtcCalendar = Boolean(ignoreTimezone || isDateOnly || isMidnightUtc);
 
-  // Parse date and reference 'now' in the same mode (UTC or local)
-  const m = useUtcCalendar ? moment.utc(date) : moment(date);
-  const now = useUtcCalendar ? moment.utc() : moment();
+  // Parse date and reference 'now' in the same mode (UTC, configured zone, or
+  // local). The UTC calendar path deliberately ignores timeZone: a date-only
+  // value carries no time of day, so converting it would move the calendar day
+  // rather than the clock time.
+  const zoned = (value?: string) => {
+    if (value == null) {
+      return timeZone ? moment.tz(timeZone) : moment();
+    }
+
+    return convertToTimezone(value, timeZone);
+  };
+
+  const m = useUtcCalendar ? moment.utc(date) : zoned(date);
+  const now = useUtcCalendar ? moment.utc() : zoned();
 
   // Small local time formatter that mirrors Utilities/Date/formatTime behavior
   const time = timeFormat
@@ -93,12 +128,15 @@ function getRelativeDate({
 
   const diffDays = m.startOf('day').diff(now.startOf('day'), 'days');
   if (diffDays > 0 && diffDays <= 7) {
-    const day = m.format('dddd');
+    const day = getDayOfWeek(m.day());
     return includeTime ? translate('DayOfWeekAt', { day, time }) : day;
   }
 
   return includeTime
-    ? formatDateTime(date, shortDateFormat, timeFormat, { includeSeconds })
+    ? formatDateTime(date, shortDateFormat, timeFormat, {
+        includeSeconds,
+        timeZone: useUtcCalendar ? '' : timeZone,
+      })
     : m.format(shortDateFormat);
 }
 

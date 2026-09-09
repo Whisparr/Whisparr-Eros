@@ -15,11 +15,17 @@ namespace Whisparr.Api.V3.Profiles.Release
         // Is List<string>, string or JArray, we accept 'string' with POST and PUT for backwards compatibility
         public object Required { get; set; }
         public object Ignored { get; set; }
+
+        // Superseded by IndexerIds, still accepted on POST and PUT and still
+        // returned (as the first of IndexerIds) for backwards compatibility.
         public int IndexerId { get; set; }
+        public List<int> IndexerIds { get; set; }
         public HashSet<int> Tags { get; set; }
 
         public ReleaseProfileResource()
         {
+            // IndexerIds is deliberately left null so a request that omits it can
+            // be told apart from one that clears it. See MapIndexerIds.
             Tags = new HashSet<int>();
         }
     }
@@ -40,7 +46,8 @@ namespace Whisparr.Api.V3.Profiles.Release
                 Enabled = model.Enabled,
                 Required = model.Required ?? new List<string>(),
                 Ignored = model.Ignored ?? new List<string>(),
-                IndexerId = model.IndexerId,
+                IndexerId = model.IndexerIds.FirstOrDefault(),
+                IndexerIds = new List<int>(model.IndexerIds),
                 Tags = new HashSet<int>(model.Tags)
             };
         }
@@ -59,7 +66,7 @@ namespace Whisparr.Api.V3.Profiles.Release
                 Enabled = resource.Enabled,
                 Required = resource.MapRequired(),
                 Ignored = resource.MapIgnored(),
-                IndexerId = resource.IndexerId,
+                IndexerIds = resource.MapIndexerIds(),
                 Tags = new HashSet<int>(resource.Tags)
             };
         }
@@ -67,6 +74,25 @@ namespace Whisparr.Api.V3.Profiles.Release
         public static List<ReleaseProfileResource> ToResource(this IEnumerable<ReleaseProfile> models)
         {
             return models.Select(ToResource).ToList();
+        }
+
+        // Older clients only know IndexerId, where 0 meant 'any indexer'. Fall back
+        // to it only when IndexerIds is absent from the request: a client clearing
+        // the list sends an empty IndexerIds and usually leaves the now-stale
+        // IndexerId alongside it, and that must not re-pin the profile.
+        public static List<int> MapIndexerIds(this ReleaseProfileResource profile)
+        {
+            if (profile.IndexerIds != null)
+            {
+                return profile.IndexerIds.Distinct().ToList();
+            }
+
+            if (profile.IndexerId > 0)
+            {
+                return new List<int> { profile.IndexerId };
+            }
+
+            return new List<int>();
         }
 
         public static List<string> MapRequired(this ReleaseProfileResource profile) => ParseArray(profile.Required, "required");

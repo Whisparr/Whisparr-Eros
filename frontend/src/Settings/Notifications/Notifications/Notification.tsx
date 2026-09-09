@@ -75,6 +75,7 @@ function Notification({ notification }: Readonly<NotificationProps>) {
     <Card
       className={styles.notification}
       overlayContent={true}
+      aria-label={translate('EditConnectionName', { name })}
       onPress={setEditNotificationModalOpen}
     >
       <div className={styles.name}>{name}</div>

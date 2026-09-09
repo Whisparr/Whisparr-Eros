@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading;
 using NLog;
-using NzbDrone.Common;
-using NzbDrone.Common.Cache;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Extensions;
@@ -25,23 +24,18 @@ namespace NzbDrone.Core.MediaCover
 {
     public interface IMapCoversToLocal
     {
-        Dictionary<string, FileInfo> GetMovieCoverFileInfos();
-        Dictionary<string, FileInfo> GetPerformerCoverFileInfos();
-        Dictionary<string, FileInfo> GetStudioCoverFileInfos();
-        void ConvertToLocalUrls(int movieId, IEnumerable<MediaCover> covers, Dictionary<string, FileInfo> fileInfos = null);
-        void ConvertToLocalPerformerUrls(int performerId, IEnumerable<MediaCover> covers, Dictionary<string, FileInfo> fileInfos = null);
-        void ConvertToLocalStudioUrls(int studioId, IEnumerable<MediaCover> covers, Dictionary<string, FileInfo> fileInfos = null);
-        void ConvertToLocalUrls(IEnumerable<Tuple<int, IEnumerable<MediaCover>>> items, Dictionary<string, FileInfo> coverFileInfos);
-        void ConvertToLocalPerformerUrls(IEnumerable<Tuple<int, IEnumerable<MediaCover>>> items, Dictionary<string, FileInfo> coverFileInfos);
-        void ConvertToLocalStudioUrls(IEnumerable<Tuple<int, IEnumerable<MediaCover>>> items, Dictionary<string, FileInfo> coverFileInfos);
+        void ConvertToLocalUrls(int movieId, IEnumerable<MediaCover> covers);
+        void ConvertToLocalPerformerUrls(int performerId, IEnumerable<MediaCover> covers);
+        void ConvertToLocalStudioUrls(int studioId, IEnumerable<MediaCover> covers);
         string GetMovieCoverPath(int movieId, MediaCoverTypes coverType, int? height = null);
         string GetPerformerCoverPath(int performerId, MediaCoverTypes coverType, int? height = null);
         string GetStudioCoverPath(int studioId, MediaCoverTypes coverType, int? height = null);
     }
 
     public class MediaCoverService :
+        IHandle<MovieUpdatedEvent>,
         IHandle<ApplicationStartedEvent>,
-        IHandleAsync<MovieUpdatedEvent>,
+        IHandle<ApplicationShutdownRequested>,
         IHandleAsync<PerformerUpdatedEvent>,
         IHandleAsync<StudioUpdatedEvent>,
         IHandleAsync<MoviesDeletedEvent>,
@@ -49,7 +43,13 @@ namespace NzbDrone.Core.MediaCover
         IHandleAsync<StudiosDeletedEvent>,
         IMapCoversToLocal
     {
-        private const string CoverFileInfosCacheKey = "all";
+        private const string DefaultStudioCoverExtension = ".jpg";
+        internal const int MovieCoverQueueCapacity = 100;
+
+        internal static int MovieCoverWorkerCount => (int)Math.Ceiling(Environment.ProcessorCount / 2.0);
+
+        internal MovieCoverQueueTestSeam MovieCoverQueueTest { get; }
+
         private readonly IMediaCoverProxy _mediaCoverProxy;
         private readonly IImageResizer _resizer;
         private readonly IHttpClient _httpClient;
@@ -59,12 +59,30 @@ namespace NzbDrone.Core.MediaCover
         private readonly IEventAggregator _eventAggregator;
         private readonly Logger _logger;
 
+        private readonly object _movieCoverQueueLock;
+        private readonly Queue<int> _movieCoverQueue;
+        private readonly Dictionary<int, PendingMovieCover> _pendingMovieCovers;
+
+        // Retain admitted sequence high-water marks while needed to reject older producers.
+        // Movie deletion purges idle marks and keeps only temporary tombstones for
+        // producers or workers that entered before the deletion event.
+        private readonly Dictionary<int, long> _movieCoverHighWaterSequences;
+        private readonly Dictionary<int, int> _movieCoverProducerCounts;
+        private readonly Dictionary<int, int> _activeMovieCoverWorkerCounts;
+        private readonly HashSet<int> _deletedMovieCoversWithActiveWork;
+        private readonly SemaphoreSlim _queuedMovieCovers;
+        private readonly SemaphoreSlim _movieCoverQueueSlots;
+        private readonly int _movieCoverWorkerCount;
+        private readonly List<Thread> _movieCoverWorkers;
+
         private readonly string _coverRootFolder;
 
-        private readonly ICached<Dictionary<string, FileInfo>> _movieCoverFileInfosCache;
-        private readonly ICached<Dictionary<string, FileInfo>> _performerCoverFileInfosCache;
-        private readonly ICached<Dictionary<string, FileInfo>> _studioCoverFileInfosCache;
-        private static readonly TimeSpan CoverFileInfosCacheTtl = TimeSpan.FromSeconds(900);
+        private readonly CancellationTokenSource _movieCoverIntakeCancellation;
+
+        private TimeSpan _movieCoverShutdownTimeout = TimeSpan.FromSeconds(5);
+        private MovieCoverLifecycleState _movieCoverLifecycleState;
+        private long _movieCoverSequence;
+        private int _movieCoverBlockedProducerCount;
 
         // ImageSharp is slow on ARM (no hardware acceleration on mono yet)
         // So limit the number of concurrent resizing tasks
@@ -78,7 +96,6 @@ namespace NzbDrone.Core.MediaCover
                                  ICoverExistsSpecification coverExistsSpecification,
                                  IConfigFileProvider configFileProvider,
                                  IEventAggregator eventAggregator,
-                                 ICacheManager cacheManager,
                                  Logger logger)
         {
             _mediaCoverProxy = mediaCoverProxy;
@@ -92,9 +109,19 @@ namespace NzbDrone.Core.MediaCover
 
             _coverRootFolder = appFolderInfo.GetMediaCoverPath();
 
-            _movieCoverFileInfosCache = cacheManager.GetCache<Dictionary<string, FileInfo>>(GetType(), "movieCoverFileInfos");
-            _performerCoverFileInfosCache = cacheManager.GetCache<Dictionary<string, FileInfo>>(GetType(), "performerCoverFileInfos");
-            _studioCoverFileInfosCache = cacheManager.GetCache<Dictionary<string, FileInfo>>(GetType(), "studioCoverFileInfos");
+            _movieCoverWorkerCount = MovieCoverWorkerCount;
+            _movieCoverQueueLock = new object();
+            _movieCoverQueue = new Queue<int>();
+            _pendingMovieCovers = new Dictionary<int, PendingMovieCover>();
+            _movieCoverHighWaterSequences = new Dictionary<int, long>();
+            _movieCoverProducerCounts = new Dictionary<int, int>();
+            _activeMovieCoverWorkerCounts = new Dictionary<int, int>();
+            _deletedMovieCoversWithActiveWork = new HashSet<int>();
+            _queuedMovieCovers = new SemaphoreSlim(0);
+            _movieCoverQueueSlots = new SemaphoreSlim(MovieCoverQueueCapacity, MovieCoverQueueCapacity);
+            _movieCoverWorkers = new List<Thread>();
+            _movieCoverIntakeCancellation = new CancellationTokenSource();
+            MovieCoverQueueTest = new MovieCoverQueueTestSeam(this);
         }
 
         public string GetMovieCoverPath(int movieId, MediaCoverTypes coverType, int? height = null)
@@ -118,193 +145,112 @@ namespace NzbDrone.Core.MediaCover
             return Path.Combine(GetStudioCoverPath(studioId), coverType.ToString().ToLower() + heightSuffix + GetExtension(coverType));
         }
 
-        public Dictionary<string, FileInfo> GetMovieCoverFileInfos()
-        {
-            return _movieCoverFileInfosCache.Get(CoverFileInfosCacheKey, () => GetCoverFileInfos("movie"), CoverFileInfosCacheTtl);
-        }
-
-        public Dictionary<string, FileInfo> GetPerformerCoverFileInfos()
-        {
-            return _performerCoverFileInfosCache.Get(CoverFileInfosCacheKey, () => GetCoverFileInfos("performer"), CoverFileInfosCacheTtl);
-        }
-
-        public Dictionary<string, FileInfo> GetStudioCoverFileInfos()
-        {
-            return _studioCoverFileInfosCache.Get(CoverFileInfosCacheKey, () => GetCoverFileInfos("studio"), CoverFileInfosCacheTtl);
-        }
-
-        public void ConvertToLocalUrls(int movieId, IEnumerable<MediaCover> covers, Dictionary<string, FileInfo> fileInfos = null)
+        public void ConvertToLocalUrls(int movieId, IEnumerable<MediaCover> covers)
         {
             if (movieId == 0)
             {
-                // Movie isn't in Whisparr yet, map via a proxy to circument referrer issues
+                // Movie isn't in Whisparr yet, map via a proxy to circumvent referrer issues
                 foreach (var mediaCover in covers)
                 {
                     mediaCover.Url = _mediaCoverProxy.RegisterUrl(mediaCover.RemoteUrl);
                 }
+
+                return;
             }
-            else
+
+            foreach (var mediaCover in covers)
             {
-                foreach (var mediaCover in covers)
+                if (mediaCover.CoverType == MediaCoverTypes.Unknown)
                 {
-                    if (mediaCover.CoverType == MediaCoverTypes.Unknown)
-                    {
-                        continue;
-                    }
-
-                    var filePath = GetMovieCoverPath(movieId, mediaCover.CoverType);
-
-                    FileInfo file;
-                    var fileExists = false;
-                    if (fileInfos != null)
-                    {
-                        fileExists = fileInfos.TryGetValue(filePath, out file);
-                    }
-                    else
-                    {
-                        file = _diskProvider.GetFileInfo(filePath);
-                        fileExists = file.Exists;
-                    }
-
-                    mediaCover.Url = _configFileProvider.UrlBase + @"/MediaCover/movie/" + movieId + "/" + mediaCover.CoverType.ToString().ToLower() + GetExtension(mediaCover.CoverType);
-
-                    if (fileExists)
-                    {
-                        var lastWrite = file.LastWriteTimeUtc;
-                        mediaCover.Url += "?lastWrite=" + lastWrite.Ticks;
-                    }
+                    continue;
                 }
+
+                mediaCover.Url = _configFileProvider.UrlBase + @"/MediaCover/movie/" + movieId + "/" + mediaCover.CoverType.ToString().ToLower() + GetExtension(mediaCover.CoverType);
+
+                AppendCacheBuster(mediaCover);
             }
         }
 
-        public void ConvertToLocalPerformerUrls(int performerId, IEnumerable<MediaCover> covers, Dictionary<string, FileInfo> fileInfos = null)
+        public void ConvertToLocalPerformerUrls(int performerId, IEnumerable<MediaCover> covers)
         {
             if (performerId == 0)
             {
-                // Movie isn't in Whisparr yet, map via a proxy to circument referrer issues
+                // Performer isn't in Whisparr yet, map via a proxy to circumvent referrer issues
                 foreach (var mediaCover in covers)
                 {
                     mediaCover.Url = _mediaCoverProxy.RegisterUrl(mediaCover.RemoteUrl);
                 }
+
+                return;
             }
-            else
+
+            foreach (var mediaCover in covers)
             {
-                foreach (var mediaCover in covers)
+                if (mediaCover.CoverType == MediaCoverTypes.Unknown)
                 {
-                    if (mediaCover.CoverType == MediaCoverTypes.Unknown)
-                    {
-                        continue;
-                    }
-
-                    var filePath = GetPerformerCoverPath(performerId, mediaCover.CoverType);
-
-                    FileInfo file;
-                    var fileExists = false;
-                    if (fileInfos != null)
-                    {
-                        fileExists = fileInfos.TryGetValue(filePath, out file);
-                    }
-                    else
-                    {
-                        file = _diskProvider.GetFileInfo(filePath);
-                        fileExists = file.Exists;
-                    }
-
-                    mediaCover.Url = _configFileProvider.UrlBase + @"/MediaCover/performer/" + performerId + "/" + mediaCover.CoverType.ToString().ToLower() + GetExtension(mediaCover.CoverType);
-
-                    if (fileExists)
-                    {
-                        var lastWrite = file.LastWriteTimeUtc;
-                        mediaCover.Url += "?lastWrite=" + lastWrite.Ticks;
-                    }
+                    continue;
                 }
+
+                mediaCover.Url = _configFileProvider.UrlBase + @"/MediaCover/performer/" + performerId + "/" + mediaCover.CoverType.ToString().ToLower() + GetExtension(mediaCover.CoverType);
+
+                AppendCacheBuster(mediaCover);
             }
         }
 
-        public void ConvertToLocalStudioUrls(int studioId, IEnumerable<MediaCover> covers, Dictionary<string, FileInfo> fileInfos = null)
+        public void ConvertToLocalStudioUrls(int studioId, IEnumerable<MediaCover> covers)
         {
             if (studioId == 0)
             {
-                // Movie isn't in Whisparr yet, map via a proxy to circument referrer issues
+                // Studio isn't in Whisparr yet, map via a proxy to circumvent referrer issues
                 foreach (var mediaCover in covers)
                 {
                     mediaCover.Url = _mediaCoverProxy.RegisterUrl(mediaCover.RemoteUrl);
                 }
+
+                return;
             }
-            else
+
+            // Studio covers are written with an extension taken from the download's Content-Type
+            // rather than from the cover type, so the folder has to be read to find out which.
+            var extension = GetStudioCoverExtension(studioId);
+
+            foreach (var mediaCover in covers)
             {
-                foreach (var mediaCover in covers)
+                if (mediaCover.CoverType == MediaCoverTypes.Unknown)
                 {
-                    if (mediaCover.CoverType == MediaCoverTypes.Unknown)
-                    {
-                        continue;
-                    }
-
-                    var filePath = GetStudioCoverPath(studioId);
-                    var extension = GetExtension(mediaCover.CoverType);
-
-                    // get files in studio folder
-                    var pathExists = _diskProvider.FolderExists(filePath);
-                    if (!pathExists)
-                    {
-                        _logger.Trace("Studio folder didn't exist, creating {0}", filePath);
-                        _diskProvider.CreateFolder(filePath);
-                    }
-
-                    var files = _diskProvider.GetFiles(filePath, false);
-                    if (files.Any())
-                    {
-                        var info = _diskProvider.GetFileInfo(files.First());
-                        extension = info.Extension;
-                    }
-
-                    FileInfo file;
-                    var fileExists = false;
-                    var testPath = Path.Join(filePath, mediaCover.CoverType.ToString() + extension);
-                    if (fileInfos != null)
-                    {
-                        fileExists = fileInfos.TryGetValue(testPath, out file);
-                    }
-                    else
-                    {
-                        file = _diskProvider.GetFileInfo(testPath);
-                        fileExists = file.Exists;
-                    }
-
-                    mediaCover.Url = _configFileProvider.UrlBase + @"/MediaCover/studio/" + studioId + "/" + mediaCover.CoverType.ToString().ToLower() + extension;
-
-                    if (fileExists)
-                    {
-                        var lastWrite = file.LastWriteTimeUtc;
-                        _logger.Trace("Studio cover already exists, last write time {0}", lastWrite);
-                        mediaCover.Url += "?lastWrite=" + lastWrite.Ticks;
-                    }
+                    continue;
                 }
+
+                mediaCover.Url = _configFileProvider.UrlBase + @"/MediaCover/studio/" + studioId + "/" + mediaCover.CoverType.ToString().ToLower() + extension;
+
+                AppendCacheBuster(mediaCover);
             }
         }
 
-        public void ConvertToLocalUrls(IEnumerable<Tuple<int, IEnumerable<MediaCover>>> items, Dictionary<string, FileInfo> coverFileInfos)
+        // Keyed on the remote URL rather than the file's modification time: our metadata sources
+        // address images by content (a StashDB image UUID, a TPDB content hash), so the URL changes
+        // when and only when the image does. A modification time changes whenever the file is
+        // rewritten with identical bytes, and does not change until the local file catches up.
+        private static void AppendCacheBuster(MediaCover mediaCover)
         {
-            foreach (var movie in items)
+            if (mediaCover.RemoteUrl.IsNotNullOrWhiteSpace())
             {
-                ConvertToLocalUrls(movie.Item1, movie.Item2, coverFileInfos);
+                mediaCover.Url += "?h=" + mediaCover.RemoteUrl.SHA256Hash()[..20];
             }
         }
 
-        public void ConvertToLocalPerformerUrls(IEnumerable<Tuple<int, IEnumerable<MediaCover>>> items, Dictionary<string, FileInfo> coverFileInfos)
+        private string GetStudioCoverExtension(int studioId)
         {
-            foreach (var movie in items)
-            {
-                ConvertToLocalPerformerUrls(movie.Item1, movie.Item2, coverFileInfos);
-            }
-        }
+            var folder = GetStudioCoverPath(studioId);
 
-        public void ConvertToLocalStudioUrls(IEnumerable<Tuple<int, IEnumerable<MediaCover>>> items, Dictionary<string, FileInfo> coverFileInfos)
-        {
-            foreach (var movie in items)
+            if (!_diskProvider.FolderExists(folder))
             {
-                ConvertToLocalStudioUrls(movie.Item1, movie.Item2, coverFileInfos);
+                return DefaultStudioCoverExtension;
             }
+
+            var files = _diskProvider.GetFiles(folder, false).ToList();
+
+            return files.Any() ? _diskProvider.GetFileInfo(files.First()).Extension : DefaultStudioCoverExtension;
         }
 
         private string GetMovieCoverPath(int movieId)
@@ -695,23 +641,423 @@ namespace NzbDrone.Core.MediaCover
             };
         }
 
-        private Dictionary<string, FileInfo> GetCoverFileInfos(string subFolder)
+        public void Handle(MovieUpdatedEvent message)
         {
-            if (!_diskProvider.FolderExists(Path.Combine(_coverRootFolder, subFolder)))
+            var sequence = Interlocked.Increment(ref _movieCoverSequence);
+            CancellationToken intakeCancellation;
+
+            lock (_movieCoverQueueLock)
             {
-                return new Dictionary<string, FileInfo>();
+                if (_movieCoverLifecycleState != MovieCoverLifecycleState.Running)
+                {
+                    _logger.Debug("Ignoring movie cover update for {0} because the media cover queue is stopping", message.Movie.Id);
+                    return;
+                }
+
+                if (_deletedMovieCoversWithActiveWork.Contains(message.Movie.Id))
+                {
+                    return;
+                }
+
+                if (_movieCoverHighWaterSequences.TryGetValue(message.Movie.Id, out var highWaterSequence) && sequence <= highWaterSequence)
+                {
+                    return;
+                }
+
+                if (_pendingMovieCovers.TryGetValue(message.Movie.Id, out var pending))
+                {
+                    if (sequence > pending.Sequence)
+                    {
+                        _pendingMovieCovers[message.Movie.Id] = new PendingMovieCover(message.Movie, sequence);
+                        _movieCoverHighWaterSequences[message.Movie.Id] = sequence;
+                    }
+
+                    return;
+                }
+
+                _movieCoverHighWaterSequences[message.Movie.Id] = sequence;
+                _movieCoverProducerCounts[message.Movie.Id] = _movieCoverProducerCounts.GetValueOrDefault(message.Movie.Id) + 1;
+                intakeCancellation = _movieCoverIntakeCancellation.Token;
             }
 
-            return _diskProvider
-                    .GetFileInfos(Path.Combine(_coverRootFolder, subFolder), true)
-                    .ToDictionary(x => x.FullName, PathEqualityComparer.Instance);
+            try
+            {
+                Interlocked.Increment(ref _movieCoverBlockedProducerCount);
+
+                try
+                {
+                    _movieCoverQueueSlots.Wait(intakeCancellation);
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
+                finally
+                {
+                    Interlocked.Decrement(ref _movieCoverBlockedProducerCount);
+                }
+
+                MovieCoverQueueTest.InvokeSlotAcquired(message.Movie, sequence);
+
+                lock (_movieCoverQueueLock)
+                {
+                    if (_movieCoverLifecycleState != MovieCoverLifecycleState.Running)
+                    {
+                        _movieCoverQueueSlots.Release();
+                        return;
+                    }
+
+                    if (_movieCoverHighWaterSequences.TryGetValue(message.Movie.Id, out var highWaterSequence) && sequence < highWaterSequence)
+                    {
+                        _movieCoverQueueSlots.Release();
+                        return;
+                    }
+
+                    if (_pendingMovieCovers.TryGetValue(message.Movie.Id, out var pending))
+                    {
+                        if (sequence > pending.Sequence)
+                        {
+                            _pendingMovieCovers[message.Movie.Id] = new PendingMovieCover(message.Movie, sequence);
+                            _movieCoverHighWaterSequences[message.Movie.Id] = sequence;
+                        }
+
+                        _movieCoverQueueSlots.Release();
+                        return;
+                    }
+
+                    _pendingMovieCovers.Add(message.Movie.Id, new PendingMovieCover(message.Movie, sequence));
+                    _movieCoverHighWaterSequences[message.Movie.Id] = sequence;
+                    _movieCoverQueue.Enqueue(message.Movie.Id);
+                    _queuedMovieCovers.Release();
+                }
+            }
+            finally
+            {
+                lock (_movieCoverQueueLock)
+                {
+                    var producerCount = _movieCoverProducerCounts[message.Movie.Id] - 1;
+                    if (producerCount == 0)
+                    {
+                        _movieCoverProducerCounts.Remove(message.Movie.Id);
+
+                        if (!_activeMovieCoverWorkerCounts.ContainsKey(message.Movie.Id) &&
+                            _deletedMovieCoversWithActiveWork.Contains(message.Movie.Id))
+                        {
+                            ClearDeletedMovieCoverState(message.Movie.Id);
+                        }
+                    }
+                    else
+                    {
+                        _movieCoverProducerCounts[message.Movie.Id] = producerCount;
+                    }
+                }
+            }
         }
 
         public void Handle(ApplicationStartedEvent message)
         {
-            GetMovieCoverFileInfos();
-            GetPerformerCoverFileInfos();
-            GetStudioCoverFileInfos();
+            lock (_movieCoverQueueLock)
+            {
+                if (_movieCoverLifecycleState != MovieCoverLifecycleState.NotStarted)
+                {
+                    return;
+                }
+
+                _movieCoverLifecycleState = MovieCoverLifecycleState.Running;
+
+                _logger.Info("Starting {0} media cover workers with a queue capacity of {1}", _movieCoverWorkerCount, MovieCoverQueueCapacity);
+
+                for (var i = 0; i < _movieCoverWorkerCount; i++)
+                {
+                    var thread = new Thread(ProcessMovieCoverQueue)
+                    {
+                        IsBackground = true,
+                        Name = $"MediaCover-{i + 1}"
+                    };
+
+                    _movieCoverWorkers.Add(thread);
+                    thread.Start();
+                }
+            }
+        }
+
+        public void Handle(ApplicationShutdownRequested message)
+        {
+            Thread[] workers;
+            int abandonedMovieCovers;
+
+            lock (_movieCoverQueueLock)
+            {
+                if (_movieCoverLifecycleState != MovieCoverLifecycleState.Running)
+                {
+                    return;
+                }
+
+                _movieCoverLifecycleState = MovieCoverLifecycleState.Stopping;
+                _movieCoverIntakeCancellation.Cancel();
+                workers = _movieCoverWorkers.ToArray();
+                abandonedMovieCovers = _pendingMovieCovers.Count;
+                _movieCoverQueue.Clear();
+                _pendingMovieCovers.Clear();
+                _movieCoverHighWaterSequences.Clear();
+            }
+
+            if (abandonedMovieCovers > 0)
+            {
+                _movieCoverQueueSlots.Release(abandonedMovieCovers);
+            }
+
+            _queuedMovieCovers.Release(workers.Length);
+
+            var shutdownTimer = Stopwatch.StartNew();
+            var allWorkersStopped = true;
+
+            foreach (var worker in workers)
+            {
+                var remaining = _movieCoverShutdownTimeout - shutdownTimer.Elapsed;
+
+                if (remaining <= TimeSpan.Zero || !worker.Join(remaining))
+                {
+                    allWorkersStopped = false;
+                    break;
+                }
+            }
+
+            if (allWorkersStopped)
+            {
+                lock (_movieCoverQueueLock)
+                {
+                    _movieCoverWorkers.Clear();
+                    _movieCoverLifecycleState = MovieCoverLifecycleState.Stopped;
+                }
+            }
+            else
+            {
+                lock (_movieCoverQueueLock)
+                {
+                    ReconcileShutdown();
+                }
+
+                _logger.Warn("Media cover shutdown deadline elapsed with {0} worker(s) still running", workers.Count(v => v.IsAlive));
+            }
+        }
+
+        private void ProcessMovieCoverQueue()
+        {
+            try
+            {
+                while (true)
+                {
+                    _queuedMovieCovers.Wait();
+
+                    int movieId;
+                    Movie movie;
+
+                    lock (_movieCoverQueueLock)
+                    {
+                        if (_movieCoverQueue.Count == 0)
+                        {
+                            if (_movieCoverLifecycleState != MovieCoverLifecycleState.Running)
+                            {
+                                return;
+                            }
+
+                            continue;
+                        }
+
+                        movieId = _movieCoverQueue.Dequeue();
+                        movie = _pendingMovieCovers[movieId].Movie;
+                        _pendingMovieCovers.Remove(movieId);
+                        _activeMovieCoverWorkerCounts[movieId] = _activeMovieCoverWorkerCounts.GetValueOrDefault(movieId) + 1;
+                        _movieCoverQueueSlots.Release();
+                    }
+
+                    try
+                    {
+                        HandleAsync(new MovieUpdatedEvent(movie));
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error(ex, "Error processing media covers for movie {0}", movie.Id);
+                    }
+                    finally
+                    {
+                        CompleteMovieCoverProcessing(movieId);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Unknown error in media cover processing thread");
+            }
+            finally
+            {
+                lock (_movieCoverQueueLock)
+                {
+                    ReconcileShutdown(Thread.CurrentThread);
+                }
+            }
+        }
+
+        private void CompleteMovieCoverProcessing(int movieId)
+        {
+            bool deleteRecreatedCovers;
+
+            lock (_movieCoverQueueLock)
+            {
+                var workerCount = _activeMovieCoverWorkerCounts[movieId] - 1;
+                if (workerCount == 0)
+                {
+                    _activeMovieCoverWorkerCounts.Remove(movieId);
+                }
+                else
+                {
+                    _activeMovieCoverWorkerCounts[movieId] = workerCount;
+                }
+
+                deleteRecreatedCovers = _deletedMovieCoversWithActiveWork.Contains(movieId);
+            }
+
+            if (!deleteRecreatedCovers)
+            {
+                return;
+            }
+
+            DeleteMovieCoverFolder(movieId);
+
+            lock (_movieCoverQueueLock)
+            {
+                if (!_activeMovieCoverWorkerCounts.ContainsKey(movieId) &&
+                    !_movieCoverProducerCounts.ContainsKey(movieId))
+                {
+                    ClearDeletedMovieCoverState(movieId);
+                }
+            }
+        }
+
+        private void DeleteMovieCoverFolder(int movieId)
+        {
+            var path = GetMovieCoverPath(movieId);
+            if (_diskProvider.FolderExists(path))
+            {
+                _diskProvider.DeleteFolder(path, true);
+            }
+        }
+
+        private void ReconcileShutdown(Thread exitingWorker = null)
+        {
+            if (_movieCoverLifecycleState != MovieCoverLifecycleState.Stopping ||
+                _movieCoverWorkers.Any(worker => worker != exitingWorker && worker.IsAlive))
+            {
+                return;
+            }
+
+            _movieCoverWorkers.Clear();
+            _movieCoverLifecycleState = MovieCoverLifecycleState.Stopped;
+        }
+
+        private enum MovieCoverLifecycleState
+        {
+            NotStarted,
+            Running,
+            Stopping,
+            Stopped
+        }
+
+        internal sealed class MovieCoverQueueTestSeam
+        {
+            private readonly MediaCoverService _owner;
+
+            internal MovieCoverQueueTestSeam(MediaCoverService owner)
+            {
+                _owner = owner;
+                SlotAcquired = (_, _) => { };
+            }
+
+            internal TimeSpan ShutdownTimeout
+            {
+                get => _owner._movieCoverShutdownTimeout;
+                set => _owner._movieCoverShutdownTimeout = value;
+            }
+
+            internal Action<Movie, long> SlotAcquired { get; set; }
+            internal int BlockedProducerCount => Volatile.Read(ref _owner._movieCoverBlockedProducerCount);
+
+            internal int PendingUniqueCount
+            {
+                get
+                {
+                    lock (_owner._movieCoverQueueLock)
+                    {
+                        return _owner._pendingMovieCovers.Count;
+                    }
+                }
+            }
+
+            internal bool HasHighWaterSequence(int movieId)
+            {
+                lock (_owner._movieCoverQueueLock)
+                {
+                    return _owner._movieCoverHighWaterSequences.ContainsKey(movieId);
+                }
+            }
+
+            internal bool Stopping
+            {
+                get
+                {
+                    lock (_owner._movieCoverQueueLock)
+                    {
+                        return _owner._movieCoverLifecycleState == MovieCoverLifecycleState.Stopping;
+                    }
+                }
+            }
+
+            internal int WorkerPoolSize
+            {
+                get
+                {
+                    lock (_owner._movieCoverQueueLock)
+                    {
+                        return _owner._movieCoverWorkers.Count;
+                    }
+                }
+            }
+
+            internal int WorkerCountAlive
+            {
+                get
+                {
+                    lock (_owner._movieCoverQueueLock)
+                    {
+                        return _owner._movieCoverWorkers.Count(worker => worker.IsAlive);
+                    }
+                }
+            }
+
+            internal void InvokeSlotAcquired(Movie movie, long sequence)
+            {
+                try
+                {
+                    SlotAcquired(movie, sequence);
+                }
+                catch (Exception ex)
+                {
+                    _owner._logger.Error(ex, "Error in media cover queue test hook");
+                }
+            }
+        }
+
+        private sealed class PendingMovieCover
+        {
+            public PendingMovieCover(Movie movie, long sequence)
+            {
+                Movie = movie;
+                Sequence = sequence;
+            }
+
+            public Movie Movie { get; }
+            public long Sequence { get; }
         }
 
         public void HandleAsync(MovieUpdatedEvent message)
@@ -730,15 +1076,61 @@ namespace NzbDrone.Core.MediaCover
             var updated = EnsureCovers(message.Studio);
         }
 
+        private void ClearDeletedMovieCoverState(int movieId)
+        {
+            _deletedMovieCoversWithActiveWork.Remove(movieId);
+            _movieCoverHighWaterSequences.Remove(movieId);
+        }
+
+        private void PurgeDeletedMovieCovers(HashSet<int> deletedMovieIds)
+        {
+            lock (_movieCoverQueueLock)
+            {
+                var retainedMovieCoverIds = _movieCoverQueue.Where(movieId => !deletedMovieIds.Contains(movieId)).ToArray();
+                var removedQueuedMovieCovers = _movieCoverQueue.Count - retainedMovieCoverIds.Length;
+                _movieCoverQueue.Clear();
+
+                foreach (var movieId in retainedMovieCoverIds)
+                {
+                    _movieCoverQueue.Enqueue(movieId);
+                }
+
+                foreach (var movieId in deletedMovieIds)
+                {
+                    _pendingMovieCovers.Remove(movieId);
+
+                    if (_movieCoverProducerCounts.ContainsKey(movieId) || _activeMovieCoverWorkerCounts.ContainsKey(movieId))
+                    {
+                        _movieCoverHighWaterSequences[movieId] = Interlocked.Increment(ref _movieCoverSequence);
+                        _deletedMovieCoversWithActiveWork.Add(movieId);
+                    }
+                    else
+                    {
+                        ClearDeletedMovieCoverState(movieId);
+                    }
+                }
+
+                // A worker may already have consumed this permit while waiting for the
+                // queue lock; its empty-queue path absorbs that wake-up instead.
+                for (var i = 0; i < removedQueuedMovieCovers; i++)
+                {
+                    _queuedMovieCovers.Wait(0);
+                }
+
+                if (removedQueuedMovieCovers > 0)
+                {
+                    _movieCoverQueueSlots.Release(removedQueuedMovieCovers);
+                }
+            }
+        }
+
         public void HandleAsync(MoviesDeletedEvent message)
         {
+            PurgeDeletedMovieCovers(message.Movies.Select(movie => movie.Id).ToHashSet());
+
             foreach (var movie in message.Movies)
             {
-                var path = GetMovieCoverPath(movie.Id);
-                if (_diskProvider.FolderExists(path))
-                {
-                    _diskProvider.DeleteFolder(path, true);
-                }
+                DeleteMovieCoverFolder(movie.Id);
             }
         }
 

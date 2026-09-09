@@ -19,6 +19,7 @@ namespace NzbDrone.Core.Profiles.Qualities
         QualityProfile Add(QualityProfile profile);
         void Update(QualityProfile profile);
         void Delete(int id);
+        QualityProfileInUse GetInUse(int id);
         List<QualityProfile> All();
         QualityProfile Get(int id);
         bool Exists(int id);
@@ -37,6 +38,7 @@ namespace NzbDrone.Core.Profiles.Qualities
         private readonly IImportListFactory _importListFactory;
         private readonly IPerformerService _performerService;
         private readonly IStudioService _studioService;
+        private readonly IQualityProfileRankService _rankService;
         private readonly Logger _logger;
 
         public QualityProfileService(IQualityProfileRepository profileRepository,
@@ -45,6 +47,7 @@ namespace NzbDrone.Core.Profiles.Qualities
                               IImportListFactory importListFactory,
                               IPerformerService performerService,
                               IStudioService studioService,
+                              IQualityProfileRankService rankService,
                               Logger logger)
         {
             _profileRepository = profileRepository;
@@ -53,28 +56,51 @@ namespace NzbDrone.Core.Profiles.Qualities
             _importListFactory = importListFactory;
             _performerService = performerService;
             _studioService = studioService;
+            _rankService = rankService;
             _logger = logger;
         }
 
         public QualityProfile Add(QualityProfile profile)
         {
-            return _profileRepository.Insert(profile);
+            var saved = _profileRepository.Insert(profile);
+            _rankService.UpdateRanksForProfile(saved);
+
+            return saved;
         }
 
         public void Update(QualityProfile profile)
         {
             _profileRepository.Update(profile);
+            _rankService.UpdateRanksForProfile(profile);
         }
 
         public void Delete(int id)
         {
-            if (_movieService.GetAllMovies().Any(c => c.QualityProfileId == id) || _importListFactory.All().Any(c => c.QualityProfileId == id) ||
-                _performerService.GetAllPerformers().Any(c => c.QualityProfileId == id) || _studioService.GetAllStudios().Any(c => c.QualityProfileId == id) || _profileRepository.Get(id)?.Fallback == true)
+            if (GetInUse(id).IsInUse)
             {
                 throw new QualityProfileInUseException(id);
             }
 
             _profileRepository.Delete(id);
+            _rankService.DeleteRanksForProfile(id);
+        }
+
+        // The counts the delete guard refuses on, so the client can ask before the modal
+        // offers the button. Movies, performers and studios are counted in SQL: the guard
+        // used to load all three tables to answer a boolean, and the movie table alone is
+        // the whole library. Import lists are provider definitions and already in memory.
+        // `Get` rather than `Find` for the fallback flag, so an unknown id is a 404 here
+        // and stays a 404 on delete.
+        public QualityProfileInUse GetInUse(int id)
+        {
+            return new QualityProfileInUse
+            {
+                MovieCount = _movieService.CountByQualityProfile(id),
+                PerformerCount = _performerService.CountByQualityProfile(id),
+                StudioCount = _studioService.CountByQualityProfile(id),
+                ImportListCount = _importListFactory.All().Count(c => c.QualityProfileId == id),
+                IsFallback = _profileRepository.Get(id)?.Fallback == true
+            };
         }
 
         public List<QualityProfile> All()
@@ -126,8 +152,13 @@ namespace NzbDrone.Core.Profiles.Qualities
 
         public void Handle(ApplicationStartedEvent message)
         {
-            if (All().Any())
+            var profiles = All();
+
+            if (profiles.Any())
             {
+                // Ranks are derived state, so profiles that predate the migration need seeding.
+                _rankService.SeedAll(profiles);
+
                 return;
             }
 

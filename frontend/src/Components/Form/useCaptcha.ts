@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import requestAction from 'Utilities/requestAction';
+import requestAction, { ProviderData } from 'Utilities/requestAction';
 
 interface CaptchaState {
   refreshing: boolean;
@@ -21,7 +21,7 @@ interface CaptchaRequest {
 
 interface ProviderParams {
   provider: string;
-  providerData: object;
+  providerData: ProviderData;
 }
 
 const defaultState: CaptchaState = {
@@ -40,23 +40,21 @@ function useCaptcha() {
   const refresh = useCallback(({ provider, providerData }: ProviderParams) => {
     setState((prevState) => ({ ...prevState, refreshing: true }));
 
-    const promise = requestAction({
+    requestAction<{ captchaRequest?: CaptchaRequest }>({
       action: 'checkCaptcha',
       provider,
       providerData,
-    });
-
-    promise.done((data: { captchaRequest?: CaptchaRequest }) => {
-      setState((prevState) => ({
-        ...prevState,
-        refreshing: false,
-        ...data.captchaRequest,
-      }));
-    });
-
-    promise.fail(() => {
-      setState((prevState) => ({ ...prevState, refreshing: false }));
-    });
+    })
+      .then((data) => {
+        setState((prevState) => ({
+          ...prevState,
+          refreshing: false,
+          ...data.captchaRequest,
+        }));
+      })
+      .catch(() => {
+        setState((prevState) => ({ ...prevState, refreshing: false }));
+      });
   }, []);
 
   const getCaptchaCookie = useCallback(
@@ -65,7 +63,7 @@ function useCaptcha() {
       providerData,
       captchaResponse,
     }: ProviderParams & { captchaResponse: string }) => {
-      const promise = requestAction({
+      requestAction<{ captchaToken: string }>({
         action: 'getCaptchaCookie',
         provider,
         providerData,
@@ -74,11 +72,15 @@ function useCaptcha() {
           ray: state.ray,
           captchaResponse,
         },
-      });
-
-      promise.done((data: { captchaToken: string }) => {
-        setState((prevState) => ({ ...prevState, token: data.captchaToken }));
-      });
+      })
+        .then((data) => {
+          setState((prevState) => ({ ...prevState, token: data.captchaToken }));
+        })
+        // The original attached only a `done` handler, so a failed request
+        // left the captcha untouched and said nothing. Kept, because a native
+        // promise would otherwise log an unhandled rejection where jQuery's
+        // deferred stayed quiet -- see the migration doc.
+        .catch(() => {});
     },
     [state.responseUrl, state.ray]
   );

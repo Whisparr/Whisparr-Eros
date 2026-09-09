@@ -68,7 +68,7 @@ export const useManageNotification = (
 
   // Same query key as the lookup inside `useSelectedSchema`, so this reads the
   // one request rather than making a second.
-  const { isSchemaFetching, isSchemaFetched, schemaError } =
+  const { isSchemaLoading, isSchemaFetched, schemaError } =
     useNotificationSchema(isAdding);
 
   const defaultNotification = useMemo(() => {
@@ -103,7 +103,7 @@ export const useManageNotification = (
 
     // Only the add case has anything to wait for -- an existing connection
     // comes from the list the page already loaded.
-    isFetching: isAdding && isSchemaFetching,
+    isFetching: isAdding && isSchemaLoading,
     isFetched: isAdding ? isSchemaFetched : true,
     error: isAdding ? schemaError : null,
   };

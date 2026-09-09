@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Moq;
 using NUnit.Framework;
+using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Model;
 using NzbDrone.Common.Processes;
 using NzbDrone.Host;
@@ -26,6 +27,19 @@ namespace NzbDrone.App.Test
             Mocker.GetMock<IProcessProvider>()
                   .Setup(s => s.FindProcessByName(ProcessProvider.WHISPARR_PROCESS_NAME))
                   .Returns(new List<ProcessInfo>());
+
+            Mocker.SetConstant<IStartupContext>(new StartupContext());
+        }
+
+        private void GivenAnotherConsoleIsRunning()
+        {
+            Mocker.GetMock<IProcessProvider>()
+                  .Setup(c => c.FindProcessByName(ProcessProvider.WHISPARR_CONSOLE_PROCESS_NAME))
+                  .Returns(new List<ProcessInfo>
+                           {
+                               new ProcessInfo { Id = 10 },
+                               new ProcessInfo { Id = CURRENT_PROCESS_ID }
+                           });
         }
 
         [Test]
@@ -46,13 +60,7 @@ namespace NzbDrone.App.Test
         [Test]
         public void should_enforce_if_another_console_is_running()
         {
-            Mocker.GetMock<IProcessProvider>()
-                  .Setup(c => c.FindProcessByName(ProcessProvider.WHISPARR_CONSOLE_PROCESS_NAME))
-                  .Returns(new List<ProcessInfo>
-                           {
-                               new ProcessInfo { Id = 10 },
-                               new ProcessInfo { Id = CURRENT_PROCESS_ID }
-                           });
+            GivenAnotherConsoleIsRunning();
 
             Assert.Throws<TerminateApplicationException>(() => Subject.PreventStartIfAlreadyRunning());
             Mocker.GetMock<IBrowserService>().Verify(c => c.LaunchWebUI(), Times.Once());
@@ -72,6 +80,18 @@ namespace NzbDrone.App.Test
 
             Assert.Throws<TerminateApplicationException>(() => Subject.PreventStartIfAlreadyRunning());
             Mocker.GetMock<IBrowserService>().Verify(c => c.LaunchWebUI(), Times.Once());
+            ExceptionVerification.ExpectedWarns(1);
+        }
+
+        [Test]
+        public void should_not_launch_browser_if_nobrowser_flag_is_set()
+        {
+            GivenAnotherConsoleIsRunning();
+
+            Mocker.SetConstant<IStartupContext>(new StartupContext("-nobrowser"));
+
+            Assert.Throws<TerminateApplicationException>(() => Subject.PreventStartIfAlreadyRunning());
+            Mocker.GetMock<IBrowserService>().Verify(c => c.LaunchWebUI(), Times.Never());
             ExceptionVerification.ExpectedWarns(1);
         }
     }

@@ -44,6 +44,7 @@ function AddNewPerformerModalContent({
     rootFolderPath,
     monitored,
     moviesMonitored,
+    whisparrMonitorNewItems,
     qualityProfileId,
     searchForMovie,
     tags,
@@ -75,6 +76,7 @@ function AddNewPerformerModalContent({
                 size={250}
                 overflow={true}
                 lazy={true}
+                title={fullName}
               />
             </div>
           )}
@@ -121,6 +123,18 @@ function AddNewPerformerModalContent({
                   name="moviesMonitored"
                   helpText={translate('MonitoredPerformerMovieHelpText')}
                   {...moviesMonitored}
+                  onChange={onInputChange}
+                />
+              </FormGroup>
+
+              <FormGroup>
+                <FormLabel>{translate('WhisparrMonitorNewItems')}</FormLabel>
+
+                <FormInputGroup
+                  type={inputTypes.CHECK}
+                  name="whisparrMonitorNewItems"
+                  helpText={translate('WhisparrMonitorNewItemsEntityHelpText')}
+                  {...whisparrMonitorNewItems}
                   onChange={onInputChange}
                 />
               </FormGroup>

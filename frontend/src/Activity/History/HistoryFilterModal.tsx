@@ -1,11 +1,12 @@
 import React, { useCallback } from 'react';
-import FilterModal from 'Components/Filter/FilterModal';
+import FilterModal, {
+  FilterModalPassthroughProps,
+} from 'Components/Filter/FilterModal';
 import History from 'typings/History';
 import { setHistoryOption } from './historyOptionsStore';
 import { FILTER_BUILDER } from './useHistory';
 
-interface HistoryFilterModalProps {
-  isOpen: boolean;
+interface HistoryFilterModalProps extends FilterModalPassthroughProps {
   sectionItems: History[];
 }
 

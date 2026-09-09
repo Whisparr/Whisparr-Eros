@@ -16,6 +16,7 @@ interface ManageImportListsModalRowProps {
   qualityProfileId: number;
   implementation: string;
   tags: number[];
+  tagExisting: boolean;
   enabled: boolean;
   enableAuto: boolean;
   columns: Column[];
@@ -36,6 +37,7 @@ function ManageImportListsModalRow(
     enabled,
     enableAuto,
     tags,
+    tagExisting,
     onSelectedChange,
   } = props;
 
@@ -82,6 +84,10 @@ function ManageImportListsModalRow(
 
       <TableRowCell className={styles.tags}>
         <MovieTagList tags={tags} />
+      </TableRowCell>
+
+      <TableRowCell className={styles.tagExisting}>
+        {tagExisting ? translate('Yes') : translate('No')}
       </TableRowCell>
     </TableRow>
   );

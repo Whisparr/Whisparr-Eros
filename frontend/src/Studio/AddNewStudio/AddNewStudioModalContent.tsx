@@ -60,6 +60,7 @@ function AddNewStudioModalContent(props: AddNewStudioModalContentProps) {
                 size={250}
                 overflow={true}
                 lazy={true}
+                title={title}
               />
             </div>
           )}
@@ -103,6 +104,17 @@ function AddNewStudioModalContent(props: AddNewStudioModalContentProps) {
                   helpText={translate('MonitoredStudioMovieHelpText')}
                   {...settings.moviesMonitored}
                   errors={settings.moviesMonitored?.errors}
+                  onChange={onInputChange}
+                />
+              </FormGroup>
+
+              <FormGroup>
+                <FormLabel>{translate('WhisparrMonitorNewItems')}</FormLabel>
+                <FormInputGroup
+                  type={inputTypes.CHECK}
+                  name="whisparrMonitorNewItems"
+                  helpText={translate('WhisparrMonitorNewItemsEntityHelpText')}
+                  {...settings.whisparrMonitorNewItems}
                   onChange={onInputChange}
                 />
               </FormGroup>

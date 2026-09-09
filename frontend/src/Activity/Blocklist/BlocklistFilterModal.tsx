@@ -1,11 +1,12 @@
 import React, { useCallback } from 'react';
-import FilterModal from 'Components/Filter/FilterModal';
+import FilterModal, {
+  FilterModalPassthroughProps,
+} from 'Components/Filter/FilterModal';
 import Blocklist from 'typings/Blocklist';
 import { setBlocklistOption } from './blocklistOptionsStore';
 import { FILTER_BUILDER } from './useBlocklist';
 
-interface BlocklistFilterModalProps {
-  isOpen: boolean;
+interface BlocklistFilterModalProps extends FilterModalPassthroughProps {
   sectionItems: Blocklist[];
 }
 

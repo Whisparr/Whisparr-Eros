@@ -170,6 +170,7 @@ function OrganizePreviewModalContent({
             className={styles.selectAllInput}
             containerClassName={styles.selectAllInputContainer}
             name="selectAll"
+            ariaLabel={translate('SelectAll')}
             value={selectAllValue}
             onChange={handleSelectAllChange}
           />

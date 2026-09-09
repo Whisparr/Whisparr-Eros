@@ -24,7 +24,7 @@ function AddDownloadClientModalContent({
   onDownloadClientSelect,
   onModalClose,
 }: Readonly<AddDownloadClientModalContentProps>) {
-  const { isSchemaFetching, isSchemaFetched, schemaError, schema } =
+  const { isSchemaLoading, isSchemaFetched, schemaError, schema } =
     useDownloadClientSchema();
 
   const { usenetDownloadClients, torrentDownloadClients } = useMemo(() => {
@@ -53,9 +53,9 @@ function AddDownloadClientModalContent({
       <ModalHeader>{translate('AddDownloadClient')}</ModalHeader>
 
       <ModalBody>
-        {isSchemaFetching ? <LoadingIndicator /> : null}
+        {isSchemaLoading ? <LoadingIndicator /> : null}
 
-        {!isSchemaFetching && !!schemaError ? (
+        {!isSchemaLoading && !!schemaError ? (
           <Alert kind={kinds.DANGER}>
             {translate('AddDownloadClientError')}
           </Alert>

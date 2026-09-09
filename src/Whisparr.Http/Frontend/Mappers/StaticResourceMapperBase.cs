@@ -8,6 +8,7 @@ using Microsoft.Net.Http.Headers;
 using NLog;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnvironmentInfo;
+using NzbDrone.Common.Extensions;
 
 namespace Whisparr.Http.Frontend.Mappers
 {
@@ -27,13 +28,32 @@ namespace Whisparr.Http.Frontend.Mappers
             _caseSensitive = RuntimeInfo.IsProduction ? DiskProviderBase.PathStringComparison : StringComparison.OrdinalIgnoreCase;
         }
 
-        public abstract string Map(string resourceUrl);
+        protected abstract string FolderPath { get; }
+
+        protected abstract string MapPath(string resourceUrl);
 
         public abstract bool CanHandle(string resourceUrl);
+
+        // Resolve the mapped path and refuse anything that escapes FolderPath, so a
+        // crafted resource url cannot walk out of the folder the mapper owns.
+        public string Map(string resourceUrl)
+        {
+            var filePath = Path.GetFullPath(MapPath(resourceUrl));
+            var parentPath = Path.GetFullPath(FolderPath) + Path.DirectorySeparatorChar;
+
+            return filePath.StartsWith(parentPath, _caseSensitive) ? filePath : null;
+        }
 
         public Task<IActionResult> GetResponse(string resourceUrl)
         {
             var filePath = Map(resourceUrl);
+
+            if (filePath == null)
+            {
+                _logger.Warn("Resource {0} resolves outside of {1}", resourceUrl.ForLog(), FolderPath);
+
+                return Task.FromResult<IActionResult>(null);
+            }
 
             if (_diskProvider.FileExists(filePath, _caseSensitive))
             {
@@ -48,7 +68,7 @@ namespace Whisparr.Http.Frontend.Mappers
                 }));
             }
 
-            _logger.Warn("File {0} not found", filePath);
+            _logger.Warn("File {0} not found", filePath.ForLog());
 
             return Task.FromResult<IActionResult>(null);
         }

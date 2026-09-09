@@ -14,6 +14,7 @@ using NzbDrone.Core.ImportLists.ImportExclusions;
 using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.MetadataSource;
 using NzbDrone.Core.Movies.Commands;
+using NzbDrone.Core.Movies.Performers;
 using NzbDrone.Core.Movies.Studios;
 using NzbDrone.Core.Organizer;
 using NzbDrone.Core.Parser;
@@ -34,6 +35,7 @@ namespace NzbDrone.Core.Movies
     {
         private readonly IMovieService _movieService;
         private readonly IStudioService _studioService;
+        private readonly IPerformerService _performerService;
         private readonly IMovieMetadataService _movieMetadataService;
         private readonly IProvideMovieInfo _movieInfo;
         private readonly IBuildFileNames _fileNameBuilder;
@@ -46,11 +48,12 @@ namespace NzbDrone.Core.Movies
 
         public AddMovieService(IMovieService movieService,
                                 IStudioService studioService,
+                                IPerformerService performerService,
                                 IMovieMetadataService movieMetadataService,
                                 IProvideMovieInfo movieInfo,
                                 IBuildFileNames fileNameBuilder,
                                 IAddMovieValidator addMovieValidator,
-                                ImportListExclusionService importListExclusionService,
+                                IImportListExclusionService importListExclusionService,
                                 IRootFolderService rootFolderService,
                                 IConfigService configService,
                                 ITagRepository tagRepository,
@@ -58,6 +61,7 @@ namespace NzbDrone.Core.Movies
         {
             _movieService = movieService;
             _studioService = studioService;
+            _performerService = performerService;
             _movieMetadataService = movieMetadataService;
             _movieInfo = movieInfo;
             _fileNameBuilder = fileNameBuilder;
@@ -344,29 +348,59 @@ namespace NzbDrone.Core.Movies
                     }
                 }
 
-                var performerForeignIds = newMovie.MovieMetadata.Value.PerformerForeignIds;
+                var performerForeignIds = newMovie.MovieMetadata.Value.PerformerForeignIds ?? new List<string>();
                 var excludedItems = _importListExclusionService.GetAllByType(ImportExclusionType.Performer);
-                if (excludedItems != null)
+                var excludedPerformers = excludedItems?.Where(e => performerForeignIds.Contains(e.ForeignId)).ToList() ?? new List<ImportListExclusion>();
+
+                if (excludedPerformers.Any())
                 {
-                    var excludedPerformers = excludedItems.Where(e => performerForeignIds.Contains(e.ForeignId)).ToList();
-                    if (excludedPerformers.Any())
+                    if (_configService.WhisparrAlwaysExcludePerformersTag.IsNullOrWhiteSpace())
                     {
-                        if (_configService.WhisparrAlwaysExcludePerformersTag.IsNullOrWhiteSpace())
+                        newExclusion.Reason = ImportExclusionReason.PerformerExclusion;
+                        _importListExclusionService.AddExclusion(newExclusion);
+                        throw new ExcludedException($"Performer: [{string.Join(",", excludedPerformers.Select(ep => ep.ToString()).ToList())}] has been excluded");
+                    }
+                    else
+                    {
+                        var tag = AddTag(new Tag { Label = _configService.WhisparrAlwaysExcludePerformersTag });
+                        if (tag != null)
                         {
-                            newExclusion.Reason = ImportExclusionReason.PerformerExclusion;
+                            newMovie.Tags.Add(tag.Id);
+                        }
+
+                        newMovie.Monitored = false;
+                        _logger.Info("Performer: [{0}] has been excluded. Marking movie as unmonitored.", string.Join(",", excludedPerformers.Select(ep => ep.ToString()).ToList()));
+                    }
+                }
+                else if (performerForeignIds.Any())
+                {
+                    // A scene has one studio but any number of performers, so a single credited
+                    // performer's after date is enough to hold it back; performers without a date
+                    // set never block anything.
+                    var performersAfterDate = _performerService.FindByForeignIds(performerForeignIds)
+                        .Where(p => p.AfterDate.HasValue && newMovie.MovieMetadata?.Value?.ReleaseDateUtc < p.AfterDate.Value)
+                        .ToList();
+
+                    if (performersAfterDate.Any())
+                    {
+                        var performerDates = string.Join(", ", performersAfterDate.Select(p => $"{p.Name} ({p.AfterDate.Value:yyyy-MM-dd})"));
+
+                        if (_configService.WhisparrAlwaysExcludePerformersAfterTag.IsNullOrWhiteSpace())
+                        {
+                            newExclusion.Reason = ImportExclusionReason.PerformerAfterDate;
                             _importListExclusionService.AddExclusion(newExclusion);
-                            throw new ExcludedException($"Performer: [{string.Join(",", excludedPerformers.Select(ep => ep.ToString()).ToList())}] has been excluded");
+                            throw new ExcludedException($"Performer After Date: [{performerDates}] is after the release date");
                         }
                         else
                         {
-                            var tag = AddTag(new Tag { Label = _configService.WhisparrAlwaysExcludePerformersTag });
+                            var tag = AddTag(new Tag { Label = _configService.WhisparrAlwaysExcludePerformersAfterTag });
                             if (tag != null)
                             {
                                 newMovie.Tags.Add(tag.Id);
                             }
 
                             newMovie.Monitored = false;
-                            _logger.Info("Performer: [{0}] has been excluded. Marking movie as unmonitored.", string.Join(",", excludedPerformers.Select(ep => ep.ToString()).ToList()));
+                            _logger.Info("Performer: [{0}] has an after date later than the release. Marking movie as unmonitored.", performerDates);
                         }
                     }
                 }

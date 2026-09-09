@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using NLog;
 using NzbDrone.Common;
 using NzbDrone.Common.Cloud;
+using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
 using NzbDrone.Common.Serializer;
@@ -754,6 +755,11 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                 return null;
             }
 
+            if (title.IsPathValid(PathValidationType.AnyOs))
+            {
+                throw new InvalidSearchTermException("Invalid search term '{0}'", title);
+            }
+
             var result = new List<object>();
             var movieInfo = Parser.Parser.ParseMoviePath(title);
 
@@ -937,7 +943,6 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                     .Build();
 
                 request.AllowAutoRedirect = true;
-                request.SuppressHttpError = true;
 
                 var httpResponse = _httpClient.Get<List<MovieResource>>(request);
 
@@ -1042,7 +1047,6 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                     .Build();
 
                 request.AllowAutoRedirect = true;
-                request.SuppressHttpError = true;
 
                 var httpResponse = _httpClient.Get<List<MovieResource>>(request);
 
@@ -1128,7 +1132,6 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                     .Build();
 
                 request.AllowAutoRedirect = true;
-                request.SuppressHttpError = true;
 
                 var httpResponse = _httpClient.Get<List<MovieResource>>(request);
 
@@ -1226,7 +1229,6 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                     .Build();
 
                 request.AllowAutoRedirect = true;
-                request.SuppressHttpError = true;
 
                 var httpResponse = _httpClient.Get<List<PerformerResource>>(request);
 
@@ -1310,7 +1312,6 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                     .Build();
 
                 request.AllowAutoRedirect = true;
-                request.SuppressHttpError = true;
 
                 var httpResponse = _httpClient.Get<List<StudioResource>>(request);
 

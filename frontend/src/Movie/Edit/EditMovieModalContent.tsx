@@ -56,13 +56,7 @@ function EditMovieModalContent({
   const saveMovieAndMoveFiles = useSaveMovie(true);
 
   const isSaving = saveMovie.isPending || saveMovieAndMoveFiles.isPending;
-  // Map ApiError to the { status, responseJSON } shape expected by
-  // selectSettings and SpinnerErrorButton.
-  const saveError = useMemo(() => {
-    const err = saveMovie.error ?? saveMovieAndMoveFiles.error;
-    if (!err) return undefined;
-    return { status: err.statusCode, responseJSON: err.statusBody };
-  }, [saveMovie.error, saveMovieAndMoveFiles.error]);
+  const saveError = saveMovie.error ?? saveMovieAndMoveFiles.error;
 
   // Compute which fields have pending (unsaved) changes so selectSettings
   // can mark them accordingly.

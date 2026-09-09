@@ -1,0 +1,34 @@
+export const BOOL = 'bool';
+export const BYTES = 'bytes';
+export const DATE = 'date';
+export const DEFAULT = 'default';
+export const FOLDER = 'folder';
+export const HISTORY_EVENT_TYPE = 'historyEventType';
+export const INDEXER = 'indexer';
+export const LANGUAGE = 'language';
+export const PROTOCOL = 'protocol';
+export const QUALITY = 'quality';
+export const QUALITY_PROFILE = 'qualityProfile';
+export const QUEUE_STATUS = 'queueStatus';
+export const MOVIE = 'movie';
+export const RELEASE_STATUS = 'releaseStatus';
+export const TAG = 'tag';
+export const IMPORTLIST = 'importList';
+
+export type FilterBuilderValueType =
+  | 'bool'
+  | 'bytes'
+  | 'date'
+  | 'default'
+  | 'folder'
+  | 'historyEventType'
+  | 'indexer'
+  | 'language'
+  | 'protocol'
+  | 'quality'
+  | 'qualityProfile'
+  | 'queueStatus'
+  | 'movie'
+  | 'releaseStatus'
+  | 'tag'
+  | 'importList';

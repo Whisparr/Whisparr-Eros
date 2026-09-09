@@ -7,6 +7,38 @@
   transform: translateX(0);
 }
 
+.sidebarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: $headerHeight;
+}
+
+.logoContainer {
+  display: flex;
+  align-items: center;
+  padding-left: 20px;
+}
+
+.logoLink {
+  line-height: 0;
+}
+
+.logo {
+  display: block;
+  width: auto;
+  height: 32px;
+  vertical-align: middle;
+}
+
+.sidebarCloseButton {
+  composes: button from '~Components/Link/IconButton.css';
+
+  margin-right: 15px;
+  color: var(--white);
+  text-align: center;
+}
+
 .sidebar {
   display: flex;
   flex-direction: column;

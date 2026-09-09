@@ -1,20 +1,17 @@
 import { useGeneralSettings } from 'Settings/General/useGeneralSettings';
+import {
+  getLinkedMovieMetadataSource,
+  isMovieMetadataLinked,
+} from './useMovieMonitorAvailability';
 
 export function useShowMovieMonitorToggleButton(
   tmdbid?: number,
   tpdbid?: string
 ) {
   const { data: generalSettings } = useGeneralSettings();
-  const source = generalSettings.whisparrMovieMetadataSource;
+  const linkedSource = getLinkedMovieMetadataSource(
+    generalSettings?.whisparrMovieMetadataSource
+  );
 
-  switch (true) {
-    case source === 'none':
-      return false;
-    case source === 'tmdb' && tmdbid && tmdbid > 0:
-      return true;
-    case source === 'tpdb' && tpdbid && tpdbid.length > 0:
-      return true;
-    default:
-      return false;
-  }
+  return !!linkedSource && isMovieMetadataLinked(linkedSource, tmdbid, tpdbid);
 }

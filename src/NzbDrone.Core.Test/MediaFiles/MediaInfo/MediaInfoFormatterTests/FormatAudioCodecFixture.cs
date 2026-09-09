@@ -28,6 +28,7 @@ namespace NzbDrone.Core.Test.MediaFiles.MediaInfo.MediaInfoFormatterTests
         [TestCase("mp3, ,  ", "climbing.mp4", "MP3")]
         [TestCase("dts, , DTS-HD MA", "DTS-HD.MA", "DTS-HD MA")]
         [TestCase("dts, , DTS:X", "DTS-X", "DTS-X")]
+        [TestCase("dts, , DTS-HD MA + DTS:X", "DTS-X", "DTS-X")]
         [TestCase("dts, , DTS-HD MA + DTS:X IMAX", "DTS-X", "DTS-X")]
         [TestCase("dts, , DTS-HD MA", "DTS-HD.MA", "DTS-HD MA")]
         [TestCase("dts, , DTS-ES", "DTS-ES", "DTS-ES")]

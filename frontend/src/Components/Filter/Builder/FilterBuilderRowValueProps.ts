@@ -1,15 +1,21 @@
-import { FilterBuilderProp } from 'Filters/Filter';
+import { FilterBuilderProp, PropertyFilter } from 'Filters/Filter';
+import { FilterType } from 'Helpers/Props/filterTypes';
 
-interface FilterBuilderRowOnChangeProps {
+export interface FilterBuilderRowOnChangeProps {
   name: string;
-  value: unknown[];
+  // Whatever the filter holds: an array for every value type but date, which
+  // holds either a `yyyy-mm-dd` string or an in-last/in-next `{ time, value }`.
+  value: PropertyFilter['value'];
 }
 
 interface FilterBuilderRowValueProps {
-  filterType?: string;
-  filterValue: string | number | object | string[] | number[] | object[];
+  filterType?: FilterType;
+  filterValue: PropertyFilter['value'];
   selectedFilterBuilderProp: FilterBuilderProp<unknown>;
-  sectionItem: unknown[];
+  // Was `sectionItem`, which nothing read -- `DefaultFilterBuilderRowValue`,
+  // the only component that wants the items, had to omit the typo and
+  // redeclare the name the row actually passes.
+  sectionItems: readonly unknown[];
   onChange: (payload: FilterBuilderRowOnChangeProps) => void;
 }
 

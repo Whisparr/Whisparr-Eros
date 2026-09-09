@@ -23,7 +23,7 @@ namespace NzbDrone.Core.HealthCheck.Checks
 
             if (!Enum.GetNames(typeof(ReleaseBranches)).Any(x => x.ToLower() == currentBranch))
             {
-                return new HealthCheck(GetType(), HealthCheckResult.Warning, string.Format(_localizationService.GetLocalizedString("ReleaseBranchCheckOfficialBranchMessage"), _configFileService.Branch), "#branch-is-not-a-valid-release-branch");
+                return new HealthCheck(GetType(), HealthCheckResult.Warning, HealthCheckReason.ReleaseBranch, string.Format(_localizationService.GetLocalizedString("ReleaseBranchCheckOfficialBranchMessage"), _configFileService.Branch), "#branch-is-not-a-valid-release-branch");
             }
 
             return new HealthCheck(GetType());

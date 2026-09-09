@@ -63,6 +63,7 @@ namespace NzbDrone.Core.Organizer
                 ImdbId = "tt0066921",
                 TmdbId = 345691,
                 ForeignId = "345691",
+                CollectionTitle = "The Movie Collection",
                 ItemType = ItemType.Movie
             };
 

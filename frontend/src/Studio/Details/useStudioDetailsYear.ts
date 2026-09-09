@@ -104,7 +104,10 @@ export function useStudioDetailsYearActions(
 
   const onTableOptionChange = useCallback(
     ({ columns }: TableOptionsChangePayload) => {
-      setStudioScenesColumns(columns);
+      // This table has no page size, so the modal only ever sends columns.
+      if (columns) {
+        setStudioScenesColumns(columns);
+      }
     },
     []
   );

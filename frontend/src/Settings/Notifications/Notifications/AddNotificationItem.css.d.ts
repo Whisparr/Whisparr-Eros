@@ -6,7 +6,6 @@ declare namespace AddNotificationItemCssNamespace {
     overlay: string;
     presetsMenu: string;
     presetsMenuButton: string;
-    underlay: string;
   }
 }
 

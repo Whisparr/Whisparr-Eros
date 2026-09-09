@@ -15,6 +15,7 @@ import {
   setPerformerIndexTableOption,
 } from 'Performer/Index/performerIndexOptionsStore';
 import { CheckInputChanged } from 'typings/inputs';
+import translate from 'Utilities/String/translate';
 import PerformerIndexTableOptions from './PerformerIndexTableOptions';
 import styles from './PerformerIndexTableHeader.css';
 
@@ -85,7 +86,10 @@ function PerformerIndexTableHeader(props: PerformerIndexTableHeaderProps) {
                 optionsComponent={PerformerIndexTableOptions}
                 onTableOptionChange={onTableOptionChange}
               >
-                <IconButton name={icons.ADVANCED_SETTINGS} />
+                <IconButton
+                  name={icons.ADVANCED_SETTINGS}
+                  aria-label={translate('TableOptionsButton')}
+                />
               </TableOptionsModalWrapper>
             </VirtualTableHeaderCell>
           );

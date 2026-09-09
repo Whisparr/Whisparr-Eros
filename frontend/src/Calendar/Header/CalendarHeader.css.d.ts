@@ -1,5 +1,6 @@
 declare namespace CalendarHeaderCssNamespace {
   export interface ICalendarHeaderCss {
+    datePicker: string;
     header: string;
     loading: string;
     navigationButtons: string;

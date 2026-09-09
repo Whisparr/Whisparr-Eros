@@ -2,10 +2,10 @@ import React, { useMemo } from 'react';
 import FormGroup from 'Components/Form/FormGroup';
 import FormInputGroup from 'Components/Form/FormInputGroup';
 import FormLabel from 'Components/Form/FormLabel';
-import AppError from 'typings/AppError';
 import { FieldSelectOption } from 'typings/Field';
 import { InputChanged } from 'typings/inputs';
 import { Failure } from 'typings/pending';
+import { ApiError } from 'Utilities/Fetch/fetchJson';
 
 interface ProviderFieldFormGroupProps<T> {
   advancedSettings: boolean;
@@ -24,7 +24,7 @@ interface ProviderFieldFormGroupProps<T> {
   providerData?: object;
   // Forwarded to the inputs that talk to the API on their own -- an OAuth
   // field reports a failed authorization back to the form through this.
-  onSaveError?: (error: AppError | null) => void;
+  onSaveError?: (error: ApiError | null) => void;
   pending: boolean;
   errors: Failure[];
   warnings: Failure[];

@@ -6,7 +6,6 @@ declare namespace AddSpecificationItemCssNamespace {
     presetsMenu: string;
     presetsMenuButton: string;
     specification: string;
-    underlay: string;
   }
 }
 

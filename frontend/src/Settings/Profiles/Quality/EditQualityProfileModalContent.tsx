@@ -24,6 +24,7 @@ import QualityProfile, {
 } from 'typings/QualityProfile';
 import translate from 'Utilities/String/translate';
 import QualityProfileFormatItems from './QualityProfileFormatItems';
+import { DragMoveOptions } from './QualityProfileItemDragSource';
 import QualityProfileItems from './QualityProfileItems';
 import useQualityProfileInUse from './useQualityProfileInUse';
 import { useManageQualityProfile } from './useQualityProfiles';
@@ -35,12 +36,6 @@ const MODAL_BODY_PADDING = Number.parseInt(dimensions.modalBodyPadding, 10);
 // parser reports when it could not tell -- matching on it is not a choice the
 // profile offers.
 const UNPROFILED_LANGUAGES = ['Unknown'];
-
-interface DragMoveOptions {
-  dragQualityIndex: string;
-  dropQualityIndex: string;
-  dropPosition: string;
-}
 
 interface DragState {
   dragQualityIndex: string | null;
@@ -91,7 +86,7 @@ function EditQualityProfileModalContent({
     item,
     isSaving,
     saveError,
-    isSchemaFetching,
+    isSchemaLoading,
     isSchemaFetched,
     schemaError,
     validationErrors,
@@ -100,7 +95,7 @@ function EditQualityProfileModalContent({
     saveProvider,
   } = useManageQualityProfile(id, cloneId);
 
-  const isInUse = useQualityProfileInUse(id);
+  const { isInUse, inUseMessage } = useQualityProfileInUse(id);
   const wasSaving = usePrevious(isSaving);
 
   const [editGroups, setEditGroups] = useState(false);
@@ -539,9 +534,9 @@ function EditQualityProfileModalContent({
       <ModalBody>
         <Measure onMeasure={handleBodyMeasure}>
           <div>
-            {isSchemaFetching ? <LoadingIndicator /> : null}
+            {isSchemaLoading ? <LoadingIndicator /> : null}
 
-            {!isSchemaFetching && schemaError ? (
+            {!isSchemaLoading && schemaError ? (
               <Alert kind={kinds.DANGER}>
                 {translate('AddQualityProfileError')}
               </Alert>
@@ -690,7 +685,6 @@ function EditQualityProfileModalContent({
                   <div className={styles.formGroupWrapper}>
                     <QualityProfileItems
                       editGroups={editGroups}
-                      dragQualityIndex={dragState.dragQualityIndex}
                       dropQualityIndex={dragState.dropQualityIndex}
                       dropPosition={dragState.dropPosition}
                       qualityProfileItems={items.value}
@@ -728,11 +722,7 @@ function EditQualityProfileModalContent({
           {id ? (
             <div
               className={styles.deleteButtonContainer}
-              title={
-                isInUse
-                  ? translate('QualityProfileInUseMovieListCollection')
-                  : undefined
-              }
+              title={isInUse ? inUseMessage : undefined}
             >
               <Button
                 kind={kinds.DANGER}

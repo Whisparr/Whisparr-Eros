@@ -6,6 +6,7 @@ declare namespace ManageIndexersModalRowCssNamespace {
     implementation: string;
     name: string;
     priority: string;
+    protocol: string;
     tags: string;
   }
 }

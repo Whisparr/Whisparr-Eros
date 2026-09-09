@@ -38,6 +38,7 @@ namespace NzbDrone.Core.Configuration
         bool LaunchBrowser { get; }
         AuthenticationType AuthenticationMethod { get; }
         AuthenticationRequiredType AuthenticationRequired { get; }
+        string AllowedHosts { get; }
         bool AnalyticsEnabled { get; }
         string LogLevel { get; }
         string ConsoleLogLevel { get; }
@@ -51,6 +52,7 @@ namespace NzbDrone.Core.Configuration
         string SslCertPath { get; }
         string SslCertPassword { get; }
         string UrlBase { get; }
+        string TrustedNetworks { get; }
         string UiFolder { get; }
         string InstanceName { get; }
         bool UpdateAutomatically { get; }
@@ -66,6 +68,8 @@ namespace NzbDrone.Core.Configuration
         string PostgresPassword { get; }
         string PostgresMainDb { get; }
         string PostgresLogDb { get; }
+        string PostgresMainDbConnectionString { get; }
+        string PostgresLogDbConnectionString { get; }
         string Theme { get; }
         bool TrustCgnatIpAddresses { get; }
         string WhisparrMetadata { get; }
@@ -136,6 +140,7 @@ namespace NzbDrone.Core.Configuration
             _cache.Clear();
 
             var allWithDefaults = GetConfigDictionary();
+            var hasUpdated = false;
 
             foreach (var configValue in configValues)
             {
@@ -154,11 +159,15 @@ namespace NzbDrone.Core.Configuration
 
                 if (!equal)
                 {
+                    hasUpdated = true;
                     SetValue(configValue.Key.FirstCharToUpper(), configValue.Value.ToString());
                 }
             }
 
-            _eventAggregator.PublishEvent(new ConfigFileSavedEvent());
+            if (hasUpdated)
+            {
+                _eventAggregator.PublishEvent(new ConfigFileSavedEvent());
+            }
         }
 
         public string BindAddress
@@ -267,6 +276,8 @@ namespace NzbDrone.Core.Configuration
                 ? enumValue
                 : GetValueEnum("AuthenticationRequired", AuthenticationRequiredType.Enabled);
 
+        public string AllowedHosts => _serverOptions.AllowedHosts ?? GetValue("AllowedHosts", string.Empty);
+
         public bool AnalyticsEnabled => _logOptions.AnalyticsEnabled ?? GetValueBoolean("AnalyticsEnabled", true, persist: false);
 
         public string Branch => GetValue("Branch", "eros").ToLowerInvariant();
@@ -286,6 +297,8 @@ namespace NzbDrone.Core.Configuration
         public string PostgresMainDb => _postgresOptions?.MainDb ?? GetValue("PostgresMainDb", "whisparr-main", persist: false);
         public string PostgresLogDb => _postgresOptions?.LogDb ?? GetValue("PostgresLogDb", "whisparr-log", persist: false);
         public int PostgresPort => (_postgresOptions?.Port ?? 0) != 0 ? _postgresOptions.Port : GetValueInt("PostgresPort", 5432, persist: false);
+        public string PostgresMainDbConnectionString => _postgresOptions?.MainDbConnectionString ?? GetValue("PostgresMainDbConnectionString", string.Empty, persist: false);
+        public string PostgresLogDbConnectionString => _postgresOptions?.LogDbConnectionString ?? GetValue("PostgresLogDbConnectionString", string.Empty, persist: false);
         public bool LogDbEnabled => _logOptions.DbEnabled ?? GetValueBoolean("LogDbEnabled", true, persist: false);
         public bool LogSql => _logOptions.Sql ?? GetValueBoolean("LogSql", false, persist: false);
         public int LogRotate => _logOptions.Rotate ?? GetValueInt("LogRotate", 50, persist: false);
@@ -308,6 +321,8 @@ namespace NzbDrone.Core.Configuration
                 return "/" + urlBase;
             }
         }
+
+        public string TrustedNetworks => _serverOptions.TrustedNetworks ?? GetValue("TrustedNetworks", string.Empty);
 
         public string UiFolder => BuildInfo.IsDebug ? Path.Combine("..", "UI") : "UI";
 

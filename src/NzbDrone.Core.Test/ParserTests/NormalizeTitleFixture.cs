@@ -28,6 +28,12 @@ namespace NzbDrone.Core.Test.ParserTests
         [TestCase("Im a cyborg, but thats ok", "imcyborgbutthatsok")]
         [TestCase("Test: Something à Deux", "testsomethingdeux")]
         [TestCase("Parler à", "parlera")]
+        [TestCase("Ríkið", "rikid")]
+        [TestCase("Søren", "soren")]
+        [TestCase("Łódź", "lodz")]
+        [TestCase("Æon Flux", "aeonflux")]
+        [TestCase("Đorđe", "dorde")]
+        [TestCase("þor", "thor")]
         public void should_remove_special_characters_and_casing(string dirty, string clean)
         {
             var result = dirty.CleanMovieTitle();

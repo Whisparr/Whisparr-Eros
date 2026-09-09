@@ -23,6 +23,9 @@ namespace Whisparr.Api.V3.Studios
         /// <summary>Whether to search for new items when added to studio</summary>
         public bool? SearchOnAdd { get; set; }
 
+        /// <summary>The date to only add items after, as yyyy-MM-dd. Omit to leave the studios' existing dates alone, or send an empty string to clear them</summary>
+        public string AfterDate { get; set; }
+
         /// <summary>The tags to apply to the studios</summary>
         public List<int> Tags { get; set; }
 

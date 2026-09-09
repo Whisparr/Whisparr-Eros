@@ -4,6 +4,7 @@ using FizzWare.NBuilder;
 using Moq;
 using NUnit.Framework;
 using NzbDrone.Common.Disk;
+using NzbDrone.Core.HealthCheck;
 using NzbDrone.Core.HealthCheck.Checks;
 using NzbDrone.Core.Localization;
 using NzbDrone.Core.Movies;
@@ -22,6 +23,31 @@ namespace NzbDrone.Core.Test.HealthCheck.Checks
             Mocker.GetMock<ILocalizationService>()
                   .Setup(s => s.GetLocalizedString(It.IsAny<string>()))
                   .Returns("Some Warning Message");
+        }
+
+        private void GivenMissingRootFolders(params string[] rootFolderPaths)
+        {
+            var movies = Builder<Movie>.CreateListOfSize(rootFolderPaths.Length)
+                                        .Build()
+                                        .ToList();
+
+            Mocker.GetMock<IMovieService>()
+                  .Setup(s => s.AllMoviePaths())
+                  .Returns(movies.ToDictionary(x => x.Id, x => x.Path));
+
+            Mocker.GetMock<IRootFolderService>()
+                .Setup(s => s.All())
+                .Returns(new List<RootFolder>());
+
+            var queue = new Queue<string>(rootFolderPaths);
+
+            Mocker.GetMock<IRootFolderService>()
+                .Setup(s => s.GetBestRootFolderPath(It.IsAny<string>(), It.IsAny<List<RootFolder>>()))
+                .Returns(() => queue.Dequeue());
+
+            Mocker.GetMock<IDiskProvider>()
+                  .Setup(s => s.FolderExists(It.IsAny<string>()))
+                  .Returns(false);
         }
 
         private void GivenMissingRootFolder(string rootFolderPath, int movieCount = 1)
@@ -62,7 +88,7 @@ namespace NzbDrone.Core.Test.HealthCheck.Checks
         {
             GivenMissingRootFolder(@"C:\Movies".AsOsAgnostic());
 
-            Subject.Check().ShouldBeError();
+            Subject.Check().ShouldBeError(reason: HealthCheckReason.RootFolderMissing);
         }
 
         [Test]
@@ -80,7 +106,15 @@ namespace NzbDrone.Core.Test.HealthCheck.Checks
             PosixOnly();
             GivenMissingRootFolder(@"C:\Movies");
 
-            Subject.Check().ShouldBeError();
+            Subject.Check().ShouldBeError(reason: HealthCheckReason.RootFolderMissing);
+        }
+
+        [Test]
+        public void should_return_error_with_the_multiple_reason_when_several_root_folders_are_missing()
+        {
+            GivenMissingRootFolders(@"C:\Movies".AsOsAgnostic(), @"C:\Scenes".AsOsAgnostic());
+
+            Subject.Check().ShouldBeError(reason: HealthCheckReason.RootFolderMultipleMissing);
         }
 
         [Test]

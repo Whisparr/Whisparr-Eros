@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useRef } from 'react';
 import Alert from 'Components/Alert';
 import TextInput from 'Components/Form/TextInput';
 import Icon from 'Components/Icon';
@@ -25,6 +25,8 @@ function AddNewScene() {
     onClearLookup,
   } = useAddNewMovie('scene');
 
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
   const onSearchInputChange = useCallback(
     ({ value }: { value: string }) => {
       onLookupChange(value);
@@ -34,6 +36,7 @@ function AddNewScene() {
 
   const onClearMovieLookupPress = useCallback(() => {
     onClearLookup();
+    searchInputRef.current?.focus();
   }, [onClearLookup]);
 
   return (
@@ -45,6 +48,7 @@ function AddNewScene() {
           </div>
 
           <TextInput
+            ref={searchInputRef}
             className={styles.searchInput}
             name="movieLookup"
             value={term}
@@ -131,7 +135,7 @@ function AddNewScene() {
               {translate('HaveNotAddedMovies')}
             </div>
             <div>
-              <Button to="/add/import" kind={kinds.PRIMARY}>
+              <Button to="/add/import/scenes" kind={kinds.PRIMARY}>
                 {translate('ImportExistingMovies')}
               </Button>
             </div>

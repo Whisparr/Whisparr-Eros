@@ -21,6 +21,7 @@ namespace NzbDrone.Core.Datastore
     {
         IEnumerable<TModel> All();
         int Count();
+        int Count(Expression<Func<TModel, bool>> predicate);
         TModel Get(int id);
         TModel Find(int id);
         TModel Insert(TModel model);
@@ -104,6 +105,21 @@ namespace NzbDrone.Core.Datastore
             using (var conn = _database.OpenConnection())
             {
                 return conn.ExecuteScalar<int>($"SELECT COUNT(*) FROM \"{_table}\"");
+            }
+        }
+
+        // Counted in SQL rather than by materialising the rows: the callers only want the
+        // number, and the tables this is asked about are the library-sized ones.
+        public int Count(Expression<Func<TModel, bool>> predicate)
+        {
+            var sql = new SqlBuilder(_database.DatabaseType)
+                .SelectCount()
+                .Where(predicate)
+                .AddPageCountTemplate(typeof(TModel));
+
+            using (var conn = _database.OpenConnection())
+            {
+                return conn.ExecuteScalar<int>(sql.RawSql, sql.Parameters);
             }
         }
 
@@ -266,8 +282,10 @@ namespace NzbDrone.Core.Datastore
             }
 
             using (var conn = _database.OpenConnection())
+            using (var tran = conn.BeginTransaction(IsolationLevel.ReadCommitted))
             {
-                UpdateFields(conn, null, models, _properties);
+                UpdateFields(conn, tran, models, _properties);
+                tran.Commit();
             }
         }
 
@@ -371,8 +389,10 @@ namespace NzbDrone.Core.Datastore
             var propertiesToUpdate = properties.Select(x => x.GetMemberName()).ToList();
 
             using (var conn = _database.OpenConnection())
+            using (var tran = conn.BeginTransaction(IsolationLevel.ReadCommitted))
             {
-                UpdateFields(conn, null, models, propertiesToUpdate);
+                UpdateFields(conn, tran, models, propertiesToUpdate);
+                tran.Commit();
             }
 
             foreach (var model in models)
@@ -443,7 +463,7 @@ namespace NzbDrone.Core.Datastore
             }
         }
 
-        protected List<TModel> GetPagedRecords(SqlBuilder builder, PagingSpec<TModel> pagingSpec, Func<SqlBuilder, IEnumerable<TModel>> queryFunc)
+        protected List<TModel> GetPagedRecords(SqlBuilder builder, PagingSpec<TModel> pagingSpec, Func<SqlBuilder, IEnumerable<TModel>> queryFunc, string customSortExpression = null)
         {
             AddFilters(builder, pagingSpec);
 
@@ -452,28 +472,35 @@ namespace NzbDrone.Core.Datastore
                 pagingSpec.SortKey = $"{_table}.{_keyProperty.Name}";
             }
 
-            var orderByClause = BuildOrderByClause(pagingSpec);
+            var orderByClause = BuildOrderByClause(pagingSpec, customSortExpression);
             builder.OrderBy(orderByClause);
 
             return queryFunc(builder).ToList();
         }
 
-        private string BuildOrderByClause(PagingSpec<TModel> pagingSpec)
+        // customSortExpression replaces the mapped column for callers whose sort key has no column
+        // to sort on - "quality" is a rank the caller joins in, not a value stored on the row.
+        // Unlike upstream, the default sort keys still apply as tiebreakers, so rows sharing a rank
+        // keep a stable order instead of falling back to whatever the database returns.
+        private string BuildOrderByClause(PagingSpec<TModel> pagingSpec, string customSortExpression = null)
         {
             var pagingOffset = Math.Max(pagingSpec.Page - 1, 0) * pagingSpec.PageSize;
 
-            var sortKey = TableMapping.Mapper.GetSortKey(pagingSpec.SortKey);
+            (string Table, string Column)? sortKey = customSortExpression == null ? TableMapping.Mapper.GetSortKey(pagingSpec.SortKey) : null;
             var sortDirection = pagingSpec.SortDirection == SortDirection.Descending ? "DESC" : "ASC";
 
             var sbOrderByClause = new StringBuilder(null);
 
-            sbOrderByClause.Append($"\"{sortKey.Table ?? _table}\".\"{sortKey.Column}\" {sortDirection}");
+            sbOrderByClause.Append(customSortExpression != null
+                ? $"{customSortExpression} {sortDirection}"
+                : $"\"{sortKey.Value.Table ?? _table}\".\"{sortKey.Value.Column}\" {sortDirection}");
+
             if (pagingSpec.DefaultSortKeys?.Any() == true)
             {
                 foreach (var defaultSortKey in pagingSpec.DefaultSortKeys)
                 {
                     var key = TableMapping.Mapper.GetSortKey(defaultSortKey);
-                    if (key.Column == sortKey.Column && key.Table == sortKey.Table)
+                    if (sortKey.HasValue && key.Column == sortKey.Value.Column && key.Table == sortKey.Value.Table)
                     {
                         continue;
                     }

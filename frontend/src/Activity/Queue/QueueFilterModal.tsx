@@ -1,11 +1,12 @@
 import React, { useCallback } from 'react';
-import FilterModal from 'Components/Filter/FilterModal';
+import FilterModal, {
+  FilterModalPassthroughProps,
+} from 'Components/Filter/FilterModal';
 import Queue from 'typings/Queue';
 import { setQueueOption } from './queueOptionsStore';
 import { FILTER_BUILDER } from './useQueue';
 
-interface QueueFilterModalProps {
-  isOpen: boolean;
+interface QueueFilterModalProps extends FilterModalPassthroughProps {
   sectionItems: Queue[];
 }
 

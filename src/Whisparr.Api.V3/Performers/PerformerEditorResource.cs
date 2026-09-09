@@ -23,6 +23,9 @@ namespace Whisparr.Api.V3.Performers
         /// <summary>Whether to search for new content after it is added to the performers.</summary>
         public bool? SearchOnAdd { get; set; }
 
+        /// <summary>The date to only add items after, as yyyy-MM-dd. Omit to leave the performers' existing dates alone, or send an empty string to clear them</summary>
+        public string AfterDate { get; set; }
+
         /// <summary>The IDs of the tags to apply to the performers.</summary>
         public List<int> Tags { get; set; }
 

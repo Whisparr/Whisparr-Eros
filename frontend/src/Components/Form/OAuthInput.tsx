@@ -2,15 +2,15 @@ import React, { useCallback, useEffect } from 'react';
 import SpinnerErrorButton from 'Components/Link/SpinnerErrorButton';
 import { kinds } from 'Helpers/Props';
 import useOAuth from 'OAuth/useOAuth';
-import AppError from 'typings/AppError';
 import { InputOnChange } from 'typings/inputs';
+import { ApiError } from 'Utilities/Fetch/fetchJson';
 
 export interface OAuthInputProps {
   label?: string;
   name: string;
   provider: string;
   providerData: Record<string, unknown>;
-  onSaveError?: (error: AppError | null) => void;
+  onSaveError?: (error: ApiError | null) => void;
   onChange: InputOnChange<unknown>;
 }
 
@@ -28,7 +28,7 @@ function OAuthInput({
   // error, so a failed authorization has to be reported there rather than just
   // shown on the button.
   const reportSaveError = useCallback(
-    (saveError: AppError | null) => {
+    (saveError: ApiError | null) => {
       onSaveError?.(saveError);
     },
     [onSaveError]
@@ -40,7 +40,7 @@ function OAuthInput({
         reportSaveError(null);
       })
       .catch((error) => {
-        if (error?.status === 400) {
+        if (error?.statusCode === 400) {
           reportSaveError(error);
         }
       });

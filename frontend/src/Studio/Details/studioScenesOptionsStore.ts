@@ -32,7 +32,7 @@ const { useOption, getOptions, setOptions, setOption, setSort } =
           columnLabel: () => translate('Monitored'),
           label: '',
           isVisible: true,
-          isModifiable: false,
+          isModifiable: 'disabled',
         },
         {
           name: 'title',
@@ -79,7 +79,7 @@ const { useOption, getOptions, setOptions, setOption, setSort } =
           columnLabel: () => translate('Actions'),
           label: '',
           isVisible: true,
-          isModifiable: false,
+          isModifiable: 'disabled',
         },
       ],
     };

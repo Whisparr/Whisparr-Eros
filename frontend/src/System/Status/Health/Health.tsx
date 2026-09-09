@@ -112,7 +112,13 @@ function Health() {
                       />
                     </TableRowCell>
 
-                    <TableRowCell>{item.message}</TableRowCell>
+                    <TableRowCell>
+                      {item.message.includes('](') ? (
+                        <InlineMarkdown data={item.message} />
+                      ) : (
+                        item.message
+                      )}
+                    </TableRowCell>
 
                     <TableRowCell>
                       <IconButton

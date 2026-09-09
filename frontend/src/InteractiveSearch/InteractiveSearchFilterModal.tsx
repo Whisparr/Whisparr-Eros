@@ -1,12 +1,13 @@
 import React, { useCallback } from 'react';
-import FilterModal from 'Components/Filter/FilterModal';
+import FilterModal, {
+  FilterModalPassthroughProps,
+} from 'Components/Filter/FilterModal';
 import InteractiveSearchPayload from './InteractiveSearchPayload';
 import { RELEASE_FILTER_BUILDER_PROPS } from './releaseFilters';
 import { setReleasesFilter } from './releaseOptionsStore';
 import { useReleases } from './useReleases';
 
-interface InteractiveSearchFilterModalProps {
-  isOpen: boolean;
+interface InteractiveSearchFilterModalProps extends FilterModalPassthroughProps {
   searchPayload: InteractiveSearchPayload;
 }
 

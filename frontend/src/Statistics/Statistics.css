@@ -1,0 +1,9 @@
+.charts {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.chart {
+  flex: 1 0 380px;
+  min-width: 0;
+}

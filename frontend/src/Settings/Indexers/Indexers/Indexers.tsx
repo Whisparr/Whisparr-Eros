@@ -71,7 +71,11 @@ function Indexers() {
             );
           })}
 
-          <Card className={styles.addIndexer} onPress={handleAddIndexerPress}>
+          <Card
+            className={styles.addIndexer}
+            aria-label={translate('AddIndexer')}
+            onPress={handleAddIndexerPress}
+          >
             <div className={styles.center}>
               <Icon name={icons.ADD} size={45} />
             </div>

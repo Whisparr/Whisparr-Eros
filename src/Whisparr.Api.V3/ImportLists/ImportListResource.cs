@@ -16,6 +16,7 @@ namespace Whisparr.Api.V3.ImportLists
         public int ListOrder { get; set; }
         public TimeSpan MinRefreshInterval { get; set; }
         public DateTime? LastInfoSync { get; set; }
+        public bool TagExisting { get; set; }
     }
 
     public class ImportListResourceMapper : ProviderResourceMapper<ImportListResource, ImportListDefinition>
@@ -46,6 +47,7 @@ namespace Whisparr.Api.V3.ImportLists
             resource.ListOrder = (int)definition.ListType;
             resource.MinRefreshInterval = definition.MinRefreshInterval;
             resource.LastInfoSync = _importListStatusService.GetLastSyncListInfo(definition.Id);
+            resource.TagExisting = definition.TagExisting;
 
             return resource;
         }
@@ -67,6 +69,7 @@ namespace Whisparr.Api.V3.ImportLists
             definition.QualityProfileId = resource.QualityProfileId;
             definition.ListType = resource.ListType;
             definition.MinRefreshInterval = resource.MinRefreshInterval;
+            definition.TagExisting = resource.TagExisting;
 
             return definition;
         }

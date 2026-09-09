@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import useApiMutation from 'Helpers/Hooks/useApiMutation';
+import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import usePage from 'Helpers/Hooks/usePage';
 import usePagedApiQuery from 'Helpers/Hooks/usePagedApiQuery';
 import { usePendingChangesStore } from 'Helpers/Hooks/usePendingChangesStore';
@@ -45,6 +46,30 @@ const useImportListExclusions = () => {
 
 export default useImportListExclusions;
 
+// One item's exclusion, looked up by foreign ID -- the interactive search marks
+// excluded items with it. `stashId` is the API's name for the foreign ID; it
+// returns at most one record, and `[]` for an ID that is not excluded, so the
+// miss needs no handling beyond the `undefined` below.
+//
+// This is a third sibling to the movie history and blocklist reads the search
+// already makes. Like those it is keyed by something every row of a search
+// shares, so React Query issues it once per search rather than once per
+// release.
+export const useImportListExclusionByForeignId = (
+  foreignId: string | undefined
+) => {
+  const { data, ...query } = useApiQuery<ImportListExclusion[]>({
+    path: IMPORT_LIST_EXCLUSIONS_PATH,
+    queryParams: { stashId: foreignId },
+    queryOptions: { enabled: !!foreignId },
+  });
+
+  return {
+    ...query,
+    data: data?.[0],
+  };
+};
+
 export const useManageImportListExclusion = (
   importListExclusion?: ImportListExclusion
 ) => {
@@ -68,6 +93,10 @@ export const useManageImportListExclusion = (
       onSuccess: () => {
         queryClient.invalidateQueries({
           queryKey: [PAGED_IMPORT_LIST_EXCLUSIONS_PATH],
+        });
+
+        queryClient.invalidateQueries({
+          queryKey: [IMPORT_LIST_EXCLUSIONS_PATH],
         });
       },
     },
@@ -124,6 +153,10 @@ export const useDeleteImportListExclusion = (id: number) => {
         queryClient.invalidateQueries({
           queryKey: [PAGED_IMPORT_LIST_EXCLUSIONS_PATH],
         });
+
+        queryClient.invalidateQueries({
+          queryKey: [IMPORT_LIST_EXCLUSIONS_PATH],
+        });
       },
     },
   });
@@ -150,6 +183,10 @@ export const useDeleteImportListExclusions = (onSuccess?: () => void) => {
       onSuccess: () => {
         queryClient.invalidateQueries({
           queryKey: [PAGED_IMPORT_LIST_EXCLUSIONS_PATH],
+        });
+
+        queryClient.invalidateQueries({
+          queryKey: [IMPORT_LIST_EXCLUSIONS_PATH],
         });
 
         onSuccess?.();

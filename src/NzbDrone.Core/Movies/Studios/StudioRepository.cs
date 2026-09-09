@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Dapper;
+using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Datastore;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Parser;
@@ -37,7 +38,19 @@ namespace NzbDrone.Core.Movies.Studios
 
         public List<Studio> FindAllByTitle(string title)
         {
-            return All().Where(x => x.CleanTitle == title || x.CleanSearchTitle == title || (x.Aliases != null && x.Aliases.Where(x => x.CleanStudioTitle()?.ToLower() == title).Any())).ToList();
+            if (title.IsNullOrWhiteSpace())
+            {
+                return new List<Studio>();
+            }
+
+            // CleanSearchTitle is only ever written by the API's resource mapper, and stores
+            // string.Empty when the studio has no search title. Studios created by the
+            // metadata and scan paths leave it null. Comparing a blank title against either
+            // would return every studio the user has saved through the UI, so blanks are
+            // excluded rather than relied upon to be null.
+            return All().Where(x => x.CleanTitle == title
+                                 || (x.CleanSearchTitle.IsNotNullOrWhiteSpace() && x.CleanSearchTitle == title)
+                                 || (x.Aliases != null && x.Aliases.Any(alias => alias.CleanStudioTitle()?.ToLower() == title))).ToList();
         }
 
         public Studio FindByForeignId(string foreignId)

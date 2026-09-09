@@ -57,19 +57,14 @@ export type CollectionFilterPredicate = (
   type: FilterType
 ) => boolean;
 
-const predicates = filterTypePredicates as Record<
-  string,
-  (itemValue: unknown, filterValue: unknown) => boolean
->;
-
 export const COLLECTION_FILTER_PREDICATES: Record<
   string,
   CollectionFilterPredicate
 > = {
   genres: (item, filterValue, type) =>
-    predicates[type](collectionGenres(item), filterValue),
+    filterTypePredicates[type](collectionGenres(item), filterValue),
   totalMovies: (item, filterValue, type) =>
-    predicates[type](item.movies.length, filterValue),
+    filterTypePredicates[type](item.movies.length, filterValue),
 };
 
 export const COLLECTION_FILTER_BUILDER_PROPS: FilterBuilderProp<MovieCollection>[] =

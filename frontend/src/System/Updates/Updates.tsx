@@ -28,7 +28,8 @@ const VERSION_REGEX = /\d+\.\d+\.\d+\.\d+/i;
 function Updates() {
   const currentVersion = useAppValue('version');
   const { packageUpdateMechanismMessage } = useSystemStatusData();
-  const { shortDateFormat, longDateFormat, timeFormat } = useUiSettingsValues();
+  const { shortDateFormat, longDateFormat, timeFormat, timeZone } =
+    useUiSettingsValues();
   const isInstallingUpdate = useCommandExecuting(
     commandNames.APPLICATION_UPDATE
   );
@@ -180,7 +181,8 @@ function Updates() {
                       title={formatDateTime(
                         update.releaseDate,
                         longDateFormat,
-                        timeFormat
+                        timeFormat,
+                        { timeZone }
                       )}
                     >
                       {formatDate(update.releaseDate, shortDateFormat)}
@@ -197,7 +199,8 @@ function Updates() {
                         title={formatDateTime(
                           update.installedOn,
                           longDateFormat,
-                          timeFormat
+                          timeFormat,
+                          { timeZone }
                         )}
                       >
                         {translate('CurrentlyInstalled')}
@@ -211,7 +214,8 @@ function Updates() {
                         title={formatDateTime(
                           update.installedOn,
                           longDateFormat,
-                          timeFormat
+                          timeFormat,
+                          { timeZone }
                         )}
                       >
                         {translate('PreviouslyInstalled')}

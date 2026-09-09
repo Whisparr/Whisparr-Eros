@@ -2,16 +2,18 @@ import { reduce } from 'lodash';
 import React, {
   useCallback,
   useEffect,
+  useMemo,
   useReducer,
   useRef,
   useState,
 } from 'react';
-import { useMatch, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import Alert from 'Components/Alert';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import PageContent from 'Components/Page/PageContent';
 import PageContentBody from 'Components/Page/PageContentBody';
-import { kinds } from 'Helpers/Props';
+import { kinds, sortDirections } from 'Helpers/Props';
+import { SortDirection } from 'Helpers/Props/sortDirections';
 import { useRootFolder } from 'RootFolder/useRootFolders';
 import { useQualityProfiles } from 'Settings/Profiles/Quality/useQualityProfiles';
 import ImportFile from 'typings/ImportFile';
@@ -26,6 +28,8 @@ import {
 } from '../../addMovieDefaultsStore';
 import {
   IMPORT_ITEM_LIMIT,
+  ImportItem,
+  ImportItemType,
   importReducer,
   MovieLookupResult,
 } from '../ImportMovieTypes';
@@ -35,6 +39,10 @@ import ImportMovieFooter from './ImportMovieFooter';
 import ImportMovieTable from './ImportMovieTable';
 
 const EMPTY_IMPORT_FILES: ImportFile[] = [];
+
+interface ImportMovieProps {
+  readonly itemType?: ImportItemType;
+}
 
 interface SelectionState {
   allSelected: boolean;
@@ -56,13 +64,11 @@ function getSelectedIds(selectedState: Record<string, boolean>): string[] {
   );
 }
 
-function ImportMovie() {
+function ImportMovie({ itemType }: ImportMovieProps) {
   const { rootFolderId: rootFolderIdParam } = useParams() as {
     rootFolderId: string;
   };
   const rootFolderId = Number.parseInt(rootFolderIdParam, 10);
-  const scenesMatch = useMatch('/add/import/scenes/:rootFolderId');
-  const itemType: 'movie' | 'scene' = scenesMatch ? 'scene' : 'movie';
 
   // The list endpoint already carries import files, but this page is reachable
   // by url with no list in the cache, so it reads the folder on its own.
@@ -104,6 +110,10 @@ function ImportMovie() {
     lastToggled: null,
     selectedState: {},
   });
+
+  const [sortDirection, setSortDirection] = useState<SortDirection>(
+    sortDirections.ASCENDING
+  );
 
   const [isImporting, setIsImporting] = useState(false);
   const [importError, setImportError] = useState<ApiError | null>(null);
@@ -147,6 +157,30 @@ function ImportMovie() {
     });
   }, [importState.items, queueLookup]);
 
+  // Rows land in whatever order the disk scan produced them, so the table is
+  // sorted by relative path — the only column whose value doesn't change as
+  // lookups come back and start shuffling rows around.
+  const sortedItems = useMemo(() => {
+    const sorted = [...importState.items].sort((a: ImportItem, b: ImportItem) =>
+      a.relativePath.localeCompare(b.relativePath, undefined, {
+        numeric: true,
+        sensitivity: 'base',
+      })
+    );
+
+    return sortDirection === sortDirections.DESCENDING
+      ? sorted.reverse()
+      : sorted;
+  }, [importState.items, sortDirection]);
+
+  const onSortPress = useCallback(() => {
+    setSortDirection((prev) =>
+      prev === sortDirections.ASCENDING
+        ? sortDirections.DESCENDING
+        : sortDirections.ASCENDING
+    );
+  }, []);
+
   const onSelectAllChange = useCallback(({ value }: { value: boolean }) => {
     setSelectionState(
       (prev) => selectAll(prev.selectedState, value) as SelectionState
@@ -160,14 +194,14 @@ function ImportMovie() {
           toggleSelected(
             prev,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            importState.items as unknown as any[],
+            sortedItems as unknown as any[],
             String(id),
             value ?? false,
             shiftKey
           ) as SelectionState
       );
     },
-    [importState.items]
+    [sortedItems]
   );
 
   const onRemoveSelectedStateItem = useCallback((id: string) => {
@@ -182,7 +216,7 @@ function ImportMovie() {
     (opts: {
       id: string;
       term: string;
-      itemType: 'movie' | 'scene';
+      itemType?: ImportItemType;
       topOfQueue: boolean;
     }) => {
       queueLookup(opts);
@@ -271,8 +305,16 @@ function ImportMovie() {
 
   const selectedIds = getSelectedIds(selectionState.selectedState);
 
+  let titleKey = 'ImportLibrary';
+
+  if (itemType === 'scene') {
+    titleKey = 'ImportScenes';
+  } else if (itemType === 'movie') {
+    titleKey = 'ImportMovies';
+  }
+
   return (
-    <PageContent title={translate('ImportMovies')}>
+    <PageContent title={translate(titleKey)}>
       <PageContentBody>
         {rootFoldersFetching ? <LoadingIndicator /> : null}
 
@@ -285,7 +327,12 @@ function ImportMovie() {
         rootFoldersPopulated &&
         !importFiles.length ? (
           <Alert kind={kinds.INFO}>
-            {translate('AllMoviesInPathHaveBeenImported', { path: path ?? '' })}
+            {translate(
+              itemType === 'scene'
+                ? 'AllScenesInPathHaveBeenImported'
+                : 'AllMoviesInPathHaveBeenImported',
+              { path: path ?? '' }
+            )}
           </Alert>
         ) : null}
 
@@ -303,11 +350,13 @@ function ImportMovie() {
         rootFoldersPopulated &&
         !!importFiles.length ? (
           <ImportMovieTable
-            items={importState.items}
+            items={sortedItems}
             isLookingUp={isLookingUp}
             allSelected={selectionState.allSelected}
             allUnselected={selectionState.allUnselected}
             selectedState={selectionState.selectedState}
+            sortDirection={sortDirection}
+            onSortPress={onSortPress}
             onSelectAllChange={onSelectAllChange}
             onSelectedChange={onSelectedChange}
             onRemoveSelectedStateItem={onRemoveSelectedStateItem}

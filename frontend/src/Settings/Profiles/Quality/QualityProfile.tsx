@@ -62,6 +62,7 @@ function QualityProfile({
     <Card
       className={styles.qualityProfile}
       overlayContent={true}
+      aria-label={translate('EditQualityProfileName', { name })}
       onPress={setEditQualityProfileModalOpen}
     >
       <div className={styles.nameContainer}>

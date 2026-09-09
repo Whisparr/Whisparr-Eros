@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using NLog;
+using NzbDrone.Common.Extensions;
 using Whisparr.Http.Extensions;
 using Whisparr.Http.Frontend.Mappers;
 
@@ -69,7 +70,7 @@ namespace Whisparr.Http.Frontend
                 return NotFound();
             }
 
-            _logger.Warn("Couldn't find handler for {0}", path);
+            _logger.Warn("Couldn't find handler for {0}", path.ForLog());
 
             return NotFound();
         }

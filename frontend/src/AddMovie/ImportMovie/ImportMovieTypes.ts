@@ -4,15 +4,33 @@ export interface ImportFile {
   relativePath: string;
 }
 
+// The movies/scenes routes pin the lookup to one type; the bare
+// /add/import/:rootFolderId route leaves it unset so the server infers the
+// type per file.
+export type ImportItemType = 'movie' | 'scene';
+
+// Only the fields the import table reads. Credits carry the performer gender,
+// but the server skips mapping them for results that already exist locally —
+// those fall back to performerNames.
+export interface ImportCredit {
+  personName?: string;
+  performer?: {
+    name?: string;
+    gender?: string;
+  };
+}
+
 export interface MovieLookupResult {
   foreignId: string;
   tmdbId: number;
   tpdbId?: string;
-  itemType: 'movie' | 'scene';
+  itemType: ImportItemType;
   title: string;
   year: number;
   releaseDate?: string;
   studioTitle?: string;
+  performerNames?: string[];
+  searchCredits?: ImportCredit[];
   isExisting: boolean;
 }
 
@@ -21,7 +39,7 @@ export interface ImportItem {
   path: string;
   relativePath: string;
   term: string;
-  itemType: 'movie' | 'scene';
+  itemType?: ImportItemType;
   isFetching: boolean;
   isPopulated: boolean;
   isQueued: boolean;
@@ -36,7 +54,7 @@ export type ImportAction =
   | {
       type: 'INIT_ITEMS';
       files: ImportFile[];
-      itemType: 'movie' | 'scene';
+      itemType?: ImportItemType;
       defaults: { monitor: string; qualityProfileId: number };
     }
   | { type: 'SET_ITEM_FETCHING'; id: string }

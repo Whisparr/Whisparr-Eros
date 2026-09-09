@@ -122,6 +122,7 @@ function MovieCastPoster({ credit, posterWidth, posterHeight }: Props) {
               size={250}
               lazy={false}
               overflow={true}
+              title={title}
               onError={onPosterLoadError}
               onLoad={onPosterLoad}
             />

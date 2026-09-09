@@ -105,6 +105,7 @@ function CollectionMovie({
             size={250}
             lazy={false}
             overflow={true}
+            title={title}
             onError={handlePosterLoadError}
             onLoad={handlePosterLoad}
           />

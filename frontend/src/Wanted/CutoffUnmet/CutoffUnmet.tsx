@@ -16,6 +16,7 @@ import TableBody from 'Components/Table/TableBody';
 import TableOptionsModalWrapper from 'Components/Table/TableOptions/TableOptionsModalWrapper';
 import TablePager from 'Components/Table/TablePager';
 import { Filter as AppStateFilter } from 'Filters/Filter';
+import { useCustomFiltersList } from 'Filters/useCustomFilters';
 import useSelectState from 'Helpers/Hooks/useSelectState';
 import { align, icons, kinds } from 'Helpers/Props';
 import { SortDirection } from 'Helpers/Props/sortDirections';
@@ -25,7 +26,9 @@ import { TableOptionsChangePayload } from 'typings/Table';
 import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
 import getMonitoredValue from 'Wanted/getMonitoredValue';
+import toWantedSearchCommandBody from 'Wanted/toWantedSearchCommandBody';
 import useToggleMoviesMonitored from 'Wanted/useToggleMoviesMonitored';
+import CutoffUnmetFilterModal from './CutoffUnmetFilterModal';
 import {
   setCutoffUnmetOption,
   setCutoffUnmetOptions,
@@ -37,6 +40,7 @@ import useCutoffUnmet, { FILTERS } from './useCutoffUnmet';
 
 function CutoffUnmet() {
   const executeCommand = useExecuteCommand();
+  const customFilters = useCustomFiltersList('wanted.cutoffUnmet');
 
   const { columns, pageSize, selectedFilterKey, sortKey, sortDirection } =
     useCutoffUnmetOptions();
@@ -119,14 +123,17 @@ function CutoffUnmet() {
 
   const handleSearchAllCutoffUnmetConfirmed = useCallback(() => {
     executeCommand({
-      name: commandNames.CUTOFF_UNMET_MOVIES_SEARCH,
+      ...toWantedSearchCommandBody(
+        commandNames.CUTOFF_UNMET_MOVIES_SEARCH,
+        filters
+      ),
       commandFinished: () => {
         refetch();
       },
     });
 
     setIsConfirmSearchAllModalOpen(false);
-  }, [refetch, executeCommand]);
+  }, [filters, refetch, executeCommand]);
 
   const handleToggleSelectedPress = useCallback(() => {
     toggleMoviesMonitored({
@@ -226,7 +233,8 @@ function CutoffUnmet() {
             alignMenu={align.RIGHT}
             selectedFilterKey={selectedFilterKey}
             filters={FILTERS as unknown as AppStateFilter[]}
-            customFilters={[]}
+            customFilters={customFilters}
+            filterModalConnectorComponent={CutoffUnmetFilterModal}
             onFilterSelect={handleFilterSelect}
           />
         </PageToolbarSection>

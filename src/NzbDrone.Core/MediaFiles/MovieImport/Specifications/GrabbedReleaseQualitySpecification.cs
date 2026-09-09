@@ -42,7 +42,7 @@ namespace NzbDrone.Core.MediaFiles.MovieImport.Specifications
                 if (item.Quality.Quality != Quality.Unknown && item.Quality != localMovie.Quality)
                 {
                     // Log only for info, spec removed due to common webdl/webrip mismatches
-                    _logger.Debug("Quality for grabbed release ({0}) does not match the quality of the file ({1})", item.Quality, localMovie.Quality);
+                    _logger.Debug("Quality for grabbed release ({0}) does not match the quality of the file ({1})", item.Quality.ToString().ForLog(), localMovie.Quality.ToString().ForLog());
                 }
             }
 

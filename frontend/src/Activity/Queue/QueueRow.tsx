@@ -291,6 +291,7 @@ function QueueRow(props: QueueRowProps) {
             <TableRowCell key={name} className={styles.progress}>
               {!!progress && (
                 <ProgressBar
+                  ariaLabel={translate('DownloadProgressForTitle', { title })}
                   progress={progress}
                   title={`${progress.toFixed(1)}%`}
                 />
@@ -309,6 +310,7 @@ function QueueRow(props: QueueRowProps) {
               {showInteractiveImport ? (
                 <IconButton
                   name={icons.INTERACTIVE}
+                  aria-label={translate('ManualImport')}
                   onPress={handleInteractiveImportPress}
                 />
               ) : null}
@@ -348,6 +350,7 @@ function QueueRow(props: QueueRowProps) {
         canChangeCategory={!!downloadClientHasPostImportCategory}
         canIgnore={!!movie}
         isPending={isPending}
+        downloadClient={downloadClient}
         onRemovePress={handleRemoveQueueItemModalConfirmed}
         onModalClose={handleRemoveQueueItemModalClose}
       />

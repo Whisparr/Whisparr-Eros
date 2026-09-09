@@ -59,8 +59,6 @@ updates:
       # entry when we're ready to do that migration.
       - dependency-name: "typescript"
         update-types: ["version-update:semver-major"]
-      - dependency-name: "jquery"
-        update-types: ["version-update:semver-major"]
       - dependency-name: "react-window"
         update-types: ["version-update:semver-major"]
       - dependency-name: "swiper"

@@ -21,10 +21,12 @@ namespace NzbDrone.Core.Test.MovieTests.MovieRepositoryTests
     public class MovieRepositoryFixture : DbTest<MovieRepository, Movie>
     {
         private IQualityProfileRepository _profileRepository;
+        private int _metadataSequence;
 
         [SetUp]
         public void Setup()
         {
+            _metadataSequence = 0;
             _profileRepository = Mocker.Resolve<QualityProfileRepository>();
             Mocker.SetConstant<IQualityProfileRepository>(_profileRepository);
 
@@ -62,11 +64,12 @@ namespace NzbDrone.Core.Test.MovieTests.MovieRepositoryTests
         }
 
         // PagedBuilder INNER JOINs MovieMetadata, so a paged movie needs a metadata row to match.
-        private void GivenPagedMovie(int qualityProfileId, int movieFileId, int year = 2020)
+        private Movie GivenPagedMovie(int qualityProfileId, int movieFileId, int year = 2020, HashSet<int> tags = null)
         {
             var metadata = Db.Insert(Builder<MovieMetadata>.CreateNew()
                 .With(m => m.Id = 0)
                 .With(m => m.Year = year)
+                .With(m => m.ForeignId = $"metadata-{++_metadataSequence}")
                 .BuildNew());
 
             var movie = Builder<Movie>.CreateNew()
@@ -74,9 +77,39 @@ namespace NzbDrone.Core.Test.MovieTests.MovieRepositoryTests
                 .With(m => m.MovieMetadataId = metadata.Id)
                 .With(m => m.QualityProfileId = qualityProfileId)
                 .With(m => m.MovieFileId = movieFileId)
+                .With(m => m.Tags = tags ?? new HashSet<int>())
                 .BuildNew();
 
-            Subject.Insert(movie);
+            return Subject.Insert(movie);
+        }
+
+        // Builder() joins MovieFiles on MovieFile.MovieId, while the paging spec filters on
+        // Movie.MovieFileId, so a movie with a file has to have both sides pointing at each other.
+        private Movie GivenPagedMovieWithFile(int qualityProfileId, Quality quality, HashSet<int> tags = null)
+        {
+            var movie = GivenPagedMovie(qualityProfileId, movieFileId: 0, tags: tags);
+
+            var movieFile = Db.Insert(Builder<MovieFile>.CreateNew()
+                .With(f => f.Id = 0)
+                .With(f => f.MovieId = movie.Id)
+                .With(f => f.Quality = new QualityModel(quality))
+                .With(f => f.Languages = new List<Language> { Language.English })
+                .With(f => f.MediaInfo = new MediaInfoModel { RawStreamData = "{ \"streams\": [] }", VideoFormat = "h264" })
+                .BuildNew());
+
+            movie.MovieFileId = movieFile.Id;
+            Subject.Update(movie);
+
+            return movie;
+        }
+
+        // Cutoff is Bluray1080p, so anything below it is unmet.
+        private List<QualitiesBelowCutoff> GivenQualitiesBelowCutoff(QualityProfile profile)
+        {
+            return new List<QualitiesBelowCutoff>
+            {
+                new QualitiesBelowCutoff(profile.Id, new[] { Quality.HDTV720p.Id, Quality.DVD.Id })
+            };
         }
 
         private static PagingSpec<Movie> PagingSpec() => new PagingSpec<Movie>
@@ -181,6 +214,86 @@ namespace NzbDrone.Core.Test.MovieTests.MovieRepositoryTests
 
             spec.Records.Should().HaveCount(1);
             spec.TotalRecords.Should().Be(1);
+        }
+
+        [Test]
+        public void should_filter_movies_without_files_by_tag()
+        {
+            var profile = GivenProfile();
+            var tagged = GivenPagedMovie(profile.Id, movieFileId: 0, tags: new HashSet<int> { 1, 2 });
+            GivenPagedMovie(profile.Id, movieFileId: 0, tags: new HashSet<int> { 3 });
+            GivenPagedMovie(profile.Id, movieFileId: 0);
+
+            var spec = PagingSpec();
+            Subject.MoviesWithoutFiles(spec, new HashSet<int> { 2 });
+
+            spec.Records.Should().ContainSingle().Which.Id.Should().Be(tagged.Id);
+            spec.TotalRecords.Should().Be(1);
+        }
+
+        [Test]
+        public void should_match_a_movie_carrying_any_of_the_filtered_tags()
+        {
+            var profile = GivenProfile();
+            GivenPagedMovie(profile.Id, movieFileId: 0, tags: new HashSet<int> { 7 });
+            GivenPagedMovie(profile.Id, movieFileId: 0, tags: new HashSet<int> { 8 });
+
+            var spec = PagingSpec();
+            Subject.MoviesWithoutFiles(spec, new HashSet<int> { 7, 8 });
+
+            spec.Records.Should().HaveCount(2);
+        }
+
+        [Test]
+        public void should_not_filter_movies_without_files_when_no_tags_given()
+        {
+            var profile = GivenProfile();
+            GivenPagedMovie(profile.Id, movieFileId: 0, tags: new HashSet<int> { 1 });
+            GivenPagedMovie(profile.Id, movieFileId: 0);
+
+            var spec = PagingSpec();
+            Subject.MoviesWithoutFiles(spec, new HashSet<int>());
+
+            spec.Records.Should().HaveCount(2);
+        }
+
+        [Test]
+        public void should_filter_cutoff_unmet_by_tag()
+        {
+            var profile = GivenProfile();
+            var tagged = GivenPagedMovieWithFile(profile.Id, Quality.HDTV720p, tags: new HashSet<int> { 4 });
+            GivenPagedMovieWithFile(profile.Id, Quality.HDTV720p, tags: new HashSet<int> { 5 });
+
+            var spec = PagingSpec();
+            Subject.MoviesWhereCutoffUnmet(spec, GivenQualitiesBelowCutoff(profile), new HashSet<int> { 4 });
+
+            spec.Records.Should().ContainSingle().Which.Id.Should().Be(tagged.Id);
+        }
+
+        [Test]
+        public void should_filter_cutoff_unmet_by_quality()
+        {
+            var profile = GivenProfile();
+            var dvdMovie = GivenPagedMovieWithFile(profile.Id, Quality.DVD);
+            GivenPagedMovieWithFile(profile.Id, Quality.HDTV720p);
+
+            var spec = PagingSpec();
+            Subject.MoviesWhereCutoffUnmet(spec, GivenQualitiesBelowCutoff(profile), quality: new List<int> { Quality.DVD.Id });
+
+            spec.Records.Should().ContainSingle().Which.Id.Should().Be(dvdMovie.Id);
+        }
+
+        [Test]
+        public void should_not_filter_cutoff_unmet_when_no_tags_or_qualities_given()
+        {
+            var profile = GivenProfile();
+            GivenPagedMovieWithFile(profile.Id, Quality.DVD, tags: new HashSet<int> { 1 });
+            GivenPagedMovieWithFile(profile.Id, Quality.HDTV720p);
+
+            var spec = PagingSpec();
+            Subject.MoviesWhereCutoffUnmet(spec, GivenQualitiesBelowCutoff(profile));
+
+            spec.Records.Should().HaveCount(2);
         }
     }
 }

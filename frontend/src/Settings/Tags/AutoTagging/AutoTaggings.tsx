@@ -53,7 +53,11 @@ export default function AutoTaggings() {
             );
           })}
 
-          <Card className={styles.addAutoTagging} onPress={handleAddPress}>
+          <Card
+            className={styles.addAutoTagging}
+            aria-label={translate('AddAutoTag')}
+            onPress={handleAddPress}
+          >
             <div className={styles.center}>
               <Icon name={icons.ADD} size={45} />
             </div>

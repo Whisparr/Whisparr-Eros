@@ -285,6 +285,7 @@ function MovieDetails(props: Readonly<Partial<Props>>) {
               size={500}
               lazy={true}
               placeholder={posterPlaceholder}
+              title={title}
             />
             <div className={styles.info}>
               <Measure onMeasure={handleTitleMeasure}>
@@ -344,7 +345,9 @@ function MovieDetails(props: Readonly<Partial<Props>>) {
 
                   <span className={styles.links}>
                     <Tooltip
+                      accessibleLabel={translate('Links')}
                       anchor={<Icon name={icons.EXTERNAL_LINK} size={20} />}
+                      contentRole="dialog"
                       tooltip={
                         <MovieDetailsLinks
                           tmdbId={tmdbId}

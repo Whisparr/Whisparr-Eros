@@ -110,7 +110,7 @@ const { useOptions, setOptions, setSort } =
               name: icons.ADVANCED_SETTINGS,
             }),
             isVisible: true,
-            isModifiable: false,
+            isModifiable: 'disabled',
           },
         ],
       };

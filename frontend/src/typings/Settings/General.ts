@@ -9,6 +9,7 @@ export default interface General {
   launchBrowser: boolean;
   authenticationMethod: string;
   authenticationRequired: string;
+  allowedHosts: string;
   analyticsEnabled: boolean;
   username: string;
   password: string;
@@ -21,6 +22,7 @@ export default interface General {
   sslCertPath: string;
   sslCertPassword: string;
   urlBase: string;
+  trustedNetworks: string;
   instanceName: string;
   applicationUrl: string;
   updateAutomatically: boolean;
@@ -42,6 +44,7 @@ export default interface General {
   id: number;
   whisparrAlwaysExcludeCollectionsTag: string;
   whisparrAlwaysExcludePerformersTag: string;
+  whisparrAlwaysExcludePerformersAfterTag: string;
   whisparrAlwaysExcludeStudiosTag: string;
   whisparrAlwaysExcludeStudiosAfterTag: string;
   whisparrAlwaysExcludeTagsTag: string;
@@ -52,6 +55,7 @@ export default interface General {
   whisparrCacheStudioAPI: boolean;
   whisparrCorruptFileDetection: boolean;
   whisparrFuzzyTitleMatchingThreshold: number;
+  whisparrMonitorNewItems: boolean;
   whisparrMovieMetadataSource: string;
   whisparrValidateRuntime: boolean;
   whisparrValidateRuntimeLimit: number;

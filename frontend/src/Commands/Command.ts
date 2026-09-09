@@ -1,5 +1,7 @@
 import ModelBase from 'App/ModelBase';
 
+export type CommandPriority = 'low' | 'normal' | 'high';
+
 export interface CommandBody {
   sendUpdatesToClient: boolean;
   updateScheduledTask: boolean;
@@ -20,6 +22,7 @@ export interface CommandBody {
 // whatever that command's handler declares.
 export interface NewCommandBody {
   name: string;
+  priority?: CommandPriority;
   [key: string]:
     string | number | boolean | number[] | string[] | object | undefined;
 }
@@ -29,7 +32,7 @@ interface Command extends ModelBase {
   commandName: string;
   message: string;
   body: CommandBody;
-  priority: string;
+  priority: CommandPriority;
   status: string;
   result: string;
   queued: string;

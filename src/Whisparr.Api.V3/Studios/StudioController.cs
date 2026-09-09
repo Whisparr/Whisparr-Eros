@@ -18,6 +18,8 @@ using NzbDrone.Core.Movies;
 using NzbDrone.Core.Movies.Studios;
 using NzbDrone.Core.Movies.Studios.Events;
 using NzbDrone.Core.MovieStats;
+using NzbDrone.Core.Validation;
+using NzbDrone.Core.Validation.Paths;
 using NzbDrone.SignalR;
 using Whisparr.Api.V3.Movies;
 using Whisparr.Api.V3.Studios.Helpers;
@@ -64,6 +66,8 @@ namespace Whisparr.Api.V3.Studios
                                 IImportListExclusionService exclusionService,
                                 ICacheManager cacheManager,
                                 IConfigService configService,
+                                QualityProfileExistsValidator<StudioResource> qualityProfileExistsValidator,
+                                RootFolderExistsValidator<StudioResource> rootFolderExistsValidator,
                                 Logger logger,
                                 IBroadcastSignalRMessage signalRBroadcaster)
         : base(signalRBroadcaster)
@@ -77,6 +81,15 @@ namespace Whisparr.Api.V3.Studios
             _useCache = configService.WhisparrCacheStudioAPI;
             _studioResourceCache = cacheManager.GetCache<StudioResource>(typeof(StudioResource), "studioResources");
             _logger = logger;
+
+            SharedValidator.RuleFor(s => s.QualityProfileId).Cascade(CascadeMode.Stop)
+                .ValidId()
+                .SetValidator(qualityProfileExistsValidator);
+
+            SharedValidator.RuleFor(s => s.RootFolderPath).Cascade(CascadeMode.Stop)
+                .IsValidPath()
+                .SetValidator(rootFolderExistsValidator)
+                .When(s => s.RootFolderPath.IsNotNullOrWhiteSpace());
 
             if (configService.WhisparrMovieMetadataSource == MovieMetadataType.TMDB)
             {
@@ -159,10 +172,10 @@ namespace Whisparr.Api.V3.Studios
                 }
             }
 
-            var coverFileInfos = _coverMapper.GetMovieCoverFileInfos();
-            _coverMapper.ConvertToLocalUrls(
-                movieResources.Select(x => Tuple.Create(x.Id, x.Images.AsEnumerable())),
-                coverFileInfos);
+            foreach (var movieResource in movieResources)
+            {
+                _coverMapper.ConvertToLocalUrls(movieResource.Id, movieResource.Images);
+            }
 
             return movieResources;
         }
@@ -251,9 +264,10 @@ namespace Whisparr.Api.V3.Studios
                     studioResources = _studioService.GetAllStudios().ToResource();
                 }
 
-                var coverFileInfos = _coverMapper.GetStudioCoverFileInfos();
-
-                _coverMapper.ConvertToLocalStudioUrls(studioResources.Select(x => Tuple.Create(x.Id, x.Images.AsEnumerable())), coverFileInfos);
+                foreach (var studioResource in studioResources)
+                {
+                    _coverMapper.ConvertToLocalStudioUrls(studioResource.Id, studioResource.Images);
+                }
 
                 LinkMovies(studioResources);
             }
@@ -282,7 +296,10 @@ namespace Whisparr.Api.V3.Studios
 
             _studioResourceCache.Remove(updatedStudio.ForeignId);
 
-            return Accepted(updatedStudio);
+            // Pass the id, not the model: `Accepted(Studio)` binds to ControllerBase's
+            // object overload and serialises the raw model, which has no HasMovies /
+            // HasScenes / Years. Clients replace their cached studio with the response.
+            return Accepted(updatedStudio.Id);
         }
 
         [RestDeleteById]
@@ -326,6 +343,12 @@ namespace Whisparr.Api.V3.Studios
         public void Handle(StudioUpdatedEvent message)
         {
             var resource = MapToResource(message.Studio);
+
+            // The counts on the model are transient -- they are only filled in by the
+            // IHandleAsync side of this event, which has not run yet. Link the movies
+            // here so the broadcast carries the same HasMovies/HasScenes/Years the
+            // clients would get from a GET, instead of a resource that reads as empty.
+            FetchAndLinkMovies(resource);
 
             BroadcastResourceChange(ModelAction.Updated, resource);
         }
@@ -492,9 +515,10 @@ namespace Whisparr.Api.V3.Studios
                             studioResources.AddIfNotNull(MapToResource(studio));
                         }
 
-                        var coverFileInfos = _coverMapper.GetStudioCoverFileInfos();
-
-                        _coverMapper.ConvertToLocalStudioUrls(studioResources.Select(x => Tuple.Create(x.Id, x.Images.AsEnumerable())), coverFileInfos);
+                        foreach (var studioResource in studioResources)
+                {
+                    _coverMapper.ConvertToLocalStudioUrls(studioResource.Id, studioResource.Images);
+                }
 
                         LinkMovies(studioResources);
 
@@ -549,8 +573,10 @@ namespace Whisparr.Api.V3.Studios
             var resources = page.Select(s => s.ToResource()).ToList();
 
             // Bulk load file info once for all studios on page
-            var coverFileInfos = _coverMapper.GetStudioCoverFileInfos();
-            _coverMapper.ConvertToLocalStudioUrls(resources.Select(x => Tuple.Create(x.Id, x.Images.AsEnumerable())), coverFileInfos);
+            foreach (var studioResource in resources)
+            {
+                _coverMapper.ConvertToLocalStudioUrls(studioResource.Id, studioResource.Images);
+            }
 
             var result = new PagingResource<StudioResource>(request)
             {
@@ -564,13 +590,10 @@ namespace Whisparr.Api.V3.Studios
         {
             Paging.ApplyStudioFiltersToPagingSpec(request.Filters, pageSpec);
 
-            // Get file info once for bulk operation
-            var coverFileInfos = _coverMapper.GetStudioCoverFileInfos();
-
             return pageSpec.ApplyToPage(_studioService.Paged, resource =>
             {
                 var studioResource = resource.ToResource();
-                _coverMapper.ConvertToLocalStudioUrls(studioResource.Id, studioResource.Images, coverFileInfos);
+                _coverMapper.ConvertToLocalStudioUrls(studioResource.Id, studioResource.Images);
                 return studioResource;
             });
         }

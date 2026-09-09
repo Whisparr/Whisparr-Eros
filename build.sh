@@ -254,7 +254,8 @@ InstallInno()
     ProgressStart "Installing portable Inno Setup"
 
     rm -rf _inno
-    curl -s --output innosetup.exe "https://files.jrsoftware.org/is/6/innosetup-${INNOVERSION:-6.2.2}.exe"
+    local innoVersion="${INNOVERSION:-6.2.2}"
+    curl -s -L --output innosetup.exe "https://github.com/jrsoftware/issrc/releases/download/is-${innoVersion//./_}/innosetup-${innoVersion}.exe"
     mkdir _inno
     ./innosetup.exe //portable=1 //silent //currentuser //dir=.\\_inno
     rm innosetup.exe

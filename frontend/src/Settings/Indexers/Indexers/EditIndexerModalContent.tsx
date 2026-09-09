@@ -72,6 +72,7 @@ function EditIndexerModalContent({
     protocol,
     downloadClientId,
   } = item;
+  const providerName = name?.value || implementationName;
 
   const handleInputChange = useCallback(
     ({ name, value }: InputChanged) => {
@@ -290,6 +291,16 @@ function EditIndexerModalContent({
         <SpinnerErrorButton
           isSpinning={isTesting}
           error={saveError}
+          pendingLabel={translate('ProviderTestInProgress', {
+            name: providerName,
+          })}
+          successLabel={translate('ProviderTestSuccessful', {
+            name: providerName,
+          })}
+          warningLabel={translate('ProviderTestWarning', {
+            name: providerName,
+          })}
+          errorLabel={translate('ProviderTestFailed', { name: providerName })}
           onPress={handleTestPress}
         >
           {translate('Test')}

@@ -16,6 +16,7 @@ namespace Whisparr.Api.V3.Config
         public bool LaunchBrowser { get; set; }
         public AuthenticationType AuthenticationMethod { get; set; }
         public AuthenticationRequiredType AuthenticationRequired { get; set; }
+        public string AllowedHosts { get; set; }
         public bool AnalyticsEnabled { get; set; }
         public string Username { get; set; }
         public string Password { get; set; }
@@ -28,6 +29,7 @@ namespace Whisparr.Api.V3.Config
         public string SslCertPath { get; set; }
         public string SslCertPassword { get; set; }
         public string UrlBase { get; set; }
+        public string TrustedNetworks { get; set; }
         public string InstanceName { get; set; }
         public string ApplicationUrl { get; set; }
         public bool UpdateAutomatically { get; set; }
@@ -48,6 +50,7 @@ namespace Whisparr.Api.V3.Config
         public bool TrustCgnatIpAddresses { get; set; }
         public string WhisparrAlwaysExcludeCollectionsTag { get; set; }
         public string WhisparrAlwaysExcludePerformersTag { get; set; }
+        public string WhisparrAlwaysExcludePerformersAfterTag { get; set; }
         public string WhisparrAlwaysExcludeStudiosTag { get; set; }
         public string WhisparrAlwaysExcludeStudiosAfterTag { get; set; }
         public string WhisparrAlwaysExcludeTagsTag { get; set; }
@@ -58,6 +61,7 @@ namespace Whisparr.Api.V3.Config
         public bool WhisparrCacheStudioAPI { get; set; }
         public bool WhisparrCorruptFileDetection { get; set; }
         public int WhisparrFuzzyTitleMatchingThreshold { get; set; }
+        public bool WhisparrMonitorNewItems { get; set; }
         public MovieMetadataType WhisparrMovieMetadataSource { get; set; }
         public bool WhisparrValidateRuntime { get; set; }
         public int WhisparrValidateRuntimeLimit { get; set; }
@@ -77,6 +81,7 @@ namespace Whisparr.Api.V3.Config
                 LaunchBrowser = model.LaunchBrowser,
                 AuthenticationMethod = model.AuthenticationMethod,
                 AuthenticationRequired = model.AuthenticationRequired,
+                AllowedHosts = model.AllowedHosts,
                 AnalyticsEnabled = model.AnalyticsEnabled,
 
                 // Username
@@ -89,6 +94,7 @@ namespace Whisparr.Api.V3.Config
                 SslCertPath = model.SslCertPath,
                 SslCertPassword = model.SslCertPassword,
                 UrlBase = model.UrlBase,
+                TrustedNetworks = model.TrustedNetworks,
                 InstanceName = model.InstanceName,
                 UpdateAutomatically = model.UpdateAutomatically,
                 UpdateMechanism = model.UpdateMechanism,
@@ -108,6 +114,7 @@ namespace Whisparr.Api.V3.Config
                 ApplicationUrl = configService.ApplicationUrl,
                 WhisparrAlwaysExcludeCollectionsTag = configService.WhisparrAlwaysExcludeCollectionsTag,
                 WhisparrAlwaysExcludePerformersTag = configService.WhisparrAlwaysExcludePerformersTag,
+                WhisparrAlwaysExcludePerformersAfterTag = configService.WhisparrAlwaysExcludePerformersAfterTag,
                 WhisparrAlwaysExcludeStudiosTag = configService.WhisparrAlwaysExcludeStudiosTag,
                 WhisparrAlwaysExcludeStudiosAfterTag = configService.WhisparrAlwaysExcludeStudiosAfterTag,
                 WhisparrAlwaysExcludeTagsTag = configService.WhisparrAlwaysExcludeTagsTag,
@@ -118,6 +125,7 @@ namespace Whisparr.Api.V3.Config
                 WhisparrCacheStudioAPI = configService.WhisparrCacheStudioAPI,
                 WhisparrCorruptFileDetection = configService.WhisparrCorruptFileDetection,
                 WhisparrFuzzyTitleMatchingThreshold = configService.WhisparrFuzzyTitleMatchingThreshold,
+                WhisparrMonitorNewItems = configService.WhisparrMonitorNewItems,
                 WhisparrMovieMetadataSource = configService.WhisparrMovieMetadataSource,
                 WhisparrValidateRuntime = configService.WhisparrValidateRuntime,
                 WhisparrValidateRuntimeLimit = configService.WhisparrValidateRuntimeLimit

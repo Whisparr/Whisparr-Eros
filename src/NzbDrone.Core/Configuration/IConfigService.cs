@@ -31,6 +31,7 @@ namespace NzbDrone.Core.Configuration
         bool CreateEmptyMovieFolders { get; set; }
         bool DeleteEmptyFolders { get; set; }
         FileDateType FileDate { get; set; }
+        bool SkipFreeSpaceCheckWhenGrabbing { get; set; }
         bool SkipFreeSpaceCheckWhenImporting { get; set; }
         int MinimumFreeSpaceWhenImporting { get; set; }
         bool CopyUsingHardlinks { get; set; }
@@ -78,6 +79,7 @@ namespace NzbDrone.Core.Configuration
         string ShortDateFormat { get; set; }
         string LongDateFormat { get; set; }
         string TimeFormat { get; set; }
+        string TimeZone { get; set; }
         bool ShowRelativeDates { get; set; }
         bool EnableColorImpairedMode { get; set; }
         int UILanguage { get; set; }
@@ -110,6 +112,7 @@ namespace NzbDrone.Core.Configuration
         // Whisparr
         string WhisparrAlwaysExcludeCollectionsTag { get; }
         string WhisparrAlwaysExcludePerformersTag { get; }
+        string WhisparrAlwaysExcludePerformersAfterTag { get; }
         string WhisparrAlwaysExcludeStudiosTag { get; }
         string WhisparrAlwaysExcludeStudiosAfterTag { get; }
         string WhisparrAlwaysExcludeTagsTag { get; }
@@ -120,6 +123,7 @@ namespace NzbDrone.Core.Configuration
         bool WhisparrCacheStudioAPI { get; }
         bool WhisparrCorruptFileDetection { get; }
         int WhisparrFuzzyTitleMatchingThreshold { get; }
+        bool WhisparrMonitorNewItems { get; set; }
         MovieMetadataType WhisparrMovieMetadataSource { get; }
         bool WhisparrValidateRuntime { get; }
         int WhisparrValidateRuntimeLimit { get; }

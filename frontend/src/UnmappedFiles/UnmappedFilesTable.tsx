@@ -57,8 +57,8 @@ export interface UnmappedFilesTableProps {
 interface UnmappedFilesTableState {
   allSelected: boolean;
   allUnselected: boolean;
-  lastToggled: number | null;
-  selectedState: Record<number, boolean>;
+  lastToggled: number | string | null;
+  selectedState: Record<number | string, boolean>;
 }
 
 class UnmappedFilesTable extends Component<

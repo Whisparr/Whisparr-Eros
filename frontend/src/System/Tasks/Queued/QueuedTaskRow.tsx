@@ -1,6 +1,5 @@
 import moment from 'moment';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { CommandBody } from 'Commands/Command';
 import { useCancelCommand } from 'Commands/useCommands';
 import Icon, { IconProps } from 'Components/Icon';
 import IconButton from 'Components/Link/IconButton';
@@ -42,7 +41,7 @@ function getStatusIconProps(
       return {
         name: icons.CHECK,
         kind: kinds.SUCCESS,
-        title: message === 'Completed' ? title : `${title}: ${message}`,
+        title: message == null ? title : `${title}: ${message}`,
       };
 
     case 'failed':
@@ -98,7 +97,6 @@ export interface QueuedTaskRowProps {
   status: string;
   duration?: string;
   message?: string;
-  body: CommandBody;
   clientUserAgent?: string;
 }
 
@@ -113,13 +111,17 @@ export default function QueuedTaskRow(props: QueuedTaskRowProps) {
     status,
     duration,
     message,
-    body,
     clientUserAgent,
   } = props;
 
   const { cancelCommand } = useCancelCommand(id);
-  const { longDateFormat, shortDateFormat, showRelativeDates, timeFormat } =
-    useUiSettingsValues();
+  const {
+    longDateFormat,
+    shortDateFormat,
+    showRelativeDates,
+    timeFormat,
+    timeZone,
+  } = useUiSettingsValues();
 
   const updateTimeTimeoutId = useRef<ReturnType<typeof setTimeout> | null>(
     null
@@ -186,27 +188,29 @@ export default function QueuedTaskRow(props: QueuedTaskRowProps) {
 
       <QueuedTaskRowNameCell
         commandName={commandName}
-        body={body}
+        message={message}
         clientUserAgent={clientUserAgent}
       />
 
       <TableRowCell
         className={styles.queued}
-        title={formatDateTime(queued, longDateFormat, timeFormat)}
+        title={formatDateTime(queued, longDateFormat, timeFormat, { timeZone })}
       >
         {queuedAt}
       </TableRowCell>
 
       <TableRowCell
         className={styles.started}
-        title={formatDateTime(started, longDateFormat, timeFormat)}
+        title={formatDateTime(started, longDateFormat, timeFormat, {
+          timeZone,
+        })}
       >
         {startedAt}
       </TableRowCell>
 
       <TableRowCell
         className={styles.ended}
-        title={formatDateTime(ended, longDateFormat, timeFormat)}
+        title={formatDateTime(ended, longDateFormat, timeFormat, { timeZone })}
       >
         {endedAt}
       </TableRowCell>

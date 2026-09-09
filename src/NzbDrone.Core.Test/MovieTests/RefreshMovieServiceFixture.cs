@@ -1,10 +1,12 @@
 using System.Collections.Generic;
+using System.IO;
 using FizzWare.NBuilder;
 using Moq;
 using NUnit.Framework;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.AutoTagging;
 using NzbDrone.Core.Exceptions;
+using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.MetadataSource;
 using NzbDrone.Core.Movies;
 using NzbDrone.Core.Movies.Commands;
@@ -125,6 +127,32 @@ namespace NzbDrone.Core.Test.MovieTests
                 .Verify(v => v.Upsert(It.IsAny<MovieMetadata>()), Times.Never());
 
             ExceptionVerification.ExpectedErrors(1);
+        }
+
+        [Test]
+        public void should_continue_refreshing_remaining_movies_when_one_fails()
+        {
+            var otherMovie = Builder<Movie>.CreateNew()
+                .With(s => s.Id = _existingMovie.Id + 1)
+                .With(s => s.MovieMetadata.Value.Status = MovieStatusType.Released)
+                .Build();
+
+            Mocker.GetMock<IMovieService>()
+                  .Setup(s => s.GetMovie(otherMovie.Id))
+                  .Returns(otherMovie);
+
+            Mocker.GetMock<IProvideMovieInfo>()
+                  .Setup(s => s.GetMovieInfo(_existingMovie.Id))
+                  .Throws(new IOException());
+
+            Subject.Execute(new RefreshMovieCommand(new List<int> { _existingMovie.Id, otherMovie.Id }));
+
+            // The failing movie used to rethrow, which abandoned every movie queued behind it.
+            Mocker.GetMock<IMovieService>()
+                  .Verify(v => v.GetMovie(otherMovie.Id), Times.AtLeastOnce());
+
+            Mocker.GetMock<ICommandResultReporter>()
+                  .Verify(v => v.Report(CommandResult.Indeterminate), Times.AtLeastOnce());
         }
     }
 }

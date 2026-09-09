@@ -189,7 +189,8 @@ namespace NzbDrone.Core.MediaFiles
                     Title = m.MovieMetadata.Value.StudioTitle,
                     RootFolderPath = m.RootFolderPath,
                     Monitored = false,
-                }).ToList(), true);
+                }).ToList(),
+                true);
 
                 _commandQueueManager.PushMany(scene_list.Select(s => new AddMoviesCommand(new List<Movie> { s })).ToList());
             }

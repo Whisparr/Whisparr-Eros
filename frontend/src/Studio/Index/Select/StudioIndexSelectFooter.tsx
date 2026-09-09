@@ -19,6 +19,7 @@ interface SavePayload {
   qualityProfileId?: number;
   rootFolderPath?: string;
   searchOnAdd?: boolean;
+  afterDate?: string;
 }
 
 interface StudioIndexSelectFooterProps {

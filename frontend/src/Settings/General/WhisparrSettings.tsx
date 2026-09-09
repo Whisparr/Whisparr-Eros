@@ -18,6 +18,7 @@ function WhisparrSettings({
   const {
     whisparrAlwaysExcludeCollectionsTag,
     whisparrAlwaysExcludePerformersTag,
+    whisparrAlwaysExcludePerformersAfterTag,
     whisparrAlwaysExcludeStudiosTag,
     whisparrAlwaysExcludeStudiosAfterTag,
     whisparrAlwaysExcludeTagsTag,
@@ -28,6 +29,7 @@ function WhisparrSettings({
     whisparrCacheStudioAPI,
     whisparrCorruptFileDetection,
     whisparrFuzzyTitleMatchingThreshold,
+    whisparrMonitorNewItems,
     whisparrMovieMetadataSource,
     whisparrValidateRuntime,
     whisparrValidateRuntimeLimit,
@@ -161,6 +163,18 @@ function WhisparrSettings({
       </FormGroup>
 
       <FormGroup>
+        <FormLabel>{translate('WhisparrMonitorNewItems')}</FormLabel>
+
+        <FormInputGroup
+          type={inputTypes.CHECK}
+          name="whisparrMonitorNewItems"
+          helpText={translate('WhisparrMonitorNewItemsHelpText')}
+          onChange={onInputChange}
+          {...whisparrMonitorNewItems}
+        />
+      </FormGroup>
+
+      <FormGroup>
         <FormLabel>{translate('WhisparrMovieMetadataSource')}</FormLabel>
 
         <FormInputGroup
@@ -196,6 +210,22 @@ function WhisparrSettings({
           helpText={translate('WhisparrAlwaysExcludePerformersTagHelpText')}
           onChange={onInputChange}
           {...whisparrAlwaysExcludePerformersTag}
+        />
+      </FormGroup>
+
+      <FormGroup>
+        <FormLabel>
+          {translate('WhisparrAlwaysExcludePerformersAfterTag')}
+        </FormLabel>
+
+        <FormInputGroup
+          type={inputTypes.TEXT}
+          name="whisparrAlwaysExcludePerformersAfterTag"
+          helpText={translate(
+            'WhisparrAlwaysExcludePerformersAfterTagHelpText'
+          )}
+          onChange={onInputChange}
+          {...whisparrAlwaysExcludePerformersAfterTag}
         />
       </FormGroup>
 

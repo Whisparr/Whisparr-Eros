@@ -1,6 +1,8 @@
 import { PropertyFilter } from 'Filters/Filter';
 
 export interface QueryParams {
+  // `null` is allowed because the reducer below already drops it: a provider
+  // action can be handed a value the form has not filled in yet.
   [key: string]:
     | string
     | number
@@ -8,6 +10,7 @@ export interface QueryParams {
     | PropertyFilter[]
     | number[]
     | string[]
+    | null
     | undefined;
 }
 
@@ -27,7 +30,14 @@ const getQueryString = (queryParams?: QueryParams) => {
       if (Array.isArray(value)) {
         if (typeof value[0] === 'object') {
           (value as PropertyFilter[]).forEach((filter) => {
-            acc.append(filter.key, String(filter.value));
+            // A filter whose value is a list (tags, quality profiles, movie ids)
+            // has to become one query parameter per entry, so the controller
+            // binds it as a List<int> rather than a single comma-joined string.
+            if (Array.isArray(filter.value)) {
+              filter.value.forEach((v) => acc.append(filter.key, String(v)));
+            } else {
+              acc.append(filter.key, String(filter.value));
+            }
           });
         } else {
           value.forEach((item) => {

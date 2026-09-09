@@ -1,4 +1,5 @@
 import React from 'react';
+import { useModalContext } from './ModalContext';
 import styles from './ModalHeader.css';
 
 interface ModalHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -6,8 +7,10 @@ interface ModalHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 function ModalHeader({ children, ...otherProps }: ModalHeaderProps) {
+  const { headerId } = useModalContext();
+
   return (
-    <div className={styles.modalHeader} {...otherProps}>
+    <div id={headerId} className={styles.modalHeader} {...otherProps}>
       {children}
     </div>
   );

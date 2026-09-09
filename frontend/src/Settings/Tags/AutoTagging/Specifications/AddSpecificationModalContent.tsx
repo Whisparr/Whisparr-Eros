@@ -20,7 +20,7 @@ interface AddSpecificationModalContentProps {
 export default function AddSpecificationModalContent({
   onModalClose,
 }: Readonly<AddSpecificationModalContentProps>) {
-  const { schema, isSchemaFetching, isSchemaFetched, schemaError } =
+  const { schema, isSchemaLoading, isSchemaFetched, schemaError } =
     useAutoTaggingSchema();
 
   // The pick is handed straight back through `onModalClose` rather than parked
@@ -46,9 +46,9 @@ export default function AddSpecificationModalContent({
       <ModalHeader>{translate('AddCondition')}</ModalHeader>
 
       <ModalBody>
-        {isSchemaFetching ? <LoadingIndicator /> : null}
+        {isSchemaLoading ? <LoadingIndicator /> : null}
 
-        {!isSchemaFetching && !!schemaError ? (
+        {!isSchemaLoading && !!schemaError ? (
           <Alert kind={kinds.DANGER}>{translate('AddConditionError')}</Alert>
         ) : null}
 

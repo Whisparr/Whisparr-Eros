@@ -157,6 +157,7 @@ function SceneIndexPoster(props: Readonly<SceneIndexPosterProps>) {
             name={icons.REFRESH}
             title={translate('RefreshScene')}
             isSpinning={isRefreshingScene}
+            tabIndex={-1}
             onPress={onRefreshPress}
           />
 
@@ -166,6 +167,7 @@ function SceneIndexPoster(props: Readonly<SceneIndexPosterProps>) {
               name={icons.SEARCH}
               title={translate('SearchForScene')}
               isSpinning={isSearchingScene}
+              tabIndex={-1}
               onPress={onSearchPress}
             />
           ) : null}
@@ -173,6 +175,7 @@ function SceneIndexPoster(props: Readonly<SceneIndexPosterProps>) {
           <IconButton
             name={icons.EDIT}
             title={translate('EditScene')}
+            tabIndex={-1}
             onPress={onEditScenePress}
           />
 
@@ -194,6 +197,7 @@ function SceneIndexPoster(props: Readonly<SceneIndexPosterProps>) {
             size={180}
             lazy={true}
             overflow={true}
+            title={title}
             onError={onPosterLoadError}
             onLoad={onPosterLoad}
           />

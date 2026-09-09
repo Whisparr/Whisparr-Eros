@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import ProtocolLabel from 'Activity/Queue/ProtocolLabel';
 import Card from 'Components/Card';
 import Label from 'Components/Label';
 import ConfirmModal from 'Components/Modal/ConfirmModal';
@@ -17,7 +18,7 @@ interface DownloadClientProps {
 }
 
 function DownloadClient({ downloadClient }: Readonly<DownloadClientProps>) {
-  const { id, name, enable, priority, tags } = downloadClient;
+  const { id, name, protocol, enable, priority, tags } = downloadClient;
 
   const tagList = useTagList();
   const { deleteDownloadClient } = useDeleteDownloadClient(id);
@@ -47,11 +48,14 @@ function DownloadClient({ downloadClient }: Readonly<DownloadClientProps>) {
     <Card
       className={styles.downloadClient}
       overlayContent={true}
+      aria-label={translate('EditDownloadClientName', { name })}
       onPress={setEditDownloadClientModalOpen}
     >
       <div className={styles.name}>{name}</div>
 
       <div className={styles.enabled}>
+        <ProtocolLabel protocol={protocol} />
+
         {enable ? (
           <Label kind={kinds.SUCCESS}>{translate('Enabled')}</Label>
         ) : (

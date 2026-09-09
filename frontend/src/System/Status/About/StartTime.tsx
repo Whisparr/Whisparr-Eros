@@ -10,7 +10,7 @@ interface StartTimeProps {
 
 function StartTime(props: StartTimeProps) {
   const { startTime } = props;
-  const { timeFormat, longDateFormat } = useUiSettingsValues();
+  const { timeFormat, longDateFormat, timeZone } = useUiSettingsValues();
   const [time, setTime] = useState(Date.now());
 
   const { formattedStartTime, uptime } = useMemo(() => {
@@ -22,10 +22,11 @@ function StartTime(props: StartTimeProps) {
         timeFormat,
         {
           includeSeconds: true,
+          timeZone,
         }
       ),
     };
-  }, [startTime, time, longDateFormat, timeFormat]);
+  }, [startTime, time, longDateFormat, timeFormat, timeZone]);
 
   useEffect(() => {
     const interval = setInterval(() => setTime(Date.now()), 1000);

@@ -40,6 +40,7 @@ namespace NzbDrone.Core.Test.ParserTests
         [TestCase("[Vixen] Matthew Meie, Erica Mori & Era Queen - Bratty College Girls Have Naughty Threesome (2025-12-03) [2160p]", true)]
         [TestCase("[Vixen] Matthew Meie, Erica Mori & Era Queen - Bratty College Girls Have Naughty Threesome (2025-12-03) [2160p].mp4", true)]
         [TestCase("[Studio.com] (E09) Perfomer(aka Alias) [2015 г., All Sex, BJ, IR, 720p]", true)]
+        [TestCase("[Deeper] Key Mistress - Jessi Rae - 2025-12-18 - 1440p", true)]
 
         public void should_parse_as_scene(string title, bool expected)
         {
@@ -67,6 +68,7 @@ namespace NzbDrone.Core.Test.ParserTests
         [TestCase("[BellesaFilms] The Sister - Ashley Lane, Mannie Coco (2025-09-28) [2160p]", "BellesaFilms")]
         [TestCase("[Blacked] - 2025-11-24 - BBC Queen Violet Takes On Three Cocks - Violet Myers - 1080p", "Blacked")]
         [TestCase("[Deeper] Key Mistress - Jessi Rae - 2025-12-18 - 1080p", "Deeper")]
+        [TestCase("[Deeper] Key Mistress - Jessi Rae - 2025-12-18 - 1440p", "Deeper")]
         [TestCase("(Deeper) Key Mistress - Jessi Rae - 2025-12-18 - 1080p", "Deeper")]
         [TestCase("[Vixen] Matthew Meie, Erica Mori & Era Queen - Bratty College Girls Have Naughty Threesome (2025-12-03) [2160p]", "Vixen")]
         [TestCase("[Vixen] Matthew Meie, Erica Mori & Era Queen - Bratty College Girls Have Naughty Threesome (2025-12-03) [2160p].mp4", "Vixen")]
@@ -251,6 +253,20 @@ namespace NzbDrone.Core.Test.ParserTests
             {
                 result.StashId.Should().BeNullOrEmpty();
             }
+        }
+
+        // QualityParser already folds 1440p in with R1080p, but the title regexes did not list
+        // it, so the release tokens were never narrowed at a 1440p marker and the whole quality
+        // block was carried into them as performer/tag text.
+        [TestCase("Studio.26.07.09.Performer.Title.XXX.1080p.x265-GROUP", ".Performer.Title")]
+        [TestCase("Studio.26.07.09.Performer.Title.XXX.1440p.x265-GROUP", ".Performer.Title")]
+        [TestCase("Studio.26.07.09.Performer.Title.XXX.2160p.x265-GROUP", ".Performer.Title")]
+        public void should_narrow_release_tokens_at_the_resolution_marker(string title, string expected)
+        {
+            var result = Parser.Parser.ParseMovieTitle(title);
+
+            result.Should().NotBeNull();
+            result.ReleaseTokens.Should().Be(expected);
         }
     }
 }

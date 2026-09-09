@@ -53,6 +53,7 @@ namespace NzbDrone.Core.Configuration
         public void SaveConfigDictionary(Dictionary<string, object> configValues)
         {
             var allWithDefaults = AllWithDefaults();
+            var hasUpdated = false;
 
             foreach (var configValue in configValues)
             {
@@ -66,11 +67,15 @@ namespace NzbDrone.Core.Configuration
 
                 if (!equal)
                 {
+                    hasUpdated = true;
                     SetValue(configValue.Key, configValue.Value.ToString());
                 }
             }
 
-            _eventAggregator.PublishEvent(new ConfigSavedEvent());
+            if (hasUpdated)
+            {
+                _eventAggregator.PublishEvent(new ConfigSavedEvent());
+            }
         }
 
         public bool IsDefined(string key)
@@ -273,6 +278,13 @@ namespace NzbDrone.Core.Configuration
         }
 
         // TODO: Rename to 'Skip Free Space Check'
+        public bool SkipFreeSpaceCheckWhenGrabbing
+        {
+            get { return GetValueBoolean("SkipFreeSpaceCheckWhenGrabbing", false); }
+
+            set { SetValue("SkipFreeSpaceCheckWhenGrabbing", value); }
+        }
+
         public bool SkipFreeSpaceCheckWhenImporting
         {
             get { return GetValueBoolean("SkipFreeSpaceCheckWhenImporting", false); }
@@ -343,6 +355,13 @@ namespace NzbDrone.Core.Configuration
             set { SetValue("RescanAfterRefresh", value); }
         }
 
+        public bool WhisparrMonitorNewItems
+        {
+            get { return GetValueBoolean("WhisparrMonitorNewItems", true); }
+
+            set { SetValue("WhisparrMonitorNewItems", value); }
+        }
+
         public bool SetPermissionsLinux
         {
             get { return GetValueBoolean("SetPermissionsLinux", false); }
@@ -404,6 +423,13 @@ namespace NzbDrone.Core.Configuration
             get { return GetValue("TimeFormat", "h(:mm)a"); }
 
             set { SetValue("TimeFormat", value); }
+        }
+
+        public string TimeZone
+        {
+            get { return GetValue("TimeZone", ""); }
+
+            set { SetValue("TimeZone", value); }
         }
 
         public bool ShowRelativeDates
@@ -487,6 +513,12 @@ namespace NzbDrone.Core.Configuration
         {
             get { return GetValue("WhisparrAlwaysExcludePerformersTag", ""); }
             set { SetValue("WhisparrAlwaysExcludePerformersTag", value); }
+        }
+
+        public string WhisparrAlwaysExcludePerformersAfterTag
+        {
+            get { return GetValue("WhisparrAlwaysExcludePerformersAfterTag", ""); }
+            set { SetValue("WhisparrAlwaysExcludePerformersAfterTag", value); }
         }
 
         public string WhisparrAlwaysExcludeStudiosTag

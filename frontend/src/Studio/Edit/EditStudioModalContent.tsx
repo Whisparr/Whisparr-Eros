@@ -10,9 +10,9 @@ import ModalBody from 'Components/Modal/ModalBody';
 import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
+import { useMovieMonitorAvailability } from 'Helpers/Hooks/useMovieMonitorAvailability';
 import { inputTypes } from 'Helpers/Props';
 import selectSettings from 'Helpers/selectSettings';
-import { useGeneralSettings } from 'Settings/General/useGeneralSettings';
 import Studio from 'Studio/Studio';
 import StudioLogo from 'Studio/StudioLogo';
 import { useSaveStudio } from 'Studio/useStudio';
@@ -30,11 +30,13 @@ function EditStudioModalContent({
   onModalClose,
 }: Readonly<EditStudioModalContentProps>) {
   const { isSmallScreen } = useAppDimensions();
-  const { data: generalSettings } = useGeneralSettings();
 
   const [monitored, setMonitored] = useState(studio.monitored);
   const [moviesMonitored, setMoviesMonitored] = useState(
     studio.moviesMonitored
+  );
+  const [whisparrMonitorNewItems, setWhisparrMonitorNewItems] = useState(
+    studio.whisparrMonitorNewItems
   );
   const [afterDate, setAfterDate] = useState(studio.afterDate ?? '');
   const [qualityProfileId, setQualityProfileId] = useState(
@@ -58,6 +60,10 @@ function EditStudioModalContent({
 
     if (moviesMonitored !== studio.moviesMonitored) {
       changes.moviesMonitored = moviesMonitored;
+    }
+
+    if (whisparrMonitorNewItems !== studio.whisparrMonitorNewItems) {
+      changes.whisparrMonitorNewItems = whisparrMonitorNewItems;
     }
 
     if (afterDate !== (studio.afterDate ?? '')) {
@@ -88,6 +94,7 @@ function EditStudioModalContent({
   }, [
     monitored,
     moviesMonitored,
+    whisparrMonitorNewItems,
     afterDate,
     qualityProfileId,
     rootFolderPath,
@@ -102,6 +109,7 @@ function EditStudioModalContent({
       {
         monitored: studio.monitored,
         moviesMonitored: studio.moviesMonitored,
+        whisparrMonitorNewItems: studio.whisparrMonitorNewItems,
         afterDate: studio.afterDate ?? '',
         qualityProfileId: studio.qualityProfileId,
         rootFolderPath: studio.rootFolderPath,
@@ -115,15 +123,19 @@ function EditStudioModalContent({
   }, [studio, pendingChanges, saveStudio.error]);
 
   // Movie monitoring only means something when the metadata source can supply
-  // movies for this studio, so the toggle follows the configured source.
-  const showMovieMonitor = useMemo(() => {
-    const source = generalSettings?.whisparrMovieMetadataSource?.toLowerCase();
+  // movies at all, so the toggle follows the configured source. When the
+  // source is set but this studio isn't linked to it on stashdb.org the toggle
+  // stays visible and disabled, with the reason underneath it.
+  const {
+    isSupported: isMovieMonitorSupported,
+    isLinked: isMovieMonitorLinked,
+    unavailableMessage: movieMonitorUnavailableMessage,
+  } = useMovieMonitorAvailability('studio', studio.tmdbId, studio.tpdbId);
 
-    return (
-      (source === 'tmdb' && studio.tmdbId > 0) ||
-      (source === 'tpdb' && studio.tpdbId?.length > 0)
-    );
-  }, [generalSettings, studio.tmdbId, studio.tpdbId]);
+  // A studio can already be monitored and later lose its link, so leave the
+  // toggle usable in that direction — otherwise there'd be no way to clear a
+  // value the server now rejects on every save.
+  const isMovieMonitorDisabled = !isMovieMonitorLinked && !moviesMonitored;
 
   const handleInputChange = useCallback(({ name, value }: InputChanged) => {
     switch (name) {
@@ -132,6 +144,9 @@ function EditStudioModalContent({
         break;
       case 'moviesMonitored':
         setMoviesMonitored(value as boolean);
+        break;
+      case 'whisparrMonitorNewItems':
+        setWhisparrMonitorNewItems(value as boolean);
         break;
       case 'afterDate':
         setAfterDate(value as string);
@@ -180,6 +195,7 @@ function EditStudioModalContent({
                 className={styles.poster}
                 images={studio.images}
                 size={250}
+                title={studio.title}
               />
             </div>
           )}
@@ -200,18 +216,31 @@ function EditStudioModalContent({
                 />
               </FormGroup>
 
-              {showMovieMonitor ? (
+              {isMovieMonitorSupported ? (
                 <FormGroup>
                   <FormLabel>{translate('MonitoredMovie')}</FormLabel>
                   <FormInputGroup
                     type={inputTypes.CHECK}
                     name="moviesMonitored"
                     helpText={translate('MonitoredStudioMovieHelpText')}
+                    helpTextWarning={movieMonitorUnavailableMessage}
+                    isDisabled={isMovieMonitorDisabled}
                     {...settings.moviesMonitored}
                     onChange={handleInputChange}
                   />
                 </FormGroup>
               ) : null}
+
+              <FormGroup>
+                <FormLabel>{translate('WhisparrMonitorNewItems')}</FormLabel>
+                <FormInputGroup
+                  type={inputTypes.CHECK}
+                  name="whisparrMonitorNewItems"
+                  helpText={translate('WhisparrMonitorNewItemsEntityHelpText')}
+                  {...settings.whisparrMonitorNewItems}
+                  onChange={handleInputChange}
+                />
+              </FormGroup>
 
               <FormGroup>
                 <FormLabel>{translate('MonitorAfter')}</FormLabel>

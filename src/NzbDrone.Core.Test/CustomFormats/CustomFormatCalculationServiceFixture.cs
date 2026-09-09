@@ -7,6 +7,7 @@ using NzbDrone.Core.History;
 using NzbDrone.Core.Languages;
 using NzbDrone.Core.MediaFiles;
 using NzbDrone.Core.Movies;
+using NzbDrone.Core.Parser.Model;
 using NzbDrone.Core.Qualities;
 using NzbDrone.Core.Test.Framework;
 
@@ -24,6 +25,7 @@ namespace NzbDrone.Core.Test.CustomFormats
         {
             _movie = Builder<Movie>.CreateNew()
                                    .With(m => m.MovieMetadata.Value.Title = "Performer Title")
+                                   .With(m => m.MovieMetadata.Value.Year = 2023)
                                    .Build();
 
             Mocker.GetMock<ICustomFormatService>()
@@ -53,6 +55,28 @@ namespace NzbDrone.Core.Test.CustomFormats
                 MovieId = _movie.Id,
                 SceneName = sceneName,
                 RelativePath = relativePath,
+                Quality = new QualityModel(Quality.WEBDL1080p),
+                Languages = new List<Language> { Language.English }
+            };
+        }
+
+        private void GivenYearFormat(int min, int max)
+        {
+            Mocker.GetMock<ICustomFormatService>()
+                  .Setup(s => s.All())
+                  .Returns(new List<CustomFormat>
+                  {
+                      new CustomFormat("Year", new YearSpecification { Min = min, Max = max }) { Id = 2 }
+                  });
+        }
+
+        private LocalMovie GivenLocalMovie(string sceneName)
+        {
+            return new LocalMovie
+            {
+                Movie = _movie,
+                SceneName = sceneName,
+                Path = $"/data/scenes/Vixen/{sceneName}.mkv",
                 Quality = new QualityModel(Quality.WEBDL1080p),
                 Languages = new List<Language> { Language.English }
             };
@@ -94,6 +118,45 @@ namespace NzbDrone.Core.Test.CustomFormats
             var history = GivenHistory("Vixen - 2023-12-18 - Performer Title [WEBDL-1080p].mkv");
 
             Subject.ParseCustomFormat(history, _movie).Should().BeEmpty();
+        }
+
+        // The synthesized ParsedMovieInfos are built from a stored movie rather than parsed, so they
+        // carried Year = 0 and every Year specification failed for anything already imported.
+        [Test]
+        public void should_match_the_year_specification_for_history()
+        {
+            GivenYearFormat(2020, 2025);
+
+            Subject.ParseCustomFormat(GivenHistory(SceneName), _movie)
+                   .Should().ContainSingle(f => f.Name == "Year");
+        }
+
+        [Test]
+        public void should_match_the_year_specification_for_a_movie_file()
+        {
+            GivenYearFormat(2020, 2025);
+
+            Subject.ParseCustomFormat(GivenMovieFile(SceneName, $"{SceneName}.mkv"), _movie)
+                   .Should().ContainSingle(f => f.Name == "Year");
+        }
+
+        [Test]
+        public void should_match_the_year_specification_for_an_imported_file()
+        {
+            GivenYearFormat(2020, 2025);
+
+            Subject.ParseCustomFormat(GivenLocalMovie(SceneName))
+                   .Should().ContainSingle(f => f.Name == "Year");
+        }
+
+        [Test]
+        public void should_not_match_the_year_specification_outside_the_range()
+        {
+            GivenYearFormat(2010, 2015);
+
+            Subject.ParseCustomFormat(GivenHistory(SceneName), _movie).Should().BeEmpty();
+            Subject.ParseCustomFormat(GivenMovieFile(SceneName, $"{SceneName}.mkv"), _movie).Should().BeEmpty();
+            Subject.ParseCustomFormat(GivenLocalMovie(SceneName)).Should().BeEmpty();
         }
     }
 }

@@ -37,6 +37,12 @@ const { useOptions, useOption, setOptions, setOption, setSort } =
           isVisible: false,
         },
         {
+          name: 'quality',
+          label: () => translate('Quality'),
+          isSortable: true,
+          isVisible: true,
+        },
+        {
           name: 'status',
           label: () => translate('Status'),
           isVisible: true,
@@ -46,7 +52,7 @@ const { useOptions, useOption, setOptions, setOption, setSort } =
           label: '',
           columnLabel: () => translate('Actions'),
           isVisible: true,
-          isModifiable: false,
+          isModifiable: 'onlyPosition',
         },
       ],
     };

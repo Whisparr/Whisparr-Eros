@@ -6,7 +6,6 @@ declare namespace AddImportListItemCssNamespace {
     overlay: string;
     presetsMenu: string;
     presetsMenuButton: string;
-    underlay: string;
   }
 }
 

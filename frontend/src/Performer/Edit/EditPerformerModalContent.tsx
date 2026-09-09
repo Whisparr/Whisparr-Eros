@@ -11,6 +11,7 @@ import ModalBody from 'Components/Modal/ModalBody';
 import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
+import { useMovieMonitorAvailability } from 'Helpers/Hooks/useMovieMonitorAvailability';
 import { inputTypes } from 'Helpers/Props';
 import selectSettings from 'Helpers/selectSettings';
 import MovieHeadshot from 'Movie/MovieHeadshot';
@@ -22,13 +23,11 @@ import styles from './EditPerformerModalContent.css';
 
 export interface EditPerformerModalContentProps {
   performer: Performer;
-  showMovieMonitor: boolean;
   onModalClose: () => void;
 }
 
 function EditPerformerModalContent({
   performer,
-  showMovieMonitor,
   onModalClose,
 }: Readonly<EditPerformerModalContentProps>) {
   const { isSmallScreen } = useAppDimensions();
@@ -38,12 +37,16 @@ function EditPerformerModalContent({
   const [moviesMonitored, setMoviesMonitored] = useState(
     performer.moviesMonitored
   );
+  const [whisparrMonitorNewItems, setWhisparrMonitorNewItems] = useState(
+    performer.whisparrMonitorNewItems
+  );
   const [qualityProfileId, setQualityProfileId] = useState(
     performer.qualityProfileId
   );
   const [rootFolderPath, setRootFolderPath] = useState(
     performer.rootFolderPath
   );
+  const [afterDate, setAfterDate] = useState(performer.afterDate ?? '');
   const [tags, setTags] = useState(performer.tags ?? []);
   const [searchOnAdd, setSearchOnAdd] = useState(performer.searchOnAdd);
 
@@ -63,12 +66,20 @@ function EditPerformerModalContent({
       changes.moviesMonitored = moviesMonitored;
     }
 
+    if (whisparrMonitorNewItems !== performer.whisparrMonitorNewItems) {
+      changes.whisparrMonitorNewItems = whisparrMonitorNewItems;
+    }
+
     if (qualityProfileId !== performer.qualityProfileId) {
       changes.qualityProfileId = qualityProfileId;
     }
 
     if (rootFolderPath !== performer.rootFolderPath) {
       changes.rootFolderPath = rootFolderPath;
+    }
+
+    if (afterDate !== (performer.afterDate ?? '')) {
+      changes.afterDate = afterDate;
     }
 
     if (JSON.stringify(tags) !== JSON.stringify(performer.tags ?? [])) {
@@ -83,8 +94,10 @@ function EditPerformerModalContent({
   }, [
     monitored,
     moviesMonitored,
+    whisparrMonitorNewItems,
     qualityProfileId,
     rootFolderPath,
+    afterDate,
     tags,
     searchOnAdd,
     performer,
@@ -95,8 +108,10 @@ function EditPerformerModalContent({
       {
         monitored: performer.monitored,
         moviesMonitored: performer.moviesMonitored,
+        whisparrMonitorNewItems: performer.whisparrMonitorNewItems,
         qualityProfileId: performer.qualityProfileId,
         rootFolderPath: performer.rootFolderPath,
+        afterDate: performer.afterDate ?? '',
         tags: performer.tags ?? [],
         searchOnAdd: performer.searchOnAdd,
       },
@@ -104,6 +119,25 @@ function EditPerformerModalContent({
       savePerformer.error
     );
   }, [performer, pendingChanges, savePerformer.error]);
+
+  // Movie monitoring only means something when the metadata source can supply
+  // movies at all, so the toggle follows the configured source. When the
+  // source is set but this performer isn't linked to it on stashdb.org the
+  // toggle stays visible and disabled, with the reason underneath it.
+  const {
+    isSupported: isMovieMonitorSupported,
+    isLinked: isMovieMonitorLinked,
+    unavailableMessage: movieMonitorUnavailableMessage,
+  } = useMovieMonitorAvailability(
+    'performer',
+    performer.tmdbId,
+    performer.tpdbId
+  );
+
+  // A performer can already be monitored and later lose their link, so leave
+  // the toggle usable in that direction — otherwise there'd be no way to clear
+  // a value the server now rejects on every save.
+  const isMovieMonitorDisabled = !isMovieMonitorLinked && !moviesMonitored;
 
   const handleInputChange = useCallback(({ name, value }: InputChanged) => {
     switch (name) {
@@ -113,11 +147,17 @@ function EditPerformerModalContent({
       case 'moviesMonitored':
         setMoviesMonitored(value as boolean);
         break;
+      case 'whisparrMonitorNewItems':
+        setWhisparrMonitorNewItems(value as boolean);
+        break;
       case 'qualityProfileId':
         setQualityProfileId(value as number);
         break;
       case 'rootFolderPath':
         setRootFolderPath(value as string);
+        break;
+      case 'afterDate':
+        setAfterDate(value as string);
         break;
       case 'tags':
         setTags(value as number[]);
@@ -155,6 +195,7 @@ function EditPerformerModalContent({
                 className={styles.poster}
                 images={performer.images}
                 size={250}
+                title={performer.fullName}
               />
             </div>
           )}
@@ -175,18 +216,42 @@ function EditPerformerModalContent({
                 />
               </FormGroup>
 
-              {showMovieMonitor ? (
+              {isMovieMonitorSupported ? (
                 <FormGroup>
                   <FormLabel>{translate('MonitoredMovie')}</FormLabel>
                   <FormInputGroup
                     type={inputTypes.CHECK}
                     name="moviesMonitored"
                     helpText={translate('MonitoredPerformerMovieHelpText')}
+                    helpTextWarning={movieMonitorUnavailableMessage}
+                    isDisabled={isMovieMonitorDisabled}
                     {...settings.moviesMonitored}
                     onChange={handleInputChange}
                   />
                 </FormGroup>
               ) : null}
+
+              <FormGroup>
+                <FormLabel>{translate('WhisparrMonitorNewItems')}</FormLabel>
+                <FormInputGroup
+                  type={inputTypes.CHECK}
+                  name="whisparrMonitorNewItems"
+                  helpText={translate('WhisparrMonitorNewItemsEntityHelpText')}
+                  {...settings.whisparrMonitorNewItems}
+                  onChange={handleInputChange}
+                />
+              </FormGroup>
+
+              <FormGroup>
+                <FormLabel>{translate('MonitorAfter')}</FormLabel>
+                <FormInputGroup
+                  type={inputTypes.DATE}
+                  name="afterDate"
+                  helpText={translate('MonitorAfterPerformerHelpText')}
+                  {...settings.afterDate}
+                  onChange={handleInputChange}
+                />
+              </FormGroup>
 
               <FormGroup>
                 <FormLabel>{translate('QualityProfile')}</FormLabel>

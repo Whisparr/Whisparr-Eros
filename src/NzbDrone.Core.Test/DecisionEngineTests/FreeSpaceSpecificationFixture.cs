@@ -39,6 +39,20 @@ namespace NzbDrone.Core.Test.DecisionEngineTests
         }
 
         [Test]
+        public void should_only_check_the_disk_once_for_repeated_releases_for_the_same_movie()
+        {
+            WithMinimumFreeSpace(0);
+            WithAvailableSpace(200);
+            WithSize(100);
+
+            Subject.IsSatisfiedBy(_remoteMovie, null).Accepted.Should().BeTrue();
+            Subject.IsSatisfiedBy(_remoteMovie, null).Accepted.Should().BeTrue();
+
+            Mocker.GetMock<IDiskProvider>()
+                  .Verify(s => s.GetAvailableSpace(_remoteMovie.Movie.Path), Times.Once());
+        }
+
+        [Test]
         public void should_return_true_when_available_space_is_more_than_size()
         {
             WithMinimumFreeSpace(0);
@@ -82,7 +96,7 @@ namespace NzbDrone.Core.Test.DecisionEngineTests
         public void should_return_true_if_skip_free_space_check_is_true()
         {
             Mocker.GetMock<IConfigService>()
-                .Setup(s => s.SkipFreeSpaceCheckWhenImporting)
+                .Setup(s => s.SkipFreeSpaceCheckWhenGrabbing)
                 .Returns(true);
 
             WithMinimumFreeSpace(150);
@@ -90,6 +104,20 @@ namespace NzbDrone.Core.Test.DecisionEngineTests
             WithSize(100);
 
             Subject.IsSatisfiedBy(_remoteMovie, null).Accepted.Should().BeTrue();
+        }
+
+        [Test]
+        public void should_not_skip_free_space_check_when_only_the_import_setting_is_true()
+        {
+            Mocker.GetMock<IConfigService>()
+                .Setup(s => s.SkipFreeSpaceCheckWhenImporting)
+                .Returns(true);
+
+            WithMinimumFreeSpace(150);
+            WithAvailableSpace(200);
+            WithSize(100);
+
+            Subject.IsSatisfiedBy(_remoteMovie, null).Accepted.Should().BeFalse();
         }
 
         [Test]

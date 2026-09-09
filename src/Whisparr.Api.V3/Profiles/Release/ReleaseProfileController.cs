@@ -26,22 +26,22 @@ namespace Whisparr.Api.V3.Profiles.Release
             {
                 if (restriction.MapRequired().Empty() && restriction.MapIgnored().Empty())
                 {
-                    context.AddFailure(nameof(ReleaseProfile.Required), "'Must contain' or 'Must not contain' is required");
+                    context.AddFailure(nameof(ReleaseProfileResource.Required), "'Must contain' or 'Must not contain' is required");
                 }
 
                 if (restriction.MapRequired().Any(t => t.IsNullOrWhiteSpace()))
                 {
-                    context.AddFailure(nameof(ReleaseProfile.Required), "'Must contain' should not contain whitespaces or an empty string");
+                    context.AddFailure(nameof(ReleaseProfileResource.Required), "'Must contain' should not contain whitespaces or an empty string");
                 }
 
                 if (restriction.MapIgnored().Any(t => t.IsNullOrWhiteSpace()))
                 {
-                    context.AddFailure(nameof(ReleaseProfile.Ignored), "'Must not contain' should not contain whitespaces or an empty string");
+                    context.AddFailure(nameof(ReleaseProfileResource.Ignored), "'Must not contain' should not contain whitespaces or an empty string");
                 }
 
-                if (restriction.Enabled && restriction.IndexerId != 0 && !_indexerFactory.Exists(restriction.IndexerId))
+                if (restriction.Enabled && restriction.MapIndexerIds().Any(id => !_indexerFactory.Exists(id)))
                 {
-                    context.AddFailure(nameof(ReleaseProfile.IndexerId), "Indexer does not exist");
+                    context.AddFailure(nameof(ReleaseProfileResource.IndexerIds), "Indexer does not exist");
                 }
             });
         }

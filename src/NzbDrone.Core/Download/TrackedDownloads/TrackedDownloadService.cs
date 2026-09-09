@@ -28,6 +28,7 @@ namespace NzbDrone.Core.Download.TrackedDownloads
     }
 
     public class TrackedDownloadService : ITrackedDownloadService,
+                                          IHandle<MovieGrabbedEvent>,
                                           IHandle<MovieAddedEvent>,
                                           IHandleAsync<MovieEditedEvent>,
                                           IHandleAsync<MoviesBulkEditedEvent>,
@@ -117,19 +118,6 @@ namespace NzbDrone.Core.Download.TrackedDownloads
 
             try
             {
-                var historyItems = _historyService.FindByDownloadId(downloadItem.DownloadId)
-                    .OrderByDescending(h => h.Date)
-                    .ToList();
-
-                var parsedMovieInfo = Parser.Parser.ParseMovieTitle(trackedDownload.DownloadItem.Title);
-
-                if (parsedMovieInfo != null)
-                {
-                    trackedDownload.RemoteMovie = _parsingService.Map(parsedMovieInfo, "", 0, null);
-
-                    _aggregationService.Augment(trackedDownload.RemoteMovie);
-                }
-
                 var downloadHistory = _downloadHistoryService.GetLatestDownloadHistoryItem(downloadItem.DownloadId);
 
                 if (downloadHistory != null)
@@ -137,6 +125,21 @@ namespace NzbDrone.Core.Download.TrackedDownloads
                     var state = GetStateFromHistory(downloadHistory.EventType);
                     trackedDownload.State = state;
                 }
+
+                var parsedMovieInfo = Parser.Parser.ParseMovieTitle(trackedDownload.DownloadItem.Title);
+
+                if (parsedMovieInfo != null)
+                {
+                    trackedDownload.RemoteMovie = downloadHistory is { EventType: DownloadHistoryEventType.DownloadImported }
+                        ? _parsingService.Map(parsedMovieInfo, downloadHistory.MovieId)
+                        : _parsingService.Map(parsedMovieInfo, "", 0, null);
+
+                    _aggregationService.Augment(trackedDownload.RemoteMovie);
+                }
+
+                var historyItems = _historyService.FindByDownloadId(downloadItem.DownloadId)
+                    .OrderByDescending(h => h.Date)
+                    .ToList();
 
                 if (historyItems.Any())
                 {
@@ -198,7 +201,8 @@ namespace NzbDrone.Core.Download.TrackedDownloads
             catch (Exception e)
             {
                 _logger.Debug(e, "Failed to find movie for " + downloadItem.Title);
-                return null;
+
+                trackedDownload.Warn("Unable to parse movie from title");
             }
 
             LogItemChange(trackedDownload, existingItem?.DownloadItem, trackedDownload.DownloadItem);
@@ -261,6 +265,25 @@ namespace NzbDrone.Core.Download.TrackedDownloads
                     trackedDownload.State,
                     trackedDownload.RemoteMovie?.ParsedMovieInfo,
                     downloadItem.OutputPath);
+            }
+        }
+
+        public void Handle(MovieGrabbedEvent message)
+        {
+            if (message.DownloadId.IsNullOrWhiteSpace())
+            {
+                return;
+            }
+
+            var trackedDownload = Find(message.DownloadId);
+
+            // A finished download being grabbed again is a fresh attempt, so drop the old
+            // tracking rather than letting its terminal state suppress the new import.
+            if (trackedDownload is { State: TrackedDownloadState.Imported or
+                                            TrackedDownloadState.Failed or
+                                            TrackedDownloadState.Ignored })
+            {
+                _cache.Remove(message.DownloadId);
             }
         }
 

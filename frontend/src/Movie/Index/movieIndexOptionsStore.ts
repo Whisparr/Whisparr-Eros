@@ -100,7 +100,7 @@ const { useOptions, useOption, getOptions, setOptions, setOption, setSort } =
           columnLabel: 'Select',
           isSortable: false,
           isVisible: true,
-          isModifiable: false,
+          isModifiable: 'disabled',
         },
         {
           name: 'status',
@@ -108,14 +108,14 @@ const { useOptions, useOption, getOptions, setOptions, setOption, setSort } =
           columnLabel: () => translate('ReleaseStatus'),
           isSortable: false,
           isVisible: true,
-          isModifiable: false,
+          isModifiable: 'disabled',
         },
         {
           name: 'sortTitle',
           label: () => translate('MovieTitle'),
           isSortable: true,
           isVisible: true,
-          isModifiable: false,
+          isModifiable: 'disabled',
         },
         {
           name: 'studioTitle',
@@ -194,7 +194,7 @@ const { useOptions, useOption, getOptions, setOptions, setOption, setSort } =
           label: '',
           columnLabel: () => translate('Actions'),
           isVisible: true,
-          isModifiable: false,
+          isModifiable: 'disabled',
         },
       ],
     };

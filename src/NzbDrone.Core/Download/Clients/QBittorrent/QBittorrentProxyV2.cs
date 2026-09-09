@@ -360,7 +360,8 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
         {
             var requestBuilder = new HttpRequestBuilder(settings.UseSsl, settings.Host, settings.Port, settings.UrlBase)
             {
-                LogResponseContent = true
+                LogResponseContent = true,
+                StoreRequestCookie = false
             };
 
             if (settings.ApiKey.IsNotNullOrWhiteSpace())
@@ -458,7 +459,7 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
                 return;
             }
 
-            var authKey = string.Format("{0}:{1}", requestBuilder.BaseUrl, settings.Password);
+            var authKey = $"{requestBuilder.BaseUrl}:{settings.Username}:{settings.Password}";
 
             var cookies = _authCookieCache.Find(authKey);
 

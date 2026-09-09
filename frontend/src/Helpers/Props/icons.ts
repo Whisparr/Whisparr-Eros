@@ -42,6 +42,7 @@ import {
   faCalculator as fasCalculator,
   faCalendarAlt as fasCalendarAlt,
   faCaretDown as fasCaretDown,
+  faChartPie as fasChartPie,
   faCheck as fasCheck,
   faCheckCircle as fasCheckCircle,
   faChevronCircleDown as fasChevronCircleDown,
@@ -49,6 +50,7 @@ import {
   faChevronCircleUp as fasChevronCircleUp,
   faCircle as fasCircle,
   faCircleDown as fasCircleDown,
+  faCircleMinus as fasCircleMinus,
   faCirclePlay as fasCirclePlay,
   faCloud as fasCloud,
   faCloudDownloadAlt as fasCloudDownloadAlt,
@@ -148,6 +150,7 @@ export const CAKE = faBirthdayCake;
 export const CALENDAR = fasCalendarAlt;
 export const CALENDAR_O = farCalendar;
 export const CARET_DOWN = fasCaretDown;
+export const CHART = fasChartPie;
 export const CHECK = fasCheck;
 export const CHECK_INDETERMINATE = fasMinus;
 export const CHECK_CIRCLE = fasCheckCircle;
@@ -172,6 +175,7 @@ export const DOWNLOADING = fasCloudDownloadAlt;
 export const DRIVE = farHdd;
 export const EDIT = fasWrench;
 export const MOVIE_FILE = farFileVideo;
+export const EXCLUDE = fasCircleMinus;
 export const EXPAND = fasChevronCircleDown;
 export const EXPAND_INDETERMINATE = fasChevronCircleRight;
 export const EXPORT = fasFileExport;

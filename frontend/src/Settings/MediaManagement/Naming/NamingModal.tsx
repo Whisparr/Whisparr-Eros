@@ -117,13 +117,7 @@ const movieTokens = [
   { token: '{Movie TitleThe}', example: "Movie's Title, The", footNote: true },
   {
     token: '{Movie CleanTitleThe}',
-    example: 'Movies Title, The',
-    footNote: true,
-  },
-  { token: '{Movie OriginalTitle}', example: 'Τίτλος ταινίας', footNote: true },
-  {
-    token: '{Movie CleanOriginalTitle}',
-    example: 'Τίτλος ταινίας',
+    example: 'Movies Title The',
     footNote: true,
   },
   { token: '{Movie TitleFirstCharacter}', example: 'M' },
@@ -133,7 +127,6 @@ const movieTokens = [
     example: 'The Movie Collection',
     footNote: true,
   },
-  { token: '{Movie Certification}', example: 'R' },
   { token: '{Release Year}', example: '2009' },
 ];
 
@@ -250,7 +243,11 @@ const editionTokens = [
 
 const customFormatTokens = [
   { token: '{Custom Formats}', example: 'Surround Sound x264' },
-  { token: '{Custom Format:FormatName}', example: 'AMZN' },
+  {
+    token: '{Custom Format:FormatName}',
+    example: 'Surround Sound',
+    footNote: true,
+  },
 ];
 
 const originalTokens = [
@@ -601,18 +598,24 @@ function NamingModal(props: NamingModalProps) {
 
               <FieldSet legend={translate('CustomFormats')}>
                 <div className={styles.groups}>
-                  {customFormatTokens.map(({ token, example }) => {
+                  {customFormatTokens.map(({ token, example, footNote }) => {
                     return (
                       <NamingOption
                         key={token}
                         token={token}
                         example={example}
+                        footNote={footNote}
                         tokenSeparator={tokenSeparator}
                         tokenCase={tokenCase}
                         onPress={handleOptionPress}
                       />
                     );
                   })}
+                </div>
+
+                <div className={styles.footNote}>
+                  <Icon className={styles.icon} name={icons.FOOTNOTE} />
+                  <InlineMarkdown data={translate('CustomFormatFootNote')} />
                 </div>
               </FieldSet>
 
