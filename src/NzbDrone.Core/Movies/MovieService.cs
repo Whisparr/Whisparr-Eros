@@ -43,6 +43,7 @@ namespace NzbDrone.Core.Movies
         List<Movie> FindByTitleCandidates(List<string> titles, out List<string> otherTitles);
         Movie FindScene(ParsedMovieInfo parsedMovieInfo, bool interactiveSearch = false, SearchCriteriaBase searchCriteria = null);
         List<Movie> GetByStudioForeignId(string studioForeignId);
+        Movie FindFuzzyMovieByYear(string title, int year);
         List<Movie> GetByPerformerForeignId(string performerForeignId);
         Movie FindByPath(string path);
         Dictionary<int, string> AllMoviePaths();
@@ -80,6 +81,14 @@ namespace NzbDrone.Core.Movies
     public class MovieService : IMovieService, IHandle<MovieFileAddedEvent>,
                                                IHandle<MovieFileDeletedEvent>
     {
+        private const int FuzzyMovieMatchMargin = 5;
+
+        // A trailing number is the difference between a movie and its sequel, so it has to survive title cleaning intact.
+        private static readonly Regex SequelTokenRegex = new Regex(@"\b(?<token>\d{1,4}|[ivx]{1,5})\s*$", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout);
+
+        private static readonly Dictionary<string, int> RomanSequelTokens =
+            RomanNumeralParser.GetArabicRomanNumeralsMapping().ToDictionary(m => m.RomanNumeralLowerCase, m => m.ArabicNumeral);
+
         private readonly IMovieRepository _movieRepository;
         private readonly ICreditService _creditService;
         private readonly IStudioService _studioService;
@@ -1286,6 +1295,103 @@ namespace NzbDrone.Core.Movies
             _logger.Debug("{0}: Matching [{1}] to movie [{2}]: {3}%", methodName, normalizedTitle, movie.ToString(), score);
 
             return (movie, score);
+        }
+
+        /// <summary>Finds a movie by fuzzy title match among movies released in the given year.</summary>
+        /// <remarks>Compares the parsed title (cleaned, with the release year appended) against each candidate's clean title. The year is included on both sides so a spurious leading tag only shifts similarity by its own length rather than also desynchronizing the year suffix. A margin over the runner-up score disambiguates same-year near-duplicates.</remarks>
+        /// <param name="title">The release title to match. Will be normalized.</param>
+        /// <param name="year">A parsed, reliable release year (1800 or later).</param>
+        /// <returns>The single best matching movie, or null if none clears the threshold with sufficient margin.</returns>
+        public Movie FindFuzzyMovieByYear(string title, int year)
+        {
+            var methodName = "FindFuzzyMovieByYear";
+            var normalizedTitle = $"{title.CleanMovieTitle().StripSpaces()}{year}";
+
+            var threshold = _configService.WhisparrFuzzyTitleMatchingThreshold;
+            if (threshold < 70)
+            {
+                _logger.Trace("{0}: Fuzzy match disabled with a threshold of {1}", methodName, threshold);
+                return null;
+            }
+
+            var candidates = _movieRepository.FindByYear(ItemType.Movie, year) ?? new List<Movie>();
+
+            var titleSequel = GetSequelToken(title);
+
+            var matches = new List<(Movie Movie, int Score)>();
+            foreach (var movie in candidates)
+            {
+                // "Taboo 2" scores ~95 against "Taboo", so without this the fuzzy pass happily grabs the wrong entry whenever only one of a numbered pair is in the library.
+                if (GetSequelToken(movie.Title) != titleSequel)
+                {
+                    _logger.Trace("{0}: Skipping [{1}] - sequel number does not match the release", methodName, movie.ToString());
+                    continue;
+                }
+
+                // Prefer the pipeline's pre-cleaned title; fall back to cleaning Title if CleanTitle was never populated (e.g. a movie added without a metadata refresh).
+                var cleanCandidate = !string.IsNullOrWhiteSpace(movie.CleanTitle)
+                    ? movie.CleanTitle.CleanMovieTitle().StripSpaces()
+                    : movie.Title?.CleanMovieTitle().StripSpaces();
+
+                if (string.IsNullOrWhiteSpace(cleanCandidate))
+                {
+                    continue;
+                }
+
+                // Candidate titles already carry the release year, so compare title-only on both sides.
+                var candidateTitle = $"{cleanCandidate}{year}";
+
+                var score = FuzzySharp.Fuzz.Ratio(normalizedTitle, candidateTitle);
+                _logger.Debug("{0}: Matching [{1}] to movie [{2}]: {3}%", methodName, normalizedTitle, movie.ToString(), score);
+
+                if (score >= threshold)
+                {
+                    matches.Add((Movie: movie, Score: score));
+                }
+            }
+
+            if (matches.Count == 0)
+            {
+                return null;
+            }
+
+            var sorted = matches.OrderByDescending(m => m.Score).ToList();
+            var highest = sorted[0];
+
+            // If another candidate is within the margin, the match is ambiguous (e.g. same title from two studios) - don't guess.
+            if (sorted.Count > 1 && highest.Score - sorted[1].Score < FuzzyMovieMatchMargin)
+            {
+                _logger.Trace("{0}: Ambiguous fuzzy match, top [{1}] score {2} within margin of runner-up {3}", methodName, highest.Movie.Title, highest.Score, sorted[1].Score);
+                return null;
+            }
+
+            _logger.Trace("{0}: Returning fuzzy matched movie [{1} - {2}] with score {3}", methodName, highest.Movie.Title, highest.Movie.ForeignId, highest.Score);
+            return highest.Movie;
+        }
+
+        /// <summary>Extracts the trailing sequel/volume number from a title, normalizing roman numerals to their arabic value.</summary>
+        /// <returns>The number, or null when the title does not end in one.</returns>
+        private static int? GetSequelToken(string title)
+        {
+            if (title.IsNullOrWhiteSpace())
+            {
+                return null;
+            }
+
+            var match = SequelTokenRegex.Match(title.Trim());
+            if (!match.Success)
+            {
+                return null;
+            }
+
+            var token = match.Groups["token"].Value;
+
+            if (int.TryParse(token, out var arabic))
+            {
+                return arabic;
+            }
+
+            return RomanSequelTokens.TryGetValue(token.ToLowerInvariant(), out var roman) ? roman : null;
         }
     }
 }

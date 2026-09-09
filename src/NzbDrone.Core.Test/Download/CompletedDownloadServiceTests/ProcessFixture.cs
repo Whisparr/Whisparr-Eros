@@ -178,6 +178,59 @@ namespace NzbDrone.Core.Test.Download.CompletedDownloadServiceTests
             AssertNotReadyToImport();
         }
 
+        // The download title no longer parses to a movie, so the grab history decides whether importing unattended is safe.
+        private void GivenGrabbedWithMatchType(MovieMatchType matchType, ReleaseSourceType releaseSource)
+        {
+            var history = new MovieHistory { EventType = MovieHistoryEventType.Grabbed, MovieId = 1 };
+            history.Data[MovieHistory.MOVIE_MATCH_TYPE] = matchType.ToString();
+            history.Data[MovieHistory.RELEASE_SOURCE] = releaseSource.ToString();
+
+            Mocker.GetMock<IHistoryService>()
+                  .Setup(s => s.FindByDownloadId(_trackedDownload.DownloadItem.DownloadId))
+                  .Returns(new List<MovieHistory> { history });
+
+            Mocker.GetMock<IParsingService>()
+                  .Setup(s => s.GetMovie("Drone.S01E01.HDTV", false))
+                  .Returns((Movie)null);
+
+            Mocker.GetMock<IMovieService>()
+                  .Setup(s => s.GetMovie(1))
+                  .Returns(_trackedDownload.RemoteMovie.Movie);
+        }
+
+        [TestCase(MovieMatchType.Id)]
+        [TestCase(MovieMatchType.FuzzyTitle)]
+        public void should_block_import_when_the_movie_was_not_identified_by_name(MovieMatchType matchType)
+        {
+            GivenGrabbedWithMatchType(matchType, ReleaseSourceType.Rss);
+
+            Subject.Check(_trackedDownload);
+
+            _trackedDownload.State.Should().Be(TrackedDownloadState.ImportBlocked);
+        }
+
+        [TestCase(MovieMatchType.Id)]
+        [TestCase(MovieMatchType.FuzzyTitle)]
+        public void should_import_a_weak_match_that_came_from_an_interactive_search(MovieMatchType matchType)
+        {
+            // The user picked this release themselves, so the weak match was already confirmed by a human.
+            GivenGrabbedWithMatchType(matchType, ReleaseSourceType.InteractiveSearch);
+
+            Subject.Check(_trackedDownload);
+
+            AssertReadyToImport();
+        }
+
+        [Test]
+        public void should_import_an_exact_title_match_without_intervention()
+        {
+            GivenGrabbedWithMatchType(MovieMatchType.Title, ReleaseSourceType.Rss);
+
+            Subject.Check(_trackedDownload);
+
+            AssertReadyToImport();
+        }
+
         private void AssertNotReadyToImport()
         {
             _trackedDownload.State.Should().NotBe(TrackedDownloadState.ImportPending);
