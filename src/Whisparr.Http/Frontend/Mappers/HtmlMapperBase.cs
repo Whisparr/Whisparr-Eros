@@ -12,7 +12,9 @@ namespace Whisparr.Http.Frontend.Mappers
     {
         private readonly IDiskProvider _diskProvider;
         private readonly Lazy<ICacheBreakerProvider> _cacheBreakProviderFactory;
-        private static readonly Regex ReplaceRegex = new Regex(@"(?:(?<attribute>href|src)=\"")(?<path>.*?(?<extension>css|js|png|ico|ics|svg|json))(?:\"")(?:\s(?<nohash>data-no-hash))?", RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexDefaults.Timeout);
+
+        // A minifier may drop the quotes (src=/index.js), so match both forms or the url base is never applied.
+        private static readonly Regex ReplaceRegex = new Regex(@"(?<attribute>href|src)=(?:\""(?<path>.*?(?:css|js|png|ico|ics|svg|json))\""|(?<path>[^\s\""'<>=`]+?(?:css|js|png|ico|ics|svg|json))(?=[\s>]))(?:\s(?<nohash>data-no-hash))?", RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexDefaults.Timeout);
 
         private string _generatedContent;
 
