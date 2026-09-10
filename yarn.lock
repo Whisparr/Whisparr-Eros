@@ -1577,10 +1577,10 @@
   dependencies:
     "@types/react" "*"
 
-"@types/react-dom@19.2.5", "@types/react-dom@^19.2.3":
-  version "19.2.5"
-  resolved "https://registry.yarnpkg.com/@types/react-dom/-/react-dom-19.2.5.tgz#d4ecf8d704cab59901d3fbb0975b6f855306595f"
-  integrity sha512-fMPwH9v7r/pp43yUd2/Mbiex5KouJwwR3dzHkhLREUC6764VyDsqxhAxv6OFEYR1RhjOyD1naqba8ECDBe7ZQg==
+"@types/react-dom@19.2.7", "@types/react-dom@^19.2.3":
+  version "19.2.7"
+  resolved "https://registry.yarnpkg.com/@types/react-dom/-/react-dom-19.2.7.tgz#eba78fc6201e564986ec40d56c86c8434593cace"
+  integrity sha512-I8bPpDLcHBv1qiIiXDCy71Rt8eQDKJP0sMSWJphDdAcdqiJ1sGpZamavoEIRZmYzjia9LuEb2HlYdDpmoENpvQ==
 
 "@types/react-google-recaptcha@2.1.9":
   version "2.1.9"
@@ -3754,10 +3754,10 @@ filemanager-webpack-plugin@10.0.1:
     normalize-path "^3.0.0"
     schema-utils "^4.3.3"
 
-filesize@11.0.22:
-  version "11.0.22"
-  resolved "https://registry.yarnpkg.com/filesize/-/filesize-11.0.22.tgz#7ceb11d6b7ee33248939c83a93b042e6562c6015"
-  integrity sha512-RlCVs9CY+oSsRnNZn95J9vDXjNjOwddKyTFjOYtA4yxYVIxBnwiVVGJX+TFhsmu3uUf81JDGyijtYL9xgawlTw==
+filesize@11.0.23:
+  version "11.0.23"
+  resolved "https://registry.yarnpkg.com/filesize/-/filesize-11.0.23.tgz#e419b47a06b175faec0bbb13f619c81accb5e4ec"
+  integrity sha512-EzB9Km94xm3V7szupSlcGVJpkvXWuNtSZmr7qBoj229q7lEJEEYGMk8gwGnA4ZTAGQmHZigTDEIuOfCQXec1fQ==
 
 fill-range@^7.1.1:
   version "7.1.1"
