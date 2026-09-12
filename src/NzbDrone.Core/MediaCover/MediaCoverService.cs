@@ -43,12 +43,14 @@ namespace NzbDrone.Core.MediaCover
         IHandleAsync<StudiosDeletedEvent>,
         IMapCoversToLocal
     {
-        private const string DefaultStudioCoverExtension = ".jpg";
         internal const int MovieCoverQueueCapacity = 100;
 
-        internal static int MovieCoverWorkerCount => (int)Math.Ceiling(Environment.ProcessorCount / 2.0);
+        private const string DefaultStudioCoverExtension = ".jpg";
+        private const string CoverDownloadFailedMessage = "Couldn't download media cover for {0}.";
 
-        internal MovieCoverQueueTestSeam MovieCoverQueueTest { get; }
+        // ImageSharp is slow on ARM (no hardware acceleration on mono yet)
+        // So limit the number of concurrent resizing tasks
+        private static SemaphoreSlim _semaphore = new SemaphoreSlim((int)Math.Ceiling(Environment.ProcessorCount / 2.0));
 
         private readonly IMediaCoverProxy _mediaCoverProxy;
         private readonly IImageResizer _resizer;
@@ -83,10 +85,6 @@ namespace NzbDrone.Core.MediaCover
         private MovieCoverLifecycleState _movieCoverLifecycleState;
         private long _movieCoverSequence;
         private int _movieCoverBlockedProducerCount;
-
-        // ImageSharp is slow on ARM (no hardware acceleration on mono yet)
-        // So limit the number of concurrent resizing tasks
-        private static SemaphoreSlim _semaphore = new SemaphoreSlim((int)Math.Ceiling(Environment.ProcessorCount / 2.0));
 
         public MediaCoverService(IMediaCoverProxy mediaCoverProxy,
                                  IImageResizer resizer,
@@ -124,25 +122,37 @@ namespace NzbDrone.Core.MediaCover
             MovieCoverQueueTest = new MovieCoverQueueTestSeam(this);
         }
 
+        private enum MovieCoverLifecycleState
+        {
+            NotStarted,
+            Running,
+            Stopping,
+            Stopped
+        }
+
+        internal static int MovieCoverWorkerCount => (int)Math.Ceiling(Environment.ProcessorCount / 2.0);
+
+        internal MovieCoverQueueTestSeam MovieCoverQueueTest { get; }
+
         public string GetMovieCoverPath(int movieId, MediaCoverTypes coverType, int? height = null)
         {
             var heightSuffix = height.HasValue ? "-" + height.ToString() : "";
 
-            return Path.Combine(GetMovieCoverPath(movieId), coverType.ToString().ToLower() + heightSuffix + GetExtension(coverType));
+            return Path.Combine(GetMovieCoverPath(movieId), coverType.ToString().ToLowerInvariant() + heightSuffix + GetExtension(coverType));
         }
 
         public string GetPerformerCoverPath(int performerId, MediaCoverTypes coverType, int? height = null)
         {
             var heightSuffix = height.HasValue ? "-" + height.ToString() : "";
 
-            return Path.Combine(GetPerformerCoverPath(performerId), coverType.ToString().ToLower() + heightSuffix + GetExtension(coverType));
+            return Path.Combine(GetPerformerCoverPath(performerId), coverType.ToString().ToLowerInvariant() + heightSuffix + GetExtension(coverType));
         }
 
         public string GetStudioCoverPath(int studioId, MediaCoverTypes coverType, int? height = null)
         {
             var heightSuffix = height.HasValue ? "-" + height.ToString() : "";
 
-            return Path.Combine(GetStudioCoverPath(studioId), coverType.ToString().ToLower() + heightSuffix + GetExtension(coverType));
+            return Path.Combine(GetStudioCoverPath(studioId), coverType.ToString().ToLowerInvariant() + heightSuffix + GetExtension(coverType));
         }
 
         public void ConvertToLocalUrls(int movieId, IEnumerable<MediaCover> covers)
@@ -165,7 +175,7 @@ namespace NzbDrone.Core.MediaCover
                     continue;
                 }
 
-                mediaCover.Url = _configFileProvider.UrlBase + @"/MediaCover/movie/" + movieId + "/" + mediaCover.CoverType.ToString().ToLower() + GetExtension(mediaCover.CoverType);
+                mediaCover.Url = $"{_configFileProvider.UrlBase}/MediaCover/movie/{movieId}/{mediaCover.CoverType.ToString().ToLowerInvariant()}{GetExtension(mediaCover.CoverType)}";
 
                 AppendCacheBuster(mediaCover);
             }
@@ -191,7 +201,7 @@ namespace NzbDrone.Core.MediaCover
                     continue;
                 }
 
-                mediaCover.Url = _configFileProvider.UrlBase + @"/MediaCover/performer/" + performerId + "/" + mediaCover.CoverType.ToString().ToLower() + GetExtension(mediaCover.CoverType);
+                mediaCover.Url = $"{_configFileProvider.UrlBase}/MediaCover/performer/{performerId}/{mediaCover.CoverType.ToString().ToLowerInvariant()}{GetExtension(mediaCover.CoverType)}";
 
                 AppendCacheBuster(mediaCover);
             }
@@ -221,424 +231,10 @@ namespace NzbDrone.Core.MediaCover
                     continue;
                 }
 
-                mediaCover.Url = _configFileProvider.UrlBase + @"/MediaCover/studio/" + studioId + "/" + mediaCover.CoverType.ToString().ToLower() + extension;
+                mediaCover.Url = $"{_configFileProvider.UrlBase}/MediaCover/studio/{studioId}/{mediaCover.CoverType.ToString().ToLowerInvariant()}{extension}";
 
                 AppendCacheBuster(mediaCover);
             }
-        }
-
-        // Keyed on the remote URL rather than the file's modification time: our metadata sources
-        // address images by content (a StashDB image UUID, a TPDB content hash), so the URL changes
-        // when and only when the image does. A modification time changes whenever the file is
-        // rewritten with identical bytes, and does not change until the local file catches up.
-        private static void AppendCacheBuster(MediaCover mediaCover)
-        {
-            if (mediaCover.RemoteUrl.IsNotNullOrWhiteSpace())
-            {
-                mediaCover.Url += "?h=" + mediaCover.RemoteUrl.SHA256Hash()[..20];
-            }
-        }
-
-        private string GetStudioCoverExtension(int studioId)
-        {
-            var folder = GetStudioCoverPath(studioId);
-
-            if (!_diskProvider.FolderExists(folder))
-            {
-                return DefaultStudioCoverExtension;
-            }
-
-            var files = _diskProvider.GetFiles(folder, false).ToList();
-
-            return files.Any() ? _diskProvider.GetFileInfo(files.First()).Extension : DefaultStudioCoverExtension;
-        }
-
-        private string GetMovieCoverPath(int movieId)
-        {
-            return Path.Combine(_coverRootFolder, "movie", movieId.ToString());
-        }
-
-        private string GetPerformerCoverPath(int performerId)
-        {
-            return Path.Combine(_coverRootFolder, "performer", performerId.ToString());
-        }
-
-        private string GetStudioCoverPath(int studioId)
-        {
-            return Path.Combine(_coverRootFolder, "studio", studioId.ToString());
-        }
-
-        private bool EnsureCovers(Movie movie)
-        {
-            var updated = false;
-            var toResize = new List<Tuple<MediaCover, bool>>();
-
-            foreach (var cover in movie.MovieMetadata.Value.Images)
-            {
-                if (cover.CoverType == MediaCoverTypes.Unknown)
-                {
-                    continue;
-                }
-
-                var fileName = GetMovieCoverPath(movie.Id, cover.CoverType);
-                var alreadyExists = false;
-
-                try
-                {
-                    alreadyExists = _coverExistsSpecification.AlreadyExists(cover.RemoteUrl, fileName);
-
-                    if (!alreadyExists)
-                    {
-                        DownloadCover(movie, cover);
-                        updated = true;
-                    }
-                }
-                catch (HttpException e)
-                {
-                    _logger.Warn("Couldn't download media cover for {0}. {1}", movie, e.Message);
-                }
-                catch (WebException e)
-                {
-                    _logger.Warn("Couldn't download media cover for {0}. {1}", movie, e.Message);
-                }
-                catch (Exception e)
-                {
-                    _logger.Error(e, "Couldn't download media cover for {0}", movie);
-                }
-
-                toResize.Add(Tuple.Create(cover, alreadyExists));
-            }
-
-            try
-            {
-                _semaphore.Wait();
-
-                foreach (var tuple in toResize)
-                {
-                    EnsureResizedCovers(movie, tuple.Item1, !tuple.Item2);
-                }
-            }
-            finally
-            {
-                _semaphore.Release();
-            }
-
-            return updated;
-        }
-
-        private bool EnsureCovers(Studio studio)
-        {
-            var updated = false;
-            var toResize = new List<Tuple<MediaCover, bool>>();
-
-            foreach (var cover in studio.Images)
-            {
-                if (cover.CoverType == MediaCoverTypes.Unknown)
-                {
-                    continue;
-                }
-
-                var fileName = GetStudioCoverPath(studio.Id, cover.CoverType);
-                var alreadyExists = false;
-
-                try
-                {
-                    alreadyExists = _coverExistsSpecification.AlreadyExists(cover.RemoteUrl, fileName);
-
-                    if (!alreadyExists)
-                    {
-                        DownloadCover(studio, cover);
-                        updated = true;
-                    }
-                }
-                catch (HttpException e)
-                {
-                    _logger.Warn("Couldn't download media cover for {0}. {1}", studio, e.Message);
-                }
-                catch (WebException e)
-                {
-                    _logger.Warn("Couldn't download media cover for {0}. {1}", studio, e.Message);
-                }
-                catch (Exception e)
-                {
-                    _logger.Error(e, "Couldn't download media cover for {0}", studio);
-                }
-
-                toResize.Add(Tuple.Create(cover, alreadyExists));
-            }
-
-            try
-            {
-                _semaphore.Wait();
-
-                foreach (var tuple in toResize)
-                {
-                    EnsureResizedCovers(studio, tuple.Item1, !tuple.Item2);
-                }
-            }
-            finally
-            {
-                _semaphore.Release();
-            }
-
-            return updated;
-        }
-
-        private bool EnsureCovers(Performer performer)
-        {
-            var updated = false;
-            var toResize = new List<Tuple<MediaCover, bool>>();
-
-            foreach (var cover in performer.Images)
-            {
-                if (cover.CoverType == MediaCoverTypes.Unknown)
-                {
-                    continue;
-                }
-
-                var fileName = GetPerformerCoverPath(performer.Id, cover.CoverType);
-                var alreadyExists = false;
-
-                try
-                {
-                    alreadyExists = _coverExistsSpecification.AlreadyExists(cover.RemoteUrl, fileName);
-
-                    if (!alreadyExists)
-                    {
-                        DownloadCover(performer, cover);
-                        updated = true;
-                    }
-                }
-                catch (HttpException e)
-                {
-                    _logger.Warn("Couldn't download media cover for {0}. {1}", performer, e.Message);
-                }
-                catch (WebException e)
-                {
-                    _logger.Warn("Couldn't download media cover for {0}. {1}", performer, e.Message);
-                }
-                catch (Exception e)
-                {
-                    _logger.Error(e, "Couldn't download media cover for {0}", performer);
-                }
-
-                toResize.Add(Tuple.Create(cover, alreadyExists));
-            }
-
-            try
-            {
-                _semaphore.Wait();
-
-                foreach (var tuple in toResize)
-                {
-                    EnsureResizedCovers(performer, tuple.Item1, !tuple.Item2);
-                }
-            }
-            finally
-            {
-                _semaphore.Release();
-            }
-
-            return updated;
-        }
-
-        private void DownloadCover(Movie movie, MediaCover cover)
-        {
-            var fileName = GetMovieCoverPath(movie.Id, cover.CoverType);
-
-            _logger.Trace("Downloading {0} for {1} {2}", cover.CoverType, movie.ToString(), cover.RemoteUrl);
-            _httpClient.DownloadFile(cover.RemoteUrl, fileName);
-        }
-
-        private void DownloadCover(Performer performer, MediaCover cover)
-        {
-            var fileName = GetPerformerCoverPath(performer.Id, cover.CoverType);
-
-            _logger.Trace("Downloading {0} for {1} {2}", cover.CoverType, performer.ToString(), cover.RemoteUrl);
-            _httpClient.DownloadFile(cover.RemoteUrl, fileName);
-        }
-
-        private void DownloadCover(Studio studio, MediaCover cover)
-        {
-            var req = new HttpRequest(cover.RemoteUrl);
-            _logger.Trace("Downloading {0} for {1} {2}", cover.CoverType, studio.ToString(), cover.RemoteUrl);
-            var imageResponse = _httpClient.Execute(req);
-            var extension = imageResponse.Headers.ContentType switch
-            {
-                "image/svg+xml" => ".svg",
-                "image/png" => ".png",
-                "image/jpeg " => ".jpg",
-                _ => ".png",
-            };
-            var filePath = GetStudioCoverPath(studio.Id);
-            filePath = Path.Join(filePath, cover.CoverType.ToString().ToLower() + extension);
-            var fileInfo = _diskProvider.GetFileInfo(filePath);
-            if (fileInfo.Directory != null && !fileInfo.Directory.Exists)
-            {
-                fileInfo.Directory.Create();
-            }
-
-            _logger.Trace("Writing studio cover to {0}", filePath);
-            File.WriteAllBytes(filePath, imageResponse.ResponseData);
-        }
-
-        private bool RemoteUrlHasExtension(MediaCover cover)
-        {
-            var url = cover.RemoteUrl.Split('?')[0]; // ignore URL params
-            url = url.Split('/').Last();
-            var extension = url.Contains('.') ? url.Substring(url.LastIndexOf('.')) : "";
-            if (extension.Length > 0)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        private void EnsureResizedCovers(Movie movie, MediaCover cover, bool forceResize)
-        {
-            int[] heights;
-
-            switch (cover.CoverType)
-            {
-                default:
-                    return;
-
-                case MediaCoverTypes.Poster:
-                case MediaCoverTypes.Headshot:
-                    heights = new[] { 500, 250 };
-                    break;
-
-                case MediaCoverTypes.Banner:
-                    heights = new[] { 70, 35 };
-                    break;
-
-                case MediaCoverTypes.Fanart:
-                case MediaCoverTypes.Screenshot:
-                    heights = new[] { 360, 180 };
-                    break;
-            }
-
-            foreach (var height in heights)
-            {
-                var mainFileName = GetMovieCoverPath(movie.Id, cover.CoverType);
-                var resizeFileName = GetMovieCoverPath(movie.Id, cover.CoverType, height);
-
-                if (forceResize || !_diskProvider.FileExists(resizeFileName) || _diskProvider.GetFileSize(resizeFileName) == 0)
-                {
-                    _logger.Debug("Resizing {0}-{1} for {2}", cover.CoverType, height, movie);
-
-                    try
-                    {
-                        _resizer.Resize(mainFileName, resizeFileName, height);
-                    }
-                    catch
-                    {
-                        _logger.Debug("Couldn't resize media cover {0}-{1} for {2}, using full size image instead.", cover.CoverType, height, movie);
-                    }
-                }
-            }
-        }
-
-        private void EnsureResizedCovers(Studio studio, MediaCover cover, bool forceResize)
-        {
-            int[] heights;
-
-            switch (cover.CoverType)
-            {
-                default:
-                    return;
-
-                case MediaCoverTypes.Poster:
-                case MediaCoverTypes.Headshot:
-                    heights = new[] { 500, 250 };
-                    break;
-
-                case MediaCoverTypes.Banner:
-                    heights = new[] { 70, 35 };
-                    break;
-
-                case MediaCoverTypes.Fanart:
-                case MediaCoverTypes.Screenshot:
-                    heights = new[] { 360, 180 };
-                    break;
-            }
-
-            foreach (var height in heights)
-            {
-                var mainFileName = GetStudioCoverPath(studio.Id, cover.CoverType);
-                var resizeFileName = GetStudioCoverPath(studio.Id, cover.CoverType, height);
-
-                if (forceResize || !_diskProvider.FileExists(resizeFileName) || _diskProvider.GetFileSize(resizeFileName) == 0)
-                {
-                    _logger.Debug("Resizing {0}-{1} for {2}", cover.CoverType, height, studio);
-
-                    try
-                    {
-                        _resizer.Resize(mainFileName, resizeFileName, height);
-                    }
-                    catch
-                    {
-                        _logger.Debug("Couldn't resize media cover {0}-{1} for {2}, using full size image instead.", cover.CoverType, height, studio);
-                    }
-                }
-            }
-        }
-
-        private void EnsureResizedCovers(Performer performer, MediaCover cover, bool forceResize)
-        {
-            int[] heights;
-
-            switch (cover.CoverType)
-            {
-                default:
-                    return;
-
-                case MediaCoverTypes.Poster:
-                case MediaCoverTypes.Headshot:
-                    heights = new[] { 500, 250 };
-                    break;
-
-                case MediaCoverTypes.Banner:
-                    heights = new[] { 70, 35 };
-                    break;
-
-                case MediaCoverTypes.Fanart:
-                case MediaCoverTypes.Screenshot:
-                    heights = new[] { 360, 180 };
-                    break;
-            }
-
-            foreach (var height in heights)
-            {
-                var mainFileName = GetPerformerCoverPath(performer.Id, cover.CoverType);
-                var resizeFileName = GetPerformerCoverPath(performer.Id, cover.CoverType, height);
-
-                if (forceResize || !_diskProvider.FileExists(resizeFileName) || _diskProvider.GetFileSize(resizeFileName) == 0)
-                {
-                    _logger.Debug("Resizing {0}-{1} for {2}", cover.CoverType, height, performer);
-
-                    try
-                    {
-                        _resizer.Resize(mainFileName, resizeFileName, height);
-                    }
-                    catch
-                    {
-                        _logger.Debug("Couldn't resize media cover {0}-{1} for {2}, using full size image instead.", cover.CoverType, height, performer);
-                    }
-                }
-            }
-        }
-
-        private string GetExtension(MediaCoverTypes coverType)
-        {
-            return coverType switch
-            {
-                MediaCoverTypes.Clearlogo => ".png",
-                _ => ".jpg"
-            };
         }
 
         public void Handle(MovieUpdatedEvent message)
@@ -795,6 +391,7 @@ namespace NzbDrone.Core.MediaCover
 
                 _movieCoverLifecycleState = MovieCoverLifecycleState.Stopping;
                 _movieCoverIntakeCancellation.Cancel();
+                _movieCoverIntakeCancellation.Dispose();
                 workers = _movieCoverWorkers.ToArray();
                 abandonedMovieCovers = _pendingMovieCovers.Count;
                 _movieCoverQueue.Clear();
@@ -842,13 +439,461 @@ namespace NzbDrone.Core.MediaCover
             }
         }
 
+        public void HandleAsync(MovieUpdatedEvent message)
+        {
+            var updated = EnsureCovers(message.Movie);
+            _eventAggregator.PublishEvent(new MediaCoversUpdatedEvent(message.Movie, updated));
+        }
+
+        public void HandleAsync(PerformerUpdatedEvent message)
+        {
+            _ = EnsureCovers(message.Performer);
+        }
+
+        public void HandleAsync(StudioUpdatedEvent message)
+        {
+            _ = EnsureCovers(message.Studio);
+        }
+
+        public void HandleAsync(MoviesDeletedEvent message)
+        {
+            PurgeDeletedMovieCovers(message.Movies.Select(movie => movie.Id).ToHashSet());
+
+            foreach (var movie in message.Movies)
+            {
+                DeleteMovieCoverFolder(movie.Id);
+            }
+        }
+
+        public void HandleAsync(PerformersDeletedEvent message)
+        {
+            foreach (var performer in message.Performers)
+            {
+                var path = GetPerformerCoverPath(performer.Id);
+                if (_diskProvider.FolderExists(path))
+                {
+                    _diskProvider.DeleteFolder(path, true);
+                }
+            }
+        }
+
+        public void HandleAsync(StudiosDeletedEvent message)
+        {
+            foreach (var studio in message.Studios)
+            {
+                var path = GetStudioCoverPath(studio.Id);
+                if (_diskProvider.FolderExists(path))
+                {
+                    _diskProvider.DeleteFolder(path, true);
+                }
+            }
+        }
+
+        private static string GetExtension(MediaCoverTypes coverType)
+        {
+            return coverType switch
+            {
+                MediaCoverTypes.Clearlogo => ".png",
+                _ => ".jpg"
+            };
+        }
+
+        // Keyed on the remote URL rather than the file's modification time: our metadata sources
+        // address images by content (a StashDB image UUID, a TPDB content hash), so the URL changes
+        // when and only when the image does. A modification time changes whenever the file is
+        // rewritten with identical bytes, and does not change until the local file catches up.
+        private static void AppendCacheBuster(MediaCover mediaCover)
+        {
+            if (mediaCover.RemoteUrl.IsNotNullOrWhiteSpace())
+            {
+                mediaCover.Url += "?h=" + mediaCover.RemoteUrl.SHA256Hash()[..20];
+            }
+        }
+
+        private string GetStudioCoverExtension(int studioId)
+        {
+            var folder = GetStudioCoverPath(studioId);
+
+            if (!_diskProvider.FolderExists(folder))
+            {
+                return DefaultStudioCoverExtension;
+            }
+
+            var file = _diskProvider.GetFiles(folder, false).FirstOrDefault();
+            return file != null ? _diskProvider.GetFileInfo(file).Extension : DefaultStudioCoverExtension;
+        }
+
+        private string GetMovieCoverPath(int movieId)
+        {
+            return Path.Combine(_coverRootFolder, "movie", movieId.ToString());
+        }
+
+        private string GetPerformerCoverPath(int performerId)
+        {
+            return Path.Combine(_coverRootFolder, "performer", performerId.ToString());
+        }
+
+        private string GetStudioCoverPath(int studioId)
+        {
+            return Path.Combine(_coverRootFolder, "studio", studioId.ToString());
+        }
+
+        private bool EnsureCovers(Movie movie)
+        {
+            var updated = false;
+            var toResize = new List<Tuple<MediaCover, bool>>();
+
+            foreach (var cover in movie.MovieMetadata.Value.Images)
+            {
+                if (cover.CoverType == MediaCoverTypes.Unknown)
+                {
+                    continue;
+                }
+
+                var fileName = GetMovieCoverPath(movie.Id, cover.CoverType);
+                var alreadyExists = false;
+
+                try
+                {
+                    alreadyExists = _coverExistsSpecification.AlreadyExists(cover.RemoteUrl, fileName);
+
+                    if (!alreadyExists)
+                    {
+                        DownloadCover(movie, cover);
+                        updated = true;
+                    }
+                }
+                catch (HttpException e)
+                {
+                    _logger.Warn(e, CoverDownloadFailedMessage, movie);
+                }
+                catch (WebException e)
+                {
+                    _logger.Warn(e, CoverDownloadFailedMessage, movie);
+                }
+                catch (Exception e)
+                {
+                    _logger.Error(e, CoverDownloadFailedMessage, movie);
+                }
+
+                toResize.Add(Tuple.Create(cover, alreadyExists));
+            }
+
+            try
+            {
+                _semaphore.Wait(CancellationToken.None);
+
+                foreach (var tuple in toResize)
+                {
+                    EnsureResizedCovers(movie, tuple.Item1, !tuple.Item2);
+                }
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
+
+            return updated;
+        }
+
+        private bool EnsureCovers(Studio studio)
+        {
+            var updated = false;
+            var toResize = new List<Tuple<MediaCover, bool>>();
+
+            foreach (var cover in studio.Images)
+            {
+                if (cover.CoverType == MediaCoverTypes.Unknown)
+                {
+                    continue;
+                }
+
+                var fileName = GetStudioCoverPath(studio.Id, cover.CoverType);
+                var alreadyExists = false;
+
+                try
+                {
+                    alreadyExists = _coverExistsSpecification.AlreadyExists(cover.RemoteUrl, fileName);
+
+                    if (!alreadyExists)
+                    {
+                        DownloadCover(studio, cover);
+                        updated = true;
+                    }
+                }
+                catch (HttpException e)
+                {
+                    _logger.Warn(e, CoverDownloadFailedMessage, studio);
+                }
+                catch (WebException e)
+                {
+                    _logger.Warn(e, CoverDownloadFailedMessage, studio);
+                }
+                catch (Exception e)
+                {
+                    _logger.Error(e, CoverDownloadFailedMessage, studio);
+                }
+
+                toResize.Add(Tuple.Create(cover, alreadyExists));
+            }
+
+            try
+            {
+                _semaphore.Wait(CancellationToken.None);
+
+                foreach (var tuple in toResize)
+                {
+                    EnsureResizedCovers(studio, tuple.Item1, !tuple.Item2);
+                }
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
+
+            return updated;
+        }
+
+        private bool EnsureCovers(Performer performer)
+        {
+            var updated = false;
+            var toResize = new List<Tuple<MediaCover, bool>>();
+
+            foreach (var cover in performer.Images)
+            {
+                if (cover.CoverType == MediaCoverTypes.Unknown)
+                {
+                    continue;
+                }
+
+                var fileName = GetPerformerCoverPath(performer.Id, cover.CoverType);
+                var alreadyExists = false;
+
+                try
+                {
+                    alreadyExists = _coverExistsSpecification.AlreadyExists(cover.RemoteUrl, fileName);
+
+                    if (!alreadyExists)
+                    {
+                        DownloadCover(performer, cover);
+                        updated = true;
+                    }
+                }
+                catch (HttpException e)
+                {
+                    _logger.Warn(e, CoverDownloadFailedMessage, performer);
+                }
+                catch (WebException e)
+                {
+                    _logger.Warn(e, CoverDownloadFailedMessage, performer);
+                }
+                catch (Exception e)
+                {
+                    _logger.Error(e, CoverDownloadFailedMessage, performer);
+                }
+
+                toResize.Add(Tuple.Create(cover, alreadyExists));
+            }
+
+            try
+            {
+                _semaphore.Wait(CancellationToken.None);
+
+                foreach (var tuple in toResize)
+                {
+                    EnsureResizedCovers(performer, tuple.Item1, !tuple.Item2);
+                }
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
+
+            return updated;
+        }
+
+        private void DownloadCover(Movie movie, MediaCover cover)
+        {
+            var fileName = GetMovieCoverPath(movie.Id, cover.CoverType);
+
+            _logger.Trace("Downloading {0} for {1} {2}", cover.CoverType, movie.ToString(), cover.RemoteUrl);
+            _httpClient.DownloadFile(cover.RemoteUrl, fileName);
+        }
+
+        private void DownloadCover(Performer performer, MediaCover cover)
+        {
+            var fileName = GetPerformerCoverPath(performer.Id, cover.CoverType);
+
+            _logger.Trace("Downloading {0} for {1} {2}", cover.CoverType, performer.ToString(), cover.RemoteUrl);
+            _httpClient.DownloadFile(cover.RemoteUrl, fileName);
+        }
+
+        private void DownloadCover(Studio studio, MediaCover cover)
+        {
+            var req = new HttpRequest(cover.RemoteUrl);
+            _logger.Trace("Downloading {0} for {1} {2}", cover.CoverType, studio.ToString(), cover.RemoteUrl);
+            var imageResponse = _httpClient.Execute(req);
+            var extension = imageResponse.Headers.ContentType switch
+            {
+                "image/svg+xml" => ".svg",
+                "image/png" => ".png",
+                "image/jpeg " => ".jpg",
+                _ => ".png",
+            };
+            var filePath = GetStudioCoverPath(studio.Id);
+            filePath = Path.Join(filePath, cover.CoverType.ToString().ToLowerInvariant() + extension);
+            var fileInfo = _diskProvider.GetFileInfo(filePath);
+            if (fileInfo.Directory != null && !fileInfo.Directory.Exists)
+            {
+                fileInfo.Directory.Create();
+            }
+
+            _logger.Trace("Writing studio cover to {0}", filePath);
+            File.WriteAllBytes(filePath, imageResponse.ResponseData);
+        }
+
+        private void EnsureResizedCovers(Movie movie, MediaCover cover, bool forceResize)
+        {
+            int[] heights;
+
+            switch (cover.CoverType)
+            {
+                default:
+                    return;
+
+                case MediaCoverTypes.Poster:
+                case MediaCoverTypes.Headshot:
+                    heights = new[] { 500, 250 };
+                    break;
+
+                case MediaCoverTypes.Banner:
+                    heights = new[] { 70, 35 };
+                    break;
+
+                case MediaCoverTypes.Fanart:
+                case MediaCoverTypes.Screenshot:
+                    heights = new[] { 360, 180 };
+                    break;
+            }
+
+            foreach (var height in heights)
+            {
+                var mainFileName = GetMovieCoverPath(movie.Id, cover.CoverType);
+                var resizeFileName = GetMovieCoverPath(movie.Id, cover.CoverType, height);
+
+                if (forceResize || !_diskProvider.FileExists(resizeFileName) || _diskProvider.GetFileSize(resizeFileName) == 0)
+                {
+                    _logger.Debug("Resizing {0}-{1} for {2}", cover.CoverType, height, movie);
+
+                    try
+                    {
+                        _resizer.Resize(mainFileName, resizeFileName, height);
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.Debug(e, "Couldn't resize media cover {0}-{1} for {2}, using full size image instead.", cover.CoverType, height, movie);
+                    }
+                }
+            }
+        }
+
+        private void EnsureResizedCovers(Studio studio, MediaCover cover, bool forceResize)
+        {
+            int[] heights;
+
+            switch (cover.CoverType)
+            {
+                default:
+                    return;
+
+                case MediaCoverTypes.Poster:
+                case MediaCoverTypes.Headshot:
+                    heights = new[] { 500, 250 };
+                    break;
+
+                case MediaCoverTypes.Banner:
+                    heights = new[] { 70, 35 };
+                    break;
+
+                case MediaCoverTypes.Fanart:
+                case MediaCoverTypes.Screenshot:
+                    heights = new[] { 360, 180 };
+                    break;
+            }
+
+            foreach (var height in heights)
+            {
+                var mainFileName = GetStudioCoverPath(studio.Id, cover.CoverType);
+                var resizeFileName = GetStudioCoverPath(studio.Id, cover.CoverType, height);
+
+                if (forceResize || !_diskProvider.FileExists(resizeFileName) || _diskProvider.GetFileSize(resizeFileName) == 0)
+                {
+                    _logger.Debug("Resizing {0}-{1} for {2}", cover.CoverType, height, studio);
+
+                    try
+                    {
+                        _resizer.Resize(mainFileName, resizeFileName, height);
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.Debug(e, "Couldn't resize media cover {0}-{1} for {2}, using full size image instead.", cover.CoverType, height, studio);
+                    }
+                }
+            }
+        }
+
+        private void EnsureResizedCovers(Performer performer, MediaCover cover, bool forceResize)
+        {
+            int[] heights;
+
+            switch (cover.CoverType)
+            {
+                default:
+                    return;
+
+                case MediaCoverTypes.Poster:
+                case MediaCoverTypes.Headshot:
+                    heights = new[] { 500, 250 };
+                    break;
+
+                case MediaCoverTypes.Banner:
+                    heights = new[] { 70, 35 };
+                    break;
+
+                case MediaCoverTypes.Fanart:
+                case MediaCoverTypes.Screenshot:
+                    heights = new[] { 360, 180 };
+                    break;
+            }
+
+            foreach (var height in heights)
+            {
+                var mainFileName = GetPerformerCoverPath(performer.Id, cover.CoverType);
+                var resizeFileName = GetPerformerCoverPath(performer.Id, cover.CoverType, height);
+
+                if (forceResize || !_diskProvider.FileExists(resizeFileName) || _diskProvider.GetFileSize(resizeFileName) == 0)
+                {
+                    _logger.Debug("Resizing {0}-{1} for {2}", cover.CoverType, height, performer);
+
+                    try
+                    {
+                        _resizer.Resize(mainFileName, resizeFileName, height);
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.Debug(e, "Couldn't resize media cover {0}-{1} for {2}, using full size image instead.", cover.CoverType, height, performer);
+                    }
+                }
+            }
+        }
+
         private void ProcessMovieCoverQueue()
         {
             try
             {
                 while (true)
                 {
-                    _queuedMovieCovers.Wait();
+                    _queuedMovieCovers.Wait(CancellationToken.None);
 
                     int movieId;
                     Movie movie;
@@ -956,126 +1001,6 @@ namespace NzbDrone.Core.MediaCover
             _movieCoverLifecycleState = MovieCoverLifecycleState.Stopped;
         }
 
-        private enum MovieCoverLifecycleState
-        {
-            NotStarted,
-            Running,
-            Stopping,
-            Stopped
-        }
-
-        internal sealed class MovieCoverQueueTestSeam
-        {
-            private readonly MediaCoverService _owner;
-
-            internal MovieCoverQueueTestSeam(MediaCoverService owner)
-            {
-                _owner = owner;
-                SlotAcquired = (_, _) => { };
-            }
-
-            internal TimeSpan ShutdownTimeout
-            {
-                get => _owner._movieCoverShutdownTimeout;
-                set => _owner._movieCoverShutdownTimeout = value;
-            }
-
-            internal Action<Movie, long> SlotAcquired { get; set; }
-            internal int BlockedProducerCount => Volatile.Read(ref _owner._movieCoverBlockedProducerCount);
-
-            internal int PendingUniqueCount
-            {
-                get
-                {
-                    lock (_owner._movieCoverQueueLock)
-                    {
-                        return _owner._pendingMovieCovers.Count;
-                    }
-                }
-            }
-
-            internal bool HasHighWaterSequence(int movieId)
-            {
-                lock (_owner._movieCoverQueueLock)
-                {
-                    return _owner._movieCoverHighWaterSequences.ContainsKey(movieId);
-                }
-            }
-
-            internal bool Stopping
-            {
-                get
-                {
-                    lock (_owner._movieCoverQueueLock)
-                    {
-                        return _owner._movieCoverLifecycleState == MovieCoverLifecycleState.Stopping;
-                    }
-                }
-            }
-
-            internal int WorkerPoolSize
-            {
-                get
-                {
-                    lock (_owner._movieCoverQueueLock)
-                    {
-                        return _owner._movieCoverWorkers.Count;
-                    }
-                }
-            }
-
-            internal int WorkerCountAlive
-            {
-                get
-                {
-                    lock (_owner._movieCoverQueueLock)
-                    {
-                        return _owner._movieCoverWorkers.Count(worker => worker.IsAlive);
-                    }
-                }
-            }
-
-            internal void InvokeSlotAcquired(Movie movie, long sequence)
-            {
-                try
-                {
-                    SlotAcquired(movie, sequence);
-                }
-                catch (Exception ex)
-                {
-                    _owner._logger.Error(ex, "Error in media cover queue test hook");
-                }
-            }
-        }
-
-        private sealed class PendingMovieCover
-        {
-            public PendingMovieCover(Movie movie, long sequence)
-            {
-                Movie = movie;
-                Sequence = sequence;
-            }
-
-            public Movie Movie { get; }
-            public long Sequence { get; }
-        }
-
-        public void HandleAsync(MovieUpdatedEvent message)
-        {
-            var updated = EnsureCovers(message.Movie);
-            _eventAggregator.PublishEvent(new MediaCoversUpdatedEvent(message.Movie, updated));
-        }
-
-        public void HandleAsync(PerformerUpdatedEvent message)
-        {
-            var updated = EnsureCovers(message.Performer);
-        }
-
-        public void HandleAsync(StudioUpdatedEvent message)
-        {
-            var updated = EnsureCovers(message.Studio);
-        }
-
         private void ClearDeletedMovieCoverState(int movieId)
         {
             _deletedMovieCoversWithActiveWork.Remove(movieId);
@@ -1114,7 +1039,7 @@ namespace NzbDrone.Core.MediaCover
                 // queue lock; its empty-queue path absorbs that wake-up instead.
                 for (var i = 0; i < removedQueuedMovieCovers; i++)
                 {
-                    _queuedMovieCovers.Wait(0);
+                    _queuedMovieCovers.Wait(0, CancellationToken.None);
                 }
 
                 if (removedQueuedMovieCovers > 0)
@@ -1124,38 +1049,100 @@ namespace NzbDrone.Core.MediaCover
             }
         }
 
-        public void HandleAsync(MoviesDeletedEvent message)
+        internal sealed class MovieCoverQueueTestSeam
         {
-            PurgeDeletedMovieCovers(message.Movies.Select(movie => movie.Id).ToHashSet());
+            private readonly MediaCoverService _owner;
 
-            foreach (var movie in message.Movies)
+            internal MovieCoverQueueTestSeam(MediaCoverService owner)
             {
-                DeleteMovieCoverFolder(movie.Id);
+                _owner = owner;
+                SlotAcquired = (_, _) => { };
             }
-        }
 
-        public void HandleAsync(PerformersDeletedEvent message)
-        {
-            foreach (var performer in message.Performers)
+            internal TimeSpan ShutdownTimeout
             {
-                var path = GetPerformerCoverPath(performer.Id);
-                if (_diskProvider.FolderExists(path))
+                get => _owner._movieCoverShutdownTimeout;
+                set => _owner._movieCoverShutdownTimeout = value;
+            }
+
+            internal Action<Movie, long> SlotAcquired { get; set; }
+            internal int BlockedProducerCount => Volatile.Read(ref _owner._movieCoverBlockedProducerCount);
+
+            internal int PendingUniqueCount
+            {
+                get
                 {
-                    _diskProvider.DeleteFolder(path, true);
+                    lock (_owner._movieCoverQueueLock)
+                    {
+                        return _owner._pendingMovieCovers.Count;
+                    }
+                }
+            }
+
+            internal bool Stopping
+            {
+                get
+                {
+                    lock (_owner._movieCoverQueueLock)
+                    {
+                        return _owner._movieCoverLifecycleState == MovieCoverLifecycleState.Stopping;
+                    }
+                }
+            }
+
+            internal int WorkerPoolSize
+            {
+                get
+                {
+                    lock (_owner._movieCoverQueueLock)
+                    {
+                        return _owner._movieCoverWorkers.Count;
+                    }
+                }
+            }
+
+            internal int WorkerCountAlive
+            {
+                get
+                {
+                    lock (_owner._movieCoverQueueLock)
+                    {
+                        return _owner._movieCoverWorkers.Count(worker => worker.IsAlive);
+                    }
+                }
+            }
+
+            internal bool HasHighWaterSequence(int movieId)
+            {
+                lock (_owner._movieCoverQueueLock)
+                {
+                    return _owner._movieCoverHighWaterSequences.ContainsKey(movieId);
+                }
+            }
+
+            internal void InvokeSlotAcquired(Movie movie, long sequence)
+            {
+                try
+                {
+                    SlotAcquired(movie, sequence);
+                }
+                catch (Exception ex)
+                {
+                    _owner._logger.Error(ex, "Error in media cover queue test hook");
                 }
             }
         }
 
-        public void HandleAsync(StudiosDeletedEvent message)
+        private sealed class PendingMovieCover
         {
-            foreach (var studio in message.Studios)
+            public PendingMovieCover(Movie movie, long sequence)
             {
-                var path = GetStudioCoverPath(studio.Id);
-                if (_diskProvider.FolderExists(path))
-                {
-                    _diskProvider.DeleteFolder(path, true);
-                }
+                Movie = movie;
+                Sequence = sequence;
             }
+
+            public Movie Movie { get; }
+            public long Sequence { get; }
         }
     }
 }
