@@ -25,7 +25,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Volta
-        uses: volta-cli/action@v5
+        uses: volta-cli/action@615a78f6c83e116339c53b94f3f82b4d6c0b7d18
 
       - name: Check
         env:
