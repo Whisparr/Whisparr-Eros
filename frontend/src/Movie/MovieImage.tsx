@@ -108,6 +108,7 @@ function MovieImage({
       triedRemote.current = false;
       setUrl(computedUrl);
       setHasError(false);
+      setIsLoaded(true);
     } else if (!nextImage) {
       if (image.current) {
         image.current = null;
