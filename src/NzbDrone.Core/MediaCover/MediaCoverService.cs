@@ -43,14 +43,14 @@ namespace NzbDrone.Core.MediaCover
         IHandleAsync<StudiosDeletedEvent>,
         IMapCoversToLocal
     {
+        internal const int MovieCoverQueueCapacity = 100;
+
         private const string DefaultStudioCoverExtension = ".jpg";
         private const string CoverDownloadFailedMessage = "Couldn't download media cover for {0}.";
 
-        internal const int MovieCoverQueueCapacity = 100;
-
-        internal static int MovieCoverWorkerCount => (int)Math.Ceiling(Environment.ProcessorCount / 2.0);
-
-        internal MovieCoverQueueTestSeam MovieCoverQueueTest { get; }
+        // ImageSharp is slow on ARM (no hardware acceleration on mono yet)
+        // So limit the number of concurrent resizing tasks
+        private static SemaphoreSlim _semaphore = new SemaphoreSlim((int)Math.Ceiling(Environment.ProcessorCount / 2.0));
 
         private readonly IMediaCoverProxy _mediaCoverProxy;
         private readonly IImageResizer _resizer;
@@ -85,10 +85,6 @@ namespace NzbDrone.Core.MediaCover
         private MovieCoverLifecycleState _movieCoverLifecycleState;
         private long _movieCoverSequence;
         private int _movieCoverBlockedProducerCount;
-
-        // ImageSharp is slow on ARM (no hardware acceleration on mono yet)
-        // So limit the number of concurrent resizing tasks
-        private static SemaphoreSlim _semaphore = new SemaphoreSlim((int)Math.Ceiling(Environment.ProcessorCount / 2.0));
 
         public MediaCoverService(IMediaCoverProxy mediaCoverProxy,
                                  IImageResizer resizer,
@@ -125,6 +121,18 @@ namespace NzbDrone.Core.MediaCover
             _movieCoverIntakeCancellation = new CancellationTokenSource();
             MovieCoverQueueTest = new MovieCoverQueueTestSeam(this);
         }
+
+        private enum MovieCoverLifecycleState
+        {
+            NotStarted,
+            Running,
+            Stopping,
+            Stopped
+        }
+
+        internal static int MovieCoverWorkerCount => (int)Math.Ceiling(Environment.ProcessorCount / 2.0);
+
+        internal MovieCoverQueueTestSeam MovieCoverQueueTest { get; }
 
         public string GetMovieCoverPath(int movieId, MediaCoverTypes coverType, int? height = null)
         {
@@ -227,6 +235,267 @@ namespace NzbDrone.Core.MediaCover
 
                 AppendCacheBuster(mediaCover);
             }
+        }
+
+        public void Handle(MovieUpdatedEvent message)
+        {
+            var sequence = Interlocked.Increment(ref _movieCoverSequence);
+            CancellationToken intakeCancellation;
+
+            lock (_movieCoverQueueLock)
+            {
+                if (_movieCoverLifecycleState != MovieCoverLifecycleState.Running)
+                {
+                    _logger.Debug("Ignoring movie cover update for {0} because the media cover queue is stopping", message.Movie.Id);
+                    return;
+                }
+
+                if (_deletedMovieCoversWithActiveWork.Contains(message.Movie.Id))
+                {
+                    return;
+                }
+
+                if (_movieCoverHighWaterSequences.TryGetValue(message.Movie.Id, out var highWaterSequence) && sequence <= highWaterSequence)
+                {
+                    return;
+                }
+
+                if (_pendingMovieCovers.TryGetValue(message.Movie.Id, out var pending))
+                {
+                    if (sequence > pending.Sequence)
+                    {
+                        _pendingMovieCovers[message.Movie.Id] = new PendingMovieCover(message.Movie, sequence);
+                        _movieCoverHighWaterSequences[message.Movie.Id] = sequence;
+                    }
+
+                    return;
+                }
+
+                _movieCoverHighWaterSequences[message.Movie.Id] = sequence;
+                _movieCoverProducerCounts[message.Movie.Id] = _movieCoverProducerCounts.GetValueOrDefault(message.Movie.Id) + 1;
+                intakeCancellation = _movieCoverIntakeCancellation.Token;
+            }
+
+            try
+            {
+                Interlocked.Increment(ref _movieCoverBlockedProducerCount);
+
+                try
+                {
+                    _movieCoverQueueSlots.Wait(intakeCancellation);
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
+                finally
+                {
+                    Interlocked.Decrement(ref _movieCoverBlockedProducerCount);
+                }
+
+                MovieCoverQueueTest.InvokeSlotAcquired(message.Movie, sequence);
+
+                lock (_movieCoverQueueLock)
+                {
+                    if (_movieCoverLifecycleState != MovieCoverLifecycleState.Running)
+                    {
+                        _movieCoverQueueSlots.Release();
+                        return;
+                    }
+
+                    if (_movieCoverHighWaterSequences.TryGetValue(message.Movie.Id, out var highWaterSequence) && sequence < highWaterSequence)
+                    {
+                        _movieCoverQueueSlots.Release();
+                        return;
+                    }
+
+                    if (_pendingMovieCovers.TryGetValue(message.Movie.Id, out var pending))
+                    {
+                        if (sequence > pending.Sequence)
+                        {
+                            _pendingMovieCovers[message.Movie.Id] = new PendingMovieCover(message.Movie, sequence);
+                            _movieCoverHighWaterSequences[message.Movie.Id] = sequence;
+                        }
+
+                        _movieCoverQueueSlots.Release();
+                        return;
+                    }
+
+                    _pendingMovieCovers.Add(message.Movie.Id, new PendingMovieCover(message.Movie, sequence));
+                    _movieCoverHighWaterSequences[message.Movie.Id] = sequence;
+                    _movieCoverQueue.Enqueue(message.Movie.Id);
+                    _queuedMovieCovers.Release();
+                }
+            }
+            finally
+            {
+                lock (_movieCoverQueueLock)
+                {
+                    var producerCount = _movieCoverProducerCounts[message.Movie.Id] - 1;
+                    if (producerCount == 0)
+                    {
+                        _movieCoverProducerCounts.Remove(message.Movie.Id);
+
+                        if (!_activeMovieCoverWorkerCounts.ContainsKey(message.Movie.Id) &&
+                            _deletedMovieCoversWithActiveWork.Contains(message.Movie.Id))
+                        {
+                            ClearDeletedMovieCoverState(message.Movie.Id);
+                        }
+                    }
+                    else
+                    {
+                        _movieCoverProducerCounts[message.Movie.Id] = producerCount;
+                    }
+                }
+            }
+        }
+
+        public void Handle(ApplicationStartedEvent message)
+        {
+            lock (_movieCoverQueueLock)
+            {
+                if (_movieCoverLifecycleState != MovieCoverLifecycleState.NotStarted)
+                {
+                    return;
+                }
+
+                _movieCoverLifecycleState = MovieCoverLifecycleState.Running;
+
+                _logger.Info("Starting {0} media cover workers with a queue capacity of {1}", _movieCoverWorkerCount, MovieCoverQueueCapacity);
+
+                for (var i = 0; i < _movieCoverWorkerCount; i++)
+                {
+                    var thread = new Thread(ProcessMovieCoverQueue)
+                    {
+                        IsBackground = true,
+                        Name = $"MediaCover-{i + 1}"
+                    };
+
+                    _movieCoverWorkers.Add(thread);
+                    thread.Start();
+                }
+            }
+        }
+
+        public void Handle(ApplicationShutdownRequested message)
+        {
+            Thread[] workers;
+            int abandonedMovieCovers;
+
+            lock (_movieCoverQueueLock)
+            {
+                if (_movieCoverLifecycleState != MovieCoverLifecycleState.Running)
+                {
+                    return;
+                }
+
+                _movieCoverLifecycleState = MovieCoverLifecycleState.Stopping;
+                _movieCoverIntakeCancellation.Cancel();
+                _movieCoverIntakeCancellation.Dispose();
+                workers = _movieCoverWorkers.ToArray();
+                abandonedMovieCovers = _pendingMovieCovers.Count;
+                _movieCoverQueue.Clear();
+                _pendingMovieCovers.Clear();
+                _movieCoverHighWaterSequences.Clear();
+            }
+
+            if (abandonedMovieCovers > 0)
+            {
+                _movieCoverQueueSlots.Release(abandonedMovieCovers);
+            }
+
+            _queuedMovieCovers.Release(workers.Length);
+
+            var shutdownTimer = Stopwatch.StartNew();
+            var allWorkersStopped = true;
+
+            foreach (var worker in workers)
+            {
+                var remaining = _movieCoverShutdownTimeout - shutdownTimer.Elapsed;
+
+                if (remaining <= TimeSpan.Zero || !worker.Join(remaining))
+                {
+                    allWorkersStopped = false;
+                    break;
+                }
+            }
+
+            if (allWorkersStopped)
+            {
+                lock (_movieCoverQueueLock)
+                {
+                    _movieCoverWorkers.Clear();
+                    _movieCoverLifecycleState = MovieCoverLifecycleState.Stopped;
+                }
+            }
+            else
+            {
+                lock (_movieCoverQueueLock)
+                {
+                    ReconcileShutdown();
+                }
+
+                _logger.Warn("Media cover shutdown deadline elapsed with {0} worker(s) still running", workers.Count(v => v.IsAlive));
+            }
+        }
+
+        public void HandleAsync(MovieUpdatedEvent message)
+        {
+            var updated = EnsureCovers(message.Movie);
+            _eventAggregator.PublishEvent(new MediaCoversUpdatedEvent(message.Movie, updated));
+        }
+
+        public void HandleAsync(PerformerUpdatedEvent message)
+        {
+            _ = EnsureCovers(message.Performer);
+        }
+
+        public void HandleAsync(StudioUpdatedEvent message)
+        {
+            _ = EnsureCovers(message.Studio);
+        }
+
+        public void HandleAsync(MoviesDeletedEvent message)
+        {
+            PurgeDeletedMovieCovers(message.Movies.Select(movie => movie.Id).ToHashSet());
+
+            foreach (var movie in message.Movies)
+            {
+                DeleteMovieCoverFolder(movie.Id);
+            }
+        }
+
+        public void HandleAsync(PerformersDeletedEvent message)
+        {
+            foreach (var performer in message.Performers)
+            {
+                var path = GetPerformerCoverPath(performer.Id);
+                if (_diskProvider.FolderExists(path))
+                {
+                    _diskProvider.DeleteFolder(path, true);
+                }
+            }
+        }
+
+        public void HandleAsync(StudiosDeletedEvent message)
+        {
+            foreach (var studio in message.Studios)
+            {
+                var path = GetStudioCoverPath(studio.Id);
+                if (_diskProvider.FolderExists(path))
+                {
+                    _diskProvider.DeleteFolder(path, true);
+                }
+            }
+        }
+
+        private static string GetExtension(MediaCoverTypes coverType)
+        {
+            return coverType switch
+            {
+                MediaCoverTypes.Clearlogo => ".png",
+                _ => ".jpg"
+            };
         }
 
         // Keyed on the remote URL rather than the file's modification time: our metadata sources
@@ -618,217 +887,6 @@ namespace NzbDrone.Core.MediaCover
             }
         }
 
-        private static string GetExtension(MediaCoverTypes coverType)
-        {
-            return coverType switch
-            {
-                MediaCoverTypes.Clearlogo => ".png",
-                _ => ".jpg"
-            };
-        }
-
-        public void Handle(MovieUpdatedEvent message)
-        {
-            var sequence = Interlocked.Increment(ref _movieCoverSequence);
-            CancellationToken intakeCancellation;
-
-            lock (_movieCoverQueueLock)
-            {
-                if (_movieCoverLifecycleState != MovieCoverLifecycleState.Running)
-                {
-                    _logger.Debug("Ignoring movie cover update for {0} because the media cover queue is stopping", message.Movie.Id);
-                    return;
-                }
-
-                if (_deletedMovieCoversWithActiveWork.Contains(message.Movie.Id))
-                {
-                    return;
-                }
-
-                if (_movieCoverHighWaterSequences.TryGetValue(message.Movie.Id, out var highWaterSequence) && sequence <= highWaterSequence)
-                {
-                    return;
-                }
-
-                if (_pendingMovieCovers.TryGetValue(message.Movie.Id, out var pending))
-                {
-                    if (sequence > pending.Sequence)
-                    {
-                        _pendingMovieCovers[message.Movie.Id] = new PendingMovieCover(message.Movie, sequence);
-                        _movieCoverHighWaterSequences[message.Movie.Id] = sequence;
-                    }
-
-                    return;
-                }
-
-                _movieCoverHighWaterSequences[message.Movie.Id] = sequence;
-                _movieCoverProducerCounts[message.Movie.Id] = _movieCoverProducerCounts.GetValueOrDefault(message.Movie.Id) + 1;
-                intakeCancellation = _movieCoverIntakeCancellation.Token;
-            }
-
-            try
-            {
-                Interlocked.Increment(ref _movieCoverBlockedProducerCount);
-
-                try
-                {
-                    _movieCoverQueueSlots.Wait(intakeCancellation);
-                }
-                catch (OperationCanceledException)
-                {
-                    return;
-                }
-                finally
-                {
-                    Interlocked.Decrement(ref _movieCoverBlockedProducerCount);
-                }
-
-                MovieCoverQueueTest.InvokeSlotAcquired(message.Movie, sequence);
-
-                lock (_movieCoverQueueLock)
-                {
-                    if (_movieCoverLifecycleState != MovieCoverLifecycleState.Running)
-                    {
-                        _movieCoverQueueSlots.Release();
-                        return;
-                    }
-
-                    if (_movieCoverHighWaterSequences.TryGetValue(message.Movie.Id, out var highWaterSequence) && sequence < highWaterSequence)
-                    {
-                        _movieCoverQueueSlots.Release();
-                        return;
-                    }
-
-                    if (_pendingMovieCovers.TryGetValue(message.Movie.Id, out var pending))
-                    {
-                        if (sequence > pending.Sequence)
-                        {
-                            _pendingMovieCovers[message.Movie.Id] = new PendingMovieCover(message.Movie, sequence);
-                            _movieCoverHighWaterSequences[message.Movie.Id] = sequence;
-                        }
-
-                        _movieCoverQueueSlots.Release();
-                        return;
-                    }
-
-                    _pendingMovieCovers.Add(message.Movie.Id, new PendingMovieCover(message.Movie, sequence));
-                    _movieCoverHighWaterSequences[message.Movie.Id] = sequence;
-                    _movieCoverQueue.Enqueue(message.Movie.Id);
-                    _queuedMovieCovers.Release();
-                }
-            }
-            finally
-            {
-                lock (_movieCoverQueueLock)
-                {
-                    var producerCount = _movieCoverProducerCounts[message.Movie.Id] - 1;
-                    if (producerCount == 0)
-                    {
-                        _movieCoverProducerCounts.Remove(message.Movie.Id);
-
-                        if (!_activeMovieCoverWorkerCounts.ContainsKey(message.Movie.Id) &&
-                            _deletedMovieCoversWithActiveWork.Contains(message.Movie.Id))
-                        {
-                            ClearDeletedMovieCoverState(message.Movie.Id);
-                        }
-                    }
-                    else
-                    {
-                        _movieCoverProducerCounts[message.Movie.Id] = producerCount;
-                    }
-                }
-            }
-        }
-
-        public void Handle(ApplicationStartedEvent message)
-        {
-            lock (_movieCoverQueueLock)
-            {
-                if (_movieCoverLifecycleState != MovieCoverLifecycleState.NotStarted)
-                {
-                    return;
-                }
-
-                _movieCoverLifecycleState = MovieCoverLifecycleState.Running;
-
-                _logger.Info("Starting {0} media cover workers with a queue capacity of {1}", _movieCoverWorkerCount, MovieCoverQueueCapacity);
-
-                for (var i = 0; i < _movieCoverWorkerCount; i++)
-                {
-                    var thread = new Thread(ProcessMovieCoverQueue)
-                    {
-                        IsBackground = true,
-                        Name = $"MediaCover-{i + 1}"
-                    };
-
-                    _movieCoverWorkers.Add(thread);
-                    thread.Start();
-                }
-            }
-        }
-
-        public void Handle(ApplicationShutdownRequested message)
-        {
-            Thread[] workers;
-            int abandonedMovieCovers;
-
-            lock (_movieCoverQueueLock)
-            {
-                if (_movieCoverLifecycleState != MovieCoverLifecycleState.Running)
-                {
-                    return;
-                }
-
-                _movieCoverLifecycleState = MovieCoverLifecycleState.Stopping;
-                _movieCoverIntakeCancellation.Cancel();
-                _movieCoverIntakeCancellation.Dispose();
-                workers = _movieCoverWorkers.ToArray();
-                abandonedMovieCovers = _pendingMovieCovers.Count;
-                _movieCoverQueue.Clear();
-                _pendingMovieCovers.Clear();
-                _movieCoverHighWaterSequences.Clear();
-            }
-
-            if (abandonedMovieCovers > 0)
-            {
-                _movieCoverQueueSlots.Release(abandonedMovieCovers);
-            }
-
-            _queuedMovieCovers.Release(workers.Length);
-
-            var shutdownTimer = Stopwatch.StartNew();
-            var allWorkersStopped = true;
-
-            foreach (var worker in workers)
-            {
-                var remaining = _movieCoverShutdownTimeout - shutdownTimer.Elapsed;
-
-                if (remaining <= TimeSpan.Zero || !worker.Join(remaining))
-                {
-                    allWorkersStopped = false;
-                    break;
-                }
-            }
-
-            if (allWorkersStopped)
-            {
-                lock (_movieCoverQueueLock)
-                {
-                    _movieCoverWorkers.Clear();
-                    _movieCoverLifecycleState = MovieCoverLifecycleState.Stopped;
-                }
-            }
-            else
-            {
-                lock (_movieCoverQueueLock)
-                {
-                    ReconcileShutdown();
-                }
-
-                _logger.Warn("Media cover shutdown deadline elapsed with {0} worker(s) still running", workers.Count(v => v.IsAlive));
-            }
-        }
-
         private void ProcessMovieCoverQueue()
         {
             try
@@ -943,110 +1001,6 @@ namespace NzbDrone.Core.MediaCover
             _movieCoverLifecycleState = MovieCoverLifecycleState.Stopped;
         }
 
-        private enum MovieCoverLifecycleState
-        {
-            NotStarted,
-            Running,
-            Stopping,
-            Stopped
-        }
-
-        internal sealed class MovieCoverQueueTestSeam
-        {
-            private readonly MediaCoverService _owner;
-
-            internal MovieCoverQueueTestSeam(MediaCoverService owner)
-            {
-                _owner = owner;
-                SlotAcquired = (_, _) => { };
-            }
-
-            internal TimeSpan ShutdownTimeout
-            {
-                get => _owner._movieCoverShutdownTimeout;
-                set => _owner._movieCoverShutdownTimeout = value;
-            }
-
-            internal Action<Movie, long> SlotAcquired { get; set; }
-            internal int BlockedProducerCount => Volatile.Read(ref _owner._movieCoverBlockedProducerCount);
-
-            internal int PendingUniqueCount
-            {
-                get
-                {
-                    lock (_owner._movieCoverQueueLock)
-                    {
-                        return _owner._pendingMovieCovers.Count;
-                    }
-                }
-            }
-
-            internal bool HasHighWaterSequence(int movieId)
-            {
-                lock (_owner._movieCoverQueueLock)
-                {
-                    return _owner._movieCoverHighWaterSequences.ContainsKey(movieId);
-                }
-            }
-
-            internal bool Stopping
-            {
-                get
-                {
-                    lock (_owner._movieCoverQueueLock)
-                    {
-                        return _owner._movieCoverLifecycleState == MovieCoverLifecycleState.Stopping;
-                    }
-                }
-            }
-
-            internal int WorkerPoolSize
-            {
-                get
-                {
-                    lock (_owner._movieCoverQueueLock)
-                    {
-                        return _owner._movieCoverWorkers.Count;
-                    }
-                }
-            }
-
-            internal int WorkerCountAlive
-            {
-                get
-                {
-                    lock (_owner._movieCoverQueueLock)
-                    {
-                        return _owner._movieCoverWorkers.Count(worker => worker.IsAlive);
-                    }
-                }
-            }
-
-            internal void InvokeSlotAcquired(Movie movie, long sequence)
-            {
-                try
-                {
-                    SlotAcquired(movie, sequence);
-                }
-                catch (Exception ex)
-                {
-                    _owner._logger.Error(ex, "Error in media cover queue test hook");
-                }
-            }
-        }
-
-        private sealed class PendingMovieCover
-        {
-            public PendingMovieCover(Movie movie, long sequence)
-            {
-                Movie = movie;
-                Sequence = sequence;
-            }
-
-            public Movie Movie { get; }
-            public long Sequence { get; }
-        }
-
         private void ClearDeletedMovieCoverState(int movieId)
         {
             _deletedMovieCoversWithActiveWork.Remove(movieId);
@@ -1095,54 +1049,100 @@ namespace NzbDrone.Core.MediaCover
             }
         }
 
-        public void HandleAsync(MovieUpdatedEvent message)
+        internal sealed class MovieCoverQueueTestSeam
         {
-            var updated = EnsureCovers(message.Movie);
-            _eventAggregator.PublishEvent(new MediaCoversUpdatedEvent(message.Movie, updated));
-        }
+            private readonly MediaCoverService _owner;
 
-        public void HandleAsync(PerformerUpdatedEvent message)
-        {
-            _ = EnsureCovers(message.Performer);
-        }
-
-        public void HandleAsync(StudioUpdatedEvent message)
-        {
-            _ = EnsureCovers(message.Studio);
-        }
-
-        public void HandleAsync(MoviesDeletedEvent message)
-        {
-            PurgeDeletedMovieCovers(message.Movies.Select(movie => movie.Id).ToHashSet());
-
-            foreach (var movie in message.Movies)
+            internal MovieCoverQueueTestSeam(MediaCoverService owner)
             {
-                DeleteMovieCoverFolder(movie.Id);
+                _owner = owner;
+                SlotAcquired = (_, _) => { };
             }
-        }
 
-        public void HandleAsync(PerformersDeletedEvent message)
-        {
-            foreach (var performer in message.Performers)
+            internal TimeSpan ShutdownTimeout
             {
-                var path = GetPerformerCoverPath(performer.Id);
-                if (_diskProvider.FolderExists(path))
+                get => _owner._movieCoverShutdownTimeout;
+                set => _owner._movieCoverShutdownTimeout = value;
+            }
+
+            internal Action<Movie, long> SlotAcquired { get; set; }
+            internal int BlockedProducerCount => Volatile.Read(ref _owner._movieCoverBlockedProducerCount);
+
+            internal int PendingUniqueCount
+            {
+                get
                 {
-                    _diskProvider.DeleteFolder(path, true);
+                    lock (_owner._movieCoverQueueLock)
+                    {
+                        return _owner._pendingMovieCovers.Count;
+                    }
+                }
+            }
+
+            internal bool Stopping
+            {
+                get
+                {
+                    lock (_owner._movieCoverQueueLock)
+                    {
+                        return _owner._movieCoverLifecycleState == MovieCoverLifecycleState.Stopping;
+                    }
+                }
+            }
+
+            internal int WorkerPoolSize
+            {
+                get
+                {
+                    lock (_owner._movieCoverQueueLock)
+                    {
+                        return _owner._movieCoverWorkers.Count;
+                    }
+                }
+            }
+
+            internal int WorkerCountAlive
+            {
+                get
+                {
+                    lock (_owner._movieCoverQueueLock)
+                    {
+                        return _owner._movieCoverWorkers.Count(worker => worker.IsAlive);
+                    }
+                }
+            }
+
+            internal bool HasHighWaterSequence(int movieId)
+            {
+                lock (_owner._movieCoverQueueLock)
+                {
+                    return _owner._movieCoverHighWaterSequences.ContainsKey(movieId);
+                }
+            }
+
+            internal void InvokeSlotAcquired(Movie movie, long sequence)
+            {
+                try
+                {
+                    SlotAcquired(movie, sequence);
+                }
+                catch (Exception ex)
+                {
+                    _owner._logger.Error(ex, "Error in media cover queue test hook");
                 }
             }
         }
 
-        public void HandleAsync(StudiosDeletedEvent message)
+        private sealed class PendingMovieCover
         {
-            foreach (var studio in message.Studios)
+            public PendingMovieCover(Movie movie, long sequence)
             {
-                var path = GetStudioCoverPath(studio.Id);
-                if (_diskProvider.FolderExists(path))
-                {
-                    _diskProvider.DeleteFolder(path, true);
-                }
+                Movie = movie;
+                Sequence = sequence;
             }
+
+            public Movie Movie { get; }
+            public long Sequence { get; }
         }
     }
 }
