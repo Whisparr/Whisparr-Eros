@@ -274,6 +274,9 @@ dotnet_diagnostic.CA5397.severity = suggestion
 
 dotnet_diagnostic.SYSLIB0006.severity = none
 
+[src/*.Test/**.cs] # exempt tests from "Remove the underscores from member name" for SonarQube
+dotnet_diagnostic.CA1707.severity = none
+
 [*.{js,html,hbs,less,css,ts,tsx}]
 charset = utf-8
 trim_trailing_whitespace = true
