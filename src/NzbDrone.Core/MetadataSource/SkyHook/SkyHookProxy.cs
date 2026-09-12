@@ -36,6 +36,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
         private readonly IConfigService _configService;
         private readonly IMovieService _movieService;
         private readonly IMovieMetadataService _movieMetadataService;
+        private readonly IStudioService _studioService;
 
         public SkyHookProxy(IHttpClient httpClient,
             IWhisparrCloudRequestBuilder requestBuilder,
@@ -43,6 +44,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             IConfigFileProvider configFileProvider,
             IMovieService movieService,
             IMovieMetadataService movieMetadataService,
+            IStudioService studioService,
             Logger logger)
         {
             _httpClient = httpClient;
@@ -59,6 +61,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             _configService = configService;
             _movieService = movieService;
             _movieMetadataService = movieMetadataService;
+            _studioService = studioService;
 
             _logger = logger;
         }
@@ -777,6 +780,14 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                 }
             }
 
+            if (movieInfo is { IsScene: true } && itemType != ItemType.Movie &&
+                movieInfo.StashId.IsNullOrWhiteSpace() &&
+                movieInfo.StudioTitle.IsNotNullOrWhiteSpace() &&
+                movieInfo.ReleaseDate.IsNotNullOrWhiteSpace())
+            {
+                return SearchForNewSceneByStudioAndDate(movieInfo).Cast<object>().ToList();
+            }
+
             title = FormatSearchTerm(title, itemType, movieInfo);
             var lowerTitle = title.ToLower();
 
@@ -1085,6 +1096,44 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
         public List<Movie> SearchForNewScene(string title)
         {
+            return SearchForNewScene(title, null, null);
+        }
+
+        private List<Movie> SearchForNewSceneByStudioAndDate(ParsedMovieInfo movieInfo)
+        {
+            var releaseDate = movieInfo.ReleaseDate;
+            var studio = _studioService.FindByTitle(movieInfo.StudioTitle);
+
+            List<Movie> results;
+            Func<MovieMetadata, bool> isSameStudio;
+
+            // A studio already in the library is searched by its StashDB id. Anything else can only be matched by name,
+            // and a studio and date search must never return another studio's scene.
+            if (studio != null && Guid.TryParse(studio.ForeignId, out _))
+            {
+                results = SearchForNewScene($"{studio.Title} {releaseDate}", studio.ForeignId, releaseDate);
+                isSameStudio = m => string.Equals(m.StudioForeignId, studio.ForeignId, StringComparison.OrdinalIgnoreCase);
+            }
+            else
+            {
+                var cleanStudioTitle = movieInfo.StudioTitle.CleanStudioTitle();
+
+                results = SearchForNewScene($"{movieInfo.StudioTitle} {releaseDate}", null, null);
+                isSameStudio = m => m.StudioTitle.CleanStudioTitle() == cleanStudioTitle;
+            }
+
+            var matches = results.Where(m => m.MovieMetadata.Value.ReleaseDate == releaseDate && isSameStudio(m.MovieMetadata.Value)).ToList();
+
+            if (matches.Count != results.Count)
+            {
+                _logger.Debug("Dropped {0} of {1} scene search results not from studio '{2}' on {3}", results.Count - matches.Count, results.Count, movieInfo.StudioTitle, releaseDate);
+            }
+
+            return matches;
+        }
+
+        private List<Movie> SearchForNewScene(string title, string studioForeignId, string releaseDate)
+        {
             try
             {
                 var lowerTitle = title.ToLower();
@@ -1126,10 +1175,19 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
                 var searchTerm = lowerTitle.Replace("_", " ").Replace(".", " ");
 
-                var request = _whisparrMetadata.Create()
+                var requestBuilder = _whisparrMetadata.Create()
                     .SetSegment("route", "scene/search")
-                    .AddQueryParam("q", searchTerm)
-                    .Build();
+                    .AddQueryParam("q", searchTerm);
+
+                // The metadata server answers a studio and date pair with that studio's scenes on that date.
+                // Older servers ignore the pair and search by q, so q is always sent.
+                if (studioForeignId.IsNotNullOrWhiteSpace() && releaseDate.IsNotNullOrWhiteSpace())
+                {
+                    requestBuilder.AddQueryParam("studio", studioForeignId)
+                        .AddQueryParam("date", releaseDate);
+                }
+
+                var request = requestBuilder.Build();
 
                 request.AllowAutoRedirect = true;
 
@@ -1401,11 +1459,6 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                 if (movieInfo.StashId.IsNotNullOrWhiteSpace())
                 {
                     return $"stashid:{movieInfo.StashId}";
-                }
-
-                if (movieInfo.ReleaseDate.IsNotNullOrWhiteSpace())
-                {
-                    return $"{movieInfo.StudioTitle} {movieInfo.ReleaseDate}";
                 }
             }
             else if (!movieInfo.IsScene && itemType != ItemType.Scene)
