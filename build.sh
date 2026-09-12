@@ -255,7 +255,7 @@ InstallInno()
 
     rm -rf _inno
     local innoVersion="${INNOVERSION:-6.2.2}"
-    curl -s -L --output innosetup.exe "https://github.com/jrsoftware/issrc/releases/download/is-${innoVersion//./_}/innosetup-${innoVersion}.exe"
+    curl --proto "=https" --tlsv1.2 -s -L --output innosetup.exe "https://github.com/jrsoftware/issrc/releases/download/is-${innoVersion//./_}/innosetup-${innoVersion}.exe"
     mkdir _inno
     ./innosetup.exe //portable=1 //silent //currentuser //dir=.\\_inno
     rm innosetup.exe
