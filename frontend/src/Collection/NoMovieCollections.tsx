@@ -1,6 +1,8 @@
 import React from 'react';
+import Alert from 'Components/Alert';
 import Button from 'Components/Link/Button';
 import { kinds } from 'Helpers/Props';
+import { useGeneralSettings } from 'Settings/General/useGeneralSettings';
 import translate from 'Utilities/String/translate';
 import styles from './NoMovieCollections.css';
 
@@ -8,7 +10,9 @@ interface NoMovieCollectionsProps {
   totalItems: number;
 }
 
-function NoMovieCollections({ totalItems }: NoMovieCollectionsProps) {
+function NoMovieCollections({ totalItems }: Readonly<NoMovieCollectionsProps>) {
+  const { data: generalSettings } = useGeneralSettings();
+
   if (totalItems > 0) {
     return (
       <div>
@@ -16,6 +20,17 @@ function NoMovieCollections({ totalItems }: NoMovieCollectionsProps) {
           {translate('AllCollectionsHiddenDueToFilter')}
         </div>
       </div>
+    );
+  }
+
+  // Collections only ever come from TMDb: the TPDb movie resource carries no
+  // collection, so with TPDb as the source this page can never fill, and
+  // "add a new movie" would send the user off to do something that won't help.
+  if (generalSettings.whisparrMovieMetadataSource?.toLowerCase() === 'tpdb') {
+    return (
+      <Alert kind={kinds.WARNING}>
+        {translate('CollectionsUnavailableWithTpdb')}
+      </Alert>
     );
   }
 
