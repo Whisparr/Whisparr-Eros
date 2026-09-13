@@ -43,7 +43,7 @@ export function useCollectionExistingMovies(collections: MovieCollection[]) {
       });
     });
 
-    return Array.from(ids).sort();
+    return Array.from(ids).sort((a, b) => a.localeCompare(b));
   }, [collections]);
 
   const { data } = useApiQuery<Movie[]>({
