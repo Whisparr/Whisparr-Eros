@@ -162,7 +162,7 @@ dotnet_diagnostic.CA1056.severity = suggestion
 dotnet_diagnostic.CA1058.severity = suggestion
 dotnet_diagnostic.CA1060.severity = suggestion
 dotnet_diagnostic.CA1061.severity = suggestion
-dotnet_diagnostic.CA1062.severity = suggestion
+dotnet_diagnostic.CA1062.severity = none # reviewed 2026-09-12, not valuable since our code isn't a library
 dotnet_diagnostic.CA1063.severity = suggestion
 dotnet_diagnostic.CA1064.severity = suggestion
 dotnet_diagnostic.CA1065.severity = suggestion
@@ -271,7 +271,7 @@ dotnet_diagnostic.CA5385.severity = suggestion
 dotnet_diagnostic.CA5392.severity = suggestion
 dotnet_diagnostic.CA5394.severity = suggestion
 dotnet_diagnostic.CA5397.severity = suggestion
-
+dotnet_diagnostic.IDE0028.severity = none # 2026-09-12 - Suppress from SonarQube, our style convention overrules.
 dotnet_diagnostic.SYSLIB0006.severity = none
 
 [src/*.Test/**.cs] # exempt tests from "Remove the underscores from member name" for SonarQube
