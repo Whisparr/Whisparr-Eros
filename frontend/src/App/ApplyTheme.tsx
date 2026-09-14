@@ -1,11 +1,11 @@
 import { useCallback, useEffect } from 'react';
-import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
+import useTheme from 'Helpers/Hooks/useTheme';
 import themes from 'Styles/Themes';
 
 function ApplyTheme() {
-  // Mounted above the boot gate, so this renders before `/config/ui` resolves
-  // and falls back to the theme the server rendered the page with.
-  const theme = useUiSettingsValues().theme || window.Whisparr.theme;
+  // `useTheme` resolves `auto` against the system theme and follows it when it
+  // changes; `themes.auto` is fixed at page load, so reading it here would not.
+  const theme = useTheme();
 
   const updateCSSVariables = useCallback(() => {
     Object.entries(themes[theme]).forEach(([key, value]) => {
