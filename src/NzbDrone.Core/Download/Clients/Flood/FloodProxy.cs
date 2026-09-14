@@ -26,84 +26,12 @@ namespace NzbDrone.Core.Download.Clients.Flood
     public class FloodProxy : IFloodProxy
     {
         private readonly IHttpClient _httpClient;
-        private readonly Logger _logger;
         private readonly ICached<Dictionary<string, string>> _authCookieCache;
 
         public FloodProxy(IHttpClient httpClient, ICacheManager cacheManager, Logger logger)
         {
             _httpClient = httpClient;
-            _logger = logger;
             _authCookieCache = cacheManager.GetCache<Dictionary<string, string>>(GetType(), "authCookies");
-        }
-
-        private string BuildUrl(FloodSettings settings)
-        {
-            return $"{(settings.UseSsl ? "https://" : "http://")}{settings.Host.ToUrlHost()}:{settings.Port}/{settings.UrlBase}";
-        }
-
-        private string BuildCachedCookieKey(FloodSettings settings)
-        {
-            return $"{BuildUrl(settings)}:{settings.Username}";
-        }
-
-        private HttpRequestBuilder BuildRequest(FloodSettings settings)
-        {
-            var requestBuilder = new HttpRequestBuilder(HttpUri.CombinePath(BuildUrl(settings), "/api"))
-            {
-                LogResponseContent = true,
-                NetworkCredential = new NetworkCredential(settings.Username, settings.Password)
-            };
-
-            requestBuilder.Headers.ContentType = "application/json";
-            requestBuilder.SetCookies(AuthAuthenticate(requestBuilder, settings));
-
-            return requestBuilder;
-        }
-
-        private HttpResponse HandleRequest(HttpRequest request, FloodSettings settings)
-        {
-            try
-            {
-                return _httpClient.Execute(request);
-            }
-            catch (HttpException ex)
-            {
-                if (ex.Response.StatusCode == HttpStatusCode.Forbidden ||
-                    ex.Response.StatusCode == HttpStatusCode.Unauthorized)
-                {
-                    _authCookieCache.Remove(BuildCachedCookieKey(settings));
-                    throw new DownloadClientAuthenticationException("Failed to authenticate with Flood.");
-                }
-
-                throw new DownloadClientException("Unable to connect to Flood, please check your settings");
-            }
-            catch
-            {
-                throw new DownloadClientException("Unable to connect to Flood, please check your settings");
-            }
-        }
-
-        private Dictionary<string, string> AuthAuthenticate(HttpRequestBuilder requestBuilder, FloodSettings settings, bool force = false)
-        {
-            var cachedCookies = _authCookieCache.Find(BuildCachedCookieKey(settings));
-
-            if (cachedCookies == null || force)
-            {
-                var authenticateRequest = requestBuilder.Resource("/auth/authenticate").Post().Build();
-
-                var body = new Dictionary<string, object>
-                {
-                    { "username", settings.Username },
-                    { "password", settings.Password }
-                };
-                authenticateRequest.SetContent(body.ToJson());
-
-                var response = HandleRequest(authenticateRequest, settings);
-                cachedCookies = response.GetCookies();
-                _authCookieCache.Set(BuildCachedCookieKey(settings), cachedCookies);
-            }
-
-            return cachedCookies;
         }
 
         public void AuthVerify(FloodSettings settings)
@@ -220,6 +148,76 @@ namespace NzbDrone.Core.Download.Clients.Flood
             contentsRequest.Method = HttpMethod.Get;
 
             return Json.Deserialize<FloodClientSettings>(HandleRequest(contentsRequest, settings).Content);
+        }
+
+        private static string BuildUrl(FloodSettings settings)
+        {
+            return $"{(settings.UseSsl ? "https://" : "http://")}{settings.Host.ToUrlHost()}:{settings.Port}/{settings.UrlBase}";
+        }
+
+        private static string BuildCachedCookieKey(FloodSettings settings)
+        {
+            return $"{BuildUrl(settings)}:{settings.Username}";
+        }
+
+        private HttpRequestBuilder BuildRequest(FloodSettings settings)
+        {
+            var requestBuilder = new HttpRequestBuilder(HttpUri.CombinePath(BuildUrl(settings), "/api"))
+            {
+                LogResponseContent = true,
+                NetworkCredential = new NetworkCredential(settings.Username, settings.Password)
+            };
+
+            requestBuilder.Headers.ContentType = "application/json";
+            requestBuilder.SetCookies(AuthAuthenticate(requestBuilder, settings));
+
+            return requestBuilder;
+        }
+
+        private HttpResponse HandleRequest(HttpRequest request, FloodSettings settings)
+        {
+            try
+            {
+                return _httpClient.Execute(request);
+            }
+            catch (HttpException ex)
+            {
+                if (ex.Response.StatusCode == HttpStatusCode.Forbidden ||
+                    ex.Response.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    _authCookieCache.Remove(BuildCachedCookieKey(settings));
+                    throw new DownloadClientAuthenticationException("Failed to authenticate with Flood.");
+                }
+
+                throw new DownloadClientException("Unable to connect to Flood, please check your settings");
+            }
+            catch
+            {
+                throw new DownloadClientException("Unable to connect to Flood, please check your settings");
+            }
+        }
+
+        private Dictionary<string, string> AuthAuthenticate(HttpRequestBuilder requestBuilder, FloodSettings settings, bool force = false)
+        {
+            var cachedCookies = _authCookieCache.Find(BuildCachedCookieKey(settings));
+
+            if (cachedCookies == null || force)
+            {
+                var authenticateRequest = requestBuilder.Resource("/auth/authenticate").Post().Build();
+
+                var body = new Dictionary<string, object>
+                {
+                    { "username", settings.Username },
+                    { "password", settings.Password }
+                };
+                authenticateRequest.SetContent(body.ToJson());
+
+                var response = HandleRequest(authenticateRequest, settings);
+                cachedCookies = response.GetCookies();
+                _authCookieCache.Set(BuildCachedCookieKey(settings), cachedCookies);
+            }
+
+            return cachedCookies;
         }
     }
 }

@@ -225,15 +225,12 @@ namespace NzbDrone.Core.Download.Clients.NzbVortex
         {
             var group = GetGroups().FirstOrDefault(c => c.GroupName == Settings.TvCategory);
 
-            if (group == null)
+            if (group == null && Settings.TvCategory.IsNotNullOrWhiteSpace())
             {
-                if (Settings.TvCategory.IsNotNullOrWhiteSpace())
+                return new NzbDroneValidationFailure("TvCategory", _localizationService.GetLocalizedString("DownloadClientValidationGroupMissing"))
                 {
-                    return new NzbDroneValidationFailure("TvCategory", _localizationService.GetLocalizedString("DownloadClientValidationGroupMissing"))
-                    {
-                        DetailedDescription = _localizationService.GetLocalizedString("DownloadClientValidationGroupMissingDetail", new Dictionary<string, object> { { "clientName", Name } })
-                    };
-                }
+                    DetailedDescription = _localizationService.GetLocalizedString("DownloadClientValidationGroupMissingDetail", new Dictionary<string, object> { { "clientName", Name } })
+                };
             }
 
             return null;

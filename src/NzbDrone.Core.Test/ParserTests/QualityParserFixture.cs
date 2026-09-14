@@ -530,7 +530,7 @@ namespace NzbDrone.Core.Test.ParserTests
             result.Revision.IsRepack.Should().Be(isRepack);
         }
 
-        private void ParseAndVerifyQuality(string title, QualitySource source, bool proper, Resolution resolution)
+        private static void ParseAndVerifyQuality(string title, QualitySource source, bool proper, Resolution resolution)
         {
             var result = QualityParser.ParseQuality(title);
             if (resolution != Resolution.Unknown)

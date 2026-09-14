@@ -424,7 +424,7 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
             };
         }
 
-        private bool RemovesCompletedDownloads(QBittorrentPreferences config)
+        private static bool RemovesCompletedDownloads(QBittorrentPreferences config)
         {
             var minimumRetention = 60 * 24 * 14; // 14 days in minutes
             return (config.MaxRatioEnabled || (config.MaxSeedingTimeEnabled && config.MaxSeedingTime < minimumRetention)) && (config.MaxRatioAction == QBittorrentMaxRatioAction.Remove || config.MaxRatioAction == QBittorrentMaxRatioAction.DeleteFiles);
@@ -626,7 +626,7 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
             return null;
         }
 
-        protected TimeSpan? GetRemainingTime(QBittorrentTorrent torrent)
+        protected static TimeSpan? GetRemainingTime(QBittorrentTorrent torrent)
         {
             if (torrent.Eta < 0 || torrent.Eta > 365 * 24 * 3600)
             {
@@ -731,7 +731,7 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
             return false;
         }
 
-        protected bool HasReachedInactiveSeedingTimeLimit(QBittorrentTorrent torrent, QBittorrentPreferences config)
+        protected static bool HasReachedInactiveSeedingTimeLimit(QBittorrentTorrent torrent, QBittorrentPreferences config)
         {
             long inactiveSeedingTimeLimit;
 
