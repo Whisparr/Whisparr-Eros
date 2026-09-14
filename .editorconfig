@@ -274,8 +274,9 @@ dotnet_diagnostic.CA5397.severity = suggestion
 dotnet_diagnostic.IDE0028.severity = none # 2026-09-12 - Suppress from SonarQube, our style convention overrules.
 dotnet_diagnostic.SYSLIB0006.severity = none
 
-[src/*.Test/**.cs] # exempt tests from "Remove the underscores from member name" for SonarQube
-dotnet_diagnostic.CA1707.severity = none
+[src/*.Test/**.cs]
+dotnet_diagnostic.CA1707.severity = none  # exempt tests from "Remove the underscores from member name" for SonarQube
+dotnet_diagnostic.CA2007.severity = none # exempt tests from "Consider calling ConfigureAwait on the awaited task" for SonarQube
 
 [*.{js,html,hbs,less,css,ts,tsx}]
 charset = utf-8
