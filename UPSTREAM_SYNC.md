@@ -10,19 +10,11 @@ Backlogs below are as of radarr `a96bf7c3ec`, sonarr `91c4ae17c0`. Run `--report
 
 ## radarr — Radarr/Radarr `develop`
 
-<!-- outstanding: 1 -->
+<!-- outstanding: 0 -->
 
-Owns: **backend**. High-water mark: `48a61bf63a`.
+Owns: **backend**. High-water mark: `a96bf7c3ec`.
 
-**1 outstanding.**
-
-| Month | Total | be | fe | be+fe | chore |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| 2026-09 | 1 | 0 | 0 | 1 | 0 |
-
-### 2026-09
-
-- `be+fe` [`255f38dce`](https://github.com/Radarr/Radarr/commit/255f38dce817a5a2fb0cdc9b9476324725dc75b3) Fixed: Refactor showing grabbed/blocklisted releases in Interactive Search — *Mark McDowall*
+Caught up — nothing outstanding.
 
 ## sonarr — Sonarr/Sonarr `v5-develop`
 
@@ -205,6 +197,7 @@ Commits reviewed and dispositioned. Skips carry their reason.
 | [`92f24bcdb`](https://github.com/Radarr/Radarr/commit/92f24bcdb96def15923779e277afea878ee0de3a) | Fixed: Improve logging for 'Allowed Hosts' and 'Trusted Networks' | `skip` | Taking the Sonarr original instead (sonarr/sonarr@1b5aa5551), the same way the Trusted Networks setting it follows was taken. The fix is wanted: ConfigureHostFilteringOptions was registered by hand in Startup and again by AutoAddServices scanning Whisparr.Host, so every startup logged the Allowed Hosts line twice. |
 | [`3fcf0db80`](https://github.com/Radarr/Radarr/commit/3fcf0db80f396059ffc1a4c513075a88a7816080) | Don't skip health check if Allowed Hosts is set to * | `have` | Radarr re-spin of sonarr/sonarr@9a7727670, which landed here as 9cc3bff6b9 via #648, followed by our own distinct wildcard message in 9b6ed53869. |
 | [`a96bf7c3e`](https://github.com/Radarr/Radarr/commit/a96bf7c3ecb23cb76993770727285dc17a613fbc) | Multiple Translations updated by Weblate | `skip` | Weblate commit. Translations come from our own Weblate project, never from cherry-picks. |
+| [`255f38dce`](https://github.com/Radarr/Radarr/commit/255f38dce817a5a2fb0cdc9b9476324725dc75b3) | Fixed: Refactor showing grabbed/blocklisted releases in Interactive Search | `adapt` | Moves grabbed/failed detection for Interactive Search server-side: ReleaseController attaches a ReleaseHistoryResource to each release, matched by guid, then info URL, then torrent title/protocol/indexer. Our row matched by guid only and marked failures by source title, so a release whose guid changed since the grab showed as never grabbed - reproduced on 6969 with a stub Torznab, where the reissued-guid release now carries its grab. Past the parser gate on substance: the new Parser/ReleaseComparer holds the blocklist's SameNzb/SameTorrent rules moved out of BlocklistService unchanged, no grammar. Adapted rather than picked: the frontend half is Radarr redux, rewritten against our React Query row (keeping its tooltips and our import-list exclusion icon), and the now-unused useMovieBlocklist hook goes. Ported faithfully, including two upstream gaps in ReleaseComparerModel(MovieHistory) - TorrentInfoHash is never set and PublishedDate is the grab time - which Sonarr v5-develop shares. Upstream has no tests; ReleaseComparerFixture, ReleaseControllerFixture and a HistoryRepository test are ours. |
 
 ### sonarr
 

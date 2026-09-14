@@ -1,8 +1,4 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import {
-  useMovieBlocklist,
-  useMovieHistory,
-} from 'Activity/History/useHistory';
 import ProtocolLabel from 'Activity/Queue/ProtocolLabel';
 import Icon from 'Components/Icon';
 import Link from 'Components/Link/Link';
@@ -76,49 +72,10 @@ function getDownloadTooltip(
   return translate('AddToDownloadQueue');
 }
 
-// Both queries are keyed by movieId, so every row on a search shares the one
-// request React Query already has in flight.
-function useReleaseHistory(guid: string, movieId: number) {
-  const { data: movieHistory } = useMovieHistory(movieId);
-  const { data: movieBlocklist } = useMovieBlocklist(movieId);
-
-  return useMemo(() => {
-    let historyFailedData = null;
-    let blocklistedData = null;
-
-    const historyGrabbedData = movieHistory.find(
-      ({ eventType, data }) =>
-        eventType === 'grabbed' &&
-        data != null &&
-        typeof data === 'object' &&
-        'guid' in data &&
-        (data as { guid?: string }).guid === guid
-    );
-
-    if (historyGrabbedData) {
-      historyFailedData = movieHistory.find(
-        ({ eventType, sourceTitle }) =>
-          eventType === 'downloadFailed' &&
-          sourceTitle === historyGrabbedData.sourceTitle
-      );
-
-      blocklistedData = movieBlocklist.find(
-        (item) => item.sourceTitle === historyGrabbedData.sourceTitle
-      );
-    }
-
-    return {
-      historyGrabbedData,
-      historyFailedData,
-      blocklistedData,
-    };
-  }, [guid, movieHistory, movieBlocklist]);
-}
-
-// Whether the searched item is excluded from import lists. Unlike the two reads
-// above this is a fact about the item, not the release, so it marks every row
-// the same way -- an exclusion and a grab are separate decisions that can
-// disagree, and the search is where that shows up.
+// Whether the searched item is excluded from import lists. Unlike the grab and
+// blocklist state each release carries, this is a fact about the item, not the
+// release, so it marks every row the same way -- an exclusion and a grab are
+// separate decisions that can disagree, and the search is where that shows up.
 //
 // The exclusions table is keyed by foreign ID rather than movie id, hence the
 // hop through the movie. Both requests are already in flight for the search:
@@ -137,7 +94,7 @@ interface InteractiveSearchRowProps extends Release {
   searchPayload: InteractiveSearchPayload;
 }
 
-function InteractiveSearchRow(props: InteractiveSearchRowProps) {
+function InteractiveSearchRow(props: Readonly<InteractiveSearchRowProps>) {
   const {
     guid,
     indexerId,
@@ -153,6 +110,7 @@ function InteractiveSearchRow(props: InteractiveSearchRowProps) {
     seeders,
     leechers,
     quality,
+    history,
     languages,
     customFormatScore,
     customFormats,
@@ -169,8 +127,13 @@ function InteractiveSearchRow(props: InteractiveSearchRowProps) {
 
   const { longDateFormat, timeFormat, timeZone } = useUiSettingsValues();
 
-  const { historyGrabbedData, historyFailedData, blocklistedData } =
-    useReleaseHistory(guid, searchPayload.movieId);
+  // The server matches a grab to this release and says so on `history`; a
+  // blocklisted release is one the decision engine rejected for it.
+  const isBlocklisted = useMemo(
+    () =>
+      rejections.some((reason) => reason.toLowerCase().includes('blocklisted')),
+    [rejections]
+  );
 
   const importListExclusion = useMovieExclusion(searchPayload.movieId);
 
@@ -245,15 +208,17 @@ function InteractiveSearchRow(props: InteractiveSearchRowProps) {
       <TableRowCell className={styles.indexer}>{indexer}</TableRowCell>
 
       <TableRowCell className={styles.history}>
-        {historyGrabbedData?.date && !historyFailedData?.date ? (
+        {history?.grabbed && !history.failed ? (
           <Tooltip
             anchor={<Icon name={icons.DOWNLOADING} kind={kinds.DEFAULT} />}
             tooltip={translate('GrabbedAt', {
               date: formatDateTime(
-                historyGrabbedData.date,
+                history.grabbed,
                 longDateFormat,
                 timeFormat,
-                { includeSeconds: true }
+                {
+                  includeSeconds: true,
+                }
               ),
             })}
             kind={kinds.INVERSE}
@@ -261,47 +226,42 @@ function InteractiveSearchRow(props: InteractiveSearchRowProps) {
           />
         ) : null}
 
-        {historyFailedData?.date ? (
+        {history?.failed ? (
           <Tooltip
             anchor={<Icon name={icons.DOWNLOADING} kind={kinds.DANGER} />}
             tooltip={translate('FailedAt', {
-              date: formatDateTime(
-                historyFailedData.date,
-                longDateFormat,
-                timeFormat,
-                { includeSeconds: true }
-              ),
+              date: formatDateTime(history.failed, longDateFormat, timeFormat, {
+                includeSeconds: true,
+              }),
             })}
             kind={kinds.INVERSE}
             position={tooltipPositions.LEFT}
           />
         ) : null}
 
-        {blocklistedData?.date ? (
+        {isBlocklisted ? (
           <Icon
-            className={
-              historyGrabbedData || historyFailedData ? styles.blocklist : ''
-            }
+            className={history ? styles.blocklist : ''}
             name={icons.BLOCKLIST}
             kind={kinds.DANGER}
-            title={translate('BlocklistedAt', {
-              date: formatDateTime(
-                blocklistedData.date,
-                longDateFormat,
-                timeFormat,
-                { includeSeconds: true }
-              ),
-            })}
+            title={
+              history?.failed
+                ? translate('BlocklistedAt', {
+                    date: formatDateTime(
+                      history.failed,
+                      longDateFormat,
+                      timeFormat,
+                      { includeSeconds: true }
+                    ),
+                  })
+                : translate('Blocklisted')
+            }
           />
         ) : null}
 
         {importListExclusion ? (
           <Icon
-            className={
-              historyGrabbedData || historyFailedData || blocklistedData
-                ? styles.exclusion
-                : ''
-            }
+            className={history || isBlocklisted ? styles.exclusion : ''}
             name={icons.EXCLUDE}
             kind={kinds.WARNING}
             title={translate('ExcludedFromImportListsReason', {

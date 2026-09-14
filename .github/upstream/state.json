@@ -5,8 +5,8 @@
       "repo": "Radarr/Radarr",
       "branch": "develop",
       "owns": "backend",
-      "highWater": "48a61bf63aabac13446c3792a1d6e0ec8ccd741d",
-      "highWaterNote": "2026-09 'Bump to 6.4.4'. Everything at or before this mark is dispositioned. The next commit, 255f38dce (grabbed/blocklisted releases in Interactive Search), is being adapted in its own PR; every 2026-09 commit after it is already settled, so the mark moves to the tip when that lands. Advance only when everything at or before the new mark is settled."
+      "highWater": "a96bf7c3ecb23cb76993770727285dc17a613fbc",
+      "highWaterNote": "2026-09-13 'Multiple Translations updated by Weblate', the current tip of Radarr develop. Everything at or before this mark is dispositioned: 2026-09 closed when 255f38dce (grabbed/blocklisted releases in Interactive Search) landed as its own PR after the rest of the month. Advance only when everything at or before the new mark is settled."
     },
     "sonarr": {
       "repo": "Sonarr/Sonarr",
@@ -739,6 +739,12 @@
         "month": "2026-09",
         "disposition": "skip",
         "reason": "Weblate commit. Translations come from our own Weblate project, never from cherry-picks."
+      },
+      "255f38dce817a5a2fb0cdc9b9476324725dc75b3": {
+        "subject": "Fixed: Refactor showing grabbed/blocklisted releases in Interactive Search",
+        "month": "2026-09",
+        "disposition": "adapt",
+        "reason": "Moves grabbed/failed detection for Interactive Search server-side: ReleaseController attaches a ReleaseHistoryResource to each release, matched by guid, then info URL, then torrent title/protocol/indexer. Our row matched by guid only and marked failures by source title, so a release whose guid changed since the grab showed as never grabbed - reproduced on 6969 with a stub Torznab, where the reissued-guid release now carries its grab. Past the parser gate on substance: the new Parser/ReleaseComparer holds the blocklist's SameNzb/SameTorrent rules moved out of BlocklistService unchanged, no grammar. Adapted rather than picked: the frontend half is Radarr redux, rewritten against our React Query row (keeping its tooltips and our import-list exclusion icon), and the now-unused useMovieBlocklist hook goes. Ported faithfully, including two upstream gaps in ReleaseComparerModel(MovieHistory) - TorrentInfoHash is never set and PublishedDate is the grab time - which Sonarr v5-develop shares. Upstream has no tests; ReleaseComparerFixture, ReleaseControllerFixture and a HistoryRepository test are ours."
       }
     },
     "sonarr": {

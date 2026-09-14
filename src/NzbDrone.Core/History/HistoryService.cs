@@ -21,6 +21,7 @@ namespace NzbDrone.Core.History
         QualityModel GetBestQualityInHistory(QualityProfile profile, int movieId);
         PagingSpec<MovieHistory> Paged(PagingSpec<MovieHistory> pagingSpec, int[] languages, int[] qualities);
         MovieHistory MostRecentForMovie(int movieId);
+        List<MovieHistory> FindByMovieId(int movieId);
         MovieHistory MostRecentForDownloadId(string downloadId);
         MovieHistory Get(int historyId);
         List<MovieHistory> Find(string downloadId, MovieHistoryEventType eventType);
@@ -40,6 +41,12 @@ namespace NzbDrone.Core.History
                                   IHandle<MoviesDeletedEvent>,
                                   IHandle<DownloadIgnoredEvent>
     {
+        private const string DownloadClient = "DownloadClient";
+        private const string DownloadClientName = "DownloadClientName";
+        private const string IndexerFlags = "IndexerFlags";
+
+        private const string ReleaseGroup = "ReleaseGroup";
+
         private readonly IHistoryRepository _historyRepository;
         private readonly Logger _logger;
 
@@ -57,6 +64,11 @@ namespace NzbDrone.Core.History
         public MovieHistory MostRecentForMovie(int movieId)
         {
             return _historyRepository.MostRecentForMovie(movieId);
+        }
+
+        public List<MovieHistory> FindByMovieId(int movieId)
+        {
+            return _historyRepository.FindByMovieId(movieId);
         }
 
         public MovieHistory MostRecentForDownloadId(string downloadId)
@@ -139,13 +151,13 @@ namespace NzbDrone.Core.History
 
             history.Data.Add("Indexer", message.Movie.Release.Indexer);
             history.Data.Add("NzbInfoUrl", message.Movie.Release.InfoUrl);
-            history.Data.Add("ReleaseGroup", message.Movie.ParsedMovieInfo.ReleaseGroup);
+            history.Data.Add(ReleaseGroup, message.Movie.ParsedMovieInfo.ReleaseGroup);
             history.Data.Add("Age", message.Movie.Release.Age.ToString());
             history.Data.Add("AgeHours", message.Movie.Release.AgeHours.ToString());
             history.Data.Add("AgeMinutes", message.Movie.Release.AgeMinutes.ToString());
             history.Data.Add("PublishedDate", message.Movie.Release.PublishDate.ToUniversalTime().ToString("s") + "Z");
-            history.Data.Add("DownloadClient", message.DownloadClient);
-            history.Data.Add("DownloadClientName", message.DownloadClientName);
+            history.Data.Add(DownloadClient, message.DownloadClient);
+            history.Data.Add(DownloadClientName, message.DownloadClientName);
             history.Data.Add("Size", message.Movie.Release.Size.ToString());
             history.Data.Add("DownloadUrl", message.Movie.Release.DownloadUrl);
             history.Data.Add("Guid", message.Movie.Release.Guid);
@@ -154,7 +166,7 @@ namespace NzbDrone.Core.History
             history.Data.Add("CustomFormatScore", message.Movie.CustomFormatScore.ToString());
             history.Data.Add("MovieMatchType", message.Movie.MovieMatchType.ToString());
             history.Data.Add("ReleaseSource", message.Movie.ReleaseSource.ToString());
-            history.Data.Add("IndexerFlags", message.Movie.Release.IndexerFlags.ToString());
+            history.Data.Add(IndexerFlags, message.Movie.Release.IndexerFlags.ToString());
             history.Data.Add("IndexerId", message.Movie.Release.IndexerId.ToString());
 
             if (!message.Movie.ParsedMovieInfo.ReleaseHash.IsNullOrWhiteSpace())
@@ -199,12 +211,12 @@ namespace NzbDrone.Core.History
             history.Data.Add("FileId", message.ImportedMovie.Id.ToString());
             history.Data.Add("DroppedPath", message.MovieInfo.Path);
             history.Data.Add("ImportedPath", Path.Combine(movie.Path, message.ImportedMovie.RelativePath));
-            history.Data.Add("DownloadClient", message.DownloadClientInfo?.Type);
-            history.Data.Add("DownloadClientName", message.DownloadClientInfo?.Name);
-            history.Data.Add("ReleaseGroup", message.MovieInfo.ReleaseGroup);
+            history.Data.Add(DownloadClient, message.DownloadClientInfo?.Type);
+            history.Data.Add(DownloadClientName, message.DownloadClientInfo?.Name);
+            history.Data.Add(ReleaseGroup, message.MovieInfo.ReleaseGroup);
             history.Data.Add("CustomFormatScore", message.MovieInfo.CustomFormatScore.ToString());
             history.Data.Add("Size", message.MovieInfo.Size.ToString());
-            history.Data.Add("IndexerFlags", message.ImportedMovie.IndexerFlags.ToString());
+            history.Data.Add(IndexerFlags, message.ImportedMovie.IndexerFlags.ToString());
 
             _historyRepository.Insert(history);
         }
@@ -229,9 +241,9 @@ namespace NzbDrone.Core.History
             };
 
             history.Data.Add("Reason", message.Reason.ToString());
-            history.Data.Add("ReleaseGroup", message.MovieFile.ReleaseGroup);
+            history.Data.Add(ReleaseGroup, message.MovieFile.ReleaseGroup);
             history.Data.Add("Size", message.MovieFile.Size.ToString());
-            history.Data.Add("IndexerFlags", message.MovieFile.IndexerFlags.ToString());
+            history.Data.Add(IndexerFlags, message.MovieFile.IndexerFlags.ToString());
 
             if (history.SourceTitle.IsNullOrWhiteSpace())
             {
@@ -249,9 +261,9 @@ namespace NzbDrone.Core.History
             {
                 sourceRelativePath = message.Movie.Path.GetRelativePath(message.OriginalPath);
             }
-            catch
+            catch (Exception e)
             {
-                _logger.Error("Trying to RelativePath for {0} with {1}", message.Movie.Path, message.OriginalPath);
+                _logger.Error(e, "Trying to RelativePath for {0} with {1}", message.Movie.Path, message.OriginalPath);
             }
 
             var path = Path.Combine(message.Movie.Path, message.MovieFile.RelativePath);
@@ -271,9 +283,9 @@ namespace NzbDrone.Core.History
             history.Data.Add("SourceRelativePath", sourceRelativePath);
             history.Data.Add("Path", path);
             history.Data.Add("RelativePath", relativePath);
-            history.Data.Add("ReleaseGroup", message.MovieFile.ReleaseGroup);
+            history.Data.Add(ReleaseGroup, message.MovieFile.ReleaseGroup);
             history.Data.Add("Size", message.MovieFile.Size.ToString());
-            history.Data.Add("IndexerFlags", message.MovieFile.IndexerFlags.ToString());
+            history.Data.Add(IndexerFlags, message.MovieFile.IndexerFlags.ToString());
 
             _historyRepository.Insert(history);
         }
@@ -291,10 +303,10 @@ namespace NzbDrone.Core.History
                 Languages = message.Languages
             };
 
-            history.Data.Add("DownloadClient", message.DownloadClientInfo.Type);
-            history.Data.Add("DownloadClientName", message.DownloadClientInfo.Name);
+            history.Data.Add(DownloadClient, message.DownloadClientInfo.Type);
+            history.Data.Add(DownloadClientName, message.DownloadClientInfo.Name);
             history.Data.Add("Message", message.Message);
-            history.Data.Add("ReleaseGroup", message.TrackedDownload?.RemoteMovie?.ParsedMovieInfo?.ReleaseGroup);
+            history.Data.Add(ReleaseGroup, message.TrackedDownload?.RemoteMovie?.ParsedMovieInfo?.ReleaseGroup);
             history.Data.Add("Size", message.TrackedDownload?.DownloadItem.TotalSize.ToString());
             history.Data.Add("Indexer", message.TrackedDownload?.RemoteMovie?.Release?.Indexer);
 
@@ -319,10 +331,10 @@ namespace NzbDrone.Core.History
                 DownloadId = message.DownloadId
             };
 
-            history.Data.Add("DownloadClient", message.DownloadClient);
-            history.Data.Add("DownloadClientName", message.TrackedDownload?.DownloadItem.DownloadClientInfo.Name);
+            history.Data.Add(DownloadClient, message.DownloadClient);
+            history.Data.Add(DownloadClientName, message.TrackedDownload?.DownloadItem.DownloadClientInfo.Name);
             history.Data.Add("Message", message.Message);
-            history.Data.Add("ReleaseGroup", message.TrackedDownload?.RemoteMovie?.ParsedMovieInfo?.ReleaseGroup ?? message.Data.GetValueOrDefault(MovieHistory.RELEASE_GROUP));
+            history.Data.Add(ReleaseGroup, message.TrackedDownload?.RemoteMovie?.ParsedMovieInfo?.ReleaseGroup ?? message.Data.GetValueOrDefault(MovieHistory.RELEASE_GROUP));
             history.Data.Add("Size", message.TrackedDownload?.DownloadItem.TotalSize.ToString() ?? message.Data.GetValueOrDefault(MovieHistory.SIZE));
             history.Data.Add("Indexer", message.TrackedDownload?.RemoteMovie?.Release?.Indexer ?? message.Data.GetValueOrDefault(MovieHistory.INDEXER));
 

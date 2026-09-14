@@ -11,7 +11,6 @@ import {
   filterBuilderValueTypes,
   filterTypes,
 } from 'Helpers/Props';
-import Blocklist from 'typings/Blocklist';
 import History from 'typings/History';
 import findSelectedFilters from 'Utilities/Filter/findSelectedFilters';
 import translate from 'Utilities/String/translate';
@@ -163,10 +162,8 @@ const useHistory = () => {
 export default useHistory;
 
 const DEFAULT_HISTORY: History[] = [];
-const DEFAULT_BLOCKLIST: Blocklist[] = [];
 
-// History for a single movie, used by the movie history modal and to mark
-// releases in the interactive search.
+// History for a single movie, used by the movie history modal.
 export const useMovieHistory = (movieId: number | undefined) => {
   const { data, ...query } = useApiQuery<History[]>({
     path: '/history/movie',
@@ -177,22 +174,6 @@ export const useMovieHistory = (movieId: number | undefined) => {
   return {
     ...query,
     data: data ?? DEFAULT_HISTORY,
-  };
-};
-
-// Blocklisted releases for a single movie. It lives here rather than beside
-// the blocklist page because its only consumer reads it together with the
-// movie history above.
-export const useMovieBlocklist = (movieId: number | undefined) => {
-  const { data, ...query } = useApiQuery<Blocklist[]>({
-    path: '/blocklist/movie',
-    queryParams: { movieId },
-    queryOptions: { enabled: !!movieId },
-  });
-
-  return {
-    ...query,
-    data: data ?? DEFAULT_BLOCKLIST,
   };
 };
 
