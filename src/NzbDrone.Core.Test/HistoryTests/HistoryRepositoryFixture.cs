@@ -6,7 +6,6 @@ using FluentAssertions;
 using NUnit.Framework;
 using NzbDrone.Core.History;
 using NzbDrone.Core.Languages;
-using NzbDrone.Core.Movies;
 using NzbDrone.Core.Qualities;
 using NzbDrone.Core.Test.Framework;
 
@@ -15,21 +14,6 @@ namespace NzbDrone.Core.Test.HistoryTests
     [TestFixture]
     public class HistoryRepositoryFixture : DbTest<HistoryRepository, MovieHistory>
     {
-        private Movie _movie1;
-        private Movie _movie2;
-
-        [SetUp]
-        public void Setup()
-        {
-            _movie1 = Builder<Movie>.CreateNew()
-                                    .With(s => s.Id = 7)
-                                    .Build();
-
-            _movie2 = Builder<Movie>.CreateNew()
-                                    .With(s => s.Id = 8)
-                                    .Build();
-        }
-
         [Test]
         public void should_read_write_dictionary()
         {

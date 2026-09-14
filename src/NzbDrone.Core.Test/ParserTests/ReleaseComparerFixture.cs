@@ -14,42 +14,7 @@ namespace NzbDrone.Core.Test.ParserTests
     public class ReleaseComparerFixture : CoreTest
     {
         private const long Size = 1_000_000_000;
-        private static readonly DateTime PublishDate = new (2026, 9, 13, 12, 0, 0, DateTimeKind.Utc);
-
-        private static ReleaseComparerModel Blocklisted(string indexer = "Indexer", DateTime? publishedDate = null, long? size = Size, string infoHash = null)
-        {
-            return new ReleaseComparerModel(new Blocklist
-            {
-                SourceTitle = "Studio.26.09.13.Performer.Scene.1080p.WEB-DL",
-                Indexer = indexer,
-                PublishedDate = publishedDate ?? PublishDate,
-                Size = size,
-                TorrentInfoHash = infoHash
-            });
-        }
-
-        private static ReleaseInfo Release(string indexer = "Indexer", DateTime? publishDate = null, long size = Size)
-        {
-            return new ReleaseInfo
-            {
-                Title = "Studio.26.09.13.Performer.Scene.1080p.WEB-DL",
-                Indexer = indexer,
-                PublishDate = publishDate ?? PublishDate,
-                Size = size
-            };
-        }
-
-        private static TorrentInfo Torrent(string infoHash, string indexer = "Indexer")
-        {
-            return new TorrentInfo
-            {
-                Title = "Studio.26.09.13.Performer.Scene.1080p.WEB-DL",
-                Indexer = indexer,
-                InfoHash = infoHash,
-                PublishDate = PublishDate,
-                Size = Size
-            };
-        }
+        private static readonly DateTime PublishDate = new(2026, 9, 13, 12, 0, 0, DateTimeKind.Utc);
 
         [Test]
         public void nzb_should_match_the_same_publish_date()
@@ -153,6 +118,41 @@ namespace NzbDrone.Core.Test.ParserTests
 
             model.Size.Should().Be(0);
             model.Indexer.Should().BeNull();
+        }
+
+        private static ReleaseComparerModel Blocklisted(string indexer = "Indexer", DateTime? publishedDate = null, long? size = Size, string infoHash = null)
+        {
+            return new ReleaseComparerModel(new Blocklist
+            {
+                SourceTitle = "Studio.26.09.13.Performer.Scene.1080p.WEB-DL",
+                Indexer = indexer,
+                PublishedDate = publishedDate ?? PublishDate,
+                Size = size,
+                TorrentInfoHash = infoHash
+            });
+        }
+
+        private static ReleaseInfo Release(string indexer = "Indexer", DateTime? publishDate = null, long size = Size)
+        {
+            return new ReleaseInfo
+            {
+                Title = "Studio.26.09.13.Performer.Scene.1080p.WEB-DL",
+                Indexer = indexer,
+                PublishDate = publishDate ?? PublishDate,
+                Size = size
+            };
+        }
+
+        private static TorrentInfo Torrent(string infoHash, string indexer = "Indexer")
+        {
+            return new TorrentInfo
+            {
+                Title = "Studio.26.09.13.Performer.Scene.1080p.WEB-DL",
+                Indexer = indexer,
+                InfoHash = infoHash,
+                PublishDate = PublishDate,
+                Size = Size
+            };
         }
     }
 }

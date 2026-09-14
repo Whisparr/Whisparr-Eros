@@ -24,7 +24,7 @@ namespace NzbDrone.Api.Test.v3.Indexers
     public class ReleaseControllerFixture : TestBase<ReleaseController>
     {
         private const int MovieId = 7;
-        private static readonly DateTime GrabDate = new (2026, 9, 13, 18, 30, 0, DateTimeKind.Utc);
+        private static readonly DateTime GrabDate = new(2026, 9, 13, 18, 30, 0, DateTimeKind.Utc);
 
         private List<MovieHistory> _history;
         private List<DownloadDecision> _decisions;
@@ -60,75 +60,6 @@ namespace NzbDrone.Api.Test.v3.Indexers
             Mocker.GetMock<IHistoryService>()
                 .Setup(s => s.FindByMovieId(MovieId))
                 .Returns(() => _history);
-        }
-
-        private void GivenUsenetRelease(string guid, string infoUrl = null)
-        {
-            var release = new ReleaseInfo
-            {
-                Guid = guid,
-                Title = "Studio.26.09.13.Performer.Scene.1080p.WEB-DL",
-                Indexer = "Indexer",
-                InfoUrl = infoUrl,
-                Size = 1000,
-                PublishDate = new DateTime(2026, 9, 13, 12, 0, 0, DateTimeKind.Utc),
-                DownloadProtocol = DownloadProtocol.Usenet
-            };
-
-            GivenDecision(release);
-        }
-
-        private void GivenTorrentRelease(string guid, string infoHash)
-        {
-            var release = new TorrentInfo
-            {
-                Guid = guid,
-                Title = "Studio.26.09.13.Performer.Scene.1080p.WEB-DL",
-                Indexer = "Indexer",
-                InfoHash = infoHash,
-                Size = 1000,
-                PublishDate = new DateTime(2026, 9, 13, 12, 0, 0, DateTimeKind.Utc),
-                DownloadProtocol = DownloadProtocol.Torrent
-            };
-
-            GivenDecision(release);
-        }
-
-        private void GivenDecision(ReleaseInfo release)
-        {
-            _decisions.Add(new DownloadDecision(new RemoteMovie
-            {
-                Release = release,
-                ParsedMovieInfo = new ParsedMovieInfo
-                {
-                    Quality = new QualityModel(Quality.WEBDL1080p),
-                    MovieTitles = new List<string> { "Scene" }
-                },
-                CustomFormats = new List<CustomFormat>(),
-                Languages = new List<Language>()
-            }));
-        }
-
-        private void GivenHistory(MovieHistoryEventType eventType, DateTime date, string downloadId, Dictionary<string, string> data)
-        {
-            var history = new MovieHistory
-            {
-                MovieId = MovieId,
-                EventType = eventType,
-                Date = date,
-                DownloadId = downloadId,
-                SourceTitle = "Studio.26.09.13.Performer.Scene.1080p.WEB-DL",
-                Data = data
-            };
-
-            _history.Add(history);
-        }
-
-        private async Task<ReleaseResource> GetOnlyRelease()
-        {
-            var releases = await Subject.GetReleases(MovieId);
-
-            return releases.Single();
         }
 
         [Test]
@@ -262,6 +193,75 @@ namespace NzbDrone.Api.Test.v3.Indexers
 
             releases.Should().ContainSingle().Which.History.Should().BeNull();
             Mocker.GetMock<IHistoryService>().Verify(s => s.FindByMovieId(It.IsAny<int>()), Times.Never());
+        }
+
+        private void GivenUsenetRelease(string guid, string infoUrl = null)
+        {
+            var release = new ReleaseInfo
+            {
+                Guid = guid,
+                Title = "Studio.26.09.13.Performer.Scene.1080p.WEB-DL",
+                Indexer = "Indexer",
+                InfoUrl = infoUrl,
+                Size = 1000,
+                PublishDate = new DateTime(2026, 9, 13, 12, 0, 0, DateTimeKind.Utc),
+                DownloadProtocol = DownloadProtocol.Usenet
+            };
+
+            GivenDecision(release);
+        }
+
+        private void GivenTorrentRelease(string guid, string infoHash)
+        {
+            var release = new TorrentInfo
+            {
+                Guid = guid,
+                Title = "Studio.26.09.13.Performer.Scene.1080p.WEB-DL",
+                Indexer = "Indexer",
+                InfoHash = infoHash,
+                Size = 1000,
+                PublishDate = new DateTime(2026, 9, 13, 12, 0, 0, DateTimeKind.Utc),
+                DownloadProtocol = DownloadProtocol.Torrent
+            };
+
+            GivenDecision(release);
+        }
+
+        private void GivenDecision(ReleaseInfo release)
+        {
+            _decisions.Add(new DownloadDecision(new RemoteMovie
+            {
+                Release = release,
+                ParsedMovieInfo = new ParsedMovieInfo
+                {
+                    Quality = new QualityModel(Quality.WEBDL1080p),
+                    MovieTitles = new List<string> { "Scene" }
+                },
+                CustomFormats = new List<CustomFormat>(),
+                Languages = new List<Language>()
+            }));
+        }
+
+        private void GivenHistory(MovieHistoryEventType eventType, DateTime date, string downloadId, Dictionary<string, string> data)
+        {
+            var history = new MovieHistory
+            {
+                MovieId = MovieId,
+                EventType = eventType,
+                Date = date,
+                DownloadId = downloadId,
+                SourceTitle = "Studio.26.09.13.Performer.Scene.1080p.WEB-DL",
+                Data = data
+            };
+
+            _history.Add(history);
+        }
+
+        private async Task<ReleaseResource> GetOnlyRelease()
+        {
+            var releases = await Subject.GetReleases(MovieId);
+
+            return releases.Single();
         }
     }
 }

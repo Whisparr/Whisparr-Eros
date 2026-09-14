@@ -100,7 +100,7 @@ namespace Whisparr.Api.V3.Indexers
                         ReleaseSource = remoteMovie.ReleaseSource
                     };
 
-                    remoteMovie.Movie = _movieService.GetMovie(release.MovieId!.Value);
+                    remoteMovie.Movie = _movieService.GetMovie(release.MovieId.Value);
                     remoteMovie.ParsedMovieInfo.Quality = release.Quality;
                     remoteMovie.Languages = release.Languages;
                 }
@@ -142,6 +142,19 @@ namespace Whisparr.Api.V3.Indexers
             return await GetRss();
         }
 
+        protected override ReleaseResource MapDecision(DownloadDecision decision, int initialWeight)
+        {
+            var resource = base.MapDecision(decision, initialWeight);
+            _remoteMovieCache.Set(GetCacheKey(resource), decision.RemoteMovie, TimeSpan.FromMinutes(30));
+
+            return resource;
+        }
+
+        private static string GetCacheKey(ReleaseResource resource)
+        {
+            return string.Concat(resource.IndexerId, "_", resource.Guid);
+        }
+
         private async Task<List<ReleaseResource>> GetMovieReleases(int movieId)
         {
             try
@@ -170,19 +183,6 @@ namespace Whisparr.Api.V3.Indexers
             var prioritizedDecisions = _prioritizeDownloadDecision.PrioritizeDecisionsForMovies(decisions);
 
             return MapDecisions(prioritizedDecisions);
-        }
-
-        protected override ReleaseResource MapDecision(DownloadDecision decision, int initialWeight)
-        {
-            var resource = base.MapDecision(decision, initialWeight);
-            _remoteMovieCache.Set(GetCacheKey(resource), decision.RemoteMovie, TimeSpan.FromMinutes(30));
-
-            return resource;
-        }
-
-        private string GetCacheKey(ReleaseResource resource)
-        {
-            return string.Concat(resource.IndexerId, "_", resource.Guid);
         }
 
         private List<ReleaseResource> MapDecisions(IEnumerable<DownloadDecision> decisions, List<MovieHistory> history)

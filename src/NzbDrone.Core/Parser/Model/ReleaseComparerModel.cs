@@ -7,12 +7,6 @@ namespace NzbDrone.Core.Parser.Model;
 
 public class ReleaseComparerModel
 {
-    public string Title { get; set; }
-    public string TorrentInfoHash { get; set; }
-    public DateTime? PublishedDate { get; set; }
-    public string Indexer { get; set; }
-    public long Size { get; set; }
-
     public ReleaseComparerModel(Blocklist blocklist)
     {
         Title = blocklist.SourceTitle;
@@ -29,4 +23,10 @@ public class ReleaseComparerModel
         Indexer = history.Data.GetValueOrDefault("indexer");
         Size = long.Parse(history.Data.GetValueOrDefault("size", "0"));
     }
+
+    public string Title { get; set; }
+    public string TorrentInfoHash { get; set; }
+    public DateTime? PublishedDate { get; set; }
+    public string Indexer { get; set; }
+    public long Size { get; set; }
 }

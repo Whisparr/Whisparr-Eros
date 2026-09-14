@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Datastore;
@@ -82,18 +83,18 @@ namespace NzbDrone.Core.Blocklisting
         public void Block(RemoteMovie remoteMovie, string message)
         {
             var blocklist = new Blocklist
-                            {
-                                MovieId = remoteMovie.Movie.Id,
-                                SourceTitle =  remoteMovie.Release.Title,
-                                Quality = remoteMovie.ParsedMovieInfo.Quality,
-                                Date = DateTime.UtcNow,
-                                PublishedDate = remoteMovie.Release.PublishDate,
-                                Size = remoteMovie.Release.Size,
-                                Indexer = remoteMovie.Release.Indexer,
-                                Protocol = remoteMovie.Release.DownloadProtocol,
-                                Message = message,
-                                Languages = remoteMovie.ParsedMovieInfo.Languages
-                            };
+            {
+                MovieId = remoteMovie.Movie.Id,
+                SourceTitle = remoteMovie.Release.Title,
+                Quality = remoteMovie.ParsedMovieInfo.Quality,
+                Date = DateTime.UtcNow,
+                PublishedDate = remoteMovie.Release.PublishDate,
+                Size = remoteMovie.Release.Size,
+                Indexer = remoteMovie.Release.Indexer,
+                Protocol = remoteMovie.Release.DownloadProtocol,
+                Message = message,
+                Languages = remoteMovie.ParsedMovieInfo.Languages
+            };
 
             if (remoteMovie.Release is TorrentInfo torrentRelease)
             {
@@ -113,16 +114,6 @@ namespace NzbDrone.Core.Blocklisting
             _blocklistRepository.DeleteMany(ids);
         }
 
-        private bool SameNzb(Blocklist item, ReleaseInfo release)
-        {
-            return ReleaseComparer.SameNzb(new ReleaseComparerModel(item), release);
-        }
-
-        private bool SameTorrent(Blocklist item, TorrentInfo release)
-        {
-            return ReleaseComparer.SameTorrent(new ReleaseComparerModel(item), release);
-        }
-
         public void Execute(ClearBlocklistCommand message)
         {
             _blocklistRepository.Purge();
@@ -136,7 +127,7 @@ namespace NzbDrone.Core.Blocklisting
                 SourceTitle = message.SourceTitle,
                 Quality = message.Quality,
                 Date = DateTime.UtcNow,
-                PublishedDate = DateTime.Parse(message.Data.GetValueOrDefault("publishedDate")),
+                PublishedDate = DateTime.Parse(message.Data.GetValueOrDefault("publishedDate"), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal),
                 Size = long.Parse(message.Data.GetValueOrDefault("size", "0")),
                 Indexer = message.Data.GetValueOrDefault("indexer"),
                 Protocol = (DownloadProtocol)Convert.ToInt32(message.Data.GetValueOrDefault("protocol")),
@@ -158,6 +149,16 @@ namespace NzbDrone.Core.Blocklisting
         public void HandleAsync(MoviesDeletedEvent message)
         {
             _blocklistRepository.DeleteForMovies(message.Movies.Select(m => m.Id).ToList());
+        }
+
+        private static bool SameNzb(Blocklist item, ReleaseInfo release)
+        {
+            return ReleaseComparer.SameNzb(new ReleaseComparerModel(item), release);
+        }
+
+        private static bool SameTorrent(Blocklist item, TorrentInfo release)
+        {
+            return ReleaseComparer.SameTorrent(new ReleaseComparerModel(item), release);
         }
     }
 }
