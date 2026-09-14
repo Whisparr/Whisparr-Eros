@@ -31,7 +31,7 @@ namespace NzbDrone.Core.Validation
         {
             ruleBuilder.NotEmpty();
 
-            return ruleBuilder.Must(x => HostRegex.IsMatch(x) || x.IsValidIpAddress()).WithMessage("must be valid Host without http://");
+            return ruleBuilder.Must(IsValidHost).WithMessage("must be valid Host without http://");
         }
 
         public static IRuleBuilderOptions<T, string> ValidHosts<T>(this IRuleBuilder<T, string> ruleBuilder)
@@ -99,6 +99,28 @@ namespace NzbDrone.Core.Validation
 
                 return false;
             }).WithMessage($"Must be greater than or equal to '{minValue}' and less than or equal to '{maxValue}'");
+        }
+
+        private static bool IsValidHost(string host)
+        {
+            if (host.IsNullOrWhiteSpace())
+            {
+                return false;
+            }
+
+            if (HostRegex.IsMatch(host))
+            {
+                return true;
+            }
+
+            var address = host.FromUrlHost();
+
+            if (!address.IsValidIpAddress())
+            {
+                return false;
+            }
+
+            return address == host || address.Contains(':', StringComparison.Ordinal);
         }
     }
 }
