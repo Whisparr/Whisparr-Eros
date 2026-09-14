@@ -250,7 +250,6 @@ function SceneIndex() {
                   <SceneIndexPosters
                     items={items}
                     sortKey={sortKey}
-                    sortDirection={sortDirection}
                     scrollerRef={scrollerRef}
                     isSelectMode={isSelectMode}
                     isSmallScreen={isSmallScreen}

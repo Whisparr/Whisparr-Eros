@@ -249,7 +249,6 @@ function MovieIndex() {
                   <MovieIndexPosters
                     items={items}
                     sortKey={sortKey}
-                    sortDirection={sortDirection}
                     scrollerRef={scrollerRef}
                     isSelectMode={isSelectMode}
                     isSmallScreen={isSmallScreen}
