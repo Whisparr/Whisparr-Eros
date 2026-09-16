@@ -29,5 +29,41 @@ namespace NzbDrone.Core.Test.ParserTests
             // Indexer
             stashDB.CleanStudioTitle().Should().Be(external.CleanStudioTitle());
         }
+
+        // The metadata search matches whole words, so a studio name taken from a release has to be
+        // expanded before it is sent. The cleaned form is what the result is matched on afterwards.
+        [TestCase("SweetSinner", "Sweet Sinner")]
+        [TestCase("BrazzersExxtra", "Brazzers Exxtra")]
+        [TestCase("MileHighMedia", "Mile High Media")]
+        [TestCase("ZeroToleranceFilms", "Zero Tolerance Films")]
+        [TestCase("LifeSelector", "Life Selector")]
+        [TestCase("3rdDegree", "3rd Degree")]
+        [TestCase("IFeelMyself", "I Feel Myself")]
+
+        // A run of capitals is an acronym and stays whole.
+        [TestCase("BackdoorPOV", "Backdoor POV")]
+        [TestCase("InTheVIP", "In The VIP")]
+        [TestCase("POVLife", "POV Life")]
+
+        // A name that already reads as words is left alone.
+        [TestCase("Sweet Sinner", "Sweet Sinner")]
+        [TestCase("Casting Couch-X", "Casting Couch-X")]
+        [TestCase("  Sweet   Sinner  ", "Sweet Sinner")]
+        [TestCase("", "")]
+        [TestCase(null, "")]
+        public void should_expand_studio_title_for_search(string parsed, string expected)
+        {
+            parsed.ExpandStudioTitle().Should().Be(expected);
+        }
+
+        [TestCase("SweetSinner")]
+        [TestCase("BackdoorPOV")]
+        [TestCase("MileHighMedia")]
+        [TestCase("3rdDegree")]
+        public void should_expand_studio_title_without_changing_its_clean_title(string parsed)
+        {
+            // Expanding is only about how the name is searched, never about how it is matched.
+            parsed.ExpandStudioTitle().CleanStudioTitle().Should().Be(parsed.CleanStudioTitle());
+        }
     }
 }

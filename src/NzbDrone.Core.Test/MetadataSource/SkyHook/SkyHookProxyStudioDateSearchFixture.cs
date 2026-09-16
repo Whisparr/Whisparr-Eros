@@ -22,70 +22,16 @@ namespace NzbDrone.Core.Test.MetadataSource.SkyHook
         private const string FileName = "BrazzersExxtra.2024-05-17.Jane.Doe.Threeway.Tug.Of.War.1080p.mp4";
 
         private HttpRequest _capturedRequest;
+        private HttpRequest _capturedStudioRequest;
 
         [SetUp]
         public void Setup()
         {
             _capturedRequest = null;
+            _capturedStudioRequest = null;
 
             GivenSearchReturns();
-        }
-
-        private void GivenSearchReturns(params MovieResource[] scenes)
-        {
-            Mocker.GetMock<IHttpClient>()
-                .Setup(v => v.Get<List<MovieResource>>(It.IsAny<HttpRequest>()))
-                .Returns((HttpRequest request) =>
-                {
-                    _capturedRequest = request;
-
-                    var response = new HttpResponse(request, new HttpHeader(), scenes.ToList().ToJson(), HttpStatusCode.OK);
-
-                    return new HttpResponse<List<MovieResource>>(response);
-                });
-        }
-
-        private void GivenStudioInLibrary(string foreignId)
-        {
-            Mocker.GetMock<IStudioService>()
-                .Setup(v => v.FindByTitle(It.IsAny<string>()))
-                .Returns(new Studio { Title = "Brazzers Exxtra", CleanTitle = "brazzersexxtra", ForeignId = foreignId });
-        }
-
-        private static MovieResource Scene(string stashId, string title, string studioTitle, string studioId, string releaseDate)
-        {
-            return new MovieResource
-            {
-                ItemType = ItemType.Scene,
-                ForeignIds = new ExternalIdResource { StashId = stashId },
-                Title = title,
-                ReleaseDate = releaseDate,
-                Images = new List<ImageResource>(),
-                Genres = new List<string>(),
-                Studio = new StudioResource
-                {
-                    Title = studioTitle,
-                    ForeignIds = new ExternalIdResource { StashId = studioId }
-                }
-            };
-        }
-
-        private List<string> SearchTitles(string term, ItemType itemType = ItemType.Scene)
-        {
-            return Subject.SearchForNewEntity(term, itemType)
-                .Cast<Movie>()
-                .Select(m => m.MovieMetadata.Value.Title)
-                .ToList();
-        }
-
-        private Dictionary<string, string> QueryParams()
-        {
-            _capturedRequest.Should().NotBeNull();
-
-            return _capturedRequest.Url.Query
-                .Split('&')
-                .Select(p => p.Split('='))
-                .ToDictionary(p => p[0], p => WebUtility.UrlDecode(p[1]));
+            GivenStudioSearchReturns();
         }
 
         [Test]
@@ -125,14 +71,89 @@ namespace NzbDrone.Core.Test.MetadataSource.SkyHook
         }
 
         [Test]
-        public void should_search_by_name_when_studio_is_not_in_library()
+        public void should_search_by_name_when_the_studio_cannot_be_resolved()
         {
             SearchTitles(FileName);
 
             var query = QueryParams();
             query.Should().NotContainKey("studio");
             query.Should().NotContainKey("date");
-            query["q"].Should().Be("brazzersexxtra 2024-05-17");
+
+            // A release writes the name run together, which matches nothing, so it is expanded first.
+            query["q"].Should().Be("brazzers exxtra 2024-05-17");
+        }
+
+        [Test]
+        public void should_resolve_an_unknown_studio_and_search_by_id_and_date()
+        {
+            GivenStudioSearchReturns(Studio("Brazzers Exxtra", BrazzersExxtraId));
+
+            SearchTitles(FileName);
+
+            StudioQueryParams()["q"].Should().Be("brazzers exxtra");
+
+            var query = QueryParams();
+            query["studio"].Should().Be(BrazzersExxtraId);
+            query["date"].Should().Be("2024-05-17");
+        }
+
+        [Test]
+        public void should_only_return_the_resolved_studio_on_the_parsed_date()
+        {
+            GivenStudioSearchReturns(Studio("Brazzers Exxtra", BrazzersExxtraId));
+            GivenSearchReturns(
+                Scene("b", "May 17, 2024", "CumClinic", OtherStudioId, "2024-05-17"),
+                Scene("a", "The Brazzers Podcast: Episode 17", "Brazzers Exxtra", BrazzersExxtraId, "2026-05-23"),
+                Scene("c", "Threeway Tug Of War", "Brazzers Exxtra", BrazzersExxtraId, "2024-05-17"));
+
+            SearchTitles(FileName).Should().Equal("Threeway Tug Of War");
+        }
+
+        [Test]
+        public void should_not_bind_to_a_studio_search_result_with_a_different_name()
+        {
+            // A name search answers with near misses as readily as with the studio asked for.
+            GivenStudioSearchReturns(
+                Studio("Brazzers", OtherStudioId),
+                Studio("Brazzers Exxtra Live", OtherStudioId));
+
+            SearchTitles(FileName);
+
+            QueryParams().Should().NotContainKey("studio");
+        }
+
+        [Test]
+        public void should_skip_a_studio_search_result_without_a_stash_id()
+        {
+            GivenStudioSearchReturns(
+                Studio("Brazzers Exxtra", null),
+                Studio("Brazzers Exxtra", BrazzersExxtraId));
+
+            SearchTitles(FileName);
+
+            QueryParams()["studio"].Should().Be(BrazzersExxtraId);
+        }
+
+        [Test]
+        public void should_search_by_name_when_the_studio_search_fails()
+        {
+            GivenStudioSearchThrows();
+
+            SearchTitles(FileName);
+
+            var query = QueryParams();
+            query.Should().NotContainKey("studio");
+            query["q"].Should().Be("brazzers exxtra 2024-05-17");
+        }
+
+        [Test]
+        public void should_not_search_for_a_studio_already_in_the_library()
+        {
+            GivenStudioInLibrary(BrazzersExxtraId);
+
+            SearchTitles(FileName);
+
+            Mocker.GetMock<IHttpClient>().Verify(v => v.Get<List<StudioResource>>(It.IsAny<HttpRequest>()), Times.Never());
         }
 
         [Test]
@@ -159,7 +180,7 @@ namespace NzbDrone.Core.Test.MetadataSource.SkyHook
         [Test]
         public void should_return_nothing_when_no_result_is_from_the_parsed_studio()
         {
-            // What StashDB returns for "brazzersexxtra 2024-05-17": only the date token matches
+            // What StashDB returns for "brazzers exxtra 2024-05-17": only the date token matches
             GivenSearchReturns(
                 Scene("e", "SpyTug 244-G17", "SpyTug", OtherStudioId, "2016-11-11"),
                 Scene("b", "May 17, 2024", "CumClinic", OtherStudioId, "2024-05-17"),
@@ -201,6 +222,106 @@ namespace NzbDrone.Core.Test.MetadataSource.SkyHook
             SearchTitles(FileName, ItemType.Movie);
 
             Mocker.GetMock<IStudioService>().Verify(v => v.FindByTitle(It.IsAny<string>()), Times.Never());
+        }
+
+        private static StudioResource Studio(string title, string studioId)
+        {
+            return new StudioResource
+            {
+                Title = title,
+                ForeignIds = new ExternalIdResource { StashId = studioId },
+                Images = new List<ImageResource>()
+            };
+        }
+
+        private static MovieResource Scene(string stashId, string title, string studioTitle, string studioId, string releaseDate)
+        {
+            return new MovieResource
+            {
+                ItemType = ItemType.Scene,
+                ForeignIds = new ExternalIdResource { StashId = stashId },
+                Title = title,
+                ReleaseDate = releaseDate,
+                Images = new List<ImageResource>(),
+                Genres = new List<string>(),
+                Studio = new StudioResource
+                {
+                    Title = studioTitle,
+                    ForeignIds = new ExternalIdResource { StashId = studioId }
+                }
+            };
+        }
+
+        private static Dictionary<string, string> QueryParams(HttpRequest request)
+        {
+            return request.Url.Query
+                .Split('&')
+                .Select(p => p.Split('='))
+                .ToDictionary(p => p[0], p => WebUtility.UrlDecode(p[1]));
+        }
+
+        private void GivenSearchReturns(params MovieResource[] scenes)
+        {
+            Mocker.GetMock<IHttpClient>()
+                .Setup(v => v.Get<List<MovieResource>>(It.IsAny<HttpRequest>()))
+                .Returns((HttpRequest request) =>
+                {
+                    _capturedRequest = request;
+
+                    var response = new HttpResponse(request, new HttpHeader(), scenes.ToList().ToJson(), HttpStatusCode.OK);
+
+                    return new HttpResponse<List<MovieResource>>(response);
+                });
+        }
+
+        private void GivenStudioInLibrary(string foreignId)
+        {
+            Mocker.GetMock<IStudioService>()
+                .Setup(v => v.FindByTitle(It.IsAny<string>()))
+                .Returns(new Studio { Title = "Brazzers Exxtra", CleanTitle = "brazzersexxtra", ForeignId = foreignId });
+        }
+
+        private void GivenStudioSearchReturns(params StudioResource[] studios)
+        {
+            Mocker.GetMock<IHttpClient>()
+                .Setup(v => v.Get<List<StudioResource>>(It.IsAny<HttpRequest>()))
+                .Returns((HttpRequest request) =>
+                {
+                    _capturedStudioRequest = request;
+
+                    var response = new HttpResponse(request, new HttpHeader(), studios.ToList().ToJson(), HttpStatusCode.OK);
+
+                    return new HttpResponse<List<StudioResource>>(response);
+                });
+        }
+
+        private void GivenStudioSearchThrows()
+        {
+            Mocker.GetMock<IHttpClient>()
+                .Setup(v => v.Get<List<StudioResource>>(It.IsAny<HttpRequest>()))
+                .Throws(new HttpException(new HttpRequest("http://localhost"), new HttpResponse(new HttpRequest("http://localhost"), new HttpHeader(), "", HttpStatusCode.InternalServerError)));
+        }
+
+        private List<string> SearchTitles(string term, ItemType itemType = ItemType.Scene)
+        {
+            return Subject.SearchForNewEntity(term, itemType)
+                .Cast<Movie>()
+                .Select(m => m.MovieMetadata.Value.Title)
+                .ToList();
+        }
+
+        private Dictionary<string, string> QueryParams()
+        {
+            _capturedRequest.Should().NotBeNull();
+
+            return QueryParams(_capturedRequest);
+        }
+
+        private Dictionary<string, string> StudioQueryParams()
+        {
+            _capturedStudioRequest.Should().NotBeNull();
+
+            return QueryParams(_capturedStudioRequest);
         }
     }
 }
