@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using NLog;
 using NzbDrone.Common;
@@ -16,6 +17,14 @@ namespace NzbDrone.Core.Parser
 {
     public static class Parser
     {
+        private const string AirYearConst = "airyear";
+        private const string CodeConst = "code";
+        private const string EditionConst = "edition";
+        private const string EpisodeConst = "episode";
+        private const string ImdbIdConst = "imdbid";
+        private const string StashIdConst = "stashid";
+        private const string TitleYearConst = "titleyear";
+        private const string TmdbIdConst = "tmdbid";
         private static readonly Logger Logger = NzbDroneLogger.GetLogger(typeof(Parser));
 
         private static readonly Regex EditionRegex = new Regex(@"\(?\b(?<edition>(((Recut.|Extended.|Ultimate.)?(Director.?s|Collector.?s|Theatrical|Ultimate|Extended|Despecialized|(Special|Rouge|Final|Assembly|Imperial|Diamond|Signature|Hunter|Rekall)(?=(.(Cut|Edition|Version)))|\d{2,3}(th)?.Anniversary)(?:.(Cut|Edition|Version))?(.(Extended|Uncensored|Remastered|Unrated|Uncut|Open.?Matte|IMAX|Fan.?Edit))?|((Uncensored|Remastered|Unrated|Uncut|Open?.Matte|IMAX|Fan.?Edit|Restored|((2|3|4)in1))))))\b\)?", RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexDefaults.Timeout);
@@ -25,8 +34,6 @@ namespace NzbDrone.Core.Parser
         private static readonly Regex HardcodedSubsRegex = new Regex(@"\b((?<hcsub>(\w+(?<!SOFT|MULTI|HORRIBLE)SUBS?))|(?<hc>(HC|SUBBED)))\b",
                                                         RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace,
                                                         RegexDefaults.Timeout);
-
-        private static readonly RegexReplace[] PreSubstitutionRegex = Array.Empty<RegexReplace>();
 
         private static readonly Regex[] ReportTitleRegex = new[]
         {
@@ -257,10 +264,6 @@ namespace NzbDrone.Core.Parser
                                                                    RegexOptions.IgnoreCase | RegexOptions.Compiled,
                                                                    RegexDefaults.Timeout);
 
-        private static readonly Regex YearInTitleRegex = new Regex(@"^(?<title>.+?)(?:\W|_.)?[\(\[]?(?<year>\d{4})[\]\)]?",
-                                                                RegexOptions.IgnoreCase | RegexOptions.Compiled,
-                                                                RegexDefaults.Timeout);
-
         private static readonly Regex SpecialCharRegex = new Regex(@"(\&|\:|\\|\/)+", RegexOptions.Compiled, RegexDefaults.Timeout);
         private static readonly Regex PunctuationRegex = new Regex(@"[^\w\s]", RegexOptions.Compiled, RegexDefaults.Timeout);
         private static readonly Regex ArticleWordRegex = new Regex(@"^(a|an|the)\s", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout);
@@ -276,13 +279,8 @@ namespace NzbDrone.Core.Parser
         // Strips domain suffixes (Site.com -> Site) anywhere in the studio token, not just the trailing one.
         private static readonly Regex StudioDomainSuffixRegex = new Regex(@"\.(com|net|org|tv|xxx|co|io)\b", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout);
 
-        private static readonly string[] Numbers = new[] { "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine" };
-        private static Dictionary<string, string> _umlautMappings = new Dictionary<string, string>
-        {
-            { "ö", "oe" },
-            { "ä", "ae" },
-            { "ü", "ue" },
-        };
+        // The brands a cross-posted scene is listed under are separated by one of these.
+        private static readonly char[] StudioBrandSeparators = { '/', '|' };
 
         public static ParsedMovieInfo ParseMoviePath(string path)
         {
@@ -345,7 +343,6 @@ namespace NzbDrone.Core.Parser
 
                 var simpleTitle = SimpleTitleRegex.Replace(releaseTitle);
 
-                // TODO: Quick fix stripping [url] - prefixes.
                 simpleTitle = ParserCommon.WebsitePrefixRegex.Replace(simpleTitle);
                 simpleTitle = ParserCommon.WebsitePostfixRegex.Replace(simpleTitle);
 
@@ -477,9 +474,9 @@ namespace NzbDrone.Core.Parser
 
                 // If we got here, it means we were unable to parse the title with any of the regexes. Let's do some final checks before giving up.
                 var m = StashIdRegex.Match(releaseTitle);
-                if (m != null && m.Groups["stashid"].Success)
+                if (m != null && m.Groups[StashIdConst].Success)
                 {
-                    var stashIdValue = m.Groups["stashid"].Value;
+                    var stashIdValue = m.Groups[StashIdConst].Value;
                     var simpleReleaseTitle = SimpleReleaseTitleRegex.Replace(releaseTitle, string.Empty);
                     var result = new ParsedMovieInfo
                     {
@@ -512,15 +509,9 @@ namespace NzbDrone.Core.Parser
             }
 
             var match = ReportImdbId.Match(title);
-            if (match.Success)
+            if (match.Success && (match.Groups[ImdbIdConst].Value != null && (match.Groups[ImdbIdConst].Length == 9 || match.Groups[ImdbIdConst].Length == 10)))
             {
-                if (match.Groups["imdbid"].Value != null)
-                {
-                    if (match.Groups["imdbid"].Length == 9 || match.Groups["imdbid"].Length == 10)
-                    {
-                        return match.Groups["imdbid"].Value;
-                    }
-                }
+                return match.Groups[ImdbIdConst].Value;
             }
 
             return "";
@@ -534,12 +525,9 @@ namespace NzbDrone.Core.Parser
             }
 
             var match = ReportTmdbId.Match(title);
-            if (match.Success)
+            if (match.Success && match.Groups[TmdbIdConst].Value != null)
             {
-                if (match.Groups["tmdbid"].Value != null)
-                {
-                    return int.TryParse(match.Groups["tmdbid"].Value, out var tmdbId) ? tmdbId : 0;
-                }
+                return int.TryParse(match.Groups[TmdbIdConst].Value, out var tmdbId) ? tmdbId : 0;
             }
 
             return 0;
@@ -554,10 +542,10 @@ namespace NzbDrone.Core.Parser
 
             var editionMatch = ReportEditionRegex.Match(languageTitle);
 
-            if (editionMatch.Success && editionMatch.Groups["edition"].Value != null &&
-                editionMatch.Groups["edition"].Value.IsNotNullOrWhiteSpace())
+            if (editionMatch.Success && editionMatch.Groups[EditionConst].Value != null &&
+                editionMatch.Groups[EditionConst].Value.IsNotNullOrWhiteSpace())
             {
-                return editionMatch.Groups["edition"].Value.Replace(".", " ");
+                return editionMatch.Groups[EditionConst].Value.Replace(".", " ");
             }
 
             return "";
@@ -697,8 +685,6 @@ namespace NzbDrone.Core.Parser
 
                     if (result != null)
                     {
-                        var simpleReleaseTitle = SimpleReleaseTitleRegex.Replace(title, string.Empty);
-
                         title = result.PrimaryMovieTitle;
                     }
                 }
@@ -844,9 +830,41 @@ namespace NzbDrone.Core.Parser
             return null;
         }
 
+        /// <summary>Decides whether a dot separated part of a movie name is one letter of an acronym.</summary>
+        /// <param name="part">The part being read.</param>
+        /// <param name="nextPart">The part after it, or an empty string once the last part is reached.</param>
+        /// <param name="previousAcronym">Whether the part before it was read as an acronym letter.</param>
+        /// <param name="index">The position of this part within the name.</param>
+        /// <param name="partCount">How many parts the name was split into.</param>
+        /// <remarks>
+        /// A single letter belongs to an acronym, except a trailing one that no acronym has already
+        /// started, and one followed by a lone digit, which reads as a number instead. 'A' and 'Dr' are
+        /// the words short enough to be mistaken for a letter, so each is decided on its own terms.
+        /// </remarks>
+        /// <returns>True when the part should be kept dotted as part of an acronym.</returns>
+        private static bool IsAcronymPart(string part, string nextPart, bool previousAcronym, int index, int partCount)
+        {
+            var lowerPart = part.ToLower();
+
+            if (lowerPart == "a")
+            {
+                return previousAcronym || nextPart.Length == 1;
+            }
+
+            if (lowerPart == "dr")
+            {
+                return true;
+            }
+
+            return part.Length == 1 &&
+                   !int.TryParse(part, out _) &&
+                   (previousAcronym || index < partCount - 1) &&
+                   (previousAcronym || nextPart.Length != 1 || !int.TryParse(nextPart, out _));
+        }
+
         private static ParsedMovieInfo ParseMatchCollection(MatchCollection matchCollection, string releaseTitle)
         {
-            if (!matchCollection[0].Groups["airyear"].Success && !matchCollection[0].Groups["code"].Success && !matchCollection[0].Groups["episode"].Success && !matchCollection[0].Groups["stashid"].Success)
+            if (!matchCollection[0].Groups[AirYearConst].Success && !matchCollection[0].Groups[CodeConst].Success && !matchCollection[0].Groups[EpisodeConst].Success && !matchCollection[0].Groups[StashIdConst].Success)
             {
                 if (!matchCollection[0].Groups["title"].Success || matchCollection[0].Groups["title"].Value == "(")
                 {
@@ -858,7 +876,8 @@ namespace NzbDrone.Core.Parser
                 movieName = RequestInfoRegex.Replace(movieName, "").Trim(' ');
 
                 var parts = movieName.Split('.');
-                movieName = "";
+                var movieNameSb = new StringBuilder();
+
                 var n = 0;
                 var previousAcronym = false;
                 var nextPart = "";
@@ -873,37 +892,27 @@ namespace NzbDrone.Core.Parser
                         nextPart = "";
                     }
 
-                    if (part.Length == 1 && part.ToLower() != "a" && !int.TryParse(part, out _) &&
-                        (previousAcronym || n < parts.Length - 1) &&
-                        (previousAcronym || nextPart.Length != 1 || !int.TryParse(nextPart, out _)))
+                    if (IsAcronymPart(part, nextPart, previousAcronym, n, parts.Length))
                     {
-                        movieName += part + ".";
-                        previousAcronym = true;
-                    }
-                    else if (part.ToLower() == "a" && (previousAcronym || nextPart.Length == 1))
-                    {
-                        movieName += part + ".";
-                        previousAcronym = true;
-                    }
-                    else if (part.ToLower() == "dr")
-                    {
-                        movieName += part + ".";
+                        movieNameSb.Append(part).Append('.');
                         previousAcronym = true;
                     }
                     else
                     {
                         if (previousAcronym)
                         {
-                            movieName += " ";
+                            movieNameSb.Append(' ');
                             previousAcronym = false;
                         }
 
-                        movieName += part + " ";
+                        movieNameSb.Append(part);
+                        movieNameSb.Append(' ');
                     }
 
                     n++;
                 }
 
+                movieName = movieNameSb.ToString();
                 movieName = movieName.Trim(' ').TrimEnd("XXX").Trim(' ');
 
                 int.TryParse(matchCollection[0].Groups["year"].Value, out var releaseYear);
@@ -912,9 +921,9 @@ namespace NzbDrone.Core.Parser
 
                 result = new ParsedMovieInfo { Year = releaseYear };
 
-                if (matchCollection[0].Groups["edition"].Success)
+                if (matchCollection[0].Groups[EditionConst].Success)
                 {
-                    result.Edition = matchCollection[0].Groups["edition"].Value.Replace(".", " ");
+                    result.Edition = matchCollection[0].Groups[EditionConst].Value.Replace(".", " ");
                 }
 
                 var movieTitles = new List<string>();
@@ -942,9 +951,9 @@ namespace NzbDrone.Core.Parser
                     ReleaseTitle = releaseTitle,
                 };
 
-                if (matchCollection[0].Groups["airyear"].Success)
+                if (matchCollection[0].Groups[AirYearConst].Success)
                 {
-                    int.TryParse(matchCollection[0].Groups["airyear"].Value, out var airYear);
+                    int.TryParse(matchCollection[0].Groups[AirYearConst].Value, out var airYear);
 
                     if (airYear <= 99)
                     {
@@ -974,11 +983,11 @@ namespace NzbDrone.Core.Parser
                         airmonth = tempDay;
                     }
 
-                    DateTime airDate;
+                    DateOnly airDate;
 
                     try
                     {
-                        airDate = new DateTime(airYear, airmonth, airday);
+                        airDate = new DateOnly(airYear, airmonth, airday);
                     }
                     catch (Exception)
                     {
@@ -986,13 +995,13 @@ namespace NzbDrone.Core.Parser
                     }
 
                     // Check if episode is in the future (most likely a parse error)
-                    if (airDate > DateTime.Now.AddDays(1).Date)
+                    if (airDate > DateOnly.FromDateTime(DateTime.Now.AddDays(1).Date))
                     {
                         throw new InvalidDateException("Invalid date found: {0}", airDate);
                     }
 
                     // If the parsed air date is before 1970 and the title year wasn't matched (not a match for the Plex DVR format) throw an error
-                    if (airDate < new DateTime(1970, 1, 1) && matchCollection[0].Groups["titleyear"].Value.IsNullOrWhiteSpace())
+                    if (airDate < new DateOnly(1970, 1, 1) && matchCollection[0].Groups[TitleYearConst].Value.IsNullOrWhiteSpace())
                     {
                         throw new InvalidDateException("Invalid date found: {0}", airDate);
                     }
@@ -1004,7 +1013,7 @@ namespace NzbDrone.Core.Parser
                 // "[SiteA.com / SiteB.com]" or "[SiteC.com / SiteD.com]". Take the
                 // first (most specific) brand and strip domain suffixes so the token resolves to a known
                 // studio. Previously this produced e.g. "SiteA com / SiteB", which matched nothing.
-                var studioTitleToken = matchCollection[0].Groups["studiotitle"].Value.Split(new[] { '/', '|' })[0];
+                var studioTitleToken = matchCollection[0].Groups["studiotitle"].Value.Split(StudioBrandSeparators)[0];
                 studioTitleToken = StudioDomainSuffixRegex.Replace(studioTitleToken, string.Empty);
 
                 var studioTitle = studioTitleToken.Replace('.', ' ').Replace('_', ' ');
@@ -1014,16 +1023,16 @@ namespace NzbDrone.Core.Parser
 
                 if (result.ReleaseDate.IsNotNullOrWhiteSpace())
                 {
-                    lastSeasonEpisodeStringIndex = Math.Max(lastSeasonEpisodeStringIndex, matchCollection[0].Groups["airyear"].EndIndex());
+                    lastSeasonEpisodeStringIndex = Math.Max(lastSeasonEpisodeStringIndex, matchCollection[0].Groups[AirYearConst].EndIndex());
                     lastSeasonEpisodeStringIndex = Math.Max(lastSeasonEpisodeStringIndex, matchCollection[0].Groups["airmonth"].EndIndex());
                     lastSeasonEpisodeStringIndex = Math.Max(lastSeasonEpisodeStringIndex, matchCollection[0].Groups["airday"].EndIndex());
                 }
 
-                if (matchCollection[0].Groups["episode"].Success)
+                if (matchCollection[0].Groups[EpisodeConst].Success)
                 {
-                    result.Episode = matchCollection[0].Groups["episode"].Value;
+                    result.Episode = matchCollection[0].Groups[EpisodeConst].Value;
 
-                    lastSeasonEpisodeStringIndex = Math.Max(lastSeasonEpisodeStringIndex, matchCollection[0].Groups["episode"].EndIndex());
+                    lastSeasonEpisodeStringIndex = Math.Max(lastSeasonEpisodeStringIndex, matchCollection[0].Groups[EpisodeConst].EndIndex());
                 }
 
                 if (matchCollection[0].Groups["releasetoken"].Success)
@@ -1051,16 +1060,16 @@ namespace NzbDrone.Core.Parser
                 }
 
                 var m = StashIdRegex.Match(result.ReleaseTokens);
-                if (m != null && m.Groups["stashid"].Success)
+                if (m != null && m.Groups[StashIdConst].Success)
                 {
-                    result.StashId = m.Groups["stashid"].Value;
+                    result.StashId = m.Groups[StashIdConst].Value;
                     result.ReleaseTokens = result.ReleaseTokens.Replace(result.StashId, "");
                 }
 
                 result.Code = string.Empty;
-                if (matchCollection[0].Groups["code"].Success)
+                if (matchCollection[0].Groups[CodeConst].Success)
                 {
-                    result.Code = matchCollection[0].Groups["code"].Value;
+                    result.Code = matchCollection[0].Groups[CodeConst].Value;
                 }
 
                 var firstPerformer = matchCollection[0].Groups["performer"].Value.Replace('.', ' ');
