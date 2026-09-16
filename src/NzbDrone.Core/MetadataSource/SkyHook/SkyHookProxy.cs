@@ -815,9 +815,9 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             }
 
             title = FormatSearchTerm(title, itemType, movieInfo);
-            var lowerTitle = title.ToLower();
+            var lowerTitle = title.ToLowerInvariant();
 
-            if (lowerTitle.StartsWith("tmdb:") || lowerTitle.StartsWith("tmdbid:") || lowerTitle.StartsWith("imdb:") || lowerTitle.StartsWith("imdbid:") || lowerTitle.StartsWith(StashPrefixConst) || lowerTitle.StartsWith(StashIdPrefixConst) || lowerTitle.StartsWith("https:"))
+            if (lowerTitle.StartsWith("tmdb:", StringComparison.Ordinal) || lowerTitle.StartsWith("tmdbid:", StringComparison.Ordinal) || lowerTitle.StartsWith("imdb:", StringComparison.Ordinal) || lowerTitle.StartsWith("imdbid:", StringComparison.Ordinal) || lowerTitle.StartsWith(StashPrefixConst, StringComparison.Ordinal) || lowerTitle.StartsWith(StashIdPrefixConst, StringComparison.Ordinal) || lowerTitle.StartsWith("https:", StringComparison.Ordinal))
             {
                 _logger.Debug($"Searching for {itemType.ToString()} - {title}");
                 var movies = itemType == ItemType.Movie ? SearchForNewMovie(title) : SearchForNewScene(title);
@@ -875,7 +875,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                     title = "tmdb:" + match.Groups["tmdbid"].Value;
                 }
 
-                var lowerTitle = title.ToLower();
+                var lowerTitle = title.ToLowerInvariant();
 
                 lowerTitle = lowerTitle.Replace(".", "");
 
@@ -890,7 +890,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                     // Parser found something interesting!
                     if (parserResult.PrimaryMovieTitle.IsNotNullOrWhiteSpace())
                     {
-                        parserTitle = parserResult.PrimaryMovieTitle.ToLower().Replace(".", " "); // TODO Update so not every period gets replaced (e.g. R.I.P.D.)
+                        parserTitle = parserResult.PrimaryMovieTitle.ToLowerInvariant().Replace(".", " "); // TODO Update so not every period gets replaced (e.g. R.I.P.D.)
                     }
 
                     if (parserResult.Year > 1800)
@@ -927,7 +927,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
                 parserTitle = StripTrailingTheFromTitle(parserTitle);
 
-                if (lowerTitle.StartsWith("imdb:") || lowerTitle.StartsWith("imdbid:"))
+                if (lowerTitle.StartsWith("imdb:", StringComparison.Ordinal) || lowerTitle.StartsWith("imdbid:", StringComparison.Ordinal))
                 {
                     var slug = lowerTitle.Split(':')[1].Trim();
 
@@ -949,7 +949,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                     }
                 }
 
-                if (lowerTitle.StartsWith("tmdb:") || lowerTitle.StartsWith("tmdbid:"))
+                if (lowerTitle.StartsWith("tmdb:", StringComparison.Ordinal) || lowerTitle.StartsWith("tmdbid:", StringComparison.Ordinal))
                 {
                     var slug = lowerTitle.Split(':')[1].Trim();
 
@@ -1020,7 +1020,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
         {
             try
             {
-                var lowerTitle = title.ToLower();
+                var lowerTitle = title.ToLowerInvariant();
 
                 lowerTitle = lowerTitle.Replace(".", "");
 
@@ -1034,7 +1034,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                     _logger.Debug($"Search based on TPDB URL.  Re-writing as {lowerTitle}");
                 }
 
-                if (lowerTitle.StartsWith("tpdb:") || lowerTitle.StartsWith("tpdbid:"))
+                if (lowerTitle.StartsWith("tpdb:", StringComparison.Ordinal) || lowerTitle.StartsWith("tpdbid:", StringComparison.Ordinal))
                 {
                     var slug = lowerTitle.Split(':')[1].Trim();
 
@@ -1066,7 +1066,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                 if (parserResult != null && parserResult.PrimaryMovieTitle.IsNotNullOrWhiteSpace() && parserResult.PrimaryMovieTitle != title)
                 {
                     // Parser found something interesting!
-                    parserTitle = parserResult.PrimaryMovieTitle.ToLower().Replace(".", " "); // TODO Update so not every period gets replaced (e.g. R.I.P.D.)
+                    parserTitle = parserResult.PrimaryMovieTitle.ToLowerInvariant().Replace(".", " "); // TODO Update so not every period gets replaced (e.g. R.I.P.D.)
                     if (parserResult.Year > 1800)
                     {
                         yearTerm = parserResult.Year.ToString();
@@ -1129,7 +1129,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
         {
             try
             {
-                var lowerTitle = title.ToLower();
+                var lowerTitle = title.ToLowerInvariant();
 
                 lowerTitle = lowerTitle.Replace(".", "");
 
@@ -1143,7 +1143,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                     _logger.Debug($"Search based on StashDB URL.  Re-writing as {lowerTitle}");
                 }
 
-                if (lowerTitle.StartsWith(StashPrefixConst) || lowerTitle.StartsWith(StashIdPrefixConst))
+                if (lowerTitle.StartsWith(StashPrefixConst, StringComparison.Ordinal) || lowerTitle.StartsWith(StashIdPrefixConst, StringComparison.Ordinal))
                 {
                     var slug = lowerTitle.Split(':')[1].Trim();
 
@@ -1210,7 +1210,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
         {
             try
             {
-                var lowerTitle = title.ToLower();
+                var lowerTitle = title.ToLowerInvariant();
 
                 lowerTitle = lowerTitle.Replace(".", "");
 
@@ -1224,7 +1224,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                     _logger.Debug($"Search based on StashDB URL.  Re-writing as {lowerTitle}");
                 }
 
-                if (lowerTitle.StartsWith(StashPrefixConst) || lowerTitle.StartsWith(StashIdPrefixConst))
+                if (lowerTitle.StartsWith(StashPrefixConst, StringComparison.Ordinal) || lowerTitle.StartsWith(StashIdPrefixConst, StringComparison.Ordinal))
                 {
                     var slug = lowerTitle.Split(':')[1].Trim();
 
@@ -1540,6 +1540,27 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             return mappedRatings;
         }
 
+        private static MovieCollection MapCollection(CollectionResource collectionResource)
+        {
+            if (collectionResource == null)
+            {
+                throw new ArgumentNullException(nameof(collectionResource));
+            }
+
+            var collection = new MovieCollection
+            {
+                TmdbId = collectionResource.ForeignIds.TmdbId,
+                Title = collectionResource.Name,
+                Overview = collectionResource.Overview,
+                CleanTitle = collectionResource.Name.CleanMovieTitle(),
+                SortTitle = Parser.Parser.NormalizeTitle(collectionResource.Name),
+                Images = collectionResource.Images?.Select(MapImage).ToList() ?? new List<MediaCover.MediaCover>(),
+                Movies = collectionResource.Parts?.Select(x => MapMovie(x)).ToList() ?? new List<MovieMetadata>()
+            };
+
+            return collection;
+        }
+
         private static MediaCover.MediaCover MapImage(ImageResource imageResource)
         {
             if (imageResource == null)
@@ -1556,7 +1577,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
         private static MediaCoverTypes MapCoverType(string coverType)
         {
-            switch (coverType.ToLower())
+            switch (coverType.ToLowerInvariant())
             {
                 case "poster":
                     return MediaCoverTypes.Poster;
@@ -1575,11 +1596,11 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
         private static string StripTrailingTheFromTitle(string title)
         {
-            if (title.EndsWith(",the"))
+            if (title.EndsWith(",the", StringComparison.Ordinal))
             {
                 title = title.Substring(0, title.Length - 4);
             }
-            else if (title.EndsWith(", the"))
+            else if (title.EndsWith(", the", StringComparison.Ordinal))
             {
                 title = title.Substring(0, title.Length - 5);
             }
@@ -1670,7 +1691,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
         {
             try
             {
-                var lowerTitle = title.ToLower();
+                var lowerTitle = title.ToLowerInvariant();
 
                 lowerTitle = lowerTitle.Replace(".", "");
 
@@ -1684,7 +1705,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                     _logger.Debug($"Search based on StashDB URL.  Re-writing as {lowerTitle}");
                 }
 
-                if (lowerTitle.StartsWith(StashPrefixConst) || lowerTitle.StartsWith(StashIdPrefixConst))
+                if (lowerTitle.StartsWith(StashPrefixConst, StringComparison.Ordinal) || lowerTitle.StartsWith(StashIdPrefixConst, StringComparison.Ordinal))
                 {
                     var slug = lowerTitle.Split(':')[1].Trim();
 
@@ -1827,27 +1848,6 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             }
 
             return movie;
-        }
-
-        private MovieCollection MapCollection(CollectionResource collectionResource)
-        {
-            if (collectionResource == null)
-            {
-                throw new ArgumentNullException(nameof(collectionResource));
-            }
-
-            var collection = new MovieCollection
-            {
-                TmdbId = collectionResource.ForeignIds.TmdbId,
-                Title = collectionResource.Name,
-                Overview = collectionResource.Overview,
-                CleanTitle = collectionResource.Name.CleanMovieTitle(),
-                SortTitle = Parser.Parser.NormalizeTitle(collectionResource.Name),
-                Images = collectionResource.Images?.Select(MapImage).ToList() ?? new List<MediaCover.MediaCover>(),
-                Movies = collectionResource.Parts?.Select(x => MapMovie(x)).ToList() ?? new List<MovieMetadata>()
-            };
-
-            return collection;
         }
 
         private Performer MapPerformer(PerformerResource performer)

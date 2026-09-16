@@ -491,7 +491,7 @@ namespace NzbDrone.Core.Parser
             }
             catch (Exception e)
             {
-                if (!title.ToLower().Contains("password") && !title.ToLower().Contains("yenc"))
+                if (!title.Contains("password", StringComparison.OrdinalIgnoreCase) && !title.Contains("yenc", StringComparison.OrdinalIgnoreCase))
                 {
                     Logger.Error(e, "An error has occurred while trying to parse {0}", title);
                 }
@@ -732,7 +732,7 @@ namespace NzbDrone.Core.Parser
             title = DuplicateSpacesRegex.Replace(title, " ");
 
             return title.Trim()
-                        .ToLower();
+                        .ToLowerInvariant();
         }
 
         public static string AlternateTitle(this string title)
@@ -768,7 +768,7 @@ namespace NzbDrone.Core.Parser
             title = DuplicateSpacesRegex.Replace(title, " ");
             title = SpecialCharRegex.Replace(title, string.Empty);
 
-            return title.Trim().ToLower();
+            return title.Trim().ToLowerInvariant();
         }
 
         public static string SimplifyReleaseTitle(this string title)
@@ -798,7 +798,7 @@ namespace NzbDrone.Core.Parser
                 return string.Empty;
             }
 
-            if (title.EndsWith(textToTrim))
+            if (title.EndsWith(textToTrim, StringComparison.Ordinal))
             {
                 title = title.Remove(title.Length - textToTrim.Length);
             }
@@ -844,7 +844,7 @@ namespace NzbDrone.Core.Parser
         /// <returns>True when the part should be kept dotted as part of an acronym.</returns>
         private static bool IsAcronymPart(string part, string nextPart, bool previousAcronym, int index, int partCount)
         {
-            var lowerPart = part.ToLower();
+            var lowerPart = part.ToLowerInvariant();
 
             if (lowerPart == "a")
             {
@@ -953,7 +953,13 @@ namespace NzbDrone.Core.Parser
 
                 if (matchCollection[0].Groups[AirYearConst].Success)
                 {
-                    int.TryParse(matchCollection[0].Groups[AirYearConst].Value, out var airYear);
+                    // Every airyear group matches digits only, so this cannot fail today. Left explicit
+                    // because the alternative is a silent year 0, which ToFourDigitYear turns into 2000
+                    // and DateOnly then accepts, importing a scene under a year nothing parsed.
+                    if (!int.TryParse(matchCollection[0].Groups[AirYearConst].Value, out var airYear))
+                    {
+                        throw new InvalidDateException("Invalid year found: {0}", matchCollection[0].Groups[AirYearConst].Value);
+                    }
 
                     if (airYear <= 99)
                     {
@@ -1084,7 +1090,7 @@ namespace NzbDrone.Core.Parser
 
         private static bool ValidateBeforeParsing(string title)
         {
-            if (title.ToLower().Contains("password") && title.ToLower().Contains("yenc"))
+            if (title.Contains("password", StringComparison.OrdinalIgnoreCase) && title.Contains("yenc", StringComparison.OrdinalIgnoreCase))
             {
                 Logger.Debug("");
                 return false;
