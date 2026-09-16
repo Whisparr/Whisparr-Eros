@@ -34,106 +34,6 @@ namespace NzbDrone.Core.Test.MetadataSource.SkyHook
             GivenStudioSearchReturns();
         }
 
-        private void GivenSearchReturns(params MovieResource[] scenes)
-        {
-            Mocker.GetMock<IHttpClient>()
-                .Setup(v => v.Get<List<MovieResource>>(It.IsAny<HttpRequest>()))
-                .Returns((HttpRequest request) =>
-                {
-                    _capturedRequest = request;
-
-                    var response = new HttpResponse(request, new HttpHeader(), scenes.ToList().ToJson(), HttpStatusCode.OK);
-
-                    return new HttpResponse<List<MovieResource>>(response);
-                });
-        }
-
-        private void GivenStudioInLibrary(string foreignId)
-        {
-            Mocker.GetMock<IStudioService>()
-                .Setup(v => v.FindByTitle(It.IsAny<string>()))
-                .Returns(new Studio { Title = "Brazzers Exxtra", CleanTitle = "brazzersexxtra", ForeignId = foreignId });
-        }
-
-        private void GivenStudioSearchReturns(params StudioResource[] studios)
-        {
-            Mocker.GetMock<IHttpClient>()
-                .Setup(v => v.Get<List<StudioResource>>(It.IsAny<HttpRequest>()))
-                .Returns((HttpRequest request) =>
-                {
-                    _capturedStudioRequest = request;
-
-                    var response = new HttpResponse(request, new HttpHeader(), studios.ToList().ToJson(), HttpStatusCode.OK);
-
-                    return new HttpResponse<List<StudioResource>>(response);
-                });
-        }
-
-        private void GivenStudioSearchThrows()
-        {
-            Mocker.GetMock<IHttpClient>()
-                .Setup(v => v.Get<List<StudioResource>>(It.IsAny<HttpRequest>()))
-                .Throws(new HttpException(new HttpRequest("http://localhost"), new HttpResponse(new HttpRequest("http://localhost"), new HttpHeader(), "", HttpStatusCode.InternalServerError)));
-        }
-
-        private static StudioResource Studio(string title, string studioId)
-        {
-            return new StudioResource
-            {
-                Title = title,
-                ForeignIds = new ExternalIdResource { StashId = studioId },
-                Images = new List<ImageResource>()
-            };
-        }
-
-        private static MovieResource Scene(string stashId, string title, string studioTitle, string studioId, string releaseDate)
-        {
-            return new MovieResource
-            {
-                ItemType = ItemType.Scene,
-                ForeignIds = new ExternalIdResource { StashId = stashId },
-                Title = title,
-                ReleaseDate = releaseDate,
-                Images = new List<ImageResource>(),
-                Genres = new List<string>(),
-                Studio = new StudioResource
-                {
-                    Title = studioTitle,
-                    ForeignIds = new ExternalIdResource { StashId = studioId }
-                }
-            };
-        }
-
-        private List<string> SearchTitles(string term, ItemType itemType = ItemType.Scene)
-        {
-            return Subject.SearchForNewEntity(term, itemType)
-                .Cast<Movie>()
-                .Select(m => m.MovieMetadata.Value.Title)
-                .ToList();
-        }
-
-        private Dictionary<string, string> QueryParams()
-        {
-            _capturedRequest.Should().NotBeNull();
-
-            return QueryParams(_capturedRequest);
-        }
-
-        private Dictionary<string, string> StudioQueryParams()
-        {
-            _capturedStudioRequest.Should().NotBeNull();
-
-            return QueryParams(_capturedStudioRequest);
-        }
-
-        private static Dictionary<string, string> QueryParams(HttpRequest request)
-        {
-            return request.Url.Query
-                .Split('&')
-                .Select(p => p.Split('='))
-                .ToDictionary(p => p[0], p => WebUtility.UrlDecode(p[1]));
-        }
-
         [Test]
         public void should_search_a_library_studio_by_id_and_date()
         {
@@ -322,6 +222,106 @@ namespace NzbDrone.Core.Test.MetadataSource.SkyHook
             SearchTitles(FileName, ItemType.Movie);
 
             Mocker.GetMock<IStudioService>().Verify(v => v.FindByTitle(It.IsAny<string>()), Times.Never());
+        }
+
+        private static StudioResource Studio(string title, string studioId)
+        {
+            return new StudioResource
+            {
+                Title = title,
+                ForeignIds = new ExternalIdResource { StashId = studioId },
+                Images = new List<ImageResource>()
+            };
+        }
+
+        private static MovieResource Scene(string stashId, string title, string studioTitle, string studioId, string releaseDate)
+        {
+            return new MovieResource
+            {
+                ItemType = ItemType.Scene,
+                ForeignIds = new ExternalIdResource { StashId = stashId },
+                Title = title,
+                ReleaseDate = releaseDate,
+                Images = new List<ImageResource>(),
+                Genres = new List<string>(),
+                Studio = new StudioResource
+                {
+                    Title = studioTitle,
+                    ForeignIds = new ExternalIdResource { StashId = studioId }
+                }
+            };
+        }
+
+        private static Dictionary<string, string> QueryParams(HttpRequest request)
+        {
+            return request.Url.Query
+                .Split('&')
+                .Select(p => p.Split('='))
+                .ToDictionary(p => p[0], p => WebUtility.UrlDecode(p[1]));
+        }
+
+        private void GivenSearchReturns(params MovieResource[] scenes)
+        {
+            Mocker.GetMock<IHttpClient>()
+                .Setup(v => v.Get<List<MovieResource>>(It.IsAny<HttpRequest>()))
+                .Returns((HttpRequest request) =>
+                {
+                    _capturedRequest = request;
+
+                    var response = new HttpResponse(request, new HttpHeader(), scenes.ToList().ToJson(), HttpStatusCode.OK);
+
+                    return new HttpResponse<List<MovieResource>>(response);
+                });
+        }
+
+        private void GivenStudioInLibrary(string foreignId)
+        {
+            Mocker.GetMock<IStudioService>()
+                .Setup(v => v.FindByTitle(It.IsAny<string>()))
+                .Returns(new Studio { Title = "Brazzers Exxtra", CleanTitle = "brazzersexxtra", ForeignId = foreignId });
+        }
+
+        private void GivenStudioSearchReturns(params StudioResource[] studios)
+        {
+            Mocker.GetMock<IHttpClient>()
+                .Setup(v => v.Get<List<StudioResource>>(It.IsAny<HttpRequest>()))
+                .Returns((HttpRequest request) =>
+                {
+                    _capturedStudioRequest = request;
+
+                    var response = new HttpResponse(request, new HttpHeader(), studios.ToList().ToJson(), HttpStatusCode.OK);
+
+                    return new HttpResponse<List<StudioResource>>(response);
+                });
+        }
+
+        private void GivenStudioSearchThrows()
+        {
+            Mocker.GetMock<IHttpClient>()
+                .Setup(v => v.Get<List<StudioResource>>(It.IsAny<HttpRequest>()))
+                .Throws(new HttpException(new HttpRequest("http://localhost"), new HttpResponse(new HttpRequest("http://localhost"), new HttpHeader(), "", HttpStatusCode.InternalServerError)));
+        }
+
+        private List<string> SearchTitles(string term, ItemType itemType = ItemType.Scene)
+        {
+            return Subject.SearchForNewEntity(term, itemType)
+                .Cast<Movie>()
+                .Select(m => m.MovieMetadata.Value.Title)
+                .ToList();
+        }
+
+        private Dictionary<string, string> QueryParams()
+        {
+            _capturedRequest.Should().NotBeNull();
+
+            return QueryParams(_capturedRequest);
+        }
+
+        private Dictionary<string, string> StudioQueryParams()
+        {
+            _capturedStudioRequest.Should().NotBeNull();
+
+            return QueryParams(_capturedStudioRequest);
         }
     }
 }
