@@ -1181,7 +1181,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             }
             catch (UnexpectedHtmlContentException ex)
             {
-                _logger.Warn(ex, "Search for '{0}' failed. StashDb returned a HTML Response.", title);
+                _logger.Warn(ex, "Search for '{0}' failed. StashDb returned a HTML Response.", title.ForLog());
                 return new List<Performer>();
             }
             catch (HttpException ex)
@@ -1196,7 +1196,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             }
             catch (JsonException ex)
             {
-                _logger.Warn(ex, "Search for '{0}' failed. StashDb returned a JSON response.", title);
+                _logger.Warn(ex, "Search for '{0}' failed. StashDb returned a JSON response.", title.ForLog());
                 return new List<Performer>();
             }
             catch (Exception ex)
@@ -1262,7 +1262,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             }
             catch (UnexpectedHtmlContentException ex)
             {
-                _logger.Warn(ex, "Search for '{0}' failed. StashDb returned a HTML Response.", title);
+                _logger.Warn(ex, "Search for '{0}' failed. StashDb returned a HTML Response.", title.ForLog());
                 return new List<Studio>();
             }
             catch (HttpException ex)
@@ -1277,7 +1277,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             }
             catch (JsonException ex)
             {
-                _logger.Warn(ex, "Search for '{0}' failed. StashDb returned a JSON response.", title);
+                _logger.Warn(ex, "Search for '{0}' failed. StashDb returned a JSON response.", title.ForLog());
                 return new List<Studio>();
             }
             catch (Exception ex)
@@ -1745,7 +1745,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             }
             catch (UnexpectedHtmlContentException ex)
             {
-                _logger.Warn(ex, "Search for '{0}' failed. StashDb returned a HTML Response.", title);
+                _logger.Warn(ex, "Search for '{0}' failed. StashDb returned a HTML Response.", title.ForLog());
                 return new List<Movie>();
             }
             catch (HttpException ex)
@@ -1760,7 +1760,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             }
             catch (JsonException ex)
             {
-                _logger.Warn(ex, "Search for '{0}' failed. StashDb returned a JSON response.", title);
+                _logger.Warn(ex, "Search for '{0}' failed. StashDb returned a JSON response.", title.ForLog());
                 return new List<Movie>();
             }
             catch (Exception ex)
