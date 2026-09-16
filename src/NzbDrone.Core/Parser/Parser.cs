@@ -240,6 +240,15 @@ namespace NzbDrone.Core.Parser
 
         private static readonly Regex StashIdRegex = new Regex(@"(?<stashid>.{8}-.{4}-.{4}-.{4}-.{12})", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout);
 
+        // Studio names arrive from a release as one run-together token. Split it back into words at a
+        // lower-to-upper boundary, and at the last capital of a run followed by a lower case letter, so
+        // an acronym stays whole: SweetSinner -> Sweet Sinner, BackdoorPOV -> Backdoor POV.
+        private static readonly Regex StudioTitleWordBoundaryRegex = new Regex(@"(?<=[a-z0-9])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])",
+                                                                               RegexOptions.Compiled,
+                                                                               RegexDefaults.Timeout);
+
+        private static readonly Regex StudioTitleWhitespaceRegex = new Regex(@"\s+", RegexOptions.Compiled, RegexDefaults.Timeout);
+
         private static readonly Regex SimpleReleaseTitleRegex = new Regex(@"\s*(?:[<>?*|])", RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexDefaults.Timeout);
 
         // Valid TLDs http://data.iana.org/TLD/tlds-alpha-by-domain.txt
@@ -630,6 +639,22 @@ namespace NzbDrone.Core.Parser
             }
 
             return string.Empty;
+        }
+
+        /// <summary>Restores the word breaks in a studio name parsed from a release.</summary>
+        /// <remarks>
+        /// The metadata search matches on whole words, so the run-together form a release carries
+        /// ('SweetSinner') finds nothing and has to be expanded ('Sweet Sinner') before it is sent.
+        /// A name that already has its spaces is returned unchanged.
+        /// </remarks>
+        public static string ExpandStudioTitle(this string title)
+        {
+            if (title.IsNullOrWhiteSpace())
+            {
+                return string.Empty;
+            }
+
+            return StudioTitleWhitespaceRegex.Replace(StudioTitleWordBoundaryRegex.Replace(title, " "), " ").Trim();
         }
 
         public static string CleanMovieTitle(this string title)

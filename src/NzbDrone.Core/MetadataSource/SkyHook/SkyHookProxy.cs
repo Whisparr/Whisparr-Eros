@@ -1102,23 +1102,31 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
         private List<Movie> SearchForNewSceneByStudioAndDate(ParsedMovieInfo movieInfo)
         {
             var releaseDate = movieInfo.ReleaseDate;
+            var cleanStudioTitle = movieInfo.StudioTitle.CleanStudioTitle();
+
+            // A studio and date search must never return another studio's scene, and only a search by
+            // StashDB id can promise that. A studio already in the library carries its id; anything else
+            // is resolved against the metadata server before the scene search is made.
             var studio = _studioService.FindByTitle(movieInfo.StudioTitle);
+
+            if (studio == null || !Guid.TryParse(studio.ForeignId, out _))
+            {
+                studio = FindStudioByTitle(movieInfo.StudioTitle, cleanStudioTitle);
+            }
 
             List<Movie> results;
             Func<MovieMetadata, bool> isSameStudio;
 
-            // A studio already in the library is searched by its StashDB id. Anything else can only be matched by name,
-            // and a studio and date search must never return another studio's scene.
-            if (studio != null && Guid.TryParse(studio.ForeignId, out _))
+            if (studio != null)
             {
                 results = SearchForNewScene($"{studio.Title} {releaseDate}", studio.ForeignId, releaseDate);
                 isSameStudio = m => string.Equals(m.StudioForeignId, studio.ForeignId, StringComparison.OrdinalIgnoreCase);
             }
             else
             {
-                var cleanStudioTitle = movieInfo.StudioTitle.CleanStudioTitle();
-
-                results = SearchForNewScene($"{movieInfo.StudioTitle} {releaseDate}", null, null);
+                // The studio is unknown, so all that is left is a name search. A release writes the name as one
+                // run-together token, which matches nothing, so send the name with its word breaks restored.
+                results = SearchForNewScene($"{movieInfo.StudioTitle.ExpandStudioTitle()} {releaseDate}", null, null);
                 isSameStudio = m => m.StudioTitle.CleanStudioTitle() == cleanStudioTitle;
             }
 
@@ -1130,6 +1138,44 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             }
 
             return matches;
+        }
+
+        /// <summary>Resolves a studio parsed from a release to a metadata server studio.</summary>
+        /// <param name="studioTitle">The studio name as it was parsed from the release.</param>
+        /// <param name="cleanStudioTitle">The cleaned form of that name, used to confirm the match.</param>
+        /// <remarks>
+        /// A name search answers with near misses as readily as with the studio asked for, so only a
+        /// result whose own name cleans down to the same value is accepted. Binding to the wrong studio
+        /// would hand the scene search a studio id that quietly matches somebody else's scene.
+        /// </remarks>
+        /// <returns>The matching studio, or null when the name cannot be resolved.</returns>
+        private Studio FindStudioByTitle(string studioTitle, string cleanStudioTitle)
+        {
+            var searchTitle = studioTitle.ExpandStudioTitle();
+
+            try
+            {
+                var studio = SearchForNewStudio(searchTitle)
+                    .FirstOrDefault(s => s != null &&
+                                         s.Title.CleanStudioTitle() == cleanStudioTitle &&
+                                         Guid.TryParse(s.ForeignId, out _));
+
+                if (studio == null)
+                {
+                    _logger.Debug("No studio matching '{0}' found for '{1}'", searchTitle, studioTitle);
+                }
+                else
+                {
+                    _logger.Debug("Resolved studio '{0}' to {1} ({2})", studioTitle, studio.Title, studio.ForeignId);
+                }
+
+                return studio;
+            }
+            catch (SkyHookException ex)
+            {
+                _logger.Debug(ex, "Studio search for '{0}' failed", searchTitle);
+                return null;
+            }
         }
 
         private List<Movie> SearchForNewScene(string title, string studioForeignId, string releaseDate)
