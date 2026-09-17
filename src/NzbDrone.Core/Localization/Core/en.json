@@ -1015,6 +1015,7 @@
   "InCinemasDate": "In Cinemas Date",
   "InCinemasMovieAvailabilityDescription": "Movies are considered available as soon as movies hit cinemas.",
   "InCinemasMovieDescription": "Movie is in Cinemas",
+  "InLibraryWithoutFile": "In library, but the file is missing",
   "IncludeCustomFormatWhenRenaming": "Include Custom Format when Renaming",
   "IncludeCustomFormatWhenRenamingHelpText": "Include in {Custom Formats} renaming format",
   "IncludeHealthWarnings": "Include Health Warnings",

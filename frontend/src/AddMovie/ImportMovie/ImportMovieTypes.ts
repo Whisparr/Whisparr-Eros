@@ -1,3 +1,5 @@
+import { QualityModel } from 'Quality/Quality';
+
 export interface ImportFile {
   name: string;
   path: string;
@@ -32,6 +34,11 @@ export interface MovieLookupResult {
   performerNames?: string[];
   searchCredits?: ImportCredit[];
   isExisting: boolean;
+  // Only populated for results already in the library, so the import table can say
+  // whether the entry is still missing its file or which quality it already holds.
+  hasFile?: boolean;
+  sizeOnDisk?: number;
+  existingQuality?: QualityModel;
 }
 
 export interface ImportItem {

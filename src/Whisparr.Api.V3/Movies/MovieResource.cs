@@ -10,6 +10,7 @@ using NzbDrone.Core.MediaCover;
 using NzbDrone.Core.Movies;
 using NzbDrone.Core.Movies.Credits;
 using NzbDrone.Core.Parser;
+using NzbDrone.Core.Qualities;
 using Swashbuckle.AspNetCore.Annotations;
 using Whisparr.Api.V3.MovieFiles;
 using Whisparr.Api.V3.Movies;
@@ -103,6 +104,12 @@ namespace Whisparr.Api.V3.Movies
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         [SwaggerIgnore]
         public bool IsExisting { get; set; }
+
+        // Quality of the file the existing movie already has, so search results can say
+        // more than "Existing". Only set for lookups; see IsExisting.
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        [SwaggerIgnore]
+        public QualityModel ExistingQuality { get; set; }
     }
 
     public static class MovieResourceMapper

@@ -144,16 +144,31 @@ namespace Whisparr.Api.V3.Movies
         }
 
         /// <summary>Marks resources that already exist in the local database by setting
-        /// <see cref="MovieResource.IsExisting"/>.</summary>
+        /// <see cref="MovieResource.IsExisting"/>, along with the file that match already has
+        /// so callers can tell an existing-but-missing entry from one that is already satisfied.</summary>
         /// <param name="resources">Resources to annotate.</param>
         private void MapToExistingMovies(List<MovieResource> resources)
         {
-            var matches = _movieService.FindByForeignIds(resources.Select(r => r.ForeignId).ToList());
+            var matches = _movieService.FindByForeignIds(resources.Select(r => r.ForeignId).ToList())
+                .GroupBy(m => m.ForeignId)
+                .ToDictionary(g => g.Key, g => g.First());
+
             foreach (var r in resources)
             {
-                if (matches.Any(m => m.ForeignId == r.ForeignId))
+                if (!matches.TryGetValue(r.ForeignId, out var match))
                 {
-                    r.IsExisting = true;
+                    continue;
+                }
+
+                r.IsExisting = true;
+                r.HasFile = match.HasFile;
+
+                // FindByForeignIds left-joins the movie file, so this costs nothing extra --
+                // but the join can yield a hollow row, hence the HasFile guard.
+                if (match.HasFile && match.MovieFile != null)
+                {
+                    r.SizeOnDisk = match.MovieFile.Size;
+                    r.ExistingQuality = match.MovieFile.Quality;
                 }
             }
         }

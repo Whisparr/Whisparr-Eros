@@ -27,6 +27,9 @@ function ImportMovieSearchResult({
     performerNames,
     searchCredits,
     isExisting,
+    hasFile,
+    existingQuality,
+    sizeOnDisk,
   } = item;
 
   const stashId = foreignId && tmdbId === 0 && !tpdbId ? foreignId : '';
@@ -47,6 +50,9 @@ function ImportMovieSearchResult({
           performerNames={performerNames}
           searchCredits={searchCredits}
           isExistingMovie={isExisting}
+          existingHasFile={hasFile}
+          existingQuality={existingQuality}
+          existingSize={sizeOnDisk}
         />
       </Link>
 

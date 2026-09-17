@@ -1,8 +1,10 @@
 import React, { useMemo } from 'react';
 import Label from 'Components/Label';
 import { kinds } from 'Helpers/Props';
+import MovieQuality from 'Movie/MovieQuality';
 import { all as allGenders, getGenderDetails } from 'Performer/Gender';
 import PerformerGenderIcon from 'Performer/PerformerGenderIcon';
+import { QualityModel } from 'Quality/Quality';
 import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import getRelativeDate from 'Utilities/Date/getRelativeDate';
 import translate from 'Utilities/String/translate';
@@ -18,6 +20,9 @@ interface ImportMovieTitleProps {
   performerNames?: string[];
   searchCredits?: ImportCredit[];
   isExistingMovie: boolean;
+  existingHasFile?: boolean;
+  existingQuality?: QualityModel;
+  existingSize?: number;
 }
 
 // Several genders share one glyph, so the icons are deduplicated by the icon
@@ -59,6 +64,9 @@ function ImportMovieTitle({
   performerNames,
   searchCredits,
   isExistingMovie,
+  existingHasFile,
+  existingQuality,
+  existingSize,
 }: Readonly<ImportMovieTitleProps>) {
   const { shortDateFormat, showRelativeDates } = useUiSettingsValues();
 
@@ -123,9 +131,20 @@ function ImportMovieTitle({
 
       <div className={styles.title}>{itemDescr}</div>
 
-      {isExistingMovie && (
-        <Label kind={kinds.WARNING}>{translate('Existing')}</Label>
-      )}
+      {/* One chip either way: an entry already in the library shows the quality it
+          holds, or a Missing badge when the file is what it is waiting for. */}
+      {isExistingMovie &&
+        (existingHasFile && existingQuality ? (
+          <MovieQuality
+            quality={existingQuality}
+            size={existingSize}
+            title={translate('AlreadyInYourLibrary')}
+          />
+        ) : (
+          <Label kind={kinds.DANGER} title={translate('InLibraryWithoutFile')}>
+            {translate('Missing')}
+          </Label>
+        ))}
     </div>
   );
 }

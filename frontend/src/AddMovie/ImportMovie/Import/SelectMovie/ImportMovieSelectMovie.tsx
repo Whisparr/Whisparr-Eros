@@ -141,6 +141,9 @@ function ImportMovieSelectMovie({
                   performerNames={selectedMovie.performerNames}
                   searchCredits={selectedMovie.searchCredits}
                   isExistingMovie={selectedMovie.isExisting}
+                  existingHasFile={selectedMovie.hasFile}
+                  existingQuality={selectedMovie.existingQuality}
+                  existingSize={selectedMovie.sizeOnDisk}
                 />
               ) : null}
 
