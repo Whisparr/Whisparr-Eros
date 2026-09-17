@@ -116,7 +116,7 @@ namespace NzbDrone.Api.Test.v3.Performers
             var resource = GivenResource();
             resource.AfterDate = "2024-06-01";
 
-            var response = (AcceptedResult)Subject.SaveAll(resource);
+            var response = (AcceptedResult)Subject.SaveAll(resource).Result;
 
             // The client replaces its cached performers with this body, so it has to be
             // mapped resources rather than the raw models.
