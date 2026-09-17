@@ -1098,6 +1098,7 @@
   "IndexerTagMovieHelpText": "Only use this indexer for movies with at least one matching tag. Leave blank to use with all movies.",
   "Info": "Info",
   "InfoUrl": "Info URL",
+  "InLibraryWithoutFile": "In library, but the file is missing",
   "Install": "Install",
   "InstallLatest": "Install Latest",
   "InstallMajorVersionUpdate": "Install Update",
