@@ -34,7 +34,7 @@ Note that only one type of a given movie is supported. If you want both an 4k ve
 
 Note: GitHub Issues are for Bugs and Feature Requests Only
 
-[![GitHub - Bugs and Feature Requests Only](https://img.shields.io/badge/github-issues-red.svg?maxAge=60)](https://github.com/Whisparr/Whisparr/issues)
+[![GitHub - Bugs and Feature Requests Only](https://img.shields.io/badge/github-issues-red.svg?maxAge=60)](https://github.com/Whisparr/Whisparr-Eros/issues)
 
 ## Contributors & Developers
 

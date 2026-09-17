@@ -5,4 +5,4 @@ contact_links:
     about: Chat with users and devs on support and setup related topics.
   - name: Whisparr v2 (pink) issues
     url: https://github.com/Whisparr/Whisparr/issues
-    about: Go here is you want to open an issue for Whisparr version 2.x (pink color scheme)
+    about: Go here if you want to open an issue for Whisparr version 2.x (pink color scheme)

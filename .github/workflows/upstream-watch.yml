@@ -22,11 +22,11 @@ jobs:
       # should not hide the state of the other.
       fail-fast: false
       matrix:
-        # Titles carry a [v3] prefix: the tracking issues live on
-        # Whisparr/Whisparr, which serves both the v2 line and this one, so an
-        # unprefixed 'Upstream sync: ...' reads as ambiguous there. The prefix
-        # is also part of the lookup key -- changing it orphans the existing
-        # issue and opens a new one, so rename the issue with it.
+        # Titles carry a [v3] prefix. It is a leftover from when these issues
+        # lived on Whisparr/Whisparr alongside the v2 line, and is no longer
+        # needed for disambiguation now that they are on this repo -- but it is
+        # the lookup key, so dropping it orphans the existing issue and opens a
+        # new one. Rename the issues first if it is ever dropped.
         include:
           - upstream: radarr
             title: '[v3] Upstream sync: Radarr develop'
@@ -44,15 +44,12 @@ jobs:
         with:
           client-id: ${{ secrets.CI_APP_ID }}
           private-key: ${{ secrets.CI_APP_KEY }}
-          # Two repos, because the work is split across two. The PR belongs
-          # here, but issues are disabled on this repo -- the backlog issue
-          # goes to Whisparr/Whisparr, where issues for both are tracked.
-          # Left unset, the token is scoped to this repo alone and every
-          # issue call 404s.
+          # Both the PR and the backlog issue live on this repo, so a
+          # single-repo scope is enough. (It was two repos until Issues were
+          # enabled here on 2026-09-17 and the tracking issues moved over.)
           owner: ${{ github.repository_owner }}
           repositories: |
             Whisparr-Eros
-            Whisparr
 
       - name: Check out
         uses: actions/checkout@v7
@@ -113,13 +110,12 @@ jobs:
       - name: Update the tracking issue
         env:
           GH_TOKEN: ${{ steps.app.outputs.token }}
-          # Issues are disabled on Whisparr-Eros and tracked on Whisparr for
-          # both repos, so every gh call in this step has to be aimed off this
-          # repo. Passed as an explicit --repo rather than GH_REPO: gh honours
+          # The tracking issues live on this repo. Still passed as an explicit
+          # --repo on every call rather than relying on GH_REPO: gh honours
           # GH_REPO for `issue`, but `label create` ignored it and made the
           # label against the checkout's remote instead, which is how the first
           # two issues were opened unlabelled and then duplicated.
-          ISSUES_REPO: Whisparr/Whisparr
+          ISSUES_REPO: ${{ github.repository }}
           TITLE: ${{ matrix.title }}
           OUTSTANDING: ${{ fromJSON(steps.attempt.outputs.summary).outstanding }}
         run: |
