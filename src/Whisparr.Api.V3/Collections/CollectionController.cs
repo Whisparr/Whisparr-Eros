@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Configuration;
@@ -132,7 +133,8 @@ namespace Whisparr.Api.V3.Collections
         [HttpPut]
         [Consumes("application/json")]
         [Produces("application/json")]
-        public ActionResult UpdateCollections([FromBody] CollectionUpdateResource resource)
+        [ProducesResponseType(typeof(List<CollectionResource>), StatusCodes.Status202Accepted)]
+        public ActionResult<List<CollectionResource>> UpdateCollections([FromBody] CollectionUpdateResource resource)
         {
             var collectionsToUpdate = _collectionService.GetCollections(resource.CollectionIds).ToList();
 

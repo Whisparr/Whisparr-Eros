@@ -127,7 +127,7 @@ namespace NzbDrone.Api.Test.v3.Studios
             var resource = GivenResource();
             resource.MoviesMonitored = true;
 
-            var response = (AcceptedResult)Subject.SaveAll(resource);
+            var response = (AcceptedResult)Subject.SaveAll(resource).Result;
 
             // The client replaces its cached studios with this body, so it has to be
             // mapped resources rather than the raw models.

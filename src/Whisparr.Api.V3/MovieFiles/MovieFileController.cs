@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.CustomFormats;
 using NzbDrone.Core.Datastore.Events;
@@ -132,7 +133,8 @@ namespace Whisparr.Api.V3.MovieFiles
         [Obsolete("Use bulk endpoint instead")]
         [HttpPut("editor")]
         [Consumes("application/json")]
-        public object SetMovieFile([FromBody] MovieFileListResource resource)
+        [ProducesResponseType(typeof(List<MovieFileResource>), StatusCodes.Status202Accepted)]
+        public ActionResult<List<MovieFileResource>> SetMovieFile([FromBody] MovieFileListResource resource)
         {
             var movieFiles = _mediaFileService.GetMovies(resource.MovieFileIds);
 
@@ -229,7 +231,8 @@ namespace Whisparr.Api.V3.MovieFiles
 
         [HttpPut("bulk")]
         [Consumes("application/json")]
-        public object SetPropertiesBulk([FromBody] List<MovieFileResource> resources)
+        [ProducesResponseType(typeof(List<MovieFileResource>), StatusCodes.Status202Accepted)]
+        public ActionResult<List<MovieFileResource>> SetPropertiesBulk([FromBody] List<MovieFileResource> resources)
         {
             var movieFiles = _mediaFileService.GetMovies(resources.Select(r => r.Id));
 
