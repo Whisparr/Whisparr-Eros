@@ -160,6 +160,7 @@ namespace NzbDrone.Host
                 });
 
                 c.OperationFilter<AllowAnonymousOperationFilter>();
+                c.SchemaFilter<CommandResourceSchemaFilter>();
 
                 c.DescribeAllParametersInCamelCase();
             });
