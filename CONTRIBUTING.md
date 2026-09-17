@@ -87,7 +87,7 @@ dotnet msbuild -restore src/Whisparr.sln -p:Configuration=Debug -p:Platform=Posi
 
 ## Contributing Code
 
-- If you're adding a new, already requested feature, please comment on [GitHub Issues](https://github.com/Whisparr/Whisparr/issues) so work is not duplicated (If you want to add something not already on there, please talk to us first)
+- If you're adding a new, already requested feature, please comment on [GitHub Issues](https://github.com/Whisparr/Whisparr-Eros/issues) so work is not duplicated (If you want to add something not already on there, please talk to us first)
 - Rebase from Whisparr's `eros-develop` branch, do not merge
 - Make meaningful commits, or squash them
 - Feel free to make a pull request before work is complete, this will let us see where its at and make comments/suggest improvements

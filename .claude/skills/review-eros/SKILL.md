@@ -9,9 +9,9 @@ allowed-tools: Bash, Read, Grep, Glob, Agent, AskUserQuestion, TodoWrite
 # Review an Eros PR
 
 Review a pull request against `Whisparr/Whisparr-Eros:eros-develop` the same way
-every time. The repo is `Whisparr/Whisparr-Eros` (remote here). Issues for both
-`Whisparr/Whisparr` and `Whisparr/Whisparr-Eros` are tracked on
-`Whisparr/Whisparr`, so linked issues use `Fixes whisparr/whisparr#NNNN`.
+every time. The repo is `Whisparr/Whisparr-Eros` (remote here). Eros issues live
+on this repo (since 2026-09-17), so a linked issue is a bare `Fixes #NNNN`;
+`Whisparr/Whisparr` keeps the v2 line and needs the qualified form.
 
 Output rule: **produce the full review in the terminal first, then ask** whether
 to post it. Never auto-post. Never add an AI-attribution footer to anything
@@ -49,8 +49,8 @@ Flag every miss. Sources: `CONTRIBUTING.md`, `.github/PULL_REQUEST_TEMPLATE.md`,
     under `src/NzbDrone.Core/Datastore/Migration/`, the note must give its
     number.
   - **Tests** checkbox and **Translation Keys** checkbox.
-  - Linked issue as `Fixes whisparr/whisparr#NNNN` (issues live on
-    `Whisparr/Whisparr`).
+  - Linked issue as `Fixes #NNNN` (Eros issues live on this repo);
+    `Fixes Whisparr/Whisparr#NNNN` only for a v2 issue.
 - **Localization**: any new user-facing string needs an `en.json` key at
   `src/NzbDrone.Core/Localization/Core/en.json`. Backend uses
   `_localizationService.GetLocalizedString("Key")`; frontend uses
