@@ -24,6 +24,7 @@ using NzbDrone.Core.Instrumentation;
 using NzbDrone.Core.Lifecycle;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Host.AccessControl;
+using NzbDrone.Host.OpenApi;
 using NzbDrone.Http.Authentication;
 using NzbDrone.SignalR;
 using Whisparr.Api.V3.System;
@@ -157,6 +158,8 @@ namespace NzbDrone.Host
                 {
                     [new OpenApiSecuritySchemeReference(apikeyQuery.Name, document)] = new List<string>(),
                 });
+
+                c.OperationFilter<AllowAnonymousOperationFilter>();
 
                 c.DescribeAllParametersInCamelCase();
             });
