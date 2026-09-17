@@ -18,102 +18,74 @@ using Whisparr.Http.REST;
 
 namespace Whisparr.Api.V3.Movies
 {
-    public class MovieResource : RestResource
-    {
-        public MovieResource()
-        {
-            PerformerForeignIds = new List<string>();
-            PerformerNames = new List<string>();
-            Genres = new List<string>();
-            Monitored = true;
-        }
-
-        // Todo: Sorters should be done completely on the client
-        // Todo: Is there an easy way to keep IgnoreArticlesWhenSorting in sync between, Series, History, Missing?
-        // Todo: We should get the entire Profile instead of ID and Name separately
-
-        // View Only
-        public string Title { get; set; }
-        public string Code { get; set; }
-        public Language OriginalLanguage { get; set; }
-        public string SortTitle { get; set; }
-        public List<AlternativeTitleResource> AlternateTitles { get; set; }
-        public long? SizeOnDisk { get; set; }
-        public int? MovieFileCount { get; set; }
-        public MovieStatusType Status { get; set; }
-        public string Overview { get; set; }
-        public DateTime? ReleaseDate { get; set; }
-        public string PhysicalReleaseNote { get; set; }
-        public List<MediaCover> Images { get; set; }
-        public string Website { get; set; }
-
-        // public bool Downloaded { get; set; }
-        public string RemotePoster { get; set; }
-        public int Year { get; set; }
-        public string StudioTitle { get; set; }
-        public string StudioForeignId { get; set; }
-
-        // View & Edit
-        public string Path { get; set; }
-        public int QualityProfileId { get; set; }
-
-        // Compatibility
-        public bool? HasFile { get; set; }
-        public int MovieFileId { get; set; }
-
-        // Editing Only
-        public bool Monitored { get; set; }
-        public bool IsAvailable { get; set; }
-        public string FolderName { get; set; }
-
-        public int Runtime { get; set; }
-        public string CleanTitle { get; set; }
-        public string ImdbId { get; set; }
-        public int TmdbId { get; set; }
-        public string TpdbId { get; set; }
-        public string ForeignId { get; set; }
-        public string StashId { get; set; }
-        public string TitleSlug { get; set; }
-        public string RootFolderPath { get; set; }
-        public string Folder { get; set; }
-        public List<string> Genres { get; set; }
-        public HashSet<int> Tags { get; set; }
-        public DateTime Added { get; set; }
-        public AddMovieOptions AddOptions { get; set; }
-        public Ratings Ratings { get; set; }
-        public MovieFileResource MovieFile { get; set; }
-        public MovieCollectionResource Collection { get; set; }
-        public List<Credit> SearchCredits { get; set; }
-        public List<string> PerformerForeignIds { get; set; }
-        public List<string> PerformerNames { get; set; }
-        public ItemType ItemType { get; set; }
-        public DateTime? LastSearchTime { get; set; }
-        public MovieStatisticsResource Statistics { get; set; }
-
-        // Hiding this so people don't think its usable (only used to set the initial state)
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-        [SwaggerIgnore]
-        public bool Grabbed { get; set; }
-
-        // Hiding this so people don't think its usable (only used for searches)
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-        [SwaggerIgnore]
-        public bool IsExcluded { get; set; }
-
-        // Hiding this so people don't think its usable (only used for searches)
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-        [SwaggerIgnore]
-        public bool IsExisting { get; set; }
-
-        // Quality of the file the existing movie already has, so search results can say
-        // more than "Existing". Only set for lookups; see IsExisting.
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-        [SwaggerIgnore]
-        public QualityModel ExistingQuality { get; set; }
-    }
-
     public static class MovieResourceMapper
     {
+        public static Movie ToModel(this MovieResource resource)
+        {
+            if (resource == null)
+            {
+                return null;
+            }
+
+            return new Movie
+            {
+                Id = resource.Id,
+
+                MovieMetadata = new MovieMetadata
+                {
+                    ForeignId = resource.ForeignId,
+                    TmdbId = resource.TmdbId,
+                    Title = resource.Title,
+                    Genres = resource.Genres,
+                    Images = resource.Images,
+                    SortTitle = resource.SortTitle,
+                    ReleaseDateUtc = resource.ReleaseDate,
+                    Year = resource.Year,
+                    Overview = resource.Overview,
+                    Website = resource.Website,
+                    Ratings = resource.Ratings,
+                    StudioTitle = resource.StudioTitle,
+                    StudioForeignId = resource.StudioForeignId,
+                    Runtime = resource.Runtime,
+                    CleanTitle = resource.CleanTitle,
+                    ImdbId = resource.ImdbId,
+                    TpdbId = resource.TpdbId,
+                    StashId = resource.StashId,
+                    ItemType = resource.ItemType
+                },
+
+                Path = resource.Path,
+                QualityProfileId = resource.QualityProfileId,
+
+                Monitored = resource.Monitored,
+
+                RootFolderPath = resource.RootFolderPath,
+
+                Tags = resource.Tags ?? new HashSet<int>(),
+                Added = resource.Added,
+                AddOptions = resource.AddOptions
+            };
+        }
+
+        public static Movie ToModel(this MovieResource resource, Movie movie)
+        {
+            var updatedMovie = resource.ToModel();
+
+            movie.ApplyChanges(updatedMovie);
+
+            return movie;
+        }
+
+        public static List<Movie> ToModel(this IEnumerable<MovieResource> resources)
+        {
+            return resources.Select(ToModel).ToList();
+        }
+
+        public static List<MovieResource> ToResource(this IEnumerable<Movie> movies, int availDelay, IUpgradableSpecification upgradableSpecification = null, ICustomFormatCalculationService formatCalculationService = null)
+        {
+            return movies.Select(x => ToResource(x, availDelay, upgradableSpecification, formatCalculationService)).ToList();
+        }
+
         public static MovieResource ToResource(this Movie model, int availDelay, IUpgradableSpecification upgradableSpecification = null, ICustomFormatCalculationService formatCalculationService = null)
         {
             if (model == null || model.MovieMetadata.Value == null)
@@ -184,71 +156,93 @@ namespace Whisparr.Api.V3.Movies
                 Collection = collection,
             };
         }
+    }
 
-        public static Movie ToModel(this MovieResource resource)
+    public class MovieResource : RestResource
+    {
+        public MovieResource()
         {
-            if (resource == null)
-            {
-                return null;
-            }
-
-            return new Movie
-            {
-                Id = resource.Id,
-
-                MovieMetadata = new MovieMetadata
-                {
-                    ForeignId = resource.ForeignId,
-                    TmdbId = resource.TmdbId,
-                    Title = resource.Title,
-                    Genres = resource.Genres,
-                    Images = resource.Images,
-                    SortTitle = resource.SortTitle,
-                    ReleaseDateUtc = resource.ReleaseDate,
-                    Year = resource.Year,
-                    Overview = resource.Overview,
-                    Website = resource.Website,
-                    Ratings = resource.Ratings,
-                    StudioTitle = resource.StudioTitle,
-                    StudioForeignId = resource.StudioForeignId,
-                    Runtime = resource.Runtime,
-                    CleanTitle = resource.CleanTitle,
-                    ImdbId = resource.ImdbId,
-                    TpdbId = resource.TpdbId,
-                    StashId = resource.StashId,
-                    ItemType = resource.ItemType
-                },
-
-                Path = resource.Path,
-                QualityProfileId = resource.QualityProfileId,
-
-                Monitored = resource.Monitored,
-
-                RootFolderPath = resource.RootFolderPath,
-
-                Tags = resource.Tags ?? new HashSet<int>(),
-                Added = resource.Added,
-                AddOptions = resource.AddOptions
-            };
+            PerformerForeignIds = new List<string>();
+            PerformerNames = new List<string>();
+            Genres = new List<string>();
+            Monitored = true;
         }
 
-        public static Movie ToModel(this MovieResource resource, Movie movie)
-        {
-            var updatedMovie = resource.ToModel();
+        // View Only
+        public string Title { get; set; }
+        public string Code { get; set; }
+        public Language OriginalLanguage { get; set; }
+        public string SortTitle { get; set; }
+        public List<AlternativeTitleResource> AlternateTitles { get; set; }
+        public long? SizeOnDisk { get; set; }
+        public int? MovieFileCount { get; set; }
+        public MovieStatusType Status { get; set; }
+        public string Overview { get; set; }
+        public DateTime? ReleaseDate { get; set; }
+        public string PhysicalReleaseNote { get; set; }
+        public List<MediaCover> Images { get; set; }
+        public string Website { get; set; }
+        public string RemotePoster { get; set; }
+        public int Year { get; set; }
+        public string StudioTitle { get; set; }
+        public string StudioForeignId { get; set; }
 
-            movie.ApplyChanges(updatedMovie);
+        // View & Edit
+        public string Path { get; set; }
+        public int QualityProfileId { get; set; }
 
-            return movie;
-        }
+        // Compatibility
+        public bool? HasFile { get; set; }
+        public int MovieFileId { get; set; }
 
-        public static List<MovieResource> ToResource(this IEnumerable<Movie> movies, int availDelay, IUpgradableSpecification upgradableSpecification = null, ICustomFormatCalculationService formatCalculationService = null)
-        {
-            return movies.Select(x => ToResource(x, availDelay, upgradableSpecification, formatCalculationService)).ToList();
-        }
+        // Editing Only
+        public bool Monitored { get; set; }
+        public bool IsAvailable { get; set; }
+        public string FolderName { get; set; }
 
-        public static List<Movie> ToModel(this IEnumerable<MovieResource> resources)
-        {
-            return resources.Select(ToModel).ToList();
-        }
+        public int Runtime { get; set; }
+        public string CleanTitle { get; set; }
+        public string ImdbId { get; set; }
+        public int TmdbId { get; set; }
+        public string TpdbId { get; set; }
+        public string ForeignId { get; set; }
+        public string StashId { get; set; }
+        public string TitleSlug { get; set; }
+        public string RootFolderPath { get; set; }
+        public string Folder { get; set; }
+        public List<string> Genres { get; set; }
+        public HashSet<int> Tags { get; set; }
+        public DateTime Added { get; set; }
+        public AddMovieOptions AddOptions { get; set; }
+        public Ratings Ratings { get; set; }
+        public MovieFileResource MovieFile { get; set; }
+        public MovieCollectionResource Collection { get; set; }
+        public List<Credit> SearchCredits { get; set; }
+        public List<string> PerformerForeignIds { get; set; }
+        public List<string> PerformerNames { get; set; }
+        public ItemType ItemType { get; set; }
+        public DateTime? LastSearchTime { get; set; }
+        public MovieStatisticsResource Statistics { get; set; }
+
+        // Hiding this so people don't think its usable (only used to set the initial state)
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        [SwaggerIgnore]
+        public bool Grabbed { get; set; }
+
+        // Hiding this so people don't think its usable (only used for searches)
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        [SwaggerIgnore]
+        public bool IsExcluded { get; set; }
+
+        // Hiding this so people don't think its usable (only used for searches)
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        [SwaggerIgnore]
+        public bool IsExisting { get; set; }
+
+        // Quality of the file the existing movie already has, so search results can say
+        // more than "Existing". Only set for lookups; see IsExisting.
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        [SwaggerIgnore]
+        public QualityModel ExistingQuality { get; set; }
     }
 }

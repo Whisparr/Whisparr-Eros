@@ -68,14 +68,6 @@ namespace Whisparr.Api.V3.Movies
             throw new NotImplementedException();
         }
 
-        /// <summary>Not implemented for lookup controller; required by base type.</summary>
-        /// <param name="id">The movie id.</param>
-        /// <returns>The <see cref="MovieResource"/>.</returns>
-        protected override MovieResource GetResourceById(int id)
-        {
-            throw new NotImplementedException();
-        }
-
         /// <summary>Lookup movie metadata by TMDB id.</summary>
         /// <param name="tmdbId">TMDB identifier.</param>
         /// <returns>A <see cref="MovieResource"/> populated with metadata for the TMDB id.</returns>
@@ -132,15 +124,23 @@ namespace Whisparr.Api.V3.Movies
 
             foreach (var result in results)
             {
-                if (result is Movie)
+                if (result is Movie movie)
                 {
-                    searchResults.Add((Movie)result);
+                    searchResults.Add(movie);
                 }
             }
 
             var resources = MapToResource(searchResults).ToList();
             MapToExistingMovies(resources);
             return resources;
+        }
+
+        /// <summary>Not implemented for lookup controller; required by base type.</summary>
+        /// <param name="id">The movie id.</param>
+        /// <returns>The <see cref="MovieResource"/>.</returns>
+        protected override MovieResource GetResourceById(int id)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>Marks resources that already exist in the local database by setting
