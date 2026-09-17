@@ -229,8 +229,8 @@ git log eros-develop..HEAD --format=%b | grep -c 'cherry picked from'
 Open the PR against `eros-develop` (never `eros`) filling in
 `.github/PULL_REQUEST_TEMPLATE.md` — `gh pr create --body` silently bypasses it,
 so pass `--body-file` with the template filled in. Keep the body short: what was
-picked, what was skipped and why, and the verification result. Link issues fully
-qualified as `Fixes Whisparr/Whisparr#123` — a bare `#123` resolves against the
-wrong repo from this remote.
+picked, what was skipped and why, and the verification result. Link Eros issues as
+`Fixes #123` — they live on this repo since 2026-09-17. Only a **v2** issue
+needs the qualified `Fixes Whisparr/Whisparr#123`.
 
 Never add AI attribution to the commit or PR body.

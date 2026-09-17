@@ -42,6 +42,12 @@ namespace NzbDrone.Core.Test.ParserTests
         [TestCase("We Are the Movie!.2013.720p.H264.mkv", "We Are the Movie!")]
         [TestCase("(500).Days.Of.Movie.(2009).DTS.1080p.BluRay.x264.NLsubs", "(500) Days Of Movie")]
         [TestCase("To.Live.and.Movie.in.L.A.1985.1080p.BluRay", "To Live and Movie in L.A.")]
+
+        // A part is kept dotted only while it reads as a letter of an acronym.
+        [TestCase("S.W.A.T.Movie.2003.1080p.BluRay", "S.W.A.T. Movie")]
+        [TestCase("Movie.of.Dr.No.1962.1080p.BluRay", "Movie of Dr. No")]
+        [TestCase("The.A.Team.Movie.2010.1080p.BluRay", "The A Team Movie")]
+        [TestCase("Movie.Part.2.1985.1080p.BluRay", "Movie Part 2")]
         [TestCase("A.I.Artificial.Movie.(2001)", "A.I. Artificial Movie")]
         [TestCase("A.Movie.Name.(1998)", "A Movie Name")]
         [TestCase("www.Torrenting.com - Movie.2008.720p.X264-DIMENSION", "Movie")]

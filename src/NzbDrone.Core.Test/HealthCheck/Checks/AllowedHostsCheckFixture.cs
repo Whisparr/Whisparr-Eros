@@ -63,6 +63,19 @@ namespace NzbDrone.Core.Test.HealthCheck.Checks
             Subject.Check().ShouldBeOk();
         }
 
+        [TestCase("*")]
+        [TestCase("*, whisparr.local")]
+        [TestCase("whisparr.local; *")]
+        public void should_return_warning_when_allowed_hosts_contains_wildcard(string allowedHosts)
+        {
+            GivenAllowedHosts(allowedHosts);
+            GivenAuthenticationRequired(AuthenticationRequiredType.DisabledForLocalAddresses);
+
+            Subject.Check().ShouldBeWarning(reason: HealthCheckReason.AllowedHostsWildcard);
+
+            ExceptionVerification.ExpectedWarns(1);
+        }
+
         [Test]
         public void should_return_warning_when_allowed_hosts_is_whitespace()
         {

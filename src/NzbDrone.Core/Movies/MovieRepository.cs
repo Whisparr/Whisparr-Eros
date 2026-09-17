@@ -17,15 +17,16 @@ namespace NzbDrone.Core.Movies
         bool MoviePathExists(string path);
         List<Movie> FindByTitles(List<string> titles);
         IEnumerable<Movie> FindByIds(List<int> ids);
-        Movie FindByTpdbId(string tpdbid);
         Movie FindByImdbId(string imdbid);
-        Movie FindByTmdbId(int tmdbid);
         Movie FindByForeignId(string foreignId);
         List<Movie> FindByForeignIds(List<string> foreignIds);
+        Movie FindByTpdbId(string tpdbid);
         List<Movie> FindByTpdbId(List<string> tpdbids);
+        Movie FindByTmdbId(int tmdbid);
         List<Movie> FindByTmdbId(List<int> tmdbids);
         List<Movie> FindByStudioAndDate(string studioForeignId, string date);
         List<Movie> GetByStudioForeignId(string studioForeignId);
+        List<Movie> FindByYear(ItemType itemType, int year);
         List<Movie> GetByPerformerForeignId(string performerForeignId);
         List<Movie> MoviesBetweenDates(DateTime start, DateTime end, bool includeUnmonitored);
         PagingSpec<Movie> MoviesWithoutFiles(PagingSpec<Movie> pagingSpec, HashSet<int> movieTags = null);
@@ -342,6 +343,22 @@ namespace NzbDrone.Core.Movies
             var builder = new SqlBuilder(_database.DatabaseType)
                 .Join<Movie, MovieMetadata>((m, p) => m.MovieMetadataId == p.Id)
                 .Where<MovieMetadata>(x => x.StudioForeignId == studioForeignId);
+
+            return _database.QueryJoined<Movie, MovieMetadata>(
+                builder,
+                (movie, metadata) =>
+                {
+                    movie.MovieMetadata = metadata;
+
+                    return movie;
+                }).AsList();
+        }
+
+        public List<Movie> FindByYear(ItemType itemType, int year)
+        {
+            var builder = new SqlBuilder(_database.DatabaseType)
+                .Join<Movie, MovieMetadata>((m, p) => m.MovieMetadataId == p.Id)
+                .Where<MovieMetadata>(x => x.ItemType == itemType && x.Year == year);
 
             return _database.QueryJoined<Movie, MovieMetadata>(
                 builder,

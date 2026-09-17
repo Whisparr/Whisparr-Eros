@@ -14,6 +14,7 @@ namespace NzbDrone.Common.Extensions
     public static class StringExtensions
     {
         private static readonly Regex CamelCaseRegex = new Regex("(?<!^)[A-Z]", RegexOptions.Compiled, RegexDefaults.Timeout);
+        private static readonly Regex CollapseSpace = new Regex(@"\s+", RegexOptions.Compiled, RegexDefaults.Timeout);
 
         static StringExtensions()
         {
@@ -59,8 +60,6 @@ namespace NzbDrone.Common.Extensions
         {
             return string.Format(format, formattingArgs);
         }
-
-        private static readonly Regex CollapseSpace = new Regex(@"\s+", RegexOptions.Compiled, RegexDefaults.Timeout);
 
         public static string Replace(this string text, int index, int length, string replacement)
         {
@@ -133,12 +132,9 @@ namespace NzbDrone.Common.Extensions
 
             var cleaned = new StringBuilder(text.Length);
 
-            foreach (var c in text)
+            foreach (var c in text.Where(c => !char.IsControl(c)))
             {
-                if (!char.IsControl(c))
-                {
-                    cleaned.Append(c);
-                }
+                cleaned.Append(c);
             }
 
             // The loop has already dropped CR and LF. The explicit Replace pair is
@@ -173,11 +169,6 @@ namespace NzbDrone.Common.Extensions
         public static bool EqualsIgnoreCase(this string text, string equals)
         {
             return text.Equals(equals, StringComparison.InvariantCultureIgnoreCase);
-        }
-
-        public static bool ContainsIgnoreCase(this string text, string contains)
-        {
-            return text.IndexOf(contains, StringComparison.InvariantCultureIgnoreCase) > -1;
         }
 
         public static string WrapInQuotes(this string text)
@@ -218,6 +209,11 @@ namespace NzbDrone.Common.Extensions
         public static string SplitCamelCase(this string input)
         {
             return CamelCaseRegex.Replace(input, match => " " + match.Value);
+        }
+
+        public static bool ContainsIgnoreCase(this string text, string contains)
+        {
+            return text.IndexOf(contains, StringComparison.InvariantCultureIgnoreCase) > -1;
         }
 
         public static bool ContainsIgnoreCase(this IEnumerable<string> source, string value)
@@ -266,9 +262,41 @@ namespace NzbDrone.Common.Extensions
             return parsedAddress.AddressFamily == AddressFamily.InterNetwork || parsedAddress.AddressFamily == AddressFamily.InterNetworkV6;
         }
 
+        public static bool IsLocalhostAddress(this string input)
+        {
+            if (input.IsNullOrWhiteSpace())
+            {
+                return false;
+            }
+
+            var host = input.FromUrlHost();
+
+            if (host.Equals("localhost", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return true;
+            }
+
+            return IPAddress.TryParse(host, out var parsedAddress) && IPAddress.IsLoopback(parsedAddress);
+        }
+
         public static string ToUrlHost(this string input)
         {
-            return input.Contains(':') ? $"[{input}]" : input;
+            if (input.IsNullOrWhiteSpace() || !input.Contains(':', StringComparison.Ordinal) || IsBracketed(input))
+            {
+                return input;
+            }
+
+            return $"[{input}]";
+        }
+
+        public static string FromUrlHost(this string input)
+        {
+            if (input.IsNullOrWhiteSpace() || !IsBracketed(input))
+            {
+                return input;
+            }
+
+            return input[1..^1];
         }
 
         public static string Reverse(this string text)
@@ -278,6 +306,11 @@ namespace NzbDrone.Common.Extensions
             Array.Reverse(array);
 
             return new string(array);
+        }
+
+        private static bool IsBracketed(string input)
+        {
+            return input.StartsWith('[') && input.EndsWith(']');
         }
     }
 }

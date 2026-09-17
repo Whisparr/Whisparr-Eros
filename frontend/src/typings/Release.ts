@@ -27,8 +27,14 @@ interface Release {
   mappedMovieId?: number;
   indexerFlags: string[];
   rejections: string[];
+  history?: ReleaseHistory;
   movieRequested: boolean;
   downloadAllowed: boolean;
+}
+
+export interface ReleaseHistory {
+  grabbed: string;
+  failed: string;
 }
 
 export default Release;

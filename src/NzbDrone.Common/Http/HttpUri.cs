@@ -8,7 +8,7 @@ namespace NzbDrone.Common.Http
 {
     public class HttpUri : IEquatable<HttpUri>
     {
-        private static readonly Regex RegexUri = new Regex(@"^(?:(?<scheme>[a-z]+):)?(?://(?<host>[-_A-Z0-9.]+|\[[[A-F0-9:]+\])(?::(?<port>[0-9]{1,5}))?)?(?<path>(?:(?:(?<=^)|/+)[^/?#\r\n]+)+/*|/+)?(?:\?(?<query>[^#\r\n]*))?(?:\#(?<fragment>.*))?$", RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant, RegexDefaults.Timeout);
+        private static readonly Regex RegexUri = new Regex(@"^(?:(?<scheme>[a-z]+):)?(?://(?<host>[-_A-Z0-9.]+|\[[A-F0-9:.]+\])(?::(?<port>[0-9]{1,5}))?)?(?<path>(?:(?:(?<=^)|/+)[^/?#\r\n]+)+/*|/+)?(?:\?(?<query>[^#\r\n]*))?(?:\#(?<fragment>.*))?$", RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant, RegexDefaults.Timeout);
 
         private readonly string _uri;
         public string FullUri => _uri;
@@ -70,7 +70,7 @@ namespace NzbDrone.Common.Http
 
         private void Parse()
         {
-            var parseSuccess = Uri.TryCreate(_uri, UriKind.RelativeOrAbsolute, out var uri);
+            var parseSuccess = Uri.TryCreate(_uri, UriKind.RelativeOrAbsolute, out _);
 
             var match = RegexUri.Match(_uri);
 
@@ -100,39 +100,6 @@ namespace NzbDrone.Common.Http
         public string Path { get; private set; }
         public string Query { get; private set; }
         public string Fragment { get; private set; }
-
-        private IList<KeyValuePair<string, string>> _queryParams;
-        private IList<KeyValuePair<string, string>> QueryParams
-        {
-            get
-            {
-                if (_queryParams == null)
-                {
-                    var dict = new List<KeyValuePair<string, string>>();
-
-                    if (Query.IsNotNullOrWhiteSpace())
-                    {
-                        foreach (var pair in Query.Split('&'))
-                        {
-                            var split = pair.Split(new[] { '=' }, 2);
-
-                            if (split.Length == 1)
-                            {
-                                dict.Add(new KeyValuePair<string, string>(Uri.UnescapeDataString(split[0]), null));
-                            }
-                            else
-                            {
-                                dict.Add(new KeyValuePair<string, string>(Uri.UnescapeDataString(split[0]), Uri.UnescapeDataString(split[1])));
-                            }
-                        }
-                    }
-
-                    _queryParams = dict.AsReadOnly();
-                }
-
-                return _queryParams;
-            }
-        }
 
         public HttpUri CombinePath(string path)
         {

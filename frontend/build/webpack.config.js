@@ -76,7 +76,10 @@ module.exports = (env) => {
     },
 
     experiments: {
-      topLevelAwait: true
+      topLevelAwait: true,
+      // webpack 5.110 auto-enables native HTML, whose minimizer strips the quotes from
+      // index.html's attributes. html-webpack-plugin already minifies it.
+      html: false
     },
 
     plugins: [

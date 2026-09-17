@@ -25,4 +25,4 @@ A few sentences describing the overall goals of the pull request's commits.
 
 <!-- If multiple, put each on a separate line -->
 
-- Fixes whisparr/whisparr#XXXX
+- Fixes whisparr/whisparr-eros#XXXX

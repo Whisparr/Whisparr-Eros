@@ -194,7 +194,7 @@ namespace NzbDrone.Core.Download.Clients.Aria2
 
             return new DownloadClientInfo
             {
-                IsLocalhost = Settings.Host.Contains("127.0.0.1") || Settings.Host.Contains("localhost"),
+                IsLocalhost = Settings.Host.IsLocalhostAddress(),
                 OutputRootFolders = new List<OsPath> { _remotePathMappingService.RemapRemoteToLocal(Settings.Host, new OsPath(destDir["dir"])) }
             };
         }
@@ -257,7 +257,7 @@ namespace NzbDrone.Core.Download.Clients.Aria2
             return null;
         }
 
-        private string GetOutputPath(Aria2Status torrent)
+        private static string GetOutputPath(Aria2Status torrent)
         {
             if (torrent.Files.Length == 1)
             {

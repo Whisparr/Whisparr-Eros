@@ -52,12 +52,10 @@ namespace NzbDrone.Core.Download.Clients.FreeboxDownload
             {
                 var outputPath = new OsPath(torrent.DecodedDownloadDirectory);
 
-                if (Settings.DestinationDirectory.IsNotNullOrWhiteSpace())
+                if (Settings.DestinationDirectory.IsNotNullOrWhiteSpace() &&
+                    !new OsPath(Settings.DestinationDirectory).Contains(outputPath))
                 {
-                    if (!new OsPath(Settings.DestinationDirectory).Contains(outputPath))
-                    {
-                        continue;
-                    }
+                    continue;
                 }
 
                 if (Settings.Category.IsNotNullOrWhiteSpace())
@@ -160,7 +158,7 @@ namespace NzbDrone.Core.Download.Clients.FreeboxDownload
 
             return new DownloadClientInfo
             {
-                IsLocalhost = Settings.Host == "127.0.0.1" || Settings.Host == "::1" || Settings.Host == "localhost",
+                IsLocalhost = Settings.Host.IsLocalhostAddress(),
                 OutputRootFolders = new List<OsPath> { _remotePathMappingService.RemapRemoteToLocal(Settings.Host, new OsPath(destDir)) }
             };
         }
@@ -232,7 +230,7 @@ namespace NzbDrone.Core.Download.Clients.FreeboxDownload
             return false;
         }
 
-        private double? GetSeedRatio(RemoteMovie remoteMovie)
+        private static double? GetSeedRatio(RemoteMovie remoteMovie)
         {
             if (remoteMovie.SeedConfiguration == null || remoteMovie.SeedConfiguration.Ratio == null)
             {

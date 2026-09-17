@@ -13,63 +13,6 @@ using Whisparr.Http.REST;
 
 namespace Whisparr.Api.V3.Indexers
 {
-    public class ReleaseResource : RestResource
-    {
-        public string Guid { get; set; }
-        public QualityModel Quality { get; set; }
-        public List<CustomFormatResource> CustomFormats { get; set; }
-        public int CustomFormatScore { get; set; }
-        public int QualityWeight { get; set; }
-        public int Age { get; set; }
-        public double AgeHours { get; set; }
-        public double AgeMinutes { get; set; }
-        public long Size { get; set; }
-        public int IndexerId { get; set; }
-        public string Indexer { get; set; }
-        public string ReleaseGroup { get; set; }
-        public string SubGroup { get; set; }
-        public string ReleaseHash { get; set; }
-        public string Title { get; set; }
-        public bool SceneSource { get; set; }
-        public List<string> MovieTitles { get; set; }
-        public List<Language> Languages { get; set; }
-        public int? MappedMovieId { get; set; }
-        public bool Approved { get; set; }
-        public bool TemporarilyRejected { get; set; }
-        public bool Rejected { get; set; }
-        public int TmdbId { get; set; }
-        public int ImdbId { get; set; }
-        public IEnumerable<string> Rejections { get; set; }
-        public DateTime PublishDate { get; set; }
-        public string CommentUrl { get; set; }
-        public string DownloadUrl { get; set; }
-        public string InfoUrl { get; set; }
-        public bool MovieRequested { get; set; }
-        public bool DownloadAllowed { get; set; }
-        public int ReleaseWeight { get; set; }
-        public string Edition { get; set; }
-
-        public string MagnetUrl { get; set; }
-        public string InfoHash { get; set; }
-        public int? Seeders { get; set; }
-        public int? Leechers { get; set; }
-        public DownloadProtocol Protocol { get; set; }
-        public dynamic IndexerFlags { get; set; }
-
-        // Sent when queuing an unknown release
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-        public int? MovieId { get; set; }
-
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-        public int? DownloadClientId { get; set; }
-
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-        public string DownloadClient { get; set; }
-
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-        public bool? ShouldOverride { get; set; }
-    }
-
     public static class ReleaseResourceMapper
     {
         public static ReleaseResource ToResource(this DownloadDecision model)
@@ -164,5 +107,63 @@ namespace Whisparr.Api.V3.Indexers
 
             return model;
         }
+    }
+
+    public class ReleaseResource : RestResource
+    {
+        public string Guid { get; set; }
+        public QualityModel Quality { get; set; }
+        public List<CustomFormatResource> CustomFormats { get; set; }
+        public int CustomFormatScore { get; set; }
+        public ReleaseHistoryResource History { get; set; }
+        public int QualityWeight { get; set; }
+        public int Age { get; set; }
+        public double AgeHours { get; set; }
+        public double AgeMinutes { get; set; }
+        public long Size { get; set; }
+        public int IndexerId { get; set; }
+        public string Indexer { get; set; }
+        public string ReleaseGroup { get; set; }
+        public string SubGroup { get; set; }
+        public string ReleaseHash { get; set; }
+        public string Title { get; set; }
+        public bool SceneSource { get; set; }
+        public List<string> MovieTitles { get; set; }
+        public List<Language> Languages { get; set; }
+        public int? MappedMovieId { get; set; }
+        public bool Approved { get; set; }
+        public bool TemporarilyRejected { get; set; }
+        public bool Rejected { get; set; }
+        public int TmdbId { get; set; }
+        public int ImdbId { get; set; }
+        public IEnumerable<string> Rejections { get; set; }
+        public DateTime PublishDate { get; set; }
+        public string CommentUrl { get; set; }
+        public string DownloadUrl { get; set; }
+        public string InfoUrl { get; set; }
+        public bool MovieRequested { get; set; }
+        public bool DownloadAllowed { get; set; }
+        public int ReleaseWeight { get; set; }
+        public string Edition { get; set; }
+
+        public string MagnetUrl { get; set; }
+        public string InfoHash { get; set; }
+        public int? Seeders { get; set; }
+        public int? Leechers { get; set; }
+        public DownloadProtocol Protocol { get; set; }
+        public dynamic IndexerFlags { get; set; }
+
+        // Sent when queuing an unknown release
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public int? MovieId { get; set; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public int? DownloadClientId { get; set; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public string DownloadClient { get; set; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public bool? ShouldOverride { get; set; }
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
@@ -10,9 +11,11 @@ using NzbDrone.Common.Extensions;
 using NzbDrone.Core.DecisionEngine;
 using NzbDrone.Core.Download;
 using NzbDrone.Core.Exceptions;
+using NzbDrone.Core.History;
 using NzbDrone.Core.Indexers;
 using NzbDrone.Core.IndexerSearch;
 using NzbDrone.Core.Movies;
+using NzbDrone.Core.Parser;
 using NzbDrone.Core.Parser.Model;
 using NzbDrone.Core.Profiles.Qualities;
 using NzbDrone.Core.Validation;
@@ -30,6 +33,7 @@ namespace Whisparr.Api.V3.Indexers
         private readonly IPrioritizeDownloadDecision _prioritizeDownloadDecision;
         private readonly IDownloadService _downloadService;
         private readonly IMovieService _movieService;
+        private readonly IHistoryService _historyService;
         private readonly Logger _logger;
 
         private readonly ICached<RemoteMovie> _remoteMovieCache;
@@ -40,6 +44,7 @@ namespace Whisparr.Api.V3.Indexers
                              IPrioritizeDownloadDecision prioritizeDownloadDecision,
                              IDownloadService downloadService,
                              IMovieService movieService,
+                             IHistoryService historyService,
                              ICacheManager cacheManager,
                              IQualityProfileService qualityProfileService,
                              Logger logger)
@@ -51,6 +56,7 @@ namespace Whisparr.Api.V3.Indexers
             _prioritizeDownloadDecision = prioritizeDownloadDecision;
             _downloadService = downloadService;
             _movieService = movieService;
+            _historyService = historyService;
             _logger = logger;
 
             PostValidator.RuleFor(s => s.IndexerId).ValidId();
@@ -94,7 +100,7 @@ namespace Whisparr.Api.V3.Indexers
                         ReleaseSource = remoteMovie.ReleaseSource
                     };
 
-                    remoteMovie.Movie = _movieService.GetMovie(release.MovieId!.Value);
+                    remoteMovie.Movie = _movieService.GetMovie(release.MovieId.Value);
                     remoteMovie.ParsedMovieInfo.Quality = release.Quality;
                     remoteMovie.Languages = release.Languages;
                 }
@@ -136,14 +142,28 @@ namespace Whisparr.Api.V3.Indexers
             return await GetRss();
         }
 
+        protected override ReleaseResource MapDecision(DownloadDecision decision, int initialWeight)
+        {
+            var resource = base.MapDecision(decision, initialWeight);
+            _remoteMovieCache.Set(GetCacheKey(resource), decision.RemoteMovie, TimeSpan.FromMinutes(30));
+
+            return resource;
+        }
+
+        private static string GetCacheKey(ReleaseResource resource)
+        {
+            return string.Concat(resource.IndexerId, "_", resource.Guid);
+        }
+
         private async Task<List<ReleaseResource>> GetMovieReleases(int movieId)
         {
             try
             {
                 var decisions = await _releaseSearchService.MovieSearch(movieId, true, true);
                 var prioritizedDecisions = _prioritizeDownloadDecision.PrioritizeDecisionsForMovies(decisions);
+                var history = _historyService.FindByMovieId(movieId);
 
-                return MapDecisions(prioritizedDecisions);
+                return MapDecisions(prioritizedDecisions, history);
             }
             catch (SearchFailedException ex)
             {
@@ -165,17 +185,79 @@ namespace Whisparr.Api.V3.Indexers
             return MapDecisions(prioritizedDecisions);
         }
 
-        protected override ReleaseResource MapDecision(DownloadDecision decision, int initialWeight)
+        private List<ReleaseResource> MapDecisions(IEnumerable<DownloadDecision> decisions, List<MovieHistory> history)
         {
-            var resource = base.MapDecision(decision, initialWeight);
-            _remoteMovieCache.Set(GetCacheKey(resource), decision.RemoteMovie, TimeSpan.FromMinutes(30));
+            var result = new List<ReleaseResource>();
 
-            return resource;
+            foreach (var downloadDecision in decisions)
+            {
+                var release = MapDecision(downloadDecision, result.Count);
+
+                release.History = AddHistory(downloadDecision.RemoteMovie.Release, history);
+
+                result.Add(release);
+            }
+
+            return result;
         }
 
-        private string GetCacheKey(ReleaseResource resource)
+        private ReleaseHistoryResource AddHistory(ReleaseInfo release, List<MovieHistory> history)
         {
-            return string.Concat(resource.IndexerId, "_", resource.Guid);
+            var grabbed = history.FirstOrDefault(h => h.EventType == MovieHistoryEventType.Grabbed &&
+                                                      ((h.Data.TryGetValue("guid", out var guid) && guid == release.Guid) ||
+                                                       (h.Data.TryGetValue("nzbInfoUrl", out var infoUrl) && infoUrl.IsNotNullOrWhiteSpace() && infoUrl.Equals(release.InfoUrl, StringComparison.Ordinal))));
+
+            if (grabbed == null && release.DownloadProtocol == DownloadProtocol.Torrent)
+            {
+                if (release is not TorrentInfo torrentInfo)
+                {
+                    return null;
+                }
+
+                if (torrentInfo.InfoHash.IsNotNullOrWhiteSpace())
+                {
+                    grabbed = history.FirstOrDefault(h => h.EventType == MovieHistoryEventType.Grabbed &&
+                                                          ReleaseComparer.SameTorrent(new ReleaseComparerModel(h),
+                                                              torrentInfo));
+                }
+
+                if (grabbed == null)
+                {
+                    grabbed = history.FirstOrDefault(h => h.EventType == MovieHistoryEventType.Grabbed &&
+                                                          h.SourceTitle == release.Title &&
+                                                          (DownloadProtocol)Convert.ToInt32(
+                                                              h.Data.GetValueOrDefault("protocol")) ==
+                                                          DownloadProtocol.Torrent &&
+                                                          ReleaseComparer.SameTorrent(new ReleaseComparerModel(h),
+                                                              torrentInfo));
+                }
+            }
+            else if (grabbed == null)
+            {
+                grabbed = history.FirstOrDefault(h => h.EventType == MovieHistoryEventType.Grabbed &&
+                                                      ReleaseComparer.SameNzb(new ReleaseComparerModel(h),
+                                                          release));
+            }
+
+            if (grabbed != null)
+            {
+                var resource = new ReleaseHistoryResource
+                {
+                    Grabbed = grabbed.Date,
+                };
+
+                var failedHistory = history.FirstOrDefault(h => h.EventType == MovieHistoryEventType.DownloadFailed &&
+                                                                h.DownloadId == grabbed.DownloadId);
+
+                if (failedHistory != null)
+                {
+                    resource.Failed = failedHistory.Date;
+                }
+
+                return resource;
+            }
+
+            return null;
         }
     }
 }

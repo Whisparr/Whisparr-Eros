@@ -5,15 +5,15 @@
       "repo": "Radarr/Radarr",
       "branch": "develop",
       "owns": "backend",
-      "highWater": "39c172d827a3738af4a2d9e951c7c52ce7153d77",
-      "highWaterNote": "2026-09 'Bump NUnit to 4.5.1', the current tip of Radarr develop. Everything at or before this mark is dispositioned: the ten-month walk opened by the 68b93db78c rollback is closed, and the last two outstanding commits are settled here - 39c172d82 as `have` (we are ahead on NUnit) and e80abdd60 as `defer` (wanted, blocked on upstream wiring RestartableServiceLifetime, which it adds but never registers). Advance only when everything at or before the new mark is settled."
+      "highWater": "a96bf7c3ecb23cb76993770727285dc17a613fbc",
+      "highWaterNote": "2026-09-13 'Multiple Translations updated by Weblate', the current tip of Radarr develop. Everything at or before this mark is dispositioned: 2026-09 closed when 255f38dce (grabbed/blocklisted releases in Interactive Search) landed as its own PR after the rest of the month. Advance only when everything at or before the new mark is settled."
     },
     "sonarr": {
       "repo": "Sonarr/Sonarr",
       "branch": "v5-develop",
       "owns": "frontend",
-      "highWater": "7e627f69470b1a1d20560e31968cf281e711cc2e",
-      "highWaterNote": "2026-07-31 'Fixed: rqbit output path mapping'. Everything at or before this mark is settled: 2026-06 closed when d2f4f2d03 (Custom Filters, #606) and 49df353fa (Statistics Page, #607) landed as their own PRs, and all 36 commits of 2026-07 are dispositioned. Advance only when everything at or before the new mark is settled."
+      "highWater": "91c4ae17c07fb08b7f651e45cfcead6ec7128a2c",
+      "highWaterNote": "2026-09-13 'Fixed: Parsing of multi-episode releases with anime-style release group', the current tip of Sonarr v5-develop. Everything at or before this mark is settled: all of 2026-09 is dispositioned, including the three picks the upstream-watch PR #648 landed without dispositions. Advance only when everything at or before the new mark is settled."
     }
   },
   "dispositions": {
@@ -654,6 +654,97 @@
         "month": "2026-09",
         "disposition": "have",
         "reason": "We are already on NUnit 4 and ahead of it. src/Directory.Build.props pins NUnit 4.6.1 (upstream 4.5.1), NUnit3TestAdapter 6.3.0 and NunitXml.TestLogger 8.0.0 - the same versions this commit moves to - and src/NzbDrone.Test.Common/Whisparr.Test.Common.csproj is on NUnit 4.6.1 too. The test-file half is moot as well: our migration left no classic assertions to convert, so the tree has zero occurrences of CollectionAssert, StringAssert, ClassicAssert or the Assert.AreEqual family, and needs neither upstream's Assert.That rewrites nor their NUnit.Framework.Legacy.ClassicAssert aliases."
+      },
+      "04e27cb264104973e531cf5226430dabf5611786": {
+        "subject": "Bump Sentry to 5.16.3",
+        "month": "2026-09",
+        "disposition": "skip",
+        "reason": "Bump of their Sentry 5.x pin; we are on Sentry 6.10.0 via Whisparr.Common.csproj and do not follow 5.x. The other half removes SentryUploadSymbols=true from Directory.Build.props, and ours is already false - deliberately, so builds do not try to reach Sentry unless asked with -p:SentryUploadSymbols=true."
+      },
+      "48a61bf63aabac13446c3792a1d6e0ec8ccd741d": {
+        "subject": "Bump to 6.4.4",
+        "month": "2026-09",
+        "disposition": "skip",
+        "reason": "Radarr version bump in azure-pipelines.yml. Our versioning is independent."
+      },
+      "35d35321fbe79c41ceae647659ed889af006b1f6": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-09",
+        "disposition": "skip",
+        "reason": "Weblate commit. Translations come from our own Weblate project, never from cherry-picks."
+      },
+      "02834499f47b077f63b993df3d8ec6af6e5ff5f4": {
+        "subject": "Remove unused package references",
+        "month": "2026-09",
+        "disposition": "adapt",
+        "reason": "Nothing here uses Microsoft.Data.SqlClient or System.Configuration.ConfigurationManager either - we run SQLite and Postgres through FluentMigrator.Runner.SQLite/.Postgres. Adapted because we carried them in five projects, not two: Dependabot (#235) added direct references to SignalR, Http and Test.Common to bump the copy that reached them through Core. With Core's reference gone nothing pulls either package in - dotnet list package --include-transitive across all 22 projects in Whisparr.sln shows neither, nor the Azure.Identity/MSAL stack - so all five go. System.Memory, upstream's third removal, is not referenced here."
+      },
+      "36d8492959846d4189b60375835d48ce6e4e2dd2": {
+        "subject": "Bump frontend dependencies",
+        "month": "2026-09",
+        "disposition": "skip",
+        "reason": "npm version bumps. Dependabot owns these here, and we are at or past every version this moves to (fontawesome 7.3.1, lodash 4.18.1, qs 6.16.0, babel 7.29.7, core-js 3.50.0, webpack 5.110.3, postcss 8.5.28). Its @types/react 18.3.28 resolution would also fight our React 19 types."
+      },
+      "516ca5979e0b2ed776778e9b73158aec0a456c96": {
+        "subject": "Restore auto width behavior from previous FontAwesome versions",
+        "month": "2026-09",
+        "disposition": "skip",
+        "reason": "Radarr frontend, and not a fix we need. We have been on FontAwesome 7's fixed-width default since #49 (January 2026), and the few quirks it caused - the trans-male/trans-female gender icons among them - are already corrected in CSS, so flipping every Icon back to auto width would change spacing app-wide for no gain. Sonarr, whose frontend we follow, is on FontAwesome 7 with the same fixedWidth=false Icon and has not made this change."
+      },
+      "0220f0daa9f68ffa40e5f0fe1ce4f909858ceba4": {
+        "subject": "Log warning if hardlinking failed and fallbacks to copy",
+        "month": "2026-09",
+        "disposition": "pick",
+        "reason": "Our DiskTransferService fell back from a failed hardlink to a copy silently, same as upstream before this. Applied as-is, fixture included - DiskTransferServiceFixture already has the WithFailedHardlink helper it uses."
+      },
+      "c52c7f438764e793529e0cdbfdcc12400ff6fc35": {
+        "subject": "New: Filter movies by movie file quality",
+        "month": "2026-09",
+        "disposition": "defer",
+        "blockedBy": "A product decision on whether the movie index should gain a file-quality column and filter. It is a new feature, not a sync fix, so it waits on that call rather than being waved through.",
+        "reason": "Adds MovieFileQualitiesString to MovieStatistics, a movieFileQualities index column and an ARRAY/QUALITY filter. We have neither today - the index filters by quality profile and cutoff, not by the quality of the file on disk - so the skip reason on the Sonarr twin (the index already shows it) does not hold for us. If taken it is an adapt, not a pick: the frontend half is Radarr redux (movieActions/movieIndexActions) and has to land in our React Query filter props, the en.json key has to be our own in sorted position, and the SQLite branch of MovieFilesBuilder needs a quality aggregation upstream only wrote for Postgres. 7004fe8b3 folds in with it."
+      },
+      "7004fe8b3eee3f0280ea440dd6f59e576e0692b1": {
+        "subject": "Produce distinct values in aggregated movie stats from Postgres",
+        "month": "2026-09",
+        "disposition": "skip",
+        "reason": "Adds DISTINCT to the Postgres string_agg calls. Our MovieFilesBuilder aggregates ReleaseGroup only, and MovieStatistics.ReleaseGroups already runs .Distinct() on the split list, so the result is unchanged. The other aggregate it fixes, MovieFileQualitiesString, comes from c52c7f438, which is deferred - if that lands, its DISTINCT goes in with it."
+      },
+      "7946e7bd2cec7a67227c642ab9c9fa61ef1c14c5": {
+        "subject": "Fixed: Switch theme automatically on system change",
+        "month": "2026-09",
+        "disposition": "adapt",
+        "reason": "Real bug here, so it clears the Radarr-frontend gate. ApplyTheme read the raw setting and applied themes.auto, which Styles/Themes resolves once at module load, so with Auto selected the palette never followed a system change until reload. Reproduced in headless Chrome on 6969: under an emulated prefers-color-scheme flip light -> dark -> light, --pageBackground stayed #f5f7fa on eros-develop and went #f5f7fa -> #202020 -> #f5f7fa with the fix. Adapted: only the ApplyTheme half applies - our useTheme already resolves auto before first render and listens for changes (db42ee62e4), and reads settings through React Query rather than Redux."
+      },
+      "223dc1862d980517554acea36541a06c13ee27db": {
+        "subject": "Fix modals on iOS",
+        "month": "2026-09",
+        "disposition": "have",
+        "reason": "Radarr re-spin of sonarr/sonarr@fb7f3badd, which landed here as 44935d32db (Sonarr 2026-05 chunk)."
+      },
+      "92f24bcdb96def15923779e277afea878ee0de3a": {
+        "subject": "Fixed: Improve logging for 'Allowed Hosts' and 'Trusted Networks'",
+        "month": "2026-09",
+        "disposition": "skip",
+        "reason": "Taking the Sonarr original instead (sonarr/sonarr@1b5aa5551), the same way the Trusted Networks setting it follows was taken. The fix is wanted: ConfigureHostFilteringOptions was registered by hand in Startup and again by AutoAddServices scanning Whisparr.Host, so every startup logged the Allowed Hosts line twice."
+      },
+      "3fcf0db80f396059ffc1a4c513075a88a7816080": {
+        "subject": "Don't skip health check if Allowed Hosts is set to *",
+        "month": "2026-09",
+        "disposition": "have",
+        "reason": "Radarr re-spin of sonarr/sonarr@9a7727670, which landed here as 9cc3bff6b9 via #648, followed by our own distinct wildcard message in 9b6ed53869."
+      },
+      "a96bf7c3ecb23cb76993770727285dc17a613fbc": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-09",
+        "disposition": "skip",
+        "reason": "Weblate commit. Translations come from our own Weblate project, never from cherry-picks."
+      },
+      "255f38dce817a5a2fb0cdc9b9476324725dc75b3": {
+        "subject": "Fixed: Refactor showing grabbed/blocklisted releases in Interactive Search",
+        "month": "2026-09",
+        "disposition": "adapt",
+        "reason": "Moves grabbed/failed detection for Interactive Search server-side: ReleaseController attaches a ReleaseHistoryResource to each release, matched by guid, then info URL, then torrent title/protocol/indexer. Our row matched by guid only and marked failures by source title, so a release whose guid changed since the grab showed as never grabbed - reproduced on 6969 with a stub Torznab, where the reissued-guid release now carries its grab. Past the parser gate on substance: the new Parser/ReleaseComparer holds the blocklist's SameNzb/SameTorrent rules moved out of BlocklistService unchanged, no grammar. Adapted rather than picked: the frontend half is Radarr redux, rewritten against our React Query row (keeping its tooltips and our import-list exclusion icon), and the now-unused useMovieBlocklist hook goes. Ported faithfully, including two upstream gaps in ReleaseComparerModel(MovieHistory) - TorrentInfoHash is never set and PublishedDate is the grab time - which Sonarr v5-develop shares. Upstream has no tests; ReleaseComparerFixture, ReleaseControllerFixture and a HistoryRepository test are ours."
       }
     },
     "sonarr": {
@@ -3951,6 +4042,132 @@
         "month": "2026-07",
         "disposition": "skip",
         "reason": "Fixes output path mapping in the rqbit download client. We have no RQBit client under src/NzbDrone.Core/Download/Clients."
+      },
+      "1b5aa55515dd61046759f59ba72c9e5be153de98": {
+        "subject": "Fixed: Improve logging for 'Allowed Hosts' and 'Trusted Networks'",
+        "month": "2026-09",
+        "disposition": "pick",
+        "reason": "Taken in the Radarr 2026-09 sync as the source for the pair, over radarr/radarr@92f24bcdb. Our Startup registered ConfigureHostFilteringOptions by hand while AutoAddServices also registers it from Whisparr.Host, so Configure ran twice and each startup logged the Allowed Hosts line twice - visible in the 6969 logs. After the pick it logs once, and a request with an unlisted Host header still gets 400. Startup.cs conflicted only on the logging filters: kept our Whisparr.Http.Authentication filter alongside the two new ones."
+      },
+      "2eca8c9c61c160a2298c92acf54e7f78fb74f9b9": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-09",
+        "disposition": "skip",
+        "reason": "Weblate commit. Translations come from our own Weblate project, never from cherry-picks."
+      },
+      "3d87d4cb124054e30829829e2605ff29a45b2bce": {
+        "subject": "Fixed: BroadcasTheNet searches for three digit episode numbers",
+        "month": "2026-09",
+        "disposition": "skip",
+        "reason": "Only touches the BroadcastheNet indexer and its fixture. We have no BroadcastheNet indexer under src/NzbDrone.Core/Indexers, and there are no episode numbers to search by here."
+      },
+      "d2b791139ad791011b75ad13a3bafc275688901a": {
+        "subject": "Trim and drop empty entries when splitting host and network lists",
+        "month": "2026-09",
+        "disposition": "have",
+        "reason": "Landed as d00908e232 via the upstream-watch PR #648, trailer intact. Recorded here because #648 merged without writing dispositions."
+      },
+      "5bebd381000220efe1ba47072ff2ffc1a4605d99": {
+        "subject": "Don't show Open Browser setting on unsupported setups",
+        "month": "2026-09",
+        "disposition": "have",
+        "reason": "Our HostSettings already renders Open Browser on Start only when isWindows && mode !== 'service' - the exact condition this adds. It came in with the general settings port off Redux (a93ebd343c, #535)."
+      },
+      "22e0f2bc4fa7f43bfebd612606755b83cd84533f": {
+        "subject": "Cache nuget packages",
+        "month": "2026-09",
+        "disposition": "have",
+        "reason": "Landed as 48d3d147f2 via the upstream-watch PR #648, trailer intact. Recorded here because #648 merged without writing dispositions."
+      },
+      "9614f74c5f483c7aade6917707a435fd2b96f113": {
+        "subject": "Fixed: IPv6 Addresses for Download Clients",
+        "month": "2026-09",
+        "disposition": "adapt",
+        "reason": "Same bug here: our clients compared Host against 127.0.0.1/localhost by string, so ::1 was not local, and BuildBaseUrl and FloodProxy put a bare IPv6 host into the URL unbracketed. HttpUri conflicted because we never took the GeneratedRegex rewrite - applied the same host-group fix ([A-F0-9:.] in place of the stray [[) to our RegexUri, which keeps its RegexDefaults.Timeout. Upstream also edits RQBit and Tribler, which we do not have; those hunks are dropped. Fixtures ported as-is (UrlHostFixture, ValidHostFixture, HttpRequestBuilderFixture cases)."
+      },
+      "6421bb62188c9025a5cb7f34f70f7186e675807e": {
+        "subject": "New: Parse Web release with EAC3 Audio as WEB-DL",
+        "month": "2026-09",
+        "disposition": "adapt",
+        "reason": "Past the parser gate with a narrow reproduction. With a resolution in the name it changes nothing here: an unknown source already falls back to WEB-DL at every resolution, so upstream's 2160p case passes on eros-develop unmodified. A resolution-less scene title (Studio.Name.26.09.01.Performer.Name.WEB.EAC3.5.1.H264-GROUP) fell through to Unknown and now parses as WEBDL-480p. Adapted because our SourceRegex is the Radarr variant (26[45], DDP?5[. ]1); EAC3 goes into the same alternation. Both scene-form cases are ours; ParserTests stays green (1302)."
+      },
+      "4ae579ef5e435f8c019b48417fdd7a6068b79257": {
+        "subject": "Remove unused package references",
+        "month": "2026-09",
+        "disposition": "have",
+        "reason": "Sonarr twin of radarr/radarr@02834499f, adapted in the Radarr 2026-09 sync (e7503c8469): SqlClient and ConfigurationManager are gone from all five projects that carried them. System.Memory, this commit's other removal, was never referenced here."
+      },
+      "9a7727670251d07b23afa2f04ed13315cf1c7cbc": {
+        "subject": "Don't skip health check if Allowed Hosts is set to *",
+        "month": "2026-09",
+        "disposition": "have",
+        "reason": "Landed as 9cc3bff6b9 via the upstream-watch PR #648, trailer intact, followed by our own distinct wildcard message in 9b6ed53869. Recorded here because #648 merged without writing dispositions."
+      },
+      "2ae9bc0946596b1eb873b62de69ab09338da3a3f": {
+        "subject": "Clean up pending changes and fix OAuth on an existing import list",
+        "month": "2026-09",
+        "disposition": "have",
+        "reason": "The bugs it fixes are not in our port. Sonarr's updateFieldValue took a batch, spread the pending-fields Map into an object (which yields nothing) and cleared every pending field whenever the batch matched the saved values. Our useManageProviderSettings, written in the connections port (7380f29396, #521), splits it: updateFieldValue unsets only its own field, and the OAuth path goes through updateFieldValues, which merges into the Map and never unsets. useManageSettings already unsets per key. Moving the comparison from write time to read time would be a refactor for its own sake."
+      },
+      "7c4c81a41859952e1ea9619958a7cd224de5eb92": {
+        "subject": "Fixed: Series mapping by relative base folder name during Manual Import",
+        "month": "2026-09",
+        "disposition": "have",
+        "reason": "Upstream dropped the result of GetSeries on the relative base folder name. Our MovieImport ManualImportService has always assigned it (movie = _parsingService.GetMovie(relativeFile.Split('\\\\', '/')[0])), so the bug never existed here."
+      },
+      "5352e16d95a785aee1b760a7593857350c6a94ec": {
+        "subject": "Fixed: Pagination for Trakt import lists",
+        "month": "2026-09",
+        "disposition": "skip",
+        "reason": "Only touches the Trakt import lists and their fixtures. We have no Trakt import list - src/NzbDrone.Core/ImportLists carries RSS, StashDB, TMDb and Whisparr; Trakt exists here only as a notification."
+      },
+      "9c0d8deb01a51b35b85b8dbe296bbff87feb0ffb": {
+        "subject": "Update help text for Allowed Hosts",
+        "month": "2026-09",
+        "disposition": "adapt",
+        "reason": "Worth having: the help text now tells people to include the system hostname or Docker container name, which is the usual way to lock yourself out. The upstream en.json hunk was not taken; we rewrote our own two keys in place (they are already in sorted position). Kept our '*.' subdomain wildcard sentence, which upstream dropped although both parsers still honour it, and used whisparr in the examples."
+      },
+      "acd45e4be3716028167e9f43baf01b064884cc48": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-09",
+        "disposition": "skip",
+        "reason": "Weblate commit. Translations come from our own Weblate project, never from cherry-picks."
+      },
+      "ae29755cfa9a0deada5ec46ecb0cf16848e59586": {
+        "subject": "Log warning if hardlinking failed and fallbacks to copy",
+        "month": "2026-09",
+        "disposition": "have",
+        "reason": "Sonarr original of radarr/radarr@0220f0daa, which landed in the Radarr 2026-09 sync as 234caa9ada - same DiskTransferService change and fixture."
+      },
+      "808d483613b423abdfef2a9e0ab43982194d6d96": {
+        "subject": "Fixed: Don't parse release group as hash",
+        "month": "2026-09",
+        "disposition": "skip",
+        "reason": "Parser gate, no reproduction possible. Every regex it edits is an anime or episode pattern we do not carry, and none of our Parser.cs patterns defines a hash group at all, so GetReleaseHash never returns anything here. The new test cases are S3E10-style episode titles."
+      },
+      "d4b99a10199de7145199f2498a42c39e44056a2c": {
+        "subject": "Add missing content types to v5 API",
+        "month": "2026-09",
+        "disposition": "skip",
+        "reason": "Mixed, and neither half applies. 18 of 22 files are under src/Sonarr.Api.V5, which we do not have. The four Sonarr.Http files move ApiInfo, Authentication, InitializeJson and Ping to TypedResults for OpenAPI response metadata - no behaviour change, and we no longer publish openapi.json. The ApiInfoController half would also report v5 as current and v3 as deprecated, which is wrong for us."
+      },
+      "fd484eb6287dd93a0bad4c86d48585dff3de4b21": {
+        "subject": "Bump .NET to 10.0.12",
+        "month": "2026-09",
+        "disposition": "have",
+        "reason": "Dependabot got there first (#649): every Microsoft.* and System.* 10.0.x reference is already 10.0.12 and NUnit3TestAdapter is 6.3.0. Our global.json pins 10.0.101 with rollForward latestFeature, so the SDK pin does not apply."
+      },
+      "368a40acef6d35d9436f27153f67353bd2d313d6": {
+        "subject": "Parse full range for multi-season packs",
+        "month": "2026-09",
+        "disposition": "skip",
+        "reason": "Parser gate, no reproduction possible. Multi-season pack parsing (S01-S05) plus a ParsedEpisodeInfo field and MultiSeasonSpecification - we have no seasons."
+      },
+      "91c4ae17c07fb08b7f651e45cfcead6ec7128a2c": {
+        "subject": "Fixed: Parsing of multi-episode releases with anime-style release group",
+        "month": "2026-09",
+        "disposition": "skip",
+        "reason": "Parser gate, no reproduction possible. Splits an anime [SubGroup] Title S04E17-28 pattern; we carry no anime or episode patterns."
       }
     }
   }
