@@ -196,7 +196,7 @@ namespace Whisparr.Api.V3.MovieFiles
                 }
                 else
                 {
-                    var movie = _movieService.GetMovie(movieFiles[0].MovieId);
+                    var movie = _movieService.GetMovie(movieFile.MovieId);
 
                     _mediaFileDeletionService.DeleteMovieFile(movie, movieFile);
                 }
