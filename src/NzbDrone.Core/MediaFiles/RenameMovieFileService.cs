@@ -78,6 +78,49 @@ namespace NzbDrone.Core.MediaFiles
             return GetRenamePreviewsForMovies(_movieService.GetByStudioForeignId(studioForeignId));
         }
 
+        public void Execute(RenameFilesCommand message)
+        {
+            // Files may span several titles when renaming from a performer or studio,
+            // so each file is renamed against its own movie rather than message.MovieId
+            var movieFiles = _mediaFileService.GetMovies(message.Files);
+            var movies = movieFiles.Count == 0
+                ? new Dictionary<int, Movie>()
+                : _movieService.GetMovies(movieFiles.Select(f => f.MovieId).Distinct()).ToDictionary(m => m.Id);
+
+            foreach (var group in movieFiles.GroupBy(f => f.MovieId))
+            {
+                if (!movies.TryGetValue(group.Key, out var movie))
+                {
+                    _logger.Warn("Movie {0} not found, skipping rename of {1} files", group.Key, group.Count());
+                    continue;
+                }
+
+                var files = group.ToList();
+
+                _logger.ProgressInfo("Renaming {0} files for {1}", files.Count, movie.Title);
+                var renamedFiles = RenameFiles(files, movie);
+                _logger.ProgressInfo("{0} selected movie files renamed for {1}", renamedFiles.Count, movie.Title);
+            }
+
+            _eventAggregator.PublishEvent(new RenameCompletedEvent());
+        }
+
+        public void Execute(RenameMovieCommand message)
+        {
+            _logger.Debug("Renaming movie files for selected movie");
+            var moviesToRename = _movieService.GetMovies(message.MovieIds);
+
+            foreach (var movie in moviesToRename)
+            {
+                var movieFiles = _mediaFileService.GetFilesByMovie(movie.Id);
+                _logger.ProgressInfo("Renaming movie files for {0}", movie.Title);
+                var renamedFiles = RenameFiles(movieFiles, movie);
+                _logger.ProgressInfo("{0} movie files renamed for {1}", renamedFiles.Count, movie.Title);
+            }
+
+            _eventAggregator.PublishEvent(new RenameCompletedEvent());
+        }
+
         private List<RenameMovieFilePreview> GetRenamePreviewsForMovies(List<Movie> movies)
         {
             // A performer with several credits on one title is returned once per credit
@@ -154,11 +197,11 @@ namespace NzbDrone.Core.MediaFiles
                 }
                 catch (FileAlreadyExistsException ex)
                 {
-                    _logger.Warn("File not renamed, there is already a file at the destination: {0}", ex.Filename);
+                    _logger.Warn(ex, "File not renamed, there is already a file at the destination: {0}", ex.Filename);
                 }
                 catch (SameFilenameException ex)
                 {
-                    _logger.Debug("File not renamed, source and destination are the same: {0}", ex.Filename);
+                    _logger.Debug(ex, "File not renamed, source and destination are the same: {0}", ex.Filename);
                 }
                 catch (Exception ex)
                 {
@@ -174,49 +217,6 @@ namespace NzbDrone.Core.MediaFiles
             }
 
             return renamed;
-        }
-
-        public void Execute(RenameFilesCommand message)
-        {
-            // Files may span several titles when renaming from a performer or studio,
-            // so each file is renamed against its own movie rather than message.MovieId
-            var movieFiles = _mediaFileService.GetMovies(message.Files);
-            var movies = movieFiles.Count == 0
-                ? new Dictionary<int, Movie>()
-                : _movieService.GetMovies(movieFiles.Select(f => f.MovieId).Distinct()).ToDictionary(m => m.Id);
-
-            foreach (var group in movieFiles.GroupBy(f => f.MovieId))
-            {
-                if (!movies.TryGetValue(group.Key, out var movie))
-                {
-                    _logger.Warn("Movie {0} not found, skipping rename of {1} files", group.Key, group.Count());
-                    continue;
-                }
-
-                var files = group.ToList();
-
-                _logger.ProgressInfo("Renaming {0} files for {1}", files.Count, movie.Title);
-                var renamedFiles = RenameFiles(files, movie);
-                _logger.ProgressInfo("{0} selected movie files renamed for {1}", renamedFiles.Count, movie.Title);
-            }
-
-            _eventAggregator.PublishEvent(new RenameCompletedEvent());
-        }
-
-        public void Execute(RenameMovieCommand message)
-        {
-            _logger.Debug("Renaming movie files for selected movie");
-            var moviesToRename = _movieService.GetMovies(message.MovieIds);
-
-            foreach (var movie in moviesToRename)
-            {
-                var movieFiles = _mediaFileService.GetFilesByMovie(movie.Id);
-                _logger.ProgressInfo("Renaming movie files for {0}", movie.Title);
-                var renamedFiles = RenameFiles(movieFiles, movie);
-                _logger.ProgressInfo("{0} movie files renamed for {1}", renamedFiles.Count, movie.Title);
-            }
-
-            _eventAggregator.PublishEvent(new RenameCompletedEvent());
         }
     }
 }

@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import find from 'lodash/find';
 import React, {
   useCallback,
   useEffect,
@@ -66,7 +66,7 @@ import {
 import styles from './StudioDetails.css';
 
 function getFanartUrl(images: Image[]): string | undefined {
-  return _.find(images, { coverType: 'fanart' })?.url;
+  return find(images, { coverType: 'fanart' })?.url;
 }
 
 function StudioDetails() {

@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import find from 'lodash/find';
 import React, { useCallback, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Flag from 'react-world-flags';
@@ -54,7 +54,7 @@ import styles from './PerformerDetails.css';
 function getFanartUrl(
   images: Array<{ coverType: string; url: string }>
 ): string | undefined {
-  return _.find(images, { coverType: 'fanart' })?.url;
+  return find(images, { coverType: 'fanart' })?.url;
 }
 
 function PerformerDetails() {

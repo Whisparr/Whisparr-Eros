@@ -43,77 +43,6 @@ namespace NzbDrone.Core.Test.MediaFiles
                   .Returns<IEnumerable<int>>(ids => new List<Movie> { _movie }.Where(m => ids.Contains(m.Id)).ToList());
         }
 
-        private void GivenPreviewNaming()
-        {
-            // File 1 gets a new name, every other file already matches the naming format
-            Mocker.GetMock<IBuildFileNames>()
-                  .Setup(s => s.BuildFileName(It.IsAny<Movie>(), It.IsAny<MovieFile>(), null, null, false))
-                  .Returns<Movie, MovieFile, NamingConfig, List<CustomFormat>, bool>((m, f, n, c, sample) =>
-                      f.Id == 1 ? "renamed" : Path.GetFileNameWithoutExtension(f.RelativePath));
-
-            Mocker.GetMock<IBuildFileNames>()
-                  .Setup(s => s.BuildFilePath(It.IsAny<Movie>(), It.IsAny<string>(), It.IsAny<string>()))
-                  .Returns<Movie, string, string>((m, name, ext) => Path.Combine(m.Path, name + ext));
-        }
-
-        private List<Movie> GivenMoviesWithFiles(params int[] movieIds)
-        {
-            var movies = movieIds.Distinct()
-                                 .Select(id => Builder<Movie>.CreateNew()
-                                                             .With(m => m.Id = id)
-                                                             .With(m => m.Path = Path.Combine("/media", $"movie{id}").AsOsAgnostic())
-                                                             .Build())
-                                 .ToList();
-
-            var files = movies.Select(m => Builder<MovieFile>.CreateNew()
-                                                           .With(f => f.Id = m.Id)
-                                                           .With(f => f.MovieId = m.Id)
-                                                           .With(f => f.RelativePath = $"file{m.Id}.mkv")
-                                                           .Build())
-                              .ToList();
-
-            Mocker.GetMock<IMovieService>()
-                  .Setup(s => s.GetMovies(It.IsAny<IEnumerable<int>>()))
-                  .Returns<IEnumerable<int>>(ids => movies.Where(m => ids.Contains(m.Id)).ToList());
-
-            Mocker.GetMock<IMediaFileService>()
-                  .Setup(s => s.GetFilesByMovies(It.IsAny<IEnumerable<int>>()))
-                  .Returns<IEnumerable<int>>(ids => files.Where(f => ids.Contains(f.MovieId)).ToList());
-
-            Mocker.GetMock<IMediaFileService>()
-                  .Setup(s => s.GetMovies(It.IsAny<IEnumerable<int>>()))
-                  .Returns<IEnumerable<int>>(ids => files.Where(f => ids.Contains(f.Id)).ToList());
-
-            // Mirrors a performer credited more than once on the same title
-            return movieIds.Select(id => movies.Single(m => m.Id == id)).ToList();
-        }
-
-        private void GivenNoMovieFiles()
-        {
-            Mocker.GetMock<IMediaFileService>()
-                  .Setup(s => s.GetMovies(It.IsAny<IEnumerable<int>>()))
-                  .Returns(new List<MovieFile>());
-        }
-
-        private void GivenMovieFiles()
-        {
-            Mocker.GetMock<IMediaFileService>()
-                  .Setup(s => s.GetMovies(It.IsAny<IEnumerable<int>>()))
-                  .Returns(_movieFiles);
-        }
-
-        private void GivenMovedFiles()
-        {
-            Mocker.GetMock<IMoveMovieFiles>()
-                  .Setup(s => s.MoveMovieFile(It.IsAny<MovieFile>(), _movie, false));
-        }
-
-        private void GivenMovedFilesAndRenameFolder()
-        {
-            Mocker.GetMock<IMoveMovieFiles>()
-                  .Setup(s => s.MoveMovieFile(It.IsAny<MovieFile>(), _movie, true));
-        }
-
         [Test]
         public void should_not_publish_event_if_no_files_to_rename()
         {
@@ -256,6 +185,77 @@ namespace NzbDrone.Core.Test.MediaFiles
 
             Mocker.GetMock<IMediaFileService>()
                   .Verify(v => v.GetFilesByMovies(It.IsAny<IEnumerable<int>>()), Times.Never());
+        }
+
+        private void GivenPreviewNaming()
+        {
+            // File 1 gets a new name, every other file already matches the naming format
+            Mocker.GetMock<IBuildFileNames>()
+                  .Setup(s => s.BuildFileName(It.IsAny<Movie>(), It.IsAny<MovieFile>(), null, null, false))
+                  .Returns<Movie, MovieFile, NamingConfig, List<CustomFormat>, bool>((m, f, n, c, sample) =>
+                      f.Id == 1 ? "renamed" : Path.GetFileNameWithoutExtension(f.RelativePath));
+
+            Mocker.GetMock<IBuildFileNames>()
+                  .Setup(s => s.BuildFilePath(It.IsAny<Movie>(), It.IsAny<string>(), It.IsAny<string>()))
+                  .Returns<Movie, string, string>((m, name, ext) => Path.Combine(m.Path, name + ext));
+        }
+
+        private List<Movie> GivenMoviesWithFiles(params int[] movieIds)
+        {
+            var movies = movieIds.Distinct()
+                                 .Select(id => Builder<Movie>.CreateNew()
+                                                             .With(m => m.Id = id)
+                                                             .With(m => m.Path = Path.Combine("/media", $"movie{id}").AsOsAgnostic())
+                                                             .Build())
+                                 .ToList();
+
+            var files = movies.Select(m => Builder<MovieFile>.CreateNew()
+                                                           .With(f => f.Id = m.Id)
+                                                           .With(f => f.MovieId = m.Id)
+                                                           .With(f => f.RelativePath = $"file{m.Id}.mkv")
+                                                           .Build())
+                              .ToList();
+
+            Mocker.GetMock<IMovieService>()
+                  .Setup(s => s.GetMovies(It.IsAny<IEnumerable<int>>()))
+                  .Returns<IEnumerable<int>>(ids => movies.Where(m => ids.Contains(m.Id)).ToList());
+
+            Mocker.GetMock<IMediaFileService>()
+                  .Setup(s => s.GetFilesByMovies(It.IsAny<IEnumerable<int>>()))
+                  .Returns<IEnumerable<int>>(ids => files.Where(f => ids.Contains(f.MovieId)).ToList());
+
+            Mocker.GetMock<IMediaFileService>()
+                  .Setup(s => s.GetMovies(It.IsAny<IEnumerable<int>>()))
+                  .Returns<IEnumerable<int>>(ids => files.Where(f => ids.Contains(f.Id)).ToList());
+
+            // Mirrors a performer credited more than once on the same title
+            return movieIds.Select(id => movies.Single(m => m.Id == id)).ToList();
+        }
+
+        private void GivenNoMovieFiles()
+        {
+            Mocker.GetMock<IMediaFileService>()
+                  .Setup(s => s.GetMovies(It.IsAny<IEnumerable<int>>()))
+                  .Returns(new List<MovieFile>());
+        }
+
+        private void GivenMovieFiles()
+        {
+            Mocker.GetMock<IMediaFileService>()
+                  .Setup(s => s.GetMovies(It.IsAny<IEnumerable<int>>()))
+                  .Returns(_movieFiles);
+        }
+
+        private void GivenMovedFiles()
+        {
+            Mocker.GetMock<IMoveMovieFiles>()
+                  .Setup(s => s.MoveMovieFile(It.IsAny<MovieFile>(), _movie, false));
+        }
+
+        private void GivenMovedFilesAndRenameFolder()
+        {
+            Mocker.GetMock<IMoveMovieFiles>()
+                  .Setup(s => s.MoveMovieFile(It.IsAny<MovieFile>(), _movie, true));
         }
     }
 }
