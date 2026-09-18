@@ -127,7 +127,7 @@ namespace Whisparr.Api.V3
         [HttpPut("bulk")]
         [Consumes("application/json")]
         [Produces("application/json")]
-        public virtual ActionResult<TProviderResource> UpdateProvider([FromBody] TBulkProviderResource providerResource)
+        public virtual ActionResult<List<TProviderResource>> UpdateProvider([FromBody] TBulkProviderResource providerResource)
         {
             if (!providerResource.Ids.Any())
             {
