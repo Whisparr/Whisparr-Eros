@@ -42,11 +42,6 @@ namespace Whisparr.Api.V3.CustomFormats
             });
         }
 
-        protected override CustomFormatResource GetResourceById(int id)
-        {
-            return _formatService.GetById(id).ToResource(true);
-        }
-
         [HttpGet]
         [Produces("application/json")]
         public List<CustomFormatResource> GetAll()
@@ -131,22 +126,27 @@ namespace Whisparr.Api.V3.CustomFormats
             return schema;
         }
 
-        private void Validate(CustomFormat definition)
-        {
-            foreach (var spec in definition.Specifications)
-            {
-                var validationResult = spec.Validate();
-                VerifyValidationResult(validationResult);
-            }
-        }
-
-        protected void VerifyValidationResult(ValidationResult validationResult)
+        protected static void VerifyValidationResult(ValidationResult validationResult)
         {
             var result = new NzbDroneValidationResult(validationResult.Errors);
 
             if (!result.IsValid)
             {
                 throw new ValidationException(result.Errors);
+            }
+        }
+
+        protected override CustomFormatResource GetResourceById(int id)
+        {
+            return _formatService.GetById(id).ToResource(true);
+        }
+
+        private static void Validate(CustomFormat definition)
+        {
+            foreach (var spec in definition.Specifications)
+            {
+                var validationResult = spec.Validate();
+                VerifyValidationResult(validationResult);
             }
         }
 

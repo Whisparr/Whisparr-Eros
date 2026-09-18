@@ -38,11 +38,6 @@ namespace Whisparr.Api.V3.Qualities
             return Accepted(model.Id);
         }
 
-        protected override QualityDefinitionResource GetResourceById(int id)
-        {
-            return _qualityDefinitionService.GetById(id).ToResource();
-        }
-
         [HttpGet]
         public List<QualityDefinitionResource> GetAll()
         {
@@ -77,6 +72,11 @@ namespace Whisparr.Api.V3.Qualities
             {
                 BroadcastResourceChange(ModelAction.Sync);
             }
+        }
+
+        protected override QualityDefinitionResource GetResourceById(int id)
+        {
+            return _qualityDefinitionService.GetById(id).ToResource();
         }
     }
 }

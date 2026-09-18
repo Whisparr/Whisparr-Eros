@@ -47,17 +47,6 @@ namespace NzbDrone.Api.Test.v3.Performers
                 .Returns<List<Performer>>(p => p);
         }
 
-        private static PerformerEditorResource GivenResource()
-        {
-            return new PerformerEditorResource { PerformerIds = new List<int> { 1, 2 } };
-        }
-
-        private void GivenExistingAfterDates()
-        {
-            _performers[0].AfterDate = new DateTime(2020, 1, 1);
-            _performers[1].AfterDate = new DateTime(2021, 2, 2);
-        }
-
         [Test]
         public void should_set_the_after_date_on_every_performer()
         {
@@ -90,8 +79,8 @@ namespace NzbDrone.Api.Test.v3.Performers
 
             Subject.SaveAll(GivenResource());
 
-            _performers[0].AfterDate.Should().Be(new DateTime(2020, 1, 1));
-            _performers[1].AfterDate.Should().Be(new DateTime(2021, 2, 2));
+            _performers[0].AfterDate.Should().Be(new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc));
+            _performers[1].AfterDate.Should().Be(new DateTime(2021, 2, 2, 0, 0, 0, DateTimeKind.Utc));
         }
 
         [Test]
@@ -106,7 +95,7 @@ namespace NzbDrone.Api.Test.v3.Performers
             // the date on every selected performer instead of setting the one the user typed.
             Assert.Throws<ValidationException>(() => Subject.SaveAll(resource));
 
-            _performers[0].AfterDate.Should().Be(new DateTime(2020, 1, 1));
+            _performers[0].AfterDate.Should().Be(new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc));
             Mocker.GetMock<IPerformerService>().Verify(s => s.Update(It.IsAny<List<Performer>>()), Times.Never());
         }
 
@@ -123,6 +112,17 @@ namespace NzbDrone.Api.Test.v3.Performers
             var resources = response.Value.Should().BeOfType<List<PerformerResource>>().Subject;
             resources.Select(p => p.Id).Should().BeEquivalentTo(new[] { 1, 2 });
             resources.Should().OnlyContain(p => p.AfterDate == "2024-06-01");
+        }
+
+        private static PerformerEditorResource GivenResource()
+        {
+            return new PerformerEditorResource { PerformerIds = new List<int> { 1, 2 } };
+        }
+
+        private void GivenExistingAfterDates()
+        {
+            _performers[0].AfterDate = new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            _performers[1].AfterDate = new DateTime(2021, 2, 2, 0, 0, 0, DateTimeKind.Utc);
         }
     }
 }

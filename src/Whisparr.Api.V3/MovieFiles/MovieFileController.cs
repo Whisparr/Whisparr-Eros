@@ -49,30 +49,6 @@ namespace Whisparr.Api.V3.MovieFiles
             _upgradableSpecification = upgradableSpecification;
         }
 
-        private MovieFileResource MapToResource(MovieFile movieFile)
-        {
-            if (movieFile.MovieId > 0)
-            {
-                return movieFile.ToResource(movieFile.Movie, _upgradableSpecification, _formatCalculator);
-            }
-
-            return movieFile.ToResource();
-        }
-
-        protected override MovieFileResource GetResourceById(int id)
-        {
-            var movieFile = _mediaFileService.GetMovie(id);
-            var movie = new Movie();
-            if (movieFile.MovieId != 0)
-            {
-                movie = _movieService.GetMovie(movieFile.MovieId);
-            }
-
-            var resource = movieFile.ToResource(movie, _upgradableSpecification, _formatCalculator);
-
-            return resource;
-        }
-
         [HttpGet]
         [Produces("application/json")]
         public List<MovieFileResource> GetMovieFiles([FromQuery(Name = "movieId")] List<int> movieIds, [FromQuery] List<int> movieFileIds, bool? unmapped)
@@ -83,7 +59,7 @@ namespace Whisparr.Api.V3.MovieFiles
                 return files.ConvertAll(f => MapToResource(f));
             }
 
-            var movieFiles = new List<MovieFile>();
+            List<MovieFile> movieFiles;
 
             if (!movieIds.Any() && !movieFileIds.Any())
             {
@@ -174,7 +150,7 @@ namespace Whisparr.Api.V3.MovieFiles
 
             _mediaFileService.Update(movieFiles);
 
-            var movie = _movieService.GetMovie(movieFiles.First().MovieId);
+            var movie = _movieService.GetMovie(movieFiles[0].MovieId);
 
             return Accepted(movieFiles.ConvertAll(f => f.ToResource(movie, _upgradableSpecification, _formatCalculator)));
         }
@@ -220,7 +196,7 @@ namespace Whisparr.Api.V3.MovieFiles
                 }
                 else
                 {
-                    var movie = _movieService.GetMovie(movieFiles.First().MovieId);
+                    var movie = _movieService.GetMovie(movieFiles[0].MovieId);
 
                     _mediaFileDeletionService.DeleteMovieFile(movie, movieFile);
                 }
@@ -274,7 +250,7 @@ namespace Whisparr.Api.V3.MovieFiles
 
             _mediaFileService.Update(movieFiles);
 
-            var movie = _movieService.GetMovie(movieFiles.First().MovieId);
+            var movie = _movieService.GetMovie(movieFiles[0].MovieId);
 
             return Accepted(movieFiles.ConvertAll(f => f.ToResource(movie, _upgradableSpecification, _formatCalculator)));
         }
@@ -288,7 +264,8 @@ namespace Whisparr.Api.V3.MovieFiles
         [NonAction]
         public void Handle(MovieFileUpdatedEvent message)
         {
-            ArgumentNullException.ThrowIfNull(message?.MovieFile);
+            ArgumentNullException.ThrowIfNull(message);
+            ArgumentNullException.ThrowIfNull(message.MovieFile);
             BroadcastResourceChange(ModelAction.Updated, message.MovieFile.Id);
         }
 
@@ -296,6 +273,30 @@ namespace Whisparr.Api.V3.MovieFiles
         public void Handle(MovieFileDeletedEvent message)
         {
             BroadcastResourceChange(ModelAction.Deleted, message.MovieFile.Id);
+        }
+
+        protected override MovieFileResource GetResourceById(int id)
+        {
+            var movieFile = _mediaFileService.GetMovie(id);
+            var movie = new Movie();
+            if (movieFile.MovieId != 0)
+            {
+                movie = _movieService.GetMovie(movieFile.MovieId);
+            }
+
+            var resource = movieFile.ToResource(movie, _upgradableSpecification, _formatCalculator);
+
+            return resource;
+        }
+
+        private MovieFileResource MapToResource(MovieFile movieFile)
+        {
+            if (movieFile.MovieId > 0)
+            {
+                return movieFile.ToResource(movieFile.Movie, _upgradableSpecification, _formatCalculator);
+            }
+
+            return movieFile.ToResource();
         }
     }
 }
