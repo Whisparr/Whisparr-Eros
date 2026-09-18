@@ -38,6 +38,8 @@ import posterPlaceholder from 'Components/posterPlaceholder';
 import Tooltip from 'Components/Tooltip/Tooltip';
 import { useMovieMonitorAvailability } from 'Helpers/Hooks/useMovieMonitorAvailability';
 import { align, icons, kinds, sizes, tooltipPositions } from 'Helpers/Props';
+import OrganizePreviewModal from 'Organize/OrganizePreviewModal';
+import useOrganizeAvailability from 'Organize/useOrganizeAvailability';
 import QualityProfileName from 'Settings/Profiles/Quality/QualityProfileName';
 import DeleteStudioModal from 'Studio/Delete/DeleteStudioModal';
 import EditStudioModal from 'Studio/Edit/EditStudioModal';
@@ -76,6 +78,14 @@ function StudioDetails() {
   const [scrollContainer, setScrollContainer] = useState<Element | null>(null);
   const [isPosterOptionsModalOpen, setIsPosterOptionsModalOpen] =
     useState(false);
+  const [isOrganizeModalOpen, setIsOrganizeModalOpen] = useState(false);
+  const { canRename, title: organizeTitle } = useOrganizeAvailability(allWorks);
+  const handleOrganizePress = useCallback(() => {
+    setIsOrganizeModalOpen(true);
+  }, []);
+  const handleOrganizeModalClose = useCallback(() => {
+    setIsOrganizeModalOpen(false);
+  }, []);
   const worksView = useStudioDetailsOption('view');
   const posterOptions = useStudioDetailsOption('posterOptions');
   const handleWorksViewSelect = useCallback((view: string) => {
@@ -298,6 +308,14 @@ function StudioDetails() {
             isSpinning={isSearching}
             title={undefined}
             onPress={onSearchPress}
+          />
+
+          <PageToolbarButton
+            label={translate('PreviewRename')}
+            iconName={icons.ORGANIZE}
+            title={organizeTitle}
+            isDisabled={!canRename}
+            onPress={handleOrganizePress}
           />
 
           <PageToolbarSeparator />
@@ -666,6 +684,13 @@ function StudioDetails() {
               isOpen={isDeleteMovieModalOpen}
               studio={studio}
               onModalClose={handleDeleteMovieModalClose}
+            />
+
+            <OrganizePreviewModal
+              isOpen={isOrganizeModalOpen}
+              studioForeignId={studio.foreignId}
+              items={allWorks}
+              onModalClose={handleOrganizeModalClose}
             />
           </>
         )}

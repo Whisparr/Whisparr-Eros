@@ -8,12 +8,17 @@ export interface OrganizePreviewModel extends ModelBase {
   newPath: string;
 }
 
+export type OrganizePreviewScope =
+  | { movieId: number }
+  | { performerForeignId: string }
+  | { studioForeignId: string };
+
 const DEFAULT_ORGANIZE_PREVIEW: OrganizePreviewModel[] = [];
 
-const useOrganizePreview = (movieId: number) => {
+const useOrganizePreview = (scope: OrganizePreviewScope) => {
   const { data, ...result } = useApiQuery<OrganizePreviewModel[]>({
     path: '/rename',
-    queryParams: { movieId },
+    queryParams: { ...scope },
   });
 
   return {

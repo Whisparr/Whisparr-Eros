@@ -12,6 +12,20 @@
   margin-top: 10px;
 }
 
+.group {
+  margin-bottom: 20px;
+
+  &:last-of-type {
+    margin-bottom: 0;
+  }
+}
+
+.groupTitle {
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--borderColor);
+  font-weight: bold;
+}
+
 .selectAllInputContainer {
   margin-right: auto;
   line-height: 30px;
