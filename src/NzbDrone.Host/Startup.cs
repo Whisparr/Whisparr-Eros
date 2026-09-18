@@ -24,6 +24,7 @@ using NzbDrone.Core.Instrumentation;
 using NzbDrone.Core.Lifecycle;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Host.AccessControl;
+using NzbDrone.Host.OpenApi;
 using NzbDrone.Http.Authentication;
 using NzbDrone.SignalR;
 using Whisparr.Api.V3.System;
@@ -125,6 +126,7 @@ namespace NzbDrone.Host
                     In = ParameterLocation.Header
                 };
 
+                c.CustomOperationIds(api => OperationIds.FromRoute(api.HttpMethod, api.RelativePath));
                 c.AddSecurityDefinition("X-Api-Key", apiKeyHeader);
 
                 c.AddSecurityRequirement(document => new OpenApiSecurityRequirement
@@ -157,6 +159,9 @@ namespace NzbDrone.Host
                 {
                     [new OpenApiSecuritySchemeReference(apikeyQuery.Name, document)] = new List<string>(),
                 });
+
+                c.OperationFilter<AllowAnonymousOperationFilter>();
+                c.SchemaFilter<CommandResourceSchemaFilter>();
 
                 c.DescribeAllParametersInCamelCase();
             });

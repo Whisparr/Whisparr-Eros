@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.CustomFormats;
@@ -41,11 +42,6 @@ namespace Whisparr.Api.V3.CustomFormats
             });
         }
 
-        protected override CustomFormatResource GetResourceById(int id)
-        {
-            return _formatService.GetById(id).ToResource(true);
-        }
-
         [HttpGet]
         [Produces("application/json")]
         public List<CustomFormatResource> GetAll()
@@ -80,7 +76,8 @@ namespace Whisparr.Api.V3.CustomFormats
         [HttpPut("bulk")]
         [Consumes("application/json")]
         [Produces("application/json")]
-        public virtual ActionResult<CustomFormatResource> Update([FromBody] CustomFormatBulkResource resource)
+        [ProducesResponseType(typeof(List<CustomFormatResource>), StatusCodes.Status202Accepted)]
+        public virtual ActionResult<List<CustomFormatResource>> Update([FromBody] CustomFormatBulkResource resource)
         {
             if (!resource.Ids.Any())
             {
@@ -129,22 +126,27 @@ namespace Whisparr.Api.V3.CustomFormats
             return schema;
         }
 
-        private void Validate(CustomFormat definition)
-        {
-            foreach (var spec in definition.Specifications)
-            {
-                var validationResult = spec.Validate();
-                VerifyValidationResult(validationResult);
-            }
-        }
-
-        protected void VerifyValidationResult(ValidationResult validationResult)
+        protected static void VerifyValidationResult(ValidationResult validationResult)
         {
             var result = new NzbDroneValidationResult(validationResult.Errors);
 
             if (!result.IsValid)
             {
                 throw new ValidationException(result.Errors);
+            }
+        }
+
+        protected override CustomFormatResource GetResourceById(int id)
+        {
+            return _formatService.GetById(id).ToResource(true);
+        }
+
+        private static void Validate(CustomFormat definition)
+        {
+            foreach (var spec in definition.Specifications)
+            {
+                var validationResult = spec.Validate();
+                VerifyValidationResult(validationResult);
             }
         }
 

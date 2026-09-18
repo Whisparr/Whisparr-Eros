@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.DecisionEngine.Specifications;
@@ -36,7 +37,8 @@ namespace Whisparr.Api.V3.Studios
         [HttpPut]
         [Consumes("application/json")]
         [Produces("application/json")]
-        public IActionResult SaveAll([FromBody] StudioEditorResource resource)
+        [ProducesResponseType(typeof(List<StudioResource>), StatusCodes.Status202Accepted)]
+        public ActionResult<List<StudioResource>> SaveAll([FromBody] StudioEditorResource resource)
         {
             var studiosToUpdate = _studioService.GetStudios(resource.StudioIds);
 

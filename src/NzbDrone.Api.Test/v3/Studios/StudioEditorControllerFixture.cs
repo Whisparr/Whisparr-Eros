@@ -47,17 +47,6 @@ namespace NzbDrone.Api.Test.v3.Studios
                 .Returns<List<Studio>>(s => s);
         }
 
-        private static StudioEditorResource GivenResource()
-        {
-            return new StudioEditorResource { StudioIds = new List<int> { 1, 2 } };
-        }
-
-        private void GivenExistingAfterDates()
-        {
-            _studios[0].AfterDate = new DateTime(2020, 1, 1);
-            _studios[1].AfterDate = new DateTime(2021, 2, 2);
-        }
-
         [Test]
         public void should_set_the_after_date_on_every_studio()
         {
@@ -90,8 +79,8 @@ namespace NzbDrone.Api.Test.v3.Studios
 
             Subject.SaveAll(GivenResource());
 
-            _studios[0].AfterDate.Should().Be(new DateTime(2020, 1, 1));
-            _studios[1].AfterDate.Should().Be(new DateTime(2021, 2, 2));
+            _studios[0].AfterDate.Should().Be(new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc));
+            _studios[1].AfterDate.Should().Be(new DateTime(2021, 2, 2, 0, 0, 0, DateTimeKind.Utc));
         }
 
         [Test]
@@ -106,7 +95,7 @@ namespace NzbDrone.Api.Test.v3.Studios
             // the date on every selected studio instead of setting the one the user typed.
             Assert.Throws<ValidationException>(() => Subject.SaveAll(resource));
 
-            _studios[0].AfterDate.Should().Be(new DateTime(2020, 1, 1));
+            _studios[0].AfterDate.Should().Be(new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc));
             Mocker.GetMock<IStudioService>().Verify(s => s.Update(It.IsAny<List<Studio>>()), Times.Never());
         }
 
@@ -127,13 +116,24 @@ namespace NzbDrone.Api.Test.v3.Studios
             var resource = GivenResource();
             resource.MoviesMonitored = true;
 
-            var response = (AcceptedResult)Subject.SaveAll(resource);
+            var response = (AcceptedResult)Subject.SaveAll(resource).Result;
 
             // The client replaces its cached studios with this body, so it has to be
             // mapped resources rather than the raw models.
             var resources = response.Value.Should().BeOfType<List<StudioResource>>().Subject;
             resources.Select(s => s.Id).Should().BeEquivalentTo(new[] { 1, 2 });
             resources.Should().OnlyContain(s => s.MoviesMonitored);
+        }
+
+        private static StudioEditorResource GivenResource()
+        {
+            return new StudioEditorResource { StudioIds = new List<int> { 1, 2 } };
+        }
+
+        private void GivenExistingAfterDates()
+        {
+            _studios[0].AfterDate = new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            _studios[1].AfterDate = new DateTime(2021, 2, 2, 0, 0, 0, DateTimeKind.Utc);
         }
     }
 }

@@ -16,11 +16,10 @@ namespace Whisparr.Api.V3.System.Backup
     [V3ApiController("system/backup")]
     public class BackupController : Controller
     {
+        private static readonly List<string> ValidExtensions = new() { ".zip", ".db", ".xml" };
         private readonly IBackupService _backupService;
         private readonly IAppFolderInfo _appFolderInfo;
         private readonly IDiskProvider _diskProvider;
-
-        private static readonly List<string> ValidExtensions = new () { ".zip", ".db", ".xml" };
 
         public BackupController(IBackupService backupService,
                             IAppFolderInfo appFolderInfo,
@@ -37,14 +36,14 @@ namespace Whisparr.Api.V3.System.Backup
             var backups = _backupService.GetBackups();
 
             return backups.Select(b => new BackupResource
-                {
-                    Id = GetBackupId(b),
-                    Name = b.Name,
-                    Path = $"/backup/{b.Type.ToString().ToLower()}/{b.Name}",
-                    Type = b.Type,
-                    Size = b.Size,
-                    Time = b.Time
-                })
+            {
+                Id = GetBackupId(b),
+                Name = b.Name,
+                Path = $"/backup/{b.Type.ToString().ToLower()}/{b.Name}",
+                Type = b.Type,
+                Size = b.Size,
+                Time = b.Time
+            })
                 .OrderByDescending(b => b.Time)
                 .ToList();
         }
@@ -72,7 +71,7 @@ namespace Whisparr.Api.V3.System.Backup
         }
 
         [HttpPost("restore/{id:int}")]
-        public object Restore([FromRoute] int id)
+        public BackupRestoreResource Restore([FromRoute] int id)
         {
             var backup = GetBackup(id);
 
@@ -85,7 +84,7 @@ namespace Whisparr.Api.V3.System.Backup
 
             _backupService.Restore(path);
 
-            return new
+            return new BackupRestoreResource
             {
                 RestartRequired = true
             };
@@ -93,7 +92,7 @@ namespace Whisparr.Api.V3.System.Backup
 
         [HttpPost("restore/upload")]
         [RequestFormLimits(MultipartBodyLengthLimit = 5000000000)]
-        public object UploadAndRestore()
+        public BackupRestoreResource UploadAndRestore()
         {
             var files = Request.Form.Files;
 
@@ -118,20 +117,20 @@ namespace Whisparr.Api.V3.System.Backup
             // Cleanup restored file
             _diskProvider.DeleteFile(path);
 
-            return new
+            return new BackupRestoreResource
             {
                 RestartRequired = true
             };
         }
 
+        private static int GetBackupId(NzbDrone.Core.Backup.Backup backup)
+        {
+            return HashConverter.GetHashInt31($"backup-{backup.Type}-{backup.Name}");
+        }
+
         private string GetBackupPath(NzbDrone.Core.Backup.Backup backup)
         {
             return Path.Combine(_backupService.GetBackupFolder(backup.Type), backup.Name);
-        }
-
-        private int GetBackupId(NzbDrone.Core.Backup.Backup backup)
-        {
-            return HashConverter.GetHashInt31($"backup-{backup.Type}-{backup.Name}");
         }
 
         private NzbDrone.Core.Backup.Backup GetBackup(int id)

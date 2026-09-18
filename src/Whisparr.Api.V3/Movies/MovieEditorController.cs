@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using FluentValidation;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Configuration;
@@ -40,7 +41,8 @@ namespace Whisparr.Api.V3.Movies
 
         [HttpPut]
         [Consumes("application/json")]
-        public IActionResult SaveAll([FromBody] MovieEditorResource resource)
+        [ProducesResponseType(typeof(List<MovieResource>), StatusCodes.Status202Accepted)]
+        public ActionResult<List<MovieResource>> SaveAll([FromBody] MovieEditorResource resource)
         {
             var moviesToUpdate = _movieService.GetMovies(resource.MovieIds);
             var moviesToMove = new List<BulkMoveMovie>();

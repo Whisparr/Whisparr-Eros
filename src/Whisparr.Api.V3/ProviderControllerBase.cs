@@ -49,14 +49,6 @@ namespace Whisparr.Api.V3
             PostValidator.RuleFor(c => c.Fields).NotNull();
         }
 
-        protected override TProviderResource GetResourceById(int id)
-        {
-            var definition = _providerFactory.Get(id);
-            _providerFactory.SetProviderCharacteristics(definition);
-
-            return _resourceMapper.ToResource(definition);
-        }
-
         [HttpGet]
         [Produces("application/json")]
         public List<TProviderResource> GetAll()
@@ -127,7 +119,7 @@ namespace Whisparr.Api.V3
         [HttpPut("bulk")]
         [Consumes("application/json")]
         [Produces("application/json")]
-        public virtual ActionResult<TProviderResource> UpdateProvider([FromBody] TBulkProviderResource providerResource)
+        public virtual ActionResult<List<TProviderResource>> UpdateProvider([FromBody] TBulkProviderResource providerResource)
         {
             if (!providerResource.Ids.Any())
             {
@@ -163,18 +155,6 @@ namespace Whisparr.Api.V3
             _bulkResourceMapper.UpdateModel(providerResource, definitionsToUpdate);
 
             return Accepted(_providerFactory.Update(definitionsToUpdate).Select(x => _resourceMapper.ToResource(x)));
-        }
-
-        private TProviderDefinition GetDefinition(TProviderResource providerResource, TProviderDefinition existingDefinition, bool validate, bool includeWarnings, bool forceValidate)
-        {
-            var definition = _resourceMapper.ToModel(providerResource, existingDefinition);
-
-            if (validate && (definition.Enable || forceValidate))
-            {
-                Validate(definition, includeWarnings);
-            }
-
-            return definition;
         }
 
         [RestDeleteById]
@@ -290,21 +270,7 @@ namespace Whisparr.Api.V3
             BroadcastResourceChange(ModelAction.Deleted, message.ProviderId);
         }
 
-        private void Validate(TProviderDefinition definition, bool includeWarnings)
-        {
-            var validationResult = definition.Settings.Validate();
-
-            VerifyValidationResult(validationResult, includeWarnings);
-        }
-
-        protected virtual void Test(TProviderDefinition definition, bool includeWarnings)
-        {
-            var validationResult = _providerFactory.Test(definition);
-
-            VerifyValidationResult(validationResult, includeWarnings);
-        }
-
-        protected void VerifyValidationResult(ValidationResult validationResult, bool includeWarnings)
+        protected static void VerifyValidationResult(ValidationResult validationResult, bool includeWarnings)
         {
             var result = validationResult as NzbDroneValidationResult ?? new NzbDroneValidationResult(validationResult.Errors);
 
@@ -317,6 +283,40 @@ namespace Whisparr.Api.V3
             {
                 throw new ValidationException(result.Errors);
             }
+        }
+
+        protected override TProviderResource GetResourceById(int id)
+        {
+            var definition = _providerFactory.Get(id);
+            _providerFactory.SetProviderCharacteristics(definition);
+
+            return _resourceMapper.ToResource(definition);
+        }
+
+        protected virtual void Test(TProviderDefinition definition, bool includeWarnings)
+        {
+            var validationResult = _providerFactory.Test(definition);
+
+            VerifyValidationResult(validationResult, includeWarnings);
+        }
+
+        private static void Validate(TProviderDefinition definition, bool includeWarnings)
+        {
+            var validationResult = definition.Settings.Validate();
+
+            VerifyValidationResult(validationResult, includeWarnings);
+        }
+
+        private TProviderDefinition GetDefinition(TProviderResource providerResource, TProviderDefinition existingDefinition, bool validate, bool includeWarnings, bool forceValidate)
+        {
+            var definition = _resourceMapper.ToModel(providerResource, existingDefinition);
+
+            if (validate && (definition.Enable || forceValidate))
+            {
+                Validate(definition, includeWarnings);
+            }
+
+            return definition;
         }
     }
 }
