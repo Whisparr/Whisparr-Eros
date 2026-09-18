@@ -48,7 +48,7 @@ namespace Whisparr.Api.V3.ImportLists
         }
 
         [HttpGet]
-        public object GetDiscoverMovies()
+        public List<ImportListMoviesResource> GetDiscoverMovies()
         {
             var realResults = new List<ImportListMoviesResource>();
             var listExclusions = _importListExclusionService.GetAllExclusions();
@@ -77,7 +77,7 @@ namespace Whisparr.Api.V3.ImportLists
         }
 
         [HttpPost]
-        public object AddMovies([FromBody] List<MovieResource> resource)
+        public List<MovieResource> AddMovies([FromBody] List<MovieResource> resource)
         {
             var newMovies = resource.ToModel();
 
