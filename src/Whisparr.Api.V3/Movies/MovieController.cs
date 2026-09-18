@@ -551,7 +551,7 @@ namespace Whisparr.Api.V3.Movies
         [HttpPatch("{id}")]
         [Consumes("application/json")]
         [Produces("application/json")]
-        public IActionResult PatchMovieMonitored(int id, [FromBody] MoviePatchResource moviePatchResource)
+        public ActionResult<MovieResource> PatchMovieMonitored(int id, [FromBody] MoviePatchResource moviePatchResource)
         {
             // Load the movie
             var movie = _moviesService.GetMovie(id);
