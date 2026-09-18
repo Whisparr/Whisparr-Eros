@@ -9,8 +9,8 @@ namespace NzbDrone.Host.OpenApi
     {
         private const string ApiPrefix = "api/v3/";
 
-        private static readonly Regex ParameterRegex = new Regex(@"^\{(?<name>[^:?}]+)[^}]*\}$", RegexOptions.Compiled);
-        private static readonly Regex WordSeparatorRegex = new Regex("[^A-Za-z0-9]+", RegexOptions.Compiled);
+        private static readonly Regex ParameterRegex = new Regex(@"^\{(?<name>[^:?}]+)[^}]*\}$", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+        private static readonly Regex WordSeparatorRegex = new Regex("[^A-Za-z0-9]+", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
         // Built from the method and path rather than the controller action, so ids only change when the
         // public route does, not when an action is renamed. GET api/v3/tag/{id} becomes getTagById.

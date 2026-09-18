@@ -36,11 +36,11 @@ namespace Whisparr.Api.V3.FileSystem
         {
             if (_diskProvider.FileExists(path))
             {
-                return new FileSystemTypeResource { Type = FileSystemEntityType.File };
+                return new FileSystemTypeResource { Type = FileSystemPathType.File };
             }
 
             // Return folder even if it doesn't exist on disk to avoid leaking anything from the UI about the underlying system
-            return new FileSystemTypeResource { Type = FileSystemEntityType.Folder };
+            return new FileSystemTypeResource { Type = FileSystemPathType.Folder };
         }
 
         [HttpGet("mediafiles")]

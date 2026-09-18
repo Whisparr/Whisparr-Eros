@@ -12,14 +12,6 @@ namespace Whisparr.Api.V3.Indexers
     [V3ApiController]
     public class IndexerController : ProviderControllerBase<IndexerResource, IndexerBulkResource, IIndexer, IndexerDefinition>
     {
-        // Overridden only to name the response. The base returns a list, and an attribute on a
-        // generic method cannot say List<TProviderResource>.
-        [ProducesResponseType(typeof(List<IndexerResource>), StatusCodes.Status202Accepted)]
-        public override ActionResult<List<IndexerResource>> UpdateProvider([FromBody] IndexerBulkResource providerResource)
-        {
-            return base.UpdateProvider(providerResource);
-        }
-
         public static readonly IndexerResourceMapper ResourceMapper = new ();
         public static readonly IndexerBulkResourceMapper BulkResourceMapper = new ();
 
@@ -30,6 +22,14 @@ namespace Whisparr.Api.V3.Indexers
         {
             SharedValidator.RuleFor(c => c.Priority).InclusiveBetween(1, 50);
             SharedValidator.RuleFor(c => c.DownloadClientId).SetValidator(downloadClientExistsValidator);
+        }
+
+        // Overridden only to name the response. The base returns a list, and an attribute on a
+        // generic method cannot say List<TProviderResource>.
+        [ProducesResponseType(typeof(List<IndexerResource>), StatusCodes.Status202Accepted)]
+        public override ActionResult<List<IndexerResource>> UpdateProvider([FromBody] IndexerBulkResource providerResource)
+        {
+            return base.UpdateProvider(providerResource);
         }
     }
 }
