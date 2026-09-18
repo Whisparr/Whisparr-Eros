@@ -1,5 +1,7 @@
 declare namespace OrganizePreviewModalContentCssNamespace {
   export interface IOrganizePreviewModalContentCss {
+    group: string;
+    groupTitle: string;
     path: string;
     previews: string;
     selectAllInput: string;
