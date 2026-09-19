@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NLog;
 using NzbDrone.Common.EnvironmentInfo;
@@ -33,6 +34,8 @@ namespace Whisparr.Http.Authentication
         }
 
         [HttpPost("login")]
+        [ProducesResponseType(StatusCodes.Status302Found)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Login([FromForm] LoginResource resource, [FromQuery] string returnUrl = null)
         {
             var user = _authService.Login(HttpContext.Request, resource.Username, resource.Password);
@@ -86,6 +89,7 @@ namespace Whisparr.Http.Authentication
         }
 
         [HttpGet("logout")]
+        [ProducesResponseType(StatusCodes.Status302Found)]
         public async Task<IActionResult> Logout()
         {
             _authService.Logout(HttpContext);

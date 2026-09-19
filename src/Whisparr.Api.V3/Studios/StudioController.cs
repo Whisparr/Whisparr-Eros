@@ -124,16 +124,25 @@ namespace Whisparr.Api.V3.Studios
             return resource;
         }
 
+        // Hidden from Swagger: base class route GET {id:int} conflicts with GetStudioByForeignId's
+        // GET {studioForeignId}. ASP.NET Core routing distinguishes them at runtime via the int
+        // constraint, but OpenAPI has no equivalent and the two templates are the same path, which
+        // the spec forbids. Integer requests still route here.
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public override ActionResult<StudioResource> GetResourceByIdWithErrorHandler(int id)
+            => base.GetResourceByIdWithErrorHandler(id);
+
         /// <summary>Retrieves a single studio by their external foreign ID (e.g., from StashDb)</summary>
         /// <returns>Studio details with associated movies and local cover URLs</returns>
+        /// <remarks>A numeric value is routed to the internal ID lookup instead.</remarks>
         /// <response code="200">Studio found and returned</response>
         /// <response code="404">Studio with the specified foreign ID not found</response>
-        [HttpGet("{studioForeignId}")]
+        [HttpGet("{id}")]
         [Produces("application/json")]
-        public ActionResult<StudioResource> GetStudioByForeignId(string studioForeignId)
+        public ActionResult<StudioResource> GetStudioByForeignId(string id)
         {
-            var studioResource = GetCachedStudioResource(studioForeignId);
-            if (studioResource == null || studioResource.ForeignId != studioForeignId)
+            var studioResource = GetCachedStudioResource(id);
+            if (studioResource == null || studioResource.ForeignId != id)
             {
                 return NotFound();
             }
