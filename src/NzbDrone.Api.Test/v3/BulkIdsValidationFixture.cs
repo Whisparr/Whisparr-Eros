@@ -34,9 +34,6 @@ namespace NzbDrone.Api.Test.v3
             ("DELETE /exclusions/bulk", (m, ids) => m.Resolve<ImportListExclusionController>().DeleteImportListExclusions(new ImportListExclusionBulkResource { Ids = ToSet(ids) })),
             ("DELETE /queue/bulk", (m, ids) => m.Resolve<QueueController>().RemoveMany(new QueueBulkResource { Ids = ids })),
             ("POST /queue/grab/bulk", (m, ids) => m.Resolve<QueueActionController>().Grab(new QueueBulkResource { Ids = ids }).GetAwaiter().GetResult()),
-#pragma warning disable CS0618 // still routed; the obsolete endpoint 500s the same way
-            ("PUT /moviefile/editor", (m, ids) => m.Resolve<MovieFileController>().SetMovieFile(new MovieFileListResource { MovieFileIds = ids })),
-#pragma warning restore CS0618
             ("DELETE /moviefile/bulk", (m, ids) => m.Resolve<MovieFileController>().DeleteMovieFiles(new MovieFileListResource { MovieFileIds = ids })),
             ("PUT /movie/editor", (m, ids) => m.Resolve<MovieEditorController>().SaveAll(new MovieEditorResource { MovieIds = ids })),
             ("DELETE /movie/editor", (m, ids) => m.Resolve<MovieEditorController>().DeleteMovies(new MovieEditorResource { MovieIds = ids })),

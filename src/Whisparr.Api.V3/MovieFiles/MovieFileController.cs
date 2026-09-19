@@ -106,60 +106,6 @@ namespace Whisparr.Api.V3.MovieFiles
             return Accepted(movieFile.Id);
         }
 
-        [Obsolete("Use bulk endpoint instead")]
-        [HttpPut("editor")]
-        [Consumes("application/json")]
-        [ProducesResponseType(typeof(List<MovieFileResource>), StatusCodes.Status202Accepted)]
-        public ActionResult<List<MovieFileResource>> SetMovieFile([FromBody] MovieFileListResource resource)
-        {
-            if (resource.MovieFileIds == null || resource.MovieFileIds.Count == 0)
-            {
-                throw new Whisparr.Http.REST.BadRequestException("movieFileIds must be provided");
-            }
-
-            var movieFiles = _mediaFileService.GetMovies(resource.MovieFileIds);
-
-            foreach (var movieFile in movieFiles)
-            {
-                if (resource.Quality != null)
-                {
-                    movieFile.Quality = resource.Quality;
-                }
-
-                if (resource.Languages != null)
-                {
-                    // Don't allow user to set files with 'Any' or 'Original' language
-                    movieFile.Languages = resource.Languages.Where(l => l != null && l != Language.Any && l != Language.Original).ToList();
-                }
-
-                if (resource.IndexerFlags != null)
-                {
-                    movieFile.IndexerFlags = (IndexerFlags)resource.IndexerFlags.Value;
-                }
-
-                if (resource.Edition != null)
-                {
-                    movieFile.Edition = resource.Edition;
-                }
-
-                if (resource.ReleaseGroup != null)
-                {
-                    movieFile.ReleaseGroup = resource.ReleaseGroup;
-                }
-
-                if (resource.SceneName != null && SceneChecker.IsSceneTitle(resource.SceneName))
-                {
-                    movieFile.SceneName = resource.SceneName;
-                }
-            }
-
-            _mediaFileService.Update(movieFiles);
-
-            var movie = _movieService.GetMovie(movieFiles[0].MovieId);
-
-            return Accepted(movieFiles.ConvertAll(f => f.ToResource(movie, _upgradableSpecification, _formatCalculator)));
-        }
-
         [RestDeleteById]
         public void DeleteMovieFile(int id)
         {
