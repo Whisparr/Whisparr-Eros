@@ -11,6 +11,9 @@ using Whisparr.Http.Frontend.Mappers;
 
 namespace Whisparr.Http.Frontend
 {
+    // Kept out of the API document: every action here serves the frontend, not API data. Index
+    // also has two routes, and the empty one produced a path parameter no validator accepted.
+    [ApiExplorerSettings(IgnoreApi = true)]
     [Authorize(Policy="UI")]
     [ApiController]
     public class StaticResourceController : Controller
