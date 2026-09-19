@@ -212,6 +212,7 @@ namespace Whisparr.Api.V3
 
         [HttpPost("testall")]
         [Produces("application/json")]
+        [ProducesResponseType(typeof(List<ProviderTestAllResult>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(List<ProviderTestAllResult>), StatusCodes.Status400BadRequest)]
         public ActionResult<List<ProviderTestAllResult>> TestAll()
         {

@@ -161,6 +161,7 @@ namespace NzbDrone.Host
                 });
 
                 c.OperationFilter<SuccessStatusCodeOperationFilter>();
+                c.OperationFilter<RequiredRequestBodyOperationFilter>();
                 c.OperationFilter<AllowAnonymousOperationFilter>();
                 c.SchemaFilter<CommandResourceSchemaFilter>();
 
