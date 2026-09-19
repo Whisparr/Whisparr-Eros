@@ -154,11 +154,14 @@ namespace NzbDrone.Core.Datastore
                 return Array.Empty<TModel>();
             }
 
-            var result = Query(x => ids.Contains(x.Id));
+            var distinctIds = ids.Distinct().ToList();
+            var result = Query(x => distinctIds.Contains(x.Id));
 
-            if (result.Count != ids.Count())
+            if (result.Count != distinctIds.Count)
             {
-                throw new ApplicationException($"Expected query to return {ids.Count()} rows but returned {result.Count}");
+                var missingId = distinctIds.Except(result.Select(x => x.Id)).First();
+
+                throw new ModelNotFoundException(typeof(TModel), missingId);
             }
 
             return result;

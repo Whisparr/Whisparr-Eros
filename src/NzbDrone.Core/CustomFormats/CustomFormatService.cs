@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NzbDrone.Common.Cache;
 using NzbDrone.Core.CustomFormats.Events;
+using NzbDrone.Core.Datastore;
 using NzbDrone.Core.Messaging.Events;
 
 namespace NzbDrone.Core.CustomFormats
@@ -44,7 +45,12 @@ namespace NzbDrone.Core.CustomFormats
 
         public CustomFormat GetById(int id)
         {
-            return AllDictionary()[id];
+            if (!AllDictionary().TryGetValue(id, out var customFormat))
+            {
+                throw new ModelNotFoundException(typeof(CustomFormat), id);
+            }
+
+            return customFormat;
         }
 
         public void Update(CustomFormat customFormat)

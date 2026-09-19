@@ -174,10 +174,23 @@ namespace NzbDrone.Core.Test.Datastore
         }
 
         [Test]
-        public void get_many_should_throw_if_not_all_found()
+        public void get_many_should_throw_model_not_found_if_not_all_found()
         {
             Subject.InsertMany(_basicList);
-            Assert.Throws<ApplicationException>(() => Subject.Get(new[] { 999 }));
+
+            var ex = Assert.Throws<ModelNotFoundException>(() => Subject.Get(new[] { _basicList[0].Id, 999 }));
+
+            ex.Message.Should().Contain("ID 999");
+        }
+
+        [Test]
+        public void get_many_should_return_distinct_models_for_duplicate_ids()
+        {
+            Subject.InsertMany(_basicList);
+
+            var id = _basicList[0].Id;
+
+            Subject.Get(new[] { id, id }).Select(x => x.Id).Should().BeEquivalentTo(new[] { id });
         }
 
         [Test]
