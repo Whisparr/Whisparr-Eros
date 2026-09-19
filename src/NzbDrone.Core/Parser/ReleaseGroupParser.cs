@@ -11,14 +11,6 @@ public static class ReleaseGroupParser
 
     private static readonly Regex InvalidReleaseGroupRegex = new(@"^([se]\d+|[0-9a-f]{8})$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-    /* Anime release groups are often in the format [SubGroup] at the start of the release title
-     * e.g. [HorribleSubs] My Hero Academia S03E05 720p.  Adult studios expect this format as well.
-     * Example: [Deeper] Nine (1080p).
-     * Disabling this for now as it causes too many false positives with other release types.
-    private static readonly Regex AnimeReleaseGroupRegex = new (@"^(?:\[(?<subgroup>(?!\s).+?(?<!\s))\](?:_|-|\s|\.)?)",
-        RegexOptions.IgnoreCase | RegexOptions.Compiled);
-    */
-
     // Handle Exception Release Groups that don't follow -RlsGrp; Manual List
     // name only...be very careful with this last; high chance of false positives
     private static readonly Regex ExceptionReleaseGroupRegexExact = new(@"\b(?<releasegroup>KRaLiMaRKo|E\.N\.D|D\-Z0N3|Koten_Gars|BluDragon|ZØNEHD|HQMUX|VARYG|YIFY|YTS(.(MX|LT|AG))?|TMd|Eml HDTeam|LMain|DarQ|BEN THE MEN|TAoE|QxR|126811|PRT(?=(?:\[[^\]]+\])?$))\b", RegexOptions.IgnoreCase | RegexOptions.Compiled);
@@ -44,14 +36,6 @@ public static class ReleaseGroupParser
 
         title = ParserCommon.WebsitePrefixRegex.Replace(title);
         title = ParserCommon.CleanTorrentSuffixRegex.Replace(title);
-
-        /*
-        var animeMatch = AnimeReleaseGroupRegex.Match(title);
-
-        if (animeMatch.Success)
-        {
-            return animeMatch.Groups["subgroup"].Value;
-        }*/
 
         title = CleanReleaseGroupRegex.Replace(title);
 
