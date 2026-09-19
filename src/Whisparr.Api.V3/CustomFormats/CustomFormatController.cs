@@ -79,7 +79,7 @@ namespace Whisparr.Api.V3.CustomFormats
         [ProducesResponseType(typeof(List<CustomFormatResource>), StatusCodes.Status202Accepted)]
         public virtual ActionResult<List<CustomFormatResource>> Update([FromBody] CustomFormatBulkResource resource)
         {
-            if (!resource.Ids.Any())
+            if (resource.Ids == null || resource.Ids.Count == 0)
             {
                 throw new BadRequestException("ids must be provided");
             }
@@ -106,6 +106,11 @@ namespace Whisparr.Api.V3.CustomFormats
         [Consumes("application/json")]
         public virtual void DeleteFormats([FromBody] CustomFormatBulkResource resource)
         {
+            if (resource.Ids == null || resource.Ids.Count == 0)
+            {
+                throw new BadRequestException("ids must be provided");
+            }
+
             _formatService.Delete(resource.Ids.ToList());
         }
 

@@ -135,6 +135,11 @@ namespace Whisparr.Api.V3.ImportLists
         [Produces("application/json")]
         public void DeleteImportListExclusions([FromBody] ImportListExclusionBulkResource resource)
         {
+            if (resource.Ids == null || resource.Ids.Count == 0)
+            {
+                throw new BadRequestException("ids must be provided");
+            }
+
             foreach (var e in resource.Ids)
             {
                 var exclusion = _importListExclusionService.GetById(e);

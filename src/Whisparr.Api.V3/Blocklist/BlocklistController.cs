@@ -8,6 +8,7 @@ using NzbDrone.Core.Datastore;
 using NzbDrone.Core.Indexers;
 using Whisparr.Http;
 using Whisparr.Http.Extensions;
+using Whisparr.Http.REST;
 using Whisparr.Http.REST.Attributes;
 
 namespace Whisparr.Api.V3.Blocklist
@@ -73,6 +74,11 @@ namespace Whisparr.Api.V3.Blocklist
         [Produces("application/json")]
         public void Remove([FromBody] BlocklistBulkResource resource)
         {
+            if (resource.Ids == null || resource.Ids.Count == 0)
+            {
+                throw new BadRequestException("ids must be provided");
+            }
+
             _blocklistService.Delete(resource.Ids);
         }
     }
