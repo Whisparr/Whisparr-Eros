@@ -6,8 +6,6 @@ using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Common.Extensions;
-using NzbDrone.Core.DecisionEngine.Specifications;
-using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Movies.Performers;
 using Whisparr.Http;
 
@@ -17,15 +15,11 @@ namespace Whisparr.Api.V3.Performers
     public class PerformerEditorController : Controller
     {
         private readonly IPerformerService _performerService;
-        private readonly IManageCommandQueue _commandQueueManager;
-        private readonly IUpgradableSpecification _upgradableSpecification;
         private readonly PerformerEditorValidator _performerEditorValidator;
 
-        public PerformerEditorController(IPerformerService performerService, IManageCommandQueue commandQueueManager, IUpgradableSpecification upgradableSpecification, PerformerEditorValidator performerEditorValidator)
+        public PerformerEditorController(IPerformerService performerService, PerformerEditorValidator performerEditorValidator)
         {
             _performerService = performerService;
-            _commandQueueManager = commandQueueManager;
-            _upgradableSpecification = upgradableSpecification;
             _performerEditorValidator = performerEditorValidator;
         }
 
