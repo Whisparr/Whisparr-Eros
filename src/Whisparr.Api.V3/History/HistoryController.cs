@@ -38,28 +38,6 @@ namespace Whisparr.Api.V3.History
             _failedDownloadService = failedDownloadService;
         }
 
-        protected HistoryResource MapToResource(MovieHistory model, bool includeMovie)
-        {
-            if (model.Movie == null)
-            {
-                model.Movie = _movieService.GetMovie(model.MovieId);
-            }
-
-            var resource = model.ToResource(_formatCalculator);
-
-            if (includeMovie)
-            {
-                resource.Movie = model.Movie.ToResource(0);
-            }
-
-            if (model.Movie != null)
-            {
-                resource.QualityCutoffNotMet = _upgradableSpecification.QualityCutoffNotMet(model.Movie.QualityProfile, model.Quality);
-            }
-
-            return resource;
-        }
-
         [HttpGet]
         [Produces("application/json")]
         public PagingResource<HistoryResource> GetHistory([FromQuery] PagingRequestResource paging, bool includeMovie, [FromQuery(Name = "eventType")] int[] eventTypes, string downloadId, [FromQuery] int[] movieIds = null, [FromQuery] int[] languages = null, [FromQuery] int[] quality = null)
@@ -92,6 +70,48 @@ namespace Whisparr.Api.V3.History
             }
 
             return pagingSpec.ApplyToPage(h => _historyService.Paged(pagingSpec, languages, quality), h => MapToResource(h, includeMovie));
+        }
+
+        [HttpGet("since")]
+        [Produces("application/json")]
+        public List<HistoryResource> GetHistorySince(DateTime date, MovieHistoryEventType? eventType = null, bool includeMovie = false)
+        {
+            return _historyService.Since(date, eventType).Select(h => MapToResource(h, includeMovie)).ToList();
+        }
+
+        [HttpGet("movie")]
+        [Produces("application/json")]
+        public List<HistoryResource> GetMovieHistory(int movieId, MovieHistoryEventType? eventType = null, bool includeMovie = false)
+        {
+            return _historyService.GetByMovieId(movieId, eventType).Select(h => MapToResource(h, includeMovie)).ToList();
+        }
+
+        [HttpPost("failed/{id}")]
+        public void MarkAsFailed([FromRoute] int id)
+        {
+            _failedDownloadService.MarkAsFailed(id);
+        }
+
+        protected HistoryResource MapToResource(MovieHistory model, bool includeMovie)
+        {
+            if (model.Movie == null)
+            {
+                model.Movie = _movieService.GetMovie(model.MovieId);
+            }
+
+            var resource = model.ToResource(_formatCalculator);
+
+            if (includeMovie)
+            {
+                resource.Movie = model.Movie.ToResource(0);
+            }
+
+            if (model.Movie != null)
+            {
+                resource.QualityCutoffNotMet = _upgradableSpecification.QualityCutoffNotMet(model.Movie.QualityProfile, model.Quality);
+            }
+
+            return resource;
         }
 
         // Helper methods for OR-ed filter expressions
@@ -133,27 +153,6 @@ namespace Whisparr.Api.V3.History
             }
 
             return Expression.Lambda<Func<MovieHistory, bool>>(body, param);
-        }
-
-        [HttpGet("since")]
-        [Produces("application/json")]
-        public List<HistoryResource> GetHistorySince(DateTime date, MovieHistoryEventType? eventType = null, bool includeMovie = false)
-        {
-            return _historyService.Since(date, eventType).Select(h => MapToResource(h, includeMovie)).ToList();
-        }
-
-        [HttpGet("movie")]
-        [Produces("application/json")]
-        public List<HistoryResource> GetMovieHistory(int movieId, MovieHistoryEventType? eventType = null, bool includeMovie = false)
-        {
-            return _historyService.GetByMovieId(movieId, eventType).Select(h => MapToResource(h, includeMovie)).ToList();
-        }
-
-        [HttpPost("failed/{id}")]
-        public object MarkAsFailed([FromRoute] int id)
-        {
-            _failedDownloadService.MarkAsFailed(id);
-            return new { };
         }
     }
 }

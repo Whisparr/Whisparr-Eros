@@ -158,20 +158,16 @@ namespace Whisparr.Api.V3
         }
 
         [RestDeleteById]
-        public object DeleteProvider(int id)
+        public void DeleteProvider(int id)
         {
             _providerFactory.Delete(id);
-
-            return new { };
         }
 
         [HttpDelete("bulk")]
         [Consumes("application/json")]
-        public virtual object DeleteProviders([FromBody] TBulkProviderResource resource)
+        public virtual void DeleteProviders([FromBody] TBulkProviderResource resource)
         {
             _providerFactory.Delete(resource.Ids);
-
-            return new { };
         }
 
         [HttpGet("schema")]
@@ -200,14 +196,12 @@ namespace Whisparr.Api.V3
         [SkipValidation(true, false)]
         [HttpPost("test")]
         [Consumes("application/json")]
-        public object Test([FromBody] TProviderResource providerResource, [FromQuery] bool forceTest = false)
+        public void Test([FromBody] TProviderResource providerResource, [FromQuery] bool forceTest = false)
         {
             var existingDefinition = providerResource.Id > 0 ? _providerFactory.Find(providerResource.Id) : null;
             var providerDefinition = GetDefinition(providerResource, existingDefinition, true, !forceTest, true);
 
             Test(providerDefinition, true);
-
-            return "{}";
         }
 
         [HttpPost("testall")]

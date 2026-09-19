@@ -104,11 +104,9 @@ namespace Whisparr.Api.V3.CustomFormats
 
         [HttpDelete("bulk")]
         [Consumes("application/json")]
-        public virtual object DeleteFormats([FromBody] CustomFormatBulkResource resource)
+        public virtual void DeleteFormats([FromBody] CustomFormatBulkResource resource)
         {
             _formatService.Delete(resource.Ids.ToList());
-
-            return new { };
         }
 
         [HttpGet("schema")]

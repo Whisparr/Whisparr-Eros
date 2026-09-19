@@ -75,18 +75,6 @@ namespace Whisparr.Api.V3.ImportLists
             return importListExclusionResources;
         }
 
-        protected override ImportListExclusionResource GetResourceById(int id)
-        {
-            if (_useCache)
-            {
-                return GetExclusionResource(id);
-            }
-            else
-            {
-                return _importListExclusionService.GetById(id).ToResource();
-            }
-        }
-
         [HttpGet("paged")]
         [Produces("application/json")]
         public PagingResource<ImportListExclusionResource> GetImportListExclusionsPaged([FromQuery] PagingRequestResource paging)
@@ -145,16 +133,26 @@ namespace Whisparr.Api.V3.ImportLists
         [HttpDelete("bulk")]
         [Consumes("application/json")]
         [Produces("application/json")]
-        public object DeleteImportListExclusions([FromBody] ImportListExclusionBulkResource resource)
+        public void DeleteImportListExclusions([FromBody] ImportListExclusionBulkResource resource)
         {
-            foreach (var e in resource?.Ids)
+            foreach (var e in resource.Ids)
             {
                 var exclusion = _importListExclusionService.GetById(e);
                 _importListExclusionService.RemoveExclusion(exclusion);
                 _exclusionResourceCache.Remove($"{e}");
             }
+        }
 
-            return new { };
+        protected override ImportListExclusionResource GetResourceById(int id)
+        {
+            if (_useCache)
+            {
+                return GetExclusionResource(id);
+            }
+            else
+            {
+                return _importListExclusionService.GetById(id).ToResource();
+            }
         }
 
         private ImportListExclusionResource GetExclusionResource(int id)
