@@ -33,11 +33,6 @@ namespace NzbDrone.Core.CustomFormats
             _cache = cacheManager.GetCache<Dictionary<int, CustomFormat>>(typeof(CustomFormat), "formats");
         }
 
-        private Dictionary<int, CustomFormat> AllDictionary()
-        {
-            return _cache.Get("all", () => _formatRepository.All().ToDictionary(m => m.Id));
-        }
-
         public List<CustomFormat> All()
         {
             return AllDictionary().Values.ToList();
@@ -100,6 +95,11 @@ namespace NzbDrone.Core.CustomFormats
             }
 
             _cache.Clear();
+        }
+
+        private Dictionary<int, CustomFormat> AllDictionary()
+        {
+            return _cache.Get("all", () => _formatRepository.All().ToDictionary(m => m.Id));
         }
     }
 }

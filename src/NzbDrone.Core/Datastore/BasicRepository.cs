@@ -23,17 +23,17 @@ namespace NzbDrone.Core.Datastore
         int Count();
         int Count(Expression<Func<TModel, bool>> predicate);
         TModel Get(int id);
+        IEnumerable<TModel> Get(IEnumerable<int> ids);
         TModel Find(int id);
         TModel Insert(TModel model);
         TModel Update(TModel model);
         TModel Upsert(TModel model);
         void SetFields(TModel model, params Expression<Func<TModel, object>>[] properties);
+        void SetFields(IList<TModel> models, params Expression<Func<TModel, object>>[] properties);
         void Delete(TModel model);
         void Delete(int id);
-        IEnumerable<TModel> Get(IEnumerable<int> ids);
         void InsertMany(IList<TModel> model);
         void UpdateMany(IList<TModel> model);
-        void SetFields(IList<TModel> models, params Expression<Func<TModel, object>>[] properties);
         void DeleteMany(List<TModel> model);
         void DeleteMany(IEnumerable<int> ids);
         void Purge(bool vacuum = false);
@@ -46,34 +46,14 @@ namespace NzbDrone.Core.Datastore
     public class BasicRepository<TModel> : IBasicRepository<TModel>
         where TModel : ModelBase, new()
     {
+        protected readonly IDatabase _database;
+        protected readonly string _table;
         private static readonly ILogger Logger = NzbDroneLogger.GetLogger(typeof(BasicRepository<TModel>));
-
         private readonly IEventAggregator _eventAggregator;
         private readonly PropertyInfo _keyProperty;
         private readonly List<PropertyInfo> _properties;
         private readonly string _updateSql;
         private readonly string _insertSql;
-
-        private static ResiliencePipeline RetryStrategy => new ResiliencePipelineBuilder()
-            .AddRetry(new RetryStrategyOptions
-            {
-                ShouldHandle = new PredicateBuilder().Handle<SQLiteException>(ex => ex.ResultCode == SQLiteErrorCode.Busy),
-                Delay = TimeSpan.FromMilliseconds(100),
-                MaxRetryAttempts = 3,
-                BackoffType = DelayBackoffType.Exponential,
-                UseJitter = true,
-                OnRetry = args =>
-                {
-                    Logger.Warn(args.Outcome.Exception, "Failed writing to database. Retry #{0}", args.AttemptNumber);
-
-                    return default;
-                }
-            })
-            .Build();
-
-        protected readonly IDatabase _database;
-        protected readonly string _table;
-
         public BasicRepository(IDatabase database, IEventAggregator eventAggregator)
         {
             _database = database;
@@ -92,19 +72,32 @@ namespace NzbDrone.Core.Datastore
             _updateSql = GetUpdateSql(_properties);
         }
 
-        protected virtual SqlBuilder Builder() => new SqlBuilder(_database.DatabaseType);
+        protected virtual bool PublishModelEvents => false;
+        private static ResiliencePipeline RetryStrategy => new ResiliencePipelineBuilder()
+            .AddRetry(new RetryStrategyOptions
+            {
+                ShouldHandle = new PredicateBuilder().Handle<SQLiteException>(ex => ex.ResultCode == SQLiteErrorCode.Busy),
+                Delay = TimeSpan.FromMilliseconds(100),
+                MaxRetryAttempts = 3,
+                BackoffType = DelayBackoffType.Exponential,
+                UseJitter = true,
+                OnRetry = args =>
+                {
+                    Logger.Warn(args.Outcome.Exception, "Failed writing to database. Retry #{0}", args.AttemptNumber);
 
-        protected virtual List<TModel> Query(SqlBuilder builder) => _database.Query<TModel>(builder).ToList();
-
-        protected List<TModel> Query(Expression<Func<TModel, bool>> where) => Query(Builder().Where(where));
-
-        protected virtual List<TModel> QueryDistinct(SqlBuilder builder) => _database.QueryDistinct<TModel>(builder).ToList();
+                    return default;
+                }
+            })
+            .Build();
 
         public int Count()
         {
             using (var conn = _database.OpenConnection())
             {
+                // _table comes from TableMapping, not user input, and a table name cannot be a query parameter
+#pragma warning disable S2077
                 return conn.ExecuteScalar<int>($"SELECT COUNT(*) FROM \"{_table}\"");
+#pragma warning restore S2077
             }
         }
 
@@ -140,13 +133,6 @@ namespace NzbDrone.Core.Datastore
             return model;
         }
 
-        public TModel Find(int id)
-        {
-            var model = Query(c => c.Id == id).SingleOrDefault();
-
-            return model;
-        }
-
         public IEnumerable<TModel> Get(IEnumerable<int> ids)
         {
             if (!ids.Any())
@@ -165,6 +151,21 @@ namespace NzbDrone.Core.Datastore
             }
 
             return result;
+        }
+
+        public virtual PagingSpec<TModel> GetPaged(PagingSpec<TModel> pagingSpec)
+        {
+            pagingSpec.Records = GetPagedRecords(PagedBuilder(), pagingSpec, PagedQuery);
+            pagingSpec.TotalRecords = GetPagedRecordCount(PagedBuilder().SelectCount(), pagingSpec);
+
+            return pagingSpec;
+        }
+
+        public TModel Find(int id)
+        {
+            var model = Query(c => c.Id == id).SingleOrDefault();
+
+            return model;
         }
 
         public TModel SingleOrDefault()
@@ -192,6 +193,245 @@ namespace NzbDrone.Core.Datastore
             ModelCreated(model);
 
             return model;
+        }
+
+        public void InsertMany(IList<TModel> model)
+        {
+            if (model.Any(x => x.Id != 0))
+            {
+                throw new InvalidOperationException("Can't insert model with existing ID != 0");
+            }
+
+            using (var conn = _database.OpenConnection())
+            {
+                using (var tran = conn.BeginTransaction(IsolationLevel.ReadCommitted))
+                {
+                    foreach (var m in model)
+                    {
+                        Insert(conn, tran, m);
+                    }
+
+                    tran.Commit();
+                }
+            }
+        }
+
+        public TModel Update(TModel model)
+        {
+            if (model.Id == 0)
+            {
+                throw new InvalidOperationException("Can't update model with ID 0");
+            }
+
+            using (var conn = _database.OpenConnection())
+            {
+                UpdateFields(conn, null, model, _properties);
+            }
+
+            ModelUpdated(model);
+
+            return model;
+        }
+
+        public void UpdateMany(IList<TModel> model)
+        {
+            if (model.Any(x => x.Id == 0))
+            {
+                throw new InvalidOperationException("Can't update model with ID 0");
+            }
+
+            using (var conn = _database.OpenConnection())
+            using (var tran = conn.BeginTransaction(IsolationLevel.ReadCommitted))
+            {
+                UpdateFields(conn, tran, model, _properties);
+                tran.Commit();
+            }
+        }
+
+        public void Delete(TModel model)
+        {
+            Delete(model.Id);
+        }
+
+        public void Delete(int id)
+        {
+            Delete(x => x.Id == id);
+        }
+
+        public void DeleteMany(IEnumerable<int> ids)
+        {
+            if (ids.Any())
+            {
+                Delete(x => ids.Contains(x.Id));
+            }
+        }
+
+        public void DeleteMany(List<TModel> model)
+        {
+            DeleteMany(model.Select(m => m.Id));
+        }
+
+        public TModel Upsert(TModel model)
+        {
+            if (model.Id == 0)
+            {
+                Insert(model);
+                return model;
+            }
+
+            Update(model);
+            return model;
+        }
+
+        public void Purge(bool vacuum = false)
+        {
+            using (var conn = _database.OpenConnection())
+            {
+                // _table comes from TableMapping, not user input, and a table name cannot be a query parameter
+#pragma warning disable S2077
+                conn.Execute($"DELETE FROM \"{_table}\"");
+#pragma warning restore S2077
+            }
+
+            if (vacuum)
+            {
+                Vacuum();
+            }
+        }
+
+        public bool HasItems()
+        {
+            return Count() > 0;
+        }
+
+        public void SetFields(TModel model, params Expression<Func<TModel, object>>[] properties)
+        {
+            if (model.Id == 0)
+            {
+                throw new InvalidOperationException("Attempted to update model without ID");
+            }
+
+            var propertiesToUpdate = properties.Select(x => x.GetMemberName()).ToList();
+
+            using (var conn = _database.OpenConnection())
+            {
+                UpdateFields(conn, null, model, propertiesToUpdate);
+            }
+
+            ModelUpdated(model);
+        }
+
+        public void SetFields(IList<TModel> models, params Expression<Func<TModel, object>>[] properties)
+        {
+            if (models.Any(x => x.Id == 0))
+            {
+                throw new InvalidOperationException("Attempted to update model without ID");
+            }
+
+            var propertiesToUpdate = properties.Select(x => x.GetMemberName()).ToList();
+
+            using (var conn = _database.OpenConnection())
+            using (var tran = conn.BeginTransaction(IsolationLevel.ReadCommitted))
+            {
+                UpdateFields(conn, tran, models, propertiesToUpdate);
+                tran.Commit();
+            }
+
+            foreach (var model in models)
+            {
+                ModelUpdated(model);
+            }
+        }
+
+        protected static void AddFilters(SqlBuilder builder, PagingSpec<TModel> pagingSpec)
+        {
+            var filters = pagingSpec.FilterExpressions;
+
+            foreach (var filter in filters)
+            {
+                builder.Where<TModel>(filter);
+            }
+        }
+
+        protected virtual SqlBuilder Builder() => new SqlBuilder(_database.DatabaseType);
+
+        protected virtual List<TModel> Query(SqlBuilder builder) => _database.Query<TModel>(builder).ToList();
+
+        protected List<TModel> Query(Expression<Func<TModel, bool>> where) => Query(Builder().Where(where));
+
+        protected virtual List<TModel> QueryDistinct(SqlBuilder builder) => _database.QueryDistinct<TModel>(builder).ToList();
+
+        protected void Delete(Expression<Func<TModel, bool>> where)
+        {
+            Delete(Builder().Where<TModel>(where));
+        }
+
+        protected void Delete(SqlBuilder builder)
+        {
+            var sql = builder.AddDeleteTemplate(typeof(TModel));
+
+            using (var conn = _database.OpenConnection())
+            {
+                conn.Execute(sql.RawSql, sql.Parameters);
+            }
+        }
+
+        protected void Vacuum()
+        {
+            _database.Vacuum();
+        }
+
+        protected virtual SqlBuilder PagedBuilder() => Builder();
+        protected virtual IEnumerable<TModel> PagedQuery(SqlBuilder sql) => Query(sql);
+
+        protected List<TModel> GetPagedRecords(SqlBuilder builder, PagingSpec<TModel> pagingSpec, Func<SqlBuilder, IEnumerable<TModel>> queryFunc, string customSortExpression = null)
+        {
+            AddFilters(builder, pagingSpec);
+
+            if (pagingSpec.SortKey == null)
+            {
+                pagingSpec.SortKey = $"{_table}.{_keyProperty.Name}";
+            }
+
+            var orderByClause = BuildOrderByClause(pagingSpec, customSortExpression);
+            builder.OrderBy(orderByClause);
+
+            return queryFunc(builder).ToList();
+        }
+
+        protected int GetPagedRecordCount(SqlBuilder builder, PagingSpec<TModel> pagingSpec, string template = null)
+        {
+            AddFilters(builder, pagingSpec);
+
+            SqlBuilder.Template sql;
+            if (template != null)
+            {
+                sql = builder.AddTemplate(template).LogQuery();
+            }
+            else
+            {
+                sql = builder.AddPageCountTemplate(typeof(TModel));
+            }
+
+            using (var conn = _database.OpenConnection())
+            {
+                return conn.ExecuteScalar<int>(sql.RawSql, sql.Parameters);
+            }
+        }
+
+        protected void ModelCreated(TModel model)
+        {
+            PublishModelEvent(model, ModelAction.Created);
+        }
+
+        protected void ModelUpdated(TModel model)
+        {
+            PublishModelEvent(model, ModelAction.Updated);
+        }
+
+        protected void ModelDeleted(TModel model)
+        {
+            PublishModelEvent(model, ModelAction.Deleted);
         }
 
         private string GetInsertSql()
@@ -239,171 +479,6 @@ namespace NzbDrone.Core.Datastore
             return model;
         }
 
-        public void InsertMany(IList<TModel> models)
-        {
-            if (models.Any(x => x.Id != 0))
-            {
-                throw new InvalidOperationException("Can't insert model with existing ID != 0");
-            }
-
-            using (var conn = _database.OpenConnection())
-            {
-                using (var tran = conn.BeginTransaction(IsolationLevel.ReadCommitted))
-                {
-                    foreach (var model in models)
-                    {
-                        Insert(conn, tran, model);
-                    }
-
-                    tran.Commit();
-                }
-            }
-        }
-
-        public TModel Update(TModel model)
-        {
-            if (model.Id == 0)
-            {
-                throw new InvalidOperationException("Can't update model with ID 0");
-            }
-
-            using (var conn = _database.OpenConnection())
-            {
-                UpdateFields(conn, null, model, _properties);
-            }
-
-            ModelUpdated(model);
-
-            return model;
-        }
-
-        public void UpdateMany(IList<TModel> models)
-        {
-            if (models.Any(x => x.Id == 0))
-            {
-                throw new InvalidOperationException("Can't update model with ID 0");
-            }
-
-            using (var conn = _database.OpenConnection())
-            using (var tran = conn.BeginTransaction(IsolationLevel.ReadCommitted))
-            {
-                UpdateFields(conn, tran, models, _properties);
-                tran.Commit();
-            }
-        }
-
-        protected void Delete(Expression<Func<TModel, bool>> where)
-        {
-            Delete(Builder().Where<TModel>(where));
-        }
-
-        protected void Delete(SqlBuilder builder)
-        {
-            var sql = builder.AddDeleteTemplate(typeof(TModel));
-
-            using (var conn = _database.OpenConnection())
-            {
-                conn.Execute(sql.RawSql, sql.Parameters);
-            }
-        }
-
-        public void Delete(TModel model)
-        {
-            Delete(model.Id);
-        }
-
-        public void Delete(int id)
-        {
-            Delete(x => x.Id == id);
-        }
-
-        public void DeleteMany(IEnumerable<int> ids)
-        {
-            if (ids.Any())
-            {
-                Delete(x => ids.Contains(x.Id));
-            }
-        }
-
-        public void DeleteMany(List<TModel> models)
-        {
-            DeleteMany(models.Select(m => m.Id));
-        }
-
-        public TModel Upsert(TModel model)
-        {
-            if (model.Id == 0)
-            {
-                Insert(model);
-                return model;
-            }
-
-            Update(model);
-            return model;
-        }
-
-        public void Purge(bool vacuum = false)
-        {
-            using (var conn = _database.OpenConnection())
-            {
-                conn.Execute($"DELETE FROM \"{_table}\"");
-            }
-
-            if (vacuum)
-            {
-                Vacuum();
-            }
-        }
-
-        protected void Vacuum()
-        {
-            _database.Vacuum();
-        }
-
-        public bool HasItems()
-        {
-            return Count() > 0;
-        }
-
-        public void SetFields(TModel model, params Expression<Func<TModel, object>>[] properties)
-        {
-            if (model.Id == 0)
-            {
-                throw new InvalidOperationException("Attempted to update model without ID");
-            }
-
-            var propertiesToUpdate = properties.Select(x => x.GetMemberName()).ToList();
-
-            using (var conn = _database.OpenConnection())
-            {
-                UpdateFields(conn, null, model, propertiesToUpdate);
-            }
-
-            ModelUpdated(model);
-        }
-
-        public void SetFields(IList<TModel> models, params Expression<Func<TModel, object>>[] properties)
-        {
-            if (models.Any(x => x.Id == 0))
-            {
-                throw new InvalidOperationException("Attempted to update model without ID");
-            }
-
-            var propertiesToUpdate = properties.Select(x => x.GetMemberName()).ToList();
-
-            using (var conn = _database.OpenConnection())
-            using (var tran = conn.BeginTransaction(IsolationLevel.ReadCommitted))
-            {
-                UpdateFields(conn, tran, models, propertiesToUpdate);
-                tran.Commit();
-            }
-
-            foreach (var model in models)
-            {
-                ModelUpdated(model);
-            }
-        }
-
         private string GetUpdateSql(List<PropertyInfo> propertiesToUpdate)
         {
             var sb = new StringBuilder();
@@ -445,42 +520,6 @@ namespace NzbDrone.Core.Datastore
             RetryStrategy.Execute(static (state, _) => state.connection.Execute(state.sql, state.models, transaction: state.transaction), (connection, sql, models, transaction));
         }
 
-        protected virtual SqlBuilder PagedBuilder() => Builder();
-        protected virtual IEnumerable<TModel> PagedQuery(SqlBuilder sql) => Query(sql);
-
-        public virtual PagingSpec<TModel> GetPaged(PagingSpec<TModel> pagingSpec)
-        {
-            pagingSpec.Records = GetPagedRecords(PagedBuilder(), pagingSpec, PagedQuery);
-            pagingSpec.TotalRecords = GetPagedRecordCount(PagedBuilder().SelectCount(), pagingSpec);
-
-            return pagingSpec;
-        }
-
-        protected void AddFilters(SqlBuilder builder, PagingSpec<TModel> pagingSpec)
-        {
-            var filters = pagingSpec.FilterExpressions;
-
-            foreach (var filter in filters)
-            {
-                builder.Where<TModel>(filter);
-            }
-        }
-
-        protected List<TModel> GetPagedRecords(SqlBuilder builder, PagingSpec<TModel> pagingSpec, Func<SqlBuilder, IEnumerable<TModel>> queryFunc, string customSortExpression = null)
-        {
-            AddFilters(builder, pagingSpec);
-
-            if (pagingSpec.SortKey == null)
-            {
-                pagingSpec.SortKey = $"{_table}.{_keyProperty.Name}";
-            }
-
-            var orderByClause = BuildOrderByClause(pagingSpec, customSortExpression);
-            builder.OrderBy(orderByClause);
-
-            return queryFunc(builder).ToList();
-        }
-
         // customSortExpression replaces the mapped column for callers whose sort key has no column
         // to sort on - "quality" is a rank the caller joins in, not a value stored on the row.
         // Unlike upstream, the default sort keys still apply as tiebreakers, so rows sharing a rank
@@ -517,41 +556,6 @@ namespace NzbDrone.Core.Datastore
             return sbOrderByClause.ToString();
         }
 
-        protected int GetPagedRecordCount(SqlBuilder builder, PagingSpec<TModel> pagingSpec, string template = null)
-        {
-            AddFilters(builder, pagingSpec);
-
-            SqlBuilder.Template sql;
-            if (template != null)
-            {
-                sql = builder.AddTemplate(template).LogQuery();
-            }
-            else
-            {
-                sql = builder.AddPageCountTemplate(typeof(TModel));
-            }
-
-            using (var conn = _database.OpenConnection())
-            {
-                return conn.ExecuteScalar<int>(sql.RawSql, sql.Parameters);
-            }
-        }
-
-        protected void ModelCreated(TModel model)
-        {
-            PublishModelEvent(model, ModelAction.Created);
-        }
-
-        protected void ModelUpdated(TModel model)
-        {
-            PublishModelEvent(model, ModelAction.Updated);
-        }
-
-        protected void ModelDeleted(TModel model)
-        {
-            PublishModelEvent(model, ModelAction.Deleted);
-        }
-
         private void PublishModelEvent(TModel model, ModelAction action)
         {
             if (PublishModelEvents)
@@ -559,7 +563,5 @@ namespace NzbDrone.Core.Datastore
                 _eventAggregator.PublishEvent(new ModelEvent<TModel>(model, action));
             }
         }
-
-        protected virtual bool PublishModelEvents => false;
     }
 }

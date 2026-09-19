@@ -324,12 +324,6 @@ namespace NzbDrone.Core.Test.Datastore
             Subject.All().Should().BeEmpty();
         }
 
-        [Test]
-        public void should_be_able_to_call_ToList_on_empty_queryable()
-        {
-            Subject.All().ToList().Should().BeEmpty();
-        }
-
         [TestCase(1, 2)]
         [TestCase(2, 2)]
         [TestCase(3, 1)]
@@ -370,8 +364,8 @@ namespace NzbDrone.Core.Test.Datastore
             data.Page.Should().Be(page);
             data.PageSize.Should().Be(2);
             data.TotalRecords.Should().Be(_basicList.Count);
-            data.Records.Should().BeEquivalentTo(_basicList.OrderBy(x => x.LastExecution).OrderByDescending(x => x.Interval).Skip((page - 1) * 2).Take(2));
-            data.Records.Should().NotBeEquivalentTo(_basicList.OrderByDescending(x => x.LastExecution).OrderByDescending(x => x.Interval).Skip((page - 1) * 2).Take(2));
+            data.Records.Should().BeEquivalentTo(_basicList.OrderByDescending(x => x.Interval).ThenBy(x => x.LastExecution).Skip((page - 1) * 2).Take(2));
+            data.Records.Should().NotBeEquivalentTo(_basicList.OrderByDescending(x => x.Interval).ThenByDescending(x => x.LastExecution).Skip((page - 1) * 2).Take(2));
         }
     }
 }
