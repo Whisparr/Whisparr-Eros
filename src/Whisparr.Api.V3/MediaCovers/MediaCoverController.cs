@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 using NzbDrone.Common;
@@ -27,6 +28,8 @@ namespace Whisparr.Api.V3.MediaCovers
         }
 
         [HttpGet(@"{movieId:int}/{filename:regex((.+)\.(jpg|png|gif))}")]
+        [Produces("image/jpeg", "image/png", "image/gif")]
+        [ProducesResponseType(typeof(FileResult), StatusCodes.Status200OK)]
         public IActionResult GetMediaCover(int movieId, string filename)
         {
             var filePath = Path.Combine(_appFolderInfo.GetAppDataPath(), "MediaCover", movieId.ToString(), filename);
