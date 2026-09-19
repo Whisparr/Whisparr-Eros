@@ -174,10 +174,23 @@ namespace NzbDrone.Core.Test.Datastore
         }
 
         [Test]
-        public void get_many_should_throw_if_not_all_found()
+        public void get_many_should_throw_model_not_found_if_not_all_found()
         {
             Subject.InsertMany(_basicList);
-            Assert.Throws<ApplicationException>(() => Subject.Get(new[] { 999 }));
+
+            var ex = Assert.Throws<ModelNotFoundException>(() => Subject.Get(new[] { _basicList[0].Id, 999 }));
+
+            ex.Message.Should().Contain("ID 999");
+        }
+
+        [Test]
+        public void get_many_should_return_distinct_models_for_duplicate_ids()
+        {
+            Subject.InsertMany(_basicList);
+
+            var id = _basicList[0].Id;
+
+            Subject.Get(new[] { id, id }).Select(x => x.Id).Should().BeEquivalentTo(new[] { id });
         }
 
         [Test]
@@ -311,12 +324,6 @@ namespace NzbDrone.Core.Test.Datastore
             Subject.All().Should().BeEmpty();
         }
 
-        [Test]
-        public void should_be_able_to_call_ToList_on_empty_queryable()
-        {
-            Subject.All().ToList().Should().BeEmpty();
-        }
-
         [TestCase(1, 2)]
         [TestCase(2, 2)]
         [TestCase(3, 1)]
@@ -357,8 +364,8 @@ namespace NzbDrone.Core.Test.Datastore
             data.Page.Should().Be(page);
             data.PageSize.Should().Be(2);
             data.TotalRecords.Should().Be(_basicList.Count);
-            data.Records.Should().BeEquivalentTo(_basicList.OrderBy(x => x.LastExecution).OrderByDescending(x => x.Interval).Skip((page - 1) * 2).Take(2));
-            data.Records.Should().NotBeEquivalentTo(_basicList.OrderByDescending(x => x.LastExecution).OrderByDescending(x => x.Interval).Skip((page - 1) * 2).Take(2));
+            data.Records.Should().BeEquivalentTo(_basicList.OrderByDescending(x => x.Interval).ThenBy(x => x.LastExecution).Skip((page - 1) * 2).Take(2));
+            data.Records.Should().NotBeEquivalentTo(_basicList.OrderByDescending(x => x.Interval).ThenByDescending(x => x.LastExecution).Skip((page - 1) * 2).Take(2));
         }
     }
 }
