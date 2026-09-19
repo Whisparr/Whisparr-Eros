@@ -219,5 +219,23 @@ namespace NzbDrone.Core.Test.ParserTests
                 result.ReleaseGroup.Should().NotBe(result.StudioTitle);
             }
         }
+
+        [TestCase("Studio.26.01.01.Performer.Name.Scene.Title.XXX.1080p.HEVC.x265.PRT", "PRT")]
+        [TestCase("Studio.26.01.01.Performer.Name.Scene.Title.XXX.1080p.HEVC.x265.PRT[XvX]", "PRT")]
+        [TestCase("Studio.26.01.01.Performer.Name.Scene.Title.XXX.1080p.HEVC.x265.PRT.mkv", "PRT")]
+        [TestCase("Studio.26.01.01.Prt.Scene.Title.XXX.1080p.HEVC.x265-GROUP", "GROUP")]
+        [TestCase("Studio.26.01.01.Scene.Title.PRT.XXX.1080p.HEVC.x265", null)]
+        [TestCase("[Studio] (Performer Name) Scene Title XXX (2026-01-01) (1080p HEVC) [GhostFreakXX]", "GhostFreakXX")]
+        public void should_parse_scene_release_group_without_dash(string title, string expected)
+        {
+            Parser.ReleaseGroupParser.ParseReleaseGroup(title).Should().Be(expected);
+        }
+
+        [TestCase("Studio.26.01.01.Performer.Name.Scene.Title.XXX.1080p.HEVC.x265.PRT", "PRT")]
+        [TestCase("Studio.22.10.18.Title.XXX.720p.HEVC.x265.PRT[XvX]", "PRT")]
+        public void should_parse_scene_release_group_without_dash_from_full_title(string title, string expected)
+        {
+            Parser.Parser.ParseMovieTitle(title).ReleaseGroup.Should().Be(expected);
+        }
     }
 }
