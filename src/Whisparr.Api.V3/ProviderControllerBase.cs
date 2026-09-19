@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Serializer;
@@ -211,7 +212,8 @@ namespace Whisparr.Api.V3
 
         [HttpPost("testall")]
         [Produces("application/json")]
-        public IActionResult TestAll()
+        [ProducesResponseType(typeof(List<ProviderTestAllResult>), StatusCodes.Status400BadRequest)]
+        public ActionResult<List<ProviderTestAllResult>> TestAll()
         {
             var providerDefinitions = _providerFactory.All()
                                                       .Where(c => c.Settings.Validate().IsValid && c.Enable)
@@ -239,6 +241,7 @@ namespace Whisparr.Api.V3
         [HttpPost("action/{name}")]
         [Consumes("application/json")]
         [Produces("application/json")]
+        [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
         public IActionResult RequestAction([FromRoute] string name, [FromBody] TProviderResource providerResource)
         {
             var existingDefinition = providerResource.Id > 0 ? _providerFactory.Find(providerResource.Id) : null;
