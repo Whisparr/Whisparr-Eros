@@ -11,6 +11,12 @@ using Whisparr.Http.Frontend.Mappers;
 
 namespace Whisparr.Http.Frontend
 {
+    // Kept out of the API document. Every action here serves the frontend through MapResource,
+    // the SPA shell, its static assets and the login page, so none of it is API surface. Index
+    // also carries two routes, and the empty one has no {path} slot, so the operation generated
+    // for it declared a required path parameter nothing could resolve and no validator would
+    // accept the document.
+    [ApiExplorerSettings(IgnoreApi = true)]
     [Authorize(Policy="UI")]
     [ApiController]
     public class StaticResourceController : Controller
