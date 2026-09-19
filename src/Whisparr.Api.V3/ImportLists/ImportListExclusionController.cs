@@ -145,7 +145,7 @@ namespace Whisparr.Api.V3.ImportLists
         [HttpDelete("bulk")]
         [Consumes("application/json")]
         [Produces("application/json")]
-        public object DeleteImportListExclusions([FromBody] ImportListExclusionBulkResource resource)
+        public void DeleteImportListExclusions([FromBody] ImportListExclusionBulkResource resource)
         {
             foreach (var e in resource?.Ids)
             {
@@ -153,8 +153,6 @@ namespace Whisparr.Api.V3.ImportLists
                 _importListExclusionService.RemoveExclusion(exclusion);
                 _exclusionResourceCache.Remove($"{e}");
             }
-
-            return new { };
         }
 
         private ImportListExclusionResource GetExclusionResource(int id)

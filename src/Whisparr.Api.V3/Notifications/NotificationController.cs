@@ -25,7 +25,7 @@ namespace Whisparr.Api.V3.Notifications
         }
 
         [NonAction]
-        public override object DeleteProviders([FromBody] NotificationBulkResource resource)
+        public override void DeleteProviders([FromBody] NotificationBulkResource resource)
         {
             throw new NotImplementedException();
         }

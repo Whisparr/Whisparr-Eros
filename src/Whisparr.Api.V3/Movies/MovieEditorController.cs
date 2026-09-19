@@ -124,11 +124,9 @@ namespace Whisparr.Api.V3.Movies
         }
 
         [HttpDelete]
-        public object DeleteMovies([FromBody] MovieEditorResource resource)
+        public void DeleteMovies([FromBody] MovieEditorResource resource)
         {
             _movieService.DeleteMovies(resource.MovieIds, resource.DeleteFiles, resource.AddImportExclusion);
-
-            return new { };
         }
 
         private void MapCoversToLocal(MovieResource movie)

@@ -49,7 +49,7 @@ namespace Whisparr.Api.V3.System.Backup
         }
 
         [RestDeleteById]
-        public object DeleteBackup(int id)
+        public void DeleteBackup(int id)
         {
             var backup = GetBackup(id);
 
@@ -66,8 +66,6 @@ namespace Whisparr.Api.V3.System.Backup
             }
 
             _diskProvider.DeleteFile(path);
-
-            return new { };
         }
 
         [HttpPost("restore/{id:int}")]

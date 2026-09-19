@@ -179,7 +179,7 @@ namespace Whisparr.Api.V3.MovieFiles
 
         [HttpDelete("bulk")]
         [Consumes("application/json")]
-        public object DeleteMovieFiles([FromBody] MovieFileListResource resource)
+        public void DeleteMovieFiles([FromBody] MovieFileListResource resource)
         {
             if (!resource.MovieFileIds.Any())
             {
@@ -201,8 +201,6 @@ namespace Whisparr.Api.V3.MovieFiles
                     _mediaFileDeletionService.DeleteMovieFile(movie, movieFile);
                 }
             }
-
-            return new { };
         }
 
         [HttpPut("bulk")]

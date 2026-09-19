@@ -95,7 +95,7 @@ namespace Whisparr.Api.V3.Queue
         [HttpDelete("bulk")]
         [Consumes("application/json")]
         [Produces("application/json")]
-        public object RemoveMany([FromBody] QueueBulkResource resource, [FromQuery] bool removeFromClient = true, [FromQuery] bool blocklist = false, [FromQuery] bool skipRedownload = false, [FromQuery] bool changeCategory = false)
+        public void RemoveMany([FromBody] QueueBulkResource resource, [FromQuery] bool removeFromClient = true, [FromQuery] bool blocklist = false, [FromQuery] bool skipRedownload = false, [FromQuery] bool changeCategory = false)
         {
             var trackedDownloadIds = new List<string>();
             var pendingToRemove = new List<NzbDrone.Core.Queue.Queue>();
@@ -131,8 +131,6 @@ namespace Whisparr.Api.V3.Queue
             }
 
             _trackedDownloadService.StopTracking(trackedDownloadIds);
-
-            return new { };
         }
 
         [HttpGet]

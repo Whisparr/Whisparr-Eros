@@ -26,7 +26,7 @@ namespace Whisparr.Api.V3.Metadata
         }
 
         [NonAction]
-        public override object DeleteProviders([FromBody] MetadataBulkResource resource)
+        public override void DeleteProviders([FromBody] MetadataBulkResource resource)
         {
             throw new NotImplementedException();
         }

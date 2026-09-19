@@ -120,11 +120,9 @@ namespace Whisparr.Api.V3.Performers
         }
 
         [HttpDelete]
-        public object DeletePerformers([FromBody] PerformerEditorResource resource)
+        public void DeletePerformers([FromBody] PerformerEditorResource resource)
         {
             _performerService.DeletePerformers(resource.PerformerIds, resource.DeleteFiles, resource.AddImportExclusion);
-
-            return new { };
         }
     }
 }

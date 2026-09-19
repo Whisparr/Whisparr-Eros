@@ -150,10 +150,9 @@ namespace Whisparr.Api.V3.History
         }
 
         [HttpPost("failed/{id}")]
-        public object MarkAsFailed([FromRoute] int id)
+        public void MarkAsFailed([FromRoute] int id)
         {
             _failedDownloadService.MarkAsFailed(id);
-            return new { };
         }
     }
 }
