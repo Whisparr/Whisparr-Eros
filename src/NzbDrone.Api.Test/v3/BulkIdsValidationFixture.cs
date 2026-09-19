@@ -45,6 +45,14 @@ namespace NzbDrone.Api.Test.v3
             ("PUT /studio/editor", (m, ids) => m.Resolve<StudioEditorController>().SaveAll(new StudioEditorResource { StudioIds = ids })),
         };
 
+        [TestCaseSource(nameof(Cases))]
+        public void should_reject_missing_ids_as_bad_request(Action<AutoMoqer, List<int>> call, List<int> ids)
+        {
+            var act = () => call(Mocker, ids);
+
+            act.Should().Throw<BadRequestException>().Which.Content.Should().BeOfType<string>().Which.Should().EndWith("must be provided");
+        }
+
         private static IEnumerable<TestCaseData> Cases()
         {
             foreach (var (endpoint, call) in Endpoints)
@@ -52,14 +60,6 @@ namespace NzbDrone.Api.Test.v3
                 yield return new TestCaseData(call, null).SetName($"{endpoint} rejects null ids");
                 yield return new TestCaseData(call, new List<int>()).SetName($"{endpoint} rejects empty ids");
             }
-        }
-
-        [TestCaseSource(nameof(Cases))]
-        public void should_reject_missing_ids_as_bad_request(Action<AutoMoqer, List<int>> call, List<int> ids)
-        {
-            var act = () => call(Mocker, ids);
-
-            act.Should().Throw<BadRequestException>().Which.Content.Should().BeOfType<string>().Which.Should().EndWith("must be provided");
         }
 
         private static HashSet<int> ToSet(List<int> ids) => ids?.ToHashSet();

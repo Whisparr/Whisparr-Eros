@@ -18,15 +18,11 @@ namespace Whisparr.Api.V3.Studios
     public class StudioEditorController : Controller
     {
         private readonly IStudioService _studioService;
-        private readonly IManageCommandQueue _commandQueueManager;
-        private readonly IUpgradableSpecification _upgradableSpecification;
         private readonly StudioEditorValidator _studioEditorValidator;
 
         public StudioEditorController(IStudioService studioService, IManageCommandQueue commandQueueManager, IUpgradableSpecification upgradableSpecification, StudioEditorValidator studioEditorValidator)
         {
             _studioService = studioService;
-            _commandQueueManager = commandQueueManager;
-            _upgradableSpecification = upgradableSpecification;
             _studioEditorValidator = studioEditorValidator;
         }
 
