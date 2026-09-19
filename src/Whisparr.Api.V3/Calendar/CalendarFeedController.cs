@@ -5,6 +5,7 @@ using Ical.Net;
 using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
 using Ical.Net.Serialization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Movies;
@@ -26,6 +27,8 @@ namespace Whisparr.Api.V3.Calendar
         }
 
         [HttpGet("Whisparr.ics")]
+        [Produces("text/calendar")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         public IActionResult GetCalendarFeed(int pastDays = 7, int futureDays = 28, string tags = "", bool unmonitored = false)
         {
             var start = DateTime.Today.AddDays(-pastDays);

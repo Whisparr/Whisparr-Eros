@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Internal;
@@ -110,6 +111,8 @@ namespace Whisparr.Api.V3.System
         }
 
         [HttpGet("routes")]
+        [Produces("text/plain")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         public IActionResult GetRoutes()
         {
             using (var sw = new StringWriter())

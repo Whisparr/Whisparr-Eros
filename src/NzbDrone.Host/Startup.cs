@@ -160,7 +160,10 @@ namespace NzbDrone.Host
                     [new OpenApiSecuritySchemeReference(apikeyQuery.Name, document)] = new List<string>(),
                 });
 
+                c.OperationFilter<SuccessStatusCodeOperationFilter>();
+                c.OperationFilter<RequiredRequestBodyOperationFilter>();
                 c.OperationFilter<AllowAnonymousOperationFilter>();
+                c.OperationFilter<BackupRestoreUploadOperationFilter>();
                 c.SchemaFilter<CommandResourceSchemaFilter>();
 
                 c.DescribeAllParametersInCamelCase();
