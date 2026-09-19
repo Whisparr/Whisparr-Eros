@@ -11,6 +11,7 @@ using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Movies;
 using NzbDrone.Core.Movies.Commands;
 using Whisparr.Http;
+using Whisparr.Http.REST;
 
 namespace Whisparr.Api.V3.Movies
 {
@@ -44,6 +45,11 @@ namespace Whisparr.Api.V3.Movies
         [ProducesResponseType(typeof(List<MovieResource>), StatusCodes.Status202Accepted)]
         public ActionResult<List<MovieResource>> SaveAll([FromBody] MovieEditorResource resource)
         {
+            if (resource.MovieIds == null || resource.MovieIds.Count == 0)
+            {
+                throw new BadRequestException("movieIds must be provided");
+            }
+
             var moviesToUpdate = _movieService.GetMovies(resource.MovieIds);
             var moviesToMove = new List<BulkMoveMovie>();
 
@@ -126,6 +132,11 @@ namespace Whisparr.Api.V3.Movies
         [HttpDelete]
         public void DeleteMovies([FromBody] MovieEditorResource resource)
         {
+            if (resource.MovieIds == null || resource.MovieIds.Count == 0)
+            {
+                throw new BadRequestException("movieIds must be provided");
+            }
+
             _movieService.DeleteMovies(resource.MovieIds, resource.DeleteFiles, resource.AddImportExclusion);
         }
 

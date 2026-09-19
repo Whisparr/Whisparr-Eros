@@ -92,6 +92,11 @@ namespace Whisparr.Api.V3.Queue
         [Produces("application/json")]
         public void RemoveMany([FromBody] QueueBulkResource resource, [FromQuery] bool removeFromClient = true, [FromQuery] bool blocklist = false, [FromQuery] bool skipRedownload = false, [FromQuery] bool changeCategory = false)
         {
+            if (resource.Ids == null || resource.Ids.Count == 0)
+            {
+                throw new BadRequestException("ids must be provided");
+            }
+
             var trackedDownloadIds = new List<string>();
             var pendingToRemove = new List<NzbDrone.Core.Queue.Queue>();
             var trackedToRemove = new List<TrackedDownload>();

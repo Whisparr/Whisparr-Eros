@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Movies.Performers;
 using Whisparr.Http;
+using Whisparr.Http.REST;
 
 namespace Whisparr.Api.V3.Performers
 {
@@ -34,6 +35,11 @@ namespace Whisparr.Api.V3.Performers
         [ProducesResponseType(typeof(List<PerformerResource>), StatusCodes.Status202Accepted)]
         public ActionResult<List<PerformerResource>> SaveAll([FromBody] PerformerEditorResource resource)
         {
+            if (resource.PerformerIds == null || resource.PerformerIds.Count == 0)
+            {
+                throw new BadRequestException("performerIds must be provided");
+            }
+
             var performersToUpdate = _performerService.GetPerformers(resource.PerformerIds);
 
             // A bulk date has three states the wire can't express with a plain DateTime?:
@@ -116,6 +122,11 @@ namespace Whisparr.Api.V3.Performers
         [HttpDelete]
         public void DeletePerformers([FromBody] PerformerEditorResource resource)
         {
+            if (resource.PerformerIds == null || resource.PerformerIds.Count == 0)
+            {
+                throw new BadRequestException("performerIds must be provided");
+            }
+
             _performerService.DeletePerformers(resource.PerformerIds, resource.DeleteFiles, resource.AddImportExclusion);
         }
     }

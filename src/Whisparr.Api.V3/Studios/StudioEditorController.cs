@@ -10,6 +10,7 @@ using NzbDrone.Core.DecisionEngine.Specifications;
 using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Movies.Studios;
 using Whisparr.Http;
+using Whisparr.Http.REST;
 
 namespace Whisparr.Api.V3.Studios
 {
@@ -40,6 +41,11 @@ namespace Whisparr.Api.V3.Studios
         [ProducesResponseType(typeof(List<StudioResource>), StatusCodes.Status202Accepted)]
         public ActionResult<List<StudioResource>> SaveAll([FromBody] StudioEditorResource resource)
         {
+            if (resource.StudioIds == null || resource.StudioIds.Count == 0)
+            {
+                throw new BadRequestException("studioIds must be provided");
+            }
+
             var studiosToUpdate = _studioService.GetStudios(resource.StudioIds);
 
             // A bulk date has three states the wire can't express with a plain DateTime?:

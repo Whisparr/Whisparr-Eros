@@ -112,6 +112,11 @@ namespace Whisparr.Api.V3.MovieFiles
         [ProducesResponseType(typeof(List<MovieFileResource>), StatusCodes.Status202Accepted)]
         public ActionResult<List<MovieFileResource>> SetMovieFile([FromBody] MovieFileListResource resource)
         {
+            if (resource.MovieFileIds == null || resource.MovieFileIds.Count == 0)
+            {
+                throw new Whisparr.Http.REST.BadRequestException("movieFileIds must be provided");
+            }
+
             var movieFiles = _mediaFileService.GetMovies(resource.MovieFileIds);
 
             foreach (var movieFile in movieFiles)
@@ -181,9 +186,9 @@ namespace Whisparr.Api.V3.MovieFiles
         [Consumes("application/json")]
         public void DeleteMovieFiles([FromBody] MovieFileListResource resource)
         {
-            if (!resource.MovieFileIds.Any())
+            if (resource.MovieFileIds == null || resource.MovieFileIds.Count == 0)
             {
-                throw new NzbDrone.Core.Exceptions.BadRequestException("movieFileIds must be provided");
+                throw new Whisparr.Http.REST.BadRequestException("movieFileIds must be provided");
             }
 
             var movieFiles = _mediaFileService.GetMovies(resource.MovieFileIds);

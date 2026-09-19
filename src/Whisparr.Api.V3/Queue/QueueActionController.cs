@@ -37,6 +37,11 @@ namespace Whisparr.Api.V3.Queue
         [Consumes("application/json")]
         public async Task Grab([FromBody] QueueBulkResource resource)
         {
+            if (resource.Ids == null || resource.Ids.Count == 0)
+            {
+                throw new BadRequestException("ids must be provided");
+            }
+
             foreach (var id in resource.Ids)
             {
                 var pendingRelease = _pendingReleaseService.FindPendingQueueItem(id);

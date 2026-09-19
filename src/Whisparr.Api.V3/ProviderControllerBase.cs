@@ -121,7 +121,7 @@ namespace Whisparr.Api.V3
         [Produces("application/json")]
         public virtual ActionResult<List<TProviderResource>> UpdateProvider([FromBody] TBulkProviderResource providerResource)
         {
-            if (!providerResource.Ids.Any())
+            if (providerResource.Ids == null || providerResource.Ids.Count == 0)
             {
                 throw new BadRequestException("ids must be provided");
             }
@@ -167,6 +167,11 @@ namespace Whisparr.Api.V3
         [Consumes("application/json")]
         public virtual void DeleteProviders([FromBody] TBulkProviderResource resource)
         {
+            if (resource.Ids == null || resource.Ids.Count == 0)
+            {
+                throw new BadRequestException("ids must be provided");
+            }
+
             _providerFactory.Delete(resource.Ids);
         }
 
