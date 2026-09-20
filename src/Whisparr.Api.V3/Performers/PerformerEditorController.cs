@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Globalization;
 using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Common.Extensions;
-using NzbDrone.Core.DecisionEngine.Specifications;
-using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Movies.Performers;
 using Whisparr.Http;
+using Whisparr.Http.REST;
 
 namespace Whisparr.Api.V3.Performers
 {
@@ -16,15 +16,11 @@ namespace Whisparr.Api.V3.Performers
     public class PerformerEditorController : Controller
     {
         private readonly IPerformerService _performerService;
-        private readonly IManageCommandQueue _commandQueueManager;
-        private readonly IUpgradableSpecification _upgradableSpecification;
         private readonly PerformerEditorValidator _performerEditorValidator;
 
-        public PerformerEditorController(IPerformerService performerService, IManageCommandQueue commandQueueManager, IUpgradableSpecification upgradableSpecification, PerformerEditorValidator performerEditorValidator)
+        public PerformerEditorController(IPerformerService performerService, PerformerEditorValidator performerEditorValidator)
         {
             _performerService = performerService;
-            _commandQueueManager = commandQueueManager;
-            _upgradableSpecification = upgradableSpecification;
             _performerEditorValidator = performerEditorValidator;
         }
 
@@ -36,8 +32,14 @@ namespace Whisparr.Api.V3.Performers
         [HttpPut]
         [Consumes("application/json")]
         [Produces("application/json")]
-        public IActionResult SaveAll([FromBody] PerformerEditorResource resource)
+        [ProducesResponseType(typeof(List<PerformerResource>), StatusCodes.Status202Accepted)]
+        public ActionResult<List<PerformerResource>> SaveAll([FromBody] PerformerEditorResource resource)
         {
+            if (resource.PerformerIds == null || resource.PerformerIds.Count == 0)
+            {
+                throw new BadRequestException("performerIds must be provided");
+            }
+
             var performersToUpdate = _performerService.GetPerformers(resource.PerformerIds);
 
             // A bulk date has three states the wire can't express with a plain DateTime?:
@@ -118,11 +120,14 @@ namespace Whisparr.Api.V3.Performers
         }
 
         [HttpDelete]
-        public object DeletePerformers([FromBody] PerformerEditorResource resource)
+        public void DeletePerformers([FromBody] PerformerEditorResource resource)
         {
-            _performerService.DeletePerformers(resource.PerformerIds, resource.DeleteFiles, resource.AddImportExclusion);
+            if (resource.PerformerIds == null || resource.PerformerIds.Count == 0)
+            {
+                throw new BadRequestException("performerIds must be provided");
+            }
 
-            return new { };
+            _performerService.DeletePerformers(resource.PerformerIds, resource.DeleteFiles, resource.AddImportExclusion);
         }
     }
 }

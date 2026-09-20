@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.CustomFormats;
 using NzbDrone.Core.Datastore.Events;
@@ -48,30 +49,6 @@ namespace Whisparr.Api.V3.MovieFiles
             _upgradableSpecification = upgradableSpecification;
         }
 
-        private MovieFileResource MapToResource(MovieFile movieFile)
-        {
-            if (movieFile.MovieId > 0)
-            {
-                return movieFile.ToResource(movieFile.Movie, _upgradableSpecification, _formatCalculator);
-            }
-
-            return movieFile.ToResource();
-        }
-
-        protected override MovieFileResource GetResourceById(int id)
-        {
-            var movieFile = _mediaFileService.GetMovie(id);
-            var movie = new Movie();
-            if (movieFile.MovieId != 0)
-            {
-                movie = _movieService.GetMovie(movieFile.MovieId);
-            }
-
-            var resource = movieFile.ToResource(movie, _upgradableSpecification, _formatCalculator);
-
-            return resource;
-        }
-
         [HttpGet]
         [Produces("application/json")]
         public List<MovieFileResource> GetMovieFiles([FromQuery(Name = "movieId")] List<int> movieIds, [FromQuery] List<int> movieFileIds, bool? unmapped)
@@ -82,7 +59,7 @@ namespace Whisparr.Api.V3.MovieFiles
                 return files.ConvertAll(f => MapToResource(f));
             }
 
-            var movieFiles = new List<MovieFile>();
+            List<MovieFile> movieFiles;
 
             if (!movieIds.Any() && !movieFileIds.Any())
             {
@@ -129,54 +106,6 @@ namespace Whisparr.Api.V3.MovieFiles
             return Accepted(movieFile.Id);
         }
 
-        [Obsolete("Use bulk endpoint instead")]
-        [HttpPut("editor")]
-        [Consumes("application/json")]
-        public object SetMovieFile([FromBody] MovieFileListResource resource)
-        {
-            var movieFiles = _mediaFileService.GetMovies(resource.MovieFileIds);
-
-            foreach (var movieFile in movieFiles)
-            {
-                if (resource.Quality != null)
-                {
-                    movieFile.Quality = resource.Quality;
-                }
-
-                if (resource.Languages != null)
-                {
-                    // Don't allow user to set files with 'Any' or 'Original' language
-                    movieFile.Languages = resource.Languages.Where(l => l != null && l != Language.Any && l != Language.Original).ToList();
-                }
-
-                if (resource.IndexerFlags != null)
-                {
-                    movieFile.IndexerFlags = (IndexerFlags)resource.IndexerFlags.Value;
-                }
-
-                if (resource.Edition != null)
-                {
-                    movieFile.Edition = resource.Edition;
-                }
-
-                if (resource.ReleaseGroup != null)
-                {
-                    movieFile.ReleaseGroup = resource.ReleaseGroup;
-                }
-
-                if (resource.SceneName != null && SceneChecker.IsSceneTitle(resource.SceneName))
-                {
-                    movieFile.SceneName = resource.SceneName;
-                }
-            }
-
-            _mediaFileService.Update(movieFiles);
-
-            var movie = _movieService.GetMovie(movieFiles.First().MovieId);
-
-            return Accepted(movieFiles.ConvertAll(f => f.ToResource(movie, _upgradableSpecification, _formatCalculator)));
-        }
-
         [RestDeleteById]
         public void DeleteMovieFile(int id)
         {
@@ -201,11 +130,11 @@ namespace Whisparr.Api.V3.MovieFiles
 
         [HttpDelete("bulk")]
         [Consumes("application/json")]
-        public object DeleteMovieFiles([FromBody] MovieFileListResource resource)
+        public void DeleteMovieFiles([FromBody] MovieFileListResource resource)
         {
-            if (!resource.MovieFileIds.Any())
+            if (resource.MovieFileIds == null || resource.MovieFileIds.Count == 0)
             {
-                throw new NzbDrone.Core.Exceptions.BadRequestException("movieFileIds must be provided");
+                throw new Whisparr.Http.REST.BadRequestException("movieFileIds must be provided");
             }
 
             var movieFiles = _mediaFileService.GetMovies(resource.MovieFileIds);
@@ -218,18 +147,17 @@ namespace Whisparr.Api.V3.MovieFiles
                 }
                 else
                 {
-                    var movie = _movieService.GetMovie(movieFiles.First().MovieId);
+                    var movie = _movieService.GetMovie(movieFile.MovieId);
 
                     _mediaFileDeletionService.DeleteMovieFile(movie, movieFile);
                 }
             }
-
-            return new { };
         }
 
         [HttpPut("bulk")]
         [Consumes("application/json")]
-        public object SetPropertiesBulk([FromBody] List<MovieFileResource> resources)
+        [ProducesResponseType(typeof(List<MovieFileResource>), StatusCodes.Status202Accepted)]
+        public ActionResult<List<MovieFileResource>> SetPropertiesBulk([FromBody] List<MovieFileResource> resources)
         {
             var movieFiles = _mediaFileService.GetMovies(resources.Select(r => r.Id));
 
@@ -271,7 +199,7 @@ namespace Whisparr.Api.V3.MovieFiles
 
             _mediaFileService.Update(movieFiles);
 
-            var movie = _movieService.GetMovie(movieFiles.First().MovieId);
+            var movie = _movieService.GetMovie(movieFiles[0].MovieId);
 
             return Accepted(movieFiles.ConvertAll(f => f.ToResource(movie, _upgradableSpecification, _formatCalculator)));
         }
@@ -285,7 +213,8 @@ namespace Whisparr.Api.V3.MovieFiles
         [NonAction]
         public void Handle(MovieFileUpdatedEvent message)
         {
-            ArgumentNullException.ThrowIfNull(message?.MovieFile);
+            ArgumentNullException.ThrowIfNull(message);
+            ArgumentNullException.ThrowIfNull(message.MovieFile);
             BroadcastResourceChange(ModelAction.Updated, message.MovieFile.Id);
         }
 
@@ -293,6 +222,30 @@ namespace Whisparr.Api.V3.MovieFiles
         public void Handle(MovieFileDeletedEvent message)
         {
             BroadcastResourceChange(ModelAction.Deleted, message.MovieFile.Id);
+        }
+
+        protected override MovieFileResource GetResourceById(int id)
+        {
+            var movieFile = _mediaFileService.GetMovie(id);
+            var movie = new Movie();
+            if (movieFile.MovieId != 0)
+            {
+                movie = _movieService.GetMovie(movieFile.MovieId);
+            }
+
+            var resource = movieFile.ToResource(movie, _upgradableSpecification, _formatCalculator);
+
+            return resource;
+        }
+
+        private MovieFileResource MapToResource(MovieFile movieFile)
+        {
+            if (movieFile.MovieId > 0)
+            {
+                return movieFile.ToResource(movieFile.Movie, _upgradableSpecification, _formatCalculator);
+            }
+
+            return movieFile.ToResource();
         }
     }
 }

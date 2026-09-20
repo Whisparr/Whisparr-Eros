@@ -49,7 +49,7 @@ namespace Whisparr.Api.V3.Search
         }
 
         [HttpGet("scene")]
-        public object SearchScene([FromQuery] string term)
+        public List<SearchResource> SearchScene([FromQuery] string term)
         {
             var searchResults = _searchProxy.SearchForNewEntity(term, ItemType.Scene);
             var searchResources = MapToResource(searchResults).ToList();
@@ -58,7 +58,7 @@ namespace Whisparr.Api.V3.Search
         }
 
         [HttpGet("movie")]
-        public object SearchMovie([FromQuery] string term)
+        public List<SearchResource> SearchMovie([FromQuery] string term)
         {
             var searchResults = _searchProxy.SearchForNewEntity(term, ItemType.Movie);
             var searchResources = MapToResource(searchResults).ToList();
@@ -67,7 +67,7 @@ namespace Whisparr.Api.V3.Search
         }
 
         [HttpGet("studio")]
-        public object SearchStudio([FromQuery] string term)
+        public List<SearchResource> SearchStudio([FromQuery] string term)
         {
             var searchResults = _searchProxy.SearchForNewStudio(term);
             var searchResources = MapToResource(searchResults).ToList();
@@ -76,7 +76,7 @@ namespace Whisparr.Api.V3.Search
         }
 
         [HttpGet("performer")]
-        public object SearchPerformer([FromQuery] string term)
+        public List<SearchResource> SearchPerformer([FromQuery] string term)
         {
             var searchResults = _searchProxy.SearchForNewPerformer(term);
             return MapToResource(searchResults).ToList();

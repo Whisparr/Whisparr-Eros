@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Common.Extensions;
-using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Datastore.Events;
 using NzbDrone.Core.ImportLists.ImportExclusions;
 using NzbDrone.Core.Messaging.Commands;
@@ -30,7 +30,6 @@ namespace Whisparr.Api.V3.Collections
         private readonly IMovieService _movieService;
         private readonly IMovieMetadataService _movieMetadataService;
         private readonly IImportListExclusionService _importListExclusionService;
-        private readonly IConfigService _configService;
         private readonly IBuildFileNames _fileNameBuilder;
         private readonly INamingConfigService _namingService;
         private readonly IManageCommandQueue _commandQueueManager;
@@ -44,7 +43,6 @@ namespace Whisparr.Api.V3.Collections
         /// <param name="movieService">Service for movies.</param>
         /// <param name="movieMetadataService">Service to retrieve movie metadata (external sources).</param>
         /// <param name="importListExclusionService">Service used to check import list exclusions.</param>
-        /// <param name="configService">Application configuration service.</param>
         /// <param name="fileNameBuilder">Builder for movie folder/file naming.</param>
         /// <param name="namingService">Naming configuration service.</param>
         /// <param name="commandQueueManager">Command queue manager used to enqueue background commands.</param>
@@ -54,7 +52,6 @@ namespace Whisparr.Api.V3.Collections
                                     IMovieService movieService,
                                     IMovieMetadataService movieMetadataService,
                                     IImportListExclusionService importListExclusionService,
-                                    IConfigService configService,
                                     IBuildFileNames fileNameBuilder,
                                     INamingConfigService namingService,
                                     IManageCommandQueue commandQueueManager)
@@ -65,15 +62,9 @@ namespace Whisparr.Api.V3.Collections
             _movieService = movieService;
             _movieMetadataService = movieMetadataService;
             _importListExclusionService = importListExclusionService;
-            _configService = configService;
             _fileNameBuilder = fileNameBuilder;
             _namingService = namingService;
             _commandQueueManager = commandQueueManager;
-        }
-
-        protected override CollectionResource GetResourceById(int id)
-        {
-            return MapToResource(_collectionService.GetCollection(id));
         }
 
         /// <summary>
@@ -132,7 +123,8 @@ namespace Whisparr.Api.V3.Collections
         [HttpPut]
         [Consumes("application/json")]
         [Produces("application/json")]
-        public ActionResult UpdateCollections([FromBody] CollectionUpdateResource resource)
+        [ProducesResponseType(typeof(List<CollectionResource>), StatusCodes.Status202Accepted)]
+        public ActionResult<List<CollectionResource>> UpdateCollections([FromBody] CollectionUpdateResource resource)
         {
             var collectionsToUpdate = _collectionService.GetCollections(resource.CollectionIds).ToList();
 
@@ -209,6 +201,41 @@ namespace Whisparr.Api.V3.Collections
             _collectionService.RemoveCollection(collection);
         }
 
+        /// <summary>
+        /// Handles a collection added event and broadcasts the created resource.
+        /// </summary>
+        /// <param name="message">Event message containing the added collection.</param>
+        [NonAction]
+        public void Handle(CollectionAddedEvent message)
+        {
+            BroadcastResourceChange(ModelAction.Created, MapToResource(message.Collection));
+        }
+
+        /// <summary>
+        /// Handles a collection edited event and broadcasts the updated resource.
+        /// </summary>
+        /// <param name="message">Event message containing the edited collection.</param>
+        [NonAction]
+        public void Handle(CollectionEditedEvent message)
+        {
+            BroadcastResourceChange(ModelAction.Updated, MapToResource(message.Collection));
+        }
+
+        /// <summary>
+        /// Handles a collection deleted event and broadcasts the deleted collection id.
+        /// </summary>
+        /// <param name="message">Event message containing the deleted collection.</param>
+        [NonAction]
+        public void Handle(CollectionDeletedEvent message)
+        {
+            BroadcastResourceChange(ModelAction.Deleted, message.Collection.Id);
+        }
+
+        protected override CollectionResource GetResourceById(int id)
+        {
+            return MapToResource(_collectionService.GetCollection(id));
+        }
+
         private IEnumerable<CollectionResource> MapToResource(List<MovieCollection> collections)
         {
             // Avoid calling for naming spec on every movie in filenamebuilder
@@ -282,36 +309,6 @@ namespace Whisparr.Api.V3.Collections
             }
 
             return resource;
-        }
-
-        /// <summary>
-        /// Handles a collection added event and broadcasts the created resource.
-        /// </summary>
-        /// <param name="message">Event message containing the added collection.</param>
-        [NonAction]
-        public void Handle(CollectionAddedEvent message)
-        {
-            BroadcastResourceChange(ModelAction.Created, MapToResource(message.Collection));
-        }
-
-        /// <summary>
-        /// Handles a collection edited event and broadcasts the updated resource.
-        /// </summary>
-        /// <param name="message">Event message containing the edited collection.</param>
-        [NonAction]
-        public void Handle(CollectionEditedEvent message)
-        {
-            BroadcastResourceChange(ModelAction.Updated, MapToResource(message.Collection));
-        }
-
-        /// <summary>
-        /// Handles a collection deleted event and broadcasts the deleted collection id.
-        /// </summary>
-        /// <param name="message">Event message containing the deleted collection.</param>
-        [NonAction]
-        public void Handle(CollectionDeletedEvent message)
-        {
-            BroadcastResourceChange(ModelAction.Deleted, message.Collection.Id);
         }
     }
 }

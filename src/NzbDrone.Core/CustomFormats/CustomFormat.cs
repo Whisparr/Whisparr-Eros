@@ -5,7 +5,7 @@ using NzbDrone.Core.Datastore;
 
 namespace NzbDrone.Core.CustomFormats
 {
-    public class CustomFormat : ModelBase, IEquatable<CustomFormat>
+    public sealed class CustomFormat : ModelBase, IEquatable<CustomFormat>
     {
         public CustomFormat()
         {

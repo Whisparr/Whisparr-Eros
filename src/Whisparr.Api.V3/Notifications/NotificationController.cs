@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.Notifications;
 using NzbDrone.SignalR;
@@ -18,13 +19,13 @@ namespace Whisparr.Api.V3.Notifications
         }
 
         [NonAction]
-        public override ActionResult<NotificationResource> UpdateProvider([FromBody] NotificationBulkResource providerResource)
+        public override ActionResult<List<NotificationResource>> UpdateProvider([FromBody] NotificationBulkResource providerResource)
         {
             throw new NotImplementedException();
         }
 
         [NonAction]
-        public override object DeleteProviders([FromBody] NotificationBulkResource resource)
+        public override void DeleteProviders([FromBody] NotificationBulkResource resource)
         {
             throw new NotImplementedException();
         }

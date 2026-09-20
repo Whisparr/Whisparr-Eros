@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import * as commandNames from 'Commands/commandNames';
 import { useExecuteCommand } from 'Commands/useCommands';
 import Alert from 'Components/Alert';
@@ -12,6 +12,7 @@ import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import useSelectState from 'Helpers/Hooks/useSelectState';
 import { kinds } from 'Helpers/Props';
+import Movie from 'Movie/Movie';
 import { useMovie } from 'Movie/useMovie';
 import { useNamingSettings } from 'Settings/MediaManagement/Naming/useNamingSettings';
 import { CheckInputChanged } from 'typings/inputs';
@@ -19,7 +20,10 @@ import { SelectStateInputProps } from 'typings/props';
 import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
 import OrganizePreviewRow from './OrganizePreviewRow';
-import useOrganizePreview from './useOrganizePreview';
+import useOrganizePreview, {
+  OrganizePreviewModel,
+  OrganizePreviewScope,
+} from './useOrganizePreview';
 import styles from './OrganizePreviewModalContent.css';
 
 function getValue(allSelected: boolean, allUnselected: boolean) {
@@ -32,22 +36,85 @@ function getValue(allSelected: boolean, allUnselected: boolean) {
   return null;
 }
 
-export interface OrganizePreviewModalContentProps {
+interface PreviewGroup {
   movieId: number;
-  onModalClose: () => void;
+  title: string;
+  previews: OrganizePreviewModel[];
 }
 
-function OrganizePreviewModalContent({
-  movieId,
-  onModalClose,
-}: OrganizePreviewModalContentProps) {
+// A performer or studio preview spans many titles, so rows are grouped under
+// each title's heading, using the works the details page has already loaded.
+function groupPreviews(
+  items: readonly OrganizePreviewModel[],
+  movies: readonly Movie[]
+): PreviewGroup[] {
+  const moviesById = new Map(movies.map((m) => [m.id, m]));
+  const groups = new Map<number, PreviewGroup>();
+
+  items.forEach((item) => {
+    let group = groups.get(item.movieId);
+
+    if (!group) {
+      group = {
+        movieId: item.movieId,
+        title: moviesById.get(item.movieId)?.title ?? '',
+        previews: [],
+      };
+
+      groups.set(item.movieId, group);
+    }
+
+    group.previews.push(item);
+  });
+
+  return [...groups.values()].sort((a, b) => {
+    const aSort = moviesById.get(a.movieId)?.sortTitle ?? a.title;
+    const bSort = moviesById.get(b.movieId)?.sortTitle ?? b.title;
+
+    return aSort.localeCompare(bSort);
+  });
+}
+
+export type OrganizePreviewModalContentProps =
+  | { movieId: number; onModalClose: () => void }
+  | ((
+      | { performerForeignId: string; studioForeignId?: never }
+      | { studioForeignId: string; performerForeignId?: never }
+    ) & {
+      movieId?: never;
+      items: readonly Movie[];
+      onModalClose: () => void;
+    });
+
+function getScope(
+  props: Readonly<OrganizePreviewModalContentProps>
+): OrganizePreviewScope {
+  if (props.movieId !== undefined) {
+    return { movieId: props.movieId };
+  }
+
+  if (props.performerForeignId === undefined) {
+    return { studioForeignId: props.studioForeignId };
+  }
+
+  return { performerForeignId: props.performerForeignId };
+}
+
+function OrganizePreviewModalContent(
+  props: Readonly<OrganizePreviewModalContentProps>
+) {
+  const { movieId, onModalClose } = props;
+  const works = movieId === undefined ? props.items : undefined;
+
+  const scope = getScope(props);
+
   const executeCommand = useExecuteCommand();
   const {
     items,
     isFetching: isPreviewFetching,
     isFetched: isPreviewFetched,
     error: previewError,
-  } = useOrganizePreview(movieId);
+  } = useOrganizePreview(scope);
 
   const {
     data: naming,
@@ -63,7 +130,27 @@ function OrganizePreviewModalContent({
   const isFetching = isPreviewFetching || isNamingFetching;
   const isPopulated = isPreviewFetched && isNamingFetched;
   const error = previewError || namingError;
-  const { renameMovies, standardMovieFormat } = naming;
+  const { renameMovies, standardMovieFormat, standardSceneFormat } = naming;
+
+  const groups = useMemo(
+    () => (works ? groupPreviews(items, works) : undefined),
+    [items, works]
+  );
+
+  // Only show the naming patterns for the kinds of title being renamed
+  const { hasMovies, hasScenes } = useMemo(() => {
+    if (!works) {
+      return { hasMovies: false, hasScenes: false };
+    }
+
+    const itemTypes = new Map(works.map((m) => [m.id, m.itemType]));
+    const previewTypes = new Set(items.map((i) => itemTypes.get(i.movieId)));
+
+    return {
+      hasScenes: previewTypes.has('scene'),
+      hasMovies: [...previewTypes].some((t) => t !== 'scene'),
+    };
+  }, [items, works]);
 
   const selectAllValue = getValue(allSelected, allUnselected);
 
@@ -93,15 +180,26 @@ function OrganizePreviewModalContent({
     executeCommand({
       name: commandNames.RENAME_FILES,
       files,
-      movieId,
+      ...(movieId === undefined ? {} : { movieId }),
     });
 
     onModalClose();
   }, [movieId, selectedState, onModalClose, executeCommand]);
 
-  if (!movie) {
+  if (movieId !== undefined && !movie) {
     return null;
   }
+
+  const renderRow = (item: OrganizePreviewModel) => (
+    <OrganizePreviewRow
+      key={item.movieFileId}
+      id={item.movieFileId}
+      existingPath={item.existingPath}
+      newPath={item.newPath}
+      isSelected={selectedState[item.movieFileId]}
+      onSelectedChange={handleSelectedChange}
+    />
+  );
 
   return (
     <ModalContent onModalClose={onModalClose}>
@@ -126,39 +224,64 @@ function OrganizePreviewModalContent({
 
         {!isFetching && isPopulated && items.length ? (
           <div>
-            <Alert>
-              <div>
-                <InlineMarkdown
-                  data={translate('OrganizeRelativePaths', {
-                    path: movie.path,
-                  })}
-                  blockClassName={styles.path}
-                />
-              </div>
+            {groups ? (
+              <Alert>
+                <div>{translate('OrganizeRelativePathsPerTitle')}</div>
 
-              <div>
-                <InlineMarkdown
-                  data={translate('OrganizeNamingPattern', {
-                    standardMovieFormat,
-                  })}
-                  blockClassName={styles.standardMovieFormat}
-                />
-              </div>
-            </Alert>
+                {hasMovies ? (
+                  <div>
+                    <InlineMarkdown
+                      data={translate('OrganizeMovieNamingPattern', {
+                        standardMovieFormat,
+                      })}
+                      blockClassName={styles.standardMovieFormat}
+                    />
+                  </div>
+                ) : null}
+
+                {hasScenes ? (
+                  <div>
+                    <InlineMarkdown
+                      data={translate('OrganizeSceneNamingPattern', {
+                        standardSceneFormat,
+                      })}
+                      blockClassName={styles.standardMovieFormat}
+                    />
+                  </div>
+                ) : null}
+              </Alert>
+            ) : (
+              <Alert>
+                <div>
+                  <InlineMarkdown
+                    data={translate('OrganizeRelativePaths', {
+                      path: movie?.path ?? '',
+                    })}
+                    blockClassName={styles.path}
+                  />
+                </div>
+
+                <div>
+                  <InlineMarkdown
+                    data={translate('OrganizeNamingPattern', {
+                      standardMovieFormat,
+                    })}
+                    blockClassName={styles.standardMovieFormat}
+                  />
+                </div>
+              </Alert>
+            )}
 
             <div className={styles.previews}>
-              {items.map((item) => {
-                return (
-                  <OrganizePreviewRow
-                    key={item.movieFileId}
-                    id={item.movieFileId}
-                    existingPath={item.existingPath}
-                    newPath={item.newPath}
-                    isSelected={selectedState[item.movieFileId]}
-                    onSelectedChange={handleSelectedChange}
-                  />
-                );
-              })}
+              {groups
+                ? groups.map((group) => (
+                    <div key={group.movieId} className={styles.group}>
+                      <div className={styles.groupTitle}>{group.title}</div>
+
+                      {group.previews.map(renderRow)}
+                    </div>
+                  ))
+                : items.map(renderRow)}
             </div>
           </div>
         ) : null}

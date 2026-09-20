@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.Datastore.Events;
 using NzbDrone.Core.Messaging.Events;
@@ -37,11 +38,6 @@ namespace Whisparr.Api.V3.Qualities
             return Accepted(model.Id);
         }
 
-        protected override QualityDefinitionResource GetResourceById(int id)
-        {
-            return _qualityDefinitionService.GetById(id).ToResource();
-        }
-
         [HttpGet]
         public List<QualityDefinitionResource> GetAll()
         {
@@ -49,7 +45,8 @@ namespace Whisparr.Api.V3.Qualities
         }
 
         [HttpPut("update")]
-        public object UpdateMany([FromBody] List<QualityDefinitionResource> resource)
+        [ProducesResponseType(typeof(List<QualityDefinitionResource>), StatusCodes.Status202Accepted)]
+        public ActionResult<List<QualityDefinitionResource>> UpdateMany([FromBody] List<QualityDefinitionResource> resource)
         {
             // Read from request
             var qualityDefinitions = resource.ToModel().ToList();
@@ -75,6 +72,11 @@ namespace Whisparr.Api.V3.Qualities
             {
                 BroadcastResourceChange(ModelAction.Sync);
             }
+        }
+
+        protected override QualityDefinitionResource GetResourceById(int id)
+        {
+            return _qualityDefinitionService.GetById(id).ToResource();
         }
     }
 }

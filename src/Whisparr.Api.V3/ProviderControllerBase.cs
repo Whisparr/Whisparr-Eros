@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Serializer;
@@ -47,14 +48,6 @@ namespace Whisparr.Api.V3
             SharedValidator.RuleFor(c => c.ConfigContract).NotEmpty();
 
             PostValidator.RuleFor(c => c.Fields).NotNull();
-        }
-
-        protected override TProviderResource GetResourceById(int id)
-        {
-            var definition = _providerFactory.Get(id);
-            _providerFactory.SetProviderCharacteristics(definition);
-
-            return _resourceMapper.ToResource(definition);
         }
 
         [HttpGet]
@@ -127,9 +120,9 @@ namespace Whisparr.Api.V3
         [HttpPut("bulk")]
         [Consumes("application/json")]
         [Produces("application/json")]
-        public virtual ActionResult<TProviderResource> UpdateProvider([FromBody] TBulkProviderResource providerResource)
+        public virtual ActionResult<List<TProviderResource>> UpdateProvider([FromBody] TBulkProviderResource providerResource)
         {
-            if (!providerResource.Ids.Any())
+            if (providerResource.Ids == null || providerResource.Ids.Count == 0)
             {
                 throw new BadRequestException("ids must be provided");
             }
@@ -165,33 +158,22 @@ namespace Whisparr.Api.V3
             return Accepted(_providerFactory.Update(definitionsToUpdate).Select(x => _resourceMapper.ToResource(x)));
         }
 
-        private TProviderDefinition GetDefinition(TProviderResource providerResource, TProviderDefinition existingDefinition, bool validate, bool includeWarnings, bool forceValidate)
-        {
-            var definition = _resourceMapper.ToModel(providerResource, existingDefinition);
-
-            if (validate && (definition.Enable || forceValidate))
-            {
-                Validate(definition, includeWarnings);
-            }
-
-            return definition;
-        }
-
         [RestDeleteById]
-        public object DeleteProvider(int id)
+        public void DeleteProvider(int id)
         {
             _providerFactory.Delete(id);
-
-            return new { };
         }
 
         [HttpDelete("bulk")]
         [Consumes("application/json")]
-        public virtual object DeleteProviders([FromBody] TBulkProviderResource resource)
+        public virtual void DeleteProviders([FromBody] TBulkProviderResource resource)
         {
-            _providerFactory.Delete(resource.Ids);
+            if (resource.Ids == null || resource.Ids.Count == 0)
+            {
+                throw new BadRequestException("ids must be provided");
+            }
 
-            return new { };
+            _providerFactory.Delete(resource.Ids);
         }
 
         [HttpGet("schema")]
@@ -220,19 +202,19 @@ namespace Whisparr.Api.V3
         [SkipValidation(true, false)]
         [HttpPost("test")]
         [Consumes("application/json")]
-        public object Test([FromBody] TProviderResource providerResource, [FromQuery] bool forceTest = false)
+        public void Test([FromBody] TProviderResource providerResource, [FromQuery] bool forceTest = false)
         {
             var existingDefinition = providerResource.Id > 0 ? _providerFactory.Find(providerResource.Id) : null;
             var providerDefinition = GetDefinition(providerResource, existingDefinition, true, !forceTest, true);
 
             Test(providerDefinition, true);
-
-            return "{}";
         }
 
         [HttpPost("testall")]
         [Produces("application/json")]
-        public IActionResult TestAll()
+        [ProducesResponseType(typeof(List<ProviderTestAllResult>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(List<ProviderTestAllResult>), StatusCodes.Status400BadRequest)]
+        public ActionResult<List<ProviderTestAllResult>> TestAll()
         {
             var providerDefinitions = _providerFactory.All()
                                                       .Where(c => c.Settings.Validate().IsValid && c.Enable)
@@ -260,6 +242,7 @@ namespace Whisparr.Api.V3
         [HttpPost("action/{name}")]
         [Consumes("application/json")]
         [Produces("application/json")]
+        [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
         public IActionResult RequestAction([FromRoute] string name, [FromBody] TProviderResource providerResource)
         {
             var existingDefinition = providerResource.Id > 0 ? _providerFactory.Find(providerResource.Id) : null;
@@ -290,21 +273,7 @@ namespace Whisparr.Api.V3
             BroadcastResourceChange(ModelAction.Deleted, message.ProviderId);
         }
 
-        private void Validate(TProviderDefinition definition, bool includeWarnings)
-        {
-            var validationResult = definition.Settings.Validate();
-
-            VerifyValidationResult(validationResult, includeWarnings);
-        }
-
-        protected virtual void Test(TProviderDefinition definition, bool includeWarnings)
-        {
-            var validationResult = _providerFactory.Test(definition);
-
-            VerifyValidationResult(validationResult, includeWarnings);
-        }
-
-        protected void VerifyValidationResult(ValidationResult validationResult, bool includeWarnings)
+        protected static void VerifyValidationResult(ValidationResult validationResult, bool includeWarnings)
         {
             var result = validationResult as NzbDroneValidationResult ?? new NzbDroneValidationResult(validationResult.Errors);
 
@@ -317,6 +286,40 @@ namespace Whisparr.Api.V3
             {
                 throw new ValidationException(result.Errors);
             }
+        }
+
+        protected override TProviderResource GetResourceById(int id)
+        {
+            var definition = _providerFactory.Get(id);
+            _providerFactory.SetProviderCharacteristics(definition);
+
+            return _resourceMapper.ToResource(definition);
+        }
+
+        protected virtual void Test(TProviderDefinition definition, bool includeWarnings)
+        {
+            var validationResult = _providerFactory.Test(definition);
+
+            VerifyValidationResult(validationResult, includeWarnings);
+        }
+
+        private static void Validate(TProviderDefinition definition, bool includeWarnings)
+        {
+            var validationResult = definition.Settings.Validate();
+
+            VerifyValidationResult(validationResult, includeWarnings);
+        }
+
+        private TProviderDefinition GetDefinition(TProviderResource providerResource, TProviderDefinition existingDefinition, bool validate, bool includeWarnings, bool forceValidate)
+        {
+            var definition = _resourceMapper.ToModel(providerResource, existingDefinition);
+
+            if (validate && (definition.Enable || forceValidate))
+            {
+                Validate(definition, includeWarnings);
+            }
+
+            return definition;
         }
     }
 }

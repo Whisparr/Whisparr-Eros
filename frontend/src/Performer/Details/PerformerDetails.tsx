@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import find from 'lodash/find';
 import React, { useCallback, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Flag from 'react-world-flags';
@@ -22,6 +22,8 @@ import Tooltip from 'Components/Tooltip/Tooltip';
 import { useMovieMonitorAvailability } from 'Helpers/Hooks/useMovieMonitorAvailability';
 import { icons, kinds, sizes, tooltipPositions } from 'Helpers/Props';
 import MovieHeadshot from 'Movie/MovieHeadshot';
+import OrganizePreviewModal from 'Organize/OrganizePreviewModal';
+import useOrganizeAvailability from 'Organize/useOrganizeAvailability';
 import DeletePerformerModal from 'Performer/Delete/DeletePerformerModal';
 import PerformerIndexViewMenu from 'Performer/Index/Menus/PerformerIndexViewMenu';
 import PerformerGenderIcon from 'Performer/PerformerGenderIcon';
@@ -52,7 +54,7 @@ import styles from './PerformerDetails.css';
 function getFanartUrl(
   images: Array<{ coverType: string; url: string }>
 ): string | undefined {
-  return _.find(images, { coverType: 'fanart' })?.url;
+  return find(images, { coverType: 'fanart' })?.url;
 }
 
 function PerformerDetails() {
@@ -87,6 +89,14 @@ function PerformerDetails() {
   const currentYear = new Date().getFullYear();
 
   const [isEditMovieModalOpen, setIsEditMovieModalOpen] = useState(false);
+  const [isOrganizeModalOpen, setIsOrganizeModalOpen] = useState(false);
+  const { canRename, title: organizeTitle } = useOrganizeAvailability(movies);
+  const handleOrganizePress = useCallback(() => {
+    setIsOrganizeModalOpen(true);
+  }, []);
+  const handleOrganizeModalClose = useCallback(() => {
+    setIsOrganizeModalOpen(false);
+  }, []);
   const [isDeleteMovieModalOpen, setIsDeleteMovieModalOpen] = useState(false);
   const [isPosterOptionsModalOpen, setIsPosterOptionsModalOpen] =
     useState(false);
@@ -274,6 +284,13 @@ function PerformerDetails() {
           isSpinning={isSearching}
           title={undefined}
           onPress={handleSearchPress}
+        />
+        <PageToolbarButton
+          label={translate('PreviewRename')}
+          iconName={icons.ORGANIZE}
+          title={organizeTitle}
+          isDisabled={!canRename}
+          onPress={handleOrganizePress}
         />
         <PageToolbarSeparator />
         <PageToolbarButton
@@ -608,6 +625,12 @@ function PerformerDetails() {
           isOpen={isEditMovieModalOpen}
           performer={performer}
           onModalClose={handleEditMovieModalClose}
+        />
+        <OrganizePreviewModal
+          isOpen={isOrganizeModalOpen}
+          performerForeignId={foreignId}
+          items={movies}
+          onModalClose={handleOrganizeModalClose}
         />
       </PageContentBody>
     </PageContent>

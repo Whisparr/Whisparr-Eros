@@ -127,16 +127,23 @@ namespace Whisparr.Api.V3.Performers
             return resource;
         }
 
+        // Hidden from Swagger: this and GetPerformerByForeignId's GET {id} are one path, and
+        // only one GET can sit there. The int constraint still routes integers here at runtime.
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public override ActionResult<PerformerResource> GetResourceByIdWithErrorHandler(int id)
+            => base.GetResourceByIdWithErrorHandler(id);
+
         /// <summary>Retrieves a single performer by their external foreign ID (e.g., from StashDb)</summary>
         /// <returns>Performer details with associated movies and local cover URLs</returns>
+        /// <remarks>A numeric value is routed to the internal ID lookup instead.</remarks>
         /// <response code="200">Performer found and returned</response>
         /// <response code="404">Performer with the specified foreign ID not found</response>
-        [HttpGet("{performerForeignId}")]
+        [HttpGet("{id}")]
         [Produces("application/json")]
-        public ActionResult<PerformerResource> GetPerformerByForeignId(string performerForeignId)
+        public ActionResult<PerformerResource> GetPerformerByForeignId(string id)
         {
-            var performerResource = GetCachedPerformerResource(performerForeignId);
-            if (performerResource == null || performerResource.ForeignId != performerForeignId)
+            var performerResource = GetCachedPerformerResource(id);
+            if (performerResource == null || performerResource.ForeignId != id)
             {
                 return NotFound();
             }

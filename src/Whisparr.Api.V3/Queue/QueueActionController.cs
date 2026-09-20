@@ -21,7 +21,7 @@ namespace Whisparr.Api.V3.Queue
         }
 
         [HttpPost("grab/{id:int}")]
-        public async Task<object> Grab([FromRoute] int id)
+        public async Task Grab([FromRoute] int id)
         {
             var pendingRelease = _pendingReleaseService.FindPendingQueueItem(id);
 
@@ -31,14 +31,17 @@ namespace Whisparr.Api.V3.Queue
             }
 
             await _downloadService.DownloadReport(pendingRelease.RemoteMovie, null);
-
-            return new { };
         }
 
         [HttpPost("grab/bulk")]
         [Consumes("application/json")]
-        public async Task<object> Grab([FromBody] QueueBulkResource resource)
+        public async Task Grab([FromBody] QueueBulkResource resource)
         {
+            if (resource.Ids == null || resource.Ids.Count == 0)
+            {
+                throw new BadRequestException("ids must be provided");
+            }
+
             foreach (var id in resource.Ids)
             {
                 var pendingRelease = _pendingReleaseService.FindPendingQueueItem(id);
@@ -50,8 +53,6 @@ namespace Whisparr.Api.V3.Queue
 
                 await _downloadService.DownloadReport(pendingRelease.RemoteMovie, null);
             }
-
-            return new { };
         }
     }
 }

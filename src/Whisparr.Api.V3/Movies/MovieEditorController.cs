@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using FluentValidation;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Configuration;
@@ -10,6 +11,7 @@ using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Movies;
 using NzbDrone.Core.Movies.Commands;
 using Whisparr.Http;
+using Whisparr.Http.REST;
 
 namespace Whisparr.Api.V3.Movies
 {
@@ -40,8 +42,14 @@ namespace Whisparr.Api.V3.Movies
 
         [HttpPut]
         [Consumes("application/json")]
-        public IActionResult SaveAll([FromBody] MovieEditorResource resource)
+        [ProducesResponseType(typeof(List<MovieResource>), StatusCodes.Status202Accepted)]
+        public ActionResult<List<MovieResource>> SaveAll([FromBody] MovieEditorResource resource)
         {
+            if (resource.MovieIds == null || resource.MovieIds.Count == 0)
+            {
+                throw new BadRequestException("movieIds must be provided");
+            }
+
             var moviesToUpdate = _movieService.GetMovies(resource.MovieIds);
             var moviesToMove = new List<BulkMoveMovie>();
 
@@ -122,11 +130,14 @@ namespace Whisparr.Api.V3.Movies
         }
 
         [HttpDelete]
-        public object DeleteMovies([FromBody] MovieEditorResource resource)
+        public void DeleteMovies([FromBody] MovieEditorResource resource)
         {
-            _movieService.DeleteMovies(resource.MovieIds, resource.DeleteFiles, resource.AddImportExclusion);
+            if (resource.MovieIds == null || resource.MovieIds.Count == 0)
+            {
+                throw new BadRequestException("movieIds must be provided");
+            }
 
-            return new { };
+            _movieService.DeleteMovies(resource.MovieIds, resource.DeleteFiles, resource.AddImportExclusion);
         }
 
         private void MapCoversToLocal(MovieResource movie)

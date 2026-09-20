@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.CustomFormats;
@@ -41,11 +42,6 @@ namespace Whisparr.Api.V3.CustomFormats
             });
         }
 
-        protected override CustomFormatResource GetResourceById(int id)
-        {
-            return _formatService.GetById(id).ToResource(true);
-        }
-
         [HttpGet]
         [Produces("application/json")]
         public List<CustomFormatResource> GetAll()
@@ -80,9 +76,10 @@ namespace Whisparr.Api.V3.CustomFormats
         [HttpPut("bulk")]
         [Consumes("application/json")]
         [Produces("application/json")]
-        public virtual ActionResult<CustomFormatResource> Update([FromBody] CustomFormatBulkResource resource)
+        [ProducesResponseType(typeof(List<CustomFormatResource>), StatusCodes.Status202Accepted)]
+        public virtual ActionResult<List<CustomFormatResource>> Update([FromBody] CustomFormatBulkResource resource)
         {
-            if (!resource.Ids.Any())
+            if (resource.Ids == null || resource.Ids.Count == 0)
             {
                 throw new BadRequestException("ids must be provided");
             }
@@ -107,15 +104,18 @@ namespace Whisparr.Api.V3.CustomFormats
 
         [HttpDelete("bulk")]
         [Consumes("application/json")]
-        public virtual object DeleteFormats([FromBody] CustomFormatBulkResource resource)
+        public virtual void DeleteFormats([FromBody] CustomFormatBulkResource resource)
         {
-            _formatService.Delete(resource.Ids.ToList());
+            if (resource.Ids == null || resource.Ids.Count == 0)
+            {
+                throw new BadRequestException("ids must be provided");
+            }
 
-            return new { };
+            _formatService.Delete(resource.Ids.ToList());
         }
 
         [HttpGet("schema")]
-        public object GetTemplates()
+        public List<CustomFormatSpecificationSchema> GetTemplates()
         {
             var schema = _specifications.OrderBy(x => x.Order).Select(x => x.ToSchema()).ToList();
 
@@ -129,22 +129,27 @@ namespace Whisparr.Api.V3.CustomFormats
             return schema;
         }
 
-        private void Validate(CustomFormat definition)
-        {
-            foreach (var spec in definition.Specifications)
-            {
-                var validationResult = spec.Validate();
-                VerifyValidationResult(validationResult);
-            }
-        }
-
-        protected void VerifyValidationResult(ValidationResult validationResult)
+        protected static void VerifyValidationResult(ValidationResult validationResult)
         {
             var result = new NzbDroneValidationResult(validationResult.Errors);
 
             if (!result.IsValid)
             {
                 throw new ValidationException(result.Errors);
+            }
+        }
+
+        protected override CustomFormatResource GetResourceById(int id)
+        {
+            return _formatService.GetById(id).ToResource(true);
+        }
+
+        private static void Validate(CustomFormat definition)
+        {
+            foreach (var spec in definition.Specifications)
+            {
+                var validationResult = spec.Validate();
+                VerifyValidationResult(validationResult);
             }
         }
 

@@ -64,11 +64,6 @@ namespace Whisparr.Api.V3.Queue
             return base.GetResourceByIdWithErrorHandler(id);
         }
 
-        protected override QueueResource GetResourceById(int id)
-        {
-            throw new NotImplementedException();
-        }
-
         [RestDeleteById]
         public void RemoveAction(int id, bool removeFromClient = true, bool blocklist = false, bool skipRedownload = false, bool changeCategory = false)
         {
@@ -95,8 +90,13 @@ namespace Whisparr.Api.V3.Queue
         [HttpDelete("bulk")]
         [Consumes("application/json")]
         [Produces("application/json")]
-        public object RemoveMany([FromBody] QueueBulkResource resource, [FromQuery] bool removeFromClient = true, [FromQuery] bool blocklist = false, [FromQuery] bool skipRedownload = false, [FromQuery] bool changeCategory = false)
+        public void RemoveMany([FromBody] QueueBulkResource resource, [FromQuery] bool removeFromClient = true, [FromQuery] bool blocklist = false, [FromQuery] bool skipRedownload = false, [FromQuery] bool changeCategory = false)
         {
+            if (resource.Ids == null || resource.Ids.Count == 0)
+            {
+                throw new BadRequestException("ids must be provided");
+            }
+
             var trackedDownloadIds = new List<string>();
             var pendingToRemove = new List<NzbDrone.Core.Queue.Queue>();
             var trackedToRemove = new List<TrackedDownload>();
@@ -131,8 +131,6 @@ namespace Whisparr.Api.V3.Queue
             }
 
             _trackedDownloadService.StopTracking(trackedDownloadIds);
-
-            return new { };
         }
 
         [HttpGet]
@@ -162,6 +160,54 @@ namespace Whisparr.Api.V3.Queue
                 SortDirection.Ascending);
 
             return pagingSpec.ApplyToPage((spec) => GetQueue(spec, movieIds?.ToHashSet(), protocol, languages?.ToHashSet(), quality?.ToHashSet(), status?.ToHashSet(), includeUnknownMovieItems), (q) => MapToResource(q, includeMovie));
+        }
+
+        [NonAction]
+        public void Handle(QueueUpdatedEvent message)
+        {
+            BroadcastResourceChange(ModelAction.Sync);
+        }
+
+        [NonAction]
+        public void Handle(PendingReleasesUpdatedEvent message)
+        {
+            BroadcastResourceChange(ModelAction.Sync);
+        }
+
+        protected override QueueResource GetResourceById(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static Func<NzbDrone.Core.Queue.Queue, object> GetOrderByFunc(PagingSpec<NzbDrone.Core.Queue.Queue> pagingSpec)
+        {
+            switch (pagingSpec.SortKey)
+            {
+                case "status":
+                    return q => q.Status.ToString();
+                case "movies.sortTitle":
+                    return q => q.Movie?.MovieMetadata.Value.SortTitle ?? q.Title;
+                case "title":
+                    return q => q.Title;
+                case "year":
+                    return q => q.Movie?.Year ?? 0;
+                case "languages":
+                    return q => q.Languages;
+                case "quality":
+                    return q => q.Quality;
+                case "size":
+                    return q => q.Size;
+                case "progress":
+                    // Avoid exploding if a download's size is 0
+                    return q => 100 - (q.SizeLeft / Math.Max(q.Size * 100, 1));
+                default:
+                    return q => q.TimeLeft;
+            }
+        }
+
+        private static QueueResource MapToResource(NzbDrone.Core.Queue.Queue queueItem, bool includeMovie)
+        {
+            return queueItem.ToResource(includeMovie);
         }
 
         private PagingSpec<NzbDrone.Core.Queue.Queue> GetQueue(PagingSpec<NzbDrone.Core.Queue.Queue> pagingSpec, HashSet<int> movieIds, DownloadProtocol? protocol, HashSet<int> languages, HashSet<int> quality, HashSet<QueueStatus> status, bool includeUnknownMovieItems)
@@ -286,43 +332,7 @@ namespace Whisparr.Api.V3.Queue
             return pagingSpec;
         }
 
-        private Func<NzbDrone.Core.Queue.Queue, object> GetOrderByFunc(PagingSpec<NzbDrone.Core.Queue.Queue> pagingSpec)
-        {
-            switch (pagingSpec.SortKey)
-            {
-                case "status":
-                    return q => q.Status.ToString();
-                case "movies.sortTitle":
-                    return q => q.Movie?.MovieMetadata.Value.SortTitle ?? q.Title;
-                case "title":
-                    return q => q.Title;
-                case "year":
-                    return q => q.Movie?.Year ?? 0;
-                case "languages":
-                    return q => q.Languages;
-                case "quality":
-                    return q => q.Quality;
-                case "size":
-                    return q => q.Size;
-                case "progress":
-                    // Avoid exploding if a download's size is 0
-                    return q => 100 - (q.SizeLeft / Math.Max(q.Size * 100, 1));
-                default:
-                    return q => q.TimeLeft;
-            }
-        }
-
-        private void Remove(NzbDrone.Core.Queue.Queue pendingRelease, bool blocklist)
-        {
-            if (blocklist)
-            {
-                _blocklistService.Block(pendingRelease.RemoteMovie, "Pending release manually blocklisted");
-            }
-
-            _pendingReleaseService.RemovePendingQueueItems(pendingRelease.Id);
-        }
-
-        private TrackedDownload Remove(TrackedDownload trackedDownload, bool removeFromClient, bool blocklist, bool skipRedownload, bool changeCategory)
+        private void Remove(TrackedDownload trackedDownload, bool removeFromClient, bool blocklist, bool skipRedownload, bool changeCategory)
         {
             if (removeFromClient)
             {
@@ -354,13 +364,18 @@ namespace Whisparr.Api.V3.Queue
 
             if (!removeFromClient && !blocklist && !changeCategory)
             {
-                if (!_ignoredDownloadService.IgnoreDownload(trackedDownload))
-                {
-                    return null;
-                }
+                _ignoredDownloadService.IgnoreDownload(trackedDownload);
+            }
+        }
+
+        private void Remove(NzbDrone.Core.Queue.Queue pendingRelease, bool blocklist)
+        {
+            if (blocklist)
+            {
+                _blocklistService.Block(pendingRelease.RemoteMovie, "Pending release manually blocklisted");
             }
 
-            return trackedDownload;
+            _pendingReleaseService.RemovePendingQueueItems(pendingRelease.Id);
         }
 
         private TrackedDownload GetTrackedDownload(int queueId)
@@ -380,23 +395,6 @@ namespace Whisparr.Api.V3.Queue
             }
 
             return trackedDownload;
-        }
-
-        private QueueResource MapToResource(NzbDrone.Core.Queue.Queue queueItem, bool includeMovie)
-        {
-            return queueItem.ToResource(includeMovie);
-        }
-
-        [NonAction]
-        public void Handle(QueueUpdatedEvent message)
-        {
-            BroadcastResourceChange(ModelAction.Sync);
-        }
-
-        [NonAction]
-        public void Handle(PendingReleasesUpdatedEvent message)
-        {
-            BroadcastResourceChange(ModelAction.Sync);
         }
     }
 }
