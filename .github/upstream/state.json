@@ -5,8 +5,8 @@
       "repo": "Radarr/Radarr",
       "branch": "develop",
       "owns": "backend",
-      "highWater": "a96bf7c3ecb23cb76993770727285dc17a613fbc",
-      "highWaterNote": "2026-09-13 'Multiple Translations updated by Weblate', the current tip of Radarr develop. Everything at or before this mark is dispositioned: 2026-09 closed when 255f38dce (grabbed/blocklisted releases in Interactive Search) landed as its own PR after the rest of the month. Advance only when everything at or before the new mark is settled."
+      "highWater": "c90668a520664ad0c91812cfee57c41928ad2148",
+      "highWaterNote": "2026-09-20 'Reset loaded state for movie images when URL changes', the current tip of Radarr develop. Everything at or before this mark is dispositioned: 2026-09 closed with three backend fixes adapted and the frontend commit skipped under the radarr-frontend gate. Advance only when everything at or before the new mark is settled."
     },
     "sonarr": {
       "repo": "Sonarr/Sonarr",
@@ -745,6 +745,30 @@
         "month": "2026-09",
         "disposition": "adapt",
         "reason": "Moves grabbed/failed detection for Interactive Search server-side: ReleaseController attaches a ReleaseHistoryResource to each release, matched by guid, then info URL, then torrent title/protocol/indexer. Our row matched by guid only and marked failures by source title, so a release whose guid changed since the grab showed as never grabbed - reproduced on 6969 with a stub Torznab, where the reissued-guid release now carries its grab. Past the parser gate on substance: the new Parser/ReleaseComparer holds the blocklist's SameNzb/SameTorrent rules moved out of BlocklistService unchanged, no grammar. Adapted rather than picked: the frontend half is Radarr redux, rewritten against our React Query row (keeping its tooltips and our import-list exclusion icon), and the now-unused useMovieBlocklist hook goes. Ported faithfully, including two upstream gaps in ReleaseComparerModel(MovieHistory) - TorrentInfoHash is never set and PublishedDate is the grab time - which Sonarr v5-develop shares. Upstream has no tests; ReleaseComparerFixture, ReleaseControllerFixture and a HistoryRepository test are ours."
+      },
+      "28900a86b579441f9ac87cefb6173df91cea2ccc": {
+        "subject": "Fixed: Manual Interaction - Required notifications failing for unknown movies (#11716)",
+        "month": "2026-09",
+        "disposition": "adapt",
+        "reason": "Reproduces here. Our handler already had RemoteMovie?.Movie at the top, but ShouldHandleMovie dereferenced the movie for any notification with tags set, and CustomScript dereferenced a null DownloadItem. Took both hunks and, beyond upstream, guarded ParsedMovieInfo on the GetMessage call and the RemoteMovie.ToString() in the catch block, which would have thrown a second NullReferenceException while logging the first. Added NotificationServiceFixture, which upstream has no equivalent of; all three cases fail before the fix."
+      },
+      "0d0cb8f75eb976a2ccbb0f68e5a68735c5d199cc": {
+        "subject": "Fix filename builder for files without streams",
+        "month": "2026-09",
+        "disposition": "adapt",
+        "reason": "Reproduces here: a whitespace-only AudioFormat/VideoFormat fell through every branch, logged an unknown-format warning to Sentry and went into the renamed filename. Took the Trim/IsNullOrWhiteSpace fix, the string.Empty returns and the null-model guards, which Discord's Codecs import field needs since it passes MediaInfo unchecked. Upstream's `?? 0` is carried for the null-model case only; our MediaInfoModel.AudioChannels is a non-nullable int, so it is not otherwise reachable. Left out upstream's rewrite of the TestCase arrays - our fixture already uses the SceneName const and carries cases upstream does not, and the reshaping would fight them for no behaviour change."
+      },
+      "7852431ea7505d6061a367e2a4924c18143e0f6a": {
+        "subject": "Fixed: Don't cache media covers that aren't downloaded",
+        "month": "2026-09",
+        "disposition": "adapt",
+        "reason": "Reproduces here: our CacheableSpecification was the pre-change upstream form, and AppendCacheBuster added ?h= regardless of whether the file was on disk, so a newly added item's 404 was served with cache headers and held until the remote URL changed. Adapted to our three cover types: movie and performer resources carry Added and get the existence check, studio resources have no Added field and keep the old behaviour through the parameter's null default, as do the credit and search paths. Cache seeding narrowed to the pass that downloads - upstream seeds on every pass inside the window, which put a Cached.Set in the cover worker loop and made the queue shutdown tests miss their deadline. No fixture for CacheableSpecification: IsCacheable short-circuits on RuntimeInfo.IsProduction, which is always false under test."
+      },
+      "c90668a520664ad0c91812cfee57c41928ad2148": {
+        "subject": "Reset loaded state for movie images when URL changes",
+        "month": "2026-09",
+        "disposition": "skip",
+        "reason": "Radarr frontend, and the bug does not exist in our component. Ours follows Sonarr and has no isLoaded state at all - MovieImage.tsx tracks hasError plus a triedRemote ref for the remote-URL fallback, so there is nothing to reset when the URL changes."
       }
     },
     "sonarr": {
