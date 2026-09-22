@@ -188,7 +188,7 @@ namespace Whisparr.Api.V3.Movies
             {
                 var resource = currentMovie.ToResource(availDelay);
 
-                _coverMapper.ConvertToLocalUrls(resource.Id, resource.Images);
+                _coverMapper.ConvertToLocalUrls(resource.Id, resource.Images, resource.Added);
 
                 var poster = currentMovie.MovieMetadata.Value.Poster;
                 if (poster != null)

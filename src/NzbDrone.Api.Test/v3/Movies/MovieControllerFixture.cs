@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using FluentAssertions;
 using Moq;
@@ -50,7 +51,7 @@ namespace NzbDrone.Api.Test.v3.Movies
 
             resource.Value.Id.Should().Be(18);
             Mocker.GetMock<IMapCoversToLocal>()
-                .Verify(s => s.ConvertToLocalUrls(18, It.IsAny<List<MediaCover>>()), Times.Once());
+                .Verify(s => s.ConvertToLocalUrls(18, It.IsAny<List<MediaCover>>(), It.IsAny<DateTime?>()), Times.Once());
         }
 
         [Test]
@@ -70,7 +71,7 @@ namespace NzbDrone.Api.Test.v3.Movies
 
             resource.Value.Id.Should().Be(18);
             Mocker.GetMock<IMapCoversToLocal>()
-                .Verify(s => s.ConvertToLocalUrls(18, It.IsAny<List<MediaCover>>()), Times.Once());
+                .Verify(s => s.ConvertToLocalUrls(18, It.IsAny<List<MediaCover>>(), It.IsAny<DateTime?>()), Times.Once());
         }
 
         [Test]

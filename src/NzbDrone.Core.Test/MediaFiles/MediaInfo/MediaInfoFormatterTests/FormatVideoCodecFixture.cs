@@ -85,5 +85,23 @@ namespace NzbDrone.Core.Test.MediaFiles.MediaInfo.MediaInfoFormatterTests
 
             MediaInfoFormatter.FormatVideoCodec(mediaInfoModel, null).Should().Be(mediaInfoModel.VideoFormat);
         }
+
+        [Test]
+        public void should_return_empty_if_media_info_is_null()
+        {
+            MediaInfoFormatter.FormatVideoCodec(null, null).Should().Be(string.Empty);
+        }
+
+        [TestCase("")]
+        [TestCase("   ")]
+        public void should_return_empty_if_there_is_no_video_stream(string videoFormat)
+        {
+            var mediaInfoModel = new MediaInfoModel
+            {
+                VideoFormat = videoFormat
+            };
+
+            MediaInfoFormatter.FormatVideoCodec(mediaInfoModel, null).Should().Be(string.Empty);
+        }
     }
 }
