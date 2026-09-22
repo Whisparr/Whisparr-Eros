@@ -12,8 +12,8 @@
       "repo": "Sonarr/Sonarr",
       "branch": "v5-develop",
       "owns": "frontend",
-      "highWater": "91c4ae17c07fb08b7f651e45cfcead6ec7128a2c",
-      "highWaterNote": "2026-09-13 'Fixed: Parsing of multi-episode releases with anime-style release group', the current tip of Sonarr v5-develop. Everything at or before this mark is settled: all of 2026-09 is dispositioned, including the three picks the upstream-watch PR #648 landed without dispositions. Advance only when everything at or before the new mark is settled."
+      "highWater": "76c684e097f16ac216e6213845e5cac372774995",
+      "highWaterNote": "2026-09-16 'Reset loaded state for series images when URL changes', the current tip of Sonarr v5-develop. Everything at or before this mark is settled: all eight commits of the 2026-09 batch are dispositioned, including the three the upstream-watch PR #907 picked without dispositions. Advance only when everything at or before the new mark is settled."
     }
   },
   "dispositions": {
@@ -4192,6 +4192,55 @@
         "month": "2026-09",
         "disposition": "skip",
         "reason": "Parser gate, no reproduction possible. Splits an anime [SubGroup] Title S04E17-28 pattern; we carry no anime or episode patterns."
+      },
+      "2a5607e0fb856dd3626614248a404a3438b4a58c": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-09",
+        "disposition": "skip",
+        "reason": "Weblate gate. Touches six Localization/Core/*.json files only. Our translations come from Weblate, never from cherry-picks."
+      },
+      "77ef058dcab0250a7d43eb1e6dd71dd1dd609f9e": {
+        "subject": "New: Match anime season packs named by season title",
+        "month": "2026-09",
+        "disposition": "skip",
+        "reason": "Parser gate with nothing to reproduce. Adds Parser.ParseSeasonTitle for anime season packs named after the season with no season or episode numbers, and the ParsedEpisodeInfo.IsSeasonTitle/FullSeason/AbsoluteEpisodeNumbers plumbing it feeds. We have no seasons, no episodes and no anime; ParsedEpisodeInfo does not exist here. The rest of the commit lands in SeasonMatchSpecification and Sonarr.Api.V5, neither of which we have."
+      },
+      "bdd4f0b7dd36bd003070cf5f6ccbf2255bbfac3f": {
+        "subject": "New: Search anime season titles without season parameter",
+        "month": "2026-09",
+        "disposition": "skip",
+        "reason": "No counterpart entity. Teaches AnimeSeasonSearchCriteria to search by season title when the indexer has no season parameter. IndexerSearch/Definitions here holds only MovieSearchCriteria, SceneSearchCriteria and SearchCriteriaBase, and the Nyaa request generator it also touches is not an indexer we carry. Newznab is ours, but the hunk is entirely inside the anime-season branch."
+      },
+      "9f0cb9284b887eca4748381f8339932430a3c157": {
+        "subject": "New: OIDC authentication",
+        "month": "2026-09",
+        "disposition": "defer",
+        "blockedBy": "A product decision on whether Eros gains OIDC as a fourth authentication method. Our AuthenticationType is None/Basic/Forms/External; this adds a fifth member plus config-file keys (AuthenticationAuthority/ClientId/ClientSecret), an OidcDiscoveryService, a health check, an authority validator, a new logout.html served by a new static mapper, and a rewritten Settings/General auth section. That is a feature, not a sync fix, and it is not a call to wave through in an upstream sweep.",
+        "reason": "Deferred rather than skipped because nothing in it is inapplicable: it is auth plumbing over our existing Forms/External types, with no series or episode concept anywhere in it, so it would work here as written. Two conditions on taking it: the upstream en.json hunk (18 keys) is not ours to copy, so each string needs a key we author in case-insensitive sorted position, and the Sonarr.Api.V5 half (GeneralSettingsController/Resource) is dropped - only the V3 HostConfigController/HostConfigResource half applies here. Worth letting upstream settle first too: it landed as one 1,300-line commit with no follow-ups yet."
+      },
+      "91aeb5260c4b4082dbfbf92cbf1bebd709222cf9": {
+        "subject": "Cleanse email addresses from logs",
+        "month": "2026-09",
+        "disposition": "pick",
+        "reason": "Applied verbatim. Adds one email pattern to CleanseLogMessage so an address in a log line is redacted to (removed)@domain, with three upstream test cases. Nothing series-specific: our Email notification, the External auth path and the log viewer all pass addresses through the same cleanser. CleanseLogMessageFixture is 75 tests green after the pick."
+      },
+      "70829703c9598249ac6cb4df17d67a213e662327": {
+        "subject": "Fixed: Don't cache media covers that aren't downloaded",
+        "month": "2026-09",
+        "disposition": "have",
+        "reason": "Landed in our 03de795b41 during the Radarr 2026-09 sync, from radarr/radarr@7852431ea - the same fix on the Radarr side. Both halves match: ConvertToLocalUrls takes the added date and only appends the ?h= cache buster once the file is on disk, and CacheableSpecification stopped returning true for /api/.../MediaCover so an undownloaded cover 404s uncacheably. Ours goes further with a cover-exists cache and covers Performer and Studio as well as Movie."
+      },
+      "4f42405932216e4c148f1e0bdc74525c177bc9f3": {
+        "subject": "Add v5 MediaCoverController",
+        "month": "2026-09",
+        "disposition": "skip",
+        "reason": "V5-only. The whole commit is one added file under src/Sonarr.Api.V5/, a project we do not have; we ship src/Whisparr.Api.V3/ alone. The upstream-watch bot picked it into PR #907 because it adds a file rather than conflicting with one - no csproj references it and the build stays green, so it would have landed as a dead file."
+      },
+      "76c684e097f16ac216e6213845e5cac372774995": {
+        "subject": "Reset loaded state for series images when URL changes",
+        "month": "2026-09",
+        "disposition": "skip",
+        "reason": "The state it resets does not exist here. Upstream SeriesImage tracks isLoaded to fade the image in; our frontend/src/Movie/MovieImage.tsx tracks only url, hasError and triedRemote, and isLoaded appears nowhere in frontend/src outside three unrelated list views. The upstream-watch bot applied the one-line setIsLoaded(true) to MovieImage.tsx anyway (PR #907, dfd55217bd) by context match alone - it would not compile."
       }
     }
   }
