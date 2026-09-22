@@ -142,7 +142,7 @@ namespace Whisparr.Api.V3.Movies
 
         private void MapCoversToLocal(MovieResource movie)
         {
-            _coverMapper.ConvertToLocalUrls(movie.Id, movie.Images);
+            _coverMapper.ConvertToLocalUrls(movie.Id, movie.Images, movie.Added);
         }
     }
 }

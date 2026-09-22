@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using FluentAssertions;
@@ -117,7 +118,7 @@ namespace NzbDrone.Api.Test.v3.Studios
 
             result.Value.Should().HaveCount(1);
             Mocker.GetMock<IMapCoversToLocal>()
-                .Verify(s => s.ConvertToLocalUrls(7, It.IsAny<List<MediaCover>>()), Times.Once());
+                .Verify(s => s.ConvertToLocalUrls(7, It.IsAny<List<MediaCover>>(), It.IsAny<DateTime?>()), Times.Once());
         }
 
         [Test]
@@ -127,7 +128,7 @@ namespace NzbDrone.Api.Test.v3.Studios
 
             result.Value.Should().BeEmpty();
             Mocker.GetMock<IMapCoversToLocal>()
-                .Verify(s => s.ConvertToLocalUrls(It.IsAny<int>(), It.IsAny<List<MediaCover>>()), Times.Never());
+                .Verify(s => s.ConvertToLocalUrls(It.IsAny<int>(), It.IsAny<List<MediaCover>>(), It.IsAny<DateTime?>()), Times.Never());
         }
 
         // The rules live in the controller's constructor and ValidateResource is only

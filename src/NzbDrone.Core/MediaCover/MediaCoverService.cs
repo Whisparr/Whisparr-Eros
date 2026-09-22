@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using NLog;
+using NzbDrone.Common.Cache;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Extensions;
@@ -24,9 +25,9 @@ namespace NzbDrone.Core.MediaCover
 {
     public interface IMapCoversToLocal
     {
-        void ConvertToLocalUrls(int movieId, IEnumerable<MediaCover> covers);
-        void ConvertToLocalPerformerUrls(int performerId, IEnumerable<MediaCover> covers);
-        void ConvertToLocalStudioUrls(int studioId, IEnumerable<MediaCover> covers);
+        void ConvertToLocalUrls(int movieId, IEnumerable<MediaCover> covers, DateTime? added = null);
+        void ConvertToLocalPerformerUrls(int performerId, IEnumerable<MediaCover> covers, DateTime? added = null);
+        void ConvertToLocalStudioUrls(int studioId, IEnumerable<MediaCover> covers, DateTime? added = null);
         string GetMovieCoverPath(int movieId, MediaCoverTypes coverType, int? height = null);
         string GetPerformerCoverPath(int performerId, MediaCoverTypes coverType, int? height = null);
         string GetStudioCoverPath(int studioId, MediaCoverTypes coverType, int? height = null);
@@ -47,6 +48,11 @@ namespace NzbDrone.Core.MediaCover
 
         private const string DefaultStudioCoverExtension = ".jpg";
         private const string CoverDownloadFailedMessage = "Couldn't download media cover for {0}.";
+
+        // Covers are downloaded asynchronously after the item is added, so for a while the URL we
+        // hand out points at a file that is not on disk yet. Only newly added items are checked;
+        // after this window the cover is assumed present rather than paying a stat per request.
+        private static readonly TimeSpan CoverExistsCheckWindow = TimeSpan.FromDays(1);
 
         // ImageSharp is slow on ARM (no hardware acceleration on mono yet)
         // So limit the number of concurrent resizing tasks
@@ -77,6 +83,7 @@ namespace NzbDrone.Core.MediaCover
         private readonly int _movieCoverWorkerCount;
         private readonly List<Thread> _movieCoverWorkers;
 
+        private readonly ICached<bool> _coverExistsCache;
         private readonly string _coverRootFolder;
 
         private readonly CancellationTokenSource _movieCoverIntakeCancellation;
@@ -94,6 +101,7 @@ namespace NzbDrone.Core.MediaCover
                                  ICoverExistsSpecification coverExistsSpecification,
                                  IConfigFileProvider configFileProvider,
                                  IEventAggregator eventAggregator,
+                                 ICacheManager cacheManager,
                                  Logger logger)
         {
             _mediaCoverProxy = mediaCoverProxy;
@@ -105,6 +113,7 @@ namespace NzbDrone.Core.MediaCover
             _eventAggregator = eventAggregator;
             _logger = logger;
 
+            _coverExistsCache = cacheManager.GetCache<bool>(GetType(), "coverExists");
             _coverRootFolder = appFolderInfo.GetMediaCoverPath();
 
             _movieCoverWorkerCount = MovieCoverWorkerCount;
@@ -155,7 +164,7 @@ namespace NzbDrone.Core.MediaCover
             return Path.Combine(GetStudioCoverPath(studioId), coverType.ToString().ToLowerInvariant() + heightSuffix + GetExtension(coverType));
         }
 
-        public void ConvertToLocalUrls(int movieId, IEnumerable<MediaCover> covers)
+        public void ConvertToLocalUrls(int movieId, IEnumerable<MediaCover> covers, DateTime? added = null)
         {
             if (movieId == 0)
             {
@@ -168,6 +177,8 @@ namespace NzbDrone.Core.MediaCover
                 return;
             }
 
+            var checkExists = IsRecentlyAdded(added);
+
             foreach (var mediaCover in covers)
             {
                 if (mediaCover.CoverType == MediaCoverTypes.Unknown)
@@ -177,11 +188,11 @@ namespace NzbDrone.Core.MediaCover
 
                 mediaCover.Url = $"{_configFileProvider.UrlBase}/MediaCover/movie/{movieId}/{mediaCover.CoverType.ToString().ToLowerInvariant()}{GetExtension(mediaCover.CoverType)}";
 
-                AppendCacheBuster(mediaCover);
+                AppendCacheBuster(mediaCover, checkExists ? GetMovieCoverPath(movieId, mediaCover.CoverType) : null);
             }
         }
 
-        public void ConvertToLocalPerformerUrls(int performerId, IEnumerable<MediaCover> covers)
+        public void ConvertToLocalPerformerUrls(int performerId, IEnumerable<MediaCover> covers, DateTime? added = null)
         {
             if (performerId == 0)
             {
@@ -194,6 +205,8 @@ namespace NzbDrone.Core.MediaCover
                 return;
             }
 
+            var checkExists = IsRecentlyAdded(added);
+
             foreach (var mediaCover in covers)
             {
                 if (mediaCover.CoverType == MediaCoverTypes.Unknown)
@@ -203,11 +216,11 @@ namespace NzbDrone.Core.MediaCover
 
                 mediaCover.Url = $"{_configFileProvider.UrlBase}/MediaCover/performer/{performerId}/{mediaCover.CoverType.ToString().ToLowerInvariant()}{GetExtension(mediaCover.CoverType)}";
 
-                AppendCacheBuster(mediaCover);
+                AppendCacheBuster(mediaCover, checkExists ? GetPerformerCoverPath(performerId, mediaCover.CoverType) : null);
             }
         }
 
-        public void ConvertToLocalStudioUrls(int studioId, IEnumerable<MediaCover> covers)
+        public void ConvertToLocalStudioUrls(int studioId, IEnumerable<MediaCover> covers, DateTime? added = null)
         {
             if (studioId == 0)
             {
@@ -223,6 +236,7 @@ namespace NzbDrone.Core.MediaCover
             // Studio covers are written with an extension taken from the download's Content-Type
             // rather than from the cover type, so the folder has to be read to find out which.
             var extension = GetStudioCoverExtension(studioId);
+            var checkExists = IsRecentlyAdded(added);
 
             foreach (var mediaCover in covers)
             {
@@ -233,7 +247,7 @@ namespace NzbDrone.Core.MediaCover
 
                 mediaCover.Url = $"{_configFileProvider.UrlBase}/MediaCover/studio/{studioId}/{mediaCover.CoverType.ToString().ToLowerInvariant()}{extension}";
 
-                AppendCacheBuster(mediaCover);
+                AppendCacheBuster(mediaCover, checkExists ? Path.Combine(GetStudioCoverPath(studioId), mediaCover.CoverType.ToString().ToLowerInvariant() + extension) : null);
             }
         }
 
@@ -461,6 +475,8 @@ namespace NzbDrone.Core.MediaCover
 
             foreach (var movie in message.Movies)
             {
+                RemoveCoverExistsCache(movie.MovieMetadata.Value.Images, coverType => GetMovieCoverPath(movie.Id, coverType));
+
                 DeleteMovieCoverFolder(movie.Id);
             }
         }
@@ -469,6 +485,8 @@ namespace NzbDrone.Core.MediaCover
         {
             foreach (var performer in message.Performers)
             {
+                RemoveCoverExistsCache(performer.Images, coverType => GetPerformerCoverPath(performer.Id, coverType));
+
                 var path = GetPerformerCoverPath(performer.Id);
                 if (_diskProvider.FolderExists(path))
                 {
@@ -502,11 +520,40 @@ namespace NzbDrone.Core.MediaCover
         // address images by content (a StashDB image UUID, a TPDB content hash), so the URL changes
         // when and only when the image does. A modification time changes whenever the file is
         // rewritten with identical bytes, and does not change until the local file catches up.
-        private static void AppendCacheBuster(MediaCover mediaCover)
+        // A null existsCheckPath skips the check: either the item is past the window, or the caller
+        // could not tell us when it was added.
+        private void AppendCacheBuster(MediaCover mediaCover, string existsCheckPath)
         {
-            if (mediaCover.RemoteUrl.IsNotNullOrWhiteSpace())
+            if (mediaCover.RemoteUrl.IsNullOrWhiteSpace())
             {
-                mediaCover.Url += "?h=" + mediaCover.RemoteUrl.SHA256Hash()[..20];
+                return;
+            }
+
+            // Without the cover on disk the request 404s, and a hashed URL is cacheable, so the
+            // browser would hold onto that 404 until the remote URL itself changed.
+            if (existsCheckPath != null && !CoverExists(existsCheckPath))
+            {
+                return;
+            }
+
+            mediaCover.Url += "?h=" + mediaCover.RemoteUrl.SHA256Hash()[..20];
+        }
+
+        private bool CoverExists(string filePath)
+        {
+            return _coverExistsCache.Get(filePath, () => _diskProvider.FileExists(filePath));
+        }
+
+        private static bool IsRecentlyAdded(DateTime? added)
+        {
+            return added > DateTime.UtcNow - CoverExistsCheckWindow;
+        }
+
+        private void RemoveCoverExistsCache(IEnumerable<MediaCover> covers, Func<MediaCoverTypes, string> pathFor)
+        {
+            foreach (var cover in covers ?? Enumerable.Empty<MediaCover>())
+            {
+                _coverExistsCache.Remove(pathFor(cover.CoverType));
             }
         }
 
@@ -561,6 +608,14 @@ namespace NzbDrone.Core.MediaCover
                     {
                         DownloadCover(movie, cover);
                         updated = true;
+
+                        // Only on the pass that downloads. Upstream seeds on every pass inside the
+                        // window, which puts a Cached.Set (and its argument-name Ensure) in the
+                        // worker loop for every cover of every recently added item.
+                        if (IsRecentlyAdded(movie.Added))
+                        {
+                            _coverExistsCache.Set(fileName, true);
+                        }
                     }
                 }
                 catch (HttpException e)
@@ -677,6 +732,11 @@ namespace NzbDrone.Core.MediaCover
                     {
                         DownloadCover(performer, cover);
                         updated = true;
+
+                        if (IsRecentlyAdded(performer.Added))
+                        {
+                            _coverExistsCache.Set(fileName, true);
+                        }
                     }
                 }
                 catch (HttpException e)

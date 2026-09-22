@@ -144,6 +144,91 @@ namespace NzbDrone.Core.Test.MediaCoverTests
         }
 
         [Test]
+        public void should_convert_cover_urls_to_local_without_a_hash_when_the_cover_has_not_been_downloaded()
+        {
+            var covers = GivenCovers();
+
+            Mocker.GetMock<IDiskProvider>()
+                  .Setup(v => v.FileExists(It.IsAny<string>()))
+                  .Returns(false);
+
+            Subject.ConvertToLocalUrls(12, covers, DateTime.UtcNow);
+
+            covers.Single().Url.Should().Be("/MediaCover/movie/12/banner.jpg");
+        }
+
+        [Test]
+        public void should_convert_cover_urls_to_local_with_a_hash_once_the_cover_is_on_disk()
+        {
+            var covers = GivenCovers();
+
+            Mocker.GetMock<IDiskProvider>()
+                  .Setup(v => v.FileExists(It.IsAny<string>()))
+                  .Returns(true);
+
+            Subject.ConvertToLocalUrls(12, covers, DateTime.UtcNow);
+
+            covers.Single().Url.Should().Be($"/MediaCover/movie/12/banner.jpg?h={ExpectedHash}");
+        }
+
+        [Test]
+        public void should_only_check_whether_a_cover_exists_once()
+        {
+            Mocker.GetMock<IDiskProvider>()
+                  .Setup(v => v.FileExists(It.IsAny<string>()))
+                  .Returns(true);
+
+            Subject.ConvertToLocalUrls(12, GivenCovers(), DateTime.UtcNow);
+            Subject.ConvertToLocalUrls(12, GivenCovers(), DateTime.UtcNow);
+
+            Mocker.GetMock<IDiskProvider>().Verify(v => v.FileExists(It.IsAny<string>()), Times.Once());
+        }
+
+        [Test]
+        public void should_not_check_whether_a_cover_exists_for_an_item_added_more_than_a_day_ago()
+        {
+            var covers = GivenCovers();
+
+            Mocker.GetMock<IDiskProvider>()
+                  .Setup(v => v.FileExists(It.IsAny<string>()))
+                  .Returns(false);
+
+            Subject.ConvertToLocalUrls(12, covers, DateTime.UtcNow.AddDays(-2));
+
+            covers.Single().Url.Should().Be($"/MediaCover/movie/12/banner.jpg?h={ExpectedHash}");
+            Mocker.GetMock<IDiskProvider>().Verify(v => v.FileExists(It.IsAny<string>()), Times.Never());
+        }
+
+        [Test]
+        public void should_not_check_whether_a_cover_exists_when_the_caller_does_not_know_when_it_was_added()
+        {
+            var covers = GivenCovers();
+
+            Mocker.GetMock<IDiskProvider>()
+                  .Setup(v => v.FileExists(It.IsAny<string>()))
+                  .Returns(false);
+
+            Subject.ConvertToLocalUrls(12, covers);
+
+            covers.Single().Url.Should().Be($"/MediaCover/movie/12/banner.jpg?h={ExpectedHash}");
+            Mocker.GetMock<IDiskProvider>().Verify(v => v.FileExists(It.IsAny<string>()), Times.Never());
+        }
+
+        [Test]
+        public void should_convert_performer_cover_urls_to_local_without_a_hash_when_the_cover_has_not_been_downloaded()
+        {
+            var covers = GivenCovers();
+
+            Mocker.GetMock<IDiskProvider>()
+                  .Setup(v => v.FileExists(It.IsAny<string>()))
+                  .Returns(false);
+
+            Subject.ConvertToLocalPerformerUrls(12, covers, DateTime.UtcNow);
+
+            covers.Single().Url.Should().Be("/MediaCover/performer/12/banner.jpg");
+        }
+
+        [Test]
         public void should_change_the_url_when_the_remote_url_changes()
         {
             var before = GivenCovers();

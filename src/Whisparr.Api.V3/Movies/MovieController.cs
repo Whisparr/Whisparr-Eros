@@ -792,7 +792,7 @@ namespace Whisparr.Api.V3.Movies
 
             try
             {
-                _coverMapper.ConvertToLocalUrls(movie.Id, movie.Images);
+                _coverMapper.ConvertToLocalUrls(movie.Id, movie.Images, movie.Added);
             }
             catch (Exception ex)
             {
@@ -809,7 +809,7 @@ namespace Whisparr.Api.V3.Movies
             {
                 foreach (var movie in movies)
                 {
-                    _coverMapper.ConvertToLocalUrls(movie.Id, movie.Images);
+                    _coverMapper.ConvertToLocalUrls(movie.Id, movie.Images, movie.Added);
                 }
             }
             catch (Exception ex)
