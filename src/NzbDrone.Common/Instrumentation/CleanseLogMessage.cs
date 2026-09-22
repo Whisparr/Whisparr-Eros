@@ -5,61 +5,64 @@ using NzbDrone.Common.Extensions;
 
 namespace NzbDrone.Common.Instrumentation
 {
-    public class CleanseLogMessage
+    public static class CleanseLogMessage
     {
         private static readonly Regex[] CleansingRules =
         {
             // Url
-            new (@"(?<=\?|&|: )(apikey|(?:access[-_]?)?token|passkey|auth|authkey|user|uid|api|[a-z_]*apikey|account|passwd)=(?<secret>[^&=]+?)(?=[ ""&=]|$)", RegexOptions.Compiled | RegexOptions.IgnoreCase),
-            new (@"(?<=\?|&)[^=]*?(username|password)=(?<secret>[^&=]+?)(?= |&|$)", RegexOptions.Compiled | RegexOptions.IgnoreCase),
-            new (@"rss(24h)?\.torrentleech\.org/(?!rss)(?<secret>[0-9a-z]+)", RegexOptions.Compiled | RegexOptions.IgnoreCase),
-            new (@"torrentleech\.org/rss/download/[0-9]+/(?<secret>[0-9a-z]+)", RegexOptions.Compiled | RegexOptions.IgnoreCase),
-            new (@"iptorrents\.com/[/a-z0-9?&;]*?(?:[?&;](u|tp)=(?<secret>[^&=;]+?))+(?= |;|&|$)", RegexOptions.Compiled | RegexOptions.IgnoreCase),
-            new (@"/fetch/[a-z0-9]{32}/(?<secret>[a-z0-9]{32})", RegexOptions.Compiled),
-            new (@"(getnzb|rss).*?(?<=\?|&)(r)=(?<secret>[^&=]+?)(?= |&|$)", RegexOptions.Compiled | RegexOptions.IgnoreCase),
-            new (@"\b(\w*)?(_?(?<!use|get_)token|username|passwo?rd)=(?<secret>[^&=]+?)(?= |&|$|;)", RegexOptions.Compiled | RegexOptions.IgnoreCase),
-            new (@"-hd.me/torrent/[a-z0-9-]\.[0-9]+\.(?<secret>[0-9a-z]+)", RegexOptions.Compiled | RegexOptions.IgnoreCase),
+            Rule(@"(?<=\?|&|: )(apikey|(?:access[-_]?)?token|passkey|auth|authkey|user|uid|api|[a-z_]*apikey|account|passwd)=(?<secret>[^&=]+?)(?=[ ""&=]|$)"),
+            Rule(@"(?<=\?|&)[^=]*?(username|password)=(?<secret>[^&=]+?)(?= |&|$)"),
+            Rule(@"rss(24h)?\.torrentleech\.org/(?!rss)(?<secret>[0-9a-z]+)"),
+            Rule(@"torrentleech\.org/rss/download/[0-9]+/(?<secret>[0-9a-z]+)"),
+            Rule(@"iptorrents\.com/[/a-z0-9?&;]*?(?:[?&;](u|tp)=(?<secret>[^&=;]+?))+(?= |;|&|$)"),
+            Rule(@"/fetch/[a-z0-9]{32}/(?<secret>[a-z0-9]{32})", RegexOptions.None),
+            Rule(@"(getnzb|rss).*?(?<=\?|&)(r)=(?<secret>[^&=]+?)(?= |&|$)"),
+            Rule(@"\b(\w*)?(_?(?<!use|get_)token|username|passwo?rd)=(?<secret>[^&=]+?)(?= |&|$|;)"),
+            Rule(@"-hd.me/torrent/[a-z0-9-]\.[0-9]+\.(?<secret>[0-9a-z]+)"),
 
             // Trackers Announce Keys; Designed for Qbit Json; should work for all in theory
-            new (@"announce(\.php)?(/|%2f|%3fpasskey%3d)(?<secret>[a-z0-9]{16,})|(?<secret>[a-z0-9]{16,})(/|%2f)announce", RegexOptions.Compiled | RegexOptions.IgnoreCase),
+            Rule(@"announce(\.php)?(/|%2f|%3fpasskey%3d)(?<secret>[a-z0-9]{16,})|(?<secret>[a-z0-9]{16,})(/|%2f)announce"),
 
             // Path
-            new (@"C:\\Users\\(?<secret>[^\""]+?)(\\|$)", RegexOptions.Compiled | RegexOptions.IgnoreCase),
-            new (@"/(home|Users)/(?<secret>[^/""]+?)(/|$)", RegexOptions.Compiled | RegexOptions.IgnoreCase),
+            Rule(@"C:\\Users\\(?<secret>[^\""]+?)(\\|$)"),
+            Rule(@"/(home|Users)/(?<secret>[^/""]+?)(/|$)"),
+
+            // Email
+            Rule(@"\b(?<secret>[a-z0-9._%+-]+)@[a-z0-9.-]+\.[a-z]{2,}\b"),
 
             // NzbGet
-            new (@"""Name""\s*:\s*""[^""]*(username|password)""\s*,\s*""Value""\s*:\s*""(?<secret>[^""]+?)""", RegexOptions.Compiled | RegexOptions.IgnoreCase),
+            Rule(@"""Name""\s*:\s*""[^""]*(username|password)""\s*,\s*""Value""\s*:\s*""(?<secret>[^""]+?)"""),
 
             // Sabnzbd
-            new (@"""[^""]*(username|password|api_?key|nzb_key)""\s*:\s*""(?<secret>[^""]+?)""", RegexOptions.Compiled | RegexOptions.IgnoreCase),
-            new (@"""email_(account|to|from|pwd)""\s*:\s*""(?<secret>[^""]+?)""", RegexOptions.Compiled | RegexOptions.IgnoreCase),
+            Rule(@"""[^""]*(username|password|api_?key|nzb_key)""\s*:\s*""(?<secret>[^""]+?)"""),
+            Rule(@"""email_(account|to|from|pwd)""\s*:\s*""(?<secret>[^""]+?)"""),
 
             // uTorrent
-            new (@"\[""[a-z._]*(username|password)"",\d,""(?<secret>[^""]+?)""", RegexOptions.Compiled | RegexOptions.IgnoreCase),
-            new (@"\[""(boss_key|boss_key_salt|proxy\.proxy)"",\d,""(?<secret>[^""]+?)""", RegexOptions.Compiled | RegexOptions.IgnoreCase),
+            Rule(@"\[""[a-z._]*(username|password)"",\d,""(?<secret>[^""]+?)"""),
+            Rule(@"\[""(boss_key|boss_key_salt|proxy\.proxy)"",\d,""(?<secret>[^""]+?)"""),
 
             // Deluge
-            new (@"auth.login\(""(?<secret>[^""]+?)""", RegexOptions.Compiled | RegexOptions.IgnoreCase),
+            Rule(@"auth.login\(""(?<secret>[^""]+?)"""),
 
             // BroadcastheNet
-            new (@"""?method""?\s*:\s*""(getTorrents)"",\s*""?params""?\s*:\s*\[\s*""(?<secret>[^""]+?)""", RegexOptions.Compiled | RegexOptions.IgnoreCase),
-            new (@"getTorrents\(""(?<secret>[^""]+?)""", RegexOptions.Compiled | RegexOptions.IgnoreCase),
-            new (@"(?<=\?|&)(authkey|torrent_pass)=(?<secret>[^&=]+?)(?=""|&|$)", RegexOptions.Compiled | RegexOptions.IgnoreCase),
+            Rule(@"""?method""?\s*:\s*""(getTorrents)"",\s*""?params""?\s*:\s*\[\s*""(?<secret>[^""]+?)"""),
+            Rule(@"getTorrents\(""(?<secret>[^""]+?)"""),
+            Rule(@"(?<=\?|&)(authkey|torrent_pass)=(?<secret>[^&=]+?)(?=""|&|$)"),
 
             // Plex
-            new (@"(?<=\?|&)(X-Plex-Client-Identifier|X-Plex-Token)=(?<secret>[^&=]+?)(?= |&|$)", RegexOptions.Compiled | RegexOptions.IgnoreCase),
+            Rule(@"(?<=\?|&)(X-Plex-Client-Identifier|X-Plex-Token)=(?<secret>[^&=]+?)(?= |&|$)"),
 
             // Notifiarr
-            new (@"api/v[0-9]/notification/whisparr/(?<secret>[\w-]+)", RegexOptions.Compiled | RegexOptions.IgnoreCase),
+            Rule(@"api/v[0-9]/notification/whisparr/(?<secret>[\w-]+)"),
 
             // Discord
-            new (@"discord.com/api/webhooks/((?<secret>[\w-]+)/)?(?<secret>[\w-]+)", RegexOptions.Compiled | RegexOptions.IgnoreCase),
+            Rule(@"discord.com/api/webhooks/((?<secret>[\w-]+)/)?(?<secret>[\w-]+)"),
 
             // Telegram
-            new (@"api.telegram.org/bot(?<id>[\d]+):(?<secret>[\w-]+)/", RegexOptions.Compiled | RegexOptions.IgnoreCase)
+            Rule(@"api.telegram.org/bot(?<id>[\d]+):(?<secret>[\w-]+)/")
         };
 
-        private static readonly Regex CleanseRemoteIPRegex = new (@"(?:Auth-\w+(?<!Failure|Unauthorized) ip|from) (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})", RegexOptions.Compiled);
+        private static readonly Regex CleanseRemoteIPRegex = Rule(@"(?:Auth-\w+(?<!Failure|Unauthorized) ip|from) (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})", RegexOptions.None);
 
         public static string Cleanse(string message)
         {
@@ -102,6 +105,15 @@ namespace NzbDrone.Common.Instrumentation
             }
 
             return match.Value;
+        }
+
+        // Every rule is compiled and timeout-guarded, and this is the only place that says so - a new
+        // rule cannot be added without both. RegexDefaults.Timeout is the codebase-wide circuit
+        // breaker against catastrophic backtracking; the two rules that pass RegexOptions.None are
+        // case-sensitive by design.
+        private static Regex Rule(string pattern, RegexOptions options = RegexOptions.IgnoreCase)
+        {
+            return new Regex(pattern, options | RegexOptions.Compiled, RegexDefaults.Timeout);
         }
     }
 }

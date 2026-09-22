@@ -18,26 +18,11 @@ Caught up — nothing outstanding.
 
 ## sonarr — Sonarr/Sonarr `v5-develop`
 
-<!-- outstanding: 8 -->
+<!-- outstanding: 0 -->
 
-Owns: **frontend**. High-water mark: `91c4ae17c0`.
+Owns: **frontend**. High-water mark: `76c684e097`.
 
-**8 outstanding.**
-
-| Month | Total | be | fe | be+fe | chore |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| 2026-09 | 8 | 5 | 1 | 2 | 0 |
-
-### 2026-09
-
-- `be   ` [`2a5607e0f`](https://github.com/Sonarr/Sonarr/commit/2a5607e0fb856dd3626614248a404a3438b4a58c) Multiple Translations updated by Weblate — *Weblate*
-- `be+fe` [`77ef058dc`](https://github.com/Sonarr/Sonarr/commit/77ef058dcab0250a7d43eb1e6dd71dd1dd609f9e) New: Match anime season packs named by season title — *Jonza*
-- `be   ` [`bdd4f0b7d`](https://github.com/Sonarr/Sonarr/commit/bdd4f0b7dd36bd003070cf5f6ccbf2255bbfac3f) New: Search anime season titles without season parameter — *Jonza*
-- `be+fe` [`9f0cb9284`](https://github.com/Sonarr/Sonarr/commit/9f0cb9284b887eca4748381f8339932430a3c157) New: OIDC authentication — *Mark McDowall*
-- `be   ` [`91aeb5260`](https://github.com/Sonarr/Sonarr/commit/91aeb5260c4b4082dbfbf92cbf1bebd709222cf9) Cleanse email addresses from logs — *Mark McDowall*
-- `be   ` [`70829703c`](https://github.com/Sonarr/Sonarr/commit/70829703c9598249ac6cb4df17d67a213e662327) Fixed: Don't cache media covers that aren't downloaded — *Mark McDowall*
-- `be   ` [`4f4240593`](https://github.com/Sonarr/Sonarr/commit/4f42405932216e4c148f1e0bdc74525c177bc9f3) Add v5 MediaCoverController — *Mark McDowall*
-- `fe   ` [`76c684e09`](https://github.com/Sonarr/Sonarr/commit/76c684e097f16ac216e6213845e5cac372774995) Reset loaded state for series images when URL changes — *Mark McDowall*
+Caught up — nothing outstanding.
 
 ## Deferred
 
@@ -56,6 +41,7 @@ what has to land first. The reason field in `state.json` has the detail.
 | Commit | Subject | Blocked by |
 | --- | --- | --- |
 | [`aea7ea743`](https://github.com/Sonarr/Sonarr/commit/aea7ea7438447fd468c03cb1652084e05fd82608) | Send full certificate chain | PEM certificate support: Bootstrap.ValidateSslCertificate takes no key path, HostConfigResource has no SslKeyPath, and we still use the obsolete X509Certificate2 ctor. Port that first, then this applies. |
+| [`9f0cb9284`](https://github.com/Sonarr/Sonarr/commit/9f0cb9284b887eca4748381f8339932430a3c157) | New: OIDC authentication | A product decision on whether Eros gains OIDC as a fourth authentication method. Our AuthenticationType is None/Basic/Forms/External; this adds a fifth member plus config-file keys (AuthenticationAuthority/ClientId/ClientSecret), an OidcDiscoveryService, a health check, an authority validator, a new logout.html served by a new static mapper, and a rewritten Settings/General auth section. That is a feature, not a sync fix, and it is not a call to wave through in an upstream sweep. |
 
 ## Settled
 
@@ -765,3 +751,11 @@ Commits reviewed and dispositioned. Skips carry their reason.
 | [`fd484eb62`](https://github.com/Sonarr/Sonarr/commit/fd484eb6287dd93a0bad4c86d48585dff3de4b21) | Bump .NET to 10.0.12 | `have` | Dependabot got there first (#649): every Microsoft.* and System.* 10.0.x reference is already 10.0.12 and NUnit3TestAdapter is 6.3.0. Our global.json pins 10.0.101 with rollForward latestFeature, so the SDK pin does not apply. |
 | [`368a40ace`](https://github.com/Sonarr/Sonarr/commit/368a40acef6d35d9436f27153f67353bd2d313d6) | Parse full range for multi-season packs | `skip` | Parser gate, no reproduction possible. Multi-season pack parsing (S01-S05) plus a ParsedEpisodeInfo field and MultiSeasonSpecification - we have no seasons. |
 | [`91c4ae17c`](https://github.com/Sonarr/Sonarr/commit/91c4ae17c07fb08b7f651e45cfcead6ec7128a2c) | Fixed: Parsing of multi-episode releases with anime-style release group | `skip` | Parser gate, no reproduction possible. Splits an anime [SubGroup] Title S04E17-28 pattern; we carry no anime or episode patterns. |
+| [`2a5607e0f`](https://github.com/Sonarr/Sonarr/commit/2a5607e0fb856dd3626614248a404a3438b4a58c) | Multiple Translations updated by Weblate | `skip` | Weblate gate. Touches six Localization/Core/*.json files only. Our translations come from Weblate, never from cherry-picks. |
+| [`77ef058dc`](https://github.com/Sonarr/Sonarr/commit/77ef058dcab0250a7d43eb1e6dd71dd1dd609f9e) | New: Match anime season packs named by season title | `skip` | Parser gate with nothing to reproduce. Adds Parser.ParseSeasonTitle for anime season packs named after the season with no season or episode numbers, and the ParsedEpisodeInfo.IsSeasonTitle/FullSeason/AbsoluteEpisodeNumbers plumbing it feeds. We have no seasons, no episodes and no anime; ParsedEpisodeInfo does not exist here. The rest of the commit lands in SeasonMatchSpecification and Sonarr.Api.V5, neither of which we have. |
+| [`bdd4f0b7d`](https://github.com/Sonarr/Sonarr/commit/bdd4f0b7dd36bd003070cf5f6ccbf2255bbfac3f) | New: Search anime season titles without season parameter | `skip` | No counterpart entity. Teaches AnimeSeasonSearchCriteria to search by season title when the indexer has no season parameter. IndexerSearch/Definitions here holds only MovieSearchCriteria, SceneSearchCriteria and SearchCriteriaBase, and the Nyaa request generator it also touches is not an indexer we carry. Newznab is ours, but the hunk is entirely inside the anime-season branch. |
+| [`9f0cb9284`](https://github.com/Sonarr/Sonarr/commit/9f0cb9284b887eca4748381f8339932430a3c157) | New: OIDC authentication | `defer` | Deferred rather than skipped because nothing in it is inapplicable: it is auth plumbing over our existing Forms/External types, with no series or episode concept anywhere in it, so it would work here as written. Two conditions on taking it: the upstream en.json hunk (18 keys) is not ours to copy, so each string needs a key we author in case-insensitive sorted position, and the Sonarr.Api.V5 half (GeneralSettingsController/Resource) is dropped - only the V3 HostConfigController/HostConfigResource half applies here. Worth letting upstream settle first too: it landed as one 1,300-line commit with no follow-ups yet. |
+| [`91aeb5260`](https://github.com/Sonarr/Sonarr/commit/91aeb5260c4b4082dbfbf92cbf1bebd709222cf9) | Cleanse email addresses from logs | `pick` | Applied verbatim. Adds one email pattern to CleanseLogMessage so an address in a log line is redacted to (removed)@domain, with three upstream test cases. Nothing series-specific: our Email notification, the External auth path and the log viewer all pass addresses through the same cleanser. CleanseLogMessageFixture is 75 tests green after the pick. |
+| [`70829703c`](https://github.com/Sonarr/Sonarr/commit/70829703c9598249ac6cb4df17d67a213e662327) | Fixed: Don't cache media covers that aren't downloaded | `have` | Landed in our 03de795b41 during the Radarr 2026-09 sync, from radarr/radarr@7852431ea - the same fix on the Radarr side. Both halves match: ConvertToLocalUrls takes the added date and only appends the ?h= cache buster once the file is on disk, and CacheableSpecification stopped returning true for /api/.../MediaCover so an undownloaded cover 404s uncacheably. Ours goes further with a cover-exists cache and covers Performer and Studio as well as Movie. |
+| [`4f4240593`](https://github.com/Sonarr/Sonarr/commit/4f42405932216e4c148f1e0bdc74525c177bc9f3) | Add v5 MediaCoverController | `skip` | V5-only. The whole commit is one added file under src/Sonarr.Api.V5/, a project we do not have; we ship src/Whisparr.Api.V3/ alone. The upstream-watch bot picked it into PR #907 because it adds a file rather than conflicting with one - no csproj references it and the build stays green, so it would have landed as a dead file. |
+| [`76c684e09`](https://github.com/Sonarr/Sonarr/commit/76c684e097f16ac216e6213845e5cac372774995) | Reset loaded state for series images when URL changes | `skip` | The state it resets does not exist here. Upstream SeriesImage tracks isLoaded to fade the image in; our frontend/src/Movie/MovieImage.tsx tracks only url, hasError and triedRemote, and isLoaded appears nowhere in frontend/src outside three unrelated list views. The upstream-watch bot applied the one-line setIsLoaded(true) to MovieImage.tsx anyway (PR #907, dfd55217bd) by context match alone - it would not compile. |
