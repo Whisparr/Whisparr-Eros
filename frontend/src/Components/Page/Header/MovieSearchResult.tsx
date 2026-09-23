@@ -11,16 +11,7 @@ import firstCharToUpper from 'Utilities/String/firstCharToUpper';
 import { SuggestedMovie } from './MovieSearchInput';
 import styles from './MovieSearchResult.css';
 
-interface Match {
-  key: string;
-  refIndex: number;
-}
-
-interface MovieSearchResultProps extends SuggestedMovie {
-  match: Match;
-}
-
-function MovieSearchResult(props: MovieSearchResultProps) {
+function MovieSearchResult(props: Readonly<SuggestedMovie>) {
   const { title, year, images, itemType, studioTitle, runtime, releaseDate } =
     props;
 

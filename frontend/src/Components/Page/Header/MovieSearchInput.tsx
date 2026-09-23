@@ -17,18 +17,17 @@ import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import useKeyboardShortcuts from 'Helpers/Hooks/useKeyboardShortcuts';
 import { icons } from 'Helpers/Props';
 import Movie from 'Movie/Movie';
-import { useSearchMovieUncached } from 'Movie/useMovie';
+import Performer from 'Performer/Performer';
+import useLibrarySearch from 'Search/useLibrarySearch';
+import Studio from 'Studio/Studio';
 import translate from 'Utilities/String/translate';
 import MovieSearchResult from './MovieSearchResult';
+import PerformerSearchResult from './PerformerSearchResult';
+import StudioSearchResult from './StudioSearchResult';
 import styles from './MovieSearchInput.css';
 
 const ADD_NEW_MOVIE = 'addNewMovie';
 const ADD_NEW_SCENE = 'addNewScene';
-
-interface Match {
-  key: string;
-  refIndex: number;
-}
 
 interface AddNewMovieSuggestion {
   type: 'addNewMovie' | 'addNewScene';
@@ -56,32 +55,74 @@ export interface SuggestedMovie extends Pick<
 }
 
 interface MovieSuggestion {
+  type: 'movie';
   title: string;
-  indices: number[];
   item: SuggestedMovie;
-  matches: Match[];
-  refIndex: number;
 }
+
+interface PerformerSuggestion {
+  type: 'performer';
+  title: string;
+  item: Performer;
+}
+
+interface StudioSuggestion {
+  type: 'studio';
+  title: string;
+  item: Studio;
+}
+
+type Suggestion =
+  | AddNewMovieSuggestion
+  | MovieSuggestion
+  | PerformerSuggestion
+  | StudioSuggestion;
 
 interface Section {
   title: string;
   loading?: boolean;
-  suggestions: MovieSuggestion[] | AddNewMovieSuggestion[];
+  suggestions: Suggestion[];
 }
 
 function moviesToSuggestions(movies: readonly Movie[]): MovieSuggestion[] {
-  return movies.map((m, i) => ({
-    key: m.id,
+  return movies.map((m) => ({
+    type: 'movie',
     title: m.title,
-    indices: [],
     item: {
       ...m,
       firstCharacter: m.title.charAt(0).toLowerCase(),
       tags: m.tags || [],
     },
-    matches: [],
-    refIndex: i,
   }));
+}
+
+function performersToSuggestions(
+  performers: readonly Performer[]
+): PerformerSuggestion[] {
+  return performers.map((p) => ({
+    type: 'performer',
+    title: p.fullName || p.name,
+    item: p,
+  }));
+}
+
+function studiosToSuggestions(studios: readonly Studio[]): StudioSuggestion[] {
+  return studios.map((s) => ({ type: 'studio', title: s.title, item: s }));
+}
+
+function getSuggestionPath(suggestion: Suggestion, term: string) {
+  switch (suggestion.type) {
+    case ADD_NEW_MOVIE:
+      return `/add/new/movie?term=${encodeURIComponent(term)}`;
+    case ADD_NEW_SCENE:
+      return `/add/new/scene?term=${encodeURIComponent(term)}`;
+    case 'performer':
+      return `/performer/${suggestion.item.foreignId}`;
+    case 'studio':
+      return `/studio/${suggestion.item.foreignId}`;
+    default:
+      return `/movie/${suggestion.item.titleSlug}`;
+  }
 }
 
 function MovieSearchInput() {
@@ -89,24 +130,46 @@ function MovieSearchInput() {
   const [value, setValue] = useState('');
   const [debouncedValue] = useDebounce(value, 250);
 
-  const { data: movies = [], isLoading } =
-    useSearchMovieUncached(debouncedValue);
+  const { data, isLoading } = useLibrarySearch(debouncedValue);
 
   const { bindShortcut, unbindShortcut } = useKeyboardShortcuts();
   const autosuggestRef = useRef<Autosuggest>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const suggestions = useMemo(() => moviesToSuggestions(movies), [movies]);
+  const resultSections = useMemo(() => {
+    const sections: Section[] = [
+      {
+        title: translate('Performers'),
+        suggestions: performersToSuggestions(data?.performers.records ?? []),
+      },
+      {
+        title: translate('Studios'),
+        suggestions: studiosToSuggestions(data?.studios.records ?? []),
+      },
+      {
+        title: translate('Scenes'),
+        suggestions: moviesToSuggestions(data?.scenes.records ?? []),
+      },
+      {
+        title: translate('Movies'),
+        suggestions: moviesToSuggestions(data?.movies.records ?? []),
+      },
+    ];
+
+    return sections.filter((section) => section.suggestions.length);
+  }, [data]);
 
   const suggestionGroups = useMemo(() => {
-    const result: Section[] = [];
-    if (suggestions.length || isLoading) {
-      result.push({
+    const result: Section[] = [...resultSections];
+
+    if (isLoading) {
+      result.unshift({
         title: translate('Existing'),
-        loading: isLoading,
-        suggestions,
+        loading: true,
+        suggestions: [],
       });
     }
+
     result.push({
       title: translate('Add'),
       suggestions: [
@@ -115,7 +178,7 @@ function MovieSearchInput() {
       ],
     });
     return result;
-  }, [suggestions, value, isLoading]);
+  }, [resultSections, value, isLoading]);
 
   const focusInput = useCallback((event: ExtendedKeyboardEvent) => {
     event.preventDefault();
@@ -147,30 +210,27 @@ function MovieSearchInput() {
   }, []);
 
   const renderSuggestion = useCallback(
-    (
-      item: AddNewMovieSuggestion | MovieSuggestion,
-      { query }: { query: string }
-    ) => {
-      if ('type' in item) {
-        if (item.type === ADD_NEW_MOVIE) {
+    (item: Suggestion, { query }: { query: string }) => {
+      switch (item.type) {
+        case ADD_NEW_MOVIE:
           return (
             <div className={styles.addNewMovieSuggestion}>
               {`Add new movie: "${query}"`}
             </div>
           );
-        }
-        if (item.type === ADD_NEW_SCENE) {
+        case ADD_NEW_SCENE:
           return (
             <div className={styles.addNewMovieSuggestion}>
               {`Add new scene: "${query}"`}
             </div>
           );
-        }
+        case 'performer':
+          return <PerformerSearchResult {...item.item} />;
+        case 'studio':
+          return <StudioSearchResult {...item.item} />;
+        default:
+          return <MovieSearchResult {...item.item} />;
       }
-      const movieItem = item as MovieSuggestion;
-      return (
-        <MovieSearchResult {...movieItem.item} match={movieItem.matches[0]} />
-      );
     },
     []
   );
@@ -207,36 +267,35 @@ function MovieSearchInput() {
 
       const { highlightedSectionIndex, highlightedSuggestionIndex } =
         autosuggestRef.current.state;
-      if (!suggestions.length || highlightedSectionIndex) {
-        navigate(`/add/new/movie?term=${encodeURIComponent(value)}`);
-        inputRef.current?.blur();
-        return;
-      }
+
       const selectedSuggestion =
-        highlightedSuggestionIndex == null
-          ? suggestions[0]
-          : suggestions[highlightedSuggestionIndex];
-      navigate(`/movie/${selectedSuggestion.item.titleSlug}`);
+        highlightedSectionIndex == null || highlightedSuggestionIndex == null
+          ? resultSections[0]?.suggestions[0]
+          : suggestionGroups[highlightedSectionIndex]?.suggestions[
+              highlightedSuggestionIndex
+            ];
+
+      navigate(
+        getSuggestionPath(
+          selectedSuggestion ?? { type: ADD_NEW_MOVIE, title: value },
+          value
+        )
+      );
       inputRef.current?.blur();
     },
-    [value, suggestions, navigate]
+    [value, resultSections, suggestionGroups, navigate]
   );
 
   const handleSuggestionSelected = useCallback(
-    (
-      _event: SyntheticEvent,
-      { suggestion }: { suggestion: MovieSuggestion | AddNewMovieSuggestion }
-    ) => {
-      if ('type' in suggestion) {
-        if (suggestion.type === ADD_NEW_MOVIE) {
-          navigate(`/add/new/movie?term=${encodeURIComponent(value)}`);
-        } else if (suggestion.type === ADD_NEW_SCENE) {
-          navigate(`/add/new/scene?term=${encodeURIComponent(value)}`);
-        }
-      } else {
+    (_event: SyntheticEvent, { suggestion }: { suggestion: Suggestion }) => {
+      if (
+        suggestion.type !== ADD_NEW_MOVIE &&
+        suggestion.type !== ADD_NEW_SCENE
+      ) {
         setValue('');
-        navigate(`/movie/${suggestion.item.titleSlug}`);
       }
+
+      navigate(getSuggestionPath(suggestion, value));
     },
     [value, navigate]
   );
