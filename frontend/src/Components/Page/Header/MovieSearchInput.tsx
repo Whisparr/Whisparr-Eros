@@ -155,6 +155,10 @@ function MovieSearchInput() {
   const autosuggestRef = useRef<Autosuggest>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Autosuggest also highlights a row on mouse hover, so only a row reached
+  // with the arrow keys counts as chosen when Enter is pressed.
+  const hasKeyboardSelectionRef = useRef(false);
+
   const resultSections = useMemo(() => {
     const sections: Section[] = [
       {
@@ -263,7 +267,19 @@ function MovieSearchInput() {
         method: 'down' | 'up' | 'escape' | 'enter' | 'click' | 'type';
       }
     ) => {
-      if (method === 'up' || method === 'down') return;
+      if (method === 'up' || method === 'down') {
+        hasKeyboardSelectionRef.current = true;
+        return;
+      }
+
+      // Autosuggest reports Enter on a highlighted row as a change to that
+      // row's title. handleKeyDown decides where Enter goes, so keep the typed
+      // text and the arrow-key state as they are.
+      if (method === 'enter') {
+        return;
+      }
+
+      hasKeyboardSelectionRef.current = false;
       setValue(newValue);
     },
     []
@@ -286,25 +302,45 @@ function MovieSearchInput() {
         autosuggestRef.current.state;
 
       const selectedSuggestion =
-        highlightedSectionIndex == null || highlightedSuggestionIndex == null
-          ? resultSections[0]?.suggestions[0]
-          : suggestionGroups[highlightedSectionIndex]?.suggestions[
+        hasKeyboardSelectionRef.current &&
+        highlightedSectionIndex != null &&
+        highlightedSuggestionIndex != null
+          ? suggestionGroups[highlightedSectionIndex]?.suggestions[
               highlightedSuggestionIndex
-            ];
+            ]
+          : undefined;
 
-      navigate(
-        getSuggestionPath(
-          selectedSuggestion ?? { type: ADD_NEW_MOVIE, title: value },
-          value
-        )
-      );
+      hasKeyboardSelectionRef.current = false;
+
+      if (selectedSuggestion) {
+        if (!isAddNewSuggestion(selectedSuggestion)) {
+          setValue('');
+        }
+
+        navigate(getSuggestionPath(selectedSuggestion, value));
+      } else {
+        navigate(`/search?${new URLSearchParams({ term: value }).toString()}`);
+      }
+
       inputRef.current?.blur();
     },
-    [value, resultSections, suggestionGroups, navigate]
+    [value, suggestionGroups, navigate]
   );
 
   const handleSuggestionSelected = useCallback(
-    (_event: SyntheticEvent, { suggestion }: { suggestion: Suggestion }) => {
+    (
+      _event: SyntheticEvent,
+      {
+        suggestion,
+        method,
+      }: { suggestion: Suggestion; method: 'click' | 'enter' }
+    ) => {
+      // Autosuggest selects the highlighted row on Enter before handleKeyDown
+      // runs; leave Enter to handleKeyDown, which ignores a hovered row.
+      if (method === 'enter') {
+        return;
+      }
+
       if (!isAddNewSuggestion(suggestion)) {
         setValue('');
       }
