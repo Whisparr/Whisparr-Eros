@@ -52,11 +52,6 @@ namespace NzbDrone.Core.Test.LibrarySearchTests
                 });
         }
 
-        private static MovieTitleMatch Title(int id, string title, ItemType itemType)
-        {
-            return new MovieTitleMatch { Id = id, Title = title, CleanTitle = title.CleanMovieTitle(), ItemType = itemType };
-        }
-
         [Test]
         public void should_split_scenes_from_movies_in_rank_order()
         {
@@ -133,6 +128,11 @@ namespace NzbDrone.Core.Test.LibrarySearchTests
 
             Mocker.GetMock<IPerformerService>()
                 .Verify(s => s.SearchPerformers(It.IsAny<string>()), Times.Never());
+        }
+
+        private static MovieTitleMatch Title(int id, string title, ItemType itemType)
+        {
+            return new MovieTitleMatch { Id = id, Title = title, CleanTitle = title.CleanMovieTitle(), ItemType = itemType };
         }
     }
 }

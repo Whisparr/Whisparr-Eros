@@ -36,89 +36,6 @@ namespace NzbDrone.Core.Test.MovieTests.MovieRepositoryTests
                 .Returns(new List<CustomFormat>());
         }
 
-        private QualityProfile GivenProfile()
-        {
-            var profile = new QualityProfile
-            {
-                Items = Qualities.QualityFixture.GetDefaultQualities(Quality.Bluray1080p, Quality.DVD, Quality.HDTV720p),
-                FormatItems = CustomFormatsTestHelpers.GetDefaultFormatItems(),
-                MinFormatScore = 0,
-                Cutoff = Quality.Bluray1080p.Id,
-                Name = "TestProfile"
-            };
-
-            _profileRepository.Insert(profile);
-
-            return profile;
-        }
-
-        private MovieFile GivenMovieFile(Quality quality)
-        {
-            var movieFile = Builder<MovieFile>.CreateNew()
-                .With(f => f.Id = 0)
-                .With(f => f.Quality = new QualityModel(quality))
-                .With(f => f.Languages = new List<Language> { Language.English })
-                .With(f => f.MediaInfo = new MediaInfoModel { RawStreamData = "{ \"streams\": [] }", VideoFormat = "h264" })
-                .BuildNew();
-
-            return Db.Insert(movieFile);
-        }
-
-        // PagedBuilder INNER JOINs MovieMetadata, so a paged movie needs a metadata row to match.
-        private Movie GivenPagedMovie(int qualityProfileId, int movieFileId, int year = 2020, HashSet<int> tags = null)
-        {
-            var metadata = Db.Insert(Builder<MovieMetadata>.CreateNew()
-                .With(m => m.Id = 0)
-                .With(m => m.Year = year)
-                .With(m => m.ForeignId = $"metadata-{++_metadataSequence}")
-                .BuildNew());
-
-            var movie = Builder<Movie>.CreateNew()
-                .With(m => m.Id = 0)
-                .With(m => m.MovieMetadataId = metadata.Id)
-                .With(m => m.QualityProfileId = qualityProfileId)
-                .With(m => m.MovieFileId = movieFileId)
-                .With(m => m.Tags = tags ?? new HashSet<int>())
-                .BuildNew();
-
-            return Subject.Insert(movie);
-        }
-
-        // Builder() joins MovieFiles on MovieFile.MovieId, while the paging spec filters on
-        // Movie.MovieFileId, so a movie with a file has to have both sides pointing at each other.
-        private Movie GivenPagedMovieWithFile(int qualityProfileId, Quality quality, HashSet<int> tags = null)
-        {
-            var movie = GivenPagedMovie(qualityProfileId, movieFileId: 0, tags: tags);
-
-            var movieFile = Db.Insert(Builder<MovieFile>.CreateNew()
-                .With(f => f.Id = 0)
-                .With(f => f.MovieId = movie.Id)
-                .With(f => f.Quality = new QualityModel(quality))
-                .With(f => f.Languages = new List<Language> { Language.English })
-                .With(f => f.MediaInfo = new MediaInfoModel { RawStreamData = "{ \"streams\": [] }", VideoFormat = "h264" })
-                .BuildNew());
-
-            movie.MovieFileId = movieFile.Id;
-            Subject.Update(movie);
-
-            return movie;
-        }
-
-        // Cutoff is Bluray1080p, so anything below it is unmet.
-        private List<QualitiesBelowCutoff> GivenQualitiesBelowCutoff(QualityProfile profile)
-        {
-            return new List<QualitiesBelowCutoff>
-            {
-                new QualitiesBelowCutoff(profile.Id, new[] { Quality.HDTV720p.Id, Quality.DVD.Id })
-            };
-        }
-
-        private static PagingSpec<Movie> PagingSpec() => new PagingSpec<Movie>
-        {
-            Page = 1,
-            PageSize = 10
-        };
-
         [Test]
         public void should_load_quality_profile()
         {
@@ -297,19 +214,6 @@ namespace NzbDrone.Core.Test.MovieTests.MovieRepositoryTests
             spec.Records.Should().HaveCount(2);
         }
 
-        private Movie GivenTitledMovie(int qualityProfileId, string title, ItemType itemType)
-        {
-            var movie = GivenPagedMovie(qualityProfileId, movieFileId: 0);
-            var metadata = Db.All<MovieMetadata>().Single(m => m.Id == movie.MovieMetadataId);
-
-            metadata.Title = title;
-            metadata.CleanTitle = title.CleanMovieTitle();
-            metadata.ItemType = itemType;
-            Db.Update(metadata);
-
-            return movie;
-        }
-
         [Test]
         public void should_search_movie_titles_by_clean_title_or_foreign_id()
         {
@@ -330,6 +234,102 @@ namespace NzbDrone.Core.Test.MovieTests.MovieRepositoryTests
             sceneMatch.CleanTitle.Should().Be("Anna Goes To The Beach".CleanMovieTitle());
             sceneMatch.ItemType.Should().Be(ItemType.Scene);
             results.Single(r => r.Id == movie.Id).ItemType.Should().Be(ItemType.Movie);
+        }
+
+        // Cutoff is Bluray1080p, so anything below it is unmet.
+        private static List<QualitiesBelowCutoff> GivenQualitiesBelowCutoff(QualityProfile profile)
+        {
+            return new List<QualitiesBelowCutoff>
+            {
+                new QualitiesBelowCutoff(profile.Id, new[] { Quality.HDTV720p.Id, Quality.DVD.Id })
+            };
+        }
+
+        private static PagingSpec<Movie> PagingSpec() => new PagingSpec<Movie>
+        {
+            Page = 1,
+            PageSize = 10
+        };
+
+        private QualityProfile GivenProfile()
+        {
+            var profile = new QualityProfile
+            {
+                Items = Qualities.QualityFixture.GetDefaultQualities(Quality.Bluray1080p, Quality.DVD, Quality.HDTV720p),
+                FormatItems = CustomFormatsTestHelpers.GetDefaultFormatItems(),
+                MinFormatScore = 0,
+                Cutoff = Quality.Bluray1080p.Id,
+                Name = "TestProfile"
+            };
+
+            _profileRepository.Insert(profile);
+
+            return profile;
+        }
+
+        private MovieFile GivenMovieFile(Quality quality)
+        {
+            var movieFile = Builder<MovieFile>.CreateNew()
+                .With(f => f.Id = 0)
+                .With(f => f.Quality = new QualityModel(quality))
+                .With(f => f.Languages = new List<Language> { Language.English })
+                .With(f => f.MediaInfo = new MediaInfoModel { RawStreamData = "{ \"streams\": [] }", VideoFormat = "h264" })
+                .BuildNew();
+
+            return Db.Insert(movieFile);
+        }
+
+        // PagedBuilder INNER JOINs MovieMetadata, so a paged movie needs a metadata row to match.
+        private Movie GivenPagedMovie(int qualityProfileId, int movieFileId, int year = 2020, HashSet<int> tags = null)
+        {
+            var metadata = Db.Insert(Builder<MovieMetadata>.CreateNew()
+                .With(m => m.Id = 0)
+                .With(m => m.Year = year)
+                .With(m => m.ForeignId = $"metadata-{++_metadataSequence}")
+                .BuildNew());
+
+            var movie = Builder<Movie>.CreateNew()
+                .With(m => m.Id = 0)
+                .With(m => m.MovieMetadataId = metadata.Id)
+                .With(m => m.QualityProfileId = qualityProfileId)
+                .With(m => m.MovieFileId = movieFileId)
+                .With(m => m.Tags = tags ?? new HashSet<int>())
+                .BuildNew();
+
+            return Subject.Insert(movie);
+        }
+
+        // Builder() joins MovieFiles on MovieFile.MovieId, while the paging spec filters on
+        // Movie.MovieFileId, so a movie with a file has to have both sides pointing at each other.
+        private Movie GivenPagedMovieWithFile(int qualityProfileId, Quality quality, HashSet<int> tags = null)
+        {
+            var movie = GivenPagedMovie(qualityProfileId, movieFileId: 0, tags: tags);
+
+            var movieFile = Db.Insert(Builder<MovieFile>.CreateNew()
+                .With(f => f.Id = 0)
+                .With(f => f.MovieId = movie.Id)
+                .With(f => f.Quality = new QualityModel(quality))
+                .With(f => f.Languages = new List<Language> { Language.English })
+                .With(f => f.MediaInfo = new MediaInfoModel { RawStreamData = "{ \"streams\": [] }", VideoFormat = "h264" })
+                .BuildNew());
+
+            movie.MovieFileId = movieFile.Id;
+            Subject.Update(movie);
+
+            return movie;
+        }
+
+        private Movie GivenTitledMovie(int qualityProfileId, string title, ItemType itemType)
+        {
+            var movie = GivenPagedMovie(qualityProfileId, movieFileId: 0);
+            var metadata = Db.All<MovieMetadata>().Single(m => m.Id == movie.MovieMetadataId);
+
+            metadata.Title = title;
+            metadata.CleanTitle = title.CleanMovieTitle();
+            metadata.ItemType = itemType;
+            Db.Update(metadata);
+
+            return movie;
         }
     }
 }

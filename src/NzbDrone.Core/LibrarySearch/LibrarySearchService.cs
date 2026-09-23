@@ -9,6 +9,14 @@ using NzbDrone.Core.Parser;
 
 namespace NzbDrone.Core.LibrarySearch
 {
+    public interface ILibrarySearchService
+    {
+        LibrarySearchResult Search(string term, int limit);
+        LibrarySearchPage<Movie> SearchMovies(string term, ItemType itemType, int page, int pageSize);
+        LibrarySearchPage<Performer> SearchPerformers(string term, int page, int pageSize);
+        LibrarySearchPage<Studio> SearchStudios(string term, int page, int pageSize);
+    }
+
     public class LibrarySearchPage<T>
     {
         public int TotalRecords { get; set; }
@@ -21,14 +29,6 @@ namespace NzbDrone.Core.LibrarySearch
         public LibrarySearchPage<Studio> Studios { get; set; } = new();
         public LibrarySearchPage<Movie> Scenes { get; set; } = new();
         public LibrarySearchPage<Movie> Movies { get; set; } = new();
-    }
-
-    public interface ILibrarySearchService
-    {
-        LibrarySearchResult Search(string term, int limit);
-        LibrarySearchPage<Movie> SearchMovies(string term, ItemType itemType, int page, int pageSize);
-        LibrarySearchPage<Performer> SearchPerformers(string term, int page, int pageSize);
-        LibrarySearchPage<Studio> SearchStudios(string term, int page, int pageSize);
     }
 
     /// <summary>Searches the local library across performers, studios, scenes and movies.</summary>
@@ -116,6 +116,18 @@ namespace NzbDrone.Core.LibrarySearch
         // Stored studio titles are cleaned the same way in StudioService.SearchStudios.
         private static string CleanStudio(string title) => title.CleanStudioTitle().ToLower();
 
+        private static LibrarySearchPage<T> Page<T>(List<T> ranked, int page, int pageSize)
+        {
+            page = Math.Max(page, 1);
+            pageSize = Math.Max(pageSize, 1);
+
+            return new LibrarySearchPage<T>
+            {
+                TotalRecords = ranked.Count,
+                Records = ranked.Skip((page - 1) * pageSize).Take(pageSize).ToList()
+            };
+        }
+
         private List<MovieTitleMatch> RankMovieTitles(string term)
         {
             return LibrarySearchRanker.Rank(
@@ -142,18 +154,6 @@ namespace NzbDrone.Core.LibrarySearch
             {
                 TotalRecords = ids.TotalRecords,
                 Records = ids.Records.Where(m => movies.ContainsKey(m.Id)).Select(m => movies[m.Id]).ToList()
-            };
-        }
-
-        private static LibrarySearchPage<T> Page<T>(List<T> ranked, int page, int pageSize)
-        {
-            page = Math.Max(page, 1);
-            pageSize = Math.Max(pageSize, 1);
-
-            return new LibrarySearchPage<T>
-            {
-                TotalRecords = ranked.Count,
-                Records = ranked.Skip((page - 1) * pageSize).Take(pageSize).ToList()
             };
         }
     }

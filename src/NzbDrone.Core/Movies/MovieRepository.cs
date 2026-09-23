@@ -52,6 +52,11 @@ namespace NzbDrone.Core.Movies
 
     public class MovieRepository : BasicRepository<Movie>, IMovieRepository
     {
+        // MovieFiles.MediaInfo holds the full ffprobe dump (~7KB a row) that no paged consumer
+        // renders, so the file columns are listed explicitly instead of "MovieFiles".*. Built
+        // from the mapper rather than hardcoded so a new column can't silently go missing.
+        private static readonly string _pagedMovieFileColumns = BuildPagedMovieFileColumns();
+
         private readonly IQualityProfileRepository _profileRepository;
         private readonly IAlternativeTitleRepository _alternativeTitleRepository;
 
@@ -65,118 +70,12 @@ namespace NzbDrone.Core.Movies
             _alternativeTitleRepository = alternativeTitleRepository;
         }
 
-        // MovieFiles.MediaInfo holds the full ffprobe dump (~7KB a row) that no paged consumer
-        // renders, so the file columns are listed explicitly instead of "MovieFiles".*. Built
-        // from the mapper rather than hardcoded so a new column can't silently go missing.
-        private static readonly string _pagedMovieFileColumns = BuildPagedMovieFileColumns();
-
-        private static string BuildPagedMovieFileColumns()
-        {
-            var table = TableMapping.Mapper.TableNameMapping(typeof(MovieFile));
-            var excluded = TableMapping.Mapper.ExcludeProperties(typeof(MovieFile)).Select(x => x.Name).ToList();
-
-            var columns = typeof(MovieFile).GetProperties()
-                .Where(x => x.IsMappableProperty() &&
-                            !excluded.Contains(x.Name) &&
-                            x.Name != nameof(MovieFile.MediaInfo))
-                .Select(x => x.Name)
-
-                // Dapper splits on the first "Id" column, so the file's must lead its segment.
-                .OrderBy(x => x == nameof(ModelBase.Id) ? 0 : 1)
-                .ThenBy(x => x, StringComparer.Ordinal)
-                .Select(x => $"\"{table}\".\"{x}\"");
-
-            return string.Join(", ", columns);
-        }
-
-        protected override IEnumerable<Movie> PagedQuery(SqlBuilder builder) =>
-            _database.QueryJoined<Movie, MovieMetadata>(builder, (movie, movieMetadata) =>
-            {
-                movie.MovieMetadata = movieMetadata;
-                return movie;
-            });
-
-        // Paged queries omit the AlternativeTitles JOIN to prevent duplicate rows.
-        // The one-to-many JOIN in Builder() multiplies rows; PagedQuery maps each
-        // SQL row directly without the deduplication that Query() performs via Map().
-        // QualityProfile is intentionally not joined: QualityProfileId on Movies is sufficient
-        // for sort/filter, and GetPaged hydrates the profile itself from the profile repository.
-        protected override SqlBuilder PagedBuilder() => new SqlBuilder(_database.DatabaseType)
-            .Join<Movie, MovieMetadata>((m, p) => m.MovieMetadataId == p.Id)
-            .LeftJoin<Movie, MovieFile>((m, f) => m.MovieFileId == f.Id);
-
         public override PagingSpec<Movie> GetPaged(PagingSpec<Movie> pagingSpec)
         {
             pagingSpec.Records = GetPagedRecords(PagedBuilder(), pagingSpec, PagedQueryWithFile);
             pagingSpec.TotalRecords = GetPagedRecordCount(PagedBuilder().SelectCount(), pagingSpec);
 
             return pagingSpec;
-        }
-
-        // The index renders the file's quality, so the paged index needs MovieFile hydrated.
-        // MoviesWithoutFiles and MoviesWhereCutoffUnmet deliberately keep using PagedQuery: they
-        // GROUP BY Movies.Id, and selecting a non-aggregated file column under that errors on
-        // Postgres. QualityProfile comes from the repository rather than a JOIN because
-        // MovieFileResource.ToResource dereferences it to compute QualityCutoffNotMet.
-        private IEnumerable<Movie> PagedQueryWithFile(SqlBuilder builder)
-        {
-            var profiles = _profileRepository.All().ToDictionary(x => x.Id);
-
-            // A movie can point at a profile that no longer exists, and QualityCutoffNotMet
-            // dereferences the profile, so fall back the way All() does rather than leave it null.
-            var fallbackProfile = profiles.Values.FirstOrDefault(x => x.Fallback) ?? profiles.Values.FirstOrDefault();
-
-            var sql = builder
-                .Select($"\"{_table}\".*, \"MovieMetadata\".*, {_pagedMovieFileColumns}")
-                .AddSelectTemplate(typeof(Movie));
-
-            return _database.Query<Movie, MovieMetadata, MovieFile, Movie>(
-                sql.RawSql,
-                (movie, movieMetadata, movieFile) =>
-                {
-                    movie.MovieMetadata = movieMetadata;
-                    movie.MovieFile = movieFile;
-                    movie.QualityProfile = profiles.TryGetValue(movie.QualityProfileId, out var profile) ? profile : fallbackProfile;
-
-                    return movie;
-                },
-                sql.Parameters);
-        }
-
-        protected override SqlBuilder Builder() => new SqlBuilder(_database.DatabaseType)
-            .Join<Movie, QualityProfile>((m, p) => m.QualityProfileId == p.Id)
-            .Join<Movie, MovieMetadata>((m, p) => m.MovieMetadataId == p.Id)
-            .LeftJoin<Movie, MovieFile>((m, f) => m.Id == f.MovieId)
-            .LeftJoin<MovieMetadata, AlternativeTitle>((mm, t) => mm.Id == t.MovieMetadataId);
-
-        private Movie Map(Dictionary<int, Movie> dict, Movie movie, MovieMetadata metadata, QualityProfile qualityProfile, MovieFile movieFile, AlternativeTitle altTitle = null)
-        {
-            if (!dict.TryGetValue(movie.Id, out var movieEntry))
-            {
-                movieEntry = movie;
-                movieEntry.MovieMetadata = metadata;
-                movieEntry.QualityProfile = qualityProfile;
-                movieEntry.MovieFile = movieFile;
-                dict.Add(movieEntry.Id, movieEntry);
-            }
-
-            if (altTitle != null)
-            {
-                movieEntry.MovieMetadata.Value.AlternativeTitles.Add(altTitle);
-            }
-
-            return movieEntry;
-        }
-
-        protected override List<Movie> Query(SqlBuilder builder)
-        {
-            var movieDictionary = new Dictionary<int, Movie>();
-
-            _ = _database.QueryJoined<Movie, MovieMetadata, QualityProfile, MovieFile, AlternativeTitle>(
-                builder,
-                (movie, metadata, qualityProfile, file, altTitle) => Map(movieDictionary, movie, metadata, qualityProfile, file, altTitle));
-
-            return movieDictionary.Values.ToList();
         }
 
         public IEnumerable<Movie> FindByIds(List<int> ids)
@@ -278,47 +177,6 @@ namespace NzbDrone.Core.Movies
             return results.DistinctBy(x => x.Id).ToList();
         }
 
-        // This is a bit of a hack, but if you try to combine / rationalise these then
-        // SQLite makes a mess of the query plan and ends up doing a table scan
-        private List<Movie> FindByMovieTitles(List<string> titles)
-        {
-            var movieDictionary = new Dictionary<int, Movie>();
-
-            var builder = new SqlBuilder(_database.DatabaseType)
-                .Join<Movie, QualityProfile>((m, p) => m.QualityProfileId == p.Id)
-                .Join<Movie, MovieMetadata>((m, p) => m.MovieMetadataId == p.Id)
-                .LeftJoin<Movie, MovieFile>((m, f) => m.Id == f.MovieId)
-                .Where<MovieMetadata>(x => titles.Contains(x.CleanTitle));
-
-            _ = _database.QueryJoined<Movie, MovieMetadata, QualityProfile, MovieFile>(
-                builder,
-                (movie, metadata, qualityProfile, file) => Map(movieDictionary, movie, metadata, qualityProfile, file));
-
-            return movieDictionary.Values.ToList();
-        }
-
-        private List<Movie> FindByAltTitles(List<string> titles)
-        {
-            var movieDictionary = new Dictionary<int, Movie>();
-
-            var builder = new SqlBuilder(_database.DatabaseType)
-                .Join<AlternativeTitle, MovieMetadata>((t, mm) => t.MovieMetadataId == mm.Id)
-                .Join<MovieMetadata, Movie>((mm, m) => mm.Id == m.MovieMetadataId)
-                .Join<Movie, QualityProfile>((m, p) => m.QualityProfileId == p.Id)
-                .LeftJoin<Movie, MovieFile>((m, f) => m.Id == f.MovieId)
-                .Where<AlternativeTitle>(x => titles.Contains(x.CleanTitle));
-
-            _ = _database.QueryJoined<AlternativeTitle, QualityProfile, Movie, MovieMetadata, MovieFile>(
-                builder,
-                (altTitle, qualityProfile, movie, metadata, file) =>
-                {
-                    _ = Map(movieDictionary, movie, metadata, qualityProfile, file, altTitle);
-                    return null;
-                });
-
-            return movieDictionary.Values.ToList();
-        }
-
         public List<Movie> FindByStudioAndDate(string studioForeignId, string date)
         {
             var builder = new SqlBuilder(_database.DatabaseType)
@@ -393,6 +251,11 @@ namespace NzbDrone.Core.Movies
             return Query(x => x.MovieMetadata.Value.TpdbId == tpdbid).FirstOrDefault();
         }
 
+        public List<Movie> FindByTpdbId(List<string> tpdbids)
+        {
+            return Query(x => tpdbids.Contains(x.MovieMetadata.Value.TpdbId));
+        }
+
         public Movie FindByImdbId(string imdbid)
         {
             var imdbIdWithPrefix = Parser.Parser.NormalizeImdbId(imdbid);
@@ -404,19 +267,14 @@ namespace NzbDrone.Core.Movies
             return Query(x => x.MovieMetadata.Value.TmdbId == tmdbid).FirstOrDefault();
         }
 
-        public Movie FindByForeignId(string foreignId)
-        {
-            return Query(x => x.MovieMetadata.Value.ForeignId == foreignId).FirstOrDefault();
-        }
-
-        public List<Movie> FindByTpdbId(List<string> tpdbids)
-        {
-            return Query(x => tpdbids.Contains(x.MovieMetadata.Value.TpdbId));
-        }
-
         public List<Movie> FindByTmdbId(List<int> tmdbids)
         {
             return Query(x => tmdbids.Contains(x.MovieMetadata.Value.TmdbId));
+        }
+
+        public Movie FindByForeignId(string foreignId)
+        {
+            return Query(x => x.MovieMetadata.Value.ForeignId == foreignId).FirstOrDefault();
         }
 
         public List<Movie> GetMoviesByFileId(int fileId)
@@ -424,9 +282,9 @@ namespace NzbDrone.Core.Movies
             return Query(x => x.MovieFileId == fileId);
         }
 
-        public List<Movie> GetMoviesByFileId(IEnumerable<int> ids)
+        public List<Movie> GetMoviesByFileId(IEnumerable<int> fileId)
         {
-            return Query(x => ids.Contains(x.MovieFileId));
+            return Query(x => fileId.Contains(x.MovieFileId));
         }
 
         public List<Movie> GetMoviesByCollectionTmdbId(int collectionId)
@@ -441,7 +299,7 @@ namespace NzbDrone.Core.Movies
 
             if (!includeUnmonitored)
             {
-                builder.Where<Movie>(x => x.Monitored == true);
+                builder.Where<Movie>(x => x.Monitored);
             }
 
             return Query(builder);
@@ -510,53 +368,6 @@ namespace NzbDrone.Core.Movies
             pagingSpec.TotalRecords = GetPagedRecordCount(MoviesWhereCutoffUnmetBuilder(qualitiesBelowCutoff, movieTags, quality, sortingByQuality).SelectCountDistinct<Movie>(x => x.Id), pagingSpec);
 
             return pagingSpec;
-        }
-
-        private string BuildQualityCutoffWhereClause(List<QualitiesBelowCutoff> qualitiesBelowCutoff)
-        {
-            var clauses = new List<string>();
-
-            foreach (var profile in qualitiesBelowCutoff)
-            {
-                foreach (var belowCutoff in profile.QualityIds)
-                {
-                    clauses.Add(string.Format($"(\"{_table}\".\"QualityProfileId\" = {profile.ProfileId} AND \"MovieFiles\".\"Quality\" LIKE '%_quality_: {belowCutoff},%')"));
-                }
-            }
-
-            return string.Format("({0})", string.Join(" OR ", clauses));
-        }
-
-        // Tags live as a JSON array on the Movies row rather than in a join table,
-        // so membership has to be tested by expanding the array in SQL. The two
-        // engines spell that differently.
-        private string BuildMovieTagsWhereClause(HashSet<int> tagIds)
-        {
-            var ids = string.Join(",", tagIds);
-
-            if (_database.DatabaseType == DatabaseType.PostgreSQL)
-            {
-                return string.Format(
-                    "EXISTS (SELECT 1 FROM jsonb_array_elements_text(\"{0}\".\"Tags\"::jsonb) AS elem WHERE elem::int IN ({1}))",
-                    _table,
-                    ids);
-            }
-
-            return string.Format(
-                "EXISTS (SELECT 1 FROM json_each(\"{0}\".\"Tags\") WHERE json_each.value IN ({1}))",
-                _table,
-                ids);
-        }
-
-        // Matches BuildQualityCutoffWhereClause: the quality column holds a serialised
-        // revision object, so the id is matched inside the JSON text.
-        private string BuildQualityFilterWhereClause(List<int> qualityIds)
-        {
-            var clauses = qualityIds
-                .Select(id => string.Format("\"MovieFiles\".\"Quality\" LIKE '%_quality_: {0},%'", id))
-                .ToList();
-
-            return string.Format("({0})", string.Join(" OR ", clauses));
         }
 
         public Movie FindByPath(string path)
@@ -730,6 +541,195 @@ namespace NzbDrone.Core.Movies
                 "FROM \"Movies\" JOIN \"MovieMetadata\" ON \"Movies\".\"MovieMetadataId\" = \"MovieMetadata\".\"Id\" " +
                 "WHERE \"MovieMetadata\".\"CleanTitle\" LIKE @Pattern OR \"MovieMetadata\".\"ForeignId\" = @ForeignId",
                 new { Pattern = $"%{cleanTitle}%", ForeignId = foreignId }).ToList();
+        }
+
+        protected override SqlBuilder Builder() => new SqlBuilder(_database.DatabaseType)
+            .Join<Movie, QualityProfile>((m, p) => m.QualityProfileId == p.Id)
+            .Join<Movie, MovieMetadata>((m, p) => m.MovieMetadataId == p.Id)
+            .LeftJoin<Movie, MovieFile>((m, f) => m.Id == f.MovieId)
+            .LeftJoin<MovieMetadata, AlternativeTitle>((mm, t) => mm.Id == t.MovieMetadataId);
+
+        protected override List<Movie> Query(SqlBuilder builder)
+        {
+            var movieDictionary = new Dictionary<int, Movie>();
+
+            _ = _database.QueryJoined<Movie, MovieMetadata, QualityProfile, MovieFile, AlternativeTitle>(
+                builder,
+                (movie, metadata, qualityProfile, file, altTitle) => Map(movieDictionary, movie, metadata, qualityProfile, file, altTitle));
+
+            return movieDictionary.Values.ToList();
+        }
+
+        protected override IEnumerable<Movie> PagedQuery(SqlBuilder sql) =>
+            _database.QueryJoined<Movie, MovieMetadata>(sql, (movie, movieMetadata) =>
+            {
+                movie.MovieMetadata = movieMetadata;
+                return movie;
+            });
+
+        // Paged queries omit the AlternativeTitles JOIN to prevent duplicate rows.
+        // The one-to-many JOIN in Builder() multiplies rows; PagedQuery maps each
+        // SQL row directly without the deduplication that Query() performs via Map().
+        // QualityProfile is intentionally not joined: QualityProfileId on Movies is sufficient
+        // for sort/filter, and GetPaged hydrates the profile itself from the profile repository.
+        protected override SqlBuilder PagedBuilder() => new SqlBuilder(_database.DatabaseType)
+            .Join<Movie, MovieMetadata>((m, p) => m.MovieMetadataId == p.Id)
+            .LeftJoin<Movie, MovieFile>((m, f) => m.MovieFileId == f.Id);
+
+        private static string BuildPagedMovieFileColumns()
+        {
+            var table = TableMapping.Mapper.TableNameMapping(typeof(MovieFile));
+            var excluded = TableMapping.Mapper.ExcludeProperties(typeof(MovieFile)).Select(x => x.Name).ToList();
+
+            var columns = typeof(MovieFile).GetProperties()
+                .Where(x => x.IsMappableProperty() &&
+                            !excluded.Contains(x.Name) &&
+                            x.Name != nameof(MovieFile.MediaInfo))
+                .Select(x => x.Name)
+
+                // Dapper splits on the first "Id" column, so the file's must lead its segment.
+                .OrderBy(x => x == nameof(ModelBase.Id) ? 0 : 1)
+                .ThenBy(x => x, StringComparer.Ordinal)
+                .Select(x => $"\"{table}\".\"{x}\"");
+
+            return string.Join(", ", columns);
+        }
+
+        private static Movie Map(Dictionary<int, Movie> dict, Movie movie, MovieMetadata metadata, QualityProfile qualityProfile, MovieFile movieFile, AlternativeTitle altTitle = null)
+        {
+            if (!dict.TryGetValue(movie.Id, out var movieEntry))
+            {
+                movieEntry = movie;
+                movieEntry.MovieMetadata = metadata;
+                movieEntry.QualityProfile = qualityProfile;
+                movieEntry.MovieFile = movieFile;
+                dict.Add(movieEntry.Id, movieEntry);
+            }
+
+            if (altTitle != null)
+            {
+                movieEntry.MovieMetadata.Value.AlternativeTitles.Add(altTitle);
+            }
+
+            return movieEntry;
+        }
+
+        // Matches BuildQualityCutoffWhereClause: the quality column holds a serialised
+        // revision object, so the id is matched inside the JSON text.
+        private static string BuildQualityFilterWhereClause(List<int> qualityIds)
+        {
+            var clauses = qualityIds
+                .Select(id => string.Format("\"MovieFiles\".\"Quality\" LIKE '%_quality_: {0},%'", id))
+                .ToList();
+
+            return string.Format("({0})", string.Join(" OR ", clauses));
+        }
+
+        // The index renders the file's quality, so the paged index needs MovieFile hydrated.
+        // MoviesWithoutFiles and MoviesWhereCutoffUnmet deliberately keep using PagedQuery: they
+        // GROUP BY Movies.Id, and selecting a non-aggregated file column under that errors on
+        // Postgres. QualityProfile comes from the repository rather than a JOIN because
+        // MovieFileResource.ToResource dereferences it to compute QualityCutoffNotMet.
+        private IEnumerable<Movie> PagedQueryWithFile(SqlBuilder builder)
+        {
+            var profiles = _profileRepository.All().ToDictionary(x => x.Id);
+
+            // A movie can point at a profile that no longer exists, and QualityCutoffNotMet
+            // dereferences the profile, so fall back the way All() does rather than leave it null.
+            var fallbackProfile = profiles.Values.FirstOrDefault(x => x.Fallback) ?? profiles.Values.FirstOrDefault();
+
+            var sql = builder
+                .Select($"\"{_table}\".*, \"MovieMetadata\".*, {_pagedMovieFileColumns}")
+                .AddSelectTemplate(typeof(Movie));
+
+            return _database.Query<Movie, MovieMetadata, MovieFile, Movie>(
+                sql.RawSql,
+                (movie, movieMetadata, movieFile) =>
+                {
+                    movie.MovieMetadata = movieMetadata;
+                    movie.MovieFile = movieFile;
+                    movie.QualityProfile = profiles.TryGetValue(movie.QualityProfileId, out var profile) ? profile : fallbackProfile;
+
+                    return movie;
+                },
+                sql.Parameters);
+        }
+
+        private string BuildQualityCutoffWhereClause(List<QualitiesBelowCutoff> qualitiesBelowCutoff)
+        {
+            var clauses = new List<string>();
+
+            foreach (var profile in qualitiesBelowCutoff)
+            {
+                foreach (var belowCutoff in profile.QualityIds)
+                {
+                    clauses.Add(string.Format($"(\"{_table}\".\"QualityProfileId\" = {profile.ProfileId} AND \"MovieFiles\".\"Quality\" LIKE '%_quality_: {belowCutoff},%')"));
+                }
+            }
+
+            return string.Format("({0})", string.Join(" OR ", clauses));
+        }
+
+        // Tags live as a JSON array on the Movies row rather than in a join table,
+        // so membership has to be tested by expanding the array in SQL. The two
+        // engines spell that differently.
+        private string BuildMovieTagsWhereClause(HashSet<int> tagIds)
+        {
+            var ids = string.Join(",", tagIds);
+
+            if (_database.DatabaseType == DatabaseType.PostgreSQL)
+            {
+                return string.Format(
+                    "EXISTS (SELECT 1 FROM jsonb_array_elements_text(\"{0}\".\"Tags\"::jsonb) AS elem WHERE elem::int IN ({1}))",
+                    _table,
+                    ids);
+            }
+
+            return string.Format(
+                "EXISTS (SELECT 1 FROM json_each(\"{0}\".\"Tags\") WHERE json_each.value IN ({1}))",
+                _table,
+                ids);
+        }
+
+        // This is a bit of a hack, but if you try to combine / rationalise these then
+        // SQLite makes a mess of the query plan and ends up doing a table scan
+        private List<Movie> FindByMovieTitles(List<string> titles)
+        {
+            var movieDictionary = new Dictionary<int, Movie>();
+
+            var builder = new SqlBuilder(_database.DatabaseType)
+                .Join<Movie, QualityProfile>((m, p) => m.QualityProfileId == p.Id)
+                .Join<Movie, MovieMetadata>((m, p) => m.MovieMetadataId == p.Id)
+                .LeftJoin<Movie, MovieFile>((m, f) => m.Id == f.MovieId)
+                .Where<MovieMetadata>(x => titles.Contains(x.CleanTitle));
+
+            _ = _database.QueryJoined<Movie, MovieMetadata, QualityProfile, MovieFile>(
+                builder,
+                (movie, metadata, qualityProfile, file) => Map(movieDictionary, movie, metadata, qualityProfile, file));
+
+            return movieDictionary.Values.ToList();
+        }
+
+        private List<Movie> FindByAltTitles(List<string> titles)
+        {
+            var movieDictionary = new Dictionary<int, Movie>();
+
+            var builder = new SqlBuilder(_database.DatabaseType)
+                .Join<AlternativeTitle, MovieMetadata>((t, mm) => t.MovieMetadataId == mm.Id)
+                .Join<MovieMetadata, Movie>((mm, m) => mm.Id == m.MovieMetadataId)
+                .Join<Movie, QualityProfile>((m, p) => m.QualityProfileId == p.Id)
+                .LeftJoin<Movie, MovieFile>((m, f) => m.Id == f.MovieId)
+                .Where<AlternativeTitle>(x => titles.Contains(x.CleanTitle));
+
+            _ = _database.QueryJoined<AlternativeTitle, QualityProfile, Movie, MovieMetadata, MovieFile>(
+                builder,
+                (altTitle, qualityProfile, movie, metadata, file) =>
+                {
+                    _ = Map(movieDictionary, movie, metadata, qualityProfile, file, altTitle);
+                    return null;
+                });
+
+            return movieDictionary.Values.ToList();
         }
     }
 }

@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using FluentAssertions;
 using NUnit.Framework;
 using NzbDrone.Core.LibrarySearch;
@@ -11,16 +10,6 @@ namespace NzbDrone.Core.Test.LibrarySearchTests
     [TestFixture]
     public class LibrarySearchRankerFixture : CoreTest
     {
-        private static LibrarySearchScore ScoreMovie(string query, string title, string foreignId = null)
-        {
-            return LibrarySearchRanker.Score(query, query.CleanMovieTitle(), title, title.CleanMovieTitle(), foreignId, t => t.CleanMovieTitle());
-        }
-
-        private static List<string> Rank(string query, params string[] titles)
-        {
-            return LibrarySearchRanker.Rank(titles, query, t => t, t => t.CleanMovieTitle(), _ => null, t => t.CleanMovieTitle());
-        }
-
         [TestCase("Anna Bell", "Anna Bell")]
         [TestCase("anna bell", "Anna Bell")]
         [TestCase("Anna-Bell", "Anna Bell")]
@@ -85,8 +74,18 @@ namespace NzbDrone.Core.Test.LibrarySearchTests
         {
             var studios = new[] { "Brazzers Exxtra", "Brazzers" };
 
-            LibrarySearchRanker.Rank(studios, "Brazzers", s => s, s => s.CleanStudioTitle().ToLower(), _ => null, s => s.CleanStudioTitle().ToLower())
-                .First().Should().Be("Brazzers");
+            LibrarySearchRanker.Rank(studios, "Brazzers", s => s, s => s.CleanStudioTitle().ToLowerInvariant(), _ => null, s => s.CleanStudioTitle().ToLowerInvariant())[0]
+                .Should().Be("Brazzers");
+        }
+
+        private static LibrarySearchScore ScoreMovie(string query, string title, string foreignId = null)
+        {
+            return LibrarySearchRanker.Score(query, query.CleanMovieTitle(), title, title.CleanMovieTitle(), foreignId, t => t.CleanMovieTitle());
+        }
+
+        private static List<string> Rank(string query, params string[] titles)
+        {
+            return LibrarySearchRanker.Rank(titles, query, t => t, t => t.CleanMovieTitle(), _ => null, t => t.CleanMovieTitle());
         }
     }
 }

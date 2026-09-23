@@ -33,7 +33,6 @@ namespace NzbDrone.Core.Movies
         List<Movie> AddMovies(List<Movie> newMovies);
         List<Movie> FindByIds(List<int> ids);
         Movie FindByTpdbId(string tpdbid);
-        Movie FindByImdbId(string imdbid);
         Movie FindByTmdbId(int tmdbid);
         Movie FindByForeignId(string foreignId);
         List<Movie> FindByForeignIds(List<string> foreignIds);
@@ -206,13 +205,13 @@ namespace NzbDrone.Core.Movies
                 .AllWithYear(year)
                 .ToList();
 
-            if (result == null || result.Count == 0)
+            if (result.Count == 0)
             {
                 result =
                     candidates.Where(movie => otherTitles.Contains(movie.MovieMetadata.Value.CleanTitle)).AllWithYear(year).ToList();
             }
 
-            if (result == null || result.Count == 0)
+            if (result.Count == 0)
             {
                 result = candidates
                     .Where(m => m.MovieMetadata.Value.AlternativeTitles.Any(t => cleanTitles.Contains(t.CleanTitle) ||
@@ -295,15 +294,6 @@ namespace NzbDrone.Core.Movies
         public Movie FindByTpdbId(string tpdbid)
         {
             return _movieRepository.FindByTpdbId(tpdbid);
-        }
-
-        /// <summary> Find a movie by its IMDb identifier. </summary>
-        /// <param name="imdbid">The IMDb identifier of the movie to find.</param>
-        /// <returns>The movie object if found; otherwise, null.</returns>
-        [Obsolete("IMDB is not used on this platform")]
-        public Movie FindByImdbId(string imdbid)
-        {
-            return _movieRepository.FindByImdbId(imdbid);
         }
 
         /// <summary> Find a movie by its TMDB identifier. </summary>
@@ -566,22 +556,16 @@ namespace NzbDrone.Core.Movies
             var tagsRemoved = new HashSet<int>();
             var changes = _autoTaggingService.GetTagChanges(movie);
 
-            foreach (var tag in changes.TagsToRemove)
+            foreach (var tag in changes.TagsToRemove.Where(movie.Tags.Contains))
             {
-                if (movie.Tags.Contains(tag))
-                {
-                    movie.Tags.Remove(tag);
-                    tagsRemoved.Add(tag);
-                }
+                movie.Tags.Remove(tag);
+                tagsRemoved.Add(tag);
             }
 
-            foreach (var tag in changes.TagsToAdd)
+            foreach (var tag in changes.TagsToAdd.Where(t => !movie.Tags.Contains(t)))
             {
-                if (!movie.Tags.Contains(tag))
-                {
-                    movie.Tags.Add(tag);
-                    tagsAdded.Add(tag);
-                }
+                movie.Tags.Add(tag);
+                tagsAdded.Add(tag);
             }
 
             if (tagsAdded.Any() || tagsRemoved.Any())
@@ -710,10 +694,10 @@ namespace NzbDrone.Core.Movies
 
         /// <summary> Find a movie based on parsed movie information. </summary>
         /// <param name="parsedMovieInfo">The parsed movie information to use for the search.</param>
-        /// <param name="interactive">Indicates whether the search is interactive.</param>
+        /// <param name="interactiveSearch">Indicates whether the search is interactive.</param>
         /// <param name="searchCriteria">Optional search criteria to refine the search.</param>
         /// <returns>The movie object if found; otherwise, null.</returns>
-        public Movie FindScene(ParsedMovieInfo parsedMovieInfo, bool interactive = false, SearchCriteriaBase searchCriteria = null)
+        public Movie FindScene(ParsedMovieInfo parsedMovieInfo, bool interactiveSearch = false, SearchCriteriaBase searchCriteria = null)
         {
             Movie result = null;
             if (parsedMovieInfo.StashId.IsNotNullOrWhiteSpace())
@@ -746,7 +730,7 @@ namespace NzbDrone.Core.Movies
 
                     foreach (var studio in studios)
                     {
-                        var movie = FindByStudioAndReleaseDate(studio.ForeignId, parsedMovieInfo.ReleaseDate, parsedMovieInfo.ReleaseTokens, parsedMovieInfo.StashId, parsedMovieInfo.Episode, interactive, searchCriteria);
+                        var movie = FindByStudioAndReleaseDate(studio.ForeignId, parsedMovieInfo.ReleaseDate, parsedMovieInfo.ReleaseTokens, parsedMovieInfo.StashId, parsedMovieInfo.Episode);
 
                         if (movie != null)
                         {
@@ -756,7 +740,7 @@ namespace NzbDrone.Core.Movies
 
                     if (movies.Count == 1)
                     {
-                        result = movies.First();
+                        result = movies[0];
                     }
                 }
                 else
@@ -773,174 +757,6 @@ namespace NzbDrone.Core.Movies
         public HashSet<int> AllMovieWithCollectionsTmdbIds()
         {
             return _movieRepository.AllMovieWithCollectionsTmdbIds();
-        }
-
-        /// <summary> Find a movie by studio foreign ID and release date. </summary>
-        /// <param name="studioForeignId">The foreign ID of the studio.</param>
-        /// <param name="releaseDate">The release date of the movie.</param>
-        /// <param name="releaseTokens">The release tokens associated with the movie.</param>
-        /// <param name="foreignId">The foreign ID of the movie.</param>
-        /// <param name="episode">The episode information, if applicable.</param>
-        /// <param name="interactiveSearch">Indicates whether the search is interactive.</param>
-        /// <param name="searchCriteria">Optional search criteria to refine the search.</param>
-        /// <remarks> This method employs fuzzy matching techniques to find the best match based on the provided parameters. </remarks>
-        /// <returns>The movie object if found; otherwise, null.</returns>
-        private Movie FindByStudioAndReleaseDate(string studioForeignId, string releaseDate, string releaseTokens, string foreignId, string episode, bool interactiveSearch = false, SearchCriteriaBase searchCriteria = null)
-        {
-            var methodName = "FindByStudioAndReleaseDate";
-            if (string.IsNullOrEmpty(studioForeignId))
-            {
-                _logger.Debug($"{methodName}: Studio ForeignID is null or empty.");
-                studioForeignId = string.Empty;
-            }
-
-            if (string.IsNullOrEmpty(releaseDate))
-            {
-                _logger.Debug($"{methodName}: Release Date is null or empty.");
-                releaseDate = string.Empty;
-            }
-
-            if (string.IsNullOrEmpty(releaseTokens))
-            {
-                _logger.Debug($"{methodName}: Release Tokens is null or empty.");
-                releaseTokens = string.Empty;
-            }
-
-            var movies = new List<Movie>();
-            var verifyDate = false;
-            var verifyEpisode = false;
-
-            var hasReleaseDate = releaseDate.IsNotNullOrWhiteSpace();
-
-            if (hasReleaseDate)
-            {
-                _logger.Debug("{0}: DB query for for movies for Studio ForeignID: [{1}] and Date: [{2}].", methodName, studioForeignId, releaseDate);
-                movies = _movieRepository.FindByStudioAndDate(studioForeignId, releaseDate) ?? new List<Movie>();
-            }
-
-            // Try fuzzy release token matching if we've made it this far
-            // Use Levenshtein Distance to find the closest match above 80%
-            var fuzzyMatchMoviesWithScores = new List<(Movie Movie, int Score)>();
-            var fuzzyTitleMatchingThreshold = _configService.WhisparrFuzzyTitleMatchingThreshold;
-            if (fuzzyTitleMatchingThreshold >= 70)
-            {
-                _logger.Trace("Fuzzy match running with a score of {1}", fuzzyTitleMatchingThreshold);
-
-                foreach (var movie in movies)
-                {
-                    var fuzzyStudioTitle = movie.MovieMetadata.Value.StudioTitle;
-                    var fuzzyReleaseDate = movie.MovieMetadata.Value.ReleaseDate;
-                    if (fuzzyStudioTitle.IsNullOrWhiteSpace() || fuzzyReleaseDate.IsNullOrWhiteSpace())
-                    {
-                        // We don't want to match unless studio was properly matched up, false positives
-                        // Passion-HD trips this a lot
-                        _logger.Trace("{0}: Skipping fuzzy match for movie {1} due to missing studio or release date", methodName, movie.ToString());
-                        continue;
-                    }
-
-                    var fuzzyMatch = FuzzyMatchReleaseTokens(releaseTokens, movie);
-
-                    if (fuzzyMatch.Score >= fuzzyTitleMatchingThreshold)
-                    {
-                        fuzzyMatchMoviesWithScores.Add(fuzzyMatch);
-                    }
-                }
-            }
-            else
-            {
-                _logger.Trace("Fuzzy match disabled with a threshold of {1}", fuzzyTitleMatchingThreshold);
-            }
-
-            if (fuzzyMatchMoviesWithScores.Any())
-            {
-                // There can be only one
-                var highest = fuzzyMatchMoviesWithScores.OrderByDescending(m => m.Score).First();
-                _logger.Trace("{0}: Returning fuzzy matched movie [{1} - {2}]", methodName, highest.Movie.Title, highest.Movie.ForeignId);
-                return highest.Movie;
-            }
-
-            if (hasReleaseDate)
-            {
-                // Already queried above for the fuzzy pass, which does not mutate the list,
-                // so the same studio and date would return the same rows a second time.
-
-                // movies with release date if missing day
-                if (releaseDate.EndsWith("-01"))
-                {
-                    var monthMovies = _movieRepository.FindByStudioAndDate(studioForeignId, releaseDate.Substring(0, releaseDate.Length - 3));
-                    if (monthMovies != null && monthMovies.Any())
-                    {
-                        movies.AddRange(monthMovies);
-                    }
-                }
-
-                // movies with release date if missing day
-                if (releaseDate.EndsWith("-01-01"))
-                {
-                    var yearMovies = _movieRepository.FindByStudioAndDate(studioForeignId, releaseDate.Substring(0, releaseDate.Length - 6));
-                    if (yearMovies != null && yearMovies.Any())
-                    {
-                        movies.AddRange(yearMovies);
-                    }
-                }
-
-                // Requires a higher level of matching if we had to fallback to studio only
-                if (movies == null || !movies.Any())
-                {
-                    movies = _movieRepository.GetByStudioForeignId(studioForeignId);
-                    verifyDate = true;
-                }
-
-                // WhisparrAutoMatchOnDate enabled and only one match, return it
-                // Only applies when the date query itself found the match (verifyDate=false means we didn't fall back to studio-only)
-                if (_configService.WhisparrAutoMatchOnDate && movies.Count == 1 && !verifyDate)
-                {
-                    _logger.Debug("{0}: WhisparrAutoMatchOnDate enabled, returning single movie match by studio and date.", methodName);
-                    return movies.First();
-                }
-            }
-            else
-            {
-                // Requires a higher level of matching if we had to fallback to studio only
-                movies = _movieRepository.GetByStudioForeignId(studioForeignId);
-                verifyEpisode = true;
-            }
-
-            if (movies == null || !movies.Any())
-            {
-                return null;
-            }
-
-            // Movies with more than one movieFile is in the list, so filter to only one
-            movies = movies.DistinctBy(movie => movie.Id).ToList();
-            var parsedMovieTitle = Parser.Parser.NormalizeEpisodeTitle(releaseTokens);
-
-            if (parsedMovieTitle.IsNotNullOrWhiteSpace() || foreignId.IsNotNullOrWhiteSpace())
-            {
-                var matches = MatchMovies(parsedMovieTitle, releaseDate, foreignId, episode, movies, verifyDate, verifyEpisode);
-
-                _logger.Debug("{0}: Found {1} matches for Studio ForeignID: {2}, Date: {3}, Parsed Title: {4}, ForeignID: {5}",
-                            methodName,
-                            matches.Count,
-                            studioForeignId,
-                            releaseDate,
-                            parsedMovieTitle,
-                            foreignId);
-
-                if (matches.Count == 1)
-                {
-                    return matches.First().Key;
-                }
-
-                movies = matches.Keys.ToList();
-            }
-
-            _logger.Debug("{0}: Failed to find a match.  Studio ForeignID: {1}, Date: {2}",
-                methodName,
-                studioForeignId,
-                releaseDate);
-
-            return null;
         }
 
         /// <summary> Match parsed movie information against a list of movies. </summary>
@@ -990,20 +806,14 @@ namespace NzbDrone.Core.Movies
                 {
                     if (episode.IsNotNullOrWhiteSpace())
                     {
-                        if (episode.Equals(code, StringComparison.InvariantCultureIgnoreCase))
+                        if (episode.Equals(code, StringComparison.InvariantCultureIgnoreCase) ||
+                            (int.TryParse(code, out var codeNumber) &&
+                             int.TryParse(Regex.Match(episode, @"\d+", RegexOptions.None, RegexDefaults.Timeout).Value, out var episodeNumber) &&
+                             codeNumber == episodeNumber))
                         {
                             _logger.Debug("Match {0} against {1} [Code]", episode, code);
                             matches.Add(movie, MovieParseMatchType.Episode);
                             continue;
-                        }
-                        else if (int.TryParse(code, out var codeNumber) && int.TryParse(Regex.Match(episode, @"\d+", RegexOptions.None, RegexDefaults.Timeout).Value, out var episodeNumber))
-                        {
-                            if (codeNumber == episodeNumber)
-                            {
-                                _logger.Debug("Match {0} against {1} [Code]", episode, code);
-                                matches.Add(movie, MovieParseMatchType.Episode);
-                                continue;
-                            }
                         }
                     }
                     else
@@ -1120,7 +930,6 @@ namespace NzbDrone.Core.Movies
                 {
                     _logger.Debug("Matched [{0}] against [{1}] [ParsedTitleContainsCleanTitle]", parsedMovieTitle, cleanTitle);
                     matches.Add(movie, MovieParseMatchType.ParsedTitleContainsCleanTitle);
-                    continue;
                 }
             }
 
@@ -1202,24 +1011,6 @@ namespace NzbDrone.Core.Movies
             return matches;
         }
 
-        /// <summary> Return a single movie from a list or throw an exception if multiple movies are found. </summary>
-        /// <param name="movies">The list of movies to evaluate.</param>
-        /// <returns>The single movie if found; otherwise, null.</returns>
-        private Movie ReturnSingleMovieOrThrow(List<Movie> movies)
-        {
-            if (movies.Count == 0)
-            {
-                return null;
-            }
-
-            if (movies.Count == 1)
-            {
-                return movies.First();
-            }
-
-            throw new MultipleMoviesFoundException(movies, "Expected one movie, but found {0}. Matching movies: {1}", movies.Count, string.Join(",", movies));
-        }
-
         /// <summary> Sets the file IDs for the given movies. </summary>
         /// <param name="movies">The enumerable collection of movies to evaluate.</param>
         /// <remarks> The movies you pass in should have the Id's set already. </remarks>
@@ -1240,7 +1031,6 @@ namespace NzbDrone.Core.Movies
                 movie.MovieFileId = message.MovieFile.Id;
                 _movieRepository.Update(movie);
 
-                // _movieRepository.SetFileId(message.MovieFile.Id, message.MovieFile.Movie.Value.Id);
                 _logger.Info("Assigning file [{0}] to movie [{1}]", message.MovieFile.RelativePath, message.MovieFile.Movie);
             }
         }
@@ -1261,18 +1051,6 @@ namespace NzbDrone.Core.Movies
                 }
 
                 UpdateMovie(movie);
-            }
-        }
-
-        /// <summary> Remove the movie resources cache for a specific cache key. </summary>
-        /// <param name="cacheKey">The cache key to remove.</param>
-        /// <returns>void</returns>
-        private void RemoveMovieResourcesCache(string cacheKey)
-        {
-            var movieResourcesCache = _cacheManager.FindCache(_cacheName);
-            if (movieResourcesCache != null)
-            {
-                movieResourcesCache.Remove(cacheKey);
             }
         }
 
@@ -1407,6 +1185,200 @@ namespace NzbDrone.Core.Movies
             }
 
             return RomanSequelTokens.TryGetValue(token.ToLowerInvariant(), out var roman) ? roman : null;
+        }
+
+        /// <summary> Return a single movie from a list or throw an exception if multiple movies are found. </summary>
+        /// <param name="movies">The list of movies to evaluate.</param>
+        /// <returns>The single movie if found; otherwise, null.</returns>
+        private static Movie ReturnSingleMovieOrThrow(List<Movie> movies)
+        {
+            if (movies.Count == 0)
+            {
+                return null;
+            }
+
+            if (movies.Count == 1)
+            {
+                return movies[0];
+            }
+
+            throw new MultipleMoviesFoundException(movies, "Expected one movie, but found {0}. Matching movies: {1}", movies.Count, string.Join(",", movies));
+        }
+
+        /// <summary> Remove the movie resources cache for a specific cache key. </summary>
+        /// <param name="cacheKey">The cache key to remove.</param>
+        /// <returns>void</returns>
+        private void RemoveMovieResourcesCache(string cacheKey)
+        {
+            var movieResourcesCache = _cacheManager.FindCache(_cacheName);
+            if (movieResourcesCache != null)
+            {
+                movieResourcesCache.Remove(cacheKey);
+            }
+        }
+
+        /// <summary> Find a movie by studio foreign ID and release date. </summary>
+        /// <param name="studioForeignId">The foreign ID of the studio.</param>
+        /// <param name="releaseDate">The release date of the movie.</param>
+        /// <param name="releaseTokens">The release tokens associated with the movie.</param>
+        /// <param name="foreignId">The foreign ID of the movie.</param>
+        /// <param name="episode">The episode information, if applicable.</param>
+        /// <remarks> This method employs fuzzy matching techniques to find the best match based on the provided parameters. </remarks>
+        /// <returns>The movie object if found; otherwise, null.</returns>
+        private Movie FindByStudioAndReleaseDate(string studioForeignId, string releaseDate, string releaseTokens, string foreignId, string episode)
+        {
+            var methodName = "FindByStudioAndReleaseDate";
+            if (string.IsNullOrEmpty(studioForeignId))
+            {
+                _logger.Debug($"{methodName}: Studio ForeignID is null or empty.");
+                studioForeignId = string.Empty;
+            }
+
+            if (string.IsNullOrEmpty(releaseDate))
+            {
+                _logger.Debug($"{methodName}: Release Date is null or empty.");
+                releaseDate = string.Empty;
+            }
+
+            if (string.IsNullOrEmpty(releaseTokens))
+            {
+                _logger.Debug($"{methodName}: Release Tokens is null or empty.");
+                releaseTokens = string.Empty;
+            }
+
+            var movies = new List<Movie>();
+            var verifyDate = false;
+            var verifyEpisode = false;
+
+            var hasReleaseDate = releaseDate.IsNotNullOrWhiteSpace();
+
+            if (hasReleaseDate)
+            {
+                _logger.Debug("{0}: DB query for for movies for Studio ForeignID: [{1}] and Date: [{2}].", methodName, studioForeignId, releaseDate);
+                movies = _movieRepository.FindByStudioAndDate(studioForeignId, releaseDate) ?? new List<Movie>();
+            }
+
+            // Try fuzzy release token matching if we've made it this far
+            // Use Levenshtein Distance to find the closest match above 80%
+            var fuzzyMatchMoviesWithScores = new List<(Movie Movie, int Score)>();
+            var fuzzyTitleMatchingThreshold = _configService.WhisparrFuzzyTitleMatchingThreshold;
+            if (fuzzyTitleMatchingThreshold >= 70)
+            {
+                _logger.Trace("Fuzzy match running with a score of {1}", fuzzyTitleMatchingThreshold);
+
+                foreach (var movie in movies)
+                {
+                    var fuzzyStudioTitle = movie.MovieMetadata.Value.StudioTitle;
+                    var fuzzyReleaseDate = movie.MovieMetadata.Value.ReleaseDate;
+                    if (fuzzyStudioTitle.IsNullOrWhiteSpace() || fuzzyReleaseDate.IsNullOrWhiteSpace())
+                    {
+                        // We don't want to match unless studio was properly matched up, false positives
+                        // Passion-HD trips this a lot
+                        _logger.Trace("{0}: Skipping fuzzy match for movie {1} due to missing studio or release date", methodName, movie.ToString());
+                        continue;
+                    }
+
+                    var fuzzyMatch = FuzzyMatchReleaseTokens(releaseTokens, movie);
+
+                    if (fuzzyMatch.Score >= fuzzyTitleMatchingThreshold)
+                    {
+                        fuzzyMatchMoviesWithScores.Add(fuzzyMatch);
+                    }
+                }
+            }
+            else
+            {
+                _logger.Trace("Fuzzy match disabled with a threshold of {1}", fuzzyTitleMatchingThreshold);
+            }
+
+            if (fuzzyMatchMoviesWithScores.Any())
+            {
+                // There can be only one
+                var highest = fuzzyMatchMoviesWithScores.OrderByDescending(m => m.Score).First();
+                _logger.Trace("{0}: Returning fuzzy matched movie [{1} - {2}]", methodName, highest.Movie.Title, highest.Movie.ForeignId);
+                return highest.Movie;
+            }
+
+            if (hasReleaseDate)
+            {
+                // Already queried above for the fuzzy pass, which does not mutate the list,
+                // so the same studio and date would return the same rows a second time.
+
+                // movies with release date if missing day
+                if (releaseDate.EndsWith("-01"))
+                {
+                    var monthMovies = _movieRepository.FindByStudioAndDate(studioForeignId, releaseDate.Substring(0, releaseDate.Length - 3));
+                    if (monthMovies != null && monthMovies.Any())
+                    {
+                        movies.AddRange(monthMovies);
+                    }
+                }
+
+                // movies with release date if missing day
+                if (releaseDate.EndsWith("-01-01"))
+                {
+                    var yearMovies = _movieRepository.FindByStudioAndDate(studioForeignId, releaseDate.Substring(0, releaseDate.Length - 6));
+                    if (yearMovies != null && yearMovies.Any())
+                    {
+                        movies.AddRange(yearMovies);
+                    }
+                }
+
+                // Requires a higher level of matching if we had to fallback to studio only
+                if (movies == null || !movies.Any())
+                {
+                    movies = _movieRepository.GetByStudioForeignId(studioForeignId);
+                    verifyDate = true;
+                }
+
+                // WhisparrAutoMatchOnDate enabled and only one match, return it
+                // Only applies when the date query itself found the match (verifyDate=false means we didn't fall back to studio-only)
+                if (_configService.WhisparrAutoMatchOnDate && movies.Count == 1 && !verifyDate)
+                {
+                    _logger.Debug("{0}: WhisparrAutoMatchOnDate enabled, returning single movie match by studio and date.", methodName);
+                    return movies[0];
+                }
+            }
+            else
+            {
+                // Requires a higher level of matching if we had to fallback to studio only
+                movies = _movieRepository.GetByStudioForeignId(studioForeignId);
+                verifyEpisode = true;
+            }
+
+            if (movies == null || !movies.Any())
+            {
+                return null;
+            }
+
+            // Movies with more than one movieFile is in the list, so filter to only one
+            movies = movies.DistinctBy(movie => movie.Id).ToList();
+            var parsedMovieTitle = Parser.Parser.NormalizeEpisodeTitle(releaseTokens);
+
+            if (parsedMovieTitle.IsNotNullOrWhiteSpace() || foreignId.IsNotNullOrWhiteSpace())
+            {
+                var matches = MatchMovies(parsedMovieTitle, releaseDate, foreignId, episode, movies, verifyDate, verifyEpisode);
+
+                _logger.Debug("{0}: Found {1} matches for Studio ForeignID: {2}, Date: {3}, Parsed Title: {4}, ForeignID: {5}",
+                            methodName,
+                            matches.Count,
+                            studioForeignId,
+                            releaseDate,
+                            parsedMovieTitle,
+                            foreignId);
+
+                if (matches.Count == 1)
+                {
+                    return matches.First().Key;
+                }
+            }
+
+            _logger.Debug("{0}: Failed to find a match.  Studio ForeignID: {1}, Date: {2}",
+                methodName,
+                studioForeignId,
+                releaseDate);
+
+            return null;
         }
     }
 }

@@ -1,6 +1,5 @@
 import { ExtendedKeyboardEvent } from 'mousetrap';
 import React, {
-  FormEvent,
   KeyboardEvent,
   SyntheticEvent,
   useCallback,
@@ -255,7 +254,7 @@ function MovieSearchInput() {
 
   const handleChange = useCallback(
     (
-      _event: FormEvent<HTMLElement>,
+      _event: SyntheticEvent<HTMLElement>,
       {
         newValue,
         method,
