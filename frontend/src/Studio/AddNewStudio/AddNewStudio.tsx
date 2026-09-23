@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useRef } from 'react';
 import Alert from 'Components/Alert';
 import TextInput from 'Components/Form/TextInput';
 import Icon from 'Components/Icon';
@@ -13,45 +13,28 @@ import AddNewStudioSearchResult from './AddNewStudioSearchResult';
 import useAddNewStudio from './useAddNewStudio';
 import styles from '../../AddMovie/AddNewMovie/AddNewMovie.css';
 
-interface AddNewStudioProps {
-  term?: string;
-}
-
-function AddNewStudio(props: AddNewStudioProps) {
+function AddNewStudio() {
   const {
     error,
     isFetching,
+    term,
     studiosWithStatus,
     colorImpairedMode,
     onStudioLookupChange,
     onClearStudioLookupPress,
   } = useAddNewStudio();
 
-  const [term, setTerm] = useState(props.term || '');
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  React.useEffect(() => {
-    if (props.term && props.term !== term) {
-      setTerm(props.term);
-      onStudioLookupChange(props.term);
-    }
-  }, [props.term, term, onStudioLookupChange]);
-
+  // onStudioLookupChange clears the results itself when the box is blank.
   const onSearchInputChange = useCallback(
     ({ value }: { value: string }) => {
-      const hasValue = !!value.trim();
-      setTerm(value);
-      if (hasValue) {
-        onStudioLookupChange(value);
-      } else {
-        onClearStudioLookupPress();
-      }
+      onStudioLookupChange(value);
     },
-    [onStudioLookupChange, onClearStudioLookupPress]
+    [onStudioLookupChange]
   );
 
   const onClearPress = useCallback(() => {
-    setTerm('');
     onClearStudioLookupPress();
     searchInputRef.current?.focus();
   }, [onClearStudioLookupPress]);
