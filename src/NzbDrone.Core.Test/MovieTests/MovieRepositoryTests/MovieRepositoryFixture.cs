@@ -9,6 +9,7 @@ using NzbDrone.Core.Languages;
 using NzbDrone.Core.MediaFiles;
 using NzbDrone.Core.MediaFiles.MediaInfo;
 using NzbDrone.Core.Movies;
+using NzbDrone.Core.Parser;
 using NzbDrone.Core.Profiles.Qualities;
 using NzbDrone.Core.Qualities;
 using NzbDrone.Core.Test.CustomFormats;
@@ -294,6 +295,41 @@ namespace NzbDrone.Core.Test.MovieTests.MovieRepositoryTests
             Subject.MoviesWhereCutoffUnmet(spec, GivenQualitiesBelowCutoff(profile));
 
             spec.Records.Should().HaveCount(2);
+        }
+
+        private Movie GivenTitledMovie(int qualityProfileId, string title, ItemType itemType)
+        {
+            var movie = GivenPagedMovie(qualityProfileId, movieFileId: 0);
+            var metadata = Db.All<MovieMetadata>().Single(m => m.Id == movie.MovieMetadataId);
+
+            metadata.Title = title;
+            metadata.CleanTitle = title.CleanMovieTitle();
+            metadata.ItemType = itemType;
+            Db.Update(metadata);
+
+            return movie;
+        }
+
+        [Test]
+        public void should_search_movie_titles_by_clean_title_or_foreign_id()
+        {
+            var profile = GivenProfile();
+            var scene = GivenTitledMovie(profile.Id, "Anna Goes To The Beach", ItemType.Scene);
+            var movie = GivenTitledMovie(profile.Id, "Meet Anna", ItemType.Movie);
+            var byId = GivenTitledMovie(profile.Id, "Unrelated", ItemType.Scene);
+            GivenTitledMovie(profile.Id, "Someone Else", ItemType.Scene);
+
+            var foreignId = Db.All<MovieMetadata>().Single(m => m.Id == byId.MovieMetadataId).ForeignId;
+
+            var results = Subject.SearchMovieTitles("anna", foreignId);
+
+            results.Select(r => r.Id).Should().BeEquivalentTo(new[] { scene.Id, movie.Id, byId.Id });
+
+            var sceneMatch = results.Single(r => r.Id == scene.Id);
+            sceneMatch.Title.Should().Be("Anna Goes To The Beach");
+            sceneMatch.CleanTitle.Should().Be("Anna Goes To The Beach".CleanMovieTitle());
+            sceneMatch.ItemType.Should().Be(ItemType.Scene);
+            results.Single(r => r.Id == movie.Id).ItemType.Should().Be(ItemType.Movie);
         }
     }
 }

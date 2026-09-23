@@ -47,6 +47,7 @@ namespace NzbDrone.Core.Movies
         HashSet<int> AllMovieWithCollectionsTmdbIds();
         void SetFileId(List<Movie> movies);
         List<Movie> SearchMovies(string cleanTitle, string foreignId);
+        List<MovieTitleMatch> SearchMovieTitles(string cleanTitle, string foreignId);
     }
 
     public class MovieRepository : BasicRepository<Movie>, IMovieRepository
@@ -716,6 +717,19 @@ namespace NzbDrone.Core.Movies
                 builder,
                 (movie, metadata, qualityProfile, file, altTitle) => Map(movieDictionary, movie, metadata, qualityProfile, file, altTitle));
             return movieDictionary.Values.ToList();
+        }
+
+        // Library search ranks every match before it pages, so this reads only the columns the
+        // ranking needs. The page is then loaded in full by id.
+        public List<MovieTitleMatch> SearchMovieTitles(string cleanTitle, string foreignId)
+        {
+            using var conn = _database.OpenConnection();
+
+            return conn.Query<MovieTitleMatch>(
+                "SELECT \"Movies\".\"Id\", \"MovieMetadata\".\"Title\", \"MovieMetadata\".\"CleanTitle\", \"MovieMetadata\".\"ItemType\", \"MovieMetadata\".\"ForeignId\" " +
+                "FROM \"Movies\" JOIN \"MovieMetadata\" ON \"Movies\".\"MovieMetadataId\" = \"MovieMetadata\".\"Id\" " +
+                "WHERE \"MovieMetadata\".\"CleanTitle\" LIKE @Pattern OR \"MovieMetadata\".\"ForeignId\" = @ForeignId",
+                new { Pattern = $"%{cleanTitle}%", ForeignId = foreignId }).ToList();
         }
     }
 }

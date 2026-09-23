@@ -75,6 +75,7 @@ namespace NzbDrone.Core.Movies
         void SetFileIds(List<Movie> movies);
         Dictionary<Movie, MovieParseMatchType> MatchMovies(string parsedMovieTitle, string releaseDate, string foreignId, string episode, List<Movie> movies, bool verifyDate, bool verifyEpisode);
         List<Movie> SearchMovies(string query);
+        List<MovieTitleMatch> SearchMovieTitles(string query);
         HashSet<int> AllMovieWithCollectionsTmdbIds();
     }
 
@@ -264,6 +265,20 @@ namespace NzbDrone.Core.Movies
             var cleanTitle = query.CleanMovieTitle();
 
             return _movieRepository.SearchMovies(cleanTitle, query);
+        }
+
+        /// <summary> Search movies and scenes by clean title, reading only the columns needed to rank them. </summary>
+        /// <param name="query">The search query string.</param>
+        public List<MovieTitleMatch> SearchMovieTitles(string query)
+        {
+            var cleanTitle = query.CleanMovieTitle();
+
+            if (cleanTitle.IsNullOrWhiteSpace())
+            {
+                return new List<MovieTitleMatch>();
+            }
+
+            return _movieRepository.SearchMovieTitles(cleanTitle, query);
         }
 
         /// <summary> Find multiple movies by their unique identifiers. </summary>
