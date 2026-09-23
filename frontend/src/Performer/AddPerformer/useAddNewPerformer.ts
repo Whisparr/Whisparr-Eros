@@ -4,6 +4,7 @@ import { queryClient } from 'App/queryClient';
 import { useSafeForWorkMode } from 'App/safeForWorkStore';
 import useApiMutation from 'Helpers/Hooks/useApiMutation';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
+import useInitialTermParam from 'Helpers/Hooks/useInitialTermParam';
 import selectSettings from 'Helpers/selectSettings';
 import Performer from 'Performer/Performer';
 import { useSystemStatusData } from 'System/Status/useSystemStatus';
@@ -43,7 +44,7 @@ function useDebouncedTerm(term: string) {
 }
 
 function useAddNewPerformer() {
-  const [term, setTerm] = useState('');
+  const [term, setTerm] = useState(useInitialTermParam());
   const lookupTerm = useDebouncedTerm(term);
 
   // React Query passes an abort signal, so an in-flight lookup is cancelled

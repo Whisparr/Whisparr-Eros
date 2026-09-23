@@ -28,10 +28,29 @@ import styles from './MovieSearchInput.css';
 
 const ADD_NEW_MOVIE = 'addNewMovie';
 const ADD_NEW_SCENE = 'addNewScene';
+const ADD_NEW_PERFORMER = 'addNewPerformer';
+const ADD_NEW_STUDIO = 'addNewStudio';
 
-interface AddNewMovieSuggestion {
-  type: 'addNewMovie' | 'addNewScene';
+interface AddNewSuggestion {
+  type:
+    | typeof ADD_NEW_MOVIE
+    | typeof ADD_NEW_SCENE
+    | typeof ADD_NEW_PERFORMER
+    | typeof ADD_NEW_STUDIO;
   title: string;
+}
+
+const ADD_NEW_LABEL_KEYS: Record<AddNewSuggestion['type'], string> = {
+  [ADD_NEW_MOVIE]: 'AddNewMovie',
+  [ADD_NEW_SCENE]: 'AddNewScene',
+  [ADD_NEW_PERFORMER]: 'AddNewPerformer',
+  [ADD_NEW_STUDIO]: 'AddNewStudio',
+};
+
+function isAddNewSuggestion(
+  suggestion: Suggestion
+): suggestion is AddNewSuggestion {
+  return suggestion.type in ADD_NEW_LABEL_KEYS;
 }
 
 // prettier-ignore
@@ -73,10 +92,7 @@ interface StudioSuggestion {
 }
 
 type Suggestion =
-  | AddNewMovieSuggestion
-  | MovieSuggestion
-  | PerformerSuggestion
-  | StudioSuggestion;
+  AddNewSuggestion | MovieSuggestion | PerformerSuggestion | StudioSuggestion;
 
 interface Section {
   title: string;
@@ -116,6 +132,10 @@ function getSuggestionPath(suggestion: Suggestion, term: string) {
       return `/add/new/movie?term=${encodeURIComponent(term)}`;
     case ADD_NEW_SCENE:
       return `/add/new/scene?term=${encodeURIComponent(term)}`;
+    case ADD_NEW_PERFORMER:
+      return `/add/new/performer?term=${encodeURIComponent(term)}`;
+    case ADD_NEW_STUDIO:
+      return `/add/new/studio?term=${encodeURIComponent(term)}`;
     case 'performer':
       return `/performer/${suggestion.item.foreignId}`;
     case 'studio':
@@ -175,6 +195,8 @@ function MovieSearchInput() {
       suggestions: [
         { type: ADD_NEW_MOVIE, title: value },
         { type: ADD_NEW_SCENE, title: value },
+        { type: ADD_NEW_PERFORMER, title: value },
+        { type: ADD_NEW_STUDIO, title: value },
       ],
     });
     return result;
@@ -211,19 +233,15 @@ function MovieSearchInput() {
 
   const renderSuggestion = useCallback(
     (item: Suggestion, { query }: { query: string }) => {
+      if (isAddNewSuggestion(item)) {
+        return (
+          <div className={styles.addNewMovieSuggestion}>
+            {`${translate(ADD_NEW_LABEL_KEYS[item.type])}: "${query}"`}
+          </div>
+        );
+      }
+
       switch (item.type) {
-        case ADD_NEW_MOVIE:
-          return (
-            <div className={styles.addNewMovieSuggestion}>
-              {`Add new movie: "${query}"`}
-            </div>
-          );
-        case ADD_NEW_SCENE:
-          return (
-            <div className={styles.addNewMovieSuggestion}>
-              {`Add new scene: "${query}"`}
-            </div>
-          );
         case 'performer':
           return <PerformerSearchResult {...item.item} />;
         case 'studio':
@@ -288,10 +306,7 @@ function MovieSearchInput() {
 
   const handleSuggestionSelected = useCallback(
     (_event: SyntheticEvent, { suggestion }: { suggestion: Suggestion }) => {
-      if (
-        suggestion.type !== ADD_NEW_MOVIE &&
-        suggestion.type !== ADD_NEW_SCENE
-      ) {
+      if (!isAddNewSuggestion(suggestion)) {
         setValue('');
       }
 
