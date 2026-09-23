@@ -299,7 +299,11 @@ namespace NzbDrone.Core.Movies
 
             if (!includeUnmonitored)
             {
-                builder.Where<Movie>(x => x.Monitored);
+                // The explicit comparison is required: WhereBuilder cannot translate a bare
+                // boolean member and throws "WhereBuilder requires a concrete condition".
+#pragma warning disable S1125
+                builder.Where<Movie>(x => x.Monitored == true);
+#pragma warning restore S1125
             }
 
             return Query(builder);
