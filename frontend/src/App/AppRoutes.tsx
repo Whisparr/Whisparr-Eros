@@ -15,6 +15,7 @@ import AddNewPerformer from 'Performer/AddPerformer/AddNewPerformer';
 import PerformerDetails from 'Performer/Details/PerformerDetails';
 import PerformerIndex from 'Performer/Index/PerformerIndex';
 import SceneIndex from 'Scene/Index/SceneIndex';
+import LibrarySearch from 'Search/LibrarySearch';
 import CustomFormatSettingsPage from 'Settings/CustomFormats/CustomFormatSettingsPage';
 import DownloadClientSettings from 'Settings/DownloadClients/DownloadClientSettings';
 import GeneralSettings from 'Settings/General/GeneralSettings';
@@ -60,6 +61,8 @@ function AppRoutes() {
       <Route path="/performers" element={<PerformerIndex />} />
 
       <Route path="/studios" element={<StudioIndex />} />
+
+      <Route path="/search" element={<LibrarySearch />} />
 
       <Route path="/add/new/movie" element={<AddNewMovie />} />
 
