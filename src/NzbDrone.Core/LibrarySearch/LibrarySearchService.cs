@@ -20,7 +20,7 @@ namespace NzbDrone.Core.LibrarySearch
     public class LibrarySearchPage<T>
     {
         public int TotalRecords { get; set; }
-        public List<T> Records { get; set; } = new();
+        public List<T> Records { get; init; } = new();
     }
 
     public class LibrarySearchResult
@@ -114,7 +114,7 @@ namespace NzbDrone.Core.LibrarySearch
         }
 
         // Stored studio titles are cleaned the same way in StudioService.SearchStudios.
-        private static string CleanStudio(string title) => title.CleanStudioTitle().ToLower();
+        private static string CleanStudio(string title) => title.CleanStudioTitle().ToLowerInvariant();
 
         private static LibrarySearchPage<T> Page<T>(List<T> ranked, int page, int pageSize)
         {

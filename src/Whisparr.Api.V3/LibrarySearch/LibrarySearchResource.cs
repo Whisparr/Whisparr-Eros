@@ -8,7 +8,7 @@ namespace Whisparr.Api.V3.LibrarySearch
     public class LibrarySearchSectionResource<TResource>
     {
         public int TotalRecords { get; set; }
-        public List<TResource> Records { get; set; } = new();
+        public List<TResource> Records { get; init; } = new();
     }
 
     public class LibrarySearchResource

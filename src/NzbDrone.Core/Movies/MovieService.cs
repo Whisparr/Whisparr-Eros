@@ -806,7 +806,7 @@ namespace NzbDrone.Core.Movies
                 {
                     if (episode.IsNotNullOrWhiteSpace())
                     {
-                        if (episode.Equals(code, StringComparison.InvariantCultureIgnoreCase) ||
+                        if (episode.Equals(code, StringComparison.OrdinalIgnoreCase) ||
                             (int.TryParse(code, out var codeNumber) &&
                              int.TryParse(Regex.Match(episode, @"\d+", RegexOptions.None, RegexDefaults.Timeout).Value, out var episodeNumber) &&
                              codeNumber == episodeNumber))

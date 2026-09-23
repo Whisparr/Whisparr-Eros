@@ -236,6 +236,32 @@ namespace NzbDrone.Core.Test.MovieTests.MovieRepositoryTests
             results.Single(r => r.Id == movie.Id).ItemType.Should().Be(ItemType.Movie);
         }
 
+        [Test]
+        public void should_get_only_monitored_movies_between_dates()
+        {
+            var profile = GivenProfile();
+            var monitored = GivenPagedMovie(profile.Id, movieFileId: 0);
+            var unmonitored = GivenPagedMovie(profile.Id, movieFileId: 0);
+
+            unmonitored.Monitored = false;
+            Subject.Update(unmonitored);
+
+            foreach (var metadata in Db.All<MovieMetadata>())
+            {
+                metadata.ReleaseDateUtc = new System.DateTime(2020, 6, 1, 0, 0, 0, System.DateTimeKind.Utc);
+                Db.Update(metadata);
+            }
+
+            monitored.Monitored = true;
+            Subject.Update(monitored);
+
+            Subject.MoviesBetweenDates(new System.DateTime(2020, 1, 1, 0, 0, 0, System.DateTimeKind.Utc), new System.DateTime(2020, 12, 31, 0, 0, 0, System.DateTimeKind.Utc), false)
+                .Should().ContainSingle().Which.Id.Should().Be(monitored.Id);
+
+            Subject.MoviesBetweenDates(new System.DateTime(2020, 1, 1, 0, 0, 0, System.DateTimeKind.Utc), new System.DateTime(2020, 12, 31, 0, 0, 0, System.DateTimeKind.Utc), true)
+                .Should().HaveCount(2);
+        }
+
         // Cutoff is Bluray1080p, so anything below it is unmet.
         private static List<QualitiesBelowCutoff> GivenQualitiesBelowCutoff(QualityProfile profile)
         {
@@ -330,32 +356,6 @@ namespace NzbDrone.Core.Test.MovieTests.MovieRepositoryTests
             Db.Update(metadata);
 
             return movie;
-        }
-
-        [Test]
-        public void should_get_only_monitored_movies_between_dates()
-        {
-            var profile = GivenProfile();
-            var monitored = GivenPagedMovie(profile.Id, movieFileId: 0);
-            var unmonitored = GivenPagedMovie(profile.Id, movieFileId: 0);
-
-            unmonitored.Monitored = false;
-            Subject.Update(unmonitored);
-
-            foreach (var metadata in Db.All<MovieMetadata>())
-            {
-                metadata.ReleaseDateUtc = new System.DateTime(2020, 6, 1);
-                Db.Update(metadata);
-            }
-
-            monitored.Monitored = true;
-            Subject.Update(monitored);
-
-            Subject.MoviesBetweenDates(new System.DateTime(2020, 1, 1), new System.DateTime(2020, 12, 31), false)
-                .Should().ContainSingle().Which.Id.Should().Be(monitored.Id);
-
-            Subject.MoviesBetweenDates(new System.DateTime(2020, 1, 1), new System.DateTime(2020, 12, 31), true)
-                .Should().HaveCount(2);
         }
     }
 }
