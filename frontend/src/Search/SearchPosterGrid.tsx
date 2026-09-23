@@ -1,11 +1,16 @@
 import React from 'react';
 import { useAppDimension } from 'App/appStore';
+import useMeasure from 'Helpers/Hooks/useMeasure';
+import { useMovieIndexOption } from 'Movie/Index/movieIndexOptionsStore';
 import MovieIndexPoster from 'Movie/Index/Posters/MovieIndexPoster';
 import Movie from 'Movie/Movie';
+import { usePerformerIndexOption } from 'Performer/Index/performerIndexOptionsStore';
 import PerformerIndexPoster from 'Performer/Index/Posters/PerformerIndexPoster';
 import Performer from 'Performer/Performer';
 import SceneIndexPoster from 'Scene/Index/Posters/SceneIndexPoster';
+import { useSceneIndexOption } from 'Scene/Index/sceneIndexOptionsStore';
 import StudioIndexPoster from 'Studio/Index/Posters/StudioIndexPoster';
+import { useStudioIndexOption } from 'Studio/Index/studioIndexOptionsStore';
 import Studio from 'Studio/Studio';
 import dimensions from 'Styles/Variables/dimensions';
 import { LibrarySearchType } from './useLibrarySearch';
@@ -13,7 +18,8 @@ import styles from './SearchPosterGrid.css';
 
 // The index grids are virtualised against their page's scroller and assume
 // they are the only thing in it, so they can't be stacked on one page. A page
-// of search results is small enough to render in a plain wrapping grid.
+// of search results is small enough to render in a plain wrapping grid, sized
+// with the same formula and poster size option as that type's index page.
 const COLUMN_WIDTH: Record<LibrarySearchType, [number, number]> = {
   scene: [310, 300],
   movie: [182, 172],
@@ -34,6 +40,42 @@ const COLUMN_PADDING_SMALL_SCREEN = Number.parseInt(
   10
 );
 
+// The extra columns each poster size squeezes in, as on the index pages.
+const ADDITIONAL_COLUMN_COUNT: Record<string, number> = {
+  small: 3,
+  medium: 2,
+  large: 1,
+};
+
+function getColumnWidth(
+  width: number,
+  maximumColumnWidth: number,
+  size: string
+) {
+  if (!width) {
+    return maximumColumnWidth;
+  }
+
+  const columns = Math.floor(width / maximumColumnWidth);
+  const remainder = width % maximumColumnWidth;
+
+  return remainder === 0
+    ? maximumColumnWidth
+    : Math.floor(width / (columns + (ADDITIONAL_COLUMN_COUNT[size] ?? 1)));
+}
+
+// Hooks can't be called conditionally, so read every index's size and pick one.
+function usePosterSize(type: LibrarySearchType) {
+  const sizes: Record<LibrarySearchType, string> = {
+    scene: useSceneIndexOption('posterOptions').size,
+    movie: useMovieIndexOption('posterOptions').size,
+    performer: usePerformerIndexOption('posterOptions').size,
+    studio: useStudioIndexOption('posterOptions').size,
+  };
+
+  return sizes[type];
+}
+
 type SearchPosterGridProps =
   | { type: 'scene' | 'movie'; items: readonly Movie[] }
   | { type: 'performer'; items: readonly Performer[] }
@@ -42,9 +84,15 @@ type SearchPosterGridProps =
 function SearchPosterGrid(props: Readonly<SearchPosterGridProps>) {
   const isSmallScreen = useAppDimension('isSmallScreen');
   const { type } = props;
+  const size = usePosterSize(type);
+  const [measureRef, { width }] = useMeasure();
 
   const padding = isSmallScreen ? COLUMN_PADDING_SMALL_SCREEN : COLUMN_PADDING;
-  const columnWidth = COLUMN_WIDTH[type][isSmallScreen ? 1 : 0];
+  const columnWidth = getColumnWidth(
+    Math.floor(width),
+    COLUMN_WIDTH[type][isSmallScreen ? 1 : 0],
+    size
+  );
   const posterWidth = columnWidth - padding * 2;
   const posterHeight = Math.ceil(ASPECT_RATIO[type] * posterWidth);
   const cellStyle = { width: columnWidth, padding };
@@ -57,7 +105,7 @@ function SearchPosterGrid(props: Readonly<SearchPosterGridProps>) {
   };
 
   return (
-    <div className={styles.grid}>
+    <div ref={measureRef} className={styles.grid}>
       {props.type === 'scene' &&
         props.items.map((scene) => (
           <div key={scene.id} style={cellStyle}>
