@@ -125,7 +125,7 @@ namespace Whisparr.Api.V3.Search
                     var movie = (Movie)result;
                     var movieResource = movie.ToResource(availDelay);
 
-                    _coverMapper.ConvertToLocalUrls(movieResource.Id, movieResource.Images);
+                    _coverMapper.ConvertToLocalUrls(movieResource.Id, movieResource.Images, movieResource.Added);
 
                     var poster = movie.MovieMetadata.Value.Poster;
                     if (poster != null)

@@ -122,7 +122,7 @@ namespace Whisparr.Api.V3.Performers
         {
             var resource = _performerService.GetById(id).ToResource();
 
-            _coverMapper.ConvertToLocalPerformerUrls(resource.Id, resource.Images);
+            _coverMapper.ConvertToLocalPerformerUrls(resource.Id, resource.Images, resource.Added);
 
             return resource;
         }
@@ -230,7 +230,7 @@ namespace Whisparr.Api.V3.Performers
 
             foreach (var performerResource in performerResources)
             {
-                _coverMapper.ConvertToLocalPerformerUrls(performerResource.Id, performerResource.Images);
+                _coverMapper.ConvertToLocalPerformerUrls(performerResource.Id, performerResource.Images, performerResource.Added);
             }
 
             return performerResources;
@@ -356,7 +356,7 @@ namespace Whisparr.Api.V3.Performers
             }
 
             performerResource = performer.ToResource();
-            _coverMapper.ConvertToLocalPerformerUrls(performerResource.Id, performerResource.Images);
+            _coverMapper.ConvertToLocalPerformerUrls(performerResource.Id, performerResource.Images, performerResource.Added);
             _performerResourceCache.Set(performerForeignId, performerResource);
 
             return performerResource;
@@ -377,7 +377,7 @@ namespace Whisparr.Api.V3.Performers
                     }
 
                     performerResource = performer.ToResource();
-                    _coverMapper.ConvertToLocalPerformerUrls(performerResource.Id, performerResource.Images);
+                    _coverMapper.ConvertToLocalPerformerUrls(performerResource.Id, performerResource.Images, performerResource.Added);
                     _performerResourceCache.Set(id, performerResource);
                 }
 
@@ -406,7 +406,7 @@ namespace Whisparr.Api.V3.Performers
         private PerformerResource MapToResource(Performer performer)
         {
             var resource = performer.ToResource();
-            _coverMapper.ConvertToLocalPerformerUrls(resource.Id, resource.Images);
+            _coverMapper.ConvertToLocalPerformerUrls(resource.Id, resource.Images, resource.Added);
             return resource;
         }
 
@@ -487,7 +487,7 @@ namespace Whisparr.Api.V3.Performers
 
                         foreach (var performerResource in performerResources)
                         {
-                            _coverMapper.ConvertToLocalPerformerUrls(performerResource.Id, performerResource.Images);
+                            _coverMapper.ConvertToLocalPerformerUrls(performerResource.Id, performerResource.Images, performerResource.Added);
                         }
 
                         foreach (var performerResource in performerResources)
@@ -555,7 +555,7 @@ namespace Whisparr.Api.V3.Performers
             return pageSpec.ApplyToPage(_performerService.Paged, resource =>
             {
                 var performerResource = resource.ToResource();
-                _coverMapper.ConvertToLocalPerformerUrls(performerResource.Id, performerResource.Images);
+                _coverMapper.ConvertToLocalPerformerUrls(performerResource.Id, performerResource.Images, performerResource.Added);
                 return performerResource;
             });
         }
@@ -588,7 +588,7 @@ namespace Whisparr.Api.V3.Performers
 
             foreach (var performerResource in resources)
             {
-                _coverMapper.ConvertToLocalPerformerUrls(performerResource.Id, performerResource.Images);
+                _coverMapper.ConvertToLocalPerformerUrls(performerResource.Id, performerResource.Images, performerResource.Added);
             }
 
             var result = new PagingResource<PerformerResource>(request)

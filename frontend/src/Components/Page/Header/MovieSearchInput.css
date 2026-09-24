@@ -60,7 +60,7 @@
   .movieContainer {
     position: absolute;
     top: 42px;
-    z-index: 1;
+    z-index: $popperZIndex;
     display: flex;
     flex: auto;
     flex-grow: 1;

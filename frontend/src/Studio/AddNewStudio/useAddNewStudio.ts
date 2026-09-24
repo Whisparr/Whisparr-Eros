@@ -5,6 +5,7 @@ import { useSafeForWorkMode } from 'App/safeForWorkStore';
 import { ValidationMessage } from 'Components/Form/FormInputGroup';
 import useApiMutation from 'Helpers/Hooks/useApiMutation';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
+import useInitialTermParam from 'Helpers/Hooks/useInitialTermParam';
 import selectSettings from 'Helpers/selectSettings';
 import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import Studio from 'Studio/Studio';
@@ -48,8 +49,9 @@ interface SearchResource {
 
 function useAddNewStudio() {
   const uiSettings = useUiSettingsValues();
-  const [term, setTerm] = useState('');
-  const [debouncedTerm, setDebouncedTerm] = useState('');
+  const initialTerm = useInitialTermParam();
+  const [term, setTerm] = useState(initialTerm);
+  const [debouncedTerm, setDebouncedTerm] = useState(initialTerm);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   React.useEffect(() => {

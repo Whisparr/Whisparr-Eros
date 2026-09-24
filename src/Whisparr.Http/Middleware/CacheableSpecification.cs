@@ -1,7 +1,6 @@
 using System;
 using Microsoft.AspNetCore.Http;
 using NzbDrone.Common.EnvironmentInfo;
-using NzbDrone.Common.Extensions;
 
 namespace Whisparr.Http.Middleware
 {
@@ -26,15 +25,17 @@ namespace Whisparr.Http.Middleware
 
             if (request.Path.StartsWithSegments("/api", StringComparison.CurrentCultureIgnoreCase))
             {
-                if (request.Path.ToString().ContainsIgnoreCase("/MediaCover"))
-                {
-                    return true;
-                }
-
                 return false;
             }
 
             if (request.Path.StartsWithSegments("/signalr", StringComparison.CurrentCultureIgnoreCase))
+            {
+                return false;
+            }
+
+            // Cached above when the query carries an `h`, which the cover mapper only adds once the
+            // file is on disk. Without it the response is a 404 we must not let the browser keep.
+            if (request.Path.StartsWithSegments("/MediaCover", StringComparison.CurrentCultureIgnoreCase))
             {
                 return false;
             }

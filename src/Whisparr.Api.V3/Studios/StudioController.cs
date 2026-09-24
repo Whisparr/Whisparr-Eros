@@ -181,7 +181,7 @@ namespace Whisparr.Api.V3.Studios
 
             foreach (var movieResource in movieResources)
             {
-                _coverMapper.ConvertToLocalUrls(movieResource.Id, movieResource.Images);
+                _coverMapper.ConvertToLocalUrls(movieResource.Id, movieResource.Images, movieResource.Added);
             }
 
             return movieResources;

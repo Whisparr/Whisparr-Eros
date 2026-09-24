@@ -1,6 +1,5 @@
 import { ExtendedKeyboardEvent } from 'mousetrap';
 import React, {
-  FormEvent,
   KeyboardEvent,
   SyntheticEvent,
   useCallback,
@@ -17,22 +16,40 @@ import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import useKeyboardShortcuts from 'Helpers/Hooks/useKeyboardShortcuts';
 import { icons } from 'Helpers/Props';
 import Movie from 'Movie/Movie';
-import { useSearchMovieUncached } from 'Movie/useMovie';
+import Performer from 'Performer/Performer';
+import useLibrarySearch from 'Search/useLibrarySearch';
+import Studio from 'Studio/Studio';
 import translate from 'Utilities/String/translate';
 import MovieSearchResult from './MovieSearchResult';
+import PerformerSearchResult from './PerformerSearchResult';
+import StudioSearchResult from './StudioSearchResult';
 import styles from './MovieSearchInput.css';
 
 const ADD_NEW_MOVIE = 'addNewMovie';
 const ADD_NEW_SCENE = 'addNewScene';
+const ADD_NEW_PERFORMER = 'addNewPerformer';
+const ADD_NEW_STUDIO = 'addNewStudio';
 
-interface Match {
-  key: string;
-  refIndex: number;
+interface AddNewSuggestion {
+  type:
+    | typeof ADD_NEW_MOVIE
+    | typeof ADD_NEW_SCENE
+    | typeof ADD_NEW_PERFORMER
+    | typeof ADD_NEW_STUDIO;
+  title: string;
 }
 
-interface AddNewMovieSuggestion {
-  type: 'addNewMovie' | 'addNewScene';
-  title: string;
+const ADD_NEW_LABEL_KEYS: Record<AddNewSuggestion['type'], string> = {
+  [ADD_NEW_MOVIE]: 'AddNewMovie',
+  [ADD_NEW_SCENE]: 'AddNewScene',
+  [ADD_NEW_PERFORMER]: 'AddNewPerformer',
+  [ADD_NEW_STUDIO]: 'AddNewStudio',
+};
+
+function isAddNewSuggestion(
+  suggestion: Suggestion
+): suggestion is AddNewSuggestion {
+  return suggestion.type in ADD_NEW_LABEL_KEYS;
 }
 
 // prettier-ignore
@@ -56,32 +73,75 @@ export interface SuggestedMovie extends Pick<
 }
 
 interface MovieSuggestion {
+  type: 'movie';
   title: string;
-  indices: number[];
   item: SuggestedMovie;
-  matches: Match[];
-  refIndex: number;
 }
+
+interface PerformerSuggestion {
+  type: 'performer';
+  title: string;
+  item: Performer;
+}
+
+interface StudioSuggestion {
+  type: 'studio';
+  title: string;
+  item: Studio;
+}
+
+type Suggestion =
+  AddNewSuggestion | MovieSuggestion | PerformerSuggestion | StudioSuggestion;
 
 interface Section {
   title: string;
   loading?: boolean;
-  suggestions: MovieSuggestion[] | AddNewMovieSuggestion[];
+  suggestions: Suggestion[];
 }
 
 function moviesToSuggestions(movies: readonly Movie[]): MovieSuggestion[] {
-  return movies.map((m, i) => ({
-    key: m.id,
+  return movies.map((m) => ({
+    type: 'movie',
     title: m.title,
-    indices: [],
     item: {
       ...m,
       firstCharacter: m.title.charAt(0).toLowerCase(),
       tags: m.tags || [],
     },
-    matches: [],
-    refIndex: i,
   }));
+}
+
+function performersToSuggestions(
+  performers: readonly Performer[]
+): PerformerSuggestion[] {
+  return performers.map((p) => ({
+    type: 'performer',
+    title: p.fullName || p.name,
+    item: p,
+  }));
+}
+
+function studiosToSuggestions(studios: readonly Studio[]): StudioSuggestion[] {
+  return studios.map((s) => ({ type: 'studio', title: s.title, item: s }));
+}
+
+function getSuggestionPath(suggestion: Suggestion, term: string) {
+  switch (suggestion.type) {
+    case ADD_NEW_MOVIE:
+      return `/add/new/movie?term=${encodeURIComponent(term)}`;
+    case ADD_NEW_SCENE:
+      return `/add/new/scene?term=${encodeURIComponent(term)}`;
+    case ADD_NEW_PERFORMER:
+      return `/add/new/performer?term=${encodeURIComponent(term)}`;
+    case ADD_NEW_STUDIO:
+      return `/add/new/studio?term=${encodeURIComponent(term)}`;
+    case 'performer':
+      return `/performer/${suggestion.item.foreignId}`;
+    case 'studio':
+      return `/studio/${suggestion.item.foreignId}`;
+    default:
+      return `/movie/${suggestion.item.titleSlug}`;
+  }
 }
 
 function MovieSearchInput() {
@@ -89,33 +149,61 @@ function MovieSearchInput() {
   const [value, setValue] = useState('');
   const [debouncedValue] = useDebounce(value, 250);
 
-  const { data: movies = [], isLoading } =
-    useSearchMovieUncached(debouncedValue);
+  const { data, isLoading } = useLibrarySearch(debouncedValue);
 
   const { bindShortcut, unbindShortcut } = useKeyboardShortcuts();
   const autosuggestRef = useRef<Autosuggest>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const suggestions = useMemo(() => moviesToSuggestions(movies), [movies]);
+  // Autosuggest also highlights a row on mouse hover, so only a row reached
+  // with the arrow keys counts as chosen when Enter is pressed.
+  const hasKeyboardSelectionRef = useRef(false);
+
+  const resultSections = useMemo(() => {
+    const sections: Section[] = [
+      {
+        title: translate('Performers'),
+        suggestions: performersToSuggestions(data?.performers.records ?? []),
+      },
+      {
+        title: translate('Studios'),
+        suggestions: studiosToSuggestions(data?.studios.records ?? []),
+      },
+      {
+        title: translate('Scenes'),
+        suggestions: moviesToSuggestions(data?.scenes.records ?? []),
+      },
+      {
+        title: translate('Movies'),
+        suggestions: moviesToSuggestions(data?.movies.records ?? []),
+      },
+    ];
+
+    return sections.filter((section) => section.suggestions.length);
+  }, [data]);
 
   const suggestionGroups = useMemo(() => {
-    const result: Section[] = [];
-    if (suggestions.length || isLoading) {
-      result.push({
+    const result: Section[] = [...resultSections];
+
+    if (isLoading) {
+      result.unshift({
         title: translate('Existing'),
-        loading: isLoading,
-        suggestions,
+        loading: true,
+        suggestions: [],
       });
     }
+
     result.push({
       title: translate('Add'),
       suggestions: [
         { type: ADD_NEW_MOVIE, title: value },
         { type: ADD_NEW_SCENE, title: value },
+        { type: ADD_NEW_PERFORMER, title: value },
+        { type: ADD_NEW_STUDIO, title: value },
       ],
     });
     return result;
-  }, [suggestions, value, isLoading]);
+  }, [resultSections, value, isLoading]);
 
   const focusInput = useCallback((event: ExtendedKeyboardEvent) => {
     event.preventDefault();
@@ -147,37 +235,30 @@ function MovieSearchInput() {
   }, []);
 
   const renderSuggestion = useCallback(
-    (
-      item: AddNewMovieSuggestion | MovieSuggestion,
-      { query }: { query: string }
-    ) => {
-      if ('type' in item) {
-        if (item.type === ADD_NEW_MOVIE) {
-          return (
-            <div className={styles.addNewMovieSuggestion}>
-              {`Add new movie: "${query}"`}
-            </div>
-          );
-        }
-        if (item.type === ADD_NEW_SCENE) {
-          return (
-            <div className={styles.addNewMovieSuggestion}>
-              {`Add new scene: "${query}"`}
-            </div>
-          );
-        }
+    (item: Suggestion, { query }: { query: string }) => {
+      if (isAddNewSuggestion(item)) {
+        return (
+          <div className={styles.addNewMovieSuggestion}>
+            {`${translate(ADD_NEW_LABEL_KEYS[item.type])}: "${query}"`}
+          </div>
+        );
       }
-      const movieItem = item as MovieSuggestion;
-      return (
-        <MovieSearchResult {...movieItem.item} match={movieItem.matches[0]} />
-      );
+
+      switch (item.type) {
+        case 'performer':
+          return <PerformerSearchResult {...item.item} />;
+        case 'studio':
+          return <StudioSearchResult {...item.item} />;
+        default:
+          return <MovieSearchResult {...item.item} />;
+      }
     },
     []
   );
 
   const handleChange = useCallback(
     (
-      _event: FormEvent<HTMLElement>,
+      _event: SyntheticEvent<HTMLElement>,
       {
         newValue,
         method,
@@ -186,7 +267,19 @@ function MovieSearchInput() {
         method: 'down' | 'up' | 'escape' | 'enter' | 'click' | 'type';
       }
     ) => {
-      if (method === 'up' || method === 'down') return;
+      if (method === 'up' || method === 'down') {
+        hasKeyboardSelectionRef.current = true;
+        return;
+      }
+
+      // Autosuggest reports Enter on a highlighted row as a change to that
+      // row's title. handleKeyDown decides where Enter goes, so keep the typed
+      // text and the arrow-key state as they are.
+      if (method === 'enter') {
+        return;
+      }
+
+      hasKeyboardSelectionRef.current = false;
       setValue(newValue);
     },
     []
@@ -207,36 +300,52 @@ function MovieSearchInput() {
 
       const { highlightedSectionIndex, highlightedSuggestionIndex } =
         autosuggestRef.current.state;
-      if (!suggestions.length || highlightedSectionIndex) {
-        navigate(`/add/new/movie?term=${encodeURIComponent(value)}`);
-        inputRef.current?.blur();
-        return;
-      }
+
       const selectedSuggestion =
-        highlightedSuggestionIndex == null
-          ? suggestions[0]
-          : suggestions[highlightedSuggestionIndex];
-      navigate(`/movie/${selectedSuggestion.item.titleSlug}`);
+        hasKeyboardSelectionRef.current &&
+        highlightedSectionIndex != null &&
+        highlightedSuggestionIndex != null
+          ? suggestionGroups[highlightedSectionIndex]?.suggestions[
+              highlightedSuggestionIndex
+            ]
+          : undefined;
+
+      hasKeyboardSelectionRef.current = false;
+
+      if (selectedSuggestion) {
+        if (!isAddNewSuggestion(selectedSuggestion)) {
+          setValue('');
+        }
+
+        navigate(getSuggestionPath(selectedSuggestion, value));
+      } else {
+        navigate(`/search?${new URLSearchParams({ term: value }).toString()}`);
+      }
+
       inputRef.current?.blur();
     },
-    [value, suggestions, navigate]
+    [value, suggestionGroups, navigate]
   );
 
   const handleSuggestionSelected = useCallback(
     (
       _event: SyntheticEvent,
-      { suggestion }: { suggestion: MovieSuggestion | AddNewMovieSuggestion }
+      {
+        suggestion,
+        method,
+      }: { suggestion: Suggestion; method: 'click' | 'enter' }
     ) => {
-      if ('type' in suggestion) {
-        if (suggestion.type === ADD_NEW_MOVIE) {
-          navigate(`/add/new/movie?term=${encodeURIComponent(value)}`);
-        } else if (suggestion.type === ADD_NEW_SCENE) {
-          navigate(`/add/new/scene?term=${encodeURIComponent(value)}`);
-        }
-      } else {
-        setValue('');
-        navigate(`/movie/${suggestion.item.titleSlug}`);
+      // Autosuggest selects the highlighted row on Enter before handleKeyDown
+      // runs; leave Enter to handleKeyDown, which ignores a hovered row.
+      if (method === 'enter') {
+        return;
       }
+
+      if (!isAddNewSuggestion(suggestion)) {
+        setValue('');
+      }
+
+      navigate(getSuggestionPath(suggestion, value));
     },
     [value, navigate]
   );

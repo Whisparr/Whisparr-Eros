@@ -69,5 +69,29 @@ namespace NzbDrone.Core.Test.MediaFiles.MediaInfo.MediaInfoFormatterTests
 
             MediaInfoFormatter.FormatAudioCodec(mediaInfoModel, SceneName).Should().Be(mediaInfoModel.AudioFormat);
         }
+
+        [Test]
+        public void should_return_empty_if_media_info_is_null()
+        {
+            MediaInfoFormatter.FormatAudioCodec(null, SceneName).Should().Be(string.Empty);
+        }
+
+        [TestCase("")]
+        [TestCase("   ")]
+        public void should_return_empty_if_there_is_no_audio_stream(string audioFormat)
+        {
+            var mediaInfoModel = new MediaInfoModel
+            {
+                AudioFormat = audioFormat
+            };
+
+            MediaInfoFormatter.FormatAudioCodec(mediaInfoModel, SceneName).Should().Be(string.Empty);
+        }
+
+        [Test]
+        public void should_return_audio_channels_of_zero_if_media_info_is_null()
+        {
+            MediaInfoFormatter.FormatAudioChannels(null).Should().Be(0);
+        }
     }
 }
