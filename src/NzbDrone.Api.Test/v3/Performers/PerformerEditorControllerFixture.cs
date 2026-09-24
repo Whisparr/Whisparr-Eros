@@ -114,6 +114,28 @@ namespace NzbDrone.Api.Test.v3.Performers
             resources.Should().OnlyContain(p => p.AfterDate == "2024-06-01");
         }
 
+        [Test]
+        public void should_apply_monitor_new_items()
+        {
+            var resource = GivenResource();
+            resource.WhisparrMonitorNewItems = false;
+
+            Subject.SaveAll(resource);
+
+            _performers.Should().OnlyContain(x => !x.WhisparrMonitorNewItems);
+        }
+
+        [Test]
+        public void should_leave_each_monitor_new_items_alone_when_it_is_not_in_the_request()
+        {
+            _performers[0].WhisparrMonitorNewItems = false;
+
+            Subject.SaveAll(GivenResource());
+
+            _performers[0].WhisparrMonitorNewItems.Should().BeFalse();
+            _performers[1].WhisparrMonitorNewItems.Should().BeTrue();
+        }
+
         private static PerformerEditorResource GivenResource()
         {
             return new PerformerEditorResource { PerformerIds = new List<int> { 1, 2 } };

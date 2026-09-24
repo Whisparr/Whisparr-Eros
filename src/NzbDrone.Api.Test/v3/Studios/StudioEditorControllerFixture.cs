@@ -125,6 +125,28 @@ namespace NzbDrone.Api.Test.v3.Studios
             resources.Should().OnlyContain(s => s.MoviesMonitored);
         }
 
+        [Test]
+        public void should_apply_monitor_new_items()
+        {
+            var resource = GivenResource();
+            resource.WhisparrMonitorNewItems = false;
+
+            Subject.SaveAll(resource);
+
+            _studios.Should().OnlyContain(x => !x.WhisparrMonitorNewItems);
+        }
+
+        [Test]
+        public void should_leave_each_monitor_new_items_alone_when_it_is_not_in_the_request()
+        {
+            _studios[0].WhisparrMonitorNewItems = false;
+
+            Subject.SaveAll(GivenResource());
+
+            _studios[0].WhisparrMonitorNewItems.Should().BeFalse();
+            _studios[1].WhisparrMonitorNewItems.Should().BeTrue();
+        }
+
         private static StudioEditorResource GivenResource()
         {
             return new StudioEditorResource { StudioIds = new List<int> { 1, 2 } };

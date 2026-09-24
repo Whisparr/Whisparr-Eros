@@ -15,6 +15,7 @@ import styles from './EditPerformersModalContent.css';
 interface SavePayload {
   monitored?: boolean;
   moviesMonitored?: boolean;
+  whisparrMonitorNewItems?: boolean;
   qualityProfileId?: number;
   rootFolderPath?: string;
   searchOnAdd?: boolean;
@@ -53,7 +54,7 @@ const monitoredOptions = [
   },
 ];
 
-const searchOnAddOptions = [
+const yesNoOptions = [
   {
     key: NO_CHANGE,
     get value() {
@@ -110,6 +111,10 @@ function EditPerformersModalContent(
     NO_CHANGE
   );
 
+  const [whisparrMonitorNewItems, setWhisparrMonitorNewItems] = useState<
+    string | number
+  >(NO_CHANGE);
+
   const [qualityProfileId, setQualityProfileId] = useState<string | number>(
     NO_CHANGE
   );
@@ -136,6 +141,11 @@ function EditPerformersModalContent(
     if (moviesMonitored !== NO_CHANGE) {
       hasChanges = true;
       payload.moviesMonitored = moviesMonitored === 'monitored';
+    }
+
+    if (whisparrMonitorNewItems !== NO_CHANGE) {
+      hasChanges = true;
+      payload.whisparrMonitorNewItems = whisparrMonitorNewItems === 'true';
     }
 
     if (qualityProfileId !== NO_CHANGE) {
@@ -169,6 +179,7 @@ function EditPerformersModalContent(
   }, [
     monitored,
     moviesMonitored,
+    whisparrMonitorNewItems,
     qualityProfileId,
     rootFolderPath,
     searchOnAdd,
@@ -186,6 +197,9 @@ function EditPerformersModalContent(
           break;
         case 'moviesMonitored':
           setMoviesMonitored(value);
+          break;
+        case 'whisparrMonitorNewItems':
+          setWhisparrMonitorNewItems(value);
           break;
         case 'qualityProfileId':
           setQualityProfileId(value);
@@ -247,6 +261,19 @@ function EditPerformersModalContent(
         </FormGroup>
 
         <FormGroup>
+          <FormLabel>{translate('WhisparrMonitorNewItems')}</FormLabel>
+
+          <FormInputGroup
+            type={inputTypes.SELECT}
+            name="whisparrMonitorNewItems"
+            helpText={translate('WhisparrMonitorNewItemsEntityHelpText')}
+            value={whisparrMonitorNewItems}
+            values={yesNoOptions}
+            onChange={onInputChange}
+          />
+        </FormGroup>
+
+        <FormGroup>
           <FormLabel>{translate('QualityProfile')}</FormLabel>
 
           <FormInputGroup
@@ -282,7 +309,7 @@ function EditPerformersModalContent(
             name="searchOnAdd"
             helpText={translate('SearchOnAddPerformerHelpText')}
             value={searchOnAdd}
-            values={searchOnAddOptions}
+            values={yesNoOptions}
             onChange={onInputChange}
           />
         </FormGroup>
