@@ -2162,10 +2162,10 @@ async@^3.2.4:
   resolved "https://registry.yarnpkg.com/async/-/async-3.2.5.tgz#ebd52a8fdaf7a2289a24df399f8d8485c8a46b66"
   integrity sha512-baNZyqaaLhyLVKm/DlvdW051MSgO6b8eVfIezl9E5PqWxFgzLm/wQntEW4zOytVburDEr0JlALEpdOFwvErLsg==
 
-autoprefixer@10.6.0:
-  version "10.6.0"
-  resolved "https://registry.yarnpkg.com/autoprefixer/-/autoprefixer-10.6.0.tgz#b68112d055f87aff2a2ea58877b510c6847bea27"
-  integrity sha512-A26d6qs9kqGgkmImIXMYvXTzqb4Qv7AVgpY1NXzr9Y659J8qHHnLOO/zE8ewIGFMprOolAoRAQYDgNryXIJKBw==
+autoprefixer@10.6.1:
+  version "10.6.1"
+  resolved "https://registry.yarnpkg.com/autoprefixer/-/autoprefixer-10.6.1.tgz#437cea1a0b96cedc4065c05327b728b1594faf27"
+  integrity sha512-cL1Qz6ADZhcEbny/8HPfe99J6HhNoYtpX2LFLIbhgGE7Q1hlQVkYFdetDN7Id3KiQxhDrHwzlHr/YQCnZ8+xSA==
   dependencies:
     browserslist "^4.28.9"
     caniuse-lite "^1.0.30001810"
@@ -6060,10 +6060,10 @@ prettier-linter-helpers@^1.0.1:
   dependencies:
     fast-diff "^1.1.2"
 
-prettier@*, prettier@3.9.6:
-  version "3.9.6"
-  resolved "https://registry.yarnpkg.com/prettier/-/prettier-3.9.6.tgz#b3ea5146515d40fc53f18aa63f74dfab1e10dbf6"
-  integrity sha512-OpN0zzVdiaiAhxpuuj5efpIS4sY9j7bY6uR5mnj5yPzGkdkjNKSJeUThPb60Jw29QuAZgA4o+/iB49kFiaBX6g==
+prettier@*, prettier@3.9.8:
+  version "3.9.8"
+  resolved "https://registry.yarnpkg.com/prettier/-/prettier-3.9.8.tgz#54e81128584538c81d85fce9d5fd77a410c385c5"
+  integrity sha512-WRFq3Wn3WId7LLROfMLdH7xaFr2jR62wU8nLO6rQUOLOxNZUviyJQs1M0iIhLexSFy+L+w0ch66wtoO2jRjG0A==
 
 pretty-error@^4.0.0:
   version "4.0.0"
@@ -7914,10 +7914,10 @@ webpack-sources@^3.5.1:
   resolved "https://registry.yarnpkg.com/webpack-sources/-/webpack-sources-3.5.1.tgz#76c2418486dcc02b2aa0694c104176c2858fe84a"
   integrity sha512-jyuiGJdtvY434z5bUZrjz67v76/ePNvFZTp9Mdz29IlH4+GPsgyGjiv0fKI+M7BdkU6ADjulUcKAd3tUK3WlEw==
 
-webpack@5.111.0:
-  version "5.111.0"
-  resolved "https://registry.yarnpkg.com/webpack/-/webpack-5.111.0.tgz#65e7e0044d69373ea0129ef401c0299aaba52764"
-  integrity sha512-A2R74kfE6b3eLKS91iZiol03Ebx7avmJJBOyiP+4LePW9NNeNJGQkKeSQos4dk6R4H0YAMYlv+aOrs1CyWT3eA==
+webpack@5.111.1:
+  version "5.111.1"
+  resolved "https://registry.yarnpkg.com/webpack/-/webpack-5.111.1.tgz#7c12cd014fbb9bfd8509a6cfc6f1c79f4e06cade"
+  integrity sha512-cNypaz0RP+S4cvQVi1M/3bRUkvNP0xZpL0TjFx+c6jg64VbxD+2weWDgY9UnjRI6dhZgtaj8DU76GGFcJ79xPQ==
   dependencies:
     "@types/estree" "^1.0.8"
     "@types/json-schema" "^7.0.15"
