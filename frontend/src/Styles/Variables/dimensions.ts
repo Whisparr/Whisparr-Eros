@@ -1,4 +1,4 @@
-module.exports = {
+const dimensions = {
   // Page
   pageContentBodyPadding: '20px',
   pageContentBodyPaddingSmallScreen: '10px',
@@ -51,3 +51,5 @@ module.exports = {
   movieIndexColumnPaddingSmallScreen: '5px',
   movieIndexOverviewInfoRowHeight: '21px',
 };
+
+export default dimensions;
