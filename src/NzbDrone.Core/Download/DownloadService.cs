@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using NLog;
 using NzbDrone.Common.EnsureThat;
@@ -56,11 +58,68 @@ namespace NzbDrone.Core.Download
 
             var tags = remoteMovie.Movie?.Tags;
 
-            var downloadClient = downloadClientId.HasValue
-                ? _downloadClientProvider.Get(downloadClientId.Value)
-                : _downloadClientProvider.GetDownloadClient(remoteMovie.Release.DownloadProtocol, remoteMovie.Release.IndexerId, filterBlockedClients, tags);
+            if (downloadClientId.HasValue)
+            {
+                var specificClient = _downloadClientProvider.Get(downloadClientId.Value);
+                await DownloadReport(remoteMovie, specificClient);
 
-            await DownloadReport(remoteMovie, downloadClient);
+                return;
+            }
+
+            var availableClients = _downloadClientProvider.GetDownloadClients(
+                remoteMovie.Release.DownloadProtocol,
+                remoteMovie.Release.IndexerId,
+                filterBlockedClients,
+                tags).ToList();
+
+            if (!availableClients.Any())
+            {
+                throw new DownloadClientUnavailableException($"No {remoteMovie.Release.DownloadProtocol} download client available");
+            }
+
+            var triedClients = new HashSet<int>();
+            Exception lastException = null;
+
+            foreach (var downloadClient in availableClients)
+            {
+                if (triedClients.Contains(downloadClient.Definition.Id))
+                {
+                    continue;
+                }
+
+                try
+                {
+                    _logger.Debug("Attempting download with client: {0}", downloadClient.Definition.Name);
+                    await DownloadReport(remoteMovie, downloadClient);
+
+                    _downloadClientProvider.ReportSuccessfulDownloadClient(
+                        remoteMovie.Release.DownloadProtocol,
+                        downloadClient.Definition.Id);
+
+                    return;
+                }
+                catch (DownloadClientException ex)
+                {
+                    _logger.Trace(ex, "Unable to add report to download client: {0}", downloadClient.Definition.Name);
+                    triedClients.Add(downloadClient.Definition.Id);
+                    lastException = ex;
+                }
+                catch (Exception ex)
+                {
+                    // Rethrow specific exceptions that should not trigger a fallback
+                    if (ex is ReleaseDownloadException)
+                    {
+                        throw;
+                    }
+
+                    _logger.Trace(ex, "Unable to add report to download client: {0}", downloadClient.Definition.Name);
+                    triedClients.Add(downloadClient.Definition.Id);
+                    lastException = ex;
+                }
+            }
+
+            // Keep the last client's error, so a single-client setup still reports why it failed
+            throw new DownloadClientUnavailableException("All '{0}' download clients failed: {1}", lastException, remoteMovie.Release.DownloadProtocol, lastException?.Message);
         }
 
         private async Task DownloadReport(RemoteMovie remoteMovie, IDownloadClient downloadClient)
