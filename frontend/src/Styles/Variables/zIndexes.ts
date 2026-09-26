@@ -1,5 +1,7 @@
-module.exports = {
+const zIndexes = {
   pageJumpBarZIndex: 10,
   modalZIndex: 1000,
   popperZIndex: 2000,
 };
+
+export default zIndexes;

@@ -1,4 +1,4 @@
-module.exports = {
+const fonts = {
   // Families
   defaultFontFamily:
     'Roboto, "open sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
@@ -14,3 +14,5 @@ module.exports = {
 
   lineHeight: '1.528571429',
 };
+
+export default fonts;
