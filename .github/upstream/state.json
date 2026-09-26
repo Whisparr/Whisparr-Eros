@@ -2041,8 +2041,8 @@
       "6bb694a6f78db654f112868be9719f4945948796": {
         "subject": "New: Fallback to alternate download clients on failure",
         "month": "2025-12",
-        "disposition": "skip",
-        "reason": "Deferred: user-facing feature (fallback to alternate download clients on failure), not a sync decision. Needs GetDownloadClients(protocol) plus priority/last-used rotation and its own test surface. Raised and deferred on 2026-09-01."
+        "disposition": "adapt",
+        "reason": "Landed 2026-09-26 as its own PR. DownloadClientProvider taken verbatim, since ours matched upstream's parent apart from the tag message. Adapted in DownloadService: when every client fails, upstream throws a bare 'All download clients failed' and keeps the causes at Trace, so a single-client setup would lose the client's own error in the grab response. We carry the last client's exception as the inner exception and append its message. Four DownloadServiceFixture cases added for fallback, no fallback on ReleaseDownloadException, all-failed and an explicit client id."
       },
       "ee875ae65484bcd3fc15387c32cfd33a13d993aa": {
         "subject": "New: Removed Special Handling of Reflinks for BTRFS and ZFS",
