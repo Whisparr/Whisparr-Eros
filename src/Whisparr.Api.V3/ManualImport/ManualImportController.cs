@@ -24,14 +24,30 @@ namespace Whisparr.Api.V3.ManualImport
 
         [HttpGet]
         [Produces("application/json")]
-        public List<ManualImportResource> GetMediaFiles(string folder, string downloadId, int? movieId, bool filterExistingFiles = true)
+        public List<ManualImportResource> GetMediaFiles(string folder, string downloadId, [FromQuery] string[] downloadIds, int? movieId, bool filterExistingFiles = true)
         {
-            if (movieId.HasValue && downloadId.IsNullOrWhiteSpace())
+            // downloadId is kept for existing API clients; downloadIds lets the queue import several downloads at once
+            var allDownloadIds = (downloadIds ?? Enumerable.Empty<string>())
+                .Append(downloadId)
+                .Where(id => id.IsNotNullOrWhiteSpace())
+                .Distinct()
+                .ToList();
+
+            if (movieId.HasValue && allDownloadIds.Empty())
             {
                 return _manualImportService.GetMediaFiles(movieId.Value).ToResource().Select(AddQualityWeight).ToList();
             }
 
-            return _manualImportService.GetMediaFiles(folder, downloadId, movieId, filterExistingFiles).ToResource().Select(AddQualityWeight).ToList();
+            if (allDownloadIds.Any())
+            {
+                return allDownloadIds
+                    .SelectMany(id => _manualImportService.GetMediaFiles(null, id, movieId, filterExistingFiles))
+                    .ToResource()
+                    .Select(AddQualityWeight)
+                    .ToList();
+            }
+
+            return _manualImportService.GetMediaFiles(folder, null, movieId, filterExistingFiles).ToResource().Select(AddQualityWeight).ToList();
         }
 
         [HttpPost]

@@ -162,7 +162,7 @@ function isSameMovieFile(
 }
 
 export interface InteractiveImportModalContentProps {
-  downloadId?: string;
+  downloadIds?: string[];
   movieId?: number;
   showMovie?: boolean;
   allowMovieChange?: boolean;
@@ -182,7 +182,7 @@ function InteractiveImportModalContent(
   props: InteractiveImportModalContentProps
 ) {
   const {
-    downloadId,
+    downloadIds,
     movieId,
     allowMovieChange = true,
     showMovie = true,
@@ -209,7 +209,7 @@ function InteractiveImportModalContent(
 
   const { items, originalItems, isFetching, isFetched, error, updateItems } =
     useInteractiveImport({
-      downloadId,
+      downloadIds,
       movieId,
       folder,
       filterExistingFiles,
@@ -383,7 +383,8 @@ function InteractiveImportModalContent(
   }, [setIsConfirmDeleteModalOpen]);
 
   const onImportSelectedPress = useCallback(() => {
-    const finalImportMode = downloadId || !showImportMode ? 'auto' : importMode;
+    const finalImportMode =
+      downloadIds?.length || !showImportMode ? 'auto' : importMode;
 
     const existingFiles: Partial<MovieFile>[] = [];
     const files: InteractiveImportCommandOptions[] = [];
@@ -401,6 +402,7 @@ function InteractiveImportModalContent(
 
       if (isSelected) {
         const {
+          downloadId,
           movie,
           releaseGroup,
           quality,
@@ -485,7 +487,7 @@ function InteractiveImportModalContent(
       onModalClose();
     }
   }, [
-    downloadId,
+    downloadIds,
     showImportMode,
     importMode,
     items,
@@ -674,7 +676,7 @@ function InteractiveImportModalContent(
             </SpinnerButton>
           ) : null}
 
-          {!downloadId && showImportMode ? (
+          {!downloadIds?.length && showImportMode ? (
             <SelectInput
               className={styles.importMode}
               name="importMode"

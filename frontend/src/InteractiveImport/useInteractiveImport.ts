@@ -21,7 +21,7 @@ const SORT_PREDICATES = {
 };
 
 export interface InteractiveImportParams {
-  downloadId?: string;
+  downloadIds?: string[];
   movieId?: number;
   folder?: string;
   filterExistingFiles?: boolean;
@@ -53,7 +53,7 @@ export default function useInteractiveImport(params: InteractiveImportParams) {
   const { sortKey, sortDirection } = useInteractiveImportOptions();
   const [changes, setChanges] = useState<ItemChanges>({});
 
-  const { downloadId, movieId, folder, filterExistingFiles } = params;
+  const { downloadIds, movieId, folder, filterExistingFiles } = params;
 
   const {
     data,
@@ -62,7 +62,7 @@ export default function useInteractiveImport(params: InteractiveImportParams) {
     error: fetchError,
   } = useApiQuery<InteractiveImport[]>({
     path: MANUAL_IMPORT_PATH,
-    queryParams: { downloadId, movieId, folder, filterExistingFiles },
+    queryParams: { downloadIds, movieId, folder, filterExistingFiles },
     queryOptions: {
       // The list is only meaningful while the modal is open, and a stale one
       // would be handed straight back the next time it opens.

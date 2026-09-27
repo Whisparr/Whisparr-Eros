@@ -124,6 +124,13 @@ namespace NzbDrone.Core.MediaFiles.MovieImport.Manual
                     return new List<ManualImportItem>();
                 }
 
+                // The import item is only set once the download has completed
+                if (trackedDownload.ImportItem == null)
+                {
+                    _logger.Debug("Download {0} has not completed yet, nothing to import", downloadId.ForLog());
+                    return new List<ManualImportItem>();
+                }
+
                 path = trackedDownload.ImportItem.OutputPath.FullPath;
             }
 
