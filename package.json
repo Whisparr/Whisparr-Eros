@@ -22,6 +22,9 @@
     "defaults"
   ],
   "dependencies": {
+    "@dnd-kit/abstract": "0.5.0",
+    "@dnd-kit/helpers": "0.5.0",
+    "@dnd-kit/react": "0.5.0",
     "@floating-ui/react": "0.27.20",
     "@fortawesome/fontawesome-free": "7.3.1",
     "@fortawesome/fontawesome-svg-core": "7.3.1",
@@ -57,10 +60,6 @@
     "react-async-script": "1.2.0",
     "react-autosuggest": "10.1.0",
     "react-custom-scrollbars-2": "4.5.0",
-    "react-dnd": "16.0.1",
-    "react-dnd-html5-backend": "16.0.1",
-    "react-dnd-multi-backend": "9.0.0",
-    "react-dnd-touch-backend": "16.0.1",
     "react-document-title": "2.0.3",
     "react-dom": "19.3.0",
     "react-focus-lock": "2.13.7",

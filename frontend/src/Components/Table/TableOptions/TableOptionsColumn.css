@@ -1,3 +1,7 @@
+.columnContainer {
+  padding: 4px 0;
+}
+
 .column {
   display: flex;
   align-items: stretch;
@@ -33,6 +37,7 @@
   width: $dragHandleWidth;
   text-align: center;
   cursor: grab;
+  touch-action: none;
 }
 
 .dragIcon {
@@ -41,8 +46,4 @@
 
 .isDragging {
   opacity: 0.25;
-}
-
-.notDragable {
-  padding: 4px 0;
 }

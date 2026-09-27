@@ -8,19 +8,16 @@ import Measure from 'Components/Measure';
 import { Measurements } from 'Helpers/Hooks/useMeasure';
 import { icons, kinds, sizes } from 'Helpers/Props';
 import { Failure } from 'typings/pending';
-import { QualityProfileItem } from 'typings/QualityProfile';
 import translate from 'Utilities/String/translate';
-import QualityProfileItemDragPreview from './QualityProfileItemDragPreview';
-import QualityProfileItemDragSource, {
-  DragMoveOptions,
-} from './QualityProfileItemDragSource';
+import QualityProfileItem from './QualityProfileItem';
+import QualityProfileItemGroup from './QualityProfileItemGroup';
+import { DisplayItem, ROOT_CONTAINER } from './useQualityProfileDnd';
 import styles from './QualityProfileItems.css';
 
 interface QualityProfileItemsProps {
   editGroups: boolean;
-  dropQualityIndex: string | null;
-  dropPosition: string | null;
-  qualityProfileItems: QualityProfileItem[];
+  // Highest quality first, in the order the drag has them right now.
+  displayItems: DisplayItem[];
   errors?: Failure[];
   warnings?: Failure[];
   onToggleEditGroupsMode: () => void;
@@ -32,15 +29,11 @@ interface QualityProfileItemsProps {
   ) => void;
   onItemGroupAllowedChange: (groupId: number, allowed: boolean) => void;
   onItemGroupNameChange: (groupId: number, name: string) => void;
-  onQualityProfileItemDragMove: (options: DragMoveOptions) => void;
-  onQualityProfileItemDragEnd: (didDrop: boolean) => void;
 }
 
 function QualityProfileItems({
   editGroups,
-  dropQualityIndex,
-  dropPosition,
-  qualityProfileItems,
+  displayItems,
   errors = [],
   warnings = [],
   onToggleEditGroupsMode,
@@ -49,8 +42,6 @@ function QualityProfileItems({
   onQualityProfileItemAllowedChange,
   onItemGroupAllowedChange,
   onItemGroupNameChange,
-  onQualityProfileItemDragMove,
-  onQualityProfileItemDragEnd,
 }: Readonly<QualityProfileItemsProps>) {
   // The list is measured in both modes and each height kept, so switching modes
   // does not shrink the container back and forth.
@@ -68,9 +59,6 @@ function QualityProfileItems({
     [editGroups]
   );
 
-  const isDragging = dropQualityIndex !== null;
-  const isDraggingUp = isDragging && dropPosition === 'above';
-  const isDraggingDown = isDragging && dropPosition === 'below';
   const minHeight = editGroups ? qualitiesHeightEditGroups : qualitiesHeight;
 
   return (
@@ -124,41 +112,47 @@ function QualityProfileItems({
             className={styles.qualities}
             style={{ minHeight: `${minHeight}px` }}
           >
-            {qualityProfileItems
-              .map((profileItem, index) => {
-                // Read off the item rather than destructured: testing
-                // `quality` is what tells a group from a quality, and only the
-                // item itself narrows with it.
-                const { id, allowed, quality, items } = profileItem;
-                const identifier = quality ? quality.id : id;
+            {displayItems.map((entry, index) => {
+              if (entry.kind === 'group') {
+                const { group, items } = entry;
 
                 return (
-                  <QualityProfileItemDragSource
-                    key={identifier}
+                  <QualityProfileItemGroup
+                    key={`group-${group.id}`}
                     editGroups={editGroups}
-                    groupId={id}
-                    qualityId={quality?.id}
-                    name={quality ? quality.name : profileItem.name}
-                    allowed={allowed}
+                    index={index}
+                    groupId={group.id}
+                    name={group.name}
+                    allowed={group.allowed}
                     items={items}
-                    qualityIndex={`${index + 1}`}
-                    isDraggingUp={isDraggingUp}
-                    isDraggingDown={isDraggingDown}
-                    onCreateGroupPress={onCreateGroupPress}
+                    onItemGroupAllowedChange={onItemGroupAllowedChange}
+                    onItemGroupNameChange={onItemGroupNameChange}
                     onDeleteGroupPress={onDeleteGroupPress}
                     onQualityProfileItemAllowedChange={
                       onQualityProfileItemAllowedChange
                     }
-                    onItemGroupAllowedChange={onItemGroupAllowedChange}
-                    onItemGroupNameChange={onItemGroupNameChange}
-                    onQualityProfileItemDragMove={onQualityProfileItemDragMove}
-                    onQualityProfileItemDragEnd={onQualityProfileItemDragEnd}
                   />
                 );
-              })
-              .reverse()}
+              }
 
-            <QualityProfileItemDragPreview />
+              const { quality, allowed } = entry.item;
+
+              return (
+                <QualityProfileItem
+                  key={quality.id}
+                  editGroups={editGroups}
+                  containerId={ROOT_CONTAINER}
+                  index={index}
+                  qualityId={quality.id}
+                  name={quality.name}
+                  allowed={allowed}
+                  onCreateGroupPress={onCreateGroupPress}
+                  onQualityProfileItemAllowedChange={
+                    onQualityProfileItemAllowedChange
+                  }
+                />
+              );
+            })}
           </div>
         </Measure>
       </div>

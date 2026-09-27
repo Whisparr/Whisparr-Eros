@@ -1,6 +1,8 @@
+import { CollisionPriority } from '@dnd-kit/abstract';
+import { useDragOperation } from '@dnd-kit/react';
+import { useSortable } from '@dnd-kit/react/sortable';
 import classNames from 'classnames';
 import React, { useCallback } from 'react';
-import { ConnectDragSource } from 'react-dnd';
 import CheckInput from 'Components/Form/CheckInput';
 import TextInput from 'Components/Form/TextInput';
 import Icon from 'Components/Icon';
@@ -10,9 +12,8 @@ import { icons } from 'Helpers/Props';
 import { CheckInputChanged, InputChanged } from 'typings/inputs';
 import { QualityProfileQualityItem } from 'typings/QualityProfile';
 import translate from 'Utilities/String/translate';
-import QualityProfileItemDragSource, {
-  DragMoveOptions,
-} from './QualityProfileItemDragSource';
+import QualityProfileItem from './QualityProfileItem';
+import { groupContainerKey, ROOT_CONTAINER } from './useQualityProfileDnd';
 import styles from './QualityProfileItemGroup.css';
 
 export interface QualityProfileItemGroupProps {
@@ -21,12 +22,7 @@ export interface QualityProfileItemGroupProps {
   name: string;
   allowed: boolean;
   items: QualityProfileQualityItem[];
-  qualityIndex: string;
-  isDragging: boolean;
-  isDraggingUp: boolean;
-  isDraggingDown: boolean;
-  // The drag preview renders the group without a drag handle to connect.
-  connectDragSource?: ConnectDragSource;
+  index: number;
   // A group can only hold qualities, so the sources below never need the
   // handlers that act on a group.
   onItemGroupAllowedChange?: (groupId: number, allowed: boolean) => void;
@@ -36,8 +32,6 @@ export interface QualityProfileItemGroupProps {
     qualityId: number,
     allowed: boolean
   ) => void;
-  onQualityProfileItemDragMove: (options: DragMoveOptions) => void;
-  onQualityProfileItemDragEnd: (didDrop: boolean) => void;
 }
 
 function QualityProfileItemGroup({
@@ -46,18 +40,26 @@ function QualityProfileItemGroup({
   name,
   allowed,
   items,
-  qualityIndex,
-  isDragging,
-  isDraggingUp,
-  isDraggingDown,
-  connectDragSource,
+  index,
   onItemGroupAllowedChange,
   onItemGroupNameChange,
   onDeleteGroupPress,
   onQualityProfileItemAllowedChange,
-  onQualityProfileItemDragMove,
-  onQualityProfileItemDragEnd,
 }: Readonly<QualityProfileItemGroupProps>) {
+  // While editing groups the qualities inside take priority, so dropping onto
+  // a group's items puts a quality into the group rather than beside it.
+  const { ref, handleRef, isDragging } = useSortable({
+    id: groupContainerKey(groupId),
+    index,
+    group: ROOT_CONTAINER,
+    type: 'group',
+    accept: ['quality', 'group'],
+    collisionPriority: editGroups
+      ? CollisionPriority.Low
+      : CollisionPriority.Normal,
+  });
+
+  const { source } = useDragOperation();
   const handleAllowedChange = useCallback(
     ({ value }: CheckInputChanged) => {
       onItemGroupAllowedChange?.(groupId, value);
@@ -81,6 +83,7 @@ function QualityProfileItemGroup({
 
   return (
     <div
+      ref={ref}
       className={classNames(
         styles.qualityProfileItemGroup,
         editGroups && styles.editGroups,
@@ -127,53 +130,44 @@ function QualityProfileItemGroup({
               </div>
 
               <div className={styles.groupQualities}>
-                {items
-                  .map(({ quality }) => {
-                    return <Label key={quality.id}>{quality.name}</Label>;
-                  })
-                  .reverse()}
+                {items.map(({ quality }) => {
+                  return <Label key={quality.id}>{quality.name}</Label>;
+                })}
               </div>
             </div>
           </label>
         )}
 
-        {!!connectDragSource &&
-          connectDragSource(
-            <div className={styles.dragHandle}>
-              <Icon
-                className={styles.dragIcon}
-                name={icons.REORDER}
-                title={translate('Reorder')}
-              />
-            </div>
-          )}
+        <div ref={handleRef} className={styles.dragHandle}>
+          <Icon
+            className={styles.dragIcon}
+            name={icons.REORDER}
+            title={translate('Reorder')}
+          />
+        </div>
       </div>
 
       {editGroups && (
-        <div className={styles.items}>
-          {items
-            .map(({ quality }, index) => {
-              return (
-                <QualityProfileItemDragSource
-                  key={quality.id}
-                  editGroups={editGroups}
-                  groupId={groupId}
-                  qualityId={quality.id}
-                  name={quality.name}
-                  allowed={allowed}
-                  items={items}
-                  qualityIndex={`${qualityIndex}.${index + 1}`}
-                  isDraggingUp={isDraggingUp}
-                  isDraggingDown={isDraggingDown}
-                  onQualityProfileItemAllowedChange={
-                    onQualityProfileItemAllowedChange
-                  }
-                  onQualityProfileItemDragMove={onQualityProfileItemDragMove}
-                  onQualityProfileItemDragEnd={onQualityProfileItemDragEnd}
-                />
-              );
-            })
-            .reverse()}
+        <div
+          className={classNames(styles.items, source && styles.isDragActive)}
+        >
+          {items.map(({ quality }, subIndex) => {
+            return (
+              <QualityProfileItem
+                key={quality.id}
+                editGroups={editGroups}
+                containerId={groupContainerKey(groupId)}
+                index={subIndex}
+                groupId={groupId}
+                qualityId={quality.id}
+                name={quality.name}
+                allowed={allowed}
+                onQualityProfileItemAllowedChange={
+                  onQualityProfileItemAllowedChange
+                }
+              />
+            );
+          })}
         </div>
       )}
     </div>

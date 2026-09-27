@@ -1,20 +1,20 @@
+import { move } from '@dnd-kit/helpers';
+import { DragDropProvider, DragEndEvent, DragOverEvent } from '@dnd-kit/react';
 import React, { useCallback, useMemo, useState } from 'react';
 import FieldSet from 'Components/FieldSet';
 import IconButton from 'Components/Link/IconButton';
 import PageSectionContent from 'Components/Page/PageSectionContent';
 import Scroller from 'Components/Scroller/Scroller';
-import useMeasure from 'Helpers/Hooks/useMeasure';
 import useModalOpenState from 'Helpers/Hooks/useModalOpenState';
 import { icons, scrollDirections } from 'Helpers/Props';
 import { useTagList } from 'Tags/useTags';
 import sortByProp from 'Utilities/Array/sortByProp';
 import translate from 'Utilities/String/translate';
 import DelayProfile from './DelayProfile';
-import DelayProfileDragPreview from './DelayProfileDragPreview';
-import DelayProfileDragSource from './DelayProfileDragSource';
 import EditDelayProfileModal from './EditDelayProfileModal';
 import {
   DEFAULT_DELAY_PROFILE_ID,
+  DelayProfile as DelayProfileModel,
   useDelayProfiles,
   useReorderDelayProfile,
 } from './useDelayProfiles';
@@ -25,9 +25,11 @@ function DelayProfiles() {
   const tagList = useTagList();
   const reorderDelayProfile = useReorderDelayProfile();
 
-  const [measureRef, { width }] = useMeasure();
-  const [dragIndex, setDragIndex] = useState<number | null>(null);
-  const [dropIndex, setDropIndex] = useState<number | null>(null);
+  // The list is reordered locally while a profile is dragged; the server is
+  // only told where it landed once the drag ends.
+  const [localItems, setLocalItems] = useState<DelayProfileModel[] | null>(
+    null
+  );
 
   const [
     isAddDelayProfileModalOpen,
@@ -47,29 +49,38 @@ function DelayProfiles() {
       .sort(sortByProp('order'));
   }, [data]);
 
-  const handleDelayProfileDragMove = useCallback(
-    (dragIndex: number, dropIndex: number) => {
-      setDragIndex(dragIndex);
-      setDropIndex(dropIndex);
+  const displayedItems = localItems ?? items;
+
+  const handleDragStart = useCallback(() => {
+    setLocalItems([...items]);
+  }, [items]);
+
+  const handleDragOver = useCallback((event: DragOverEvent) => {
+    setLocalItems((current) => (current ? move(current, event) : current));
+  }, []);
+
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      setLocalItems((current) => {
+        if (current && !event.canceled) {
+          const moved = move(current, event);
+          const id = event.operation.source?.id as number | undefined;
+          const index = moved.findIndex((item) => item.id === id);
+
+          // Dropped where it started, so there is nothing to save.
+          if (id !== undefined && index !== -1 && items[index]?.id !== id) {
+            reorderDelayProfile(
+              id,
+              index > 0 ? moved[index - 1].id : undefined
+            );
+          }
+        }
+
+        return null;
+      });
     },
-    []
+    [items, reorderDelayProfile]
   );
-
-  const handleDelayProfileDragEnd = useCallback(
-    (id: number, didDrop: boolean) => {
-      if (didDrop && dropIndex !== null) {
-        reorderDelayProfile(id, dropIndex - 1);
-      }
-
-      setDragIndex(null);
-      setDropIndex(null);
-    },
-    [dropIndex, reorderDelayProfile]
-  );
-
-  const isDragging = dropIndex !== null;
-  const isDraggingUp = isDragging && dropIndex < (dragIndex ?? 0);
-  const isDraggingDown = isDragging && dropIndex > (dragIndex ?? 0);
 
   return (
     <FieldSet legend={translate('DelayProfiles')}>
@@ -84,7 +95,7 @@ function DelayProfiles() {
           scrollDirection={scrollDirections.HORIZONTAL}
           autoFocus={false}
         >
-          <div ref={measureRef}>
+          <div>
             <div className={styles.delayProfilesHeader}>
               <div className={styles.column}>
                 {translate('PreferredProtocol')}
@@ -94,30 +105,31 @@ function DelayProfiles() {
               <div className={styles.tags}>{translate('Tags')}</div>
             </div>
 
-            <div className={styles.delayProfiles}>
-              {items.map((item) => {
-                return (
-                  <DelayProfileDragSource
-                    key={item.id}
-                    delayProfile={item}
-                    tagList={tagList}
-                    isDraggingUp={isDraggingUp}
-                    isDraggingDown={isDraggingDown}
-                    onDelayProfileDragMove={handleDelayProfileDragMove}
-                    onDelayProfileDragEnd={handleDelayProfileDragEnd}
-                  />
-                );
-              })}
-
-              <DelayProfileDragPreview width={width} />
-            </div>
+            <DragDropProvider
+              onDragStart={handleDragStart}
+              onDragOver={handleDragOver}
+              onDragEnd={handleDragEnd}
+            >
+              <div className={styles.delayProfiles}>
+                {displayedItems.map((item, index) => {
+                  return (
+                    <DelayProfile
+                      key={item.id}
+                      delayProfile={item}
+                      tagList={tagList}
+                      index={index}
+                    />
+                  );
+                })}
+              </div>
+            </DragDropProvider>
 
             {defaultProfile ? (
               <div>
                 <DelayProfile
                   delayProfile={defaultProfile}
                   tagList={tagList}
-                  isDragging={false}
+                  index={-1}
                 />
               </div>
             ) : null}

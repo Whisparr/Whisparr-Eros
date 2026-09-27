@@ -91,6 +91,7 @@
   width: $dragHandleWidth;
   text-align: center;
   cursor: grab;
+  touch-action: none;
 }
 
 .dragIcon {
@@ -103,4 +104,10 @@
 
 .items {
   margin: 0 50px 0 35px;
+
+  /* Marks each group as a drop target while a quality is being dragged. */
+  &.isDragActive {
+    min-height: 36px;
+    outline: 1px dashed var(--borderColor);
+  }
 }
