@@ -1,10 +1,11 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { useSelect } from 'App/SelectContext';
-import { RENAME_MOVIE } from 'Commands/commandNames';
+import { DELETE_MOVIE_FILES, RENAME_MOVIE } from 'Commands/commandNames';
 import { useCommandExecuting } from 'Commands/useCommands';
 import SpinnerButton from 'Components/Link/SpinnerButton';
 import PageContentFooter from 'Components/Page/PageContentFooter';
 import { kinds } from 'Helpers/Props';
+import DeleteMovieFilesModal from 'Movie/Index/Select/Delete/Files/DeleteMovieFilesModal';
 import Movie from 'Movie/Movie';
 import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
@@ -31,6 +32,7 @@ function SceneIndexSelectFooter({
   items,
 }: Readonly<SceneIndexSelectFooterProps>) {
   const isOrganizingMovies = useCommandExecuting(RENAME_MOVIE);
+  const isDeletingFiles = useCommandExecuting(DELETE_MOVIE_FILES);
 
   // `/movie/editor` serves both buttons, but they spin independently, so each
   // gets its own mutation rather than sharing one `isPending`.
@@ -38,6 +40,7 @@ function SceneIndexSelectFooter({
   const tagsMutation = useEditScenesModalMutation();
 
   const [isDeleteSceneModalOpen, setIsDeleteSceneModalOpen] = useState(false);
+  const [isDeleteFilesModalOpen, setIsDeleteFilesModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isOrganizeModalOpen, setIsOrganizeModalOpen] = useState(false);
   const [isTagsModalOpen, setIsTagsModalOpen] = useState(false);
@@ -104,6 +107,14 @@ function SceneIndexSelectFooter({
     setIsDeleteSceneModalOpen(false);
   }, []);
 
+  const onDeleteFilesPress = useCallback(() => {
+    setIsDeleteFilesModalOpen(true);
+  }, []);
+
+  const onDeleteFilesModalClose = useCallback(() => {
+    setIsDeleteFilesModalOpen(false);
+  }, []);
+
   const onDeleteSelectedPress = useCallback(() => {
     setIsDeleteSceneModalOpen(true);
   }, []);
@@ -153,6 +164,15 @@ function SceneIndexSelectFooter({
           >
             {translate('Delete')}
           </SpinnerButton>
+
+          <SpinnerButton
+            isSpinning={isDeletingFiles}
+            isDisabled={!anySelected || isDeletingFiles}
+            kind={kinds.DANGER}
+            onPress={onDeleteFilesPress}
+          >
+            {translate('DeleteFiles')}
+          </SpinnerButton>
         </div>
       </div>
 
@@ -187,6 +207,14 @@ function SceneIndexSelectFooter({
         sceneIds={sceneIds}
         onDeletePress={onDeletePress}
         onModalClose={onDeleteModalClose}
+      />
+
+      <DeleteMovieFilesModal
+        isOpen={isDeleteFilesModalOpen}
+        itemType="scene"
+        movieIds={sceneIds}
+        items={items}
+        onModalClose={onDeleteFilesModalClose}
       />
     </PageContentFooter>
   );
