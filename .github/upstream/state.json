@@ -2767,8 +2767,8 @@
       "c64f4adfc435347da071e2fbd69847c9bb3e64ff": {
         "subject": "New: Delete files for Select Series",
         "month": "2026-03",
-        "disposition": "skip",
-        "reason": "Adds bulk 'delete files' for a series-index selection: a new DeleteSeriesFilesCommand, an IExecute handler on MediaFileDeletionService, three V5 endpoints and a new modal. That is a feature, not a sync pick. It also carries a real fix we do not take here -- DeleteEpisodeFile switching from _diskProvider.GetParentFolder to _rootFolderService.GetBestRootFolderPath, which matters when the item sits in a nested folder under the root. Lifting one line out of a feature commit into our file-deletion and recycle-bin path is not a drive-by worth making; flagged for its own PR."
+        "disposition": "adapt",
+        "reason": "Landed 2026-09-27 as its own PR. The backend became a DeleteMovieFilesCommand executed by MediaFileDeletionService. It serves both the Movies and Scenes index select footers through one shared modal; our delete modal had no file list, so it reuses the existing *FolderMovieCount/*FolderSceneCount keys and adds three of our own. The GetBestRootFolderPath fix is taken in DeleteMovieFile too: with GetParentFolder, a movie or scene nested under a studio folder had its parent studio folder checked as the root folder, and deletes failed with 'root folder doesn't exist'. One deliberate difference from upstream: a file already missing from disk is still removed from the database, matching our single-file delete, and there is no movie-folder-exists precondition."
       },
       "b135e5a2a43de73a382c7d505263d4318c00d647": {
         "subject": "New: Replace HTML Encoded values in release titles",
