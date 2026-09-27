@@ -12,8 +12,8 @@
       "repo": "Sonarr/Sonarr",
       "branch": "v5-develop",
       "owns": "frontend",
-      "highWater": "76c684e097f16ac216e6213845e5cac372774995",
-      "highWaterNote": "2026-09-16 'Reset loaded state for series images when URL changes', the current tip of Sonarr v5-develop. Everything at or before this mark is settled: all eight commits of the 2026-09 batch are dispositioned, including the three the upstream-watch PR #907 picked without dispositions. Advance only when everything at or before the new mark is settled."
+      "highWater": "a8a82905e7cebad06a8414d84124cd13899abb89",
+      "highWaterNote": "2026-09-24 'Hide home until we have something to show', the current tip of Sonarr v5-develop. Everything at or before this mark is settled. The second 2026-09 batch is 24 commits: the v5 UI redesign (12) and the four frontend tooling rewrites are deferred by paul's decision, and the backend eight are have/skip, plus one defer waiting on Radarr's restart work. Advance only when everything at or before the new mark is settled."
     }
   },
   "dispositions": {
@@ -4241,6 +4241,167 @@
         "month": "2026-09",
         "disposition": "skip",
         "reason": "The state it resets does not exist here. Upstream SeriesImage tracks isLoaded to fade the image in; our frontend/src/Movie/MovieImage.tsx tracks only url, hasError and triedRemote, and isLoaded appears nowhere in frontend/src outside three unrelated list views. The upstream-watch bot applied the one-line setIsLoaded(true) to MovieImage.tsx anyway (PR #907, dfd55217bd) by context match alone - it would not compile."
+      },
+      "e5761eceb069cfcaa4dbfe8313d6ad629693824f": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-09",
+        "disposition": "skip",
+        "reason": "Weblate translation update. Translations come from our own Weblate project, never from cherry-picks."
+      },
+      "f278f17b5dba9c5f9f98657844b3a844cbbf5cdd": {
+        "subject": "Automated API Docs update",
+        "month": "2026-09",
+        "disposition": "skip",
+        "reason": "Regenerated openapi.json for the V5 surface only. We retired the checked-in spec and serve ours at /docs, and we have no Api.V5 project anyway."
+      },
+      "dbb5c33f148a6cc8d24e89d4b97b800fec4e9dd4": {
+        "subject": "Internal restart fixes",
+        "month": "2026-09",
+        "disposition": "defer",
+        "reason": "Follow-up fixes to Sonarr's in-process restart (6cd1ab376): an IsDisposed guard in EventAggregator so events published while the container is torn down are dropped, and a DatabaseTarget that unsubscribes before resubscribing and finds itself by name on shutdown. They only matter once the host can restart in-process, which we do not do yet. Wanted when that lands, and they should land together with it.",
+        "blockedBy": "Radarr e80abdd60 (Improve external restart handling), itself deferred until Radarr wires up RestartableServiceLifetime. Sonarr's 6cd1ab376 was skipped so that both halves land through the Radarr chunk; take these fixes in the same PR."
+      },
+      "8033170da0cd53c5030930f46e5fd23d6a72bc1b": {
+        "subject": "Bump FFMpegCore to 5.5.0 and FFprobe to 9.0.2",
+        "month": "2026-09",
+        "disposition": "have",
+        "reason": "Openur.FFMpegCore is already 5.5.0.45 and Openur.FFprobeStatic 9.0.2.508 here, the exact versions this moves to."
+      },
+      "56d29e02ae20e91014c8b4ada304afa533bd0028": {
+        "subject": "Bump Dapper, MailKit and Polly",
+        "month": "2026-09",
+        "disposition": "have",
+        "reason": "Already there: Dapper 2.1.89 in all three projects, MailKit 4.18.0 and Polly 8.8.0."
+      },
+      "7bfb953e8af1a8c3cf55e3a6ee16908a5e62e3e6": {
+        "subject": "Bump Microsoft.AspNetCore.Authentication.OpenIdConnect to 10.0.12",
+        "month": "2026-09",
+        "disposition": "skip",
+        "reason": "Bumps Microsoft.AspNetCore.Authentication.OpenIdConnect, which we do not reference at all. It came to Sonarr with OIDC authentication (9f0cb9284), which is deferred here as a product decision; the package arrives with that port."
+      },
+      "93bed3223d90a2bf2debaa6cb41677a896ab6d99": {
+        "subject": "Remove System.Drawing.Common",
+        "month": "2026-09",
+        "disposition": "skip",
+        "reason": "Drops System.Drawing.Common from Sonarr.Core. Our backend follows Radarr, which still references it on develop (Radarr.Core.csproj), and we carry it in four projects (Core, Http, SignalR, Test.Common), not one. Removing it is a dependency-audit call across all four, not a Sonarr pick."
+      },
+      "1580ff87c143e449df6e22e20819e4f674d96f42": {
+        "subject": "Fixed: Manual Interaction Required Notifications for Unknown Series",
+        "month": "2026-09",
+        "disposition": "have",
+        "reason": "Already safe here. NotificationService.ShouldHandleMovie returns false with a debug log for a null movie on a tagged notification. The ManualInteractionRequired handler reads message.RemoteMovie?.Movie, and CustomScript already null-guards the movie and DownloadItem."
+      },
+      "d9e7ea05016d5bbbce62ec74da94f2dd2023f914": {
+        "subject": "v5 UI Foundation",
+        "month": "2026-09",
+        "disposition": "defer",
+        "reason": "Part of Sonarr's v5 UI redesign, merged into v5-develop in 2026-09. UI Foundation: the new design tokens, base components and page chrome that every later redesign commit builds on. Nothing here is a bug fix in code we share. It changes the look and layout, and the pages are Series-shaped, so every file would be an adapt onto our Movie/Scene/Performer/Studio pages. The en.json hunk is not ours to take either.",
+        "blockedBy": "A product decision on whether Eros adopts Sonarr's v5 UI redesign. Deferred by paul on 2026-09-27. If it is adopted, the port is its own multi-PR feature, starting from d9e7ea050 (UI Foundation), which the rest of the redesign builds on."
+      },
+      "a267097a325da52021683c6db4d0ee1c382fe218": {
+        "subject": "v5 UI Containers, Toolbear, Sidebar and Headings",
+        "month": "2026-09",
+        "disposition": "defer",
+        "reason": "Part of Sonarr's v5 UI redesign, merged into v5-develop in 2026-09. Page containers, toolbar, sidebar and headings, restyled on the foundation. Nothing here is a bug fix in code we share. It changes the look and layout, and the pages are Series-shaped, so every file would be an adapt onto our Movie/Scene/Performer/Studio pages. The en.json hunk is not ours to take either.",
+        "blockedBy": "A product decision on whether Eros adopts Sonarr's v5 UI redesign. Deferred by paul on 2026-09-27. If it is adopted, the port is its own multi-PR feature, starting from d9e7ea050 (UI Foundation), which the rest of the redesign builds on."
+      },
+      "a39334288a73eeb04208668e07cc554b916befff": {
+        "subject": "v5 Series Index",
+        "month": "2026-09",
+        "disposition": "defer",
+        "reason": "Part of Sonarr's v5 UI redesign, merged into v5-develop in 2026-09. Series Index pages rebuilt in the new design. Nothing here is a bug fix in code we share. It changes the look and layout, and the pages are Series-shaped, so every file would be an adapt onto our Movie/Scene/Performer/Studio pages. The en.json hunk is not ours to take either.",
+        "blockedBy": "A product decision on whether Eros adopts Sonarr's v5 UI redesign. Deferred by paul on 2026-09-27. If it is adopted, the port is its own multi-PR feature, starting from d9e7ea050 (UI Foundation), which the rest of the redesign builds on."
+      },
+      "22d8961c44898a68267884cd2331c2310c56f77e": {
+        "subject": "v5 Series Details",
+        "month": "2026-09",
+        "disposition": "defer",
+        "reason": "Part of Sonarr's v5 UI redesign, merged into v5-develop in 2026-09. Series Details rebuilt in the new design. Nothing here is a bug fix in code we share. It changes the look and layout, and the pages are Series-shaped, so every file would be an adapt onto our Movie/Scene/Performer/Studio pages. The en.json hunk is not ours to take either.",
+        "blockedBy": "A product decision on whether Eros adopts Sonarr's v5 UI redesign. Deferred by paul on 2026-09-27. If it is adopted, the port is its own multi-PR feature, starting from d9e7ea050 (UI Foundation), which the rest of the redesign builds on."
+      },
+      "fcdc91262c43af8ec7800a80ce83bbbf740cc131": {
+        "subject": "v5 Calendar",
+        "month": "2026-09",
+        "disposition": "defer",
+        "reason": "Part of Sonarr's v5 UI redesign, merged into v5-develop in 2026-09. Calendar rebuilt in the new design. Nothing here is a bug fix in code we share. It changes the look and layout, and the pages are Series-shaped, so every file would be an adapt onto our Movie/Scene/Performer/Studio pages. The en.json hunk is not ours to take either.",
+        "blockedBy": "A product decision on whether Eros adopts Sonarr's v5 UI redesign. Deferred by paul on 2026-09-27. If it is adopted, the port is its own multi-PR feature, starting from d9e7ea050 (UI Foundation), which the rest of the redesign builds on."
+      },
+      "4fb11bf986a30ff9b00d19e5b293e1d3aaf5f072": {
+        "subject": "v5 Activity and Wanted",
+        "month": "2026-09",
+        "disposition": "defer",
+        "reason": "Part of Sonarr's v5 UI redesign, merged into v5-develop in 2026-09. Activity and Wanted pages restyled. Nothing here is a bug fix in code we share. It changes the look and layout, and the pages are Series-shaped, so every file would be an adapt onto our Movie/Scene/Performer/Studio pages. The en.json hunk is not ours to take either.",
+        "blockedBy": "A product decision on whether Eros adopts Sonarr's v5 UI redesign. Deferred by paul on 2026-09-27. If it is adopted, the port is its own multi-PR feature, starting from d9e7ea050 (UI Foundation), which the rest of the redesign builds on."
+      },
+      "2c057e9b824b41fe73924d3e19f53141359b91f6": {
+        "subject": "v5 Settings",
+        "month": "2026-09",
+        "disposition": "defer",
+        "reason": "Part of Sonarr's v5 UI redesign, merged into v5-develop in 2026-09. Every Settings page restyled: 284 files. Nothing here is a bug fix in code we share. It changes the look and layout, and the pages are Series-shaped, so every file would be an adapt onto our Movie/Scene/Performer/Studio pages. The en.json hunk is not ours to take either.",
+        "blockedBy": "A product decision on whether Eros adopts Sonarr's v5 UI redesign. Deferred by paul on 2026-09-27. If it is adopted, the port is its own multi-PR feature, starting from d9e7ea050 (UI Foundation), which the rest of the redesign builds on."
+      },
+      "9f6853a95d4f6c6cfcfcda02340b3962db6f0b98": {
+        "subject": "v5 Add New Series",
+        "month": "2026-09",
+        "disposition": "defer",
+        "reason": "Part of Sonarr's v5 UI redesign, merged into v5-develop in 2026-09. Add New Series flow rebuilt in the new design. Nothing here is a bug fix in code we share. It changes the look and layout, and the pages are Series-shaped, so every file would be an adapt onto our Movie/Scene/Performer/Studio pages. The en.json hunk is not ours to take either.",
+        "blockedBy": "A product decision on whether Eros adopts Sonarr's v5 UI redesign. Deferred by paul on 2026-09-27. If it is adopted, the port is its own multi-PR feature, starting from d9e7ea050 (UI Foundation), which the rest of the redesign builds on."
+      },
+      "d85b036ab8e1162a8078aedebdcdd018c5fe0c9e": {
+        "subject": "v5 Library Import",
+        "month": "2026-09",
+        "disposition": "defer",
+        "reason": "Part of Sonarr's v5 UI redesign, merged into v5-develop in 2026-09. Library Import rebuilt in the new design. Nothing here is a bug fix in code we share. It changes the look and layout, and the pages are Series-shaped, so every file would be an adapt onto our Movie/Scene/Performer/Studio pages. The en.json hunk is not ours to take either.",
+        "blockedBy": "A product decision on whether Eros adopts Sonarr's v5 UI redesign. Deferred by paul on 2026-09-27. If it is adopted, the port is its own multi-PR feature, starting from d9e7ea050 (UI Foundation), which the rest of the redesign builds on."
+      },
+      "481ffa84a90e97f2215996c10d791d8a737a3d8c": {
+        "subject": "Update v5 redesign styling",
+        "month": "2026-09",
+        "disposition": "defer",
+        "reason": "Part of Sonarr's v5 UI redesign, merged into v5-develop in 2026-09. Styling pass over the redesigned components. Nothing here is a bug fix in code we share. It changes the look and layout, and the pages are Series-shaped, so every file would be an adapt onto our Movie/Scene/Performer/Studio pages. The en.json hunk is not ours to take either.",
+        "blockedBy": "A product decision on whether Eros adopts Sonarr's v5 UI redesign. Deferred by paul on 2026-09-27. If it is adopted, the port is its own multi-PR feature, starting from d9e7ea050 (UI Foundation), which the rest of the redesign builds on."
+      },
+      "b9da16d63ed22910ff47d67a6dc7ee47daef5cb6": {
+        "subject": "New: Move 'Test Parsing' and 'Manual Import' to menu on page header",
+        "month": "2026-09",
+        "disposition": "defer",
+        "reason": "Part of Sonarr's v5 UI redesign, merged into v5-develop in 2026-09. Moves Test Parsing and Manual Import from the sidebar into a menu in the redesigned page header. Nothing here is a bug fix in code we share. It changes the look and layout, and the pages are Series-shaped, so every file would be an adapt onto our Movie/Scene/Performer/Studio pages. The en.json hunk is not ours to take either.",
+        "blockedBy": "A product decision on whether Eros adopts Sonarr's v5 UI redesign. Deferred by paul on 2026-09-27. If it is adopted, the port is its own multi-PR feature, starting from d9e7ea050 (UI Foundation), which the rest of the redesign builds on."
+      },
+      "a8a82905e7cebad06a8414d84124cd13899abb89": {
+        "subject": "Hide home until we have something to show",
+        "month": "2026-09",
+        "disposition": "defer",
+        "reason": "Part of Sonarr's v5 UI redesign, merged into v5-develop in 2026-09. Redirects / to /series and hides the redesign's Home nav item until its homepage exists. We have no Home page to hide. Nothing here is a bug fix in code we share. It changes the look and layout, and the pages are Series-shaped, so every file would be an adapt onto our Movie/Scene/Performer/Studio pages. The en.json hunk is not ours to take either.",
+        "blockedBy": "A product decision on whether Eros adopts Sonarr's v5 UI redesign. Deferred by paul on 2026-09-27. If it is adopted, the port is its own multi-PR feature, starting from d9e7ea050 (UI Foundation), which the rest of the redesign builds on."
+      },
+      "600f1522651ade9668a1f9a44fe76d29fb94d9d6": {
+        "subject": "Replace react-dnd with dnd-kit",
+        "month": "2026-09",
+        "disposition": "defer",
+        "reason": "Replaces react-dnd (plus its multi and touch backends) with dnd-kit. We are still on react-dnd 16.0.1, and our drag-and-drop sites are the same shared ones (quality profile items, delay profiles, table options columns), so this is a straight adapt. It is mechanical, but it rewrites every drag source and target.",
+        "blockedBy": "Its own PR, by paul's decision on 2026-09-27: the tooling rewrites stay out of sync chunks because each one touches the whole frontend tree. Independent of the redesign; three of its files are Sonarr's own new helpers, which come with it."
+      },
+      "b2413c1e09e798101a952b848470f919a9e9311a": {
+        "subject": "Replace PostCSS variables with custom properties and @custom-media",
+        "month": "2026-09",
+        "disposition": "defer",
+        "reason": "Replaces postcss-simple-vars with native custom properties and @custom-media, and deletes Styles/Variables. It overlaps #923, which just converted those four files to TypeScript: after this, the TSX consumers that import dimensions/fonts need another source, so the port has to decide where those values live.",
+        "blockedBy": "Its own PR, by paul's decision on 2026-09-27: the tooling rewrites stay out of sync chunks because each one touches the whole frontend tree. Take it before dc984cf17 and 3731e9dc4: upstream's order is custom properties, then .module.css, then Vite."
+      },
+      "dc984cf1754f935573b1722eab57e53acb6c2572": {
+        "subject": "Rename CSS modules to .module.css",
+        "month": "2026-09",
+        "disposition": "defer",
+        "reason": "Renames every CSS module to .module.css, updating the imports: 772 files upstream. Mechanical, but it touches nearly every component, so it has to land alone and fast to avoid conflicts with in-flight PRs. 26 of its non-CSS files are Sonarr-only pages we lack.",
+        "blockedBy": "Its own PR, by paul's decision on 2026-09-27: the tooling rewrites stay out of sync chunks because each one touches the whole frontend tree. After b2413c1e0 and before 3731e9dc4, which relies on the .module.css naming."
+      },
+      "3731e9dc4731b2c1e62a05a8a6758c7c26d49239": {
+        "subject": "Replace webpack with Vite",
+        "month": "2026-09",
+        "disposition": "defer",
+        "reason": "Replaces webpack with Vite: deletes frontend/build/ and the css-variables and typings loaders, adds vite.config, and touches .github/workflows plus seven src/ files for the dev-server wiring. It removes about 6,500 lines. It changes how CI builds the UI, so its workflow half needs reading against our build_v3.yml rather than replaying.",
+        "blockedBy": "Its own PR, by paul's decision on 2026-09-27: the tooling rewrites stay out of sync chunks because each one touches the whole frontend tree. Last in the chain, after b2413c1e0 and dc984cf17, and it needs a workflow change the upstream-watch app token cannot push."
       }
     }
   }
