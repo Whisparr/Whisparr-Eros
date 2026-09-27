@@ -60,7 +60,7 @@
   .movieContainer {
     position: absolute;
     top: 42px;
-    z-index: $popperZIndex;
+    z-index: var(--popperZIndex);
     display: flex;
     flex: auto;
     flex-grow: 1;
@@ -116,7 +116,7 @@
   cursor: pointer;
 }
 
-@media only screen and (max-width: $breakpointSmall) {
+@media (--breakpointSmall) {
   .input {
     min-width: 150px;
     max-width: 200px;

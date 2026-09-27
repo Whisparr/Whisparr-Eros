@@ -12,6 +12,6 @@
   word-wrap: break-word;
   word-break: break-all;
   font-size: 13px;
-  font-family: $monoSpaceFontFamily;
+  font-family: var(--monoSpaceFontFamily);
   line-height: 1.52857143;
 }

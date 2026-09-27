@@ -3,13 +3,13 @@
   justify-content: space-between;
   flex: 0 0 auto;
   padding: 0 20px;
-  height: $toolbarHeight;
+  height: var(--toolbarHeight);
   background-color: var(--toolbarBackgroundColor);
   color: var(--toolbarColor);
   line-height: 60px;
 }
 
-@media only screen and (max-width: $breakpointSmall) {
+@media (--breakpointSmall) {
   .toolbar {
     padding: 0 10px;
   }

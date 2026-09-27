@@ -30,7 +30,7 @@
   margin-bottom: 0;
   margin-left: 2px;
   font-weight: normal;
-  line-height: $qualityProfileItemHeight;
+  line-height: var(--qualityProfileItemHeight);
   cursor: pointer;
 }
 
@@ -62,7 +62,7 @@
   justify-content: center;
   flex-shrink: 0;
   margin-left: auto;
-  width: $dragHandleWidth;
+  width: var(--dragHandleWidth);
   text-align: center;
   cursor: grab;
   touch-action: none;

@@ -33,7 +33,7 @@
   height: 35px;
 }
 
-@media only screen and (max-width: $breakpointSmall) {
+@media (--breakpointSmall) {
   .inputContainer {
     margin-right: 0;
   }

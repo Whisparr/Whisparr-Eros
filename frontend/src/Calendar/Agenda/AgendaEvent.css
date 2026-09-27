@@ -18,7 +18,7 @@
   position: relative;
   display: flex;
   overflow-x: hidden;
-  font-size: $defaultFontSize;
+  font-size: var(--defaultFontSize);
 
   &:global(.colorImpaired) {
     border-left-width: 5px;
@@ -94,7 +94,7 @@
   composes: continuing from 'Calendar/Events/CalendarEvent.css';
 }
 
-@media only screen and (max-width: $breakpointSmall) {
+@media (--breakpointSmall) {
   .overlay {
     flex-direction: column;
   }

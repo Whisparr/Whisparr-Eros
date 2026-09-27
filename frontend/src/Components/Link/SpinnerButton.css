@@ -10,7 +10,7 @@
   left: -100%;
   display: inline-flex;
   visibility: hidden;
-  transition: left $defaultSpeed;
+  transition: left var(--defaultSpeed);
   transform: translateX(-50%) translateY(-50%);
 }
 
@@ -22,8 +22,8 @@
   position: relative;
   left: 0;
   transition:
-    left $defaultSpeed,
-    opacity $defaultSpeed;
+    left var(--defaultSpeed),
+    opacity var(--defaultSpeed);
 }
 
 .isSpinning {

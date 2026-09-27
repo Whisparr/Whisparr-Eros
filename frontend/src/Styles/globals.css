@@ -2,5 +2,6 @@
 
 @import 'normalize.css/normalize.css';
 @import 'scaffolding.css';
+@import './Variables/variables.css';
 
 /* stylelint-enable */

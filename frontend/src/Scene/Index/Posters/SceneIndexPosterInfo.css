@@ -3,7 +3,7 @@
   align-items: center;
   justify-content: center;
   background-color: var(--sceneBackgroundColor);
-  font-size: $smallFontSize;
+  font-size: var(--smallFontSize);
   gap: 5px;
 }
 

@@ -43,7 +43,7 @@
 }
 
 .optionsContainer {
-  z-index: $popperZIndex;
+  z-index: var(--popperZIndex);
   width: auto;
 }
 

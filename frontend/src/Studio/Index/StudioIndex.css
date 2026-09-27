@@ -33,7 +33,7 @@
   flex-grow: 1;
 
   /* 5px less padding than normal to handle poster's 5px margin */
-  padding: calc($pageContentBodyPadding - 5px);
+  padding: calc(var(--pageContentBodyPadding) - 5px);
 }
 
 .tableInnerContentBody {
@@ -50,7 +50,7 @@
   flex-grow: 1;
 }
 
-@media only screen and (max-width: $breakpointSmall) {
+@media (--breakpointSmall) {
   .pageContentBodyWrapper {
     flex-basis: auto;
     overflow: visible;
@@ -61,6 +61,6 @@
   }
 
   .postersInnerContentBody {
-    padding: calc($pageContentBodyPaddingSmallScreen - 5px);
+    padding: calc(var(--pageContentBodyPaddingSmallScreen) - 5px);
   }
 }

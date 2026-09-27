@@ -28,7 +28,7 @@
   color: var(--helpTextColor);
 }
 
-@media only screen and (max-width: $breakpointSmall) {
+@media (--breakpointSmall) {
   .header {
     display: none;
   }

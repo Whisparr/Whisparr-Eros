@@ -1,5 +1,3 @@
-$hoverScale: 1.05;
-
 .content {
   display: flex;
   flex-direction: column;
@@ -54,7 +52,7 @@ $hoverScale: 1.05;
   text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: $smallFontSize;
+  font-size: var(--smallFontSize);
 }
 
 .controls {
@@ -65,7 +63,7 @@ $hoverScale: 1.05;
   border-radius: 4px;
   background-color: #707070;
   color: var(--white);
-  font-size: $smallFontSize;
+  font-size: var(--smallFontSize);
   opacity: 0;
   transition: opacity 0;
 }
@@ -78,7 +76,7 @@ $hoverScale: 1.05;
   }
 }
 
-@media only screen and (max-width: $breakpointSmall) {
+@media (--breakpointSmall) {
   .container {
     padding: 5px;
   }
@@ -133,5 +131,5 @@ $hoverScale: 1.05;
 .nextAiring {
   background-color: #fafbfc;
   text-align: center;
-  font-size: $smallFontSize;
+  font-size: var(--smallFontSize);
 }

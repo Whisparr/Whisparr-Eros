@@ -1,3 +1,5 @@
+// The dimensions TypeScript reads. Stylesheets use the same values as custom
+// properties from variables.css, so keep the two in sync.
 const dimensions = {
   // Page
   pageContentBodyPadding: '20px',

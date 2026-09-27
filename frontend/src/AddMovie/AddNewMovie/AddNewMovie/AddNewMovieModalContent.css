@@ -74,7 +74,7 @@
   composes: button from 'Components/Link/SpinnerButton.css';
 }
 
-@media only screen and (max-width: $breakpointSmall) {
+@media (--breakpointSmall) {
   .modalFooter {
     display: block;
     text-align: center;
@@ -85,7 +85,7 @@
   }
 }
 
-@media only screen and (max-width: $breakpointSmall) {
+@media (--breakpointSmall) {
   .poster,
   .screenShot {
     flex: 0 1 40%;

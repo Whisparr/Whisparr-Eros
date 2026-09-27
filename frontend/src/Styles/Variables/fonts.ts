@@ -1,3 +1,5 @@
+// The fonts TypeScript reads. Stylesheets use the same values as custom
+// properties from variables.css, so keep the two in sync.
 const fonts = {
   // Families
   defaultFontFamily:

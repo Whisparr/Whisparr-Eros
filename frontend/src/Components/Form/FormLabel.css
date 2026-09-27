@@ -1,7 +1,7 @@
 .label {
   display: flex;
   justify-content: flex-end;
-  margin-right: $formLabelRightMarginWidth;
+  margin-right: var(--formLabelRightMarginWidth);
   padding-top: 8px;
   min-height: 35px;
   text-align: end;
@@ -16,16 +16,16 @@
   color: var(--advancedFormLabelColor);
 }
 
-@media only screen and (max-width: $breakpointLarge) {
+@media (--breakpointLarge) {
   .label {
     justify-content: flex-start;
   }
 }
 
 .small {
-  flex: 0 0 $formLabelSmallWidth;
+  flex: 0 0 var(--formLabelSmallWidth);
 }
 
 .large {
-  flex: 0 0 $formLabelLargeWidth;
+  flex: 0 0 var(--formLabelLargeWidth);
 }
