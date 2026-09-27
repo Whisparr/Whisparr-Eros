@@ -7,7 +7,6 @@ declare namespace QualityProfileItemCssNamespace {
     dragIcon: string;
     isDragging: string;
     isInGroup: string;
-    isPreview: string;
     notAllowed: string;
     qualityName: string;
     qualityNameContainer: string;

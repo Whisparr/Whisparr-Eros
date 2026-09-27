@@ -2,11 +2,11 @@ declare namespace TableOptionsColumnCssNamespace {
   export interface ITableOptionsColumnCss {
     checkContainer: string;
     column: string;
+    columnContainer: string;
     dragHandle: string;
     dragIcon: string;
     isDragging: string;
     label: string;
-    notDragable: string;
   }
 }
 

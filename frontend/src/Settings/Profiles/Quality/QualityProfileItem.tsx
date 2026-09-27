@@ -1,24 +1,24 @@
+import { useSortable } from '@dnd-kit/react/sortable';
 import classNames from 'classnames';
 import React, { useCallback } from 'react';
-import { ConnectDragSource } from 'react-dnd';
 import CheckInput from 'Components/Form/CheckInput';
 import Icon from 'Components/Icon';
 import IconButton from 'Components/Link/IconButton';
 import { icons } from 'Helpers/Props';
 import { CheckInputChanged } from 'typings/inputs';
 import translate from 'Utilities/String/translate';
+import { qualityKey, ROOT_CONTAINER } from './useQualityProfileDnd';
 import styles from './QualityProfileItem.css';
 
 export interface QualityProfileItemProps {
   editGroups?: boolean;
-  isPreview?: boolean;
+  // The sortable container this quality sits in: the root list or a group.
+  containerId: string;
+  index: number;
   groupId?: number;
   qualityId: number;
   name: string;
   allowed: boolean;
-  isDragging: boolean;
-  // The drag preview renders the quality without a drag handle to connect.
-  connectDragSource?: ConnectDragSource;
   onCreateGroupPress?: (qualityId: number) => void;
   onQualityProfileItemAllowedChange?: (
     qualityId: number,
@@ -28,16 +28,25 @@ export interface QualityProfileItemProps {
 
 function QualityProfileItem({
   editGroups,
-  isPreview = false,
+  containerId,
+  index,
   groupId,
   qualityId,
   name,
   allowed,
-  isDragging,
-  connectDragSource,
   onCreateGroupPress,
   onQualityProfileItemAllowedChange,
 }: Readonly<QualityProfileItemProps>) {
+  // A quality in the root list can land on anything; one inside a group only
+  // swaps places with other qualities.
+  const { ref, handleRef, isDragging } = useSortable({
+    id: qualityKey(qualityId),
+    index,
+    group: containerId,
+    type: 'quality',
+    accept: containerId === ROOT_CONTAINER ? undefined : ['quality'],
+  });
+
   const handleAllowedChange = useCallback(
     ({ value }: CheckInputChanged) => {
       onQualityProfileItemAllowedChange?.(qualityId, value);
@@ -51,15 +60,15 @@ function QualityProfileItem({
 
   return (
     <div
+      ref={ref}
       className={classNames(
         styles.qualityProfileItem,
         isDragging && styles.isDragging,
-        isPreview && styles.isPreview,
         groupId && styles.isInGroup
       )}
     >
       <label className={styles.qualityNameContainer}>
-        {editGroups && !groupId && !isPreview && (
+        {editGroups && !groupId && (
           <IconButton
             className={styles.createGroupButton}
             name={icons.GROUP}
@@ -90,16 +99,13 @@ function QualityProfileItem({
         </div>
       </label>
 
-      {!!connectDragSource &&
-        connectDragSource(
-          <div className={styles.dragHandle}>
-            <Icon
-              className={styles.dragIcon}
-              title={translate('CreateGroup')}
-              name={icons.REORDER}
-            />
-          </div>
-        )}
+      <div ref={handleRef} className={styles.dragHandle}>
+        <Icon
+          className={styles.dragIcon}
+          title={translate('CreateGroup')}
+          name={icons.REORDER}
+        />
+      </div>
     </div>
   );
 }

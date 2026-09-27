@@ -2,6 +2,7 @@ declare namespace DelayProfileCssNamespace {
   export interface IDelayProfileCss {
     actions: string;
     column: string;
+    container: string;
     delayProfile: string;
     dragHandle: string;
     dragIcon: string;

@@ -1,6 +1,6 @@
+import { useSortable } from '@dnd-kit/react/sortable';
 import classNames from 'classnames';
 import React, { useCallback } from 'react';
-import { ConnectDragSource } from 'react-dnd';
 import Icon from 'Components/Icon';
 import IconButton from 'Components/Link/IconButton';
 import ConfirmModal from 'Components/Modal/ConfirmModal';
@@ -38,16 +38,14 @@ function getDelay(enabled: boolean, delay: number) {
 export interface DelayProfileProps {
   delayProfile: DelayProfileModel;
   tagList: readonly Tag[];
-  isDragging: boolean;
-  // The drag preview renders the row without a drag handle to connect.
-  connectDragSource?: ConnectDragSource;
+  // Position in the sortable list; the default profile sits outside it.
+  index: number;
 }
 
 function DelayProfile({
   delayProfile,
   tagList,
-  isDragging,
-  connectDragSource,
+  index,
 }: Readonly<DelayProfileProps>) {
   const {
     id,
@@ -60,6 +58,14 @@ function DelayProfile({
   } = delayProfile;
 
   const { deleteDelayProfile } = useDeleteDelayProfile(id);
+
+  const isDefault = id === DEFAULT_DELAY_PROFILE_ID;
+
+  const { ref, handleRef, isDragging } = useSortable({
+    id,
+    index,
+    disabled: isDefault,
+  });
 
   const [
     isEditDelayProfileModalOpen,
@@ -82,12 +88,6 @@ function DelayProfile({
     deleteDelayProfile();
   }, [deleteDelayProfile]);
 
-  const dragHandle = (
-    <div className={styles.dragHandle}>
-      <Icon className={styles.dragIcon} name={icons.REORDER} />
-    </div>
-  );
-
   let preferred = titleCase(translate('PreferProtocol', { preferredProtocol }));
 
   if (!enableUsenet) {
@@ -97,53 +97,56 @@ function DelayProfile({
   }
 
   return (
-    <div
-      className={classNames(
-        styles.delayProfile,
-        isDragging && styles.isDragging
-      )}
-    >
-      <div className={styles.column}>{preferred}</div>
-      <div className={styles.column}>{getDelay(enableUsenet, usenetDelay)}</div>
-      <div className={styles.column}>
-        {getDelay(enableTorrent, torrentDelay)}
-      </div>
+    <div ref={ref} className={isDefault ? undefined : styles.container}>
+      <div
+        className={classNames(
+          styles.delayProfile,
+          isDragging && styles.isDragging
+        )}
+      >
+        <div className={styles.column}>{preferred}</div>
+        <div className={styles.column}>
+          {getDelay(enableUsenet, usenetDelay)}
+        </div>
+        <div className={styles.column}>
+          {getDelay(enableTorrent, torrentDelay)}
+        </div>
 
-      <TagList tags={tags} tagList={tagList} />
+        <TagList tags={tags} tagList={tagList} />
 
-      <div className={styles.actions}>
-        <IconButton
-          name={icons.EDIT}
-          className={
-            id === DEFAULT_DELAY_PROFILE_ID ? styles.editButton : undefined
-          }
-          aria-label={translate('EditDelayProfile')}
-          title={translate('EditDelayProfile')}
-          onPress={setEditDelayProfileModalOpen}
+        <div className={styles.actions}>
+          <IconButton
+            name={icons.EDIT}
+            className={isDefault ? styles.editButton : undefined}
+            aria-label={translate('EditDelayProfile')}
+            title={translate('EditDelayProfile')}
+            onPress={setEditDelayProfileModalOpen}
+          />
+
+          {isDefault ? null : (
+            <div ref={handleRef} className={styles.dragHandle}>
+              <Icon className={styles.dragIcon} name={icons.REORDER} />
+            </div>
+          )}
+        </div>
+
+        <EditDelayProfileModal
+          id={id}
+          isOpen={isEditDelayProfileModalOpen}
+          onModalClose={setEditDelayProfileModalClosed}
+          onDeleteDelayProfilePress={handleDeleteDelayProfilePress}
         />
 
-        {id === DEFAULT_DELAY_PROFILE_ID
-          ? null
-          : // The preview draws the same handle, connected to nothing.
-            (connectDragSource?.(dragHandle) ?? dragHandle)}
+        <ConfirmModal
+          isOpen={isDeleteDelayProfileModalOpen}
+          kind={kinds.DANGER}
+          title={translate('DeleteDelayProfile')}
+          message={translate('DeleteDelayProfileMessageText')}
+          confirmLabel={translate('Delete')}
+          onConfirm={handleConfirmDeletePress}
+          onCancel={setDeleteDelayProfileModalClosed}
+        />
       </div>
-
-      <EditDelayProfileModal
-        id={id}
-        isOpen={isEditDelayProfileModalOpen}
-        onModalClose={setEditDelayProfileModalClosed}
-        onDeleteDelayProfilePress={handleDeleteDelayProfilePress}
-      />
-
-      <ConfirmModal
-        isOpen={isDeleteDelayProfileModalOpen}
-        kind={kinds.DANGER}
-        title={translate('DeleteDelayProfile')}
-        message={translate('DeleteDelayProfileMessageText')}
-        confirmLabel={translate('Delete')}
-        onConfirm={handleConfirmDeletePress}
-        onCancel={setDeleteDelayProfileModalClosed}
-      />
     </div>
   );
 }

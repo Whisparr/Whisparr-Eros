@@ -1,6 +1,4 @@
 import React from 'react';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
 import PageContent from 'Components/Page/PageContent';
 import PageContentBody from 'Components/Page/PageContentBody';
 import PageToolbarSeparator from 'Components/Page/Toolbar/PageToolbarSeparator';
@@ -27,12 +25,7 @@ function CustomFormatSettingsPage() {
       />
 
       <PageContentBody>
-        {/* TODO: Upgrade react-dnd to get typings, we're 2 major versions behind */}
-        {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-        {/* @ts-ignore */}
-        <DndProvider backend={HTML5Backend}>
-          <CustomFormats />
-        </DndProvider>
+        <CustomFormats />
       </PageContentBody>
     </PageContent>
   );

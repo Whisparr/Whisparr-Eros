@@ -65,6 +65,7 @@
   width: $dragHandleWidth;
   text-align: center;
   cursor: grab;
+  touch-action: none;
 }
 
 .dragIcon {
@@ -73,14 +74,4 @@
 
 .isDragging {
   opacity: 0.25;
-}
-
-.isPreview {
-  .qualityName {
-    margin-left: 14px;
-
-    &.isInGroup {
-      margin-left: 28px;
-    }
-  }
 }

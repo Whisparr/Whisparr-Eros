@@ -1,3 +1,4 @@
+import { DragDropProvider } from '@dnd-kit/react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Alert from 'Components/Alert';
 import Form from 'Components/Form/Form';
@@ -17,15 +18,11 @@ import { inputTypes, kinds, sizes } from 'Helpers/Props';
 import { useFilteredLanguages } from 'Language/useLanguages';
 import dimensions from 'Styles/Variables/dimensions';
 import { InputChanged } from 'typings/inputs';
-import QualityProfile, {
-  QualityProfileGroup,
-  QualityProfileItem,
-  QualityProfileQualityItem,
-} from 'typings/QualityProfile';
+import QualityProfile, { QualityProfileItem } from 'typings/QualityProfile';
 import translate from 'Utilities/String/translate';
 import QualityProfileFormatItems from './QualityProfileFormatItems';
-import { DragMoveOptions } from './QualityProfileItemDragSource';
 import QualityProfileItems from './QualityProfileItems';
+import useQualityProfileDnd from './useQualityProfileDnd';
 import useQualityProfileInUse from './useQualityProfileInUse';
 import { useManageQualityProfile } from './useQualityProfiles';
 import styles from './EditQualityProfileModalContent.css';
@@ -36,28 +33,6 @@ const MODAL_BODY_PADDING = Number.parseInt(dimensions.modalBodyPadding, 10);
 // parser reports when it could not tell -- matching on it is not a choice the
 // profile offers.
 const UNPROFILED_LANGUAGES = ['Unknown'];
-
-interface DragState {
-  dragQualityIndex: string | null;
-  dropQualityIndex: string | null;
-  dropPosition: string | null;
-}
-
-const NO_DRAG: DragState = {
-  dragQualityIndex: null,
-  dropQualityIndex: null,
-  dropPosition: null,
-};
-
-function parseIndex(index: string): [number | null, number] {
-  const split = index.split('.');
-
-  if (split.length === 1) {
-    return [null, Number.parseInt(split[0], 10) - 1];
-  }
-
-  return [Number.parseInt(split[0], 10) - 1, Number.parseInt(split[1], 10) - 1];
-}
 
 function getQualityItemGroupId(items: QualityProfileItem[]) {
   const ids = items
@@ -99,7 +74,6 @@ function EditQualityProfileModalContent({
   const wasSaving = usePrevious(isSaving);
 
   const [editGroups, setEditGroups] = useState(false);
-  const [dragState, setDragState] = useState<DragState>(NO_DRAG);
   const [headerHeight, setHeaderHeight] = useState(0);
   const [bodyHeight, setBodyHeight] = useState(0);
   const [footerHeight, setFooterHeight] = useState(0);
@@ -305,140 +279,8 @@ function EditQualityProfileModalContent({
     [items, setItems]
   );
 
-  const handleQualityProfileItemDragMove = useCallback(
-    (options: DragMoveOptions) => {
-      const { dragQualityIndex, dropQualityIndex, dropPosition } = options;
-
-      const [dragGroupIndex, dragItemIndex] = parseIndex(dragQualityIndex);
-      const [dropGroupIndex, dropItemIndex] = parseIndex(dropQualityIndex);
-
-      if (
-        (dropPosition === 'below' && dropItemIndex - 1 === dragItemIndex) ||
-        (dropPosition === 'above' && dropItemIndex + 1 === dragItemIndex)
-      ) {
-        setDragState((state) =>
-          state.dragQualityIndex != null ||
-          state.dropQualityIndex != null ||
-          state.dropPosition != null
-            ? NO_DRAG
-            : state
-        );
-
-        return;
-      }
-
-      let adjustedDropQualityIndex = dropQualityIndex;
-
-      // Correct dragging out of a group to the position above
-      if (
-        dropPosition === 'above' &&
-        dragGroupIndex !== dropGroupIndex &&
-        dropGroupIndex != null
-      ) {
-        // Add 1 to the group index and 2 to the item index so it's inserted above in the correct group
-        adjustedDropQualityIndex = `${dropGroupIndex + 1}.${dropItemIndex + 2}`;
-      }
-
-      // Correct inserting above outside a group
-      if (
-        dropPosition === 'above' &&
-        dragGroupIndex !== dropGroupIndex &&
-        dropGroupIndex == null
-      ) {
-        // Add 2 to the item index so it's entered in the correct place
-        adjustedDropQualityIndex = `${dropItemIndex + 2}`;
-      }
-
-      // Correct inserting below a quality within the same group (when moving a lower item)
-      if (
-        dropPosition === 'below' &&
-        dragGroupIndex === dropGroupIndex &&
-        dropGroupIndex != null &&
-        dragItemIndex < dropItemIndex
-      ) {
-        // Add 1 to the group index leave the item index
-        adjustedDropQualityIndex = `${dropGroupIndex + 1}.${dropItemIndex}`;
-      }
-
-      // Correct inserting below a quality outside a group (when moving a lower item)
-      if (
-        dropPosition === 'below' &&
-        dragGroupIndex === dropGroupIndex &&
-        dropGroupIndex == null &&
-        dragItemIndex < dropItemIndex
-      ) {
-        // Leave the item index so it's inserted below the item
-        adjustedDropQualityIndex = `${dropItemIndex}`;
-      }
-
-      setDragState((state) =>
-        dragQualityIndex !== state.dragQualityIndex ||
-        adjustedDropQualityIndex !== state.dropQualityIndex ||
-        dropPosition !== state.dropPosition
-          ? {
-              dragQualityIndex,
-              dropQualityIndex: adjustedDropQualityIndex,
-              dropPosition,
-            }
-          : state
-      );
-    },
-    []
-  );
-
-  const handleQualityProfileItemDragEnd = useCallback(
-    (didDrop: boolean) => {
-      const { dragQualityIndex, dropQualityIndex } = dragState;
-
-      if (didDrop && dragQualityIndex != null && dropQualityIndex != null) {
-        // The splices below rearrange this copy, never the query's own items.
-        const newItems: QualityProfileItem[] = items.value.map((profileItem) =>
-          profileItem.quality
-            ? { ...profileItem }
-            : { ...profileItem, items: [...profileItem.items] }
-        );
-
-        const [dragGroupIndex, dragItemIndex] = parseIndex(dragQualityIndex);
-        const [dropGroupIndex, dropItemIndex] = parseIndex(dropQualityIndex);
-
-        // Get the group before moving anything so we know the correct place to drop it.
-        const dropGroup =
-          dropGroupIndex == null
-            ? null
-            : (newItems[dropGroupIndex] as QualityProfileGroup);
-
-        const movedItem = ((): QualityProfileQualityItem => {
-          if (dragGroupIndex == null) {
-            return newItems.splice(
-              dragItemIndex,
-              1
-            )[0] as QualityProfileQualityItem;
-          }
-
-          const group = newItems[dragGroupIndex] as QualityProfileGroup;
-          const dragged = group.items.splice(dragItemIndex, 1)[0];
-
-          // If the group is now empty, destroy it.
-          if (!group.items.length) {
-            newItems.splice(dragGroupIndex, 1);
-          }
-
-          return dragged;
-        })();
-
-        if (dropGroup == null) {
-          newItems.splice(dropItemIndex, 0, movedItem);
-        } else {
-          dropGroup.items.splice(dropItemIndex, 0, movedItem);
-        }
-
-        setItems(newItems);
-      }
-
-      setDragState(NO_DRAG);
-    },
-    [dragState, items, setItems]
-  );
+  const { displayItems, handleDragStart, handleDragOver, handleDragEnd } =
+    useQualityProfileDnd(items.value, setItems);
 
   const handleToggleEditGroupsMode = useCallback(() => {
     setEditGroups((state) => !state);
@@ -683,28 +525,26 @@ function EditQualityProfileModalContent({
                   </div>
 
                   <div className={styles.formGroupWrapper}>
-                    <QualityProfileItems
-                      editGroups={editGroups}
-                      dropQualityIndex={dragState.dropQualityIndex}
-                      dropPosition={dragState.dropPosition}
-                      qualityProfileItems={items.value}
-                      errors={items.errors}
-                      warnings={items.warnings}
-                      onToggleEditGroupsMode={handleToggleEditGroupsMode}
-                      onCreateGroupPress={handleCreateGroupPress}
-                      onDeleteGroupPress={handleDeleteGroupPress}
-                      onQualityProfileItemAllowedChange={
-                        handleQualityProfileItemAllowedChange
-                      }
-                      onItemGroupAllowedChange={handleItemGroupAllowedChange}
-                      onItemGroupNameChange={handleItemGroupNameChange}
-                      onQualityProfileItemDragMove={
-                        handleQualityProfileItemDragMove
-                      }
-                      onQualityProfileItemDragEnd={
-                        handleQualityProfileItemDragEnd
-                      }
-                    />
+                    <DragDropProvider
+                      onDragStart={handleDragStart}
+                      onDragOver={handleDragOver}
+                      onDragEnd={handleDragEnd}
+                    >
+                      <QualityProfileItems
+                        editGroups={editGroups}
+                        displayItems={displayItems}
+                        errors={items.errors}
+                        warnings={items.warnings}
+                        onToggleEditGroupsMode={handleToggleEditGroupsMode}
+                        onCreateGroupPress={handleCreateGroupPress}
+                        onDeleteGroupPress={handleDeleteGroupPress}
+                        onQualityProfileItemAllowedChange={
+                          handleQualityProfileItemAllowedChange
+                        }
+                        onItemGroupAllowedChange={handleItemGroupAllowedChange}
+                        onItemGroupNameChange={handleItemGroupNameChange}
+                      />
+                    </DragDropProvider>
                   </div>
 
                   <div className={styles.formatItemSmall}>

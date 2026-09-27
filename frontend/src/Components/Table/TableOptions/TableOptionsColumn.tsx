@@ -1,6 +1,6 @@
+import { useSortable } from '@dnd-kit/react/sortable';
 import classNames from 'classnames';
 import React from 'react';
-import { ConnectDragSource } from 'react-dnd';
 import CheckInput from 'Components/Form/CheckInput';
 import Icon from 'Components/Icon';
 import Column, { IsModifiable } from 'Components/Table/Column';
@@ -13,9 +13,7 @@ export interface TableOptionsColumnProps {
   label: Column['label'];
   isVisible: boolean;
   isModifiable: IsModifiable;
-  isDragging?: boolean;
-  // The drag preview renders the column without a drag handle to connect.
-  connectDragSource?: ConnectDragSource;
+  index: number;
   onVisibleChange: (change: CheckInputChanged) => void;
 }
 
@@ -24,14 +22,19 @@ function TableOptionsColumn({
   label,
   isVisible,
   isModifiable,
-  isDragging,
-  connectDragSource,
+  index,
   onVisibleChange,
 }: Readonly<TableOptionsColumnProps>) {
   const isDraggable = isModifiable !== 'disabled';
 
+  const { ref, handleRef, isDragging } = useSortable({
+    id: name,
+    index,
+    disabled: !isDraggable,
+  });
+
   return (
-    <div className={isDraggable ? undefined : styles.notDragable}>
+    <div ref={ref} className={styles.columnContainer}>
       <div
         className={classNames(styles.column, isDragging && styles.isDragging)}
       >
@@ -46,13 +49,11 @@ function TableOptionsColumn({
           {typeof label === 'function' ? label() : label}
         </label>
 
-        {isDraggable &&
-          !!connectDragSource &&
-          connectDragSource(
-            <div className={styles.dragHandle}>
-              <Icon className={styles.dragIcon} name={icons.REORDER} />
-            </div>
-          )}
+        {isDraggable ? (
+          <div ref={handleRef} className={styles.dragHandle}>
+            <Icon className={styles.dragIcon} name={icons.REORDER} />
+          </div>
+        ) : null}
       </div>
     </div>
   );
