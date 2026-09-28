@@ -32,7 +32,7 @@
 }
 
 .sidebarCloseButton {
-  composes: button from '~Components/Link/IconButton.module.css';
+  composes: button from 'Components/Link/IconButton.module.css';
 
   margin-right: 15px;
   color: var(--white);

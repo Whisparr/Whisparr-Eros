@@ -8,18 +8,18 @@ const mixinsFiles = [
 ];
 
 module.exports = {
-  plugins: [
-    'autoprefixer',
-    ['postcss-mixins', {
+  plugins: {
+    autoprefixer: {},
+    'postcss-mixins': {
       mixinsFiles
-    }],
+    },
     // Every stylesheet can use the breakpoints' @custom-media without
     // importing them; the definitions themselves are not emitted.
-    ['@csstools/postcss-global-data', {
+    '@csstools/postcss-global-data': {
       files: [path.join(__dirname, 'src/Styles/Variables/breakpoints.css')]
-    }],
-    'postcss-custom-media',
-    'postcss-color-function',
-    'postcss-nested'
-  ]
+    },
+    'postcss-custom-media': {},
+    'postcss-color-function': {},
+    'postcss-nested': {}
+  }
 };
