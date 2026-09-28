@@ -97,6 +97,7 @@ function ImportMovieTitle({
   }, [performerNames, searchCredits]);
 
   let itemDescr = title;
+
   if (itemType === 'movie' && year) {
     itemDescr = `${itemDescr} (${year})`;
   }

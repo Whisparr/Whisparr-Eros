@@ -335,6 +335,7 @@ function EnhancedSelectInput<V, T extends EnhancedSelectInputValue<V>>(
         if (nextSelectedIndex !== null) {
           setSelectedIndex(nextSelectedIndex);
         }
+
         return;
       }
 

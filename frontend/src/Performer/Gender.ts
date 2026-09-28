@@ -44,11 +44,14 @@ export interface GenderDetails {
 export function getGenderDetails(gender: string): GenderDetails {
   if (gender) {
     const g = gender.toLowerCase() as Gender;
+
     if (all.includes(g)) {
       gender = g;
     }
   }
+
   let icon: IconName = Icons.PERFORMER;
+
   switch (gender) {
     case MALE:
       icon = Icons.PERFORMERMALE;
@@ -72,5 +75,6 @@ export function getGenderDetails(gender: string): GenderDetails {
       icon = Icons.PERFORMER;
       break;
   }
+
   return { gender, icon };
 }

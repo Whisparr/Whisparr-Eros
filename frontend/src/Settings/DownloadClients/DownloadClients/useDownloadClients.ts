@@ -158,7 +158,7 @@ export const useBulkEditDownloadClients = (onSettled?: () => void) => {
     method: 'PUT',
     mutationOptions: {
       onSuccess: (updatedDownloadClients) => {
-        queryClient.setQueryData<DownloadClient[]>(
+        queryClient.setQueryData<ReadonlyArray<DownloadClient>>(
           [DOWNLOAD_CLIENTS_PATH],
           (downloadClients = []) => {
             return downloadClients.map((downloadClient) => {
@@ -190,7 +190,7 @@ export const useBulkDeleteDownloadClients = (onSuccess?: () => void) => {
     method: 'DELETE',
     mutationOptions: {
       onSuccess: (_data, { ids }) => {
-        queryClient.setQueryData<DownloadClient[]>(
+        queryClient.setQueryData<ReadonlyArray<DownloadClient>>(
           [DOWNLOAD_CLIENTS_PATH],
           (downloadClients = []) => {
             return downloadClients.filter(

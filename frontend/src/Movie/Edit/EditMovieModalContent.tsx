@@ -127,6 +127,7 @@ function EditMovieModalContent({
     if (!rawPathSetting) {
       return { value: '', errors: [], warnings: [] };
     }
+
     return {
       ...rawPathSetting,
       value:

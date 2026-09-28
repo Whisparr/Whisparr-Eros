@@ -82,6 +82,7 @@ function StudioDetailsYear(props: StudioDetailsYearProps) {
     if (movie.sizeOnDisk) {
       return total + movie.sizeOnDisk;
     }
+
     return total;
   }, 0);
 

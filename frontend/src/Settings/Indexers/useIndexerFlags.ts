@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import IndexerFlag from 'typings/IndexerFlag';
 
-const NO_INDEXER_FLAGS: IndexerFlag[] = [];
+const NO_INDEXER_FLAGS: ReadonlyArray<IndexerFlag> = [];
 
 export const useIndexerFlags = () => {
   const result = useApiQuery<IndexerFlag[]>({

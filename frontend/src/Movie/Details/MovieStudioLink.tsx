@@ -10,6 +10,7 @@ function MovieStudioLink(props: MovieStudioLinkProps) {
   const { studioForeignId, studioTitle } = props.movie;
 
   let link = '';
+
   if (studioForeignId) {
     link = `/studio/${studioForeignId}`;
   }

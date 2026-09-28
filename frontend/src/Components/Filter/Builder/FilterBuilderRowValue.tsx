@@ -27,7 +27,7 @@ export interface FilterBuilderRowValueComponentProps extends Omit<
   FilterBuilderRowValueProps,
   'sectionItems'
 > {
-  tagList: FilterTag[];
+  tagList: ReadonlyArray<FilterTag>;
 }
 
 const BYTES_PATTERN = /^(\d+)([kmgt](i?b)?)$/i;

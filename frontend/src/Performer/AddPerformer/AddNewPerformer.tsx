@@ -100,6 +100,7 @@ function AddNewPerformer() {
                     />
                   );
                 }
+
                 return null;
               }
             )}

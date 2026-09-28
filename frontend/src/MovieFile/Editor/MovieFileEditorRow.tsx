@@ -156,6 +156,7 @@ function MovieFileEditorRow(props: MovieFileEditorRowProps) {
             </TableRowCell>
           );
         }
+
         if (name === 'audioLanguages') {
           return (
             <TableRowCell key={name} className={styles.audioLanguages}>
@@ -286,6 +287,7 @@ function MovieFileEditorRow(props: MovieFileEditorRowProps) {
             </TableRowCell>
           );
         }
+
         return null;
       })}
 

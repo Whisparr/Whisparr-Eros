@@ -13,7 +13,7 @@ export type OrganizePreviewScope =
   | { performerForeignId: string }
   | { studioForeignId: string };
 
-const DEFAULT_ORGANIZE_PREVIEW: OrganizePreviewModel[] = [];
+const DEFAULT_ORGANIZE_PREVIEW: ReadonlyArray<OrganizePreviewModel> = [];
 
 const useOrganizePreview = (scope: OrganizePreviewScope) => {
   const { data, ...result } = useApiQuery<OrganizePreviewModel[]>({

@@ -21,6 +21,7 @@ export default function countryCode(countryCode: string) {
   if (!userLocale) {
     return countryCode;
   }
+
   const locale =
     userLocale.indexOf('-') > 0 ? userLocale.split('-')[0] : userLocale;
 

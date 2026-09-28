@@ -13,7 +13,7 @@ import { useReleaseFilterKey, useReleaseSort } from './releaseOptionsStore';
 
 export const RELEASE_PATH = '/release';
 
-const DEFAULT_RELEASES: Release[] = [];
+const DEFAULT_RELEASES: ReadonlyArray<Release> = [];
 
 // Every clause the slice kept. `rejections` and `releaseWeight` both push
 // rejected releases to the bottom rather than sorting on the rejection itself,

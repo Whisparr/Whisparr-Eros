@@ -86,7 +86,10 @@ export const useReorderDelayProfile = () => {
     queryParams: ({ after }) => (after === undefined ? {} : { after }),
     mutationOptions: {
       onSuccess: (delayProfiles: DelayProfile[]) => {
-        queryClient.setQueryData<DelayProfile[]>([PATH], delayProfiles);
+        queryClient.setQueryData<ReadonlyArray<DelayProfile>>(
+          [PATH],
+          delayProfiles
+        );
       },
     },
   });

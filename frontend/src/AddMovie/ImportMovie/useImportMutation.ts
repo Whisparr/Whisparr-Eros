@@ -18,9 +18,11 @@ function buildImportBody(items: ImportItem[]): ImportMovieBody[] {
 
   return items.reduce<ImportMovieBody[]>((result, item) => {
     const movie = item.selectedMovie;
+
     if (!movie || seen.has(movie.foreignId)) {
       return result;
     }
+
     seen.add(movie.foreignId);
 
     const monitored = item.monitor === 'movieOnly';

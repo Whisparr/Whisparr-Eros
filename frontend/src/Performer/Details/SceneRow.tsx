@@ -51,25 +51,30 @@ export default function SceneRow(props: SceneRowProps) {
   } = movie;
 
   const status = movie.status as MovieStatus;
+
   const externalLink = () => {
     if (!foreignId) return '';
+
     if (foreignId.startsWith('tpdbId:')) {
       return `https://www.theporndb.net/movies/${foreignId.replace(
         'tpdbId:',
         ''
       )}`;
     }
+
     if (Number.parseInt(foreignId, 10) > 0) {
       return `https://www.themoviedb.org/movie/${foreignId.replace(
         'tmdbId:',
         ''
       )}`;
     }
+
     // failsafe, though we shouldn't ever need this
     return `https://stashdb.org/scene/${foreignId}`;
   };
 
   const { mutate: toggleMonitored } = useToggleMovieMonitored();
+
   function onMonitorToggle(): void {
     toggleMonitored({ id: movie.id, monitored: !movie.monitored });
   }

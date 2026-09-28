@@ -91,6 +91,7 @@ function ImportMovieFooter({
       } else if (name === 'qualityProfileId') {
         setQualityProfileId(value);
       }
+
       onInputChange({ name, value });
     },
     [onInputChange]

@@ -236,6 +236,7 @@ function Updates() {
                         (line: string) =>
                           typeof line === 'string' && line.trim() !== ''
                       );
+
                       if (nonEmptyLines.length > 0) {
                         return (
                           <div>
@@ -247,6 +248,7 @@ function Updates() {
                         );
                       }
                     }
+
                     return (
                       <InlineMarkdown
                         data={translate('MaintenanceReleaseWithLink', {

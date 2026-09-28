@@ -25,6 +25,7 @@ export default function MovieIndexFooter() {
       </Alert>
     );
   }
+
   if (isFetching) {
     return <LoadingIndicator />;
   }

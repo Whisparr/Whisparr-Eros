@@ -124,14 +124,17 @@ function VirtualTable<T extends ModelBase>({
     <WindowScroller scrollElement={isSmallScreen ? undefined : scroller}>
       {(props: WindowScrollerChildProps) => {
         const { height, registerChild, onChildScroll, scrollTop } = props;
+
         const registerRef = (el: HTMLDivElement | null) => {
           // `registerChild` expects a ReactNode-like value in the lib typings;
           // wrap/cast here so we can pass the DOM element as the ref.
           (registerChild as unknown as (el?: HTMLElement | null) => void)(el);
         };
+
         if (!height) {
           return null;
         }
+
         return (
           <div ref={measureRef}>
             <Scroller className={className} scrollDirection={HORIZONTAL}>

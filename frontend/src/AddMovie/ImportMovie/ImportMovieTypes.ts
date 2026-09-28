@@ -60,7 +60,7 @@ export interface ImportItem {
 export type ImportAction =
   | {
       type: 'INIT_ITEMS';
-      files: ImportFile[];
+      files: ReadonlyArray<ImportFile>;
       itemType?: ImportItemType;
       defaults: { monitor: string; qualityProfileId: number };
     }
@@ -131,6 +131,7 @@ export function importReducer(
           if (item.id !== action.id) {
             return item;
           }
+
           const selectedMovie = item.selectedMovie ?? action.results[0] ?? null;
           return {
             ...item,

@@ -25,6 +25,7 @@ export default function SceneIndexFooter() {
       </Alert>
     );
   }
+
   if (isFetching) {
     return <LoadingIndicator />;
   }

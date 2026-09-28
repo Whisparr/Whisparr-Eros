@@ -44,6 +44,7 @@ export function useMovieIndex() {
         return tableOptions?.pageSize ?? 20;
     }
   }
+
   const pageSize = getPageSize();
 
   const { data, isPending, isError } = useMovieIndexQuery({

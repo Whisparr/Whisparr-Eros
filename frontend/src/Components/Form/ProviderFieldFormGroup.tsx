@@ -77,6 +77,7 @@ function ProviderFieldFormGroup<T>({
         if (selectOptionsProviderAction) {
           return 'dynamicSelect';
         }
+
         return 'select';
       case 'movieTag':
         return 'movieTag';
