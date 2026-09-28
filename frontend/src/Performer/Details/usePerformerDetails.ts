@@ -61,6 +61,7 @@ export const usePerformerDetails = (foreignId: string) => {
     ) {
       setIsManualRefresh(false);
     }
+
     prevPerformerRef.current = performer;
   }, [performer, isManualRefresh]);
 
@@ -90,6 +91,7 @@ export const usePerformerDetails = (foreignId: string) => {
   // TODO: Move to useApiQuery
   function searchMoviesByIds(movieIds: number[]) {
     if (!movieIds || movieIds.length === 0) return;
+
     for (const id of movieIds) {
       executeCommand({
         name: commandNames.MOVIE_SEARCH,

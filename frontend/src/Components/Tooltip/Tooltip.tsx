@@ -37,6 +37,7 @@ export interface TooltipProps {
   position?: Placement;
   canFlip?: boolean;
 }
+
 function Tooltip(props: TooltipProps) {
   const {
     accessibleLabel,

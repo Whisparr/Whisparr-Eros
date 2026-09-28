@@ -282,6 +282,7 @@ function PageSidebar({ isSidebarVisible, isSmallScreen }: PageSidebarProps) {
       if (link.title && link.iconName === icons.FILM) {
         return acc;
       }
+
       acc.push(link);
       return acc;
     }, [] as SidebarItem[]);

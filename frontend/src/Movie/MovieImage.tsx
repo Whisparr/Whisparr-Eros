@@ -14,6 +14,7 @@ function findImage(images: Image[], coverType: CoverType) {
   if (preferred) return preferred;
 
   const fallbacks = ['logo', 'clearlogo', 'poster'];
+
   for (const fb of fallbacks) {
     const found = images.find((image) => image.coverType === fb);
     if (found) return found;
@@ -88,6 +89,7 @@ function MovieImage({
 
   const handleError = useCallback(() => {
     const nextImage = image.current;
+
     if (!triedRemote.current && nextImage?.remoteUrl) {
       triedRemote.current = true;
       setUrl(nextImage.remoteUrl);

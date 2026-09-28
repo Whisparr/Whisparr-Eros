@@ -131,6 +131,7 @@ export function importReducer(
           if (item.id !== action.id) {
             return item;
           }
+
           const selectedMovie = item.selectedMovie ?? action.results[0] ?? null;
           return {
             ...item,

@@ -60,6 +60,7 @@ function PerformerDetailsYear(props: PerformerDetailsYearProps) {
     if (movie.sizeOnDisk) {
       return total + movie.sizeOnDisk;
     }
+
     return total;
   }, 0);
 
@@ -82,6 +83,7 @@ function PerformerDetailsYear(props: PerformerDetailsYearProps) {
         return kinds.DANGER;
     }
   }
+
   const yearKind = getMovieCountKind();
 
   function handleRefreshClick() {

@@ -74,9 +74,11 @@ function useAddNewStudio() {
 
   const onStudioLookupChange = React.useCallback((value: string) => {
     setTerm(value);
+
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
+
     if (value.trim() === '') {
       setDebouncedTerm('');
     } else {

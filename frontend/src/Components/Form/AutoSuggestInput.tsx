@@ -101,6 +101,7 @@ function AutoSuggestInput<T = any>(props: AutoSuggestInputProps<T>) {
         state.styles.popper.maxHeight = `${maxHeight}px`;
       } else {
         const windowHeight = window.innerHeight;
+
         if (state.placement.startsWith('bottom')) {
           state.styles.popper.maxHeight = `${windowHeight - bottom}px`;
         } else {

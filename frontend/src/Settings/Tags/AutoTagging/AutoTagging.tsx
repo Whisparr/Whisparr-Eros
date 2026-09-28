@@ -92,6 +92,7 @@ export default function AutoTagging({
           if (item.required) {
             kind = 'success';
           }
+
           if (item.negate) {
             kind = 'danger';
           }

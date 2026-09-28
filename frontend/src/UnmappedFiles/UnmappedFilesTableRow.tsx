@@ -127,11 +127,14 @@ class UnmappedFilesTableRow extends Component<
       <>
         {columns.map((column) => {
           const { name, isVisible } = column;
+
           if (!isVisible) {
             return null;
           }
+
           // Type-safe dynamic CSS module access
           const cellClass = (styles as unknown as Record<string, string>)[name];
+
           if (name === 'select') {
             return (
               <VirtualTableSelectCell
@@ -146,6 +149,7 @@ class UnmappedFilesTableRow extends Component<
               />
             );
           }
+
           if (name === 'path') {
             return (
               <VirtualTableRowCell
@@ -157,6 +161,7 @@ class UnmappedFilesTableRow extends Component<
               </VirtualTableRowCell>
             );
           }
+
           if (name === 'size') {
             return (
               <VirtualTableRowCell key={name} className={cellClass}>
@@ -164,6 +169,7 @@ class UnmappedFilesTableRow extends Component<
               </VirtualTableRowCell>
             );
           }
+
           if (name === 'dateAdded') {
             return (
               <RelativeDateCell
@@ -174,6 +180,7 @@ class UnmappedFilesTableRow extends Component<
               />
             );
           }
+
           if (name === 'quality') {
             return (
               <VirtualTableRowCell key={name} className={cellClass}>
@@ -181,6 +188,7 @@ class UnmappedFilesTableRow extends Component<
               </VirtualTableRowCell>
             );
           }
+
           if (name === 'actions') {
             return (
               <VirtualTableRowCell key={name} className={cellClass}>
@@ -202,6 +210,7 @@ class UnmappedFilesTableRow extends Component<
               </VirtualTableRowCell>
             );
           }
+
           return null;
         })}
 

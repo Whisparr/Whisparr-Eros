@@ -82,16 +82,21 @@ class UnmappedFilesTable extends Component<
 
   componentDidUpdate(prevProps: UnmappedFilesTableProps) {
     const { items, isDeleting, deleteError, isScanningFolders } = this.props;
+
     if (hasDifferentItemsOrOrder(prevProps.items, items)) {
       this.setSelectedState();
     }
+
     const hasFinishedDeleting =
       prevProps.isDeleting && !isDeleting && !deleteError;
+
     if (hasFinishedDeleting) {
       this.onSelectAllChange({ value: false });
     }
+
     const hasFinishedScanning =
       prevProps.isScanningFolders && !isScanningFolders;
+
     if (
       hasFinishedScanning &&
       typeof this.props.fetchUnmappedFiles === 'function'
@@ -104,14 +109,17 @@ class UnmappedFilesTable extends Component<
 
   getSortedItems() {
     const { items, sortKey, sortDirection } = this.props;
+
     // Copy in both branches: query data is readonly, and the caller passes the
     // result to VirtualTable, which takes a mutable array.
     if (!sortKey) {
       return [...items];
     }
+
     return [...items].sort((a, b) => {
       let valA: string | number = '';
       let valB: string | number = '';
+
       if (sortKey === 'quality') {
         const getQualityName = (
           q:
@@ -121,6 +129,7 @@ class UnmappedFilesTable extends Component<
             | undefined
         ): string => {
           if (typeof q === 'string') return q.toLowerCase();
+
           if (q && typeof q === 'object') {
             if (
               'quality' in q &&
@@ -129,6 +138,7 @@ class UnmappedFilesTable extends Component<
             ) {
               return q.quality.name.toLowerCase();
             }
+
             if (
               'name' in q &&
               typeof (q as { name?: string }).name === 'string'
@@ -136,8 +146,10 @@ class UnmappedFilesTable extends Component<
               return ((q as { name?: string }).name as string).toLowerCase();
             }
           }
+
           return '';
         };
+
         valA = getQualityName(a.quality);
         valB = getQualityName(b.quality);
       } else if (sortKey === 'path') {
@@ -165,12 +177,15 @@ class UnmappedFilesTable extends Component<
         valA = a[sortKey]?.toString().toLowerCase?.() ?? '';
         valB = b[sortKey]?.toString().toLowerCase?.() ?? '';
       }
+
       if (valA < valB) {
         return sortDirection === 'ascending' ? -1 : 1;
       }
+
       if (valA > valB) {
         return sortDirection === 'ascending' ? 1 : -1;
       }
+
       return 0;
     });
   }
@@ -179,6 +194,7 @@ class UnmappedFilesTable extends Component<
     if (this.state.allUnselected) {
       return [];
     }
+
     return getSelectedIds(this.state.selectedState);
   };
 

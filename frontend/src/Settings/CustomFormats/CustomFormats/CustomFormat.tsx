@@ -100,6 +100,7 @@ export default function CustomFormat({
           if (specification.required) {
             kind = kinds.SUCCESS;
           }
+
           if (specification.negate) {
             kind = kinds.DANGER;
           }

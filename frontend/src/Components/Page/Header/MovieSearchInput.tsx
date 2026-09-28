@@ -288,10 +288,12 @@ function MovieSearchInput() {
   const handleKeyDown = useCallback(
     (event: KeyboardEvent<HTMLElement>) => {
       if (event.shiftKey || event.altKey || event.ctrlKey) return;
+
       if (event.key === 'Escape') {
         setValue('');
         return;
       }
+
       if (event.key !== 'Tab' && event.key !== 'Enter') return;
       if (!autosuggestRef.current) return;
 
@@ -373,6 +375,7 @@ function MovieSearchInput() {
 
   useEffect(() => {
     bindShortcut('focusMovieSearchInput', focusInput);
+
     return () => {
       unbindShortcut('focusMovieSearchInput');
     };

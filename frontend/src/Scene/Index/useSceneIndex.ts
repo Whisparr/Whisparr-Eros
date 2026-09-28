@@ -46,6 +46,7 @@ export function useSceneIndex() {
         return tableOptions?.pageSize ?? 25;
     }
   }
+
   const pageSize = getPageSize();
 
   const { data, isPending, isError } = useSceneIndexQuery({

@@ -141,6 +141,7 @@ function MovieDetails(props: Readonly<Partial<Props>>) {
         </PageContentBody>
       );
     }
+
     return null;
   }
 
@@ -184,6 +185,7 @@ function MovieDetails(props: Readonly<Partial<Props>>) {
   function handleTitleMeasure({ width }: { width: number }) {
     setTitleWidth(width);
   }
+
   function handleOverviewMeasure({ height }: { height: number }) {
     setOverviewHeight(height);
   }
@@ -194,6 +196,7 @@ function MovieDetails(props: Readonly<Partial<Props>>) {
       movieIds: [movieId],
     });
   }
+
   function handleSearchPress() {
     executeCommand({
       name: MOVIE_SEARCH,

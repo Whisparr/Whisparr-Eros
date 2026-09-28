@@ -100,10 +100,13 @@ function updateMovieInPerformerWorksQueryCache(updatedMovie: MovieResource) {
         if (!Array.isArray(oldData)) {
           return oldData;
         }
+
         const idx = oldData.findIndex((movie) => movie.id === updatedMovie.id);
+
         if (idx === -1) {
           return oldData;
         }
+
         const newData = [...oldData];
         newData[idx] = { ...oldData[idx], ...updatedMovie };
         return newData;
@@ -124,10 +127,13 @@ function updateMovieInStudioWorksQueryCache(updatedMovie: MovieResource) {
     if (!Array.isArray(oldData)) {
       return oldData;
     }
+
     const idx = oldData.findIndex((movie) => movie.id === updatedMovie.id);
+
     if (idx === -1) {
       return oldData;
     }
+
     const newData = [...oldData];
     newData[idx] = { ...oldData[idx], ...updatedMovie };
     return newData;
@@ -146,6 +152,7 @@ function updatePerformerQueryCache(updatedPerformer: ForeignResource) {
     if (!oldData || typeof oldData !== 'object') {
       return updatedPerformer;
     }
+
     return { ...oldData, ...updatedPerformer };
   });
 }
@@ -161,6 +168,7 @@ function updateStudioQueryCache(updatedStudio: ForeignResource) {
     if (!oldData || typeof oldData !== 'object') {
       return updatedStudio;
     }
+
     return { ...oldData, ...updatedStudio };
   });
 }

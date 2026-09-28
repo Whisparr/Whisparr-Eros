@@ -72,6 +72,7 @@ function FileEditModal({
       if (!selectedQuality) {
         return;
       }
+
       const langs: Language[] = payload.languageIds
         .map((languageId) => {
           const id =

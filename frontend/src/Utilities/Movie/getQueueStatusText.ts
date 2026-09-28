@@ -29,6 +29,7 @@ export default function getQueueStatusText(
           break;
         default:
       }
+
       break;
 
     case queueStatus === 'completed':
@@ -44,6 +45,7 @@ export default function getQueueStatusText(
           break;
         default:
       }
+
       break;
 
     default:

@@ -202,11 +202,13 @@ function StudioDetails() {
   const handleVirtualizedExpandPress = useCallback(
     (year: number, expand: boolean) => {
       const isExpanded = !!expandedState[year];
+
       if (expand !== isExpanded) {
         handleExpandPress(year);
       }
 
       const index = yearIndexMap.get(year);
+
       if (index == null) {
         return;
       }
@@ -277,11 +279,13 @@ function StudioDetails() {
         </PageContent>
       );
     }
+
     if (studioDetailsError || !studioForeignId) {
       return (
         <Alert kind={kinds.DANGER}>{translate('LoadingStudioFailed')}</Alert>
       );
     }
+
     return null;
   }
 

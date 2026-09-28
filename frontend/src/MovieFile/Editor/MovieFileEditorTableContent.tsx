@@ -71,4 +71,5 @@ function MovieFileEditorTableContent({
     </div>
   );
 }
+
 export default MovieFileEditorTableContent;

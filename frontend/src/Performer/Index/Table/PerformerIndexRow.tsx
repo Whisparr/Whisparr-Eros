@@ -95,6 +95,7 @@ function PerformerIndexRow(props: PerformerIndexRowProps) {
   );
 
   const cells: React.ReactNode[] = [];
+
   if (isSelectMode) {
     cells.push(
       <TableRowCell key="select" className={styles.select}>
@@ -140,6 +141,7 @@ function PerformerIndexRow(props: PerformerIndexRowProps) {
       );
       return;
     }
+
     if (name === 'fullName') {
       cells.push(
         <TableRowCell key={name} className={styles[name]}>
@@ -148,6 +150,7 @@ function PerformerIndexRow(props: PerformerIndexRowProps) {
       );
       return;
     }
+
     if (name === 'gender') {
       cells.push(
         <TableRowCell key={name} className={styles[name]}>
@@ -156,6 +159,7 @@ function PerformerIndexRow(props: PerformerIndexRowProps) {
       );
       return;
     }
+
     if (name === 'age') {
       cells.push(
         <TableRowCell key={name} className={styles[name]}>
@@ -164,6 +168,7 @@ function PerformerIndexRow(props: PerformerIndexRowProps) {
       );
       return;
     }
+
     if (name === 'country') {
       cells.push(
         <TableRowCell
@@ -176,6 +181,7 @@ function PerformerIndexRow(props: PerformerIndexRowProps) {
       );
       return;
     }
+
     if (name === 'careerStart') {
       cells.push(
         <TableRowCell key={name} className={styles[name]}>
@@ -184,6 +190,7 @@ function PerformerIndexRow(props: PerformerIndexRowProps) {
       );
       return;
     }
+
     if (name === 'careerEnd') {
       cells.push(
         <TableRowCell key={name} className={styles[name]}>
@@ -192,6 +199,7 @@ function PerformerIndexRow(props: PerformerIndexRowProps) {
       );
       return;
     }
+
     if (name === 'hairColor') {
       cells.push(
         <TableRowCell key={name} className={styles[name]}>
@@ -200,6 +208,7 @@ function PerformerIndexRow(props: PerformerIndexRowProps) {
       );
       return;
     }
+
     if (name === 'ethnicity') {
       cells.push(
         <TableRowCell key={name} className={styles[name]}>
@@ -208,6 +217,7 @@ function PerformerIndexRow(props: PerformerIndexRowProps) {
       );
       return;
     }
+
     if (name === 'qualityProfileId') {
       cells.push(
         <TableRowCell key={name} className={styles[name]}>
@@ -216,6 +226,7 @@ function PerformerIndexRow(props: PerformerIndexRowProps) {
       );
       return;
     }
+
     if (name === 'rootFolderPath') {
       cells.push(
         <TableRowCell
@@ -228,6 +239,7 @@ function PerformerIndexRow(props: PerformerIndexRowProps) {
       );
       return;
     }
+
     if (name === 'tags') {
       cells.push(
         <TableRowCell key={name} className={styles[name]}>
@@ -236,6 +248,7 @@ function PerformerIndexRow(props: PerformerIndexRowProps) {
       );
       return;
     }
+
     if (name === 'totalMovieCount') {
       cells.push(
         <TableRowCell key={name} className={styles[name]}>
@@ -244,6 +257,7 @@ function PerformerIndexRow(props: PerformerIndexRowProps) {
       );
       return;
     }
+
     if (name === 'totalSceneCount') {
       cells.push(
         <TableRowCell key={name} className={styles[name]}>
@@ -252,6 +266,7 @@ function PerformerIndexRow(props: PerformerIndexRowProps) {
       );
       return;
     }
+
     if (name === 'sizeOnDisk') {
       cells.push(
         <TableRowCell key={name} className={styles[name]}>
@@ -260,6 +275,7 @@ function PerformerIndexRow(props: PerformerIndexRowProps) {
       );
       return;
     }
+
     if (name === 'actions') {
       cells.push(
         <TableRowCell key={name} className={styles[name]}>

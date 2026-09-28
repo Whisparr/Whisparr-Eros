@@ -69,9 +69,11 @@ function mergeUpdates(
     const mergedUpdate: Update = Object.assign({}, appliedUpdates[0], {
       changes: appliedChanges,
     });
+
     if (!appliedChanges.new.length && !appliedChanges.fixed.length) {
       mergedUpdate.changes = null;
     }
+
     return mergedUpdate;
   } else if (
     appliedUpdates[0] &&
@@ -80,6 +82,7 @@ function mergeUpdates(
     // Just use the first string markdown
     return appliedUpdates[0];
   }
+
   return null;
 }
 
@@ -131,9 +134,11 @@ function AppUpdatedModalContent(props: AppUpdatedModalContentProps) {
                   />
                 );
               }
+
               if (typeof update.changes === 'string') {
                 return <MarkdownRenderer>{update.changes}</MarkdownRenderer>;
               }
+
               return (
                 <div>
                   <div className={styles.changes}>{translate('WhatsNew')}</div>

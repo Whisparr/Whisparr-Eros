@@ -93,6 +93,7 @@ function AddNewStudio() {
                   />
                 );
               }
+
               return null;
             })}
           </div>

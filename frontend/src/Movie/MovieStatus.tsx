@@ -21,6 +21,7 @@ function MovieStatus({ movieId, movieFileId }: MovieStatusProps) {
   const queueItem = useQueueItemForMovie(movieId);
   const { data: movieFile } = useSingleMovieFile(movieFileId);
   const { data: movie } = useMovie(movieId);
+
   if (!movie) {
     return null;
   }

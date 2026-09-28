@@ -238,4 +238,5 @@ function StudioIndex(): React.JSX.Element {
     </SelectProvider>
   );
 }
+
 export default StudioIndex;

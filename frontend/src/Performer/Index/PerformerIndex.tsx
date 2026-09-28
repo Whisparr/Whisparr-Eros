@@ -252,4 +252,5 @@ function PerformerIndex(): React.JSX.Element {
     </SelectProvider>
   );
 }
+
 export default PerformerIndex;
