@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using FizzWare.NBuilder;
 using FluentAssertions;
 using NUnit.Framework;
@@ -145,7 +146,9 @@ namespace NzbDrone.Core.Test.CustomFormats
         {
             GivenYearFormat(2020, 2025);
 
-            Subject.ParseCustomFormat(GivenLocalMovie(SceneName))
+            var localMovie = GivenLocalMovie(SceneName);
+
+            Subject.ParseCustomFormat(localMovie, Path.GetFileName(localMovie.Path))
                    .Should().ContainSingle(f => f.Name == "Year");
         }
 
@@ -156,7 +159,36 @@ namespace NzbDrone.Core.Test.CustomFormats
 
             Subject.ParseCustomFormat(GivenHistory(SceneName), _movie).Should().BeEmpty();
             Subject.ParseCustomFormat(GivenMovieFile(SceneName, $"{SceneName}.mkv"), _movie).Should().BeEmpty();
-            Subject.ParseCustomFormat(GivenLocalMovie(SceneName)).Should().BeEmpty();
+
+            var localMovie = GivenLocalMovie(SceneName);
+
+            Subject.ParseCustomFormat(localMovie, Path.GetFileName(localMovie.Path)).Should().BeEmpty();
+        }
+
+        // The file name passed in is the one the file will have after import, so a format the
+        // renamed file carries matches even when the file on disk does not.
+        [Test]
+        public void should_match_an_imported_file_on_the_file_name_it_is_given()
+        {
+            var localMovie = GivenLocalMovie(null);
+            localMovie.Path = "/downloads/Vixen - 2023-12-18 - Performer Title.mkv";
+
+            Subject.ParseCustomFormat(localMovie, "Vixen - 2023-12-18 - Performer Title [WEBDL-1080p x264].mkv")
+                   .Should().ContainSingle(f => f.Name == "x264");
+            Subject.ParseCustomFormat(localMovie, Path.GetFileName(localMovie.Path))
+                   .Should().BeEmpty();
+        }
+
+        // The release title still comes from the file on disk, so renaming can't lose a format that
+        // only the original name carried.
+        [Test]
+        public void should_keep_matching_an_imported_file_on_its_original_name()
+        {
+            var localMovie = GivenLocalMovie(null);
+            localMovie.Path = $"/downloads/{SceneName}.mkv";
+
+            Subject.ParseCustomFormat(localMovie, "Vixen - 2023-12-18 - Performer Title [WEBDL-1080p].mkv")
+                   .Should().ContainSingle(f => f.Name == "x264");
         }
     }
 }

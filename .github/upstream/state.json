@@ -2623,8 +2623,8 @@
       "33fb0a4e880a5a5a3dc3d04e26d85b0a22c73552": {
         "subject": "New: Calculate custom score using renamed filename before importing",
         "month": "2026-03",
-        "disposition": "skip",
-        "reason": "Extracts a LocalEpisodeCustomFormatCalculationService and threads FileNameUsedForCustomFormatCalculation through ImportDecisionMaker, ImportApprovedEpisodes, ManualImportService, UpdateMediaInfoService and UpgradeSpecification -- 283 changed lines of core plus a new ImportRejectionReason. We have no counterpart service, and it changes what an import decision is scored on. That is a feature port with its own blast radius, not a sync pick; worth doing on its own PR."
+        "disposition": "adapt",
+        "reason": "Landed 2026-09-27 as its own PR. Taken as upstream: a LocalMovieCustomFormatCalculationService scores an import on the name FileNameBuilder will give it, and keeps the score on its current name, so UpgradeSpecification compares like with like against the existing file (already scored on its renamed name) and rejects with the new NotCustomFormatUpgradeAfterRename when only the rename loses the upgrade. ImportDecisionMaker and ManualImportService use it, and LocalMovie.ToMovieFile() replaces ImportApprovedMovie's hand-built MovieFile, as upstream's ToEpisodeFile did. Adapted: the built name is cut to its file name and given the file's extension, since existing files are scored on Path.GetFileName(RelativePath) and our scene formats can hold folders. FileNameUsedForCustomFormatCalculation and GetSceneOrFileName are left out, having no reader here. UpdateMediaInfoService already skips persisting a MovieFile with Id 0. As upstream, a download's file now keeps its own indexer flags when grab history has none, where it was left at 0, and SceneName and OriginalFilePath are recorded on every import, not only new downloads."
       },
       "ac1c74105f4a739ec61636dc3817a4e942309434": {
         "subject": "Cleanup settings controllers",
@@ -3331,8 +3331,8 @@
       "a1abe179a5074f59d32296b57ec76474b984a76c": {
         "subject": "Fix calculating custom score using renamed filename before manual importing",
         "month": "2026-05",
-        "disposition": "have",
-        "reason": "The bug cannot exist here: our ParseCustomFormat(LocalMovie) takes no fileName parameter and already derives SimpleReleaseTitle from Path.GetFileName(localMovie.Path), so a renamed filename never reaches custom format scoring. The LocalEpisode.cs half is a collection-expression cleanup."
+        "disposition": "adapt",
+        "reason": "Taken with 33fb0a4e8, which our ParseCustomFormat(LocalMovie) now follows: the fileName parameter only feeds CustomFormatInput.Filename, and SimpleReleaseTitle still comes from the scene name or the file on disk, so renaming cannot lose a format only the original name carried. The LocalEpisode.cs half is a collection-expression cleanup of properties LocalMovie initialises with new()."
       },
       "0ebda892bc0db4adc87e8f7a1aeaaddc351cde55": {
         "subject": "Use react-query for Auto Tagging",

@@ -72,6 +72,18 @@ namespace NzbDrone.Core.MediaFiles.MovieImport.Specifications
                         currentCustomFormats != null ? currentCustomFormats.ConcatToString() : "",
                         currentFormatScore);
 
+                    if (localMovie.OriginalFileNameCustomFormatScore > currentFormatScore)
+                    {
+                        return ImportSpecDecision.Reject(ImportRejectionReason.NotCustomFormatUpgradeAfterRename,
+                            "Not a Custom Format upgrade for existing movie file(s). AfterRename: [{0}] ({1}) do not improve on Existing: [{2}] ({3}) even though BeforeRename: [{4}] ({5}) did.",
+                            newCustomFormats != null ? newCustomFormats.ConcatToString() : "",
+                            newFormatScore,
+                            currentCustomFormats != null ? currentCustomFormats.ConcatToString() : "",
+                            currentFormatScore,
+                            localMovie.OriginalFileNameCustomFormats != null ? localMovie.OriginalFileNameCustomFormats.ConcatToString() : "",
+                            localMovie.OriginalFileNameCustomFormatScore);
+                    }
+
                     return ImportSpecDecision.Reject(ImportRejectionReason.NotCustomFormatUpgrade,
                         "Not a Custom Format upgrade for existing movie file(s). New: [{0}] ({1}) do not improve on Existing: [{2}] ({3})",
                         newCustomFormats != null ? newCustomFormats.ConcatToString() : "",
