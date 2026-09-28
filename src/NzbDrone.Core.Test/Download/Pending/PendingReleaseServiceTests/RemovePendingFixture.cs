@@ -5,6 +5,7 @@ using Moq;
 using NUnit.Framework;
 using NzbDrone.Common.Crypto;
 using NzbDrone.Core.Download.Pending;
+using NzbDrone.Core.Lifecycle;
 using NzbDrone.Core.Movies;
 using NzbDrone.Core.Parser;
 using NzbDrone.Core.Parser.Model;
@@ -57,6 +58,8 @@ namespace NzbDrone.Core.Test.Download.Pending.PendingReleaseServiceTests
                 Release = Builder<ReleaseInfo>.CreateNew().Build(),
                 MovieId = _movie.Id
             });
+
+            Subject.Handle(new ApplicationStartedEvent());
         }
 
         [Test]
