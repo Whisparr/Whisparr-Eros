@@ -1327,8 +1327,8 @@
       "beadc687ae47c6d90cba247f84595a692d79a736": {
         "subject": "Add reason to health check",
         "month": "2025-11",
-        "disposition": "skip",
-        "reason": "Feature: adds a Reason payload across every health check plus API/UI plumbing. Not part of this sync scope; can be requested on its own."
+        "disposition": "have",
+        "reason": "Already in our tree through Radarr's port of it, 72ae0c011, adapted in #642: all 33 of our checks pass a HealthCheckReason, with our own reasons (AllowedHostsNotConfigured, MetadataUrlMismatch) and a None = 0 member. Sonarr reads the reason only in its v5 HealthResource, which we do not have; like Radarr, nothing here exposes it through the v3 API or the frontend."
       },
       "9bc9d6d400ff479c8348deaf6755a6c4a7547d22": {
         "subject": "Add v5 health endpoints",
@@ -1459,8 +1459,8 @@
       "317cdf15582746bd4e713d6b99e17a21dcb8abeb": {
         "subject": "add TTL setting for pushover notifications",
         "month": "2025-11",
-        "disposition": "skip",
-        "reason": "New Pushover TTL setting - small feature not in scope for this pass."
+        "disposition": "have",
+        "reason": "Already in our tree through Radarr's port of it, 949922b9a: the Pushover Ttl field, validator, proxy parameter and en.json keys all landed with the January Radarr sync."
       },
       "5a702dec12a24a1b2f7c23a40079c563a31c2573": {
         "subject": "Add v5 episode, missing and cutoff unmet endpoints",
@@ -3715,8 +3715,8 @@
       "edba5ce84cf8016ba9b945396d155f4ab2ead66e": {
         "subject": "Fix filename builder for files without streams",
         "month": "2026-06",
-        "disposition": "skip",
-        "reason": "Guards against a null MediaInfoAudioStreamModel, which is a shape we do not have; our formatters read AudioFormat/AudioChannels straight off MediaInfoModel, and AudioChannels is a non-nullable int. The null-to-empty return change is also a no-op here because FileNameBuilder already guards MediaInfo == null and null-coalesces both formatter results to string.Empty."
+        "disposition": "have",
+        "reason": "Already in our tree through Radarr's port of it, 0d0cb8f75, which was adapted after the bug reproduced here: whitespace-only audio/video formats fell through to an unknown-format warning and into renamed filenames. The earlier no-op reasoning here was wrong; see the Radarr record for what was taken."
       },
       "3e1de5fcf6c50e1f16d9bf76da16f03650a7c2b2": {
         "subject": "Fix invalid season error when season number is not yet defined in manual import",
