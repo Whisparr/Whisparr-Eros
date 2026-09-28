@@ -116,10 +116,10 @@ namespace Whisparr.Http.Frontend
             }
         }
 
-        // ProbeAsync never throws, so nothing is lost when the timer doesn't await this.
-        protected async Task RefreshAsync()
+        // Runs on the timer's thread-pool thread, which can wait out the probe's short timeout.
+        protected void Refresh()
         {
-            UpdateRunning(await ProbeAsync().ConfigureAwait(false));
+            UpdateRunning(ProbeAsync().GetAwaiter().GetResult());
         }
 
         // Asks for Vite's own client script, which only a running Vite dev server serves.
@@ -154,9 +154,9 @@ namespace Whisparr.Http.Frontend
                 {
                     if (_probeTimer == null)
                     {
-                        UpdateRunning(ProbeAsync().GetAwaiter().GetResult());
+                        Refresh();
 
-                        _probeTimer = new Timer(_ => _ = RefreshAsync(), null, ProbeInterval, ProbeInterval);
+                        _probeTimer = new Timer(_ => Refresh(), null, ProbeInterval, ProbeInterval);
                     }
                 }
             }

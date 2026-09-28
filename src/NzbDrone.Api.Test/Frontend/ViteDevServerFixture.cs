@@ -26,7 +26,8 @@ namespace NzbDrone.Api.Test.Frontend
         [TestCase("/frontend/src/Components/Page/Page.module.css")]
         public void should_recognise_vite_dev_server_paths(string resourcePath)
         {
-            using var subject = new TestViteDevServer(DevServer, isDebug: true);
+            using var handler = new RecordingHandler(string.Empty);
+            using var subject = new TestViteDevServer(DevServer, isDebug: true, handler);
 
             ViteDevServer.IsViteDevPath(resourcePath).Should().BeTrue();
             subject.HandlesPath(resourcePath).Should().BeTrue();
@@ -40,7 +41,8 @@ namespace NzbDrone.Api.Test.Frontend
         [TestCase("/movie/1")]
         public void should_leave_application_paths_alone(string resourcePath)
         {
-            using var subject = new TestViteDevServer(DevServer, isDebug: true);
+            using var handler = new RecordingHandler(string.Empty);
+            using var subject = new TestViteDevServer(DevServer, isDebug: true, handler);
 
             ViteDevServer.IsViteDevPath(resourcePath).Should().BeFalse();
             subject.HandlesPath(resourcePath).Should().BeFalse();
@@ -51,7 +53,8 @@ namespace NzbDrone.Api.Test.Frontend
         [TestCase("   ")]
         public void should_not_be_enabled_without_a_dev_server_address(string baseAddress)
         {
-            using var subject = new TestViteDevServer(baseAddress, isDebug: true);
+            using var handler = new RecordingHandler(string.Empty);
+            using var subject = new TestViteDevServer(baseAddress, isDebug: true, handler);
 
             subject.IsEnabled.Should().BeFalse();
             subject.HandlesPath("/@vite/client").Should().BeFalse();
@@ -60,7 +63,8 @@ namespace NzbDrone.Api.Test.Frontend
         [Test]
         public void should_be_enabled_with_a_dev_server_address_in_a_debug_build()
         {
-            using var subject = new TestViteDevServer(DevServer, isDebug: true);
+            using var handler = new RecordingHandler(string.Empty);
+            using var subject = new TestViteDevServer(DevServer, isDebug: true, handler);
 
             subject.IsEnabled.Should().BeTrue();
         }
@@ -68,7 +72,8 @@ namespace NzbDrone.Api.Test.Frontend
         [Test]
         public void should_never_be_enabled_in_a_release_build()
         {
-            using var subject = new TestViteDevServer(DevServer, isDebug: false);
+            using var handler = new RecordingHandler(string.Empty);
+            using var subject = new TestViteDevServer(DevServer, isDebug: false, handler);
 
             subject.IsEnabled.Should().BeFalse();
             subject.HandlesPath("/frontend/src/index.ts").Should().BeFalse();
@@ -118,7 +123,7 @@ namespace NzbDrone.Api.Test.Frontend
         }
 
         [Test]
-        public async Task should_follow_the_dev_server_starting_and_stopping()
+        public void should_follow_the_dev_server_starting_and_stopping()
         {
             using var handler = new RecordingHandler(string.Empty) { Status = HttpStatusCode.NotFound };
             using var subject = new TestViteDevServer(DevServer, isDebug: true, handler);
@@ -126,11 +131,11 @@ namespace NzbDrone.Api.Test.Frontend
             subject.IsEnabled.Should().BeFalse();
 
             handler.Status = HttpStatusCode.OK;
-            await subject.Refresh();
+            subject.RefreshNow();
             subject.IsEnabled.Should().BeTrue();
 
             handler.Status = HttpStatusCode.NotFound;
-            await subject.Refresh();
+            subject.RefreshNow();
             subject.IsEnabled.Should().BeFalse();
         }
 
@@ -147,7 +152,8 @@ namespace NzbDrone.Api.Test.Frontend
         [Test]
         public void should_follow_the_build_configuration_by_default()
         {
-            using var subject = new TestViteDevServer(DevServer);
+            using var handler = new RecordingHandler(string.Empty);
+            using var subject = new TestViteDevServer(DevServer, null, handler);
 
             subject.IsEnabled.Should().Be(BuildInfo.IsDebug);
         }
@@ -229,16 +235,15 @@ namespace NzbDrone.Api.Test.Frontend
         {
             private readonly bool? _isDebug;
 
-            // Without a handler it talks to a fake dev server that is running.
-            public TestViteDevServer(string baseAddress, bool? isDebug = null, HttpMessageHandler handler = null)
-                : base(baseAddress, handler ?? new RecordingHandler(string.Empty))
+            public TestViteDevServer(string baseAddress, bool? isDebug, HttpMessageHandler handler)
+                : base(baseAddress, handler)
             {
                 _isDebug = isDebug;
             }
 
             protected override bool IsDebugBuild => _isDebug ?? base.IsDebugBuild;
 
-            public Task Refresh() => RefreshAsync();
+            public void RefreshNow() => Refresh();
         }
 
         private class RecordingHandler : HttpMessageHandler
