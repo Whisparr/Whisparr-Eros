@@ -4,7 +4,7 @@ import PageSectionContent from 'Components/Page/PageSectionContent';
 import { useMetadata, useSortedMetadata } from 'Settings/Metadata/useMetadata';
 import translate from 'Utilities/String/translate';
 import Metadata from './Metadata';
-import styles from './Metadatas.css';
+import styles from './Metadatas.module.css';
 
 function Metadatas() {
   const { isFetching, isFetched, error } = useMetadata();

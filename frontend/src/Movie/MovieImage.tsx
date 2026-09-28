@@ -7,7 +7,7 @@ import React, {
 } from 'react';
 import translate from 'Utilities/String/translate';
 import { CoverType, Image } from './Movie';
-import styles from './MovieImage.css';
+import styles from './MovieImage.module.css';
 
 function findImage(images: Image[], coverType: CoverType) {
   const preferred = images.find((image) => image.coverType === coverType);

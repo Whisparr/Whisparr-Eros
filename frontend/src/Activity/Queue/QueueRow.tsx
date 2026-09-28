@@ -34,7 +34,7 @@ import QueueStatusCell from './QueueStatusCell';
 import RemoveQueueItemModal, { RemovePressProps } from './RemoveQueueItemModal';
 import TimeleftCell from './TimeleftCell';
 import { useGrabQueueItem, useRemoveQueueItem } from './useQueue';
-import styles from './QueueRow.css';
+import styles from './QueueRow.module.css';
 
 interface QueueRowProps {
   id: number;

@@ -22,7 +22,7 @@ import {
   useAddNewMovieSearchResult,
 } from '../useAddNewMovie';
 import AddNewMovieModal from './AddNewMovieModal';
-import styles from './AddNewMovieSearchResult.css';
+import styles from './AddNewMovieSearchResult.module.css';
 
 // TODO: Use actual credit type instead
 interface Credit {

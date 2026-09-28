@@ -27,7 +27,7 @@ import useRootFolders, {
 import translate from 'Utilities/String/translate';
 import { ImportItemType } from '../ImportMovieTypes';
 import ImportMovieRootFolderRow from './ImportMovieRootFolderRow';
-import styles from './ImportMovieSelectFolder.css';
+import styles from './ImportMovieSelectFolder.module.css';
 
 const rootFolderColumns = [
   { name: 'path', label: () => translate('Path'), isVisible: true },

@@ -8,7 +8,7 @@ import translate from 'Utilities/String/translate';
 import CustomFormat from './CustomFormat';
 import EditCustomFormatModal from './EditCustomFormatModal';
 import { useSortedCustomFormats } from './useCustomFormats';
-import styles from './CustomFormats.css';
+import styles from './CustomFormats.module.css';
 
 export default function CustomFormats() {
   const {

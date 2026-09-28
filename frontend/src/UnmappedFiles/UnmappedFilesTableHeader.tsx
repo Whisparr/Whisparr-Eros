@@ -9,7 +9,7 @@ import { icons } from 'Helpers/Props';
 import { SortDirection } from 'Helpers/Props/sortDirections';
 import { TableOptionsChangePayload } from 'typings/Table';
 import translate from 'Utilities/String/translate';
-import styles from './UnmappedFilesTableHeader.css';
+import styles from './UnmappedFilesTableHeader.module.css';
 
 export interface UnmappedFilesTableHeaderProps {
   columns: Column[];

@@ -25,7 +25,7 @@ import QualityProfileItems from './QualityProfileItems';
 import useQualityProfileDnd from './useQualityProfileDnd';
 import useQualityProfileInUse from './useQualityProfileInUse';
 import { useManageQualityProfile } from './useQualityProfiles';
-import styles from './EditQualityProfileModalContent.css';
+import styles from './EditQualityProfileModalContent.module.css';
 
 const MODAL_BODY_PADDING = Number.parseInt(dimensions.modalBodyPadding, 10);
 

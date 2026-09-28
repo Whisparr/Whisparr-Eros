@@ -11,7 +11,7 @@ import { icons, kinds } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import AddNewStudioSearchResult from './AddNewStudioSearchResult';
 import useAddNewStudio from './useAddNewStudio';
-import styles from '../../AddMovie/AddNewMovie/AddNewMovie.css';
+import styles from '../../AddMovie/AddNewMovie/AddNewMovie.module.css';
 
 function AddNewStudio() {
   const {

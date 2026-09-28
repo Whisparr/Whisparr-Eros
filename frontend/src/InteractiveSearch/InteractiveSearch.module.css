@@ -1,0 +1,11 @@
+.filterMenuContainer {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
+.alert {
+  composes: alert from 'Components/Alert.module.css';
+
+  margin-top: 10px;
+}

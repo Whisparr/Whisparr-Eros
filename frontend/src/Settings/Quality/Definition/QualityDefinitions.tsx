@@ -9,7 +9,7 @@ import {
 import translate from 'Utilities/String/translate';
 import QualityDefinition from './QualityDefinition';
 import { useManageQualityDefinitions } from './useQualityDefinitions';
-import styles from './QualityDefinitions.css';
+import styles from './QualityDefinitions.module.css';
 
 interface QualityDefinitionsProps {
   setChildSave: SetChildSave;

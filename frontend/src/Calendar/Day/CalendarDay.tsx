@@ -6,7 +6,7 @@ import * as calendarViews from 'Calendar/calendarViews';
 import CalendarEvent from 'Calendar/Events/CalendarEvent';
 import useCalendar, { useCalendarTime } from 'Calendar/useCalendar';
 import { CalendarEvent as CalendarEventModel } from 'typings/Calendar';
-import styles from './CalendarDay.css';
+import styles from './CalendarDay.module.css';
 
 function sort(items: CalendarEventModel[]) {
   return items.sort((a, b) => {

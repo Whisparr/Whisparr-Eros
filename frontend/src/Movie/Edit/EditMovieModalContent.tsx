@@ -24,7 +24,7 @@ import { ValidationError, ValidationWarning } from 'typings/pending';
 import translate from 'Utilities/String/translate';
 import RootFolderModal from './RootFolder/RootFolderModal';
 import { RootFolderUpdated } from './RootFolder/RootFolderModalContent';
-import styles from './EditMovieModalContent.css';
+import styles from './EditMovieModalContent.module.css';
 
 export interface EditMovieModalContentProps {
   movie: Movie;

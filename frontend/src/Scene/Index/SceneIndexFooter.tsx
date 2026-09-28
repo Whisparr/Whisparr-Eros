@@ -8,7 +8,7 @@ import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
 import { useSceneStats } from './useSceneStats';
-import styles from './SceneIndexFooter.css';
+import styles from './SceneIndexFooter.module.css';
 
 export default function SceneIndexFooter() {
   const { data, error, isError, isFetching } = useSceneStats();

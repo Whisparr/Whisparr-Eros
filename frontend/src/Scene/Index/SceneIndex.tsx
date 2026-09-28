@@ -36,7 +36,7 @@ import SceneIndexSelectFooter from './Select/SceneIndexSelectFooter';
 import SceneIndexTable from './Table/SceneIndexTable';
 import SceneIndexTableOptions from './Table/SceneIndexTableOptions';
 import { useSceneIndex } from './useSceneIndex';
-import styles from './SceneIndex.css';
+import styles from './SceneIndex.module.css';
 
 function SceneIndex() {
   const {

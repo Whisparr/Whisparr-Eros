@@ -12,7 +12,7 @@ import translate from 'Utilities/String/translate';
 import QualityProfileItem from './QualityProfileItem';
 import QualityProfileItemGroup from './QualityProfileItemGroup';
 import { DisplayItem, ROOT_CONTAINER } from './useQualityProfileDnd';
-import styles from './QualityProfileItems.css';
+import styles from './QualityProfileItems.module.css';
 
 interface QualityProfileItemsProps {
   editGroups: boolean;

@@ -8,7 +8,7 @@ import { icons } from 'Helpers/Props';
 import { CheckInputChanged } from 'typings/inputs';
 import translate from 'Utilities/String/translate';
 import { qualityKey, ROOT_CONTAINER } from './useQualityProfileDnd';
-import styles from './QualityProfileItem.css';
+import styles from './QualityProfileItem.module.css';
 
 export interface QualityProfileItemProps {
   editGroups?: boolean;

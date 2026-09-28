@@ -10,7 +10,7 @@ import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { inputTypes, kinds, sizes } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './DeleteSceneModal.css';
+import styles from './DeleteSceneModal.module.css';
 
 export interface DeleteSceneModalContentProps {
   sceneIds: number[];

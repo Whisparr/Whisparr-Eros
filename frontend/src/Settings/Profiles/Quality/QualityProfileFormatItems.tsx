@@ -9,7 +9,7 @@ import { QualityProfileFormatItem as ProfileFormatItem } from 'typings/CustomFor
 import { Failure } from 'typings/pending';
 import translate from 'Utilities/String/translate';
 import QualityProfileFormatItem from './QualityProfileFormatItem';
-import styles from './QualityProfileFormatItems.css';
+import styles from './QualityProfileFormatItems.module.css';
 
 function calcOrder(profileFormatItems: ProfileFormatItem[]) {
   const items = profileFormatItems.reduce<Record<number, number>>(

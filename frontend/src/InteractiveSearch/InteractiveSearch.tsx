@@ -18,7 +18,7 @@ import InteractiveSearchRow from './InteractiveSearchRow';
 import { RELEASE_FILTERS } from './releaseFilters';
 import { setReleasesFilter, setReleasesSort } from './releaseOptionsStore';
 import { useReleases } from './useReleases';
-import styles from './InteractiveSearch.css';
+import styles from './InteractiveSearch.module.css';
 
 const columns: Column[] = [
   {

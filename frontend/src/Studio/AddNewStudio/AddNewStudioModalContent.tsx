@@ -15,7 +15,7 @@ import StudioLogo from 'Studio/StudioLogo';
 import { EnhancedSelectInputChanged } from 'typings/inputs';
 import translate from 'Utilities/String/translate';
 import { useAddNewStudioModalContent } from './useAddNewStudio';
-import styles from './AddNewStudioModalContent.css';
+import styles from './AddNewStudioModalContent.module.css';
 
 interface AddNewStudioModalContentProps {
   studio: Studio;

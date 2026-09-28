@@ -10,7 +10,7 @@ import { isCommandExecuting } from 'Utilities/Command';
 import formatDate from 'Utilities/Date/formatDate';
 import formatDateTime from 'Utilities/Date/formatDateTime';
 import formatTimeSpan from 'Utilities/Date/formatTimeSpan';
-import styles from './ScheduledTaskRow.css';
+import styles from './ScheduledTaskRow.module.css';
 
 interface ScheduledTaskRowProps {
   id: number;

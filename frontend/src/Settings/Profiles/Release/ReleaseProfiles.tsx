@@ -11,7 +11,7 @@ import translate from 'Utilities/String/translate';
 import EditReleaseProfileModal from './EditReleaseProfileModal';
 import ReleaseProfileItem from './ReleaseProfileItem';
 import { useReleaseProfiles } from './useReleaseProfiles';
-import styles from './ReleaseProfiles.css';
+import styles from './ReleaseProfiles.module.css';
 
 function ReleaseProfiles() {
   const { data, isFetching, isFetched, error } = useReleaseProfiles();

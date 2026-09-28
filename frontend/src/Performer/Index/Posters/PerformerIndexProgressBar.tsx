@@ -4,7 +4,7 @@ import ProgressBar from 'Components/ProgressBar';
 import { kinds, sizes } from 'Helpers/Props';
 import { Kind } from 'Helpers/Props/kinds';
 import Performer from 'Performer/Performer';
-import styles from './PerformerIndexProgressBar.css';
+import styles from './PerformerIndexProgressBar.module.css';
 
 interface PerformerIndexProgressBarProps {
   performer: Performer;

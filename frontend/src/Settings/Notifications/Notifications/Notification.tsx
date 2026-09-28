@@ -10,7 +10,7 @@ import { useTagList } from 'Tags/useTags';
 import NotificationModel from 'typings/Notification';
 import translate from 'Utilities/String/translate';
 import EditNotificationModal from './EditNotificationModal';
-import styles from './Notification.css';
+import styles from './Notification.module.css';
 
 interface NotificationProps {
   notification: NotificationModel;

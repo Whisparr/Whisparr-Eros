@@ -13,7 +13,7 @@ import {
   useDownloadClients,
   useSortedDownloadClients,
 } from './useDownloadClients';
-import styles from './DownloadClients.css';
+import styles from './DownloadClients.module.css';
 
 function DownloadClients() {
   const { isFetching, isFetched, error } = useDownloadClients();

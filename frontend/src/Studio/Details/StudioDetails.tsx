@@ -63,7 +63,7 @@ import {
   useStudioDetailsWorks,
   useStudioTags,
 } from './useStudioDetails';
-import styles from './StudioDetails.css';
+import styles from './StudioDetails.module.css';
 
 function getFanartUrl(images: Image[]): string | undefined {
   return find(images, { coverType: 'fanart' })?.url;

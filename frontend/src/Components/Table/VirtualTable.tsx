@@ -11,7 +11,7 @@ import useMeasure from 'Helpers/Hooks/useMeasure';
 import usePrevious from 'Helpers/Hooks/usePrevious';
 import { HORIZONTAL } from 'Helpers/Props/scrollDirections';
 import hasDifferentItemsOrOrder from 'Utilities/Object/hasDifferentItemsOrOrder';
-import styles from './VirtualTable.css';
+import styles from './VirtualTable.module.css';
 
 const ROW_HEIGHT = 38;
 

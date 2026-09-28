@@ -16,7 +16,7 @@ import { SelectStateInputProps } from 'typings/props';
 import translate from 'Utilities/String/translate';
 import BlocklistDetailsModal from './BlocklistDetailsModal';
 import { useRemoveBlocklistItem } from './useBlocklist';
-import styles from './BlocklistRow.css';
+import styles from './BlocklistRow.module.css';
 
 interface BlocklistRowProps extends Blocklist {
   isSelected: boolean;

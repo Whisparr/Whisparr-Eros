@@ -24,7 +24,7 @@ import {
   useStudioDetailsYearData,
 } from './useStudioDetailsYear';
 import YearInfo from './YearInfo';
-import styles from './StudioDetailsYear.css';
+import styles from './StudioDetailsYear.module.css';
 
 interface StudioDetailsYearProps {
   studioId: number;

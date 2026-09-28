@@ -9,7 +9,7 @@ import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import getRelativeDate from 'Utilities/Date/getRelativeDate';
 import translate from 'Utilities/String/translate';
 import { ImportCredit } from '../../ImportMovieTypes';
-import styles from './ImportMovieTitle.css';
+import styles from './ImportMovieTitle.module.css';
 
 interface ImportMovieTitleProps {
   itemType: string;

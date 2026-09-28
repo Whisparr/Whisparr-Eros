@@ -11,7 +11,7 @@ import { useDeleteStudiosModalFooterHandler } from './Delete/useDeleteStudiosMod
 import EditStudiosModal from './Edit/EditStudiosModal';
 import { useEditStudiosModalMutation } from './Edit/useEditStudiosModalMutation';
 import TagsModal from './Tags/TagsModal';
-import styles from './StudioIndexSelectFooter.css';
+import styles from './StudioIndexSelectFooter.module.css';
 
 interface SavePayload {
   monitored?: boolean;

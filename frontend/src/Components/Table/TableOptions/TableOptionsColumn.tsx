@@ -6,7 +6,7 @@ import Icon from 'Components/Icon';
 import Column, { IsModifiable } from 'Components/Table/Column';
 import { icons } from 'Helpers/Props';
 import { CheckInputChanged } from 'typings/inputs';
-import styles from './TableOptionsColumn.css';
+import styles from './TableOptionsColumn.module.css';
 
 export interface TableOptionsColumnProps {
   name: string;

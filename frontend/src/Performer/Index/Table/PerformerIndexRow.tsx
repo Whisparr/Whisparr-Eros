@@ -21,7 +21,7 @@ import formatBytes from 'Utilities/Number/formatBytes';
 import countryCode from 'Utilities/String/countryCode';
 import firstCharToUpper from 'Utilities/String/firstCharToUpper';
 import translate from 'Utilities/String/translate';
-import styles from './PerformerIndexRow.css';
+import styles from './PerformerIndexRow.module.css';
 
 interface PerformerIndexRowProps {
   performer: Performer;

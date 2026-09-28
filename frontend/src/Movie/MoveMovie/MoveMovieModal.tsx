@@ -7,7 +7,7 @@ import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { kinds, sizes } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './MoveMovieModal.css';
+import styles from './MoveMovieModal.module.css';
 
 interface MoveMovieModalProps {
   originalPath?: string;

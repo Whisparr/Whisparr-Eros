@@ -24,7 +24,7 @@ import fonts from 'Styles/Variables/fonts';
 import translate from 'Utilities/String/translate';
 import { useMovieIndexOption } from '../movieIndexOptionsStore';
 import MovieIndexOverviewInfo from './MovieIndexOverviewInfo';
-import styles from './MovieIndexOverview.css';
+import styles from './MovieIndexOverview.module.css';
 
 const columnPadding = Number.parseInt(dimensions.movieIndexColumnPadding, 10);
 const columnPaddingSmallScreen = Number.parseInt(

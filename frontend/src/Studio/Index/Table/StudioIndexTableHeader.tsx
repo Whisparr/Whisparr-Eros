@@ -17,7 +17,7 @@ import {
 import { CheckInputChanged } from 'typings/inputs';
 import translate from 'Utilities/String/translate';
 import StudioIndexTableOptions from './StudioIndexTableOptions';
-import styles from './StudioIndexTableHeader.css';
+import styles from './StudioIndexTableHeader.module.css';
 
 interface StudioIndexTableHeaderProps {
   columns: Column[];

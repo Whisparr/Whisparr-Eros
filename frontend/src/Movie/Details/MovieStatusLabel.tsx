@@ -6,7 +6,7 @@ import Queue from 'typings/Queue';
 import getQueueStatusText from 'Utilities/Movie/getQueueStatusText';
 import firstCharToUpper from 'Utilities/String/firstCharToUpper';
 import translate from 'Utilities/String/translate';
-import styles from './MovieStatusLabel.css';
+import styles from './MovieStatusLabel.module.css';
 
 type MovieStatus =
   | 'availNotMonitored'

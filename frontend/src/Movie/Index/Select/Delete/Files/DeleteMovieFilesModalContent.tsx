@@ -11,7 +11,7 @@ import Movie from 'Movie/Movie';
 import sortByProp from 'Utilities/Array/sortByProp';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
-import styles from './DeleteMovieFilesModalContent.css';
+import styles from './DeleteMovieFilesModalContent.module.css';
 
 export type DeleteMovieFilesItemType = 'movie' | 'scene';
 

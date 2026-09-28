@@ -13,7 +13,7 @@ import getErrorMessage from 'Utilities/Object/getErrorMessage';
 import translate from 'Utilities/String/translate';
 import AddNewPerformerSearchResult from './AddNewPerformerSearchResult';
 import useAddNewPerformer from './useAddNewPerformer';
-import styles from '../../AddMovie/AddNewMovie/AddNewMovie.css';
+import styles from '../../AddMovie/AddNewMovie/AddNewMovie.module.css';
 
 function AddNewPerformer() {
   const {

@@ -60,7 +60,7 @@ import MovieTags from './MovieTags';
 import ReleaseDateDisplay from './ReleaseDateDisplay';
 import MovieTitlesTable from './Titles/MovieTitlesTable';
 import useMovieDetailsModals from './useMovieDetailsModals';
-import styles from './MovieDetails.css';
+import styles from './MovieDetails.module.css';
 
 interface Props {
   isSaving: boolean;

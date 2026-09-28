@@ -14,7 +14,7 @@ import MovieIndexPoster from 'Movie/Index/Posters/MovieIndexPoster';
 import Movie from 'Movie/Movie';
 import SceneIndexPoster from 'Scene/Index/Posters/SceneIndexPoster';
 import dimensions from 'Styles/Variables/dimensions';
-import styles from './DetailsPosters.css';
+import styles from './DetailsPosters.module.css';
 
 const MOVIE_MAX_COLUMN_WIDTH = 182;
 const SCENE_MAX_COLUMN_WIDTH = 310;

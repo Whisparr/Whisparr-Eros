@@ -1,0 +1,50 @@
+.selectCell {
+  composes: cell from 'Components/Table/Cells/VirtualTableSelectCell.module.css';
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top: none !important;
+}
+
+.selectInput {
+  composes: input from 'Components/Form/CheckInput.module.css';
+}
+
+.folder {
+  composes: cell from 'Components/Table/Cells/VirtualTableRowCell.module.css';
+
+  flex: 0 1 250px;
+  overflow: visible !important;
+  min-width: 170px;
+  border-top: none !important;
+  text-overflow: clip !important;
+  white-space: normal !important;
+  word-break: break-all;
+}
+
+.monitor {
+  composes: cell from 'Components/Table/Cells/VirtualTableRowCell.module.css';
+
+  flex: 0 1 150px;
+  min-width: 100px;
+  border-top: none !important;
+}
+
+.qualityProfile {
+  composes: cell from 'Components/Table/Cells/VirtualTableRowCell.module.css';
+
+  flex: 0 1 170px;
+  min-width: 100px;
+  border-top: none !important;
+}
+
+.movie {
+  composes: cell from 'Components/Table/Cells/VirtualTableRowCell.module.css';
+
+  flex: 1 0 200px;
+  overflow: visible !important;
+  border-top: none !important;
+  text-overflow: clip !important;
+  white-space: normal !important;
+}

@@ -52,7 +52,7 @@ import getErrorMessage from 'Utilities/Object/getErrorMessage';
 import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
 import InteractiveImportRow from './InteractiveImportRow';
-import styles from './InteractiveImportModalContent.css';
+import styles from './InteractiveImportModalContent.module.css';
 
 type SelectType =
   'select' | 'movie' | 'releaseGroup' | 'quality' | 'language' | 'indexerFlags';

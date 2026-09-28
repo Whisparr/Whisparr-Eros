@@ -1,0 +1,128 @@
+.content {
+  display: flex;
+  flex-grow: 1;
+  margin-bottom: 10px;
+  background-color: var(--movieBackgroundColor);
+  transition: all 200ms ease-in;
+
+  &:hover {
+    z-index: 2;
+    box-shadow: 0 0 12px var(--black);
+    transition: all 200ms ease-in;
+
+    .controls {
+      opacity: 0.9;
+      transition: opacity 200ms linear 150ms;
+    }
+  }
+}
+
+.poster {
+  position: relative;
+}
+
+.editorSelect {
+  position: absolute;
+  top: 0;
+  left: 5px;
+  z-index: 3;
+}
+
+.posterContainer {
+  position: relative;
+}
+
+.link {
+  composes: link from 'Components/Link/Link.module.css';
+
+  display: block;
+  color: var(--defaultColor);
+
+  &:hover {
+    color: var(--defaultColor);
+    text-decoration: none;
+  }
+}
+
+.deleted {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1;
+  width: 0;
+  height: 0;
+  border-width: 0 25px 25px 0;
+  border-style: solid;
+  border-color: transparent var(--gray) transparent transparent;
+  color: var(--white);
+}
+
+.info {
+  display: flex;
+  flex: 1 0 1px;
+  flex-direction: column;
+  overflow: hidden;
+  padding-left: 10px;
+}
+
+.titleRow {
+  display: flex;
+  justify-content: space-between;
+  flex: 0 0 auto;
+  margin-bottom: 10px;
+  line-height: 32px;
+}
+
+.title {
+  @add-mixin truncate;
+  composes: link;
+
+  flex: 1 0 1px;
+  font-weight: 300;
+  font-size: 30px;
+}
+
+.actions {
+  white-space: nowrap;
+}
+
+.details {
+  display: flex;
+  justify-content: space-between;
+  flex: 1 0 auto;
+}
+
+.overviewContainer {
+  display: flex;
+  justify-content: space-between;
+  flex: 0 1 1000px;
+  flex-direction: column;
+}
+
+.overview {
+  composes: link;
+
+  overflow: hidden;
+  min-height: 0;
+}
+
+.tags {
+  display: flex;
+  justify-content: space-around;
+  overflow: hidden;
+}
+
+@media (--breakpointSmall) {
+  .overview {
+    display: none;
+  }
+}
+
+.externalLinks {
+  margin-right: 0.5em;
+}
+
+.queue {
+  padding-left: 2px;
+  border-left: 4px solid var(--queueColor);
+}

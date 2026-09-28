@@ -1,0 +1,14 @@
+.links {
+  margin: 0;
+}
+
+.link {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.linkLabel {
+  composes: label from 'Components/Label.module.css';
+
+  cursor: pointer;
+}

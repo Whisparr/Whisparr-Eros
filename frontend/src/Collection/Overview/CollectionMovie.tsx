@@ -13,7 +13,7 @@ import Movie from 'Movie/Movie';
 import MoviePoster from 'Movie/MoviePoster';
 import { useToggleMovieMonitored } from 'Movie/useMovie';
 import translate from 'Utilities/String/translate';
-import styles from './CollectionMovie.css';
+import styles from './CollectionMovie.module.css';
 
 interface CollectionMovieProps {
   movie: MovieCollectionMovie;

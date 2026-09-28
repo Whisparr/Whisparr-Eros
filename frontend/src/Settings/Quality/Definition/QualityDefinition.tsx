@@ -12,7 +12,7 @@ import roundNumber from 'Utilities/Number/roundNumber';
 import translate from 'Utilities/String/translate';
 import QualityDefinitionLimits from './QualityDefinitionLimits';
 import { useManageQualityDefinitions } from './useQualityDefinitions';
-import styles from './QualityDefinition.css';
+import styles from './QualityDefinition.module.css';
 
 const MIN = 0;
 const MAX = 2000;

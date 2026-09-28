@@ -11,7 +11,7 @@ import Indexer from 'typings/Indexer';
 import translate from 'Utilities/String/translate';
 import EditReleaseProfileModal from './EditReleaseProfileModal';
 import { ReleaseProfile, useDeleteReleaseProfile } from './useReleaseProfiles';
-import styles from './ReleaseProfileItem.css';
+import styles from './ReleaseProfileItem.module.css';
 
 interface ReleaseProfileProps extends ReleaseProfile {
   tagList: readonly Tag[];

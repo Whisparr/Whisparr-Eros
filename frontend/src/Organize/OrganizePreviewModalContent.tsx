@@ -24,7 +24,7 @@ import useOrganizePreview, {
   OrganizePreviewModel,
   OrganizePreviewScope,
 } from './useOrganizePreview';
-import styles from './OrganizePreviewModalContent.css';
+import styles from './OrganizePreviewModalContent.module.css';
 
 function getValue(allSelected: boolean, allUnselected: boolean) {
   if (allSelected) {

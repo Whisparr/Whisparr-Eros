@@ -14,7 +14,7 @@ import firstCharToUpper from 'Utilities/String/firstCharToUpper';
 import translate from 'Utilities/String/translate';
 import AddNewPerformerModal from './AddNewPerformerModal';
 import { useAddNewPerformerSearchResult } from './useAddNewPerformer';
-import styles from './AddNewPerformerSearchResult.css';
+import styles from './AddNewPerformerSearchResult.module.css';
 
 interface AddNewPerformerSearchResultProps {
   performer: Performer;

@@ -3,7 +3,7 @@ import Icon from 'Components/Icon';
 import Button from 'Components/Link/Button';
 import { icons } from 'Helpers/Props';
 import { isCrossOriginFrame } from 'Utilities/browser';
-import styles from './DateInput.css';
+import styles from './DateInput.module.css';
 
 // The native picker is opened from the button rather than the input, so the
 // input itself is hidden. `showPicker` throws in a cross-origin frame, and

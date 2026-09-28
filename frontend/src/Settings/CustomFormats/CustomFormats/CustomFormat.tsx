@@ -10,7 +10,7 @@ import translate from 'Utilities/String/translate';
 import EditCustomFormatModal from './EditCustomFormatModal';
 import ExportCustomFormatModal from './ExportCustomFormatModal';
 import { useDeleteCustomFormat } from './useCustomFormats';
-import styles from './CustomFormat.css';
+import styles from './CustomFormat.module.css';
 
 interface CustomFormatProps {
   customFormat: CustomFormatModel;

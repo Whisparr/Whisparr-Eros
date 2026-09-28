@@ -10,7 +10,7 @@ import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { inputTypes, kinds, sizes } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './DeleteMovieModal.css';
+import styles from './DeleteMovieModal.module.css';
 
 export interface DeleteMovieModalContentProps {
   movieIds: number[];

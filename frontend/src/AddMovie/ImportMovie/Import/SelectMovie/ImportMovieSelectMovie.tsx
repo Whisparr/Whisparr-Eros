@@ -15,7 +15,7 @@ import {
 } from '../../ImportMovieTypes';
 import ImportMovieSearchResult from './ImportMovieSearchResult';
 import ImportMovieTitle from './ImportMovieTitle';
-import styles from './ImportMovieSelectMovie.css';
+import styles from './ImportMovieSelectMovie.module.css';
 
 interface ImportMovieSelectMovieProps {
   readonly item: ImportItem;

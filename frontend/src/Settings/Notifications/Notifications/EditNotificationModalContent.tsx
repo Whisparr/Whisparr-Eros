@@ -23,7 +23,7 @@ import Notification from 'typings/Notification';
 import { ApiError } from 'Utilities/Fetch/fetchJson';
 import translate from 'Utilities/String/translate';
 import NotificationEventItems from './NotificationEventItems';
-import styles from './EditNotificationModalContent.css';
+import styles from './EditNotificationModalContent.module.css';
 
 interface EditNotificationModalContentProps {
   id: number;

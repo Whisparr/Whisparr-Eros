@@ -14,7 +14,7 @@ import { inputTypes, kinds, sizes } from 'Helpers/Props';
 import { useDownloadClients } from 'Settings/DownloadClients/DownloadClients/useDownloadClients';
 import { useTagList } from 'Tags/useTags';
 import translate from 'Utilities/String/translate';
-import styles from './TagsModalContent.css';
+import styles from './TagsModalContent.module.css';
 
 interface TagsModalContentProps {
   ids: number[];

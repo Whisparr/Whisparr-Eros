@@ -6,7 +6,7 @@ import Movie from 'Movie/Movie';
 import { useSceneIndexOption } from '../sceneIndexOptionsStore';
 import SceneIndexRow from './SceneIndexRow';
 import SceneIndexTableHeader from './SceneIndexTableHeader';
-import styles from './SceneIndexTable.css';
+import styles from './SceneIndexTable.module.css';
 
 interface SceneIndexTableProps {
   items: Movie[];

@@ -17,7 +17,7 @@ import { QualityModel } from 'Quality/Quality';
 import MediaInfo from 'typings/MediaInfo';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
-import styles from './UnmappedFilesTableRow.css';
+import styles from './UnmappedFilesTableRow.module.css';
 
 interface UnmappedFilesTableRowProps {
   id: number;

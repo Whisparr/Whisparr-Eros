@@ -1,0 +1,84 @@
+.footer {
+  /* existing styles */
+  composes: contentFooter from 'Components/Page/PageContentFooter.module.css';
+
+  align-items: center;
+}
+/* Floating, pinned footer styles */
+.footer {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 210px; /* Match actual sidebar width from dimensions.js */
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 32px;
+  border-top: 1px solid #222;
+  background: #18191c;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.15);
+
+  .buttons {
+    display: flex;
+    justify-content: center;
+    flex: 1;
+  }
+
+  .actionButtons {
+    display: flex;
+    gap: 10px;
+
+    justify-content: center;
+    width: 100%;
+  }
+
+  .selected {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    margin-left: 32px;
+    font-weight: bold;
+  }
+  @media only screen and (max-width: 900px) {
+    .footer {
+      left: 0; /* Sidebar collapses or overlays, so footer spans full width */
+    }
+  }
+  @media (--breakpointMedium) {
+    .buttons {
+      justify-content: center;
+      width: 100%;
+    }
+
+    .selected {
+      justify-content: center;
+      margin-bottom: 20px;
+      width: 100%;
+      order: -1;
+    }
+  }
+  @media (--breakpointSmall) {
+    .footer {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .buttons {
+      flex-direction: column;
+      margin-top: 20px;
+      gap: 20px;
+    }
+
+    .actionButtons {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .selected {
+      justify-content: center;
+      order: -1;
+    }
+  }
+}

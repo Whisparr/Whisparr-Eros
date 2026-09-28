@@ -1,0 +1,69 @@
+.pageContent {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  width: 100%;
+}
+
+.performerIndexTable {
+  flex: 1;
+  width: 100%;
+}
+
+.tablePager {
+  flex: 0 0 auto;
+}
+
+.errorMessage {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 20px;
+}
+
+.contentBody {
+  composes: contentBody from 'Components/Page/PageContentBody.module.css';
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.postersInnerContentBody {
+  composes: innerContentBody from 'Components/Page/PageContentBody.module.css';
+
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+
+  /* 5px less padding than normal to handle poster's 5px margin */
+  padding: calc(var(--pageContentBodyPadding) - 5px);
+}
+
+.tableInnerContentBody {
+  composes: innerContentBody from 'Components/Page/PageContentBody.module.css';
+
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.contentBodyContainer {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+@media (--breakpointSmall) {
+  .pageContentBodyWrapper {
+    flex-basis: auto;
+    overflow: visible;
+  }
+
+  .contentBody {
+    flex-basis: 1px;
+  }
+
+  .postersInnerContentBody {
+    padding: calc(var(--pageContentBodyPaddingSmallScreen) - 5px);
+  }
+}

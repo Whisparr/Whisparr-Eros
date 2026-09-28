@@ -3,7 +3,7 @@ import React from 'react';
 import Button, { ButtonProps } from 'Components/Link/Button';
 import SpinnerButton from 'Components/Link/SpinnerButton';
 import { kinds } from 'Helpers/Props';
-import styles from './FormInputButton.css';
+import styles from './FormInputButton.module.css';
 
 export interface FormInputButtonProps extends ButtonProps {
   canSpin?: boolean;

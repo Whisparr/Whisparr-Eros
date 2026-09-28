@@ -1,0 +1,10 @@
+.status {
+  composes: cell from 'Components/Table/Cells/TableRowCell.module.css';
+
+  width: 60px;
+}
+
+.statusIcon {
+  width: 20px !important;
+  text-align: center;
+}

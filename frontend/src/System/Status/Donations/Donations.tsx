@@ -2,7 +2,7 @@ import React from 'react';
 import FieldSet from 'Components/FieldSet';
 import Link from 'Components/Link/Link';
 import translate from 'Utilities/String/translate';
-import styles from '../styles.css';
+import styles from '../styles.module.css';
 
 function Donations() {
   return (

@@ -3,7 +3,7 @@ import React, { SyntheticEvent } from 'react';
 import { InputChanged } from 'typings/inputs';
 import translate from 'Utilities/String/translate';
 import EnhancedSelectInput from './EnhancedSelectInput';
-import styles from './UMaskInput.css';
+import styles from './UMaskInput.module.css';
 
 const umaskOptions = [
   {

@@ -6,7 +6,7 @@ import MovieHeadshot from 'Movie/MovieHeadshot';
 import Performer from 'Performer/Performer';
 import PerformerGenderIcon from 'Performer/PerformerGenderIcon';
 import translate from 'Utilities/String/translate';
-import styles from './MovieSearchResult.css';
+import styles from './MovieSearchResult.module.css';
 
 type PerformerSearchResultProps = Pick<
   Performer,

@@ -1,0 +1,65 @@
+.sidebarContainer {
+  flex: 0 0 var(--sidebarWidth);
+  overflow: hidden;
+  width: var(--sidebarWidth);
+  background-color: var(--sidebarBackgroundColor);
+  transition: transform 300ms ease-in-out;
+  transform: translateX(0);
+}
+
+.sidebarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--headerHeight);
+}
+
+.logoContainer {
+  display: flex;
+  align-items: center;
+  padding-left: 20px;
+}
+
+.logoLink {
+  line-height: 0;
+}
+
+.logo {
+  display: block;
+  width: auto;
+  height: 32px;
+  vertical-align: middle;
+}
+
+.sidebarCloseButton {
+  composes: button from '~Components/Link/IconButton.module.css';
+
+  margin-right: 15px;
+  color: var(--white);
+  text-align: center;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: var(--sidebarBackgroundColor);
+  color: var(--white);
+}
+
+@media (--breakpointSmall) {
+  .sidebarContainer {
+    position: fixed;
+    top: 0;
+    z-index: 2;
+    height: 100vh;
+  }
+
+  .sidebar {
+    position: fixed;
+    z-index: 2;
+    overflow-y: auto;
+    width: 100%;
+    height: 100%;
+  }
+}

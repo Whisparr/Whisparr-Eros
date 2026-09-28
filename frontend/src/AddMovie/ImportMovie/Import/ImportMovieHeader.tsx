@@ -4,7 +4,7 @@ import VirtualTableHeaderCell from 'Components/Table/VirtualTableHeaderCell';
 import VirtualTableSelectAllHeaderCell from 'Components/Table/VirtualTableSelectAllHeaderCell';
 import { SortDirection } from 'Helpers/Props/sortDirections';
 import translate from 'Utilities/String/translate';
-import styles from './ImportMovieHeader.css';
+import styles from './ImportMovieHeader.module.css';
 
 interface ImportMovieHeaderProps {
   allSelected: boolean;

@@ -36,7 +36,7 @@ import MovieIndexSelectModeMenuItem from './Select/MovieIndexSelectModeMenuItem'
 import MovieIndexTable from './Table/MovieIndexTable';
 import MovieIndexTableOptions from './Table/MovieIndexTableOptions';
 import { useMovieIndex } from './useMovieIndex';
-import styles from './MovieIndex.css';
+import styles from './MovieIndex.module.css';
 
 function MovieIndex() {
   const {

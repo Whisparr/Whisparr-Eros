@@ -19,7 +19,7 @@ import { CheckInputChanged } from 'typings/inputs';
 import { SelectStateInputProps } from 'typings/props';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
-import styles from './StudioIndexRow.css';
+import styles from './StudioIndexRow.module.css';
 
 interface StudioIndexRowProps {
   studio: Studio;

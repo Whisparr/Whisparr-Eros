@@ -15,7 +15,7 @@ import EditMoviesModal from './Edit/EditMoviesModal';
 import { useEditMoviesModalMutation } from './Edit/useEditMoviesModalMutation';
 import OrganizeMoviesModal from './Organize/OrganizeMoviesModal';
 import TagsModal from './Tags/TagsModal';
-import styles from './MovieIndexSelectFooter.css';
+import styles from './MovieIndexSelectFooter.module.css';
 
 interface SavePayload {
   monitored?: boolean;

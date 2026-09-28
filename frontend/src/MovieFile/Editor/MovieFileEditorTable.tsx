@@ -12,7 +12,7 @@ import {
   useMovieFileEditorOptions,
 } from './movieFileEditorOptionsStore';
 import MovieFileEditorTableContent from './MovieFileEditorTableContent';
-import styles from './MovieFileEditorTable.css';
+import styles from './MovieFileEditorTable.module.css';
 
 export interface MovieFileEditorTableProps {
   movieId: number;

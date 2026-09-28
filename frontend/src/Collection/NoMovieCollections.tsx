@@ -4,7 +4,7 @@ import Button from 'Components/Link/Button';
 import { kinds } from 'Helpers/Props';
 import { useGeneralSettings } from 'Settings/General/useGeneralSettings';
 import translate from 'Utilities/String/translate';
-import styles from './NoMovieCollections.css';
+import styles from './NoMovieCollections.module.css';
 
 interface NoMovieCollectionsProps {
   totalItems: number;

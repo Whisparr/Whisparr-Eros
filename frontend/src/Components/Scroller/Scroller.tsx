@@ -14,7 +14,7 @@ import {
   ScrollDirection,
   VERTICAL,
 } from 'Helpers/Props/scrollDirections';
-import styles from './Scroller.css';
+import styles from './Scroller.module.css';
 
 export interface OnScroll {
   scrollLeft: number;

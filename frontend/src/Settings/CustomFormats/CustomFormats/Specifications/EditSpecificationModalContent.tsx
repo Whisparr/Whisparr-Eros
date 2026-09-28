@@ -20,7 +20,7 @@ import { useShowAdvancedSettings } from 'Settings/advancedSettingsStore';
 import { CustomFormatSpecification } from 'typings/CustomFormat';
 import { InputChanged } from 'typings/inputs';
 import translate from 'Utilities/String/translate';
-import styles from './EditSpecificationModalContent.css';
+import styles from './EditSpecificationModalContent.module.css';
 
 interface EditSpecificationModalContentProps {
   specification: CustomFormatSpecification;

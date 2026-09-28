@@ -16,7 +16,7 @@ import {
   DelayProfile as DelayProfileModel,
   useDeleteDelayProfile,
 } from './useDelayProfiles';
-import styles from './DelayProfile.css';
+import styles from './DelayProfile.module.css';
 
 function getDelay(enabled: boolean, delay: number) {
   if (!enabled) {

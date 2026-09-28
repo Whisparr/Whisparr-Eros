@@ -1,0 +1,11 @@
+.title {
+  composes: title from 'Components/DescriptionList/DescriptionListItemTitle.module.css';
+
+  width: 90px;
+}
+
+.description {
+  composes: title from 'Components/DescriptionList/DescriptionListItemDescription.module.css';
+
+  margin-left: 110px;
+}

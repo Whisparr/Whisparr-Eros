@@ -27,7 +27,7 @@ import {
 import ManageIndexersEditModal from './Edit/ManageIndexersEditModal';
 import ManageIndexersModalRow from './ManageIndexersModalRow';
 import TagsModal from './Tags/TagsModal';
-import styles from './ManageIndexersModalContent.css';
+import styles from './ManageIndexersModalContent.module.css';
 
 // TODO: This feels janky to do, but not sure of a better way currently
 type OnSelectedChangeCallback = React.ComponentProps<

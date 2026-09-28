@@ -23,7 +23,7 @@ import translate from 'Utilities/String/translate';
 import { GrabReleasePayload } from '../useReleases';
 import SelectDownloadClientModal from './DownloadClient/SelectDownloadClientModal';
 import OverrideMatchData from './OverrideMatchData';
-import styles from './OverrideMatchModalContent.css';
+import styles from './OverrideMatchModalContent.module.css';
 
 type SelectType =
   'select' | 'movie' | 'quality' | 'language' | 'downloadClient';

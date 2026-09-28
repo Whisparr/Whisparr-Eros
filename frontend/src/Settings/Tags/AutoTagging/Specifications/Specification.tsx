@@ -7,7 +7,7 @@ import { icons, kinds } from 'Helpers/Props';
 import { AutoTaggingSpecification } from 'typings/AutoTagging';
 import translate from 'Utilities/String/translate';
 import EditSpecificationModal from './EditSpecificationModal';
-import styles from './Specification.css';
+import styles from './Specification.module.css';
 
 interface SpecificationProps {
   specification: AutoTaggingSpecification;

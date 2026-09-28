@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import React from 'react';
-import styles from './DateInput.css';
+import styles from './DateInput.module.css';
 
 interface ChangePayload {
   name: string;

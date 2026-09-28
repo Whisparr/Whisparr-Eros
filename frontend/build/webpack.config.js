@@ -4,6 +4,7 @@ const FileManagerPlugin = require('filemanager-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const LiveReloadPlugin = require('webpack-livereload-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const { defaultGetLocalIdent } = require('css-loader');
 const TerserPlugin = require('terser-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
@@ -192,7 +193,20 @@ module.exports = (env) => {
                 modules: {
                   namedExport: false,
                   exportLocalsConvention: 'as-is',
-                  localIdentName: isProduction ? '[name]/[local]/[hash:base64:5]' : '[name]/[local]'
+                  localIdentName: isProduction ? '[name]/[local]/[hash:base64:5]' : '[name]/[local]',
+                  // Keep class names as they were before the .module.css rename
+                  // (PageSidebar-sidebar, not PageSidebar-module-sidebar): the
+                  // automation tests and user themes match on them.
+                  getLocalIdent: (loaderContext, localIdentName, localName, options) =>
+                    defaultGetLocalIdent(
+                      loaderContext,
+                      localIdentName.replace(
+                        '[name]',
+                        path.basename(loaderContext.resourcePath).replace(/(\.module)?\.css$/, '')
+                      ),
+                      localName,
+                      options
+                    ).replace(/\[local\]/gi, localName)
                 }
               }
             },

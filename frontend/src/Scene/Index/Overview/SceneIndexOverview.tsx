@@ -23,7 +23,7 @@ import fonts from 'Styles/Variables/fonts';
 import translate from 'Utilities/String/translate';
 import { useSceneIndexOption } from '../sceneIndexOptionsStore';
 import SceneIndexOverviewInfo from './SceneIndexOverviewInfo';
-import styles from './SceneIndexOverview.css';
+import styles from './SceneIndexOverview.module.css';
 
 const columnPadding = Number.parseInt(dimensions.movieIndexColumnPadding, 10);
 const columnPaddingSmallScreen = Number.parseInt(

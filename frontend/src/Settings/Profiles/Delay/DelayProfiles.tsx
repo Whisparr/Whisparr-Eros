@@ -18,7 +18,7 @@ import {
   useDelayProfiles,
   useReorderDelayProfile,
 } from './useDelayProfiles';
-import styles from './DelayProfiles.css';
+import styles from './DelayProfiles.module.css';
 
 function DelayProfiles() {
   const { data, isFetching, isFetched, error } = useDelayProfiles();

@@ -28,7 +28,7 @@ import StudioIndexRefreshStudioButton from './StudioIndexRefreshStudioButton';
 import StudioIndexTable from './Table/StudioIndexTable';
 import StudioIndexTableOptions from './Table/StudioIndexTableOptions';
 import { useStudioIndex } from './useStudioIndex';
-import styles from './StudioIndex.css';
+import styles from './StudioIndex.module.css';
 
 function StudioIndex(): React.JSX.Element {
   const {

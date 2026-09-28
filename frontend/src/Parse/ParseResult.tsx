@@ -5,7 +5,7 @@ import MovieTitleLink from 'Movie/MovieTitleLink';
 import translate from 'Utilities/String/translate';
 import { ParseModel } from './ParseModel';
 import ParseResultItem from './ParseResultItem';
-import styles from './ParseResult.css';
+import styles from './ParseResult.module.css';
 
 interface ParseResultProps {
   item: ParseModel;

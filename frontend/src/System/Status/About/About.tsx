@@ -7,7 +7,7 @@ import useSystemStatus from 'System/Status/useSystemStatus';
 import titleCase from 'Utilities/String/titleCase';
 import translate from 'Utilities/String/translate';
 import StartTime from './StartTime';
-import styles from './About.css';
+import styles from './About.module.css';
 
 function About() {
   const { data, refetch } = useSystemStatus();
