@@ -6,7 +6,6 @@ using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Instrumentation.Extensions;
 using NzbDrone.Core.Configuration;
-using NzbDrone.Core.CustomFormats;
 using NzbDrone.Core.Download;
 using NzbDrone.Core.Download.TrackedDownloads;
 using NzbDrone.Core.MediaFiles.MediaInfo;
@@ -36,7 +35,7 @@ namespace NzbDrone.Core.MediaFiles.MovieImport
         private readonly IDiskProvider _diskProvider;
         private readonly IDetectSample _detectSample;
         private readonly ITrackedDownloadService _trackedDownloadService;
-        private readonly ICustomFormatCalculationService _formatCalculator;
+        private readonly ILocalMovieCustomFormatCalculationService _formatCalculator;
         private readonly IVideoFileInfoReader _videoFileInfoReader;
         private readonly IConfigService _configService;
         private readonly Logger _logger;
@@ -49,7 +48,7 @@ namespace NzbDrone.Core.MediaFiles.MovieImport
                                    IDiskProvider diskProvider,
                                    IDetectSample detectSample,
                                    ITrackedDownloadService trackedDownloadService,
-                                   ICustomFormatCalculationService formatCalculator,
+                                   ILocalMovieCustomFormatCalculationService formatCalculator,
                                    IVideoFileInfoReader videoFileInfoReader,
                                    IConfigService configService,
                                    Logger logger)
@@ -242,8 +241,7 @@ namespace NzbDrone.Core.MediaFiles.MovieImport
                     }
                     else
                     {
-                        localMovie.CustomFormats = _formatCalculator.ParseCustomFormat(localMovie);
-                        localMovie.CustomFormatScore = localMovie.Movie.QualityProfile?.CalculateCustomFormatScore(localMovie.CustomFormats) ?? 0;
+                        _formatCalculator.UpdateMovieCustomFormats(localMovie);
 
                         decision = GetDecision(localMovie, downloadClientItem);
                     }
@@ -278,8 +276,7 @@ namespace NzbDrone.Core.MediaFiles.MovieImport
                         }
                     }
 
-                    localMovie.CustomFormats = _formatCalculator.ParseCustomFormat(localMovie);
-                    localMovie.CustomFormatScore = localMovie.Movie.QualityProfile?.CalculateCustomFormatScore(localMovie.CustomFormats) ?? 0;
+                    _formatCalculator.UpdateMovieCustomFormats(localMovie);
 
                     decision = GetDecision(localMovie, downloadClientItem);
                 }
