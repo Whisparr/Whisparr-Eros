@@ -3649,8 +3649,8 @@
       "838b25d0962108de0b5232f6957c9473b6fc6c9d": {
         "subject": "Improve Mark as Failed for non-grabbed history events",
         "month": "2026-05",
-        "disposition": "skip",
-        "reason": "Broken as landed -- both new blocks throw InvalidOperationException unconditionally after publishing the event, so marking a download failed would always 400. Upstream fixed it in 43797d65c8 a month later. Separately, our FailedDownloadService has neither the message/source parameters nor the grabbedHistory aggregation this builds on, so it is a port of two commits, not a cherry-pick. Reconsider as a pair when 2026-06 is worked."
+        "disposition": "adapt",
+        "reason": "Landed 2026-09-28 as its own PR, together with its fix 43797d65c. Taken as upstream for MarkAsFailed(historyId): a history item with a download ID is failed against that download's grab rather than the item chosen, and one that has no grab (or was not grabbed and has no download ID) is refused. Adapted: movies have no episode aggregation, so it is the grab itself or the newest grab for the download ID; the refusal is our existing NzbDroneClientException(BadRequest), which the error pipeline already maps, instead of upstream's InvalidOperationException plus a pipeline branch that would turn every unrelated InvalidOperationException into a 400. MarkAsFailed(TrackedDownload) only logs a warning when there is no grab instead of throwing, because the queue removes the item from the client before blocklisting and bulk removal would stop part way through. skipRedownload is also passed on the download-ID path, which upstream drops."
       },
       "dfc37be76e061d321ef82e88bd4c82da416018d6": {
         "subject": "Fixed: Parsing quality from some WEB releases",
@@ -3691,8 +3691,8 @@
       "43797d65c8f710ec18906a87ae27c08381efafb3": {
         "subject": "Fix marking as failed for grabbed history events",
         "month": "2026-06",
-        "disposition": "have",
-        "reason": "Both halves are already in our tree: FailedDownloadService.MarkAsFailed has no throw after the grabbed-history branch, so the missing-return fallthrough cannot occur here, and MovieHistoryRow.tsx already calls setIsMarkAsFailedModalOpen(false) on confirm."
+        "disposition": "adapt",
+        "reason": "Taken with 838b25d09: its returns after publishing are part of that port. The MovieHistoryRow half (closing the confirm modal) was already in our tree."
       },
       "1de3fb96631a71f4e030ddefe92229f832b82faa": {
         "subject": "Fixed: Loading eligible pending releases on when RSS sync runs",
