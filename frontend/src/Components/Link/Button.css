@@ -104,17 +104,17 @@
 
 .small {
   padding: 1px 5px;
-  font-size: $smallFontSize;
+  font-size: var(--smallFontSize);
 }
 
 .medium {
   padding: 6px 16px;
-  font-size: $defaultFontSize;
+  font-size: var(--defaultFontSize);
 }
 
 .large {
   padding: 10px 20px;
-  font-size: $largeFontSize;
+  font-size: var(--largeFontSize);
 }
 
 /*

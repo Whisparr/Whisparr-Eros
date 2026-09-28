@@ -68,7 +68,7 @@
   width: 75px;
 }
 
-@media only screen and (max-width: $breakpointSmall) {
+@media (--breakpointSmall) {
   .qualityDefinition {
     flex-wrap: wrap;
     height: auto;

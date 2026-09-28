@@ -1,5 +1,3 @@
-$hoverScale: 1.05;
-
 .content {
   transition: all 200ms ease-in;
 
@@ -74,14 +72,13 @@ $hoverScale: 1.05;
   width: 100%;
   pointer-events: none;
 }
-$hoverScale: 1.05;
 
 .title {
   @add-mixin truncate;
 
   background-color: var(--sceneBackgroundColor);
   text-align: center;
-  font-size: $smallFontSize;
+  font-size: var(--smallFontSize);
 }
 
 .qualityProfile,
@@ -110,7 +107,7 @@ $hoverScale: 1.05;
   border-radius: 4px;
   background-color: #707070;
   color: var(--white);
-  font-size: $smallFontSize;
+  font-size: var(--smallFontSize);
   opacity: 0;
   transition: opacity 0;
 }
@@ -123,7 +120,7 @@ $hoverScale: 1.05;
   }
 }
 
-@media only screen and (max-width: $breakpointSmall) {
+@media (--breakpointSmall) {
   .container {
     padding: 5px;
   }
@@ -168,5 +165,5 @@ $hoverScale: 1.05;
 .nextAiring {
   background-color: #fafbfc;
   text-align: center;
-  font-size: $smallFontSize;
+  font-size: var(--smallFontSize);
 }

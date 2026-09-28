@@ -1,5 +1,5 @@
 .infoRow {
-  flex: 0 0 $movieIndexOverviewInfoRowHeight;
+  flex: 0 0 var(--movieIndexOverviewInfoRowHeight);
   margin: 2px 0;
 }
 

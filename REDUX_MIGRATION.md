@@ -1895,15 +1895,18 @@ and belongs to whoever wants monitor modes to work.
   `postcss-simple-vars`, and this entry used to say Node cannot require `.ts`. It can:
   Volta pins Node 24.19, and type stripping is on by default from 22.18. The config
   now resolves the `.ts` paths and reads `.default`, and the production CSS is
-  byte-identical to the `.js` build.
+  byte-identical to the `.js` build. #931 then took `postcss-simple-vars` out
+  altogether: stylesheets read custom properties from `Styles/Variables/variables.css`,
+  so PostCSS no longer loads these files, and only `dimensions.ts` and `fonts.ts`
+  remain, for the TypeScript that reads them.
 
   **`.js` stays in webpack's `resolve.extensions`** regardless, because deep imports into
   `node_modules` (`lodash/find`) resolve through it. **The `.js` block in
   `eslint.config.js` stays permanently**: it lints `frontend/babel.config.js`,
-  `frontend/postcss.config.js`, `frontend/build/webpack.config.js` and
-  `frontend/build/webpack/css-variables-loader.js`, which are Node config and will never be
-  TypeScript. #559 tried removing it and got 47 errors, mostly `'module' is not defined` in
-  those four. `frontend/jsconfig.json` is the only config that did go.
+  `frontend/postcss.config.js` and `frontend/build/webpack.config.js`, which are Node
+  config and will never be TypeScript. #559 tried removing it and got 47 errors, mostly
+  `'module' is not defined` in those files, which then included the since-deleted
+  `css-variables-loader.js`. `frontend/jsconfig.json` is the only config that did go.
 
 - **The two theme palettes are not key-identical, and three of the four odd keys are
   live.** `dark` defines `themeLightPurple` and `sceneBackgroundColor`, which `light` does

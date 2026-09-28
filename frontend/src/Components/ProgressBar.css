@@ -110,28 +110,28 @@
 }
 
 .small {
-  height: $progressBarSmallHeight;
+  height: var(--progressBarSmallHeight);
 
   .backText,
   .frontText {
-    height: $progressBarSmallHeight;
+    height: var(--progressBarSmallHeight);
   }
 }
 
 .medium {
-  height: $progressBarMediumHeight;
+  height: var(--progressBarMediumHeight);
 
   .backText,
   .frontText {
-    height: $progressBarMediumHeight;
+    height: var(--progressBarMediumHeight);
   }
 }
 
 .large {
-  height: $progressBarLargeHeight;
+  height: var(--progressBarLargeHeight);
 
   .backText,
   .frontText {
-    height: $progressBarLargeHeight;
+    height: var(--progressBarLargeHeight);
   }
 }

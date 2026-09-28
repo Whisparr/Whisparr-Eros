@@ -4,16 +4,16 @@
 }
 
 .innerContentBody {
-  padding: $pageContentBodyPadding;
+  padding: var(--pageContentBodyPadding);
 }
 
-@media only screen and (max-width: $breakpointSmall) {
+@media (--breakpointSmall) {
   .contentBody {
     flex-basis: auto;
     overflow: visible !important;
   }
 
   .innerContentBody {
-    padding: $pageContentBodyPaddingSmallScreen;
+    padding: var(--pageContentBodyPaddingSmallScreen);
   }
 }

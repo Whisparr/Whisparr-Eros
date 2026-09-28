@@ -1,12 +1,4 @@
-const reload = require('require-nocache')(module);
-
-// TypeScript sources, loaded through Node's built-in type stripping.
-const cssVarsFiles = [
-  './src/Styles/Variables/dimensions.ts',
-  './src/Styles/Variables/fonts.ts',
-  './src/Styles/Variables/animations.ts',
-  './src/Styles/Variables/zIndexes.ts'
-].map((f) => require.resolve(f));
+const path = require('node:path');
 
 const mixinsFiles = [
   'frontend/src/Styles/Mixins/cover.css',
@@ -21,12 +13,12 @@ module.exports = {
     ['postcss-mixins', {
       mixinsFiles
     }],
-    ['postcss-simple-vars', {
-      variables: () =>
-        cssVarsFiles.reduce((acc, vars) => {
-          return Object.assign(acc, reload(vars).default);
-        }, {})
+    // Every stylesheet can use the breakpoints' @custom-media without
+    // importing them; the definitions themselves are not emitted.
+    ['@csstools/postcss-global-data', {
+      files: [path.join(__dirname, 'src/Styles/Variables/breakpoints.css')]
     }],
+    'postcss-custom-media',
     'postcss-color-function',
     'postcss-nested'
   ]

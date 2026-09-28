@@ -26,11 +26,11 @@
 }
 
 .addButton {
-  width: $dragHandleWidth;
+  width: var(--dragHandleWidth);
   text-align: center;
 }
 
-@media only screen and (max-width: $breakpointSmall) {
+@media (--breakpointSmall) {
   .horizontalScroll {
     overflow-y: hidden;
     width: 100%;

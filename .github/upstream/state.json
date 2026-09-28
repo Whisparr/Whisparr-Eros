@@ -4384,9 +4384,8 @@
       "b2413c1e09e798101a952b848470f919a9e9311a": {
         "subject": "Replace PostCSS variables with custom properties and @custom-media",
         "month": "2026-09",
-        "disposition": "defer",
-        "reason": "Replaces postcss-simple-vars with native custom properties and @custom-media, and deletes Styles/Variables. It overlaps #923, which just converted those four files to TypeScript: after this, the TSX consumers that import dimensions/fonts need another source, so the port has to decide where those values live.",
-        "blockedBy": "Its own PR, by paul's decision on 2026-09-27: the tooling rewrites stay out of sync chunks because each one touches the whole frontend tree. Take it before dc984cf17 and 3731e9dc4: upstream's order is custom properties, then .module.css, then Vite."
+        "disposition": "adapt",
+        "reason": "Landed 2026-09-27 as its own PR, and wider than upstream. Upstream's parent had already moved most tokens to var() during the redesign, so their commit only finished the job. Our 126 stylesheets still used 41 postcss-simple-vars tokens, and all of them are converted. Taken as upstream: breakpoints.css as @custom-media, loaded everywhere by @csstools/postcss-global-data and expanded by postcss-custom-media, with postcss-simple-vars and require-nocache removed. We use the current plugin majors, 4.0.0 and 12.0.2. Adapted: variables.css is new here. It holds every token plus the two that were declared locally, $hoverScale in ten poster stylesheets and $fullColorGradient, and it is imported from Styles/globals.css. dimensions.ts and fonts.ts stay as the TypeScript mirror, since about twenty components read them; animations.ts and zIndexes.ts had no TypeScript readers and are deleted. One media query used calc($breakpointLarge + 100px), which @custom-media cannot express, so it became a literal 1300px. postcss-color-function is kept, unlike upstream, because CalendarEvent and ProgressBar still use color(). The dead css-variables-loader.js goes with the variable files it existed for."
       },
       "dc984cf1754f935573b1722eab57e53acb6c2572": {
         "subject": "Rename CSS modules to .module.css",

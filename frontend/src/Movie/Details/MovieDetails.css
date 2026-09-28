@@ -225,7 +225,7 @@
   padding-left: 7px;
   min-height: 0;
   text-wrap: balance;
-  font-size: $intermediateFontSize;
+  font-size: var(--intermediateFontSize);
 }
 
 .contentContainer {
@@ -256,7 +256,7 @@
   margin-top: 20px;
 }
 
-@media only screen and (max-width: $breakpointSmall) {
+@media (--breakpointSmall) {
   .contentContainer {
     padding: 20px 0;
   }
@@ -272,7 +272,7 @@
   }
 }
 
-@media only screen and (max-width: $breakpointLarge) {
+@media (--breakpointLarge) {
   .poster,
   .screenshot,
   .movieNavigationButtons {

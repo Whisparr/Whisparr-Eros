@@ -1,5 +1,3 @@
-$hoverScale: 1.05;
-
 .content {
   display: flex;
   flex-grow: 1;
@@ -102,7 +100,7 @@ $hoverScale: 1.05;
   min-height: 0;
 }
 
-@media only screen and (max-width: $breakpointSmall) {
+@media (--breakpointSmall) {
   .overview {
     display: none;
   }

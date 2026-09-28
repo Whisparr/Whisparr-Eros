@@ -30,7 +30,7 @@
   margin-right: 8px;
 }
 
-@media only screen and (max-width: $breakpointSmall) {
+@media (--breakpointSmall) {
   .overflowMenuButton {
     &::after {
       margin-left: 0;

@@ -1,7 +1,7 @@
 .sidebarContainer {
-  flex: 0 0 $sidebarWidth;
+  flex: 0 0 var(--sidebarWidth);
   overflow: hidden;
-  width: $sidebarWidth;
+  width: var(--sidebarWidth);
   background-color: var(--sidebarBackgroundColor);
   transition: transform 300ms ease-in-out;
   transform: translateX(0);
@@ -11,7 +11,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: $headerHeight;
+  height: var(--headerHeight);
 }
 
 .logoContainer {
@@ -47,7 +47,7 @@
   color: var(--white);
 }
 
-@media only screen and (max-width: $breakpointSmall) {
+@media (--breakpointSmall) {
   .sidebarContainer {
     position: fixed;
     top: 0;

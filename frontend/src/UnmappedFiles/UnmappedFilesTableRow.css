@@ -3,7 +3,7 @@
 
   flex: 4 0 400px;
   font-size: 13px;
-  font-family: $monoSpaceFontFamily;
+  font-family: var(--monoSpaceFontFamily);
 }
 
 .quality,

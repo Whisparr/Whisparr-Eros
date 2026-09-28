@@ -2,8 +2,8 @@
   composes: menuButton from './MenuButton.css';
 
   padding-top: 4px;
-  width: $toolbarButtonWidth;
-  height: $toolbarHeight;
+  width: var(--toolbarButtonWidth);
+  height: var(--toolbarHeight);
   text-align: center;
 }
 

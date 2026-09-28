@@ -45,7 +45,7 @@
       left: 0; /* Sidebar collapses or overlays, so footer spans full width */
     }
   }
-  @media only screen and (max-width: $breakpointMedium) {
+  @media (--breakpointMedium) {
     .buttons {
       justify-content: center;
       width: 100%;
@@ -58,7 +58,7 @@
       order: -1;
     }
   }
-  @media only screen and (max-width: $breakpointSmall) {
+  @media (--breakpointSmall) {
     .footer {
       display: flex;
       flex-direction: column;

@@ -30,7 +30,7 @@
 .sizeOnDisk {
   margin-left: 10px;
   color: #777;
-  font-size: $defaultFontSize;
+  font-size: var(--defaultFontSize);
 }
 
 .expandButton {
@@ -62,7 +62,7 @@
   composes: menuContent from 'Components/Menu/MenuContent.css';
 
   white-space: nowrap;
-  font-size: $defaultFontSize;
+  font-size: var(--defaultFontSize);
 }
 
 .actionMenuIcon {
@@ -111,7 +111,7 @@
   text-align: center;
 }
 
-@media only screen and (max-width: $breakpointSmall) {
+@media (--breakpointSmall) {
   .season {
     border-right: 0;
     border-left: 0;

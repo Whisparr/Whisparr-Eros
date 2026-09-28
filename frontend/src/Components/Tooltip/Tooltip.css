@@ -4,7 +4,7 @@
 }
 
 .tooltipContainer {
-  z-index: $popperZIndex;
+  z-index: var(--popperZIndex);
   margin: 10px;
 }
 
@@ -168,29 +168,29 @@
 }
 
 .horizontalContainer {
-  max-width: calc($breakpointExtraSmall - 20px);
+  max-width: calc(var(--breakpointExtraSmall) - 20px);
 }
 
-@media only screen and (min-width: $breakpointExtraSmall) {
+@media (--breakpointExtraSmallUp) {
   .horizontalContainer {
-    max-width: calc($breakpointSmall * 0.8);
+    max-width: calc(var(--breakpointSmall) * 0.8);
   }
 }
 
-@media only screen and (min-width: $breakpointSmall) {
+@media (--breakpointSmallUp) {
   .horizontalContainer {
-    max-width: calc($breakpointMedium * 0.8);
+    max-width: calc(var(--breakpointMedium) * 0.8);
   }
 }
 
-@media only screen and (min-width: $breakpointMedium) {
+@media (--breakpointMediumUp) {
   .horizontalContainer {
-    max-width: calc($breakpointLarge * 0.8);
+    max-width: calc(var(--breakpointLarge) * 0.8);
   }
 }
 
-/* @media only screen and (max-width: $breakpointLarge) {
+/* @media (--breakpointLarge) {
   .horizontalContainer {
-    max-width: calc($breakpointLarge * 0.8);
+    max-width: calc(var(--breakpointLarge) * 0.8);
   }
 } */

@@ -9,7 +9,7 @@
 
 .step {
   display: flex;
-  font-size: $largeFontSize;
+  font-size: var(--largeFontSize);
   line-height: 20px;
 }
 
@@ -17,7 +17,7 @@
   margin-right: 8px;
 }
 
-@media only screen and (max-width: $breakpointSmall) {
+@media (--breakpointSmall) {
   composes: modalFooter from 'Components/Modal/ModalFooter.css';
 
   flex-wrap: wrap;

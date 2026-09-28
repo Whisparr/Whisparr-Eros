@@ -23,7 +23,7 @@
 }
 
 .addCustomFormatMessage {
-  max-width: $formGroupExtraSmallWidth;
+  max-width: var(--formGroupExtraSmallWidth);
   color: var(--helpTextColor);
   text-align: center;
   font-weight: 300;

@@ -16,7 +16,7 @@
   }
 }
 
-@media only screen and (max-width: $breakpointSmall) {
+@media (--breakpointSmall) {
   .modalFooter {
     padding: 15px;
   }

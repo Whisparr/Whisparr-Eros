@@ -1,6 +1,6 @@
 .qualityProfileFormatItemContainer {
   display: flex;
-  padding: $qualityProfileItemDragSourcePadding 0;
+  padding: var(--qualityProfileItemDragSourcePadding) 0;
   width: 100%;
 }
 
@@ -20,7 +20,7 @@
   margin-left: 14px;
   width: 100%;
   font-weight: normal;
-  line-height: $qualityProfileItemHeight;
+  line-height: var(--qualityProfileItemHeight);
   cursor: text;
 }
 

@@ -60,7 +60,7 @@
   height: 25px;
 }
 
-@media only screen and (max-width: $breakpointMedium) {
+@media (--breakpointMedium) {
   .pager {
     flex-wrap: wrap;
   }
