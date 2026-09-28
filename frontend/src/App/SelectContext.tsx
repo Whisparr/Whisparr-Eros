@@ -19,7 +19,7 @@ export type SelectContextAction =
     }
   | {
       type: 'updateItems';
-      items: ModelBase[];
+      items: ReadonlyArray<ModelBase>;
     };
 
 export type SelectDispatch = (action: SelectContextAction) => void;
@@ -27,7 +27,7 @@ export type SelectDispatch = (action: SelectContextAction) => void;
 interface SelectProviderOptions<T extends ModelBase> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   children: any;
-  items: Array<T>;
+  items: ReadonlyArray<T>;
 }
 
 const SelectContext = React.createContext<

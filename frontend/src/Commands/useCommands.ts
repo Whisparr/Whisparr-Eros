@@ -13,7 +13,7 @@ import Command, { CommandBody, NewCommandBody } from './Command';
 
 export const COMMANDS_QUERY_KEY = ['/command'];
 
-const DEFAULT_COMMANDS: Command[] = [];
+const DEFAULT_COMMANDS: ReadonlyArray<Command> = [];
 
 // The slice removed finished commands on a five-minute timer of its own. The server
 // already drops them from this endpoint, so re-syncing on the same interval does the
@@ -96,7 +96,7 @@ const useWriteCommand = () => {
   return useMemo(
     () => ({
       upsert(command: Command) {
-        queryClient.setQueryData<Command[]>(
+        queryClient.setQueryData<ReadonlyArray<Command>>(
           COMMANDS_QUERY_KEY,
           (existing = DEFAULT_COMMANDS) =>
             existing.some((c) => c.id === command.id)
@@ -106,7 +106,7 @@ const useWriteCommand = () => {
       },
 
       remove(id: number) {
-        queryClient.setQueryData<Command[]>(
+        queryClient.setQueryData<ReadonlyArray<Command>>(
           COMMANDS_QUERY_KEY,
           (existing = DEFAULT_COMMANDS) => existing.filter((c) => c.id !== id)
         );

@@ -67,22 +67,27 @@ function updateMovieInCollectionListQueryCache(updatedMovie: MovieResource) {
     .getQueryCache()
     .findAll({ queryKey: [EXISTING_MOVIES_PATH] })
     .forEach(({ queryKey }) => {
-      queryClient.setQueryData(queryKey, (oldData: MovieResource[]) => {
-        if (!Array.isArray(oldData)) {
-          return oldData;
+      queryClient.setQueryData(
+        queryKey,
+        (oldData: ReadonlyArray<MovieResource>) => {
+          if (!Array.isArray(oldData)) {
+            return oldData;
+          }
+
+          const idx = oldData.findIndex(
+            (movie) => movie.id === updatedMovie.id
+          );
+
+          if (idx === -1) {
+            return oldData;
+          }
+
+          const newData = [...oldData];
+          newData[idx] = { ...oldData[idx], ...updatedMovie };
+
+          return newData;
         }
-
-        const idx = oldData.findIndex((movie) => movie.id === updatedMovie.id);
-
-        if (idx === -1) {
-          return oldData;
-        }
-
-        const newData = [...oldData];
-        newData[idx] = { ...oldData[idx], ...updatedMovie };
-
-        return newData;
-      });
+      );
     });
 }
 
@@ -96,21 +101,26 @@ function updateMovieInPerformerWorksQueryCache(updatedMovie: MovieResource) {
       typeof queryKey[0] === 'string' &&
       /performer\/[^/]+\/works$/.test(queryKey[0])
     ) {
-      queryClient.setQueryData(queryKey, (oldData: MovieResource[]) => {
-        if (!Array.isArray(oldData)) {
-          return oldData;
+      queryClient.setQueryData(
+        queryKey,
+        (oldData: ReadonlyArray<MovieResource>) => {
+          if (!Array.isArray(oldData)) {
+            return oldData;
+          }
+
+          const idx = oldData.findIndex(
+            (movie) => movie.id === updatedMovie.id
+          );
+
+          if (idx === -1) {
+            return oldData;
+          }
+
+          const newData = [...oldData];
+          newData[idx] = { ...oldData[idx], ...updatedMovie };
+          return newData;
         }
-
-        const idx = oldData.findIndex((movie) => movie.id === updatedMovie.id);
-
-        if (idx === -1) {
-          return oldData;
-        }
-
-        const newData = [...oldData];
-        newData[idx] = { ...oldData[idx], ...updatedMovie };
-        return newData;
-      });
+      );
     }
   });
 }
@@ -123,21 +133,24 @@ function updateMovieInStudioWorksQueryCache(updatedMovie: MovieResource) {
   }
 
   const studioKey = `/studio/${updatedMovie.studioForeignId}/works`;
-  queryClient.setQueryData([studioKey], (oldData: MovieResource[]) => {
-    if (!Array.isArray(oldData)) {
-      return oldData;
+  queryClient.setQueryData(
+    [studioKey],
+    (oldData: ReadonlyArray<MovieResource>) => {
+      if (!Array.isArray(oldData)) {
+        return oldData;
+      }
+
+      const idx = oldData.findIndex((movie) => movie.id === updatedMovie.id);
+
+      if (idx === -1) {
+        return oldData;
+      }
+
+      const newData = [...oldData];
+      newData[idx] = { ...oldData[idx], ...updatedMovie };
+      return newData;
     }
-
-    const idx = oldData.findIndex((movie) => movie.id === updatedMovie.id);
-
-    if (idx === -1) {
-      return oldData;
-    }
-
-    const newData = [...oldData];
-    newData[idx] = { ...oldData[idx], ...updatedMovie };
-    return newData;
-  });
+  );
 }
 
 // Merges updates in React Query cache instead of a re-fetch
@@ -307,24 +320,27 @@ function updateCalendarQueryCache(updatedMovie: MovieResource) {
         return;
       }
 
-      queryClient.setQueryData(queryKey, (oldData: MovieResource[]) => {
-        if (!Array.isArray(oldData)) {
-          return oldData;
+      queryClient.setQueryData(
+        queryKey,
+        (oldData: ReadonlyArray<MovieResource>) => {
+          if (!Array.isArray(oldData)) {
+            return oldData;
+          }
+
+          const index = oldData.findIndex(
+            (movie) => movie.id === updatedMovie.id
+          );
+
+          if (index === -1) {
+            return oldData;
+          }
+
+          const newData = [...oldData];
+          newData[index] = { ...oldData[index], ...updatedMovie };
+
+          return newData;
         }
-
-        const index = oldData.findIndex(
-          (movie) => movie.id === updatedMovie.id
-        );
-
-        if (index === -1) {
-          return oldData;
-        }
-
-        const newData = [...oldData];
-        newData[index] = { ...oldData[index], ...updatedMovie };
-
-        return newData;
-      });
+      );
     });
 }
 

@@ -29,7 +29,7 @@ export const MOVIE_INDEX_FILTER_BUILDER_PROPS: FilterBuilderProp<Movie>[] = [
     name: 'releaseGroups',
     label: () => translate('ReleaseGroups'),
     type: filterBuilderTypes.ARRAY,
-    optionsSelector: function (items: Movie[]) {
+    optionsSelector: function (items: ReadonlyArray<Movie>) {
       const groupList = items.reduce<FilterBuilderPropOption[]>(
         (acc, movie) => {
           const releaseGroups = movie.statistics?.releaseGroups ?? [];
@@ -59,7 +59,7 @@ export const MOVIE_INDEX_FILTER_BUILDER_PROPS: FilterBuilderProp<Movie>[] = [
     name: 'studio',
     label: () => translate('Studio'),
     type: filterBuilderTypes.EXACT,
-    optionsSelector: function (items: Movie[]) {
+    optionsSelector: function (items: ReadonlyArray<Movie>) {
       const tagList = items.reduce<FilterBuilderPropOption[]>((acc, movie) => {
         if (movie.studioTitle) {
           acc.push({

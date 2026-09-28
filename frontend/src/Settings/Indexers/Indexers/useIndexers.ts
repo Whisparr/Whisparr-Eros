@@ -171,7 +171,7 @@ export const useBulkEditIndexers = (onSettled?: () => void) => {
     method: 'PUT',
     mutationOptions: {
       onSuccess: (updatedIndexers) => {
-        queryClient.setQueryData<Indexer[]>(
+        queryClient.setQueryData<ReadonlyArray<Indexer>>(
           [INDEXERS_PATH],
           (indexers = []) => {
             return indexers.map((indexer) => {
@@ -202,7 +202,7 @@ export const useBulkDeleteIndexers = (onSuccess?: () => void) => {
     method: 'DELETE',
     mutationOptions: {
       onSuccess: (_data, { ids }) => {
-        queryClient.setQueryData<Indexer[]>(
+        queryClient.setQueryData<ReadonlyArray<Indexer>>(
           [INDEXERS_PATH],
           (indexers = []) => {
             return indexers.filter((indexer) => !ids.includes(indexer.id));

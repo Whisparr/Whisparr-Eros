@@ -60,7 +60,7 @@ export interface ImportItem {
 export type ImportAction =
   | {
       type: 'INIT_ITEMS';
-      files: ImportFile[];
+      files: ReadonlyArray<ImportFile>;
       itemType?: ImportItemType;
       defaults: { monitor: string; qualityProfileId: number };
     }

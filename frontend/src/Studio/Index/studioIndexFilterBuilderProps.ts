@@ -85,7 +85,7 @@ export const STUDIO_INDEX_FILTER_BUILDER_PROPS: FilterBuilderProp<Studio>[] = [
     name: 'network',
     label: () => translate('Network'),
     type: filterBuilderTypes.EXACT,
-    optionsSelector: function (items: Studio[]) {
+    optionsSelector: function (items: ReadonlyArray<Studio>) {
       const tagList = items.reduce<FilterBuilderPropOption[]>((acc, studio) => {
         if (studio?.network) {
           acc.push({

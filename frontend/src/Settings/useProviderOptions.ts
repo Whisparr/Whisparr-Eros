@@ -63,14 +63,17 @@ function useProviderOptions<T = FieldSelectOption<unknown>>({
 
   // Not `useApiQuery`: it keys a POST on the whole body, which would refetch
   // on every keystroke in the provider form.
-  const result = useQuery<{ options?: T[] }, ApiError>({
+  const result = useQuery<Readonly<{ options?: ReadonlyArray<T> }>, ApiError>({
     queryKey: [
       `/${provider}/action/${action}`,
       getProviderDataKey(providerData),
     ],
     enabled: !!(provider && action && providerData),
     queryFn: async ({ signal }) => {
-      return fetchJson<{ options?: T[] }, typeof flattenedData>({
+      return fetchJson<
+        Readonly<{ options?: ReadonlyArray<T> }>,
+        typeof flattenedData
+      >({
         path: getQueryPath(`/${provider}/action/${action}`),
         method: 'POST',
         body: flattenedData,

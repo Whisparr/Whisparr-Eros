@@ -14,7 +14,7 @@ export interface Tag extends ModelBase {
 
 export const TAGS_QUERY_KEY = ['/tag'];
 
-const DEFAULT_TAGS: Tag[] = [];
+const DEFAULT_TAGS: ReadonlyArray<Tag> = [];
 
 const useTags = () => {
   const result = useApiQuery<Tag[]>({
@@ -61,10 +61,12 @@ export const useAddTag = (onTagCreated?: (tag: Tag) => void) => {
         setError(null);
       },
       onSuccess: (tag) => {
-        queryClient.setQueryData<Tag[]>(TAGS_QUERY_KEY, (tags = []) =>
-          tags.some((t) => t.id === tag.id)
-            ? tags.map((t) => (t.id === tag.id ? tag : t))
-            : [...tags, tag]
+        queryClient.setQueryData<ReadonlyArray<Tag>>(
+          TAGS_QUERY_KEY,
+          (tags = []) =>
+            tags.some((t) => t.id === tag.id)
+              ? tags.map((t) => (t.id === tag.id ? tag : t))
+              : [...tags, tag]
         );
 
         onTagCreated?.(tag);
@@ -94,7 +96,7 @@ export const useDeleteTag = (id: number) => {
       // sends a tag sync for this, and invalidating here as well just fetched
       // /tag/detail twice.
       onSuccess: () => {
-        queryClient.setQueryData<Tag[]>(TAGS_QUERY_KEY, (tags) =>
+        queryClient.setQueryData<ReadonlyArray<Tag>>(TAGS_QUERY_KEY, (tags) =>
           tags?.filter((tag) => tag.id !== id)
         );
       },

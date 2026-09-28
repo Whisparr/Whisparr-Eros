@@ -86,7 +86,7 @@ const VIEW_RANGES: Record<
   forecast: 'day',
 };
 
-const DEFAULT_ITEMS: CalendarItem[] = [];
+const DEFAULT_ITEMS: ReadonlyArray<CalendarItem> = [];
 
 const getDays = (start: moment.Moment, end: moment.Moment) => {
   const startTime = moment(start);

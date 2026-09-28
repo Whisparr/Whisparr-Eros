@@ -10,7 +10,7 @@ import { useInteractiveImportOptions } from './interactiveImportOptionsStore';
 
 export const MANUAL_IMPORT_PATH = '/manualimport';
 
-const DEFAULT_ITEMS: InteractiveImport[] = [];
+const DEFAULT_ITEMS: ReadonlyArray<InteractiveImport> = [];
 
 const SORT_PREDICATES = {
   relativePath: (item: InteractiveImport) =>

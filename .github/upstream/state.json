@@ -3661,14 +3661,14 @@
       "fe7d8e1218a02179b8bc0f2a413f03f3cb9af000": {
         "subject": "Enforce new lines around multi-line blocks",
         "month": "2026-05",
-        "disposition": "skip",
-        "reason": "Adopting padding-line-between-statements would be an eslint sweep over our whole frontend, not the 26 files upstream touched, and our config is flat (eslint.config.js) not their .eslintrc.js. Worth its own PR if we want the rule."
+        "disposition": "adapt",
+        "reason": "Landed 2026-09-28 as its own PR. The same padding-line-between-statements rule (blank line before and after any multi-line block), added to our flat eslint.config.js and auto-fixed across the whole frontend rather than upstream's 26 files: 173 blank lines in 63 files, whitespace only."
       },
       "9bed77c68d6b0e117265a8a65c80b0bf7e81d4be": {
         "subject": "Avoid mutation for react-query data",
         "month": "2026-05",
-        "disposition": "skip",
-        "reason": "Right idea -- ReadonlyArray<T> on react-query data stops callers mutating the cache in place -- but it is a 37-file typing sweep against a tree whose file set diverges from theirs, and the payoff is uniform only if it is done everywhere. Worth its own PR rather than riding along in a month's sync."
+        "disposition": "adapt",
+        "reason": "Landed 2026-09-28 as its own PR, finishing what #455 started. #455 made useApiQuery return Readonly<T>; most of upstream's consumer hunks were already in place or absent here, since our tag hooks carry readonly through. This extends it to the roots #455 missed: usePagedApiQuery's records, the two direct useQuery hooks (useProviderOptions, useTranslations), every typed setQueryData cache writer and SignalRListener's updaters, and the hooks' empty-array fallbacks. Helpers that only read now accept ReadonlyArray: SelectProvider, TagInput, getSelectOptions, upsertRootFolder, the import reducer's INIT_ITEMS, Filter optionsSelector, FilterBuilderRowValue tagList, selectUniqueIds. Types only: no in-place mutation of cached data turned up, and the built bundle is equivalent to the base."
       },
       "98202ad7a61e4fe0c3006668eb6ea071546ea26a": {
         "subject": "Multiple Translations updated by Weblate",

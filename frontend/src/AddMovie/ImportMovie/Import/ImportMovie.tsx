@@ -38,7 +38,7 @@ import useImportMutation, { buildImportBody } from '../useImportMutation';
 import ImportMovieFooter from './ImportMovieFooter';
 import ImportMovieTable from './ImportMovieTable';
 
-const EMPTY_IMPORT_FILES: ImportFile[] = [];
+const EMPTY_IMPORT_FILES: ReadonlyArray<ImportFile> = [];
 
 interface ImportMovieProps {
   readonly itemType?: ImportItemType;

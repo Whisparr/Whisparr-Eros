@@ -22,7 +22,7 @@ export function useMoviesByForeignIds(foreignIds: string[] | undefined) {
   });
 }
 
-const EMPTY_MOVIES: Movie[] = [];
+const EMPTY_MOVIES: ReadonlyArray<Movie> = [];
 
 // Fetch multiple movies by library id. Replaces `createMultiMoviesSelector`,
 // which read the `movies` slice -- empty since the index went paged, so every

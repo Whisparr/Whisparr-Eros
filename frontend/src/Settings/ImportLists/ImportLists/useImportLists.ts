@@ -183,7 +183,7 @@ export const useBulkEditImportLists = (onSettled?: () => void) => {
     method: 'PUT',
     mutationOptions: {
       onSuccess: (updatedImportLists) => {
-        queryClient.setQueryData<ImportList[]>(
+        queryClient.setQueryData<ReadonlyArray<ImportList>>(
           [IMPORT_LISTS_PATH],
           (importLists = []) => {
             return importLists.map((importList) => {
@@ -215,7 +215,7 @@ export const useBulkDeleteImportLists = (onSuccess?: () => void) => {
     method: 'DELETE',
     mutationOptions: {
       onSuccess: (_data, { ids }) => {
-        queryClient.setQueryData<ImportList[]>(
+        queryClient.setQueryData<ReadonlyArray<ImportList>>(
           [IMPORT_LISTS_PATH],
           (importLists = []) => {
             return importLists.filter(
