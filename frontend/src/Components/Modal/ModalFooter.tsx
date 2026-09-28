@@ -1,5 +1,5 @@
 import React from 'react';
-import styles from './ModalFooter.css';
+import styles from './ModalFooter.module.css';
 
 interface ModalFooterProps extends React.HTMLAttributes<HTMLDivElement> {
   children?: React.ReactNode;

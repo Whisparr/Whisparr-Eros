@@ -11,7 +11,7 @@ import ModalHeader from 'Components/Modal/ModalHeader';
 import { inputTypes, kinds } from 'Helpers/Props';
 import { NONE } from 'Helpers/Props/scrollDirections';
 import translate from 'Utilities/String/translate';
-import styles from './SelectIndexerFlagsModalContent.css';
+import styles from './SelectIndexerFlagsModalContent.module.css';
 
 interface SelectIndexerFlagsModalContentProps {
   indexerFlags: number;

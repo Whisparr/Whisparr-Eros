@@ -8,7 +8,7 @@ import MonitorToggleButton, {
   MonitorTogglePressValue,
 } from 'Components/MonitorToggleButton';
 import translate from 'Utilities/String/translate';
-import styles from './MovieCollectionLabel.css';
+import styles from './MovieCollectionLabel.module.css';
 
 interface MovieCollectionLabelProps {
   tmdbId: number;

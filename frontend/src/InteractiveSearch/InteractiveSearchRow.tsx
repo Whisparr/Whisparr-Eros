@@ -26,7 +26,7 @@ import InteractiveSearchPayload from './InteractiveSearchPayload';
 import OverrideMatchModal from './OverrideMatch/OverrideMatchModal';
 import Peers from './Peers';
 import { useGrabRelease } from './useReleases';
-import styles from './InteractiveSearchRow.css';
+import styles from './InteractiveSearchRow.module.css';
 
 function getDownloadIcon(
   isGrabbing: boolean,

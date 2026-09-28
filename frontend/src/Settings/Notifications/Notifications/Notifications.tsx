@@ -13,7 +13,7 @@ import translate from 'Utilities/String/translate';
 import AddNotificationModal from './AddNotificationModal';
 import EditNotificationModal from './EditNotificationModal';
 import Notification from './Notification';
-import styles from './Notifications.css';
+import styles from './Notifications.module.css';
 
 function Notifications() {
   const { isFetching, isFetched, error } = useNotifications();

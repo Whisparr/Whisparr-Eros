@@ -4,7 +4,7 @@ import { ColorImpairedConsumer } from 'App/ColorImpairedContext';
 import { Kind } from 'Helpers/Props/kinds';
 import { Size } from 'Helpers/Props/sizes';
 import translate from 'Utilities/String/translate';
-import styles from './ProgressBar.css';
+import styles from './ProgressBar.module.css';
 
 interface ProgressBarProps {
   ariaLabel?: string;

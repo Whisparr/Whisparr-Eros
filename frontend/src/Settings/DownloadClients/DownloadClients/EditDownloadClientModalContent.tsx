@@ -22,7 +22,7 @@ import DownloadClient from 'typings/DownloadClient';
 import { EnhancedSelectInputChanged, InputChanged } from 'typings/inputs';
 import translate from 'Utilities/String/translate';
 import { useManageDownloadClient } from './useDownloadClients';
-import styles from './EditDownloadClientModalContent.css';
+import styles from './EditDownloadClientModalContent.module.css';
 
 interface EditDownloadClientModalContentProps {
   id: number;

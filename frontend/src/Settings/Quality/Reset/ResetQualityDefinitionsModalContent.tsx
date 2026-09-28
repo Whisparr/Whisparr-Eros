@@ -12,7 +12,7 @@ import ModalHeader from 'Components/Modal/ModalHeader';
 import { inputTypes, kinds } from 'Helpers/Props';
 import { InputChanged } from 'typings/inputs';
 import translate from 'Utilities/String/translate';
-import styles from './ResetQualityDefinitionsModalContent.css';
+import styles from './ResetQualityDefinitionsModalContent.module.css';
 
 interface ResetQualityDefinitionsModalContentProps {
   onModalClose: () => void;

@@ -3,7 +3,7 @@ import Label from 'Components/Label';
 import Link from 'Components/Link/Link';
 import { kinds, sizes } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './SceneDetailsLinks.css';
+import styles from './SceneDetailsLinks.module.css';
 
 export interface SceneDetailsLinksProps {
   foreignId: string;

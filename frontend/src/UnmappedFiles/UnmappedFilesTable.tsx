@@ -22,7 +22,7 @@ import selectAll from 'Utilities/Table/selectAll';
 import toggleSelected from 'Utilities/Table/toggleSelected';
 import UnmappedFilesTableHeader from './UnmappedFilesTableHeader';
 import UnmappedFilesTableRow from './UnmappedFilesTableRow';
-import styles from './UnmappedFilesTable.css';
+import styles from './UnmappedFilesTable.module.css';
 
 export interface UnmappedFile extends ModelBase {
   originalFilePath: string;

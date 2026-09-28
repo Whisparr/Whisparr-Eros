@@ -7,7 +7,7 @@ import Icon from 'Components/Icon';
 import Link from 'Components/Link/Link';
 import { icons } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './SafeForWorkButton.css';
+import styles from './SafeForWorkButton.module.css';
 
 function SafeForWorkButton() {
   const safeForWorkMode = useSafeForWorkMode();

@@ -12,7 +12,7 @@ import firstCharToUpper from 'Utilities/String/firstCharToUpper';
 import translate from 'Utilities/String/translate';
 import AddNewStudioModal from './AddNewStudioModal';
 import { useAddNewStudioSearchResult } from './useAddNewStudio';
-import styles from './AddNewStudioSearchResult.css';
+import styles from './AddNewStudioSearchResult.module.css';
 
 interface AddNewStudioSearchResultProps {
   studio: Studio;

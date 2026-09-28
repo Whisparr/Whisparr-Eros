@@ -5,7 +5,7 @@ import FieldSet from 'Components/FieldSet';
 import useSystemStatus from 'System/Status/useSystemStatus';
 import formatNumber from 'Utilities/Number/formatNumber';
 import translate from 'Utilities/String/translate';
-import styles from './Stats.css';
+import styles from './Stats.module.css';
 
 function Stats() {
   const { data, refetch } = useSystemStatus();

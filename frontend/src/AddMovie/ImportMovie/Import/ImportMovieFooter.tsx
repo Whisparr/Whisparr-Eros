@@ -10,7 +10,7 @@ import { icons, inputTypes, kinds, tooltipPositions } from 'Helpers/Props';
 import { ApiError } from 'Utilities/Fetch/fetchJson';
 import translate from 'Utilities/String/translate';
 import { ImportItem } from '../ImportMovieTypes';
-import styles from './ImportMovieFooter.css';
+import styles from './ImportMovieFooter.module.css';
 
 const MIXED = 'mixed';
 

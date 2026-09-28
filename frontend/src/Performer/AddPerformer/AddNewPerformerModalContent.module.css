@@ -1,0 +1,70 @@
+.container {
+  display: flex;
+}
+
+.year {
+  margin-left: 5px;
+  color: var(--disabledColor);
+}
+
+.poster {
+  flex: 0 0 170px;
+  margin-right: 20px;
+  width: 170px;
+  height: 250px;
+  object-fit: cover;
+}
+
+.info {
+  flex-grow: 1;
+}
+
+.overview {
+  margin-bottom: 30px;
+}
+
+.labelIcon {
+  margin-left: 8px;
+}
+
+.searchForMissingMovieLabelContainer {
+  display: flex;
+  margin-top: 2px;
+}
+
+.searchForMissingMovieLabel {
+  margin-right: 8px;
+  font-weight: normal;
+}
+
+.searchForMissingMovieContainer {
+  composes: container from 'Components/Form/CheckInput.module.css';
+
+  flex: 0 1 0;
+}
+
+.searchForMissingMovieInput {
+  composes: input from 'Components/Form/CheckInput.module.css';
+
+  margin-top: 0;
+}
+
+.modalFooter {
+  composes: modalFooter from 'Components/Modal/ModalFooter.module.css';
+}
+
+.addButton {
+  @mixin truncate;
+  composes: button from 'Components/Link/SpinnerButton.module.css';
+}
+
+@media (--breakpointSmall) {
+  .modalFooter {
+    display: block;
+    text-align: center;
+  }
+
+  .addButton {
+    margin-top: 10px;
+  }
+}

@@ -14,7 +14,7 @@ import { useStudioIndexOption } from 'Studio/Index/studioIndexOptionsStore';
 import Studio from 'Studio/Studio';
 import dimensions from 'Styles/Variables/dimensions';
 import { LibrarySearchType } from './useLibrarySearch';
-import styles from './SearchPosterGrid.css';
+import styles from './SearchPosterGrid.module.css';
 
 // The index grids are virtualised against their page's scroller and assume
 // they are the only thing in it, so they can't be stacked on one page. A page

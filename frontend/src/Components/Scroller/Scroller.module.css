@@ -1,0 +1,34 @@
+.scroller {
+  @mixin scrollbar;
+  @mixin scrollbarTrack;
+  @mixin scrollbarThumb;
+  -webkit-overflow-scrolling: touch;
+}
+
+.none {
+  overflow: hidden;
+}
+
+.vertical {
+  overflow: hidden scroll;
+
+  &.autoScroll {
+    overflow-y: auto;
+  }
+}
+
+.horizontal {
+  overflow: scroll hidden;
+
+  &.autoScroll {
+    overflow-x: auto;
+  }
+}
+
+.both {
+  overflow: scroll;
+
+  &.autoScroll {
+    overflow: auto;
+  }
+}

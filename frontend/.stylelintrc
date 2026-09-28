@@ -19,7 +19,7 @@
       true,
       {
         "ignoreAtRules": [
-          "/^add\\-mixin$/",
+          "/^mixin$/",
           "/^define\\-mixin$/"
         ]
       }
@@ -60,7 +60,7 @@
       "dollar-variables",
       {
         "hasBlock": false,
-        "name": "add-mixin",
+        "name": "mixin",
         "type": "at-rule"
       },
       "declarations",

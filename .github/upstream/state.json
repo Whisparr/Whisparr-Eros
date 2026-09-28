@@ -4390,9 +4390,8 @@
       "dc984cf1754f935573b1722eab57e53acb6c2572": {
         "subject": "Rename CSS modules to .module.css",
         "month": "2026-09",
-        "disposition": "defer",
-        "reason": "Renames every CSS module to .module.css, updating the imports: 772 files upstream. Mechanical, but it touches nearly every component, so it has to land alone and fast to avoid conflicts with in-flight PRs. 26 of its non-CSS files are Sonarr-only pages we lack.",
-        "blockedBy": "Its own PR, by paul's decision on 2026-09-27: the tooling rewrites stay out of sync chunks because each one touches the whole frontend tree. After b2413c1e0 and before 3731e9dc4, which relies on the .module.css naming."
+        "disposition": "adapt",
+        "reason": "Landed 2026-09-27 as its own PR, re-run on our tree rather than replayed, since 26 of upstream's files are Sonarr-only pages. Every stylesheet imported as a CSS module (422 files) is renamed to .module.css along with its generated .css.d.ts. TS imports and composes references are rewritten, including the ~-prefixed one. Files that are not modules keep their names: globals.css, scaffolding.css, index.css, the mixins, variables.css, breakpoints.css and fonts.css. Adapted: upstream let the rename change every generated class name to Foo-module-bar. Our webpack config adds a getLocalIdent that drops the .module suffix, so the class names stay Foo-bar, which the Selenium tests and user themes match on. The compiled CSS is identical to the pre-rename build, down to the class-name hashes."
       },
       "3731e9dc4731b2c1e62a05a8a6758c7c26d49239": {
         "subject": "Replace webpack with Vite",

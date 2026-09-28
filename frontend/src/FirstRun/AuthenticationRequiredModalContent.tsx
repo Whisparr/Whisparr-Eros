@@ -20,7 +20,7 @@ import useSystemStatus from 'System/Status/useSystemStatus';
 import { InputChanged } from 'typings/inputs';
 import General from 'typings/Settings/General';
 import translate from 'Utilities/String/translate';
-import styles from './AuthenticationRequiredModalContent.css';
+import styles from './AuthenticationRequiredModalContent.module.css';
 
 function onModalClose() {
   // No-op

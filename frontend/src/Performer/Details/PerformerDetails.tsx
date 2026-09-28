@@ -49,7 +49,7 @@ import {
   usePerformerDetailsMovies,
 } from './usePerformerDetails';
 import { usePerformerTags } from './usePerformerTags';
-import styles from './PerformerDetails.css';
+import styles from './PerformerDetails.module.css';
 
 function getFanartUrl(
   images: Array<{ coverType: string; url: string }>

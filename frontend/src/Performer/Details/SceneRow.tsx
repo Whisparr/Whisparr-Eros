@@ -18,7 +18,7 @@ import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import formatRuntime from 'Utilities/Date/formatRuntime';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
-import styles from './SceneRow.css';
+import styles from './SceneRow.module.css';
 
 interface SceneRowProps {
   movie: Movie;

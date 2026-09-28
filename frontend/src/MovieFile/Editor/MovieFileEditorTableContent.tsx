@@ -7,7 +7,7 @@ import { TableOptionsChangePayload } from 'typings/Table';
 import translate from 'Utilities/String/translate';
 import { MovieFile } from '../MovieFile';
 import MovieFileEditorRow from './MovieFileEditorRow';
-import styles from './MovieFileEditorTableContent.css';
+import styles from './MovieFileEditorTableContent.module.css';
 
 export interface MovieFileEditorTableContentProps {
   items: readonly MovieFile[];

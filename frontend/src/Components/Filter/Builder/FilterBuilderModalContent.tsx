@@ -21,7 +21,7 @@ import { FilterType } from 'Helpers/Props/filterTypes';
 import { InputChanged } from 'typings/inputs';
 import translate from 'Utilities/String/translate';
 import FilterBuilderRow from './FilterBuilderRow';
-import styles from './FilterBuilderModalContent.css';
+import styles from './FilterBuilderModalContent.module.css';
 
 const NEW_FILTER: PropertyFilter = {
   key: '',

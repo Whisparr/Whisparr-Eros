@@ -15,7 +15,7 @@ import { FileInputChanged } from 'typings/inputs';
 import { ApiError } from 'Utilities/Fetch/fetchJson';
 import translate from 'Utilities/String/translate';
 import { useRestoreBackup, useRestoreBackupUpload } from './useBackups';
-import styles from './RestoreBackupModalContent.css';
+import styles from './RestoreBackupModalContent.module.css';
 
 function getErrorMessage(error: ApiError | Error | null) {
   if (error instanceof ApiError && error.statusBody) {

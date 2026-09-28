@@ -11,7 +11,7 @@ import { useDeletePerformerModalFooterHandler } from './Delete/useDeletePerforme
 import EditPerformersModal from './Edit/EditPerformersModal';
 import { useEditPerformersMutation } from './Edit/useEditPerformersModalMutation';
 import TagsModal from './Tags/TagsModal';
-import styles from './PerformerIndexSelectFooter.css';
+import styles from './PerformerIndexSelectFooter.module.css';
 
 // Mirrors what `EditPerformersModalContent` builds. `moviesMonitored` was
 // missing here and only survived because the modal types its callback as

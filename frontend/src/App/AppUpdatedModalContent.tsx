@@ -14,7 +14,7 @@ import UpdateChanges from 'System/Updates/UpdateChanges';
 import useUpdates from 'System/Updates/useUpdates';
 import Update from 'typings/Update';
 import translate from 'Utilities/String/translate';
-import styles from './AppUpdatedModalContent.css';
+import styles from './AppUpdatedModalContent.module.css';
 
 // A release with no `- New` or `- Fix` lines used to arrive as a single empty string
 // rather than an empty list, which counts as content and renders the "What's new?"

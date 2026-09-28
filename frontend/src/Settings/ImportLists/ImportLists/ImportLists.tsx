@@ -10,7 +10,7 @@ import AddImportListModal from './AddImportListModal';
 import EditImportListModal from './EditImportListModal';
 import ImportList from './ImportList';
 import { useImportLists, useSortedImportLists } from './useImportLists';
-import styles from './ImportLists.css';
+import styles from './ImportLists.module.css';
 
 function ImportLists() {
   const { isFetching, isFetched, error } = useImportLists();

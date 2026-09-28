@@ -9,7 +9,7 @@ import translate from 'Utilities/String/translate';
 import AutoTagging from './AutoTagging';
 import EditAutoTaggingModal from './EditAutoTaggingModal';
 import { useSortedAutoTaggings } from './useAutoTaggings';
-import styles from './AutoTaggings.css';
+import styles from './AutoTaggings.module.css';
 
 export default function AutoTaggings() {
   const { data: items, error, isFetching, isFetched } = useSortedAutoTaggings();

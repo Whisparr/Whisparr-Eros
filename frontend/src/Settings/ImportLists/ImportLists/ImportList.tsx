@@ -14,7 +14,7 @@ import getRelativeDate from 'Utilities/Date/getRelativeDate';
 import translate from 'Utilities/String/translate';
 import EditImportListModal from './EditImportListModal';
 import { useDeleteImportList } from './useImportLists';
-import styles from './ImportList.css';
+import styles from './ImportList.module.css';
 
 interface ImportListProps {
   importList: ImportListModel;

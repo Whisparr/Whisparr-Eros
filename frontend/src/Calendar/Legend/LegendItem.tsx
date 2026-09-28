@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 import React from 'react';
 import { CalendarStatus } from 'typings/Calendar';
-import styles from './LegendItem.css';
+import styles from './LegendItem.module.css';
 
 interface LegendItemProps {
   name: string;

@@ -10,7 +10,7 @@ import {
 } from '../ImportMovieTypes';
 import ImportMovieHeader from './ImportMovieHeader';
 import ImportMovieRow from './ImportMovieRow';
-import styles from './ImportMovieTable.css';
+import styles from './ImportMovieTable.module.css';
 
 interface ImportMovieTableProps {
   readonly items: ImportItem[];

@@ -10,7 +10,7 @@ import ModalHeader from 'Components/Modal/ModalHeader';
 import { inputTypes } from 'Helpers/Props';
 import { EnhancedSelectInputChanged } from 'typings/inputs';
 import translate from 'Utilities/String/translate';
-import styles from './EditStudiosModalContent.css';
+import styles from './EditStudiosModalContent.module.css';
 
 interface SavePayload {
   monitored?: boolean;

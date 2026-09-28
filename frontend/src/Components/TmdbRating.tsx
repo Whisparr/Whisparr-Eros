@@ -3,7 +3,7 @@ import Tooltip from 'Components/Tooltip/Tooltip';
 import { kinds, tooltipPositions } from 'Helpers/Props';
 import { Ratings } from 'Movie/Movie';
 import translate from 'Utilities/String/translate';
-import styles from './TmdbRating.css';
+import styles from './TmdbRating.module.css';
 
 interface TmdbRatingProps {
   ratings: Ratings;

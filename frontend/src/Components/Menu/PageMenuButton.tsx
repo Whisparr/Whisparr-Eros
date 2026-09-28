@@ -4,7 +4,7 @@ import React from 'react';
 import Icon from 'Components/Icon';
 import MenuButton from 'Components/Menu/MenuButton';
 import { icons } from 'Helpers/Props';
-import styles from './PageMenuButton.css';
+import styles from './PageMenuButton.module.css';
 
 interface PageMenuButtonProps {
   iconName: IconName;

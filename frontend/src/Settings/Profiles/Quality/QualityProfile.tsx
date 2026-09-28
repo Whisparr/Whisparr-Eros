@@ -10,7 +10,7 @@ import { QualityProfileItem } from 'typings/QualityProfile';
 import translate from 'Utilities/String/translate';
 import EditQualityProfileModal from './EditQualityProfileModal';
 import { useDeleteQualityProfile } from './useQualityProfiles';
-import styles from './QualityProfile.css';
+import styles from './QualityProfile.module.css';
 
 interface QualityProfileProps {
   id: number;

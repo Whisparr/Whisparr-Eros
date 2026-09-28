@@ -3,7 +3,7 @@ import { useSelect } from 'App/SelectContext';
 import Icon from 'Components/Icon';
 import Link from 'Components/Link/Link';
 import { icons } from 'Helpers/Props';
-import styles from './MovieIndexPosterSelect.css';
+import styles from './MovieIndexPosterSelect.module.css';
 
 interface MovieIndexPosterSelectProps {
   movieId: number;

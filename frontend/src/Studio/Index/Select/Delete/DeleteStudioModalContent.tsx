@@ -14,7 +14,7 @@ import {
   useStudioDeleteOptions,
 } from 'Studio/studioDeleteOptionsStore';
 import translate from 'Utilities/String/translate';
-import styles from './DeleteStudioModal.css';
+import styles from './DeleteStudioModal.module.css';
 
 interface DeleteStudioModalContentProps {
   onDeletePress: (deleteFiles: boolean, addImportExclusion: boolean) => void;

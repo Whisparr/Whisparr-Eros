@@ -27,7 +27,7 @@ import PerformerIndexSelectFooter from './Select/PerformerIndexSelectFooter';
 import PerformerIndexTable from './Table/PerformerIndexTable';
 import PerformerIndexTableOptions from './Table/PerformerIndexTableOptions';
 import { usePerformerIndex } from './usePerformerIndex';
-import styles from './PerformerIndex.css';
+import styles from './PerformerIndex.module.css';
 
 function SelectModeReinitializer({
   isSelectMode,

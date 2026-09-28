@@ -23,7 +23,7 @@ import translate from 'Utilities/String/translate';
 import MovieSearchResult from './MovieSearchResult';
 import PerformerSearchResult from './PerformerSearchResult';
 import StudioSearchResult from './StudioSearchResult';
-import styles from './MovieSearchInput.css';
+import styles from './MovieSearchInput.module.css';
 
 const ADD_NEW_MOVIE = 'addNewMovie';
 const ADD_NEW_SCENE = 'addNewScene';

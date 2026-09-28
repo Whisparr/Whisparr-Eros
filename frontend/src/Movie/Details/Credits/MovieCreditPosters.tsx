@@ -4,7 +4,7 @@ import { Navigation } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import dimensions from 'Styles/Variables/dimensions';
 import MovieCredit from 'typings/MovieCredit';
-import styles from './MovieCreditPosters.css';
+import styles from './MovieCreditPosters.module.css';
 
 import 'swiper/css';
 import 'swiper/css/navigation';

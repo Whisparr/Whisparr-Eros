@@ -5,7 +5,7 @@ import VirtualTableRowCell from 'Components/Table/Cells/TableRowCell';
 import { icons } from 'Helpers/Props';
 import { getSceneStatusDetails } from 'Scene/SceneStatus';
 import translate from 'Utilities/String/translate';
-import styles from './SceneStatusCell.css';
+import styles from './SceneStatusCell.module.css';
 
 interface SceneStatusCellProps {
   className: string;

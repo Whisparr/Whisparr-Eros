@@ -28,7 +28,7 @@ import formatBytes from 'Utilities/Number/formatBytes';
 import formatCustomFormatScore from 'Utilities/Number/formatCustomFormatScore';
 import translate from 'Utilities/String/translate';
 import FileDetailsModal from '../FileDetailsModal';
-import styles from './MovieFileEditorRow.css';
+import styles from './MovieFileEditorRow.module.css';
 
 interface MovieFileEditorRowProps {
   movieFile: MovieFile;

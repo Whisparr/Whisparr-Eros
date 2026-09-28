@@ -11,7 +11,7 @@ import { useSingleMovieFile } from 'MovieFile/useMovieFile';
 import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import translate from 'Utilities/String/translate';
 import CalendarEventQueueDetails from './CalendarEventQueueDetails';
-import styles from './CalendarEvent.css';
+import styles from './CalendarEvent.module.css';
 
 interface CalendarEventProps {
   id: number;

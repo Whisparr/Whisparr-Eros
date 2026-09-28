@@ -18,7 +18,7 @@ import usePaths, { Path } from 'Path/usePaths';
 import { InputChanged } from 'typings/inputs';
 import AutoSuggestInput from './AutoSuggestInput';
 import FormInputButton from './FormInputButton';
-import styles from './PathInput.css';
+import styles from './PathInput.module.css';
 
 export interface PathInputProps {
   className?: string;

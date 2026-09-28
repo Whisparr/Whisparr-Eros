@@ -3,7 +3,7 @@ import Label from 'Components/Label';
 import Link from 'Components/Link/Link';
 import { kinds, sizes } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './StudioDetailsLinks.css';
+import styles from './StudioDetailsLinks.module.css';
 
 interface StudioDetailsLinksProps {
   foreignId: string;

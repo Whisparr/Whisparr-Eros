@@ -1,0 +1,9 @@
+.doNotMoveButton {
+  composes: button from 'Components/Link/Button.module.css';
+
+  margin-right: auto;
+}
+
+.folderRenameMessage {
+  margin-top: 20px;
+}

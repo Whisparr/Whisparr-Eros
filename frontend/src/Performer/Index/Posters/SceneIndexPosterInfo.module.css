@@ -1,0 +1,11 @@
+.info {
+  background-color: var(--sceneBackgroundColor);
+  text-align: center;
+  font-size: var(--smallFontSize);
+}
+
+.title {
+  @mixin truncate;
+
+  composes: info;
+}

@@ -9,7 +9,7 @@ import Movie from 'Movie/Movie';
 import { useToggleMovieMonitored } from 'Movie/useMovie';
 import getProgressBarKind from 'Utilities/Movie/getProgressBarKind';
 import translate from 'Utilities/String/translate';
-import styles from './CollectionMovieLabel.css';
+import styles from './CollectionMovieLabel.module.css';
 
 interface CollectionMovieLabelProps {
   movie: MovieCollectionMovie;

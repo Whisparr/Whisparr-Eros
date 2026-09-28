@@ -18,7 +18,7 @@ import {
   usePerformerDetailsYearActions,
   usePerformerDetailsYearData,
 } from './usePerformerDetailsYear';
-import styles from './PerformerDetailsYear.css';
+import styles from './PerformerDetailsYear.module.css';
 
 interface PerformerDetailsYearProps {
   year: number;

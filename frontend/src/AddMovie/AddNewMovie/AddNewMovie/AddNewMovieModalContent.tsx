@@ -15,7 +15,7 @@ import MoviePoster from 'Movie/MoviePoster';
 import ScenePoster from 'Scene/ScenePoster';
 import translate from 'Utilities/String/translate';
 import { MovieLookupResult, useAddMovieMutation } from '../useAddNewMovie';
-import styles from './AddNewMovieModalContent.css';
+import styles from './AddNewMovieModalContent.module.css';
 
 interface AddNewMovieModalContentProps {
   item: MovieLookupResult;

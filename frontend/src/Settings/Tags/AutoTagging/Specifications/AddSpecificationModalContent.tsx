@@ -11,7 +11,7 @@ import { useAutoTaggingSchema } from 'Settings/Tags/AutoTagging/useAutoTaggings'
 import { AutoTaggingSpecification } from 'typings/AutoTagging';
 import translate from 'Utilities/String/translate';
 import AddSpecificationItem from './AddSpecificationItem';
-import styles from './AddSpecificationModalContent.css';
+import styles from './AddSpecificationModalContent.module.css';
 
 interface AddSpecificationModalContentProps {
   onModalClose: (selectedSpecification?: AutoTaggingSpecification) => void;

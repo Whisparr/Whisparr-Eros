@@ -3,7 +3,7 @@ import React, { useMemo } from 'react';
 import useCalendar, { useCalendarRange } from 'Calendar/useCalendar';
 import Movie from 'Movie/Movie';
 import AgendaEvent from './AgendaEvent';
-import styles from './Agenda.css';
+import styles from './Agenda.module.css';
 
 interface AgendaMovie extends Movie {
   sortDate: moment.Moment;

@@ -5,7 +5,7 @@ import {
   ScrollDirection,
   VERTICAL,
 } from 'Helpers/Props/scrollDirections';
-import styles from './ModalBody.css';
+import styles from './ModalBody.module.css';
 
 interface ModalBodyProps {
   className?: string;

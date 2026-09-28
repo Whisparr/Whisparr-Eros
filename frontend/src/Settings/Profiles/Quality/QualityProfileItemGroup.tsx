@@ -14,7 +14,7 @@ import { QualityProfileQualityItem } from 'typings/QualityProfile';
 import translate from 'Utilities/String/translate';
 import QualityProfileItem from './QualityProfileItem';
 import { groupContainerKey, ROOT_CONTAINER } from './useQualityProfileDnd';
-import styles from './QualityProfileItemGroup.css';
+import styles from './QualityProfileItemGroup.module.css';
 
 export interface QualityProfileItemGroupProps {
   editGroups?: boolean;

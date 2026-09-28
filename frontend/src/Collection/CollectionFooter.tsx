@@ -14,7 +14,7 @@ import { inputTypes, kinds } from 'Helpers/Props';
 import { InputChanged } from 'typings/inputs';
 import translate from 'Utilities/String/translate';
 import CollectionFooterLabel from './CollectionFooterLabel';
-import styles from './CollectionFooter.css';
+import styles from './CollectionFooter.module.css';
 
 interface CollectionFooterProps {
   selectedIds: number[];

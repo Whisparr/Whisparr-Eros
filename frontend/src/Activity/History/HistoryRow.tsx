@@ -20,7 +20,7 @@ import translate from 'Utilities/String/translate';
 import HistoryDetailsModal from './Details/HistoryDetailsModal';
 import HistoryEventTypeCell from './HistoryEventTypeCell';
 import { useMarkHistoryFailed } from './useHistory';
-import styles from './HistoryRow.css';
+import styles from './HistoryRow.module.css';
 
 export interface HistoryRowProps {
   id: number;

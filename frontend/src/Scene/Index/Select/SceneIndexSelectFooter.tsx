@@ -15,7 +15,7 @@ import EditScenesModal from './Edit/EditScenesModal';
 import { useEditScenesModalMutation } from './Edit/useEditScenesModalMutation';
 import OrganizeScenesModal from './Organize/OrganizeScenesModal';
 import TagsModal from './Tags/TagsModal';
-import styles from './SceneIndexSelectFooter.css';
+import styles from './SceneIndexSelectFooter.module.css';
 
 interface SavePayload {
   monitored?: boolean;

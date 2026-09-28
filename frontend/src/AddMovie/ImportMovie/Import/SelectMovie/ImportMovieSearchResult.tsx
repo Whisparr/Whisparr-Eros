@@ -4,7 +4,7 @@ import Link from 'Components/Link/Link';
 import { icons } from 'Helpers/Props';
 import { MovieLookupResult } from '../../ImportMovieTypes';
 import ImportMovieTitle from './ImportMovieTitle';
-import styles from './ImportMovieSearchResult.css';
+import styles from './ImportMovieSearchResult.module.css';
 
 interface ImportMovieSearchResultProps {
   item: MovieLookupResult;

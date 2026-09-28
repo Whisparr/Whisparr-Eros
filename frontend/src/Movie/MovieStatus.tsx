@@ -9,7 +9,7 @@ import { useMovie } from 'Movie/useMovie';
 import { useSingleMovieFile } from 'MovieFile/useMovieFile';
 import translate from 'Utilities/String/translate';
 import MovieQuality from './MovieQuality';
-import styles from './MovieStatus.css';
+import styles from './MovieStatus.module.css';
 
 interface MovieStatusProps {
   movieId: number;

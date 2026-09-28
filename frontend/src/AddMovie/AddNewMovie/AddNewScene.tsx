@@ -11,7 +11,7 @@ import { icons, kinds } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import AddNewMovieSearchResult from './AddNewMovie/AddNewMovieSearchResult';
 import { useAddNewMovie } from './useAddNewMovie';
-import styles from './AddNewMovie.css';
+import styles from './AddNewMovie.module.css';
 
 function AddNewScene() {
   const {

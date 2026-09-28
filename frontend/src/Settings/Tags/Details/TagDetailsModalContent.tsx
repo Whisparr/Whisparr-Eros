@@ -18,7 +18,7 @@ import { useAutoTaggingsWithIds } from 'Settings/Tags/AutoTagging/useAutoTagging
 import sortByProp from 'Utilities/Array/sortByProp';
 import translate from 'Utilities/String/translate';
 import TagDetailsDelayProfile from './TagDetailsDelayProfile';
-import styles from './TagDetailsModalContent.css';
+import styles from './TagDetailsModalContent.module.css';
 
 export interface TagDetailsModalContentProps {
   label: string;

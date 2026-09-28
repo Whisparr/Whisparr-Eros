@@ -27,7 +27,7 @@ import {
 import ManageDownloadClientsEditModal from './Edit/ManageDownloadClientsEditModal';
 import ManageDownloadClientsModalRow from './ManageDownloadClientsModalRow';
 import TagsModal from './Tags/TagsModal';
-import styles from './ManageDownloadClientsModalContent.css';
+import styles from './ManageDownloadClientsModalContent.module.css';
 
 // TODO: This feels janky to do, but not sure of a better way currently
 type OnSelectedChangeCallback = React.ComponentProps<

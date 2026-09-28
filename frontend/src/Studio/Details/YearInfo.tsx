@@ -3,7 +3,7 @@ import DescriptionList from 'Components/DescriptionList/DescriptionList';
 import DescriptionListItem from 'Components/DescriptionList/DescriptionListItem';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
-import styles from './YearInfo.css';
+import styles from './YearInfo.module.css';
 
 interface YearInfoProps {
   totalMovieCount: number;

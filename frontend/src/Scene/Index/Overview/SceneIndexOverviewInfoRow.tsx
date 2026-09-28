@@ -1,7 +1,7 @@
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import React from 'react';
 import Icon from 'Components/Icon';
-import styles from './SceneIndexOverviewInfoRow.css';
+import styles from './SceneIndexOverviewInfoRow.module.css';
 
 interface SceneIndexOverviewInfoRowProps {
   title?: string;

@@ -27,7 +27,7 @@ import translate from 'Utilities/String/translate';
 import { useMovieIndexOption } from '../movieIndexOptionsStore';
 import MovieIndexProgressBar from '../ProgressBar/MovieIndexProgressBar';
 import MovieStatusCell from './MovieStatusCell';
-import styles from './MovieIndexRow.css';
+import styles from './MovieIndexRow.module.css';
 
 interface MovieIndexRowProps {
   movie: Movie;

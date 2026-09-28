@@ -20,7 +20,7 @@ import { CheckInputChanged } from 'typings/inputs';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
 import { useDeleteMovieMutation } from './useDeleteMovieMutation';
-import styles from './DeleteMovieModalContent.css';
+import styles from './DeleteMovieModalContent.module.css';
 
 export interface DeleteMovieModalContentProps {
   movie: Movie;

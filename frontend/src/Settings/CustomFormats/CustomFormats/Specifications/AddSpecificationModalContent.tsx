@@ -14,7 +14,7 @@ import translate from 'Utilities/String/translate';
 import AddSpecificationItem, {
   SelectedSpecification,
 } from './AddSpecificationItem';
-import styles from './AddSpecificationModalContent.css';
+import styles from './AddSpecificationModalContent.module.css';
 
 interface AddSpecificationModalContentProps {
   onModalClose: (selectedSpecification?: CustomFormatSpecification) => void;

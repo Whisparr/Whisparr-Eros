@@ -7,7 +7,7 @@ import { sizes } from 'Helpers/Props';
 import { SelectedSchema } from 'Settings/useProviderSchema';
 import translate from 'Utilities/String/translate';
 import AddDownloadClientPresetMenuItem from './AddDownloadClientPresetMenuItem';
-import styles from './AddDownloadClientItem.css';
+import styles from './AddDownloadClientItem.module.css';
 
 interface AddDownloadClientItemProps {
   implementation: string;

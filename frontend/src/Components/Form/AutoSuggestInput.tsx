@@ -23,7 +23,7 @@ import { Manager, Popper, Reference } from 'react-popper';
 import Portal from 'Components/Portal';
 import usePrevious from 'Helpers/Hooks/usePrevious';
 import { InputChanged } from 'typings/inputs';
-import styles from './AutoSuggestInput.css';
+import styles from './AutoSuggestInput.module.css';
 
 interface AutoSuggestInputProps<T> extends Omit<
   AutosuggestPropsBase<T>,

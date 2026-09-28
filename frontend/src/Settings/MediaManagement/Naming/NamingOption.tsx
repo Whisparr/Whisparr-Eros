@@ -6,7 +6,7 @@ import { icons } from 'Helpers/Props';
 import { Size } from 'Helpers/Props/sizes';
 import TokenCase from './TokenCase';
 import TokenSeparator from './TokenSeparator';
-import styles from './NamingOption.css';
+import styles from './NamingOption.module.css';
 
 interface NamingOptionProps {
   token: string;

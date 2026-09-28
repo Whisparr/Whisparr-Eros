@@ -16,7 +16,7 @@ import StudioLogo from 'Studio/StudioLogo';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
 import StudioIndexProgressBar from './StudioIndexProgressBar';
-import styles from './StudioIndexPoster.css';
+import styles from './StudioIndexPoster.module.css';
 
 interface StudioIndexPosterProps {
   studio: Studio;

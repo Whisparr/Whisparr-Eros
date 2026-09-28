@@ -9,7 +9,7 @@ import { icons } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import Movie from './Movie';
 import MovieInteractiveSearchModal from './Search/MovieInteractiveSearchModal';
-import styles from './MovieSearchCell.css';
+import styles from './MovieSearchCell.module.css';
 
 interface MovieSearchCellProps {
   movieId: number;

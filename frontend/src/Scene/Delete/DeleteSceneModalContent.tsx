@@ -19,7 +19,7 @@ import {
 import { CheckInputChanged } from 'typings/inputs';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
-import styles from './DeleteSceneModalContent.css';
+import styles from './DeleteSceneModalContent.module.css';
 
 export interface DeleteSceneModalContentProps {
   scene: Movie;

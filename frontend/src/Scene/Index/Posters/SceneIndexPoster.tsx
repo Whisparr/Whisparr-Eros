@@ -24,7 +24,7 @@ import getRelativeDate from 'Utilities/Date/getRelativeDate';
 import translate from 'Utilities/String/translate';
 import { useSceneIndexOption } from '../sceneIndexOptionsStore';
 import SceneIndexPosterInfo from './SceneIndexPosterInfo';
-import styles from './SceneIndexPoster.css';
+import styles from './SceneIndexPoster.module.css';
 
 interface SceneIndexPosterProps {
   scene: Movie;

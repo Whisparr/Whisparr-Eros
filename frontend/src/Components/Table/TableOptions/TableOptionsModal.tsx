@@ -26,7 +26,7 @@ import { CheckInputChanged, InputChanged } from 'typings/inputs';
 import { TableOptionsChangePayload } from 'typings/Table';
 import translate from 'Utilities/String/translate';
 import TableOptionsColumn from './TableOptionsColumn';
-import styles from './TableOptionsModal.css';
+import styles from './TableOptionsModal.module.css';
 
 const DEFAULT_MAX_PAGE_SIZE = 250;
 
