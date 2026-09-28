@@ -114,9 +114,7 @@ namespace NzbDrone.Core.Download.Pending
                     var decision = pair.Item1;
                     var reason = pair.Item2;
 
-                    var existingReports = alreadyPending ?? Enumerable.Empty<PendingRelease>();
-
-                    var matchingReports = existingReports.Where(MatchingReleasePredicate(decision.RemoteMovie.Release)).ToList();
+                    var matchingReports = alreadyPending.Where(MatchingReleasePredicate(decision.RemoteMovie.Release)).ToList();
 
                     if (matchingReports.Any())
                     {
@@ -179,13 +177,6 @@ namespace NzbDrone.Core.Download.Pending
             }
 
             return releases;
-        }
-
-        private List<ReleaseInfo> FilterBlockedIndexers(List<ReleaseInfo> releases)
-        {
-            var blockedIndexers = new HashSet<int>(_indexerStatusService.GetBlockedProviders().Select(v => v.ProviderId));
-
-            return releases.Where(release => !blockedIndexers.Contains(release.IndexerId)).ToList();
         }
 
         public List<RemoteMovie> GetPendingRemoteMovies(int movieId)
@@ -253,6 +244,68 @@ namespace NzbDrone.Core.Download.Pending
 
             return movieReleases.Select(r => r.RemoteMovie)
                                  .MaxBy(p => p.Release.AgeHours);
+        }
+
+        public void Handle(MovieEditedEvent message)
+        {
+            UpdatePendingReleases(new[] { message.Movie.Id });
+        }
+
+        public void Handle(MoviesBulkEditedEvent message)
+        {
+            UpdatePendingReleases(message.Movies.Select(m => m.Id));
+        }
+
+        public void Handle(MovieUpdatedEvent message)
+        {
+            UpdatePendingReleases(new[] { message.Movie.Id });
+        }
+
+        public void Handle(MoviesDeletedEvent message)
+        {
+            _repository.DeleteByMovieIds(message.Movies.Select(m => m.Id).ToList());
+            UpdatePendingReleases();
+        }
+
+        public void Handle(MovieGrabbedEvent message)
+        {
+            RemoveGrabbed(message.Movie);
+            UpdatePendingReleases();
+        }
+
+        public void Handle(RssSyncCompleteEvent message)
+        {
+            RemoveRejected(message.ProcessedDecisions.Rejected);
+            UpdatePendingReleases();
+        }
+
+        public void Handle(QualityProfileUpdatedEvent message)
+        {
+            UpdatePendingReleases();
+        }
+
+        public void Handle(ConfigSavedEvent message)
+        {
+            UpdatePendingReleases();
+        }
+
+        public void Handle(ApplicationStartedEvent message)
+        {
+            UpdatePendingReleases();
+        }
+
+        private static Func<PendingRelease, bool> MatchingReleasePredicate(ReleaseInfo release)
+        {
+            return p => p.Title == release.Title &&
+                   p.Release.PublishDate == release.PublishDate &&
+                   p.Release.Indexer == release.Indexer;
+        }
+
+        private List<ReleaseInfo> FilterBlockedIndexers(List<ReleaseInfo> releases)
+        {
+            var blockedIndexers = new HashSet<int>(_indexerStatusService.GetBlockedProviders().Select(v => v.ProviderId));
+
+            return releases.Where(release => !blockedIndexers.Contains(release.IndexerId)).ToList();
         }
 
         private List<PendingRelease> GetPendingReleases()
@@ -420,13 +473,6 @@ namespace NzbDrone.Core.Download.Pending
             _eventAggregator.PublishEvent(new PendingReleasesUpdatedEvent());
         }
 
-        private static Func<PendingRelease, bool> MatchingReleasePredicate(ReleaseInfo release)
-        {
-            return p => p.Title == release.Title &&
-                   p.Release.PublishDate == release.PublishDate &&
-                   p.Release.Indexer == release.Indexer;
-        }
-
         private int GetDelay(RemoteMovie remoteMovie)
         {
             var delayProfile = _delayProfileService.AllForTags(remoteMovie.Movie.Tags).OrderBy(d => d.Order).First();
@@ -502,54 +548,6 @@ namespace NzbDrone.Core.Download.Pending
             }
 
             return 1;
-        }
-
-        public void Handle(MovieEditedEvent message)
-        {
-            UpdatePendingReleases(new[] { message.Movie.Id });
-        }
-
-        public void Handle(MoviesBulkEditedEvent message)
-        {
-            UpdatePendingReleases(message.Movies.Select(m => m.Id));
-        }
-
-        public void Handle(MovieUpdatedEvent message)
-        {
-            UpdatePendingReleases(new[] { message.Movie.Id });
-        }
-
-        public void Handle(MoviesDeletedEvent message)
-        {
-            _repository.DeleteByMovieIds(message.Movies.Select(m => m.Id).ToList());
-            UpdatePendingReleases();
-        }
-
-        public void Handle(MovieGrabbedEvent message)
-        {
-            RemoveGrabbed(message.Movie);
-            UpdatePendingReleases();
-        }
-
-        public void Handle(RssSyncCompleteEvent message)
-        {
-            RemoveRejected(message.ProcessedDecisions.Rejected);
-            UpdatePendingReleases();
-        }
-
-        public void Handle(QualityProfileUpdatedEvent message)
-        {
-            UpdatePendingReleases();
-        }
-
-        public void Handle(ConfigSavedEvent message)
-        {
-            UpdatePendingReleases();
-        }
-
-        public void Handle(ApplicationStartedEvent message)
-        {
-            UpdatePendingReleases();
         }
     }
 }
