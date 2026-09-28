@@ -8,13 +8,13 @@
 }
 
 .host {
-  @add-mixin truncate;
+  @mixin truncate;
 
   flex: 0 1 300px;
 }
 
 .path {
-  @add-mixin truncate;
+  @mixin truncate;
 
   flex: 0 1 400px;
 }

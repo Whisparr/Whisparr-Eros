@@ -29,7 +29,7 @@
 .path {
   margin-right: 20px;
   color: var(--dimColor);
-  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .buttons {

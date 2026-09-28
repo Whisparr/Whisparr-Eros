@@ -1,6 +1,10 @@
 .actions {
   composes: headerCell from 'Components/Table/TableHeaderCell.module.css';
 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 48px;
   width: 35px;
   white-space: nowrap;
 }
@@ -71,13 +75,6 @@
   min-width: 0;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.actions {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 48px;
 }
 
 .addImportListExclusion {

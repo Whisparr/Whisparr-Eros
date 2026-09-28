@@ -5,6 +5,16 @@
   z-index: 3;
   width: 36px;
   height: 36px;
+
+  &:hover {
+    .selected {
+      color: var(--white);
+    }
+
+    .unselected {
+      color: var(--primaryColor);
+    }
+  }
 }
 
 .checkContainer {
@@ -23,16 +33,4 @@
 
 .unselected {
   color: var(--white);
-}
-
-.checkButton {
-  &:hover {
-    .selected {
-      color: var(--white);
-    }
-
-    .unselected {
-      color: var(--primaryColor);
-    }
-  }
 }

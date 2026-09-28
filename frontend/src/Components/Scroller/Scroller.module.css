@@ -1,7 +1,7 @@
 .scroller {
-  @add-mixin scrollbar;
-  @add-mixin scrollbarTrack;
-  @add-mixin scrollbarThumb;
+  @mixin scrollbar;
+  @mixin scrollbarTrack;
+  @mixin scrollbarThumb;
   -webkit-overflow-scrolling: touch;
 }
 

@@ -52,7 +52,7 @@
 }
 
 .title {
-  @add-mixin truncate;
+  @mixin truncate;
 
   font-weight: 300;
   font-size: 30px;
@@ -112,7 +112,7 @@
   }
 
   .title {
-    @add-mixin truncate;
+    @mixin truncate;
 
     font-weight: 300;
     font-size: 22px;

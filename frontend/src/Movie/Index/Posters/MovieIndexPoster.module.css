@@ -45,7 +45,7 @@
 }
 
 .title {
-  @add-mixin truncate;
+  @mixin truncate;
   overflow: hidden;
   width: 100%;
   background-color: var(--sceneBackgroundColor);

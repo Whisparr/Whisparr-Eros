@@ -15,7 +15,7 @@
 }
 
 .hintText {
-  @add-mixin truncate;
+  @mixin truncate;
 
   margin-left: 15px;
   color: var(--darkGray);

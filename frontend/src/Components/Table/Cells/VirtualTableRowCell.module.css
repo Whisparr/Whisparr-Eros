@@ -1,5 +1,5 @@
 .cell {
-  @add-mixin truncate;
+  @mixin truncate;
   composes: cell from 'Components/Table/Cells/TableRowCell.module.css';
 
   flex-grow: 0;

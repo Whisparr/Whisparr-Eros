@@ -25,6 +25,7 @@
   position: relative;
   display: block;
   background-color: var(--movieBackgroundColor);
+  object-fit: cover;
 }
 
 .overlayTitle {
@@ -43,7 +44,7 @@
 }
 
 .title {
-  @add-mixin truncate;
+  @mixin truncate;
   overflow: hidden;
   width: 100%;
   background-color: var(--sceneBackgroundColor);
@@ -116,8 +117,4 @@
   background-color: #fafbfc;
   text-align: center;
   font-size: var(--smallFontSize);
-}
-
-.poster {
-  object-fit: cover;
 }

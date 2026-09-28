@@ -1,10 +1,8 @@
 .cell {
-  /* composes: cell from 'Components/Table/Cells/VirtualTableRowCell.module.css'; */
   align-items: center;
 }
 
 .studioTitle {
-  /* composes: cell; */
   display: flex;
   align-content: center;
   align-items: center;
@@ -16,7 +14,6 @@
 }
 
 .title {
-  /* composes: cell; */
   display: flex;
   align-content: center;
   align-items: center;
@@ -39,11 +36,10 @@
   margin-right: 10px;
   padding: 4px 0;
   min-width: 1px;
-  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .releaseDate {
-  /* composes: cell; */
   display: flex;
   align-content: center;
   align-items: center;
@@ -53,7 +49,5 @@
 
 .tmdbId,
 .imdbId {
-  /* composes: cell; */
-
   flex: 0 0 110px;
 }

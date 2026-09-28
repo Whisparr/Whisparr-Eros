@@ -70,7 +70,7 @@
 }
 
 .addButton {
-  @add-mixin truncate;
+  @mixin truncate;
   composes: button from 'Components/Link/SpinnerButton.module.css';
 }
 

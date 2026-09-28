@@ -1,5 +1,5 @@
 .menuItem {
-  @add-mixin truncate;
+  @mixin truncate;
   display: block;
   flex-shrink: 0;
   padding: 10px 20px;

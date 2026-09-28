@@ -1,10 +1,7 @@
+/* Floating, pinned footer styles */
 .footer {
   composes: contentFooter from 'Components/Page/PageContentFooter.module.css';
 
-  align-items: center;
-}
-/* Floating, pinned footer styles */
-.footer {
   position: fixed;
   right: 0;
   bottom: 0;
@@ -71,12 +68,9 @@
     }
 
     .actionButtons {
-      flex-wrap: wrap;
-    }
-
-    .actionButtons {
       display: flex;
       justify-content: center;
+      flex-wrap: wrap;
     }
 
     .selected {

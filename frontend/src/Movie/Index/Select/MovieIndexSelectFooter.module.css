@@ -1,11 +1,7 @@
-.footer {
-  /* existing styles */
-  composes: contentFooter from 'Components/Page/PageContentFooter.module.css';
-
-  align-items: center;
-}
 /* Floating, pinned footer styles */
 .footer {
+  composes: contentFooter from 'Components/Page/PageContentFooter.module.css';
+
   position: fixed;
   right: 0;
   bottom: 0;

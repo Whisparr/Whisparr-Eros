@@ -9,11 +9,11 @@
 }
 
 .underlay {
-  @add-mixin cover;
+  @mixin cover;
 }
 
 .overlay {
-  @add-mixin linkOverlay;
+  @mixin linkOverlay;
 
   position: relative;
 }

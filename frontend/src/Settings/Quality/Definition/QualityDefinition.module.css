@@ -78,10 +78,6 @@
     }
   }
 
-  .qualityDefinition:first-child {
-    border-top: none;
-  }
-
   .quality {
     font-weight: bold;
     line-height: inherit;

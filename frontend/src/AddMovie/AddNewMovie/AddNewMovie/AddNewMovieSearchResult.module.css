@@ -7,7 +7,7 @@
 }
 
 .underlay {
-  @add-mixin cover;
+  @mixin cover;
 
   background-color: var(--addMovieBackgroundColor);
   transition: background 500ms;
@@ -22,7 +22,7 @@
 }
 
 .overlay {
-  @add-mixin linkOverlay;
+  @mixin linkOverlay;
 
   position: relative;
   display: flex;

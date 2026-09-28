@@ -1,15 +1,9 @@
 declare namespace RestoreBackupModalContentModuleCssNamespace {
   export interface IRestoreBackupModalContentModuleCss {
     additionalInfo: string;
-    mappings: string;
-    names: string;
-    sourceRoot: string;
-    sources: string;
-    sourcesContent: string;
     step: string;
     stepState: string;
     steps: string;
-    version: string;
   }
 }
 

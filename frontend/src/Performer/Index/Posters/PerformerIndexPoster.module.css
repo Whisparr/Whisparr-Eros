@@ -67,7 +67,7 @@
 .title,
 .totalMovieCount,
 .totalSceneCount {
-  @add-mixin truncate;
+  @mixin truncate;
 
   background-color: var(--movieBackgroundColor);
   text-align: center;

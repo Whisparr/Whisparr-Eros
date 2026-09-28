@@ -10,7 +10,7 @@
 }
 
 .name {
-  @add-mixin truncate;
+  @mixin truncate;
 
   margin-bottom: 20px;
   font-weight: 300;

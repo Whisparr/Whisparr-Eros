@@ -67,7 +67,7 @@
 }
 
 .title {
-  @add-mixin truncate;
+  @mixin truncate;
 
   background-color: #fafbfc;
   text-align: center;

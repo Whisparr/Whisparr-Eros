@@ -19,7 +19,7 @@
 }
 
 .movieFolder {
-  @add-mixin truncate;
+  @mixin truncate;
 
   color: var(--disabledColor);
 }

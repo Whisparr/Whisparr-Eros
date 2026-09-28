@@ -121,6 +121,6 @@
   .titles,
   .title,
   .alternateTitle {
-    @add-mixin truncate;
+    @mixin truncate;
   }
 }

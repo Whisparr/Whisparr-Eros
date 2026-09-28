@@ -8,13 +8,13 @@
 }
 
 .valueText {
-  @add-mixin truncate;
+  @mixin truncate;
 
   flex: 0 0 auto;
 }
 
 .hintText {
-  @add-mixin truncate;
+  @mixin truncate;
 
   flex: 1 10 0;
   margin-left: 15px;

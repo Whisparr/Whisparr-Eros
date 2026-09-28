@@ -7,7 +7,7 @@
 }
 
 .overlay {
-  @add-mixin linkOverlay;
+  @mixin linkOverlay;
 
   padding: 10px;
 }

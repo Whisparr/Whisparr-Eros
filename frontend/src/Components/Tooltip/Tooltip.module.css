@@ -188,9 +188,3 @@
     max-width: calc(var(--breakpointLarge) * 0.8);
   }
 }
-
-/* @media (--breakpointLarge) {
-  .horizontalContainer {
-    max-width: calc(var(--breakpointLarge) * 0.8);
-  }
-} */

@@ -7,11 +7,11 @@
 }
 
 .underlay {
-  @add-mixin cover;
+  @mixin cover;
 }
 
 .overlay {
-  @add-mixin linkOverlay;
+  @mixin linkOverlay;
 
   position: relative;
   overflow-x: hidden;
@@ -34,7 +34,7 @@
 .movieTitle,
 .genres,
 .eventType {
-  @add-mixin truncate;
+  @mixin truncate;
   flex: 1 0 1px;
   margin-right: 10px;
 }

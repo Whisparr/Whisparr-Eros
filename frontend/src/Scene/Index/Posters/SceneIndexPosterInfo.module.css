@@ -8,7 +8,7 @@
 }
 
 .title {
-  @add-mixin truncate;
+  @mixin truncate;
 
   composes: info;
 }

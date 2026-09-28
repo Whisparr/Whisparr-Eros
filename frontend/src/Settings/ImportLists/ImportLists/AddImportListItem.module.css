@@ -7,13 +7,13 @@
 }
 
 .overlay {
-  @add-mixin linkOverlay;
+  @mixin linkOverlay;
 
   padding: 10px;
 }
 
 .name {
-  @add-mixin truncate;
+  @mixin truncate;
 
   text-align: center;
   font-weight: lighter;

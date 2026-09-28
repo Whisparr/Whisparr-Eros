@@ -21,7 +21,7 @@
 .error {
   margin-right: 20px;
   color: var(--dangerColor);
-  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .buttons {

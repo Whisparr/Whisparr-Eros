@@ -49,9 +49,9 @@
 }
 
 .movieContainer {
-  @add-mixin scrollbar;
-  @add-mixin scrollbarTrack;
-  @add-mixin scrollbarThumb;
+  @mixin scrollbar;
+  @mixin scrollbarTrack;
+  @mixin scrollbarThumb;
   display: flex;
   flex-grow: 1;
 }

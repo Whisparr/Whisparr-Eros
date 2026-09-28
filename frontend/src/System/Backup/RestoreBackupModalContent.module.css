@@ -16,9 +16,3 @@
 .stepState {
   margin-right: 8px;
 }
-
-@media (--breakpointSmall) {
-  composes: modalFooter from 'Components/Modal/ModalFooter.module.css';
-
-  flex-wrap: wrap;
-}

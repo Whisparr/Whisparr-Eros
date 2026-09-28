@@ -7,7 +7,7 @@
 .sourceTitle {
   composes: cell from 'Components/Table/Cells/TableRowCell.module.css';
 
-  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .customFormatScore {
