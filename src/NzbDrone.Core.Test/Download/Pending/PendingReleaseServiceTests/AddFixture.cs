@@ -7,6 +7,7 @@ using NUnit.Framework;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.DecisionEngine;
 using NzbDrone.Core.Download.Pending;
+using NzbDrone.Core.Lifecycle;
 using NzbDrone.Core.Movies;
 using NzbDrone.Core.Parser.Model;
 using NzbDrone.Core.Profiles.Qualities;
@@ -72,6 +73,10 @@ namespace NzbDrone.Core.Test.Download.Pending.PendingReleaseServiceTests
                   .Setup(s => s.GetMovie(It.IsAny<int>()))
                   .Returns(_movie);
 
+            Mocker.GetMock<IMovieService>()
+                  .Setup(s => s.GetMovies(It.IsAny<IEnumerable<int>>()))
+                  .Returns(new List<Movie> { _movie });
+
             Mocker.GetMock<IPrioritizeDownloadDecision>()
                   .Setup(s => s.PrioritizeDecisionsForMovies(It.IsAny<List<DownloadDecision>>()))
                   .Returns((List<DownloadDecision> d) => d);
@@ -93,6 +98,8 @@ namespace NzbDrone.Core.Test.Download.Pending.PendingReleaseServiceTests
                                                    .Build();
 
             _heldReleases.AddRange(heldReleases);
+
+            Subject.Handle(new ApplicationStartedEvent());
         }
 
         [Test]

@@ -5,17 +5,20 @@ using NLog;
 using NzbDrone.Common.Crypto;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Configuration;
+using NzbDrone.Core.Configuration.Events;
 using NzbDrone.Core.CustomFormats;
 using NzbDrone.Core.DecisionEngine;
 using NzbDrone.Core.Download.Aggregation;
 using NzbDrone.Core.Indexers;
 using NzbDrone.Core.Jobs;
+using NzbDrone.Core.Lifecycle;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Movies;
 using NzbDrone.Core.Movies.Events;
 using NzbDrone.Core.Parser;
 using NzbDrone.Core.Parser.Model;
 using NzbDrone.Core.Profiles.Delay;
+using NzbDrone.Core.Profiles.Qualities;
 using NzbDrone.Core.Qualities;
 using NzbDrone.Core.Queue;
 
@@ -34,9 +37,15 @@ namespace NzbDrone.Core.Download.Pending
     }
 
     public class PendingReleaseService : IPendingReleaseService,
+                                         IHandle<MovieEditedEvent>,
+                                         IHandle<MoviesBulkEditedEvent>,
+                                         IHandle<MovieUpdatedEvent>,
                                          IHandle<MovieGrabbedEvent>,
                                          IHandle<MoviesDeletedEvent>,
-                                         IHandle<RssSyncCompleteEvent>
+                                         IHandle<RssSyncCompleteEvent>,
+                                         IHandle<QualityProfileUpdatedEvent>,
+                                         IHandle<ConfigSavedEvent>,
+                                         IHandle<ApplicationStartedEvent>
     {
         private readonly IIndexerStatusService _indexerStatusService;
         private readonly IPendingReleaseRepository _repository;
@@ -51,6 +60,11 @@ namespace NzbDrone.Core.Download.Pending
         private readonly IIndexerFactory _indexerFactory;
         private readonly IEventAggregator _eventAggregator;
         private readonly Logger _logger;
+
+        // Every pending release with its movie, parsed info and custom formats already resolved.
+        // Building that is the slow part, so the queue and release processing read this copy,
+        // which is rebuilt whenever the releases or anything they are resolved against changes.
+        private List<PendingRelease> _pendingReleases = new();
 
         public PendingReleaseService(IIndexerStatusService indexerStatusService,
                                      IPendingReleaseRepository repository,
@@ -91,7 +105,9 @@ namespace NzbDrone.Core.Download.Pending
             foreach (var movieDecisions in decisions.GroupBy(v => v.Item1.RemoteMovie.Movie.Id))
             {
                 var movie = movieDecisions.First().Item1.RemoteMovie.Movie;
-                var alreadyPending = _repository.AllByMovieId(movie.Id);
+
+                // Copies, so changing a reason below can't alter the cache before it's rebuilt
+                var alreadyPending = _pendingReleases.Where(p => p.MovieId == movie.Id).Select(p => p.Clone()).ToList();
 
                 foreach (var pair in movieDecisions)
                 {
@@ -142,6 +158,8 @@ namespace NzbDrone.Core.Download.Pending
                     Insert(decision, reason);
                 }
             }
+
+            UpdatePendingReleases();
         }
 
         public List<ReleaseInfo> GetPending()
@@ -172,7 +190,7 @@ namespace NzbDrone.Core.Download.Pending
 
         public List<RemoteMovie> GetPendingRemoteMovies(int movieId)
         {
-            return IncludeRemoteMovies(_repository.AllByMovieId(movieId)).Select(v => v.RemoteMovie).ToList();
+            return GetPendingReleases(movieId).Select(v => v.RemoteMovie).ToList();
         }
 
         public List<Queue.Queue> GetPendingQueue()
@@ -181,7 +199,7 @@ namespace NzbDrone.Core.Download.Pending
 
             var nextRssSync = new Lazy<DateTime>(() => _taskManager.GetNextExecution(typeof(RssSyncCommand)));
 
-            var pendingReleases = IncludeRemoteMovies(_repository.WithoutFallback());
+            var pendingReleases = _pendingReleases.Where(p => p.Reason != PendingReleaseReason.Fallback).ToList();
 
             foreach (var pendingRelease in pendingReleases)
             {
@@ -225,6 +243,8 @@ namespace NzbDrone.Core.Download.Pending
             var releasesToRemove = movieReleases.Where(c => c.ParsedMovieInfo.PrimaryMovieTitle == targetItem.ParsedMovieInfo.PrimaryMovieTitle);
 
             _repository.DeleteMany(releasesToRemove.Select(c => c.Id));
+
+            UpdatePendingReleases();
         }
 
         public RemoteMovie OldestPendingRelease(int movieId)
@@ -237,12 +257,29 @@ namespace NzbDrone.Core.Download.Pending
 
         private List<PendingRelease> GetPendingReleases()
         {
-            return IncludeRemoteMovies(_repository.All().ToList());
+            return _pendingReleases;
         }
 
         private List<PendingRelease> GetPendingReleases(int movieId)
         {
-            return IncludeRemoteMovies(_repository.AllByMovieId(movieId).ToList());
+            return _pendingReleases.Where(p => p.MovieId == movieId).ToList();
+        }
+
+        private void UpdatePendingReleases()
+        {
+            _pendingReleases = IncludeRemoteMovies(_repository.All().ToList());
+        }
+
+        // A library refresh publishes an update for every movie, so only a movie that has
+        // pending releases rebuilds the cache.
+        private void UpdatePendingReleases(IEnumerable<int> movieIds)
+        {
+            var pendingMovieIds = _pendingReleases.Select(p => p.MovieId).ToHashSet();
+
+            if (movieIds.Any(pendingMovieIds.Contains))
+            {
+                UpdatePendingReleases();
+            }
         }
 
         private List<PendingRelease> IncludeRemoteMovies(List<PendingRelease> releases, Dictionary<string, RemoteMovie> knownRemoteMovies = null)
@@ -467,19 +504,52 @@ namespace NzbDrone.Core.Download.Pending
             return 1;
         }
 
+        public void Handle(MovieEditedEvent message)
+        {
+            UpdatePendingReleases(new[] { message.Movie.Id });
+        }
+
+        public void Handle(MoviesBulkEditedEvent message)
+        {
+            UpdatePendingReleases(message.Movies.Select(m => m.Id));
+        }
+
+        public void Handle(MovieUpdatedEvent message)
+        {
+            UpdatePendingReleases(new[] { message.Movie.Id });
+        }
+
         public void Handle(MoviesDeletedEvent message)
         {
             _repository.DeleteByMovieIds(message.Movies.Select(m => m.Id).ToList());
+            UpdatePendingReleases();
         }
 
         public void Handle(MovieGrabbedEvent message)
         {
             RemoveGrabbed(message.Movie);
+            UpdatePendingReleases();
         }
 
         public void Handle(RssSyncCompleteEvent message)
         {
             RemoveRejected(message.ProcessedDecisions.Rejected);
+            UpdatePendingReleases();
+        }
+
+        public void Handle(QualityProfileUpdatedEvent message)
+        {
+            UpdatePendingReleases();
+        }
+
+        public void Handle(ConfigSavedEvent message)
+        {
+            UpdatePendingReleases();
+        }
+
+        public void Handle(ApplicationStartedEvent message)
+        {
+            UpdatePendingReleases();
         }
     }
 }

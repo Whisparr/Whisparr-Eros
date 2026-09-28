@@ -39,6 +39,7 @@ namespace NzbDrone.Core.Profiles.Qualities
         private readonly IPerformerService _performerService;
         private readonly IStudioService _studioService;
         private readonly IQualityProfileRankService _rankService;
+        private readonly IEventAggregator _eventAggregator;
         private readonly Logger _logger;
 
         public QualityProfileService(IQualityProfileRepository profileRepository,
@@ -48,6 +49,7 @@ namespace NzbDrone.Core.Profiles.Qualities
                               IPerformerService performerService,
                               IStudioService studioService,
                               IQualityProfileRankService rankService,
+                              IEventAggregator eventAggregator,
                               Logger logger)
         {
             _profileRepository = profileRepository;
@@ -57,6 +59,7 @@ namespace NzbDrone.Core.Profiles.Qualities
             _performerService = performerService;
             _studioService = studioService;
             _rankService = rankService;
+            _eventAggregator = eventAggregator;
             _logger = logger;
         }
 
@@ -72,6 +75,7 @@ namespace NzbDrone.Core.Profiles.Qualities
         {
             _profileRepository.Update(profile);
             _rankService.UpdateRanksForProfile(profile);
+            _eventAggregator.PublishEvent(new QualityProfileUpdatedEvent(profile.Id));
         }
 
         public void Delete(int id)
