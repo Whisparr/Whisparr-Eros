@@ -10,16 +10,19 @@ namespace Whisparr.Http.Frontend.Mappers
     public class IndexHtmlMapper : HtmlMapperBase
     {
         private readonly IConfigFileProvider _configFileProvider;
+        private readonly IViteDevServer _viteDevServer;
         private readonly string _folderPath;
 
         public IndexHtmlMapper(IAppFolderInfo appFolderInfo,
                                IDiskProvider diskProvider,
                                IConfigFileProvider configFileProvider,
+                               IViteDevServer viteDevServer,
                                Lazy<ICacheBreakerProvider> cacheBreakProviderFactory,
                                Logger logger)
             : base(diskProvider, cacheBreakProviderFactory, logger)
         {
             _configFileProvider = configFileProvider;
+            _viteDevServer = viteDevServer;
 
             _folderPath = Path.Combine(appFolderInfo.StartUpFolder, configFileProvider.UiFolder);
 
@@ -36,6 +39,24 @@ namespace Whisparr.Http.Frontend.Mappers
             return base.GetHtmlText().Replace("_THEME_", _configFileProvider.Theme);
         }
 
+        // Under the Vite dev server, index.html comes from Vite so its module
+        // script and HMR client are current.
+        protected override string ReadHtml()
+        {
+            if (_viteDevServer.IsEnabled)
+            {
+                return _viteDevServer.GetIndexHtmlAsync().GetAwaiter().GetResult();
+            }
+
+            return base.ReadHtml();
+        }
+
+        // The dev server has index.html even when no build has written one to disk.
+        protected override bool ResourceExists(string filePath)
+        {
+            return _viteDevServer.IsEnabled || base.ResourceExists(filePath);
+        }
+
         protected override string MapPath(string resourceUrl)
         {
             return HtmlPath;
@@ -43,6 +64,11 @@ namespace Whisparr.Http.Frontend.Mappers
 
         public override bool CanHandle(string resourceUrl)
         {
+            if (_viteDevServer.HandlesPath(resourceUrl))
+            {
+                return false;
+            }
+
             resourceUrl = resourceUrl.ToLowerInvariant();
 
             return !resourceUrl.StartsWith("/content") &&

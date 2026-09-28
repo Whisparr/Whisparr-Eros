@@ -253,7 +253,8 @@ const baseRules = {
   'space-in-parens': 'off',
   'space-infix-ops': 'off',
   'space-unary-ops': 'off',
-  'spaced-comment': 'error',
+  // '/' allows TypeScript's triple-slash directives (/// <reference ... />)
+  'spaced-comment': ['error', 'always', { markers: ['/'] }],
   'wrap-regex': 'error',
 
   // ImportSort

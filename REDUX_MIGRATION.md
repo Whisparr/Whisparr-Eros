@@ -1900,13 +1900,12 @@ and belongs to whoever wants monitor modes to work.
   so PostCSS no longer loads these files, and only `dimensions.ts` and `fonts.ts`
   remain, for the TypeScript that reads them.
 
-  **`.js` stays in webpack's `resolve.extensions`** regardless, because deep imports into
-  `node_modules` (`lodash/find`) resolve through it. **The `.js` block in
-  `eslint.config.js` stays permanently**: it lints `frontend/babel.config.js`,
-  `frontend/postcss.config.js` and `frontend/build/webpack.config.js`, which are Node
-  config and will never be TypeScript. #559 tried removing it and got 47 errors, mostly
-  `'module' is not defined` in those files, which then included the since-deleted
-  `css-variables-loader.js`. `frontend/jsconfig.json` is the only config that did go.
+  **The `.js` block in `eslint.config.js` stays permanently**: it lints
+  `frontend/postcss.config.js`, which is Node config and will never be TypeScript.
+  #559 tried removing it and got 47 errors, mostly `'module' is not defined` in the
+  Node config files of the time: `babel.config.js`, `build/webpack.config.js` and
+  `css-variables-loader.js`, all since deleted with the move to Vite (#933).
+  `frontend/jsconfig.json` is the only config that went on its own.
 
 - **The two theme palettes are not key-identical, and three of the four odd keys are
   live.** `dark` defines `themeLightPurple` and `sceneBackgroundColor`, which `light` does

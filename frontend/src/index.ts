@@ -9,11 +9,6 @@ const response = await fetch(initializeUrl);
 
 window.Whisparr = await response.json();
 
-/* eslint-disable no-undef, @typescript-eslint/ban-ts-comment */
-// @ts-ignore 2304
-__webpack_public_path__ = `${window.Whisparr.urlBase}/`;
-/* eslint-enable no-undef, @typescript-eslint/ban-ts-comment */
-
 const error = console.error;
 
 // Monkey patch console.error to filter out some warnings from React

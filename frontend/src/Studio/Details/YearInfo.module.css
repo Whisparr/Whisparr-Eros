@@ -5,7 +5,5 @@
 }
 
 .description {
-  composes: title from 'Components/DescriptionList/DescriptionListItemDescription.module.css';
-
   margin-left: 110px;
 }

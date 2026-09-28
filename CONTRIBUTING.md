@@ -50,11 +50,15 @@ For css changes `yarn stylelint-windows --fix` {.is-info}
      yarn install
      ```
 
-- Start webpack to monitor your development environment for any changes that need post processing using:
+- Start the Vite dev server, which rebuilds the frontend as you edit it:
 
      ```bash
      yarn start
      ```
+
+  To have a debug build of the app serve it with hot reload, set `WHISPARR_VITE_DEV_SERVER=http://localhost:6939`
+  (the port is `WHISPARR_VITE_PORT`, 6939 by default) before starting the backend. Without it, run
+  `yarn build` and the app serves the built UI from `_output/UI`.
 
 ### Building the Backend
 
