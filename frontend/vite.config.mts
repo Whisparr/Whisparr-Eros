@@ -15,6 +15,9 @@ const contentDir = path.join(src, 'Content');
 
 const vitePort = Number(process.env.WHISPARR_VITE_PORT ?? 6939);
 
+// The app itself, which serves this dev server's UI while it runs.
+const appUrl = 'http://localhost:6969';
+
 function htmlFiles() {
   return readdirSync(src).filter((name) => name.endsWith('.html'));
 }
@@ -100,6 +103,41 @@ function cssModuleTypes(): Plugin {
   };
 }
 
+// The UI is opened through the app, not on this server's own port: a debug build
+// of the backend finds a running dev server by itself and serves its index.html
+// and modules. A page load that lands here directly is sent there instead; the
+// backend only ever asks for /index.html, never a page route.
+function openThroughApp(): Plugin {
+  return {
+    name: 'open-through-app',
+    apply: 'serve',
+
+    configureServer(server) {
+      server.printUrls = () => {
+        server.config.logger.info(
+          `\n  Open Whisparr at ${appUrl} -- a debug build serves this dev server's UI while it runs.\n`
+        );
+      };
+
+      server.middlewares.use((req, res, next) => {
+        if (
+          req.method === 'GET' &&
+          req.url !== '/index.html' &&
+          req.headers.accept?.includes('text/html')
+        ) {
+          res.statusCode = 302;
+          res.setHeader('Location', `${appUrl}${req.url ?? '/'}`);
+          res.end();
+
+          return;
+        }
+
+        next();
+      });
+    },
+  };
+}
+
 // Class names keep the shape they had under webpack, Component-local-hash
 // (PageSidebar-sidebarContainer-QPVG1): the automation tests and user themes
 // match on the part before the hash.
@@ -132,6 +170,7 @@ export default defineConfig({
     react(),
     copyStaticContent(),
     cssModuleTypes(),
+    openThroughApp(),
   ],
 
   base: '/',

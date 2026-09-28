@@ -123,7 +123,8 @@ Each item names a representative path — follow the existing neighbors.
 
 ## Build & run
 
-- Frontend: `yarn install`, then `yarn start` (Vite dev server) or `yarn build`;
+- Frontend: `yarn install`, then `yarn start` (Vite dev server; a debug backend on 6969
+  serves its UI live while it runs, `_output/UI` otherwise) or `yarn build`;
   `yarn typecheck` generates the CSS module typings and runs `tsc`. Node 24 (Volta)
   + Yarn via `corepack enable`.
 - Backend: `dotnet msbuild -restore src/Whisparr.sln -p:Configuration=Debug -p:Platform=Posix -t:PublishAllRids`

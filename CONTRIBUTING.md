@@ -50,15 +50,19 @@ For css changes `yarn stylelint-windows --fix` {.is-info}
      yarn install
      ```
 
-- Start the Vite dev server, which rebuilds the frontend as you edit it:
+- Start the Vite dev server:
 
      ```bash
      yarn start
      ```
 
-  To have a debug build of the app serve it with hot reload, set `WHISPARR_VITE_DEV_SERVER=http://localhost:6939`
-  (the port is `WHISPARR_VITE_PORT`, 6939 by default) before starting the backend. Without it, run
-  `yarn build` and the app serves the built UI from `_output/UI`.
+  Then open the app as usual, at `http://localhost:6969`. A debug build of the backend finds the dev server by
+  itself and serves the UI from it, so edits show up live, with no rebuild or reload. Stop `yarn start` and within a
+  couple of seconds it serves the built UI from `_output/UI` again (`yarn build`, or `yarn watch` to rebuild on
+  every change). Release builds always serve `_output/UI`.
+
+  Vite listens on 6939; set `WHISPARR_VITE_PORT` for both to change it, or `WHISPARR_VITE_DEV_SERVER` on the
+  backend to point it at a dev server elsewhere.
 
 ### Building the Backend
 
