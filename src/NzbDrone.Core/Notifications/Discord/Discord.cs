@@ -449,6 +449,26 @@ namespace NzbDrone.Core.Notifications.Discord
             _proxy.SendPayload(payload, Settings);
         }
 
+        public override void OnReviewNeeded(ReviewNeededMessage message)
+        {
+            var embed = new Embed
+            {
+                Author = new DiscordAuthor
+                {
+                    Name = Settings.Author.IsNullOrWhiteSpace() ? _configFileProvider.InstanceName : Settings.Author,
+                    IconUrl = "https://raw.githubusercontent.com/Whisparr/Whisparr/eros/Logo/256.png"
+                },
+                Title = REVIEW_NEEDED_TITLE,
+                Description = message.Message,
+                Timestamp = DateTime.UtcNow.ToString("O"),
+                Color = (int)DiscordColors.Standard
+            };
+
+            var payload = CreatePayload(null, new List<Embed> { embed });
+
+            _proxy.SendPayload(payload, Settings);
+        }
+
         public override void OnManualInteractionRequired(ManualInteractionRequiredMessage message)
         {
             var movie = message.Movie;

@@ -149,7 +149,7 @@ namespace NzbDrone.Core.Test.ParserTests.ParsingServiceTests
             Subject.Map(parsedMovieInfo, "", 0, searchCriteria);
 
             Mocker.GetMock<IMovieService>()
-                  .Verify(v => v.FindScene(parsedMovieInfo, interactiveSearch, searchCriteria), Times.Once());
+                  .Verify(v => v.FindSceneMatch(parsedMovieInfo, interactiveSearch, searchCriteria), Times.Once());
         }
 
         [Test]
@@ -171,6 +171,109 @@ namespace NzbDrone.Core.Test.ParserTests.ParsingServiceTests
             parsedMovieInfo.IsDatelessScene.Should().BeTrue();
 
             Subject.Map(parsedMovieInfo, "", 0, searchCriteria).Movie.Should().Be(movie);
+        }
+
+        private static Movie GivenScene(int id, string foreignId)
+        {
+            var scene = new Movie
+            {
+                Id = id,
+                Title = "Scene " + id,
+                ForeignId = foreignId
+            };
+
+            scene.MovieMetadata.Value.ItemType = ItemType.Scene;
+
+            return scene;
+        }
+
+        private ParsedMovieInfo GivenSceneMatch(SceneMatchResult match)
+        {
+            var parsedMovieInfo = Parser.Parser.ParseMovieTitle("Helix Studios - Hot Afternoon - Dakota Lovell [720p].mp4");
+
+            Mocker.GetMock<IMovieService>()
+                  .Setup(s => s.FindSceneMatch(parsedMovieInfo, It.IsAny<bool>(), It.IsAny<SearchCriteriaBase>()))
+                  .Returns(match);
+
+            return parsedMovieInfo;
+        }
+
+        [Test]
+        public void should_keep_review_candidates_of_weak_dateless_match_from_rss()
+        {
+            var scene = GivenScene(5, "scene-5");
+            var loadedScene = GivenScene(5, "scene-5");
+
+            var parsedMovieInfo = GivenSceneMatch(new SceneMatchResult
+            {
+                ReviewCandidates = new List<SceneMatchCandidate> { new (scene, MovieParseMatchType.PerformersNotTitle) }
+            });
+
+            Mocker.GetMock<IMovieService>()
+                  .Setup(s => s.FindByIds(It.Is<List<int>>(ids => ids.Contains(5))))
+                  .Returns(new List<Movie> { loadedScene });
+
+            var remoteMovie = Subject.Map(parsedMovieInfo, "", 0, null);
+
+            remoteMovie.Movie.Should().BeNull();
+            remoteMovie.ReviewCandidates.Should().ContainSingle();
+            remoteMovie.ReviewCandidates[0].Movie.Should().BeSameAs(loadedScene);
+            remoteMovie.ReviewCandidates[0].MatchType.Should().Be(MovieParseMatchType.PerformersNotTitle);
+        }
+
+        [Test]
+        public void should_put_searched_scene_first_among_review_candidates()
+        {
+            var searched = GivenScene(6, "scene-6");
+
+            var parsedMovieInfo = GivenSceneMatch(new SceneMatchResult
+            {
+                ReviewCandidates = new List<SceneMatchCandidate>
+                {
+                    new (GivenScene(5, "scene-5"), MovieParseMatchType.Title),
+                    new (GivenScene(6, "scene-6"), MovieParseMatchType.Title)
+                }
+            });
+
+            var remoteMovie = Subject.Map(parsedMovieInfo, "", 0, new MovieSearchCriteria { Movie = searched });
+
+            remoteMovie.Movie.Should().BeNull();
+            remoteMovie.ReviewCandidates.Should().HaveCount(2);
+            remoteMovie.ReviewCandidates[0].Movie.Should().BeSameAs(searched);
+            remoteMovie.ReviewCandidates[1].Movie.Id.Should().Be(5);
+        }
+
+        [Test]
+        public void should_drop_review_candidates_that_are_not_the_searched_scene()
+        {
+            var parsedMovieInfo = GivenSceneMatch(new SceneMatchResult
+            {
+                ReviewCandidates = new List<SceneMatchCandidate> { new (GivenScene(5, "scene-5"), MovieParseMatchType.PerformersNotTitle) }
+            });
+
+            var remoteMovie = Subject.Map(parsedMovieInfo, "", 0, new MovieSearchCriteria { Movie = GivenScene(7, "scene-7") });
+
+            remoteMovie.Movie.Should().BeNull();
+            remoteMovie.ReviewCandidates.Should().BeEmpty();
+        }
+
+        [Test]
+        public void should_load_profile_and_file_of_scene_matched_on_studio_catalogue_from_rss()
+        {
+            var scene = GivenScene(5, "scene-5");
+            var loadedScene = GivenScene(5, "scene-5");
+            loadedScene.QualityProfile = new NzbDrone.Core.Profiles.Qualities.QualityProfile();
+
+            var parsedMovieInfo = GivenSceneMatch(SceneMatchResult.Matched(scene));
+
+            Mocker.GetMock<IMovieService>()
+                  .Setup(s => s.GetMovie(5))
+                  .Returns(loadedScene);
+
+            var remoteMovie = Subject.Map(parsedMovieInfo, "", 0, null);
+
+            remoteMovie.Movie.Should().BeSameAs(loadedScene);
+            remoteMovie.ReviewCandidates.Should().BeEmpty();
         }
     }
 }

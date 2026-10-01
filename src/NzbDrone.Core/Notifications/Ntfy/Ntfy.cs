@@ -64,6 +64,11 @@ namespace NzbDrone.Core.Notifications.Ntfy
             _proxy.SendNotification(MANUAL_INTERACTION_REQUIRED_TITLE_BRANDED, message.Message, Settings);
         }
 
+        public override void OnReviewNeeded(ReviewNeededMessage message)
+        {
+            _proxy.SendNotification(REVIEW_NEEDED_TITLE_BRANDED, message.Message, Settings);
+        }
+
         public override ValidationResult Test()
         {
             var failures = new List<ValidationFailure>();

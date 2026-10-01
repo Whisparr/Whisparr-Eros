@@ -13,6 +13,7 @@ using NzbDrone.Core.Datastore.Converters;
 using NzbDrone.Core.Download;
 using NzbDrone.Core.Download.History;
 using NzbDrone.Core.Download.Pending;
+using NzbDrone.Core.Download.Review;
 using NzbDrone.Core.Extras.Metadata;
 using NzbDrone.Core.Extras.Metadata.Files;
 using NzbDrone.Core.Extras.Others;
@@ -99,7 +100,8 @@ namespace NzbDrone.Core.Datastore
                   .Ignore(i => i.SupportsOnHealthIssue)
                   .Ignore(i => i.SupportsOnHealthRestored)
                   .Ignore(i => i.SupportsOnApplicationUpdate)
-                  .Ignore(i => i.SupportsOnManualInteractionRequired);
+                  .Ignore(i => i.SupportsOnManualInteractionRequired)
+                  .Ignore(i => i.SupportsOnReviewNeeded);
 
             Mapper.Entity<MetadataDefinition>("Metadata").RegisterModel()
                   .Ignore(x => x.ImplementationName)
@@ -154,6 +156,9 @@ namespace NzbDrone.Core.Datastore
 
             Mapper.Entity<PendingRelease>("PendingReleases").RegisterModel()
                   .Ignore(e => e.RemoteMovie);
+
+            Mapper.Entity<ReviewItem>("ReviewItems").RegisterModel()
+                  .Ignore(e => e.Movie);
 
             Mapper.Entity<RemotePathMapping>("RemotePathMappings").RegisterModel();
             Mapper.Entity<Tag>("Tags").RegisterModel();

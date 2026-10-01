@@ -132,6 +132,118 @@ namespace NzbDrone.Core.Test.MovieTests.MovieServiceTests
             FindScene("Unknown Studio - Shower Sex - Joey Mills & Landon Vega [720p]", true).Should().BeNull();
         }
 
+        private SceneMatchResult FindSceneMatch(string title, bool interactive)
+        {
+            var parsedMovieInfo = Parser.Parser.ParseMovieTitle(title);
+
+            parsedMovieInfo.IsDatelessScene.Should().BeTrue();
+
+            return Subject.FindSceneMatch(parsedMovieInfo, interactive, null);
+        }
+
+        [TestCase("Helix Studios - Dakota Lovell [720p]", 4, MovieParseMatchType.PerformersTitle)]
+        [TestCase("Helix Studios - Hot Afternoon - Dakota Lovell [720p]", 4, MovieParseMatchType.PerformersNotTitle)]
+        [TestCase("Helix Studios - Twinks at Play BTS [720p]", 2, MovieParseMatchType.ParsedTitleContainsCleanTitle)]
+        public void should_offer_weak_dateless_match_for_review_in_automatic_search(string title, int id, MovieParseMatchType matchType)
+        {
+            var match = FindSceneMatch(title, false);
+
+            match.Movie.Should().BeNull();
+            match.NeedsReview.Should().BeTrue();
+            match.ReviewCandidates.Should().ContainSingle();
+            match.ReviewCandidates[0].Movie.Id.Should().Be(id);
+            match.ReviewCandidates[0].MatchType.Should().Be(matchType);
+        }
+
+        [Test]
+        public void should_not_offer_weak_dateless_match_for_review_in_interactive_search()
+        {
+            var match = FindSceneMatch("Helix Studios - Hot Afternoon - Dakota Lovell [720p]", true);
+
+            match.Movie.Should().NotBeNull();
+            match.Movie.Id.Should().Be(4);
+            match.NeedsReview.Should().BeFalse();
+        }
+
+        [TestCase("Helix Studios - Shower Sex - Joey Mills & Landon Vega [720p].mp4")]
+        [TestCase("Helix Studios - Twinks at Play.mp4")]
+        public void should_not_offer_confident_dateless_match_for_review(string title)
+        {
+            var match = FindSceneMatch(title, false);
+
+            match.Movie.Should().NotBeNull();
+            match.ReviewCandidates.Should().BeEmpty();
+        }
+
+        [TestCase("Helix Studios - Locker Room [720p]", 5, 6)]
+        [TestCase("Helix Studios - Shower Sex [720p]", 1, 7)]
+        public void should_offer_ambiguous_dateless_match_for_review_with_all_candidates(string title, int first, int second)
+        {
+            var match = FindSceneMatch(title, false);
+
+            match.Movie.Should().BeNull();
+            match.ReviewCandidates.Select(c => c.Movie.Id).Should().BeEquivalentTo(new[] { first, second });
+            match.ReviewCandidates.Should().OnlyContain(c => c.MatchType == MovieParseMatchType.Title);
+        }
+
+        [Test]
+        public void should_not_offer_ambiguous_dateless_match_for_review_in_interactive_search()
+        {
+            var match = FindSceneMatch("Helix Studios - Locker Room [720p]", true);
+
+            match.Movie.Should().BeNull();
+            match.ReviewCandidates.Should().BeEmpty();
+        }
+
+        [Test]
+        public void should_not_offer_dateless_release_matching_too_many_scenes_for_review()
+        {
+            var scenes = Enumerable.Range(10, SceneMatchResult.MaxAmbiguousCandidates + 1)
+                                   .Select(id => CreateScene(id, "Locker Room", "2020-01-01", "Performer " + id))
+                                   .ToList();
+
+            Mocker.GetMock<IMovieRepository>()
+                .Setup(s => s.GetByStudioForeignId(StudioForeignId))
+                .Returns(scenes);
+
+            var match = FindSceneMatch("Helix Studios - Locker Room [720p]", false);
+
+            match.Movie.Should().BeNull();
+            match.ReviewCandidates.Should().BeEmpty();
+        }
+
+        [Test]
+        public void should_not_offer_review_when_studio_name_is_shared_and_both_have_candidates()
+        {
+            Mocker.GetMock<IStudioService>()
+                .Setup(s => s.FindAllByTitle(It.Is<string>(t => t == "Helix Studios")))
+                .Returns(new List<Studio> { new Studio { ForeignId = StudioForeignId }, new Studio { ForeignId = "other-helix" } });
+
+            Mocker.GetMock<IMovieRepository>()
+                .Setup(s => s.GetByStudioForeignId("other-helix"))
+                .Returns(new List<Movie> { CreateScene(20, "Afternoon Delight", "2020-01-01", "Dakota Lovell") });
+
+            var match = FindSceneMatch("Helix Studios - Hot Afternoon - Dakota Lovell [720p]", false);
+
+            match.Movie.Should().BeNull();
+            match.ReviewCandidates.Should().BeEmpty();
+        }
+
+        [Test]
+        public void should_not_offer_dated_release_for_review()
+        {
+            Mocker.GetMock<IMovieRepository>()
+                .Setup(s => s.FindByStudioAndDate(StudioForeignId, "2021-08-04"))
+                .Returns(new List<Movie> { CreateScene(4, "Poolside", "2021-08-04", "Dakota Lovell") });
+
+            var parsedMovieInfo = Parser.Parser.ParseMovieTitle("Helix Studios - 2021-08-04 - Dakota Lovell [720p]");
+
+            var match = Subject.FindSceneMatch(parsedMovieInfo, false, null);
+
+            match.Movie.Should().NotBeNull();
+            match.ReviewCandidates.Should().BeEmpty();
+        }
+
         [Test]
         public void should_not_change_dated_release_matching()
         {

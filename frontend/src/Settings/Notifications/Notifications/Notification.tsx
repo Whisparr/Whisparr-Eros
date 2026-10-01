@@ -32,6 +32,7 @@ function Notification({ notification }: Readonly<NotificationProps>) {
     onHealthRestored,
     onApplicationUpdate,
     onManualInteractionRequired,
+    onReviewNeeded,
     supportsOnGrab,
     supportsOnDownload,
     supportsOnUpgrade,
@@ -44,6 +45,7 @@ function Notification({ notification }: Readonly<NotificationProps>) {
     supportsOnHealthRestored,
     supportsOnApplicationUpdate,
     supportsOnManualInteractionRequired,
+    supportsOnReviewNeeded,
     tags,
   } = notification;
 
@@ -134,6 +136,10 @@ function Notification({ notification }: Readonly<NotificationProps>) {
         </Label>
       ) : null}
 
+      {supportsOnReviewNeeded && onReviewNeeded ? (
+        <Label kind={kinds.SUCCESS}>{translate('OnReviewNeeded')}</Label>
+      ) : null}
+
       {!onGrab &&
       !onDownload &&
       !onRename &&
@@ -143,7 +149,8 @@ function Notification({ notification }: Readonly<NotificationProps>) {
       !onMovieAdded &&
       !onMovieDelete &&
       !onMovieFileDelete &&
-      !onManualInteractionRequired ? (
+      !onManualInteractionRequired &&
+      !onReviewNeeded ? (
         <Label kind={kinds.DISABLED} outline={true}>
           {translate('Disabled')}
         </Label>

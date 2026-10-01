@@ -123,7 +123,7 @@ namespace NzbDrone.Core.Test.MovieTests.MovieServiceTests
         public static Movie InvokeFindByStudioAndReleaseDate(this MovieService service, string studioId, string releaseDate, string releaseTokens, string foreignId, string episode, bool interactiveSearch = false)
         {
             var method = typeof(MovieService).GetMethod("FindByStudioAndReleaseDate", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            return (Movie)method.Invoke(service, new object[] { studioId, releaseDate, releaseTokens, foreignId, episode, interactiveSearch });
+            return ((SceneMatchResult)method.Invoke(service, new object[] { studioId, releaseDate, releaseTokens, foreignId, episode, interactiveSearch })).Movie;
         }
     }
 }

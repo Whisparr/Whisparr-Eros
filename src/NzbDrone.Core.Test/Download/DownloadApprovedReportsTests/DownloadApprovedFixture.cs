@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using FizzWare.NBuilder;
 using FluentAssertions;
@@ -9,6 +10,7 @@ using NzbDrone.Core.DecisionEngine;
 using NzbDrone.Core.Download;
 using NzbDrone.Core.Download.Clients;
 using NzbDrone.Core.Download.Pending;
+using NzbDrone.Core.Download.Review;
 using NzbDrone.Core.Exceptions;
 using NzbDrone.Core.Indexers;
 using NzbDrone.Core.Movies;
@@ -69,6 +71,33 @@ namespace NzbDrone.Core.Test.Download.DownloadApprovedReportsTests
             };
 
             return remoteMovie;
+        }
+
+        [Test]
+        public async Task should_offer_rejected_releases_for_review_with_the_grabbed_ones()
+        {
+            var grabbed = new DownloadDecision(GetRemoteMovie(new QualityModel(Quality.HDTV720p)));
+            var needsReview = new DownloadDecision(GetRemoteMovie(new QualityModel(Quality.HDTV720p), GetMovie(2)), new DownloadRejection(DownloadRejectionReason.NeedsReview, "Needs review"));
+
+            await Subject.ProcessDecisions(new List<DownloadDecision> { grabbed, needsReview });
+
+            Mocker.GetMock<IReviewService>()
+                  .Verify(v => v.Capture(It.Is<IEnumerable<DownloadDecision>>(d => d.Single() == needsReview), It.Is<IEnumerable<DownloadDecision>>(d => d.Single() == grabbed)), Times.Once());
+        }
+
+        [Test]
+        public async Task should_still_return_processed_decisions_when_review_capture_fails()
+        {
+            var grabbed = new DownloadDecision(GetRemoteMovie(new QualityModel(Quality.HDTV720p)));
+
+            Mocker.GetMock<IReviewService>()
+                  .Setup(v => v.Capture(It.IsAny<IEnumerable<DownloadDecision>>(), It.IsAny<IEnumerable<DownloadDecision>>()))
+                  .Throws(new InvalidOperationException("boom"));
+
+            var result = await Subject.ProcessDecisions(new List<DownloadDecision> { grabbed });
+
+            result.Grabbed.Should().ContainSingle();
+            ExceptionVerification.ExpectedErrors(1);
         }
 
         [Test]

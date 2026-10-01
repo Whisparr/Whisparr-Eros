@@ -41,6 +41,7 @@ namespace NzbDrone.Core.Movies
         Movie FindByTitle(List<string> titles, int? year, List<string> otherTitles, List<Movie> candidates);
         List<Movie> FindByTitleCandidates(List<string> titles, out List<string> otherTitles);
         Movie FindScene(ParsedMovieInfo parsedMovieInfo, bool interactiveSearch = false, SearchCriteriaBase searchCriteria = null);
+        SceneMatchResult FindSceneMatch(ParsedMovieInfo parsedMovieInfo, bool interactiveSearch = false, SearchCriteriaBase searchCriteria = null);
         List<Movie> GetByStudioForeignId(string studioForeignId);
         Movie FindFuzzyMovieByYear(string title, int year);
         List<Movie> GetByPerformerForeignId(string performerForeignId);
@@ -699,6 +700,16 @@ namespace NzbDrone.Core.Movies
         /// <returns>The movie object if found; otherwise, null.</returns>
         public Movie FindScene(ParsedMovieInfo parsedMovieInfo, bool interactiveSearch = false, SearchCriteriaBase searchCriteria = null)
         {
+            return FindSceneMatch(parsedMovieInfo, interactiveSearch, searchCriteria).Movie;
+        }
+
+        /// <summary> Find a scene based on parsed movie information, keeping the candidates of a match that needs a human. </summary>
+        /// <param name="parsedMovieInfo">The parsed movie information to use for the search.</param>
+        /// <param name="interactiveSearch">Indicates whether the search is interactive.</param>
+        /// <param name="searchCriteria">Optional search criteria to refine the search.</param>
+        /// <returns>The scene when it can be used automatically; otherwise the scenes a human should choose from, if any.</returns>
+        public SceneMatchResult FindSceneMatch(ParsedMovieInfo parsedMovieInfo, bool interactiveSearch = false, SearchCriteriaBase searchCriteria = null)
+        {
             Movie result = null;
             if (parsedMovieInfo.StashId.IsNotNullOrWhiteSpace())
             {
@@ -717,39 +728,45 @@ namespace NzbDrone.Core.Movies
             if (result == null && parsedMovieInfo.StudioTitle.IsNullOrWhiteSpace())
             {
                 _logger.Debug("No Studio name parsed from release, skipping studio and release date matching.");
-                return null;
+                return new SceneMatchResult();
             }
 
-            if (result == null)
+            if (result != null)
             {
-                var studios = _studioService.FindAllByTitle(parsedMovieInfo.StudioTitle);
-
-                if (studios != null && studios.Count > 0)
-                {
-                    var movies = new List<Movie>();
-
-                    foreach (var studio in studios)
-                    {
-                        var movie = FindByStudioAndReleaseDate(studio.ForeignId, parsedMovieInfo.ReleaseDate, parsedMovieInfo.ReleaseTokens, parsedMovieInfo.StashId, parsedMovieInfo.Episode, interactiveSearch);
-
-                        if (movie != null)
-                        {
-                            movies.Add(movie);
-                        }
-                    }
-
-                    if (movies.Count == 1)
-                    {
-                        result = movies[0];
-                    }
-                }
-                else
-                {
-                    _logger.Debug("Could not find Studio name. '{0}'", parsedMovieInfo.StudioTitle);
-                }
+                return SceneMatchResult.Matched(result);
             }
 
-            return result;
+            var studios = _studioService.FindAllByTitle(parsedMovieInfo.StudioTitle);
+
+            if (studios == null || studios.Count == 0)
+            {
+                _logger.Debug("Could not find Studio name. '{0}'", parsedMovieInfo.StudioTitle);
+                return new SceneMatchResult();
+            }
+
+            var studioMatches = new List<SceneMatchResult>();
+
+            foreach (var studio in studios)
+            {
+                studioMatches.Add(FindByStudioAndReleaseDate(studio.ForeignId, parsedMovieInfo.ReleaseDate, parsedMovieInfo.ReleaseTokens, parsedMovieInfo.StashId, parsedMovieInfo.Episode, interactiveSearch));
+            }
+
+            var movies = studioMatches.Where(m => m.Movie != null).Select(m => m.Movie).ToList();
+
+            if (movies.Count == 1)
+            {
+                return SceneMatchResult.Matched(movies[0]);
+            }
+
+            // Only offer the release for review when no studio of that name produced a usable match and exactly one produced candidates
+            var reviewMatches = studioMatches.Where(m => m.NeedsReview).ToList();
+
+            if (movies.Count == 0 && reviewMatches.Count == 1)
+            {
+                return reviewMatches[0];
+            }
+
+            return new SceneMatchResult();
         }
 
         /// <summary> Get a set of all TMDB IDs for movies with collections in the repository. </summary>
@@ -1223,10 +1240,10 @@ namespace NzbDrone.Core.Movies
         /// <param name="releaseTokens">The release tokens associated with the movie.</param>
         /// <param name="foreignId">The foreign ID of the movie.</param>
         /// <param name="episode">The episode information, if applicable.</param>
-        /// <param name="interactiveSearch">Indicates whether the search is interactive. Weak matches for releases without a date or episode are only accepted from an interactive search.</param>
+        /// <param name="interactiveSearch">Indicates whether the search is interactive. Weak matches for releases without a date or episode are only accepted from an interactive search; an automatic search returns them as review candidates.</param>
         /// <remarks> This method employs fuzzy matching techniques to find the best match based on the provided parameters. </remarks>
-        /// <returns>The movie object if found; otherwise, null.</returns>
-        private Movie FindByStudioAndReleaseDate(string studioForeignId, string releaseDate, string releaseTokens, string foreignId, string episode, bool interactiveSearch)
+        /// <returns>The match: the movie if found, or the candidates of a dateless release a human should confirm.</returns>
+        private SceneMatchResult FindByStudioAndReleaseDate(string studioForeignId, string releaseDate, string releaseTokens, string foreignId, string episode, bool interactiveSearch)
         {
             var methodName = "FindByStudioAndReleaseDate";
             if (string.IsNullOrEmpty(studioForeignId))
@@ -1298,7 +1315,7 @@ namespace NzbDrone.Core.Movies
                 // There can be only one
                 var highest = fuzzyMatchMoviesWithScores.OrderByDescending(m => m.Score).First();
                 _logger.Trace("{0}: Returning fuzzy matched movie [{1} - {2}]", methodName, highest.Movie.Title, highest.Movie.ForeignId);
-                return highest.Movie;
+                return SceneMatchResult.Matched(highest.Movie);
             }
 
             if (hasReleaseDate)
@@ -1338,7 +1355,7 @@ namespace NzbDrone.Core.Movies
                 if (_configService.WhisparrAutoMatchOnDate && movies.Count == 1 && !verifyDate)
                 {
                     _logger.Debug("{0}: WhisparrAutoMatchOnDate enabled, returning single movie match by studio and date.", methodName);
-                    return movies[0];
+                    return SceneMatchResult.Matched(movies[0]);
                 }
             }
             else
@@ -1354,7 +1371,7 @@ namespace NzbDrone.Core.Movies
 
             if (movies == null || !movies.Any())
             {
-                return null;
+                return new SceneMatchResult();
             }
 
             // Movies with more than one movieFile is in the list, so filter to only one
@@ -1382,16 +1399,36 @@ namespace NzbDrone.Core.Movies
                     // title contained without performer) need a human: they are only accepted from an interactive search.
                     if (datelessRelease && !interactiveSearch && !IsConfidentDatelessMatch(match.Value))
                     {
-                        _logger.Debug("{0}: Match {1} [{2}] for dateless release '{3}' is not confident enough for automatic search, interactive search required.",
+                        _logger.Debug("{0}: Match {1} [{2}] for dateless release '{3}' is not confident enough for automatic search, it needs review.",
                             methodName,
                             match.Key,
                             match.Value,
                             parsedMovieTitle);
 
-                        return null;
+                        return new SceneMatchResult
+                        {
+                            ReviewCandidates = new List<SceneMatchCandidate> { new (match.Key, match.Value) }
+                        };
                     }
 
-                    return match.Key;
+                    return SceneMatchResult.Matched(match.Key);
+                }
+
+                // A dateless release that fits a few scenes of the studio equally well needs a human to pick one
+                if (datelessRelease && !interactiveSearch && matches.Count > 1 && matches.Count <= SceneMatchResult.MaxAmbiguousCandidates)
+                {
+                    _logger.Debug("{0}: Dateless release '{1}' matches {2} scenes equally well, it needs review.",
+                        methodName,
+                        parsedMovieTitle,
+                        matches.Count);
+
+                    return new SceneMatchResult
+                    {
+                        ReviewCandidates = matches.OrderBy(m => m.Value)
+                                                  .ThenBy(m => m.Key.Id)
+                                                  .Select(m => new SceneMatchCandidate(m.Key, m.Value))
+                                                  .ToList()
+                    };
                 }
             }
 
@@ -1400,7 +1437,7 @@ namespace NzbDrone.Core.Movies
                 studioForeignId,
                 releaseDate);
 
-            return null;
+            return new SceneMatchResult();
         }
 
         private static bool IsConfidentDatelessMatch(MovieParseMatchType matchType)

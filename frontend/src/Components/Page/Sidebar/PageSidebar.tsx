@@ -7,6 +7,7 @@ import React, {
 } from 'react';
 import { useLocation } from 'react-router';
 import QueueStatus from 'Activity/Queue/Status/QueueStatus';
+import ReviewStatus from 'Activity/Review/Status/ReviewStatus';
 import { setIsSidebarVisible } from 'App/appStore';
 import { IconName } from 'Components/Icon';
 import IconButton from 'Components/Link/IconButton';
@@ -128,6 +129,11 @@ let LINKS: SidebarItem[] = [
       {
         title: () => translate('Blocklist'),
         to: '/activity/blocklist',
+      },
+      {
+        title: () => translate('Review'),
+        to: '/activity/review',
+        statusComponent: ReviewStatus,
       },
     ],
   },

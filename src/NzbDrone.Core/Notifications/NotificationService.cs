@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using NLog;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Download;
+using NzbDrone.Core.Download.Review;
 using NzbDrone.Core.HealthCheck;
 using NzbDrone.Core.MediaFiles.Events;
 using NzbDrone.Core.Messaging.Events;
@@ -26,6 +28,7 @@ namespace NzbDrone.Core.Notifications
           IHandle<HealthCheckRestoredEvent>,
           IHandle<UpdateInstalledEvent>,
           IHandle<ManualInteractionRequiredEvent>,
+          IHandle<ReviewNeededEvent>,
           IHandleAsync<CleanCompletedEvent>,
           IHandleAsync<DeleteCompletedEvent>,
           IHandleAsync<DownloadsProcessedEvent>,
@@ -35,12 +38,14 @@ namespace NzbDrone.Core.Notifications
     {
         private readonly INotificationFactory _notificationFactory;
         private readonly INotificationStatusService _notificationStatusService;
+        private readonly IMovieService _movieService;
         private readonly Logger _logger;
 
-        public NotificationService(INotificationFactory notificationFactory, INotificationStatusService notificationStatusService, Logger logger)
+        public NotificationService(INotificationFactory notificationFactory, INotificationStatusService notificationStatusService, IMovieService movieService, Logger logger)
         {
             _notificationFactory = notificationFactory;
             _notificationStatusService = notificationStatusService;
+            _movieService = movieService;
             _logger = logger;
         }
 
@@ -314,6 +319,80 @@ namespace NzbDrone.Core.Notifications
                     _logger.Error(ex, "Unable to send OnManualInteractionRequired message Remote Movie: {0}, Release Title: {1}, Download Item Title: {2} ", message.RemoteMovie?.ToString(), message.Release?.Title, message.TrackedDownload?.DownloadItem?.Title);
                 }
             }
+        }
+
+        public void Handle(ReviewNeededEvent message)
+        {
+            var notifications = _notificationFactory.OnReviewNeededEnabled();
+
+            if (notifications == null || notifications.Empty() || message.Items.Empty())
+            {
+                return;
+            }
+
+            var movies = (_movieService.FindByIds(message.Items.SelectMany(i => i.CandidateMovieIds).Distinct().ToList()) ?? new List<Movie>()).ToDictionary(m => m.Id);
+
+            var releases = message.Items.Select(i => new ReviewNeededRelease
+            {
+                ReviewItemId = i.Id,
+                Title = i.Title,
+                Indexer = i.Indexer,
+                Size = i.Size,
+                Quality = i.Quality,
+                Reason = i.Reason.ToString(),
+                Movies = i.CandidateMovieIds.Where(movies.ContainsKey).Select(id => movies[id]).ToList()
+            }).ToList();
+
+            foreach (var notification in notifications)
+            {
+                try
+                {
+                    // One notification for the whole batch, holding only the releases for scenes this notification is tagged for
+                    var tagged = releases.Where(r => ShouldHandleMovie(notification.Definition, r.Movies.FirstOrDefault())).ToList();
+
+                    if (tagged.Empty())
+                    {
+                        continue;
+                    }
+
+                    notification.OnReviewNeeded(new ReviewNeededMessage
+                    {
+                        Message = GetReviewNeededMessage(tagged),
+                        Releases = tagged
+                    });
+
+                    _notificationStatusService.RecordSuccess(notification.Definition.Id);
+                }
+                catch (Exception ex)
+                {
+                    _notificationStatusService.RecordFailure(notification.Definition.Id);
+                    _logger.Warn(ex, "Unable to send OnReviewNeeded notification to: " + notification.Definition.Name);
+                }
+            }
+        }
+
+        private static string GetReviewNeededMessage(List<ReviewNeededRelease> releases)
+        {
+            const int maxListed = 10;
+
+            var lines = new List<string>
+            {
+                releases.Count == 1 ? "1 release is awaiting review" : $"{releases.Count} releases are awaiting review"
+            };
+
+            lines.AddRange(releases.Take(maxListed).Select(r =>
+            {
+                var scene = r.Movies.FirstOrDefault();
+
+                return scene == null ? r.Title : $"{r.Title} → {scene.Title}";
+            }));
+
+            if (releases.Count > maxListed)
+            {
+                lines.Add($"and {releases.Count - maxListed} more");
+            }
+
+            return string.Join(Environment.NewLine, lines);
         }
 
         public void Handle(MovieFileDeletedEvent message)

@@ -105,9 +105,11 @@ namespace NzbDrone.Core.Parser
                 ParsedMovieInfo = parsedMovieInfo
             };
 
+            var reviewCandidates = new List<SceneMatchCandidate>();
+
             if (movie == null)
             {
-                var movieMatch = FindMovie(parsedMovieInfo, imdbId, tmdbId, searchCriteria);
+                var movieMatch = FindMovie(parsedMovieInfo, imdbId, tmdbId, searchCriteria, reviewCandidates);
 
                 if (movieMatch != null)
                 {
@@ -120,6 +122,10 @@ namespace NzbDrone.Core.Parser
             {
                 remoteMovie.Movie = movie;
             }
+            else
+            {
+                remoteMovie.ReviewCandidates = reviewCandidates;
+            }
 
             remoteMovie.Languages = parsedMovieInfo.Languages;
 
@@ -131,14 +137,14 @@ namespace NzbDrone.Core.Parser
             return remoteMovie;
         }
 
-        private FindMovieResult FindMovie(ParsedMovieInfo parsedMovieInfo, string imdbId, int tmdbId, SearchCriteriaBase searchCriteria)
+        private FindMovieResult FindMovie(ParsedMovieInfo parsedMovieInfo, string imdbId, int tmdbId, SearchCriteriaBase searchCriteria, List<SceneMatchCandidate> reviewCandidates)
         {
             FindMovieResult result = null;
             var searchingForScene = searchCriteria?.Movie.MovieMetadata?.Value.ItemType == ItemType.Scene;
 
             if (parsedMovieInfo.IsScene || searchingForScene)
             {
-                result = GetSceneMovie(parsedMovieInfo, searchCriteria);
+                result = GetSceneMovie(parsedMovieInfo, searchCriteria, reviewCandidates);
 
                 if (result?.Movie == null)
                 {
@@ -287,27 +293,29 @@ namespace NzbDrone.Core.Parser
             return null;
         }
 
-        private FindMovieResult GetSceneMovie(ParsedMovieInfo parsedMovieInfo, SearchCriteriaBase searchCriteria)
+        private FindMovieResult GetSceneMovie(ParsedMovieInfo parsedMovieInfo, SearchCriteriaBase searchCriteria, List<SceneMatchCandidate> reviewCandidates)
         {
             Movie movieInfo = null;
-            Movie movie = null;
+            SceneMatchResult sceneMatch = null;
             try
             {
-                movie = _movieService.FindScene(parsedMovieInfo, searchCriteria?.InteractiveSearch ?? false, searchCriteria);
+                sceneMatch = _movieService.FindSceneMatch(parsedMovieInfo, searchCriteria?.InteractiveSearch ?? false, searchCriteria);
             }
             catch (Exception ex)
             {
                 _logger.Error(ex, "FindScene Failed for {StudioTitle} {ReleaseDate} {ReleaseTitle}", parsedMovieInfo.StudioTitle, parsedMovieInfo.ReleaseDate, parsedMovieInfo.ReleaseTitle);
             }
 
+            var movie = sceneMatch?.Movie;
+
+            if (sceneMatch is { NeedsReview: true })
+            {
+                reviewCandidates.AddRange(GetReviewCandidates(sceneMatch.ReviewCandidates, searchCriteria));
+            }
+
             if (movie != null && searchCriteria != null)
             {
-                if (movie.ForeignId != null && searchCriteria.Movie.ForeignId == movie.ForeignId)
-                {
-                    movieInfo = searchCriteria.Movie;
-                }
-
-                if (movie.TmdbId != 0 && searchCriteria.Movie.TmdbId == movie.TmdbId)
+                if (IsSearchedMovie(movie, searchCriteria))
                 {
                     movieInfo = searchCriteria.Movie;
                 }
@@ -319,7 +327,8 @@ namespace NzbDrone.Core.Parser
             }
             else
             {
-                movieInfo = movie;
+                // A scene matched on the studio catalogue alone comes without its profile and file, which deciding on the release needs
+                movieInfo = movie?.QualityProfile == null && movie?.Id > 0 ? _movieService.GetMovie(movie.Id) ?? movie : movie;
             }
 
             if (movieInfo == null)
@@ -328,6 +337,34 @@ namespace NzbDrone.Core.Parser
             }
 
             return new FindMovieResult(movieInfo, MovieMatchType.Title);
+        }
+
+        private List<SceneMatchCandidate> GetReviewCandidates(List<SceneMatchCandidate> candidates, SearchCriteriaBase searchCriteria)
+        {
+            if (searchCriteria != null)
+            {
+                // A search only keeps releases for the scene it searched for, the searched scene leads so the release is evaluated against it
+                var searched = candidates.FirstOrDefault(c => IsSearchedMovie(c.Movie, searchCriteria));
+
+                if (searched == null)
+                {
+                    return new List<SceneMatchCandidate>();
+                }
+
+                return candidates.Where(c => c != searched)
+                                 .Prepend(new SceneMatchCandidate(searchCriteria.Movie, searched.MatchType))
+                                 .ToList();
+            }
+
+            var movies = (_movieService.FindByIds(candidates.Select(c => c.Movie.Id).ToList()) ?? new List<Movie>()).ToDictionary(m => m.Id);
+
+            return candidates.Select(c => new SceneMatchCandidate(movies.GetValueOrDefault(c.Movie.Id, c.Movie), c.MatchType)).ToList();
+        }
+
+        private static bool IsSearchedMovie(Movie movie, SearchCriteriaBase searchCriteria)
+        {
+            return (movie.ForeignId != null && searchCriteria.Movie.ForeignId == movie.ForeignId) ||
+                   (movie.TmdbId != 0 && searchCriteria.Movie.TmdbId == movie.TmdbId);
         }
     }
 }

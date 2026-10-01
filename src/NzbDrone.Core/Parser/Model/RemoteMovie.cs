@@ -20,10 +20,14 @@ namespace NzbDrone.Core.Parser.Model
         public List<Language> Languages { get; set; }
         public ReleaseSourceType ReleaseSource { get; set; }
 
+        // Scenes a dateless release may belong to when the match was too weak or ambiguous to use automatically
+        public List<SceneMatchCandidate> ReviewCandidates { get; set; }
+
         public RemoteMovie()
         {
             CustomFormats = new List<CustomFormat>();
             Languages = new List<Language>();
+            ReviewCandidates = new List<SceneMatchCandidate>();
         }
 
         public override string ToString()

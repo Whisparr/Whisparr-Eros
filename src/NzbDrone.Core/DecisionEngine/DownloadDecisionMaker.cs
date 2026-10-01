@@ -83,18 +83,17 @@ namespace NzbDrone.Core.DecisionEngine
                         var remoteMovie = _parsingService.Map(parsedMovieInfo, report.ImdbId.ToString(), report.TmdbId, searchCriteria);
                         remoteMovie.Release = report;
 
-                        if (remoteMovie.Movie == null)
+                        if (remoteMovie.Movie == null && remoteMovie.ReviewCandidates?.Any() == true && !pushedRelease && searchCriteria?.InteractiveSearch != true)
+                        {
+                            decision = GetReviewDecision(remoteMovie, searchCriteria);
+                        }
+                        else if (remoteMovie.Movie == null)
                         {
                             decision = new DownloadDecision(remoteMovie, new DownloadRejection(DownloadRejectionReason.UnknownMovie, pushedRelease ? "Unknown Movie. Unable to match to existing movie in Library using release title." : "Unknown Movie. Unable to match to correct movie using release title."));
                         }
                         else
                         {
-                            _aggregationService.Augment(remoteMovie);
-
-                            remoteMovie.CustomFormats = _formatCalculator.ParseCustomFormat(remoteMovie, remoteMovie.Release.Size);
-                            remoteMovie.CustomFormatScore = remoteMovie?.Movie?.QualityProfile?.CalculateCustomFormatScore(remoteMovie.CustomFormats) ?? 0;
-
-                            _logger.Trace("Custom Format Score of '{0}' [{1}] calculated for '{2}'", remoteMovie.CustomFormatScore, remoteMovie.CustomFormats?.ConcatToString(), report.Title);
+                            AugmentRemoteMovie(remoteMovie);
 
                             remoteMovie.DownloadAllowed = remoteMovie.Movie != null;
                             decision = GetDecisionForReport(remoteMovie, searchCriteria);
@@ -170,6 +169,39 @@ namespace NzbDrone.Core.DecisionEngine
                     yield return decision;
                 }
             }
+        }
+
+        private void AugmentRemoteMovie(RemoteMovie remoteMovie)
+        {
+            _aggregationService.Augment(remoteMovie);
+
+            remoteMovie.CustomFormats = _formatCalculator.ParseCustomFormat(remoteMovie, remoteMovie.Release.Size);
+            remoteMovie.CustomFormatScore = remoteMovie.Movie?.QualityProfile?.CalculateCustomFormatScore(remoteMovie.CustomFormats) ?? 0;
+
+            _logger.Trace("Custom Format Score of '{0}' [{1}] calculated for '{2}'", remoteMovie.CustomFormatScore, remoteMovie.CustomFormats?.ConcatToString(), remoteMovie.Release.Title);
+        }
+
+        // The release fits a scene only on a weak match, or fits a few scenes equally well. It is evaluated against the
+        // first candidate so a release that would be rejected anyway (blocklisted, scene has a file, ...) isn't offered
+        // for review, but it is never grabbed automatically: the NeedsReview rejection leaves that to a human.
+        private DownloadDecision GetReviewDecision(RemoteMovie remoteMovie, SearchCriteriaBase searchCriteria)
+        {
+            var candidate = remoteMovie.ReviewCandidates.First();
+
+            remoteMovie.Movie = candidate.Movie;
+            remoteMovie.MovieMatchType = MovieMatchType.Title;
+
+            AugmentRemoteMovie(remoteMovie);
+
+            var decision = GetDecisionForReport(remoteMovie, searchCriteria);
+
+            var message = remoteMovie.ReviewCandidates.Count > 1
+                ? $"Needs review. Release matches {remoteMovie.ReviewCandidates.Count} scenes equally well."
+                : $"Needs review. Release only matches the scene on {candidate.MatchType}.";
+
+            var rejections = decision.Rejections.Append(new DownloadRejection(DownloadRejectionReason.NeedsReview, message));
+
+            return new DownloadDecision(remoteMovie, rejections.ToArray());
         }
 
         private DownloadDecision GetDecisionForReport(RemoteMovie remoteMovie, SearchCriteriaBase searchCriteria = null)

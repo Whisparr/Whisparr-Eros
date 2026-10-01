@@ -3,6 +3,7 @@ import { Route, Routes } from 'react-router-dom';
 import Blocklist from 'Activity/Blocklist/Blocklist';
 import History from 'Activity/History/History';
 import Queue from 'Activity/Queue/Queue';
+import Review from 'Activity/Review/Review';
 import AddNewMovie from 'AddMovie/AddNewMovie/AddNewMovie';
 import AddNewScene from 'AddMovie/AddNewMovie/AddNewScene';
 import ImportMovies from 'AddMovie/ImportMovie/ImportMovies';
@@ -102,6 +103,8 @@ function AppRoutes() {
       <Route path="/activity/queue" element={<Queue />} />
 
       <Route path="/activity/blocklist" element={<Blocklist />} />
+
+      <Route path="/activity/review" element={<Review />} />
 
       {/*
         Wanted

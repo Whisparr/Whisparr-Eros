@@ -519,6 +519,12 @@ function SignalRListener() {
       return;
     }
 
+    if (name === 'review') {
+      // Prefix match: refreshes the review page and the sidebar badge
+      queryClient.invalidateQueries({ queryKey: ['/review'] });
+      return;
+    }
+
     if (name === 'studio') {
       if (Array.isArray(body.resources) && body.resources.length > 0) {
         if (body.action === 'deleted') {

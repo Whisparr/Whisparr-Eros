@@ -184,6 +184,27 @@ namespace NzbDrone.Core.Notifications.Webhook
             };
         }
 
+        protected WebhookReviewNeededPayload BuildReviewNeededPayload(ReviewNeededMessage message)
+        {
+            return new WebhookReviewNeededPayload
+            {
+                EventType = WebhookEventType.ReviewNeeded,
+                InstanceName = _configFileProvider.InstanceName,
+                ApplicationUrl = _configService.ApplicationUrl,
+                Message = message.Message,
+                Releases = message.Releases.Select(r => new WebhookReviewRelease
+                {
+                    ReviewItemId = r.ReviewItemId,
+                    ReleaseTitle = r.Title,
+                    Indexer = r.Indexer,
+                    Size = r.Size,
+                    Quality = r.Quality?.Quality?.Name,
+                    Reason = r.Reason,
+                    Movies = r.Movies.Select(GetMovie).ToList()
+                }).ToList()
+            };
+        }
+
         protected WebhookManualInteractionPayload BuildManualInteractionRequiredPayload(ManualInteractionRequiredMessage message)
         {
             var remoteMovie = message.RemoteMovie;

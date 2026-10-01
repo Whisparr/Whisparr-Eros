@@ -21,6 +21,7 @@ namespace NzbDrone.Core.Notifications
         List<INotification> OnHealthRestoredEnabled(bool filterBlockedNotifications = true);
         List<INotification> OnApplicationUpdateEnabled(bool filterBlockedNotifications = true);
         List<INotification> OnManualInteractionEnabled(bool filterBlockedNotifications = true);
+        List<INotification> OnReviewNeededEnabled(bool filterBlockedNotifications = true);
     }
 
     public class NotificationFactory : ProviderFactory<INotification, NotificationDefinition>, INotificationFactory
@@ -160,6 +161,16 @@ namespace NzbDrone.Core.Notifications
             return GetAvailableProviders().Where(n => ((NotificationDefinition)n.Definition).OnManualInteractionRequired).ToList();
         }
 
+        public List<INotification> OnReviewNeededEnabled(bool filterBlockedNotifications = true)
+        {
+            if (filterBlockedNotifications)
+            {
+                return FilterBlockedNotifications(GetAvailableProviders().Where(n => ((NotificationDefinition)n.Definition).OnReviewNeeded)).ToList();
+            }
+
+            return GetAvailableProviders().Where(n => ((NotificationDefinition)n.Definition).OnReviewNeeded).ToList();
+        }
+
         private IEnumerable<INotification> FilterBlockedNotifications(IEnumerable<INotification> notifications)
         {
             var blockedNotifications = _notificationStatusService.GetBlockedProviders().ToDictionary(v => v.ProviderId, v => v);
@@ -192,6 +203,7 @@ namespace NzbDrone.Core.Notifications
             definition.SupportsOnHealthRestored = provider.SupportsOnHealthRestored;
             definition.SupportsOnApplicationUpdate = provider.SupportsOnApplicationUpdate;
             definition.SupportsOnManualInteractionRequired = provider.SupportsOnManualInteractionRequired;
+            definition.SupportsOnReviewNeeded = provider.SupportsOnReviewNeeded;
         }
 
         public override ValidationResult Test(NotificationDefinition definition)

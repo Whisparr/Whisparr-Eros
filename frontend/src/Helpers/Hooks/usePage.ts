@@ -15,6 +15,7 @@ interface PageStore {
   movieIndex: number;
   performerIndex: number;
   queue: number;
+  review: number;
   sceneIndex: number;
   studioIndex: number;
 }
@@ -29,6 +30,7 @@ const pageStore = create<PageStore>(() => ({
   movieIndex: 1,
   performerIndex: 1,
   queue: 1,
+  review: 1,
   sceneIndex: 1,
   studioIndex: 1,
 }));

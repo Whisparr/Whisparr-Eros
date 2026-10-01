@@ -1,0 +1,61 @@
+.scene {
+  composes: cell from 'Components/Table/Cells/TableRowCell.module.css';
+
+  min-width: 200px;
+}
+
+.sceneDetails {
+  color: var(--helpTextColor);
+  font-size: var(--smallFontSize);
+}
+
+.indexer {
+  composes: cell from 'Components/Table/Cells/TableRowCell.module.css';
+
+  width: 100px;
+}
+
+.size {
+  composes: cell from 'Components/Table/Cells/TableRowCell.module.css';
+
+  width: 90px;
+  white-space: nowrap;
+}
+
+.quality {
+  composes: cell from 'Components/Table/Cells/TableRowCell.module.css';
+
+  width: 160px;
+}
+
+.match {
+  composes: cell from 'Components/Table/Cells/TableRowCell.module.css';
+
+  min-width: 160px;
+}
+
+.labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.alsoFits {
+  margin-top: 4px;
+  color: var(--helpTextColor);
+  font-size: var(--smallFontSize);
+}
+
+.select {
+  composes: select from 'Components/Form/SelectInput.module.css';
+
+  margin-top: 4px;
+  height: 30px;
+}
+
+.actions {
+  composes: cell from 'Components/Table/Cells/TableRowCell.module.css';
+
+  width: 100px;
+  white-space: nowrap;
+}

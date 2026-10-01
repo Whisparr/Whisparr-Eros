@@ -13,6 +13,7 @@ using Whisparr.Api.V3.MovieFiles;
 using Whisparr.Api.V3.Movies;
 using Whisparr.Api.V3.Performers;
 using Whisparr.Api.V3.Queue;
+using Whisparr.Api.V3.Review;
 using Whisparr.Api.V3.Studios;
 using Whisparr.Http.REST;
 
@@ -32,6 +33,9 @@ namespace NzbDrone.Api.Test.v3
             ("DELETE /customformat/bulk", (m, ids) => m.Resolve<CustomFormatController>().DeleteFormats(new CustomFormatBulkResource { Ids = ToSet(ids) })),
             ("DELETE /blocklist/bulk", (m, ids) => m.Resolve<BlocklistController>().Remove(new BlocklistBulkResource { Ids = ids })),
             ("DELETE /exclusions/bulk", (m, ids) => m.Resolve<ImportListExclusionController>().DeleteImportListExclusions(new ImportListExclusionBulkResource { Ids = ToSet(ids) })),
+            ("POST /review/approve", (m, ids) => m.Resolve<ReviewController>().Approve(new ReviewApproveResource { Ids = ids }).GetAwaiter().GetResult()),
+            ("POST /review/reject", (m, ids) => m.Resolve<ReviewController>().Reject(new ReviewBulkResource { Ids = ids })),
+            ("DELETE /review/bulk", (m, ids) => m.Resolve<ReviewController>().Remove(new ReviewBulkResource { Ids = ids })),
             ("DELETE /queue/bulk", (m, ids) => m.Resolve<QueueController>().RemoveMany(new QueueBulkResource { Ids = ids })),
             ("POST /queue/grab/bulk", (m, ids) => m.Resolve<QueueActionController>().Grab(new QueueBulkResource { Ids = ids }).GetAwaiter().GetResult()),
             ("DELETE /moviefile/bulk", (m, ids) => m.Resolve<MovieFileController>().DeleteMovieFiles(new MovieFileListResource { MovieFileIds = ids })),

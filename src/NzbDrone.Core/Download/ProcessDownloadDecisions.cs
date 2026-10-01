@@ -6,6 +6,7 @@ using NLog;
 using NzbDrone.Core.DecisionEngine;
 using NzbDrone.Core.Download.Clients;
 using NzbDrone.Core.Download.Pending;
+using NzbDrone.Core.Download.Review;
 using NzbDrone.Core.Exceptions;
 using NzbDrone.Core.Indexers;
 
@@ -22,16 +23,19 @@ namespace NzbDrone.Core.Download
         private readonly IDownloadService _downloadService;
         private readonly IPrioritizeDownloadDecision _prioritizeDownloadDecision;
         private readonly IPendingReleaseService _pendingReleaseService;
+        private readonly IReviewService _reviewService;
         private readonly Logger _logger;
 
         public ProcessDownloadDecisions(IDownloadService downloadService,
                                         IPrioritizeDownloadDecision prioritizeDownloadDecision,
                                         IPendingReleaseService pendingReleaseService,
+                                        IReviewService reviewService,
                                         Logger logger)
         {
             _downloadService = downloadService;
             _prioritizeDownloadDecision = prioritizeDownloadDecision;
             _pendingReleaseService = pendingReleaseService;
+            _reviewService = reviewService;
             _logger = logger;
         }
 
@@ -121,6 +125,8 @@ namespace NzbDrone.Core.Download
                 _pendingReleaseService.AddMany(pendingAddQueue);
             }
 
+            CaptureForReview(decisions, grabbed.Concat(pending));
+
             return new ProcessedDecisions(grabbed, pending, rejected);
         }
 
@@ -151,6 +157,18 @@ namespace NzbDrone.Core.Download
             }
 
             return result;
+        }
+
+        private void CaptureForReview(List<DownloadDecision> decisions, IEnumerable<DownloadDecision> processed)
+        {
+            try
+            {
+                _reviewService.Capture(decisions.Where(d => d.Rejected), processed.ToList());
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Unable to add releases for review");
+            }
         }
 
         internal List<DownloadDecision> GetQualifiedReports(IEnumerable<DownloadDecision> decisions)

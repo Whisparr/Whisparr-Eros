@@ -97,6 +97,11 @@ namespace NzbDrone.Core.Test.NotificationTests
             {
                 TestLogger.Info("OnManualInteractionRequired was called");
             }
+
+            public override void OnReviewNeeded(ReviewNeededMessage message)
+            {
+                TestLogger.Info("OnReviewNeeded was called");
+            }
         }
 
         private class TestNotificationWithNoEvents : NotificationBase<TestSetting>
@@ -139,6 +144,7 @@ namespace NzbDrone.Core.Test.NotificationTests
             notification.SupportsOnHealthRestored.Should().BeTrue();
             notification.SupportsOnApplicationUpdate.Should().BeTrue();
             notification.SupportsOnManualInteractionRequired.Should().BeTrue();
+            notification.SupportsOnReviewNeeded.Should().BeTrue();
         }
 
         [Test]
@@ -158,6 +164,7 @@ namespace NzbDrone.Core.Test.NotificationTests
             notification.SupportsOnHealthRestored.Should().BeFalse();
             notification.SupportsOnApplicationUpdate.Should().BeFalse();
             notification.SupportsOnManualInteractionRequired.Should().BeFalse();
+            notification.SupportsOnReviewNeeded.Should().BeFalse();
         }
     }
 }
