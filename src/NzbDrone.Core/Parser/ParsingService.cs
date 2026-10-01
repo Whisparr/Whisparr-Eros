@@ -70,19 +70,18 @@ namespace NzbDrone.Core.Parser
 
             if (parsedMovieInfo.IsScene)
             {
-                return _movieService.FindScene(parsedMovieInfo, interactive, null);
-            }
-            else
-            {
-                var result = TryGetMovieByTitleAndOrYear(parsedMovieInfo);
+                var scene = _movieService.FindScene(parsedMovieInfo, interactive, null);
 
-                if (result != null)
+                if (scene != null || !parsedMovieInfo.IsDatelessScene)
                 {
-                    return result.Movie;
+                    return scene;
                 }
             }
 
-            return null;
+            // Not a scene, or a dateless "Studio - Title" release that may be a movie named "Title - Subtitle"
+            var result = TryGetMovieByTitleAndOrYear(parsedMovieInfo);
+
+            return result?.Movie;
         }
 
         public RemoteMovie Map(ParsedMovieInfo parsedMovieInfo, string imdbId, int tmdbId, SearchCriteriaBase searchCriteria = null)
@@ -135,8 +134,9 @@ namespace NzbDrone.Core.Parser
         private FindMovieResult FindMovie(ParsedMovieInfo parsedMovieInfo, string imdbId, int tmdbId, SearchCriteriaBase searchCriteria)
         {
             FindMovieResult result = null;
+            var searchingForScene = searchCriteria?.Movie.MovieMetadata?.Value.ItemType == ItemType.Scene;
 
-            if (parsedMovieInfo.IsScene || searchCriteria?.Movie.MovieMetadata?.Value.ItemType == ItemType.Scene)
+            if (parsedMovieInfo.IsScene || searchingForScene)
             {
                 result = GetSceneMovie(parsedMovieInfo, searchCriteria);
 
@@ -145,7 +145,11 @@ namespace NzbDrone.Core.Parser
                     _logger.Debug($"No matching scene '{searchCriteria}' for '{parsedMovieInfo}'");
                 }
             }
-            else
+
+            // A dateless "Studio - Title" parse may just as well be a movie named "Title - Subtitle", so fall back to a movie lookup
+            var datelessMovieFallback = result == null && parsedMovieInfo.IsDatelessScene && !searchingForScene;
+
+            if (datelessMovieFallback || !(parsedMovieInfo.IsScene || searchingForScene))
             {
                 if (result == null && tmdbId > 0)
                 {
@@ -289,7 +293,7 @@ namespace NzbDrone.Core.Parser
             Movie movie = null;
             try
             {
-                movie = _movieService.FindScene(parsedMovieInfo, false, searchCriteria);
+                movie = _movieService.FindScene(parsedMovieInfo, searchCriteria?.InteractiveSearch ?? false, searchCriteria);
             }
             catch (Exception ex)
             {

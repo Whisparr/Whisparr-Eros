@@ -19,6 +19,7 @@ namespace NzbDrone.Core.Parser
     {
         private const string AirYearConst = "airyear";
         private const string CodeConst = "code";
+        private const string DatelessConst = "dateless";
         private const string EditionConst = "edition";
         private const string EpisodeConst = "episode";
         private const string ImdbIdConst = "imdbid";
@@ -34,6 +35,20 @@ namespace NzbDrone.Core.Parser
         private static readonly Regex HardcodedSubsRegex = new Regex(@"\b((?<hcsub>(\w+(?<!SOFT|MULTI|HORRIBLE)SUBS?))|(?<hc>(HC|SUBBED)))\b",
                                                         RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace,
                                                         RegexDefaults.Timeout);
+
+        // Scene release names without a date, as used by some torrent trackers.
+        // The studio is the text before the first " - " (or en/em dash) separator and may be at most 4 words,
+        // or the leading "[Studio]" tag when the rest still contains a " - " separator.
+        // Releases with SxxExx or a 4 digit year are never matched (they belong to the TV / movie patterns).
+        // Trailing quality / container decorations ("~HEVC", "(1080p)", "[720p+Photoset]", ".mp4") are not part of the release token.
+        // Declared before ReportTitleRegex, which references it, so it is initialized first.
+        private static readonly Regex DatelessStudioTitleRegex = new Regex(@"^(?<" + DatelessConst + @">)(?!.*\bS\d{1,2}E\d{1,3}\b)(?!.*\b(?:19|20)\d{2}\b)" +
+                                                                           @"(?:\[(?=[^\]]*[a-z])(?<studiotitle>[a-z0-9][^\[\]]{1,39}?)\]\s*(?=[^\[\]]+?\s[-\u2013\u2014]\s)" +
+                                                                           @"|(?=[^-\u2013\u2014]*[a-z])(?<studiotitle>[a-z0-9][\w'&!.,]*(?:\s[\w'&!.,]+){0,3}?)\s+[-\u2013\u2014]\s+)" +
+                                                                           @"(?<releasetoken>[^\[\]()]*?[a-z].*?)" +
+                                                                           @"(?:[\s._~+-]*(?:[\[(][\s+,&._-]*(?:(?:\d{3,4}[pi]|4k|uhd|hd|sd|hevc|avc|x26[45]|h26[45]|photo\s?sets?|photos|pics|web-?dl|web-?rip)[\s+,&._-]*)*[\])]|\b(?:hevc|avc|xxx|web-?dl|web-?rip|\d{3,4}[pi]|mp4|mkv|avi|wmv|m4v|mov)\b))*[\s._~+-]*$",
+                                                                           RegexOptions.IgnoreCase | RegexOptions.Compiled,
+                                                                           RegexDefaults.Timeout);
 
         private static readonly Regex[] ReportTitleRegex = new[]
         {
@@ -173,6 +188,12 @@ namespace NzbDrone.Core.Parser
 
             // Pattern for IDs in brackets like [SKMJ-649], (ABC-123), {XYZ-456}, [SKMJ_649], [SKMJ.649]
             new Regex(@"[\[\(\{](?<code>[A-Z]{2,5}[- _.][0-9]{3,5})[\]\)\}]", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout),
+
+            // SCENE without any date: "Studio - Title [- Performers]" or "[Studio] Title - Performers" (lowest priority scene pattern)
+            // Helix Studios - Shower Sex - Joey Mills & Landon Vega [720p].mp4
+            // Bully Him – You can't Hide From Me – Cyrus Stark & Jack Waters (1080P)
+            // [Bromo] Bet Your Ass - Ryan Jacobs & Sunny D (1080p).mp4
+            DatelessStudioTitleRegex,
 
             // Final check that it is a video
             new Regex(@"^(?<title>.+?)?(480|540|576|720|1080|1440|2160)p", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout),
@@ -384,7 +405,8 @@ namespace NzbDrone.Core.Parser
                             {
                                 var simpleReleaseTitle = SimpleReleaseTitleRegex.Replace(releaseTitle, string.Empty);
 
-                                var simpleTitleReplaceString = match[0].Groups["title"].Success ? match[0].Groups["title"].Value : result.PrimaryMovieTitle;
+                                // Scenes (incl. dateless ones, which carry a fallback movie title) never replace the title before release group parsing
+                                var simpleTitleReplaceString = match[0].Groups["title"].Success ? match[0].Groups["title"].Value : (result.IsScene ? null : result.PrimaryMovieTitle);
 
                                 if (simpleTitleReplaceString.IsNotNullOrWhiteSpace())
                                 {
@@ -864,7 +886,9 @@ namespace NzbDrone.Core.Parser
 
         private static ParsedMovieInfo ParseMatchCollection(MatchCollection matchCollection, string releaseTitle)
         {
-            if (!matchCollection[0].Groups[AirYearConst].Success && !matchCollection[0].Groups[CodeConst].Success && !matchCollection[0].Groups[EpisodeConst].Success && !matchCollection[0].Groups[StashIdConst].Success)
+            var isDateless = matchCollection[0].Groups[DatelessConst].Success;
+
+            if (!isDateless && !matchCollection[0].Groups[AirYearConst].Success && !matchCollection[0].Groups[CodeConst].Success && !matchCollection[0].Groups[EpisodeConst].Success && !matchCollection[0].Groups[StashIdConst].Success)
             {
                 if (!matchCollection[0].Groups["title"].Success || matchCollection[0].Groups["title"].Value == "(")
                 {
@@ -1081,6 +1105,20 @@ namespace NzbDrone.Core.Parser
                 var firstPerformer = matchCollection[0].Groups["performer"].Value.Replace('.', ' ');
                 result.FirstPerformer = firstPerformer;
                 result.StudioTitle = studioTitle;
+
+                if (isDateless)
+                {
+                    // Without a date the scene can only be matched by title / performers within the studio,
+                    // see MovieService.FindByStudioAndReleaseDate. Keep the name as a movie title as well,
+                    // so a dateless "Movie Title - Subtitle" release can still fall back to a movie lookup.
+                    // The dateless pattern has no code group, so a "Scene-123" in the title is not a code either.
+                    result.IsDatelessScene = true;
+                    result.Code = null;
+                    result.ReleaseTokens = result.ReleaseTokens.Trim();
+                    result.MovieTitles.Add(matchCollection[0].Value.StartsWith('[')
+                        ? result.ReleaseTokens
+                        : $"{studioTitle} - {result.ReleaseTokens}");
+                }
 
                 Logger.Debug("Scene Parsed. {0}", result);
 

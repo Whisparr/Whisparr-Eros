@@ -730,7 +730,7 @@ namespace NzbDrone.Core.Movies
 
                     foreach (var studio in studios)
                     {
-                        var movie = FindByStudioAndReleaseDate(studio.ForeignId, parsedMovieInfo.ReleaseDate, parsedMovieInfo.ReleaseTokens, parsedMovieInfo.StashId, parsedMovieInfo.Episode);
+                        var movie = FindByStudioAndReleaseDate(studio.ForeignId, parsedMovieInfo.ReleaseDate, parsedMovieInfo.ReleaseTokens, parsedMovieInfo.StashId, parsedMovieInfo.Episode, interactiveSearch);
 
                         if (movie != null)
                         {
@@ -1223,9 +1223,10 @@ namespace NzbDrone.Core.Movies
         /// <param name="releaseTokens">The release tokens associated with the movie.</param>
         /// <param name="foreignId">The foreign ID of the movie.</param>
         /// <param name="episode">The episode information, if applicable.</param>
+        /// <param name="interactiveSearch">Indicates whether the search is interactive. Weak matches for releases without a date or episode are only accepted from an interactive search.</param>
         /// <remarks> This method employs fuzzy matching techniques to find the best match based on the provided parameters. </remarks>
         /// <returns>The movie object if found; otherwise, null.</returns>
-        private Movie FindByStudioAndReleaseDate(string studioForeignId, string releaseDate, string releaseTokens, string foreignId, string episode)
+        private Movie FindByStudioAndReleaseDate(string studioForeignId, string releaseDate, string releaseTokens, string foreignId, string episode, bool interactiveSearch)
         {
             var methodName = "FindByStudioAndReleaseDate";
             if (string.IsNullOrEmpty(studioForeignId))
@@ -1249,6 +1250,7 @@ namespace NzbDrone.Core.Movies
             var movies = new List<Movie>();
             var verifyDate = false;
             var verifyEpisode = false;
+            var datelessRelease = false;
 
             var hasReleaseDate = releaseDate.IsNotNullOrWhiteSpace();
 
@@ -1343,7 +1345,11 @@ namespace NzbDrone.Core.Movies
             {
                 // Requires a higher level of matching if we had to fallback to studio only
                 movies = _movieRepository.GetByStudioForeignId(studioForeignId);
-                verifyEpisode = true;
+
+                // Episode releases (Studio.E1234.Title) are verified against the scene code.
+                // Releases with neither date nor episode ("Studio - Title - Performers") are verified by match confidence below.
+                verifyEpisode = episode.IsNotNullOrWhiteSpace();
+                datelessRelease = !verifyEpisode;
             }
 
             if (movies == null || !movies.Any())
@@ -1369,7 +1375,23 @@ namespace NzbDrone.Core.Movies
 
                 if (matches.Count == 1)
                 {
-                    return matches.First().Key;
+                    var match = matches.First();
+
+                    // Without a date the whole studio catalogue is searched, so only accept a match automatically
+                    // when the scene title itself is in the release name. Weaker matches (performers / characters only,
+                    // title contained without performer) need a human: they are only accepted from an interactive search.
+                    if (datelessRelease && !interactiveSearch && !IsConfidentDatelessMatch(match.Value))
+                    {
+                        _logger.Debug("{0}: Match {1} [{2}] for dateless release '{3}' is not confident enough for automatic search, interactive search required.",
+                            methodName,
+                            match.Key,
+                            match.Value,
+                            parsedMovieTitle);
+
+                        return null;
+                    }
+
+                    return match.Key;
                 }
             }
 
@@ -1379,6 +1401,20 @@ namespace NzbDrone.Core.Movies
                 releaseDate);
 
             return null;
+        }
+
+        private static bool IsConfidentDatelessMatch(MovieParseMatchType matchType)
+        {
+            switch (matchType)
+            {
+                case MovieParseMatchType.StashId:
+                case MovieParseMatchType.Title:
+                case MovieParseMatchType.Episode: // scene code and title both in the release name
+                case MovieParseMatchType.PerformerTitle:
+                    return true;
+                default:
+                    return false;
+            }
         }
     }
 }

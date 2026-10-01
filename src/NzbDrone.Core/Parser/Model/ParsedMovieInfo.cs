@@ -34,6 +34,9 @@ namespace NzbDrone.Core.Parser.Model
         public string HardcodedSubs { get; set; }
         public string ReleaseTokens { get; set; }
 
+        // Parsed by the dateless "Studio - Title" pattern: StudioTitle and ReleaseTokens are set, ReleaseDate is not.
+        public bool IsDatelessScene { get; set; }
+
         public string MovieTitle => PrimaryMovieTitle;
 
         public string PrimaryMovieTitle
@@ -53,7 +56,7 @@ namespace NzbDrone.Core.Parser.Model
         {
             get
             {
-                return ReleaseDate.IsNotNullOrWhiteSpace() || Episode.IsNotNullOrWhiteSpace() || Code.IsNotNullOrWhiteSpace() || StashId.IsNotNullOrWhiteSpace();
+                return ReleaseDate.IsNotNullOrWhiteSpace() || IsDatelessScene || Episode.IsNotNullOrWhiteSpace() || Code.IsNotNullOrWhiteSpace() || StashId.IsNotNullOrWhiteSpace();
             }
         }
 
