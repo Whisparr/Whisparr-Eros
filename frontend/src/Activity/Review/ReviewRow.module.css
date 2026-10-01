@@ -46,6 +46,24 @@
   font-size: var(--smallFontSize);
 }
 
+.matchActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+
+  margin-top: 4px;
+  font-size: var(--smallFontSize);
+}
+
+.matchAction {
+  color: var(--linkColor);
+
+  &:hover {
+    color: var(--linkHoverColor);
+    text-decoration: underline;
+  }
+}
+
 .select {
   composes: select from 'Components/Form/SelectInput.module.css';
 

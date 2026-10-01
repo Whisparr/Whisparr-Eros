@@ -1,0 +1,54 @@
+.row {
+  composes: row from 'Components/Table/VirtualTableRowButton.module.css';
+
+  align-items: center;
+  border-top: 1px solid var(--borderColor);
+}
+
+.hasFile {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.cell {
+  composes: cell from 'Components/Table/Cells/VirtualTableRowCell.module.css';
+
+  display: flex;
+  align-items: center;
+  min-height: 35px;
+}
+
+.studioTitle {
+  composes: cell;
+
+  flex: 0 0 150px;
+}
+
+.releaseDate {
+  composes: cell;
+
+  flex: 0 0 110px;
+}
+
+.title {
+  composes: cell;
+
+  flex: 1 0 250px;
+  gap: 4px;
+
+  margin-right: 10px;
+  min-width: 1px;
+}
+
+.titleText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.performers {
+  composes: cell;
+
+  flex: 1 0 200px;
+  margin-right: 10px;
+  min-width: 1px;
+}

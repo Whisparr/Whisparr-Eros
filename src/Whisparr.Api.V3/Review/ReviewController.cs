@@ -88,53 +88,117 @@ namespace Whisparr.Api.V3.Review
         [Produces("application/json")]
         public async Task<ReviewActionResultResource> Approve([FromBody] ReviewApproveResource resource)
         {
-            if (resource.Ids == null || resource.Ids.Count == 0)
+            var ids = resource.Ids ?? new List<int>();
+            var items = resource.Items ?? new List<ReviewApproveItemResource>();
+
+            if (ids.Count == 0 && items.Count == 0)
             {
-                throw new BadRequestException("ids must be provided");
+                throw new BadRequestException("ids or items must be provided");
             }
 
-            if (resource.MovieId.HasValue && resource.Ids.Count > 1)
+            if (resource.MovieId.HasValue && ids.Count > 1)
             {
-                throw new BadRequestException("movieId can only be given when approving a single release");
+                throw new BadRequestException("movieId can only be given when approving a single release, use items to choose a scene per release");
             }
 
-            var quality = GetQuality(resource);
+            if (resource.ForeignId.IsNotNullOrWhiteSpace() && ids.Count > 1)
+            {
+                throw new BadRequestException("foreignId can only be given when approving a single release, use items to choose a scene per release");
+            }
+
+            if (resource.ManualMatch && !resource.MovieId.HasValue && resource.ForeignId.IsNullOrWhiteSpace())
+            {
+                throw new BadRequestException("movieId or foreignId must be given with manualMatch");
+            }
+
+            if (items.Any(i => i.ManualMatch && !i.MovieId.HasValue && i.ForeignId.IsNullOrWhiteSpace()))
+            {
+                throw new BadRequestException("movieId or foreignId must be given for every item with manualMatch");
+            }
+
+            var quality = GetQuality(resource.QualityId, resource.Quality);
+
+            // A release listed in items uses its own choices, the ones listed in ids share the top level ones
+            var requests = items.Select(i => new ApproveRequest(i.Id, i.MovieId, i.ForeignId, i.ManualMatch, GetQuality(i.QualityId, i.Quality) ?? quality))
+                                .Concat(ids.Select(id => new ApproveRequest(id, resource.MovieId, resource.ForeignId, resource.ManualMatch, quality)))
+                                .DistinctBy(r => r.Id)
+                                .ToList();
+
             var result = new ReviewActionResultResource();
+
+            // A single release reports why it couldn't be grabbed as the response, a bulk approval carries on and lists the failures
+            if (requests.Count == 1)
+            {
+                var request = requests[0];
+
+                await _reviewService.Approve(request.Id, request.MovieId, request.Quality, request.ManualMatch, request.ForeignId);
+                result.Approved.Add(request.Id);
+
+                return result;
+            }
 
             // A grab only shows in the queue once the download client reports it, so a batch keeps its own tally
             var grabbedMovieIds = new HashSet<int>();
+            var grabbedForeignIds = new HashSet<string>();
 
-            foreach (var id in resource.Ids.Distinct())
+            foreach (var request in requests)
             {
-                // A single release reports why it couldn't be grabbed as the response, a bulk approval carries on and lists the failures
-                if (resource.Ids.Count == 1)
-                {
-                    await _reviewService.Approve(id, resource.MovieId, quality);
-                    result.Approved.Add(id);
-
-                    continue;
-                }
-
                 try
                 {
-                    var item = _reviewService.Get(id);
+                    var item = _reviewService.Get(request.Id);
+                    var isForeign = request.ForeignId.IsNotNullOrWhiteSpace();
+                    var movieId = request.MovieId ?? item.MovieId;
 
-                    if (!grabbedMovieIds.Add(item.MovieId))
+                    if (isForeign ? grabbedForeignIds.Contains(request.ForeignId) : grabbedMovieIds.Contains(movieId))
                     {
-                        result.Failed.Add(new ReviewActionFailureResource { Id = id, Message = $"Another selected release was already grabbed for the scene of '{item.Title}'" });
+                        result.Failed.Add(new ReviewActionFailureResource { Id = request.Id, Message = $"Another selected release was already grabbed for the scene of '{item.Title}'" });
                         continue;
                     }
 
-                    await _reviewService.Approve(id, resource.MovieId, quality);
-                    result.Approved.Add(id);
+                    var grabbedMovieId = await _reviewService.Approve(request.Id, request.MovieId, request.Quality, request.ManualMatch, request.ForeignId);
+
+                    if (isForeign)
+                    {
+                        grabbedForeignIds.Add(request.ForeignId);
+                    }
+                    else
+                    {
+                        grabbedMovieIds.Add(movieId);
+                    }
+
+                    if (grabbedMovieId > 0)
+                    {
+                        grabbedMovieIds.Add(grabbedMovieId);
+                    }
+
+                    result.Approved.Add(request.Id);
                 }
                 catch (Exception ex)
                 {
-                    result.Failed.Add(new ReviewActionFailureResource { Id = id, Message = ex.Message });
+                    result.Failed.Add(new ReviewActionFailureResource { Id = request.Id, Message = ex.Message });
                 }
             }
 
             return result;
+        }
+
+        [HttpGet("{id:int}/scenes")]
+        [Produces("application/json")]
+        public List<ReviewCandidateResource> GetScenes(int id, [FromQuery] string query, [FromQuery] bool allStudios = false, [FromQuery] int limit = 100)
+        {
+            return _reviewService.FindScenes(id, query, allStudios, Math.Clamp(limit, 1, 500))
+                                 .Select(m => m.ToSceneResource())
+                                 .ToList();
+        }
+
+        // Scenes on the metadata source (StashDB), for a release whose scene isn't in the library yet
+        [HttpGet("{id:int}/lookup")]
+        [Produces("application/json")]
+        public List<ReviewCandidateResource> LookupScenes(int id, [FromQuery] string term)
+        {
+            return _reviewService.LookupScenes(id, term)
+                                 .Select(m => m.ToSceneResource())
+                                 .ToList();
         }
 
         [HttpPost("reject")]
@@ -173,24 +237,26 @@ namespace Whisparr.Api.V3.Review
             BroadcastResourceChange(ModelAction.Sync);
         }
 
-        private static Quality GetQuality(ReviewApproveResource resource)
+        private static Quality GetQuality(int? qualityId, string qualityName)
         {
-            if (resource.QualityId.HasValue)
+            if (qualityId.HasValue)
             {
-                var byId = Quality.All.FirstOrDefault(q => q.Id == resource.QualityId.Value);
+                var byId = Quality.All.FirstOrDefault(q => q.Id == qualityId.Value);
 
-                return byId ?? throw new BadRequestException($"Unknown quality id {resource.QualityId}");
+                return byId ?? throw new BadRequestException($"Unknown quality id {qualityId}");
             }
 
-            if (resource.Quality.IsNotNullOrWhiteSpace())
+            if (qualityName.IsNotNullOrWhiteSpace())
             {
-                var byName = Quality.All.FirstOrDefault(q => q.Name.Equals(resource.Quality, StringComparison.OrdinalIgnoreCase));
+                var byName = Quality.All.FirstOrDefault(q => q.Name.Equals(qualityName, StringComparison.OrdinalIgnoreCase));
 
-                return byName ?? throw new BadRequestException($"Unknown quality '{resource.Quality}'");
+                return byName ?? throw new BadRequestException($"Unknown quality '{qualityName}'");
             }
 
             return null;
         }
+
+        private record ApproveRequest(int Id, int? MovieId, string ForeignId, bool ManualMatch, Quality Quality);
 
         private IReadOnlyDictionary<int, Movie> GetMovies(IEnumerable<ReviewItem> items)
         {

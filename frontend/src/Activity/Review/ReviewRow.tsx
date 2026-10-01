@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import SelectInput, { SelectInputOption } from 'Components/Form/SelectInput';
 import Label from 'Components/Label';
 import IconButton from 'Components/Link/IconButton';
@@ -15,11 +15,15 @@ import { SelectStateInputProps } from 'typings/props';
 import Review, { MovieParseMatchType, ReviewCandidate } from 'typings/Review';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
+import SelectReviewSceneModal from './SelectScene/SelectReviewSceneModal';
 import styles from './ReviewRow.module.css';
 
 export interface ReviewOverride {
   movieId?: number;
   qualityId?: number;
+
+  // A scene picked from the library that isn't one of the candidates
+  scene?: ReviewCandidate;
 }
 
 interface ReviewRowProps extends Review {
@@ -45,6 +49,17 @@ function getMatchTypeLabel(matchType?: MovieParseMatchType) {
   return translate(`ReviewMatchType${key}`);
 }
 
+function getSceneDetails(scene: ReviewCandidate) {
+  return [
+    scene.studioTitle,
+    scene.releaseDate,
+    scene.code,
+    scene.performerNames?.join(', '),
+  ]
+    .filter(Boolean)
+    .join(' · ');
+}
+
 function getSceneTitle(candidate: ReviewCandidate) {
   if (!candidate.title) {
     return translate('ReviewSceneMissing');
@@ -67,6 +82,7 @@ function ReviewRow(props: ReviewRowProps) {
     reasons,
     publishDate,
     added,
+    lookupTerm,
     isSelected,
     columns,
     qualityOptions,
@@ -87,9 +103,25 @@ function ReviewRow(props: ReviewRowProps) {
     );
   }, [candidates, selectedMovieId]);
 
+  const manualScene = override?.scene;
+
+  // The scene the release will be grabbed for
+  const scene = manualScene ?? candidate;
+
   const otherCandidates = useMemo(() => {
     return candidates.filter((c) => c.movieId !== candidate?.movieId);
   }, [candidates, candidate]);
+
+  const candidateIds = useMemo(() => {
+    return candidates.map((c) => c.movieId);
+  }, [candidates]);
+
+  // The picker starts on the studio the release was matched in
+  const studioTitle = useMemo(() => {
+    return candidates.find((c) => c.studioTitle)?.studioTitle;
+  }, [candidates]);
+
+  const [isSelectSceneModalOpen, setIsSelectSceneModalOpen] = useState(false);
 
   const isQualityUnknown = quality.quality.id === 0;
 
@@ -118,6 +150,46 @@ function ReviewRow(props: ReviewRowProps) {
     },
     [id, override, onOverrideChange]
   );
+
+  const handleSelectScenePress = useCallback(() => {
+    setIsSelectSceneModalOpen(true);
+  }, []);
+
+  const handleSelectSceneModalClose = useCallback(() => {
+    setIsSelectSceneModalOpen(false);
+  }, []);
+
+  const handleSceneSelect = useCallback(
+    (selected: ReviewCandidate) => {
+      setIsSelectSceneModalOpen(false);
+
+      // Picking one of the candidates is the same as choosing it in the list
+      if (selected.movieId > 0 && candidateIds.includes(selected.movieId)) {
+        onOverrideChange(id, {
+          ...override,
+          movieId: selected.movieId,
+          scene: undefined,
+        });
+
+        return;
+      }
+
+      onOverrideChange(id, {
+        ...override,
+        movieId: undefined,
+        scene: selected,
+      });
+    },
+    [id, override, candidateIds, onOverrideChange]
+  );
+
+  const handleResetScenePress = useCallback(() => {
+    onOverrideChange(id, {
+      ...override,
+      movieId: undefined,
+      scene: undefined,
+    });
+  }, [id, override, onOverrideChange]);
 
   const handleApprovePress = useCallback(() => {
     onApprovePress(id);
@@ -149,23 +221,15 @@ function ReviewRow(props: ReviewRowProps) {
         if (name === 'movieMetadata.sortTitle') {
           return (
             <TableRowCell key={name} className={styles.scene}>
-              {candidate?.titleSlug ? (
-                <Link to={`/movie/${candidate.titleSlug}`}>
-                  {candidate.title}
-                </Link>
+              {scene?.titleSlug ? (
+                <Link to={`/movie/${scene.titleSlug}`}>{scene.title}</Link>
               ) : (
-                getSceneTitle(candidate)
+                getSceneTitle(scene)
               )}
 
-              {candidate?.title ? (
+              {scene?.title ? (
                 <div className={styles.sceneDetails}>
-                  {[
-                    candidate.studioTitle,
-                    candidate.releaseDate,
-                    candidate.code,
-                  ]
-                    .filter(Boolean)
-                    .join(' · ')}
+                  {getSceneDetails(scene)}
                 </div>
               ) : null}
             </TableRowCell>
@@ -224,13 +288,31 @@ function ReviewRow(props: ReviewRowProps) {
           return (
             <TableRowCell key={name} className={styles.match}>
               <div className={styles.labels}>
-                {candidate?.matchType ? (
+                {manualScene ? (
+                  <Label
+                    kind={kinds.PRIMARY}
+                    title={translate('ReviewManualMatchTooltip')}
+                  >
+                    {translate('ReviewManualMatch')}
+                  </Label>
+                ) : null}
+
+                {manualScene?.inLibrary === false ? (
+                  <Label
+                    kind={kinds.WARNING}
+                    title={translate('ReviewSceneNotInLibraryTooltip')}
+                  >
+                    {translate('ReviewSceneNotInLibrary')}
+                  </Label>
+                ) : null}
+
+                {!manualScene && candidate?.matchType ? (
                   <Label kind={kinds.INFO}>
                     {getMatchTypeLabel(candidate.matchType)}
                   </Label>
                 ) : null}
 
-                {reasons.includes('ambiguousMatch') ? (
+                {!manualScene && reasons.includes('ambiguousMatch') ? (
                   <Label kind={kinds.WARNING}>
                     {translate('ReviewReasonAmbiguousMatch', {
                       count: candidates.length,
@@ -245,7 +327,15 @@ function ReviewRow(props: ReviewRowProps) {
                 ) : null}
               </div>
 
-              {otherCandidates.length ? (
+              {manualScene ? (
+                <div className={styles.alsoFits}>
+                  {translate('ReviewSuggestedSceneWas', {
+                    scene: getSceneTitle(candidate),
+                  })}
+                </div>
+              ) : null}
+
+              {!manualScene && otherCandidates.length ? (
                 <>
                   <div className={styles.alsoFits}>
                     {translate('ReviewAlsoFits', {
@@ -262,6 +352,25 @@ function ReviewRow(props: ReviewRowProps) {
                   />
                 </>
               ) : null}
+
+              <div className={styles.matchActions}>
+                <Link onPress={handleSelectScenePress}>
+                  <span className={styles.matchAction}>
+                    {translate('ReviewChooseScene')}
+                  </span>
+                </Link>
+
+                {manualScene ? (
+                  <Link
+                    title={translate('ReviewResetSceneTooltip')}
+                    onPress={handleResetScenePress}
+                  >
+                    <span className={styles.matchAction}>
+                      {translate('ReviewResetScene')}
+                    </span>
+                  </Link>
+                ) : null}
+              </div>
             </TableRowCell>
           );
         }
@@ -303,6 +412,17 @@ function ReviewRow(props: ReviewRowProps) {
 
         return null;
       })}
+
+      <SelectReviewSceneModal
+        isOpen={isSelectSceneModalOpen}
+        reviewId={id}
+        releaseTitle={title}
+        studioTitle={studioTitle}
+        lookupTerm={lookupTerm}
+        candidateIds={candidateIds}
+        onSceneSelect={handleSceneSelect}
+        onModalClose={handleSelectSceneModalClose}
+      />
     </TableRow>
   );
 }

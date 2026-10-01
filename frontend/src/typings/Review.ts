@@ -21,12 +21,16 @@ export type MovieParseMatchType =
 
 export interface ReviewCandidate {
   movieId: number;
+  foreignId?: string;
+  inLibrary?: boolean;
   title?: string;
   titleSlug?: string;
   studioTitle?: string;
   releaseDate?: string;
   code?: string;
+  performerNames?: string[];
   matchType?: MovieParseMatchType;
+  manual?: boolean;
   hasFile: boolean;
   monitored: boolean;
 }
@@ -46,6 +50,8 @@ interface Review extends ModelBase {
   status: 'pending' | 'approved' | 'rejected';
   publishDate?: string;
   added: string;
+  manualMatch?: boolean;
+  lookupTerm?: string;
 }
 
 export interface ReviewActionResult {

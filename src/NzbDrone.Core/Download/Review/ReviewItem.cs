@@ -37,6 +37,9 @@ namespace NzbDrone.Core.Download.Review
 
         public List<int> CandidateMovieIds => Candidates.Select(c => c.MovieId).ToList();
 
+        // Approved for a scene the user picked rather than one the release matched
+        public bool ManuallyMatched => Candidates.Any(c => c.Manual && c.MovieId == MovieId);
+
         // The stored release is deserialized as a plain ReleaseInfo, put the torrent details back for the download client and blocklist
         public ReleaseInfo GetRelease()
         {
@@ -79,6 +82,9 @@ namespace NzbDrone.Core.Download.Review
     {
         public int MovieId { get; set; }
         public MovieParseMatchType? MatchType { get; set; }
+
+        // Picked by the user when approving, the release didn't match this scene on its own
+        public bool Manual { get; set; }
     }
 
     public class ReviewItemTorrentInfo : IEmbeddedDocument

@@ -20,6 +20,9 @@ namespace NzbDrone.Core.Parser.Model
         Title = 1,
         Alias = 2,
         Id = 3,
-        FuzzyTitle = 4
+        FuzzyTitle = 4,
+
+        // Picked by the user from the library, e.g. a review item approved for a scene that wasn't a candidate
+        Manual = 5
     }
 }

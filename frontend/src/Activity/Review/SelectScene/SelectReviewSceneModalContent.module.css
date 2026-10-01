@@ -1,0 +1,72 @@
+.modalBody {
+  composes: modalBody from 'InteractiveImport/Movie/SelectMovieModalContent.module.css';
+}
+
+.filterInput {
+  composes: input from 'Components/Form/TextInput.module.css';
+
+  flex: 0 0 auto;
+  margin-bottom: 10px;
+}
+
+.studioFilter {
+  display: flex;
+  flex: 0 0 auto;
+  margin-bottom: 10px;
+}
+
+.hint {
+  flex: 0 0 auto;
+  padding: 10px 0;
+  color: var(--helpTextColor);
+}
+
+.scroller {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.studioTitle {
+  flex: 0 0 150px;
+  font-weight: bold;
+}
+
+.releaseDate {
+  flex: 0 0 110px;
+  font-weight: bold;
+}
+
+.title {
+  flex: 1 0 250px;
+  margin-right: 10px;
+  font-weight: bold;
+}
+
+.performers {
+  flex: 1 0 200px;
+  margin-right: 10px;
+  font-weight: bold;
+}
+
+.footer {
+  composes: footer from 'InteractiveImport/Movie/SelectMovieModalContent.module.css';
+}
+
+.release {
+  composes: path from 'InteractiveImport/Movie/SelectMovieModalContent.module.css';
+}
+
+.tabList {
+  composes: tabList from 'Search/LibrarySearch.module.css';
+
+  flex: 0 0 auto;
+  margin-bottom: 15px;
+}
+
+.tab {
+  composes: tab from 'Search/LibrarySearch.module.css';
+}
+
+.selectedTab {
+  composes: selectedTab from 'Search/LibrarySearch.module.css';
+}

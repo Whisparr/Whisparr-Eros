@@ -1,16 +1,27 @@
 import { useQueryClient } from '@tanstack/react-query';
 import useApiMutation from 'Helpers/Hooks/useApiMutation';
+import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import usePage from 'Helpers/Hooks/usePage';
 import usePagedApiQuery from 'Helpers/Hooks/usePagedApiQuery';
-import Review, { ReviewActionResult } from 'typings/Review';
+import Review, { ReviewActionResult, ReviewCandidate } from 'typings/Review';
 import { useReviewOptions } from './reviewOptionsStore';
 
 export const REVIEW_PATH = '/review';
 
-export interface ApproveReviewData {
-  ids: number[];
+export interface ApproveReviewItem {
+  id: number;
   movieId?: number;
+  foreignId?: string;
+  manualMatch?: boolean;
   qualityId?: number;
+}
+
+export interface ApproveReviewData {
+  ids?: number[];
+  movieId?: number;
+  manualMatch?: boolean;
+  qualityId?: number;
+  items?: ApproveReviewItem[];
 }
 
 interface BulkReviewData {
@@ -97,4 +108,30 @@ export const useRemoveReviewItems = () => {
   });
 
   return { removeReviewItems: mutate, isRemoving: isPending };
+};
+
+// Scenes to choose from when the release belongs to a scene that isn't one of
+// its candidates: the studio's scenes, or every scene matching the query.
+export const useReviewScenes = (
+  id: number,
+  query: string,
+  allStudios: boolean,
+  enabled: boolean
+) => {
+  return useApiQuery<ReviewCandidate[]>({
+    path: `${REVIEW_PATH}/${id}/scenes`,
+    queryParams: { query, allStudios, limit: 200 },
+    queryOptions: { enabled },
+  });
+};
+
+// Scenes on the metadata source (StashDB), for a release whose scene isn't in
+// the library yet. Without a term the server searches the release's studio and
+// title.
+export const useReviewLookup = (id: number, term: string, enabled: boolean) => {
+  return useApiQuery<ReviewCandidate[]>({
+    path: `${REVIEW_PATH}/${id}/lookup`,
+    queryParams: { term },
+    queryOptions: { enabled, retry: false },
+  });
 };

@@ -14,8 +14,11 @@ using NzbDrone.Core.Indexers;
 using NzbDrone.Core.MediaFiles.Events;
 using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Messaging.Events;
+using NzbDrone.Core.MetadataSource;
 using NzbDrone.Core.Movies;
+using NzbDrone.Core.Movies.Credits;
 using NzbDrone.Core.Movies.Events;
+using NzbDrone.Core.Parser;
 using NzbDrone.Core.Parser.Model;
 using NzbDrone.Core.Qualities;
 using NzbDrone.Core.Test.Framework;
@@ -480,6 +483,342 @@ namespace NzbDrone.Core.Test.Download.Review
             item.MovieId.Should().Be(_otherScene.Id);
             item.Reason.Should().Be(ReviewReason.WeakMatch);
             Mocker.GetMock<IReviewItemRepository>().Verify(v => v.UpdateMany(It.Is<IList<ReviewItem>>(l => l.Contains(item))), Times.Once());
+        }
+
+        private Movie GivenLibraryScene(int id, string title, string studioForeignId = "studio-1", string releaseDate = "2021-01-01", ItemType itemType = ItemType.Scene, params string[] performers)
+        {
+            var movie = new Movie { Id = id, Title = title, Monitored = true };
+            movie.MovieMetadata.Value.Title = title;
+            movie.MovieMetadata.Value.CleanTitle = title.CleanMovieTitle();
+            movie.MovieMetadata.Value.ItemType = itemType;
+            movie.MovieMetadata.Value.StudioForeignId = studioForeignId;
+            movie.MovieMetadata.Value.StudioTitle = "LatinBoyz";
+            movie.MovieMetadata.Value.ReleaseDate = releaseDate;
+            movie.MovieMetadata.Value.PerformerNames = performers.ToList();
+
+            return movie;
+        }
+
+        private void GivenLibrary(params Movie[] movies)
+        {
+            var library = new[] { _scene, _otherScene }.Concat(movies).ToList();
+
+            Mocker.GetMock<IMovieService>()
+                  .Setup(s => s.FindByIds(It.IsAny<List<int>>()))
+                  .Returns<List<int>>(ids => library.Where(m => ids.Contains(m.Id)).ToList());
+
+            Mocker.GetMock<IMovieService>()
+                  .Setup(s => s.GetByStudioForeignId(It.IsAny<string>()))
+                  .Returns<string>(studio => library.Where(m => m.MovieMetadata.Value.StudioForeignId == studio).ToList());
+        }
+
+        [Test]
+        public async Task should_grab_for_a_scene_that_is_not_a_candidate_when_matched_manually()
+        {
+            var chosen = GivenLibraryScene(7, "Gay Latino Bareback Porn");
+            GivenLibrary(chosen);
+
+            var item = Capture(GivenWeakMatch()).Single();
+
+            await Subject.Approve(item.Id, chosen.Id, null, true);
+
+            Mocker.GetMock<IDownloadService>()
+                  .Verify(v => v.DownloadReport(It.Is<RemoteMovie>(r => r.Movie == chosen &&
+                                                                        r.MovieMatchType == MovieMatchType.Manual &&
+                                                                        r.Release.Guid == "guid-1"),
+                                                null),
+                          Times.Once());
+
+            item.Status.Should().Be(ReviewItemStatus.Approved);
+            item.MovieId.Should().Be(chosen.Id);
+            item.ManuallyMatched.Should().BeTrue();
+            item.Candidates.Should().ContainSingle(c => c.Manual).Which.MovieId.Should().Be(chosen.Id);
+            item.Candidates.Should().Contain(c => c.MovieId == _scene.Id && !c.Manual);
+            Mocker.GetMock<IReviewItemRepository>().Verify(v => v.Update(item), Times.Once());
+        }
+
+        [Test]
+        public async Task should_refuse_a_scene_that_is_not_a_candidate_without_manual_match()
+        {
+            var chosen = GivenLibraryScene(7, "Gay Latino Bareback Porn");
+            GivenLibrary(chosen);
+
+            var item = Capture(GivenWeakMatch()).Single();
+
+            Func<Task> approve = () => Subject.Approve(item.Id, chosen.Id);
+
+            (await approve.Should().ThrowAsync<NzbDroneClientException>()).Which.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+
+            Mocker.GetMock<IDownloadService>().Verify(v => v.DownloadReport(It.IsAny<RemoteMovie>(), It.IsAny<int?>()), Times.Never());
+            item.Status.Should().Be(ReviewItemStatus.Pending);
+            item.Candidates.Should().NotContain(c => c.Manual);
+        }
+
+        [Test]
+        public async Task should_refuse_manual_match_to_a_scene_that_is_not_in_the_library()
+        {
+            GivenLibrary();
+
+            var item = Capture(GivenWeakMatch()).Single();
+
+            Func<Task> approve = () => Subject.Approve(item.Id, 99, null, true);
+
+            (await approve.Should().ThrowAsync<NzbDroneClientException>()).Which.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+        }
+
+        [Test]
+        public async Task should_refuse_manual_match_to_a_movie_that_is_not_a_scene()
+        {
+            var movie = GivenLibraryScene(8, "A Feature Movie", itemType: ItemType.Movie);
+            GivenLibrary(movie);
+
+            var item = Capture(GivenWeakMatch()).Single();
+
+            Func<Task> approve = () => Subject.Approve(item.Id, movie.Id, null, true);
+
+            var error = (await approve.Should().ThrowAsync<NzbDroneClientException>()).Which;
+            error.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+            error.Message.Should().Contain("not a scene");
+
+            Mocker.GetMock<IDownloadService>().Verify(v => v.DownloadReport(It.IsAny<RemoteMovie>(), It.IsAny<int?>()), Times.Never());
+        }
+
+        [Test]
+        public async Task should_refuse_manual_match_without_a_scene()
+        {
+            var item = Capture(GivenWeakMatch()).Single();
+
+            Func<Task> approve = () => Subject.Approve(item.Id, null, null, true);
+
+            (await approve.Should().ThrowAsync<NzbDroneClientException>()).Which.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+        }
+
+        [Test]
+        public async Task should_refuse_manual_match_to_a_scene_that_already_has_a_file()
+        {
+            var chosen = GivenLibraryScene(7, "Gay Latino Bareback Porn");
+            chosen.MovieFileId = 3;
+            GivenLibrary(chosen);
+
+            var item = Capture(GivenWeakMatch()).Single();
+
+            Func<Task> approve = () => Subject.Approve(item.Id, chosen.Id, null, true);
+
+            (await approve.Should().ThrowAsync<NzbDroneClientException>()).Which.StatusCode.Should().Be(System.Net.HttpStatusCode.Conflict);
+
+            Mocker.GetMock<IDownloadService>().Verify(v => v.DownloadReport(It.IsAny<RemoteMovie>(), It.IsAny<int?>()), Times.Never());
+            item.Status.Should().Be(ReviewItemStatus.Pending);
+        }
+
+        [Test]
+        public async Task should_refuse_manual_match_to_a_scene_that_is_already_queued()
+        {
+            var chosen = GivenLibraryScene(7, "Gay Latino Bareback Porn");
+            GivenLibrary(chosen);
+
+            Mocker.GetMock<Queue.IQueueService>()
+                  .Setup(s => s.GetQueue())
+                  .Returns(new List<Queue.Queue> { new () { Movie = chosen } });
+
+            var item = Capture(GivenWeakMatch()).Single();
+
+            Func<Task> approve = () => Subject.Approve(item.Id, chosen.Id, null, true);
+
+            (await approve.Should().ThrowAsync<NzbDroneClientException>()).Which.StatusCode.Should().Be(System.Net.HttpStatusCode.Conflict);
+        }
+
+        [Test]
+        public async Task should_approve_a_candidate_chosen_with_manual_match_as_the_candidate()
+        {
+            var item = Capture(GivenWeakMatch()).Single();
+
+            await Subject.Approve(item.Id, _scene.Id, null, true);
+
+            Mocker.GetMock<IDownloadService>()
+                  .Verify(v => v.DownloadReport(It.Is<RemoteMovie>(r => r.Movie == _scene && r.MovieMatchType == MovieMatchType.Id), null), Times.Once());
+
+            item.ManuallyMatched.Should().BeFalse();
+            item.Candidates.Should().NotContain(c => c.Manual);
+        }
+
+        [Test]
+        public void should_find_scenes_of_the_candidates_studio_by_performers()
+        {
+            _scene.MovieMetadata.Value.StudioForeignId = "studio-1";
+            _scene.MovieMetadata.Value.ItemType = ItemType.Scene;
+
+            var bareback = GivenLibraryScene(7, "Gay Latino Bareback Porn", releaseDate: "2020-05-01", performers: new[] { "Alexander", "Gato" });
+            var twinks = GivenLibraryScene(8, "Gay Latino Nude Twinks", releaseDate: "2021-05-01", performers: new[] { "Alexander", "Gato" });
+            var other = GivenLibraryScene(9, "Pool Party", releaseDate: "2022-05-01", performers: new[] { "Diego" });
+            var elsewhere = GivenLibraryScene(10, "Gay Latino Elsewhere", "studio-2", performers: new[] { "Alexander", "Gato" });
+            var movie = GivenLibraryScene(11, "Alexander Gato The Movie", itemType: ItemType.Movie, performers: new[] { "Alexander", "Gato" });
+            GivenLibrary(bareback, twinks, other, elsewhere, movie);
+
+            var item = Capture(GivenWeakMatch()).Single();
+
+            Subject.FindScenes(item.Id, "gato alexander", false, 50).Should().Equal(twinks, bareback);
+            Subject.FindScenes(item.Id, "bareback", false, 50).Should().Equal(bareback);
+            Subject.FindScenes(item.Id, null, false, 50).Should().Equal(other, twinks, bareback, _scene);
+            Subject.FindScenes(item.Id, null, false, 2).Should().Equal(other, twinks);
+        }
+
+        [Test]
+        public void should_search_scenes_of_every_studio_by_title()
+        {
+            var bareback = GivenLibraryScene(7, "Gay Latino Bareback Porn");
+            var movie = GivenLibraryScene(11, "Gay Latino The Movie", itemType: ItemType.Movie);
+            GivenLibrary(bareback, movie);
+
+            Mocker.GetMock<IMovieService>()
+                  .Setup(s => s.SearchMovies("gay latino"))
+                  .Returns(new List<Movie> { bareback, movie });
+
+            var item = Capture(GivenWeakMatch()).Single();
+
+            Subject.FindScenes(item.Id, "gay latino", true, 50).Should().Equal(bareback);
+            Subject.FindScenes(item.Id, "  ", true, 50).Should().BeEmpty();
+
+            Mocker.GetMock<IMovieService>().Verify(v => v.GetByStudioForeignId(It.IsAny<string>()), Times.Never());
+        }
+
+        private Movie GivenStashScene(string foreignId, string title, params string[] performers)
+        {
+            var scene = new Movie { Title = title };
+            scene.MovieMetadata.Value.Title = title;
+            scene.MovieMetadata.Value.ForeignId = foreignId;
+            scene.MovieMetadata.Value.ItemType = ItemType.Scene;
+            scene.MovieMetadata.Value.StudioTitle = "LatinBoyz";
+            scene.MovieMetadata.Value.Credits = performers.Select(p => new Credit { PersonName = p }).ToList();
+
+            return scene;
+        }
+
+        private void GivenSceneCanBeAdded(Movie added)
+        {
+            _scene.Path = "/media/scenes/LatinBoyz/Poolside";
+            _scene.QualityProfileId = 3;
+            _scene.Tags = new HashSet<int> { 2 };
+
+            Mocker.GetMock<RootFolders.IRootFolderService>()
+                  .Setup(s => s.GetBestRootFolderPath(_scene.Path, null))
+                  .Returns("/media/scenes");
+
+            Mocker.GetMock<IAddMovieService>()
+                  .Setup(s => s.AddMovie(It.IsAny<Movie>()))
+                  .Returns(added);
+
+            GivenLibrary(added);
+        }
+
+        [Test]
+        public async Task should_add_a_scene_from_the_metadata_source_and_grab_for_it()
+        {
+            var added = GivenLibraryScene(20, "Gay Latino Bareback Porn", performers: new[] { "Alexander", "Gato" });
+            added.MovieMetadata.Value.ForeignId = "stash-bareback";
+            GivenSceneCanBeAdded(added);
+
+            var item = Capture(GivenWeakMatch()).Single();
+
+            var grabbedMovieId = await Subject.Approve(item.Id, null, null, true, "stash-bareback");
+
+            grabbedMovieId.Should().Be(added.Id);
+
+            Mocker.GetMock<IAddMovieService>()
+                  .Verify(v => v.AddMovie(It.Is<Movie>(m => m.ForeignId == "stash-bareback" &&
+                                                             m.QualityProfileId == 3 &&
+                                                             m.RootFolderPath == "/media/scenes" &&
+                                                             m.Monitored &&
+                                                             m.Tags.SetEquals(new[] { 2 }) &&
+                                                             m.AddOptions.SearchForMovie == false)),
+                          Times.Once());
+
+            Mocker.GetMock<IDownloadService>()
+                  .Verify(v => v.DownloadReport(It.Is<RemoteMovie>(r => r.Movie == added && r.MovieMatchType == MovieMatchType.Manual), null), Times.Once());
+
+            item.MovieId.Should().Be(added.Id);
+            item.ManuallyMatched.Should().BeTrue();
+        }
+
+        [Test]
+        public async Task should_not_add_a_scene_from_the_metadata_source_that_is_already_in_the_library()
+        {
+            var existing = GivenLibraryScene(21, "Gay Latino Bareback Porn - Benyi & Jake");
+            existing.MovieMetadata.Value.ForeignId = "stash-benyi";
+            GivenLibrary(existing);
+
+            Mocker.GetMock<IMovieService>().Setup(s => s.FindByForeignId("stash-benyi")).Returns(existing);
+
+            var item = Capture(GivenWeakMatch()).Single();
+
+            await Subject.Approve(item.Id, null, null, true, "stash-benyi");
+
+            Mocker.GetMock<IAddMovieService>().Verify(v => v.AddMovie(It.IsAny<Movie>()), Times.Never());
+            Mocker.GetMock<IDownloadService>()
+                  .Verify(v => v.DownloadReport(It.Is<RemoteMovie>(r => r.Movie == existing), null), Times.Once());
+        }
+
+        [Test]
+        public async Task should_refuse_a_foreign_id_without_manual_match_or_with_a_scene_id()
+        {
+            var item = Capture(GivenWeakMatch()).Single();
+
+            Func<Task> withoutFlag = () => Subject.Approve(item.Id, null, null, false, "stash-bareback");
+            Func<Task> withMovieId = () => Subject.Approve(item.Id, _otherScene.Id, null, true, "stash-bareback");
+
+            (await withoutFlag.Should().ThrowAsync<NzbDroneClientException>()).Which.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+            (await withMovieId.Should().ThrowAsync<NzbDroneClientException>()).Which.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+
+            Mocker.GetMock<IAddMovieService>().Verify(v => v.AddMovie(It.IsAny<Movie>()), Times.Never());
+        }
+
+        [Test]
+        public void should_look_up_scenes_on_the_metadata_source_with_the_release_studio_and_title()
+        {
+            var bareback = GivenStashScene("stash-bareback", "Gay Latino Bareback Porn", "Alexander", "Gato");
+            var benyi = GivenStashScene("stash-benyi", "Gay Latino Bareback Porn - Benyi & Jake", "Benyi", "Jake");
+            var movie = GivenStashScene("stash-movie", "A Movie");
+            movie.MovieMetadata.Value.ItemType = ItemType.Movie;
+
+            var libraryBenyi = GivenLibraryScene(21, "Gay Latino Bareback Porn - Benyi & Jake");
+            libraryBenyi.MovieMetadata.Value.ForeignId = "stash-benyi";
+
+            Mocker.GetMock<ISearchForNewMovie>()
+                  .Setup(s => s.SearchForNewEntity(It.IsAny<string>(), ItemType.Scene))
+                  .Returns(new List<object> { bareback, benyi, movie });
+
+            Mocker.GetMock<IMovieService>()
+                  .Setup(s => s.FindByForeignIds(It.IsAny<List<string>>()))
+                  .Returns(new List<Movie> { libraryBenyi });
+
+            var decision = GivenWeakMatch();
+            decision.RemoteMovie.ParsedMovieInfo = Parser.Parser.ParseMovieTitle("LatinBoyz - Alexander & Gato.mp4");
+            decision.RemoteMovie.ParsedMovieInfo.Quality = new QualityModel(Quality.WEBDL720p);
+
+            var item = Capture(decision).Single();
+
+            ReviewService.GetLookupTerm(item).Should().Be("LatinBoyz alexander gato");
+
+            Subject.LookupScenes(item.Id, null).Should().Equal(bareback, libraryBenyi);
+            Mocker.GetMock<ISearchForNewMovie>().Verify(v => v.SearchForNewEntity("LatinBoyz alexander gato", ItemType.Scene), Times.Once());
+
+            Subject.LookupScenes(item.Id, "gay latino bareback");
+            Mocker.GetMock<ISearchForNewMovie>().Verify(v => v.SearchForNewEntity("gay latino bareback", ItemType.Scene), Times.Once());
+        }
+
+        [TestCase("Helix Studios - Shower Sex - Joey Mills & Landon Vega [720p].mp4", "Helix Studios shower sex joey mills landon vega")]
+        public void should_build_lookup_term_from_the_release(string title, string term)
+        {
+            var item = new ReviewItem { Title = title, ParsedMovieInfo = Parser.Parser.ParseMovieTitle(title) };
+
+            ReviewService.GetLookupTerm(item).Should().Be(term);
+        }
+
+        [Test]
+        public void should_look_up_by_release_title_when_it_could_not_be_parsed()
+        {
+            var item = new ReviewItem { Title = "Unparsed - Release &  Title" };
+
+            ReviewService.GetLookupTerm(item).Should().Be("Unparsed Release Title");
         }
     }
 }

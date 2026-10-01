@@ -33,6 +33,7 @@ import {
 import ReviewRow, { ReviewOverride } from './ReviewRow';
 import useReview, {
   ApproveReviewData,
+  ApproveReviewItem,
   useApproveReviewItems,
   useRejectReviewItems,
   useRemoveReviewItems,
@@ -125,51 +126,68 @@ function Review() {
       setFailures([]);
       setApprovingIds((current) => [...current, ...ids]);
 
-      // A release with a chosen scene or quality is approved on its own, the
-      // rest go together.
-      const requests: ApproveReviewData[] = [];
+      // A release with a chosen scene or quality carries its own choices, the
+      // rest are listed by id. One request, so the server can tell when two
+      // selected releases would be grabbed for the same scene.
+      const items: ApproveReviewItem[] = [];
       const plain: number[] = [];
 
       ids.forEach((id) => {
         const override = overrides[id];
 
-        if (override?.movieId || override?.qualityId) {
-          requests.push({ ids: [id], ...override });
+        if (override?.scene) {
+          items.push({
+            id,
+            // A scene from StashDB is added to the library when the release is grabbed
+            ...(override.scene.inLibrary === false
+              ? { foreignId: override.scene.foreignId }
+              : { movieId: override.scene.movieId }),
+            manualMatch: true,
+            qualityId: override.qualityId,
+          });
+        } else if (override?.movieId || override?.qualityId) {
+          items.push({
+            id,
+            movieId: override.movieId,
+            qualityId: override.qualityId,
+          });
         } else {
           plain.push(id);
         }
       });
 
+      const request: ApproveReviewData = {};
+
       if (plain.length) {
-        requests.push({ ids: plain });
+        request.ids = plain;
       }
 
-      requests.forEach((request) => {
-        const settle = () => {
-          setApprovingIds((current) =>
-            current.filter((id) => !request.ids.includes(id))
-          );
-        };
+      if (items.length) {
+        request.items = items;
+      }
 
-        approveReviewItems(request, {
-          onSuccess: (result: ReviewActionResult) => {
-            settle();
+      const settle = () => {
+        setApprovingIds((current) => current.filter((id) => !ids.includes(id)));
+      };
 
-            if (result.failed.length) {
-              setFailures((current) => [
-                ...current,
-                ...result.failed.map((f) => f.message),
-              ]);
-            }
-          },
-          onError: (approveError: ApiError) => {
-            settle();
+      approveReviewItems(request, {
+        onSuccess: (result: ReviewActionResult) => {
+          settle();
+
+          if (result.failed.length) {
             setFailures((current) => [
               ...current,
-              getErrorMessage(approveError, approveError.message),
+              ...result.failed.map((f) => f.message),
             ]);
-          },
-        });
+          }
+        },
+        onError: (approveError: ApiError) => {
+          settle();
+          setFailures((current) => [
+            ...current,
+            getErrorMessage(approveError, approveError.message),
+          ]);
+        },
       });
     },
     [overrides, approveReviewItems]

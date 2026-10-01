@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using NLog;
 using NzbDrone.Common.Extensions;
@@ -14,11 +15,14 @@ using NzbDrone.Core.Exceptions;
 using NzbDrone.Core.Languages;
 using NzbDrone.Core.MediaFiles.Events;
 using NzbDrone.Core.Messaging.Events;
+using NzbDrone.Core.MetadataSource;
 using NzbDrone.Core.Movies;
 using NzbDrone.Core.Movies.Events;
+using NzbDrone.Core.Parser;
 using NzbDrone.Core.Parser.Model;
 using NzbDrone.Core.Qualities;
 using NzbDrone.Core.Queue;
+using NzbDrone.Core.RootFolders;
 
 namespace NzbDrone.Core.Download.Review
 {
@@ -28,7 +32,9 @@ namespace NzbDrone.Core.Download.Review
         PagingSpec<ReviewItem> Paged(PagingSpec<ReviewItem> pagingSpec);
         ReviewItem Get(int id);
         int PendingCount();
-        Task Approve(int id, int? movieId = null, Quality quality = null);
+        Task<int> Approve(int id, int? movieId = null, Quality quality = null, bool manualMatch = false, string foreignId = null);
+        List<Movie> FindScenes(int id, string query, bool allStudios, int limit);
+        List<Movie> LookupScenes(int id, string term);
         void Reject(List<int> ids);
         void Delete(int id);
         void Delete(List<int> ids);
@@ -51,8 +57,14 @@ namespace NzbDrone.Core.Download.Review
             ReleaseSourceType.UserInvokedSearch
         };
 
+        // Joins in a release name that a metadata search would read as part of the title
+        private static readonly Regex LookupTermSeparators = new (@"\s*[,&+]\s*|\s+-\s+|\s+and\s+|\s+", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
         private readonly IReviewItemRepository _repository;
         private readonly IMovieService _movieService;
+        private readonly IAddMovieService _addMovieService;
+        private readonly ISearchForNewMovie _searchProxy;
+        private readonly IRootFolderService _rootFolderService;
         private readonly IDownloadService _downloadService;
         private readonly IQueueService _queueService;
         private readonly IBlocklistService _blocklistService;
@@ -67,6 +79,9 @@ namespace NzbDrone.Core.Download.Review
 
         public ReviewService(IReviewItemRepository repository,
                              IMovieService movieService,
+                             IAddMovieService addMovieService,
+                             ISearchForNewMovie searchProxy,
+                             IRootFolderService rootFolderService,
                              IDownloadService downloadService,
                              IQueueService queueService,
                              IBlocklistService blocklistService,
@@ -77,6 +92,9 @@ namespace NzbDrone.Core.Download.Review
         {
             _repository = repository;
             _movieService = movieService;
+            _addMovieService = addMovieService;
+            _searchProxy = searchProxy;
+            _rootFolderService = rootFolderService;
             _downloadService = downloadService;
             _queueService = queueService;
             _blocklistService = blocklistService;
@@ -180,7 +198,7 @@ namespace NzbDrone.Core.Download.Review
             return _repository.PendingCount();
         }
 
-        public async Task Approve(int id, int? movieId = null, Quality quality = null)
+        public async Task<int> Approve(int id, int? movieId = null, Quality quality = null, bool manualMatch = false, string foreignId = null)
         {
             var item = _repository.Get(id);
 
@@ -189,11 +207,21 @@ namespace NzbDrone.Core.Download.Review
                 throw new NzbDroneClientException(HttpStatusCode.Conflict, "'{0}' was already {1}", item.Title, item.Status.ToString().ToLowerInvariant());
             }
 
-            var targetMovieId = movieId ?? item.MovieId;
-
-            if (!item.CandidateMovieIds.Contains(targetMovieId))
+            if (foreignId.IsNotNullOrWhiteSpace())
             {
-                throw new NzbDroneClientException(HttpStatusCode.BadRequest, "Scene {0} is not a candidate for '{1}'", targetMovieId, item.Title);
+                if (!manualMatch)
+                {
+                    throw new NzbDroneClientException(HttpStatusCode.BadRequest, "A scene can only be chosen by its foreign id with manualMatch");
+                }
+
+                if (movieId.HasValue)
+                {
+                    throw new NzbDroneClientException(HttpStatusCode.BadRequest, "Give either a scene id or a foreign id, not both");
+                }
+            }
+            else if (manualMatch && !movieId.HasValue)
+            {
+                throw new NzbDroneClientException(HttpStatusCode.BadRequest, "A scene must be given to match '{0}' manually", item.Title);
             }
 
             if (quality != null && quality.Id == Quality.Unknown.Id)
@@ -201,7 +229,21 @@ namespace NzbDrone.Core.Download.Review
                 quality = null;
             }
 
-            var movie = _movieService.GetMovie(targetMovieId);
+            // A scene found on the metadata source is added to the library first, like the candidates it stands in for
+            var targetMovieId = foreignId.IsNotNullOrWhiteSpace()
+                ? (_movieService.FindByForeignId(foreignId) ?? AddScene(item, foreignId)).Id
+                : movieId ?? item.MovieId;
+
+            // Any scene in the library can be chosen, but only when the request says so, so a stale or mistyped id isn't grabbed by accident.
+            // A chosen scene that is a candidate after all is approved as the candidate.
+            var isManual = !item.CandidateMovieIds.Contains(targetMovieId);
+
+            if (isManual && !manualMatch)
+            {
+                throw new NzbDroneClientException(HttpStatusCode.BadRequest, "Scene {0} is not a candidate for '{1}'", targetMovieId, item.Title);
+            }
+
+            var movie = isManual ? GetManualMatch(targetMovieId) : _movieService.GetMovie(targetMovieId);
 
             if (movie.HasFile)
             {
@@ -215,9 +257,24 @@ namespace NzbDrone.Core.Download.Review
 
             var remoteMovie = BuildRemoteMovie(item, movie, quality);
 
-            _logger.Info("Grabbing reviewed release '{0}' for '{1}'", item.Title, movie.Title);
+            if (isManual)
+            {
+                // Recorded on the grab's history as the movie match type
+                remoteMovie.MovieMatchType = MovieMatchType.Manual;
+
+                _logger.Info("Grabbing reviewed release '{0}' for manually chosen '{1}'", item.Title, movie.Title);
+            }
+            else
+            {
+                _logger.Info("Grabbing reviewed release '{0}' for '{1}'", item.Title, movie.Title);
+            }
 
             await _downloadService.DownloadReport(remoteMovie, null);
+
+            if (isManual)
+            {
+                item.Candidates.Add(new ReviewItemCandidate { MovieId = movie.Id, Manual = true });
+            }
 
             item.MovieId = movie.Id;
             item.Status = ReviewItemStatus.Approved;
@@ -229,6 +286,99 @@ namespace NzbDrone.Core.Download.Review
 
             _repository.Update(item);
             _eventAggregator.PublishEvent(new ReviewQueueUpdatedEvent());
+
+            return movie.Id;
+        }
+
+        public List<Movie> LookupScenes(int id, string term)
+        {
+            var item = _repository.Get(id);
+
+            if (term.IsNullOrWhiteSpace())
+            {
+                term = GetLookupTerm(item);
+            }
+
+            if (term.IsNullOrWhiteSpace())
+            {
+                return new List<Movie>();
+            }
+
+            var scenes = (_searchProxy.SearchForNewEntity(term, ItemType.Scene) ?? new List<object>())
+                         .OfType<Movie>()
+                         .Where(m => m.MovieMetadata?.Value?.ItemType == ItemType.Scene && m.ForeignId.IsNotNullOrWhiteSpace())
+                         .ToList();
+
+            if (scenes.Empty())
+            {
+                return scenes;
+            }
+
+            // A scene already in the library is offered as that scene, so it shows its file and is chosen by id
+            var existing = (_movieService.FindByForeignIds(scenes.Select(m => m.ForeignId).ToList()) ?? new List<Movie>())
+                           .GroupBy(m => m.ForeignId)
+                           .ToDictionary(g => g.Key, g => g.First());
+
+            return scenes.Select(m => existing.GetValueOrDefault(m.ForeignId) ?? m)
+                         .DistinctBy(m => m.ForeignId)
+                         .ToList();
+        }
+
+        // What the release is most likely called on the metadata source: its studio and title (dateless releases carry the performers there)
+        public static string GetLookupTerm(ReviewItem item)
+        {
+            var parsed = item.ParsedMovieInfo;
+            var parts = new List<string> { parsed?.StudioTitle };
+
+            // The words after the studio (and date), as the scene matching reads them
+            var title = parsed?.ReleaseTokens.IsNotNullOrWhiteSpace() == true ? parsed.ReleaseTokens.NormalizeEpisodeTitle() : parsed?.PrimaryMovieTitle;
+
+            if (title.IsNotNullOrWhiteSpace() && !string.Equals(title, parsed.StudioTitle, StringComparison.OrdinalIgnoreCase))
+            {
+                parts.Add(title);
+            }
+
+            if (parts.All(p => p.IsNullOrWhiteSpace()))
+            {
+                parts.Add(item.Title);
+            }
+
+            var term = string.Join(' ', parts.Where(p => p.IsNotNullOrWhiteSpace()));
+
+            return LookupTermSeparators.Replace(term, " ").Trim();
+        }
+
+        public List<Movie> FindScenes(int id, string query, bool allStudios, int limit)
+        {
+            var item = _repository.Get(id);
+            var studioForeignId = allStudios ? null : GetStudioForeignId(item);
+
+            List<Movie> scenes;
+
+            if (studioForeignId.IsNotNullOrWhiteSpace())
+            {
+                // The studio's catalogue is small enough to filter here, on any word of the title, performers, code or date
+                var terms = (query ?? string.Empty).ToLowerInvariant().Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                var cleanQuery = query.IsNotNullOrWhiteSpace() ? query.CleanMovieTitle() : null;
+
+                scenes = _movieService.GetByStudioForeignId(studioForeignId)
+                                      .Where(m => MatchesSearch(m, terms, cleanQuery))
+                                      .ToList();
+            }
+            else if (query.IsNotNullOrWhiteSpace())
+            {
+                scenes = _movieService.SearchMovies(query);
+            }
+            else
+            {
+                return new List<Movie>();
+            }
+
+            return scenes.Where(m => m.MovieMetadata.Value?.ItemType == ItemType.Scene)
+                         .OrderByDescending(m => m.MovieMetadata.Value.ReleaseDate ?? string.Empty, StringComparer.Ordinal)
+                         .ThenBy(m => m.Title, StringComparer.OrdinalIgnoreCase)
+                         .Take(Math.Max(1, limit))
+                         .ToList();
         }
 
         public void Reject(List<int> ids)
@@ -400,6 +550,81 @@ namespace NzbDrone.Core.Download.Review
             }
 
             return release.Guid.IsNotNullOrWhiteSpace() ? item.Guid == release.Guid : item.Title == release.Title;
+        }
+
+        // Added like a scene from Add New: monitored, without a search, with the root folder, quality profile and tags of the candidate it replaces
+        private Movie AddScene(ReviewItem item, string foreignId)
+        {
+            var candidates = _movieService.FindByIds(item.CandidateMovieIds) ?? new List<Movie>();
+            var template = candidates.FirstOrDefault(m => m.Id == item.MovieId) ?? candidates.FirstOrDefault();
+
+            if (template == null)
+            {
+                throw new NzbDroneClientException(HttpStatusCode.BadRequest, "'{0}' has no scene left to take the root folder and quality profile from", item.Title);
+            }
+
+            var scene = new Movie
+            {
+                ForeignId = foreignId,
+                QualityProfileId = template.QualityProfileId,
+                RootFolderPath = _rootFolderService.GetBestRootFolderPath(template.Path),
+                Monitored = true,
+                Tags = template.Tags != null ? new HashSet<int>(template.Tags) : new HashSet<int>(),
+                AddOptions = new AddMovieOptions
+                {
+                    SearchForMovie = false,
+                    AddMethod = AddMovieMethod.Manual,
+                    Monitor = MonitorTypes.MovieOnly
+                }
+            };
+
+            _logger.Info("Adding scene {0} to the library for reviewed release '{1}'", foreignId, item.Title);
+
+            return _addMovieService.AddMovie(scene);
+        }
+
+        private Movie GetManualMatch(int movieId)
+        {
+            var movie = _movieService.FindByIds(new List<int> { movieId })?.FirstOrDefault();
+
+            if (movie == null)
+            {
+                throw new NzbDroneClientException(HttpStatusCode.BadRequest, "Scene {0} is not in the library", movieId);
+            }
+
+            if (movie.MovieMetadata?.Value?.ItemType != ItemType.Scene)
+            {
+                throw new NzbDroneClientException(HttpStatusCode.BadRequest, "'{0}' is not a scene", movie.Title);
+            }
+
+            return movie;
+        }
+
+        private string GetStudioForeignId(ReviewItem item)
+        {
+            var movies = _movieService.FindByIds(item.CandidateMovieIds) ?? new List<Movie>();
+
+            return movies.Select(m => m.MovieMetadata?.Value?.StudioForeignId).FirstOrDefault(s => s.IsNotNullOrWhiteSpace());
+        }
+
+        private static bool MatchesSearch(Movie movie, string[] terms, string cleanQuery)
+        {
+            if (terms.Length == 0)
+            {
+                return true;
+            }
+
+            var metadata = movie.MovieMetadata.Value;
+
+            if (cleanQuery.IsNotNullOrWhiteSpace() && (metadata.CleanTitle?.Contains(cleanQuery) ?? false))
+            {
+                return true;
+            }
+
+            var text = string.Join(' ', new[] { movie.Title, metadata.Code, metadata.ReleaseDate }.Concat(metadata.PerformerNames ?? new List<string>()))
+                             .ToLowerInvariant();
+
+            return terms.All(text.Contains);
         }
 
         private RemoteMovie BuildRemoteMovie(ReviewItem item, Movie movie, Quality quality)
