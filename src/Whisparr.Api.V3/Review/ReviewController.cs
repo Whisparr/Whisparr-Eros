@@ -43,8 +43,13 @@ namespace Whisparr.Api.V3.Review
 
         [HttpGet]
         [Produces("application/json")]
-        public PagingResource<ReviewResource> GetReview([FromQuery] PagingRequestResource paging)
+        public PagingResource<ReviewResource> GetReview([FromQuery] PagingRequestResource paging, [FromQuery] bool groupByScene = false)
         {
+            if (groupByScene)
+            {
+                return GetReviewByScene(paging);
+            }
+
             var pagingResource = new PagingResource<ReviewResource>(paging);
             var pagingSpec = pagingResource.MapToPagingSpec<ReviewResource, ReviewItem>(
                 new HashSet<string>(StringComparer.OrdinalIgnoreCase)
@@ -61,16 +66,72 @@ namespace Whisparr.Api.V3.Review
             pagingSpec.FilterExpressions.Add(r => r.Status == ReviewItemStatus.Pending);
 
             IReadOnlyDictionary<int, Movie> movies = null;
+            IReadOnlyDictionary<int, ReviewSceneGrab> grabs = null;
 
             return pagingSpec.ApplyToPage(
                 spec =>
                 {
                     var page = _reviewService.Paged(spec);
                     movies = GetMovies(page.Records);
+                    grabs = _reviewService.GetActiveGrabs(page.Records.Select(r => r.MovieId));
 
                     return page;
                 },
-                r => r.ToResource(movies));
+                r => r.ToResource(movies, grabs));
+        }
+
+        // The releases waiting for review, one group per scene (the scene each release would be grabbed for), paged by scene so a
+        // scene's releases are never split over two pages. TotalRecords counts scenes. Groups are ordered by the sort key: the newest
+        // release, the largest release, or the scene's or first release's title or indexer. Inside a group the largest release comes first.
+        private PagingResource<ReviewResource> GetReviewByScene(PagingRequestResource paging)
+        {
+            var page = Math.Max(paging.Page ?? 1, 1);
+            var pageSize = Math.Max(paging.PageSize ?? 10, 1);
+            var sortKey = paging.SortKey.IsNullOrWhiteSpace() ? "added" : paging.SortKey;
+            var sortDirection = paging.SortDirection ?? SortDirection.Descending;
+
+            var pending = _reviewService.Pending();
+            var movies = GetMovies(pending);
+
+            var groups = pending.GroupBy(r => r.MovieId)
+                                .Select(g => g.OrderByDescending(r => r.Size).ToList())
+                                .ToList();
+
+            Func<List<ReviewItem>, string> textKey = sortKey.ToLowerInvariant() switch
+            {
+                "title" => g => g.Min(r => r.Title?.ToLowerInvariant()),
+                "indexer" => g => g.Min(r => (r.Indexer ?? string.Empty).ToLowerInvariant()),
+                "moviemetadata.sorttitle" => g => (movies.GetValueOrDefault(g[0].MovieId) is { } movie ? movie.MovieMetadata.Value.SortTitle ?? movie.Title : g[0].Title)?.ToLowerInvariant() ?? string.Empty,
+                _ => null
+            };
+
+            IOrderedEnumerable<List<ReviewItem>> ordered;
+
+            if (textKey != null)
+            {
+                ordered = sortDirection == SortDirection.Ascending ? groups.OrderBy(textKey, StringComparer.Ordinal) : groups.OrderByDescending(textKey, StringComparer.Ordinal);
+            }
+            else if (sortKey.Equals("size", StringComparison.OrdinalIgnoreCase))
+            {
+                ordered = sortDirection == SortDirection.Ascending ? groups.OrderBy(g => g.Max(r => r.Size)) : groups.OrderByDescending(g => g.Max(r => r.Size));
+            }
+            else
+            {
+                ordered = sortDirection == SortDirection.Ascending ? groups.OrderBy(g => g.Max(r => r.Added)) : groups.OrderByDescending(g => g.Max(r => r.Added));
+            }
+
+            var pageGroups = ordered.ThenBy(g => g[0].MovieId).Skip((page - 1) * pageSize).Take(pageSize).ToList();
+            var grabs = _reviewService.GetActiveGrabs(pageGroups.Select(g => g[0].MovieId));
+
+            return new PagingResource<ReviewResource>
+            {
+                Page = page,
+                PageSize = pageSize,
+                SortKey = sortKey,
+                SortDirection = sortDirection,
+                TotalRecords = groups.Count,
+                Records = pageGroups.SelectMany(g => g).Select(r => r.ToResource(movies, grabs)).ToList()
+            };
         }
 
         [HttpGet("status")]

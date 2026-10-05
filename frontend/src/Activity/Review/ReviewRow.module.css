@@ -77,3 +77,13 @@
   width: 100px;
   white-space: nowrap;
 }
+
+.row {
+  composes: row from 'Components/Table/TableRow.module.css';
+}
+
+.grabBlocked {
+  composes: row from 'Components/Table/TableRow.module.css';
+
+  opacity: 0.5;
+}

@@ -1,0 +1,26 @@
+.row {
+  background-color: var(--tableRowHoverBackgroundColor);
+}
+
+.cell {
+  composes: cell from 'Components/Table/Cells/TableRowCell.module.css';
+
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+
+.title {
+  font-weight: bold;
+}
+
+.details {
+  color: var(--helpTextColor);
+  font-size: var(--smallFontSize);
+}

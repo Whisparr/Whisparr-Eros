@@ -34,6 +34,18 @@ namespace Whisparr.Api.V3.Review
 
         // Default search for the scene on the metadata source
         public string LookupTerm { get; set; }
+
+        // A release already on its way for the scene (MovieId), so this one shouldn't be grabbed too; null when there is none
+        public ReviewSceneGrabResource SceneGrab { get; set; }
+    }
+
+    public class ReviewSceneGrabResource
+    {
+        public string Title { get; set; }
+
+        // "grabbed" (sent to the download client), or the download's state: "downloading", "importpending", "importblocked", ...
+        public string State { get; set; }
+        public DateTime? Grabbed { get; set; }
     }
 
     public class ReviewCandidateResource
@@ -110,7 +122,7 @@ namespace Whisparr.Api.V3.Review
 
     public static class ReviewResourceMapper
     {
-        public static ReviewResource ToResource(this ReviewItem model, IReadOnlyDictionary<int, Movie> movies)
+        public static ReviewResource ToResource(this ReviewItem model, IReadOnlyDictionary<int, Movie> movies, IReadOnlyDictionary<int, ReviewSceneGrab> grabs = null)
         {
             if (model == null)
             {
@@ -135,7 +147,10 @@ namespace Whisparr.Api.V3.Review
                 PublishDate = model.Release?.PublishDate,
                 Added = model.Added,
                 ManualMatch = model.ManuallyMatched,
-                LookupTerm = ReviewService.GetLookupTerm(model)
+                LookupTerm = ReviewService.GetLookupTerm(model),
+                SceneGrab = grabs?.GetValueOrDefault(model.MovieId) is { } grab
+                    ? new ReviewSceneGrabResource { Title = grab.Title, State = grab.State, Grabbed = grab.Grabbed }
+                    : null
             };
         }
 

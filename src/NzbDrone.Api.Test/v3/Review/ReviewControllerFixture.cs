@@ -368,5 +368,55 @@ namespace NzbDrone.Api.Test.v3.Review
 
             Subject.GetResourceByIdWithErrorHandler(1).Value.LookupTerm.Should().Be("LatinBoyz alexander gato");
         }
+
+        [Test]
+        public void should_page_by_scene_with_each_scenes_releases_together()
+        {
+            var poolside1 = GivenItem(1, _scene.Id);
+            var lockerRoom = GivenItem(2, _otherScene.Id);
+            var poolside2 = GivenItem(3, _scene.Id);
+
+            poolside1.Size = 100;
+            poolside2.Size = 300;
+            lockerRoom.Added = DateTime.UtcNow.AddMinutes(5);
+
+            Mocker.GetMock<IReviewService>()
+                  .Setup(s => s.Pending())
+                  .Returns(new List<ReviewItem> { poolside1, lockerRoom, poolside2 });
+
+            Mocker.GetMock<IReviewService>()
+                  .Setup(s => s.GetActiveGrabs(It.IsAny<IEnumerable<int>>()))
+                  .Returns(new Dictionary<int, ReviewSceneGrab> { [_scene.Id] = new () { Title = "On its way", State = "downloading" } });
+
+            var firstPage = Subject.GetReview(new PagingRequestResource { Page = 1, PageSize = 1 }, true);
+
+            // Newest release first: Locker Room's group, one scene per page, two scenes in total
+            firstPage.TotalRecords.Should().Be(2);
+            firstPage.Records.Select(r => r.Id).Should().Equal(2);
+            firstPage.Records[0].SceneGrab.Should().BeNull();
+
+            var secondPage = Subject.GetReview(new PagingRequestResource { Page = 2, PageSize = 1 }, true);
+
+            // Both Poolside releases on one page, largest first, with the scene's grab under way
+            secondPage.Records.Select(r => r.Id).Should().Equal(3, 1);
+            secondPage.Records.Should().OnlyContain(r => r.SceneGrab.Title == "On its way" && r.SceneGrab.State == "downloading");
+        }
+
+        [Test]
+        public void should_order_scenes_by_title_when_asked()
+        {
+            Mocker.GetMock<IReviewService>()
+                  .Setup(s => s.Pending())
+                  .Returns(new List<ReviewItem> { GivenItem(1, _scene.Id), GivenItem(2, _otherScene.Id) });
+
+            Mocker.GetMock<IReviewService>()
+                  .Setup(s => s.GetActiveGrabs(It.IsAny<IEnumerable<int>>()))
+                  .Returns(new Dictionary<int, ReviewSceneGrab>());
+
+            var page = Subject.GetReview(new PagingRequestResource { Page = 1, PageSize = 10, SortKey = "movieMetadata.sortTitle", SortDirection = SortDirection.Ascending }, true);
+
+            // "Locker Room" before "Poolside"
+            page.Records.Select(r => r.Id).Should().Equal(2, 1);
+        }
     }
 }

@@ -8,6 +8,7 @@ import React, {
 import { useLocation } from 'react-router';
 import QueueStatus from 'Activity/Queue/Status/QueueStatus';
 import ReviewStatus from 'Activity/Review/Status/ReviewStatus';
+import ActivityStatus from 'Activity/Status/ActivityStatus';
 import { setIsSidebarVisible } from 'App/appStore';
 import { IconName } from 'Components/Icon';
 import IconButton from 'Components/Link/IconButton';
@@ -37,6 +38,9 @@ interface SidebarItem {
   isParentItem?: boolean;
   isChildItem?: boolean;
   statusComponent?: React.ElementType;
+
+  // Shown on the item while its children are hidden, instead of its first child's status
+  collapsedStatusComponent?: React.ElementType;
   children?: {
     title: string | (() => string);
     to: string;
@@ -116,6 +120,7 @@ let LINKS: SidebarItem[] = [
     iconName: icons.ACTIVITY,
     title: () => translate('Activity'),
     to: '/activity/queue',
+    collapsedStatusComponent: ActivityStatus,
     children: [
       {
         title: () => translate('Queue'),
@@ -573,7 +578,7 @@ function PageSidebar({ isSidebarVisible, isSmallScreen }: PageSidebarProps) {
                 statusComponent={
                   isActiveParent || !childStatusComponent
                     ? link.statusComponent
-                    : childStatusComponent
+                    : (link.collapsedStatusComponent ?? childStatusComponent)
                 }
                 isActive={pathname === link.to && !hasActiveChild}
                 isActiveParent={isActiveParent}

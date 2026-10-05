@@ -52,6 +52,16 @@ interface Review extends ModelBase {
   added: string;
   manualMatch?: boolean;
   lookupTerm?: string;
+  sceneGrab?: ReviewSceneGrab | null;
+}
+
+// A release already on its way for the scene, so the other releases waiting for it aren't grabbed too
+export interface ReviewSceneGrab {
+  title: string;
+
+  // "grabbed" (sent to the download client) or the download's state, e.g. "downloading"
+  state: string;
+  grabbed?: string;
 }
 
 export interface ReviewActionResult {

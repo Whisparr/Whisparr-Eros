@@ -6,11 +6,15 @@ using FluentAssertions;
 using Moq;
 using NUnit.Framework;
 using NzbDrone.Core.Blocklisting;
+using NzbDrone.Core.CustomFormats;
 using NzbDrone.Core.DecisionEngine;
+using NzbDrone.Core.DecisionEngine.Specifications;
 using NzbDrone.Core.Download;
 using NzbDrone.Core.Download.Review;
+using NzbDrone.Core.Download.TrackedDownloads;
 using NzbDrone.Core.Exceptions;
 using NzbDrone.Core.Indexers;
+using NzbDrone.Core.MediaFiles;
 using NzbDrone.Core.MediaFiles.Events;
 using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Messaging.Events;
@@ -20,6 +24,7 @@ using NzbDrone.Core.Movies.Credits;
 using NzbDrone.Core.Movies.Events;
 using NzbDrone.Core.Parser;
 using NzbDrone.Core.Parser.Model;
+using NzbDrone.Core.Profiles.Qualities;
 using NzbDrone.Core.Qualities;
 using NzbDrone.Core.Test.Framework;
 
@@ -346,14 +351,14 @@ namespace NzbDrone.Core.Test.Download.Review
         }
 
         [Test]
-        public async Task should_refuse_to_approve_when_scene_already_has_a_file()
+        public async Task should_refuse_to_approve_when_release_does_not_upgrade_the_scenes_file()
         {
             var item = Capture(GivenWeakMatch()).Single();
-            _scene.MovieFileId = 9;
+            GivenFile(_scene, Quality.Bluray1080p);
 
             Func<Task> approve = () => Subject.Approve(item.Id);
 
-            (await approve.Should().ThrowAsync<NzbDroneClientException>()).Which.Message.Should().Contain("already has a file");
+            (await approve.Should().ThrowAsync<NzbDroneClientException>()).Which.Message.Should().Contain("doesn't upgrade");
 
             Mocker.GetMock<IDownloadService>().Verify(v => v.DownloadReport(It.IsAny<RemoteMovie>(), It.IsAny<int?>()), Times.Never());
             item.Status.Should().Be(ReviewItemStatus.Pending);
@@ -597,7 +602,7 @@ namespace NzbDrone.Core.Test.Download.Review
         public async Task should_refuse_manual_match_to_a_scene_that_already_has_a_file()
         {
             var chosen = GivenLibraryScene(7, "Gay Latino Bareback Porn");
-            chosen.MovieFileId = 3;
+            GivenFile(chosen, Quality.Bluray1080p);
             GivenLibrary(chosen);
 
             var item = Capture(GivenWeakMatch()).Single();
@@ -819,6 +824,129 @@ namespace NzbDrone.Core.Test.Download.Review
             var item = new ReviewItem { Title = "Unparsed - Release &  Title" };
 
             ReviewService.GetLookupTerm(item).Should().Be("Unparsed Release Title");
+        }
+
+        private static void GivenFile(Movie movie, Quality quality)
+        {
+            movie.MovieFileId = 9;
+            movie.MovieFile = new MovieFile { Id = 9, Quality = new QualityModel(quality) };
+            movie.QualityProfile = new QualityProfile { UpgradeAllowed = true };
+        }
+
+        private void GivenUpgrade()
+        {
+            var upgradable = Mocker.GetMock<IUpgradableSpecification>();
+
+            upgradable.Setup(s => s.IsUpgradeAllowed(It.IsAny<QualityProfile>(), It.IsAny<QualityModel>(), It.IsAny<List<CustomFormat>>(), It.IsAny<QualityModel>(), It.IsAny<List<CustomFormat>>()))
+                      .Returns(true);
+
+            upgradable.Setup(s => s.CutoffNotMet(It.IsAny<QualityProfile>(), It.IsAny<QualityModel>(), It.IsAny<List<CustomFormat>>(), It.IsAny<QualityModel>()))
+                      .Returns(true);
+
+            upgradable.Setup(s => s.IsUpgradable(It.IsAny<QualityProfile>(), It.IsAny<QualityModel>(), It.IsAny<List<CustomFormat>>(), It.IsAny<QualityModel>(), It.IsAny<List<CustomFormat>>()))
+                      .Returns(UpgradeableRejectReason.None);
+        }
+
+        private List<ReviewItem> CaptureTwoReleasesForScene()
+        {
+            var second = GivenWeakMatch();
+            second.RemoteMovie.Release.Guid = "guid-2";
+            second.RemoteMovie.Release.Title = "Helix Studios - Hot Afternoon - Dakota Lovell 1080p";
+
+            return Capture(GivenWeakMatch(), second);
+        }
+
+        [Test]
+        public async Task should_approve_an_upgrade_for_a_scene_with_a_file()
+        {
+            var item = Capture(GivenWeakMatch()).Single();
+            GivenFile(_scene, Quality.SDTV);
+            GivenUpgrade();
+
+            await Subject.Approve(item.Id);
+
+            Mocker.GetMock<IDownloadService>().Verify(v => v.DownloadReport(It.Is<RemoteMovie>(r => r.Movie == _scene), null), Times.Once());
+            item.Status.Should().Be(ReviewItemStatus.Approved);
+        }
+
+        [Test]
+        public async Task should_report_the_grab_of_a_scene_and_refuse_its_other_releases()
+        {
+            var items = CaptureTwoReleasesForScene();
+
+            await Subject.Approve(items[0].Id);
+
+            var grabs = Subject.GetActiveGrabs(new[] { _scene.Id, _otherScene.Id });
+            grabs.Should().ContainKey(_scene.Id).And.HaveCount(1);
+            grabs[_scene.Id].Title.Should().Be(items[0].Title);
+            grabs[_scene.Id].State.Should().Be("grabbed");
+
+            Func<Task> approve = () => Subject.Approve(items[1].Id);
+
+            (await approve.Should().ThrowAsync<NzbDroneClientException>()).Which.StatusCode.Should().Be(System.Net.HttpStatusCode.Conflict);
+            Mocker.GetMock<IDownloadService>().Verify(v => v.DownloadReport(It.IsAny<RemoteMovie>(), It.IsAny<int?>()), Times.Once());
+        }
+
+        [Test]
+        public async Task should_free_the_scene_when_its_download_fails()
+        {
+            var items = CaptureTwoReleasesForScene();
+
+            await Subject.Approve(items[0].Id);
+
+            Subject.Handle(new DownloadFailedEvent { MovieId = _scene.Id });
+
+            Subject.GetActiveGrabs(new[] { _scene.Id }).Should().BeEmpty();
+
+            await Subject.Approve(items[1].Id);
+
+            Mocker.GetMock<IDownloadService>().Verify(v => v.DownloadReport(It.IsAny<RemoteMovie>(), It.IsAny<int?>()), Times.Exactly(2));
+        }
+
+        [TestCase(TrackedDownloadState.Downloading, "downloading")]
+        [TestCase(TrackedDownloadState.ImportBlocked, "importblocked")]
+        [TestCase(TrackedDownloadState.Failed, null)]
+        [TestCase(TrackedDownloadState.FailedPending, null)]
+        public void should_report_a_queued_download_of_the_scene_unless_it_failed(TrackedDownloadState state, string expected)
+        {
+            Mocker.GetMock<Queue.IQueueService>()
+                  .Setup(s => s.GetQueue())
+                  .Returns(new List<Queue.Queue> { new () { Movie = _scene, Title = "Queued release", TrackedDownloadState = state } });
+
+            var grabs = Subject.GetActiveGrabs(new[] { _scene.Id });
+
+            if (expected == null)
+            {
+                grabs.Should().BeEmpty();
+            }
+            else
+            {
+                grabs[_scene.Id].State.Should().Be(expected);
+                grabs[_scene.Id].Title.Should().Be("Queued release");
+            }
+        }
+
+        [Test]
+        public void should_keep_a_release_that_still_upgrades_the_imported_file()
+        {
+            Capture(GivenWeakMatch());
+            GivenFile(_scene, Quality.SDTV);
+            GivenUpgrade();
+
+            Subject.Handle(new MovieFileImportedEvent(new LocalMovie { Movie = _scene }, null, null, true, null));
+
+            _stored.Should().ContainSingle(i => i.Status == ReviewItemStatus.Pending);
+        }
+
+        [Test]
+        public void should_drop_a_release_that_does_not_upgrade_the_imported_file()
+        {
+            Capture(GivenWeakMatch());
+            GivenFile(_scene, Quality.Bluray1080p);
+
+            Subject.Handle(new MovieFileImportedEvent(new LocalMovie { Movie = _scene }, null, null, true, null));
+
+            _stored.Should().BeEmpty();
         }
     }
 }

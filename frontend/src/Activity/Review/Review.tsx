@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { Fragment, useCallback, useMemo, useState } from 'react';
 import { SelectProvider } from 'App/SelectContext';
 import Alert from 'Components/Alert';
 import { SelectInputOption } from 'Components/Form/SelectInput';
@@ -19,7 +19,10 @@ import { SortDirection } from 'Helpers/Props/sortDirections';
 import { useQualityDefinitions } from 'Settings/Quality/Definition/useQualityDefinitions';
 import { CheckInputChanged } from 'typings/inputs';
 import { SelectStateInputProps } from 'typings/props';
-import { ReviewActionResult } from 'typings/Review';
+import ReviewModel, {
+  ReviewActionResult,
+  ReviewSceneGrab,
+} from 'typings/Review';
 import { TableOptionsChangePayload } from 'typings/Table';
 import { ApiError } from 'Utilities/Fetch/fetchJson';
 import getErrorMessage from 'Utilities/Object/getErrorMessage';
@@ -31,6 +34,7 @@ import {
   useReviewOptions,
 } from './reviewOptionsStore';
 import ReviewRow, { ReviewOverride } from './ReviewRow';
+import ReviewSceneGroupRow from './ReviewSceneGroupRow';
 import useReview, {
   ApproveReviewData,
   ApproveReviewItem,
@@ -40,6 +44,12 @@ import useReview, {
 } from './useReview';
 
 type ConfirmAction = 'approve' | 'reject' | 'remove';
+
+interface SceneGroup {
+  movieId: number;
+  releases: ReviewModel[];
+  grab: ReviewSceneGrab | null;
+}
 
 function Review() {
   const { columns, pageSize, sortKey, sortDirection } = useReviewOptions();
@@ -94,6 +104,57 @@ function Review() {
     return options;
   }, [qualityDefinitions]);
 
+  // The server sends a page of scenes with each scene's releases together.
+  // A scene's releases are shown best quality first, then largest first.
+  const groups = useMemo<SceneGroup[]>(() => {
+    const weights = new Map(
+      qualityDefinitions.map(({ quality, weight }) => [quality.id, weight])
+    );
+
+    const getWeight = (item: ReviewModel) =>
+      weights.get(item.quality.quality.id) ?? 0;
+
+    const byScene = new Map<number, ReviewModel[]>();
+
+    items.forEach((item) => {
+      const releases = byScene.get(item.movieId);
+
+      if (releases) {
+        releases.push(item);
+      } else {
+        byScene.set(item.movieId, [item]);
+      }
+    });
+
+    return Array.from(byScene.entries()).map(([movieId, releases]) => ({
+      movieId,
+      releases: [...releases].sort(
+        (a, b) => getWeight(b) - getWeight(a) || b.size - a.size
+      ),
+      grab: releases.find((r) => r.sceneGrab)?.sceneGrab ?? null,
+    }));
+  }, [items, qualityDefinitions]);
+
+  // A release being grabbed right now holds back the rest of its scene too
+  const getGrabBlockedBy = useCallback(
+    (group: SceneGroup, item: ReviewModel): ReviewSceneGrab | null => {
+      if (group.grab) {
+        return group.grab;
+      }
+
+      const grabbing = group.releases.find(
+        (r) => r.id !== item.id && approvingIds.includes(r.id)
+      );
+
+      return grabbing ? { title: grabbing.title, state: 'grabbed' } : null;
+    },
+    [approvingIds]
+  );
+
+  const visibleColumnCount = useMemo(() => {
+    return columns.filter((column) => column.isVisible).length;
+  }, [columns]);
+
   const handleSelectAllChange = useCallback(
     ({ value }: CheckInputChanged) => {
       setSelectState({ type: value ? 'selectAll' : 'unselectAll', items });
@@ -122,21 +183,46 @@ function Review() {
   );
 
   const approve = useCallback(
-    (ids: number[]) => {
-      setFailures([]);
+    (requestedIds: number[]) => {
+      // Releases whose scene already has one on its way are left out
+      const skipped = items.filter(
+        (item) =>
+          requestedIds.includes(item.id) &&
+          item.sceneGrab &&
+          !overrides[item.id]?.scene &&
+          (overrides[item.id]?.movieId ?? item.movieId) === item.movieId
+      );
+
+      const ids = requestedIds.filter(
+        (id) => !skipped.some((item) => item.id === id)
+      );
+
+      setFailures(
+        skipped.map((item) =>
+          translate('ReviewGrabSkipped', {
+            title: item.title,
+            grab: item.sceneGrab?.title ?? '',
+          })
+        )
+      );
+
+      if (!ids.length) {
+        return;
+      }
+
       setApprovingIds((current) => [...current, ...ids]);
 
       // A release with a chosen scene or quality carries its own choices, the
       // rest are listed by id. One request, so the server can tell when two
       // selected releases would be grabbed for the same scene.
-      const items: ApproveReviewItem[] = [];
+      const approveItems: ApproveReviewItem[] = [];
       const plain: number[] = [];
 
       ids.forEach((id) => {
         const override = overrides[id];
 
         if (override?.scene) {
-          items.push({
+          approveItems.push({
             id,
             // A scene from StashDB is added to the library when the release is grabbed
             ...(override.scene.inLibrary === false
@@ -146,7 +232,7 @@ function Review() {
             qualityId: override.qualityId,
           });
         } else if (override?.movieId || override?.qualityId) {
-          items.push({
+          approveItems.push({
             id,
             movieId: override.movieId,
             qualityId: override.qualityId,
@@ -162,8 +248,8 @@ function Review() {
         request.ids = plain;
       }
 
-      if (items.length) {
-        request.items = items;
+      if (approveItems.length) {
+        request.items = approveItems;
       }
 
       const settle = () => {
@@ -190,7 +276,7 @@ function Review() {
         },
       });
     },
-    [overrides, approveReviewItems]
+    [items, overrides, approveReviewItems]
   );
 
   const handleApprovePress = useCallback(
@@ -407,22 +493,38 @@ function Review() {
                 onSortPress={handleSortPress}
               >
                 <TableBody>
-                  {items.map((item) => {
+                  {groups.map((group) => {
                     return (
-                      <ReviewRow
-                        key={item.id}
-                        isSelected={selectedState[item.id] || false}
-                        columns={columns}
-                        qualityOptions={qualityOptions}
-                        override={overrides[item.id]}
-                        isApproving={approvingIds.includes(item.id)}
-                        {...item}
-                        onSelectedChange={handleSelectedChange}
-                        onOverrideChange={handleOverrideChange}
-                        onApprovePress={handleApprovePress}
-                        onRejectPress={handleRejectPress}
-                        onRemovePress={handleRemovePress}
-                      />
+                      <Fragment key={group.movieId}>
+                        <ReviewSceneGroupRow
+                          scene={group.releases[0].candidates.find(
+                            (c) => c.movieId === group.movieId
+                          )}
+                          releaseCount={group.releases.length}
+                          grab={group.grab}
+                          colSpan={visibleColumnCount + 1}
+                        />
+
+                        {group.releases.map((item) => {
+                          return (
+                            <ReviewRow
+                              key={item.id}
+                              isSelected={selectedState[item.id] || false}
+                              columns={columns}
+                              qualityOptions={qualityOptions}
+                              override={overrides[item.id]}
+                              isApproving={approvingIds.includes(item.id)}
+                              grabBlockedBy={getGrabBlockedBy(group, item)}
+                              {...item}
+                              onSelectedChange={handleSelectedChange}
+                              onOverrideChange={handleOverrideChange}
+                              onApprovePress={handleApprovePress}
+                              onRejectPress={handleRejectPress}
+                              onRemovePress={handleRemovePress}
+                            />
+                          );
+                        })}
+                      </Fragment>
                     );
                   })}
                 </TableBody>

@@ -1,0 +1,9 @@
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.separator {
+  color: var(--helpTextColor);
+}

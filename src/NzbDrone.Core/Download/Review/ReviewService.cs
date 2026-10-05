@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -10,7 +11,9 @@ using NzbDrone.Core.Blocklisting;
 using NzbDrone.Core.CustomFormats;
 using NzbDrone.Core.Datastore;
 using NzbDrone.Core.DecisionEngine;
+using NzbDrone.Core.DecisionEngine.Specifications;
 using NzbDrone.Core.Download.Aggregation;
+using NzbDrone.Core.Download.TrackedDownloads;
 using NzbDrone.Core.Exceptions;
 using NzbDrone.Core.Languages;
 using NzbDrone.Core.MediaFiles.Events;
@@ -32,9 +35,11 @@ namespace NzbDrone.Core.Download.Review
         PagingSpec<ReviewItem> Paged(PagingSpec<ReviewItem> pagingSpec);
         ReviewItem Get(int id);
         int PendingCount();
+        List<ReviewItem> Pending();
         Task<int> Approve(int id, int? movieId = null, Quality quality = null, bool manualMatch = false, string foreignId = null);
         List<Movie> FindScenes(int id, string query, bool allStudios, int limit);
         List<Movie> LookupScenes(int id, string term);
+        Dictionary<int, ReviewSceneGrab> GetActiveGrabs(IEnumerable<int> movieIds);
         void Reject(List<int> ids);
         void Delete(int id);
         void Delete(List<int> ids);
@@ -45,6 +50,7 @@ namespace NzbDrone.Core.Download.Review
                                  IHandle<MovieEditedEvent>,
                                  IHandle<MoviesBulkEditedEvent>,
                                  IHandle<MovieFileImportedEvent>,
+                                 IHandle<DownloadFailedEvent>,
                                  IHandle<CommandExecutedEvent>
     {
         public const string REJECTED_MESSAGE = "Rejected in review";
@@ -60,6 +66,9 @@ namespace NzbDrone.Core.Download.Review
         // Joins in a release name that a metadata search would read as part of the title
         private static readonly Regex LookupTermSeparators = new (@"\s*[,&+]\s*|\s+-\s+|\s+and\s+|\s+", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
+        // How long a grab from review counts as under way when it doesn't show in the download queue
+        private static readonly TimeSpan RecentGrabWindow = TimeSpan.FromMinutes(15);
+
         private readonly IReviewItemRepository _repository;
         private readonly IMovieService _movieService;
         private readonly IAddMovieService _addMovieService;
@@ -70,12 +79,16 @@ namespace NzbDrone.Core.Download.Review
         private readonly IBlocklistService _blocklistService;
         private readonly IRemoteMovieAggregationService _aggregationService;
         private readonly ICustomFormatCalculationService _formatCalculator;
+        private readonly IUpgradableSpecification _upgradableSpecification;
         private readonly IEventAggregator _eventAggregator;
         private readonly Logger _logger;
 
         // Items added since the last announcement, so a whole RSS sync or search is announced in one notification
         private readonly List<ReviewItem> _unannounced = new ();
         private readonly object _unannouncedLock = new ();
+
+        // A grab from review shows in the download queue only after the next queue refresh, until then it is remembered here
+        private readonly ConcurrentDictionary<int, ReviewSceneGrab> _recentGrabs = new ();
 
         public ReviewService(IReviewItemRepository repository,
                              IMovieService movieService,
@@ -87,6 +100,7 @@ namespace NzbDrone.Core.Download.Review
                              IBlocklistService blocklistService,
                              IRemoteMovieAggregationService aggregationService,
                              ICustomFormatCalculationService formatCalculator,
+                             IUpgradableSpecification upgradableSpecification,
                              IEventAggregator eventAggregator,
                              Logger logger)
         {
@@ -100,6 +114,7 @@ namespace NzbDrone.Core.Download.Review
             _blocklistService = blocklistService;
             _aggregationService = aggregationService;
             _formatCalculator = formatCalculator;
+            _upgradableSpecification = upgradableSpecification;
             _eventAggregator = eventAggregator;
             _logger = logger;
         }
@@ -198,6 +213,11 @@ namespace NzbDrone.Core.Download.Review
             return _repository.PendingCount();
         }
 
+        public List<ReviewItem> Pending()
+        {
+            return _repository.Pending();
+        }
+
         public async Task<int> Approve(int id, int? movieId = null, Quality quality = null, bool manualMatch = false, string foreignId = null)
         {
             var item = _repository.Get(id);
@@ -245,17 +265,29 @@ namespace NzbDrone.Core.Download.Review
 
             var movie = isManual ? GetManualMatch(targetMovieId) : _movieService.GetMovie(targetMovieId);
 
-            if (movie.HasFile)
-            {
-                throw new NzbDroneClientException(HttpStatusCode.Conflict, "'{0}' already has a file", movie.Title);
-            }
-
             if (_queueService.GetQueue().Any(q => q.Movie?.Id == movie.Id))
             {
                 throw new NzbDroneClientException(HttpStatusCode.Conflict, "'{0}' is already in the download queue", movie.Title);
             }
 
+            // Grabbed from review moments ago, before the download shows in the queue
+            if (_recentGrabs.TryGetValue(movie.Id, out var recentGrab) && recentGrab.Grabbed >= DateTime.UtcNow - RecentGrabWindow)
+            {
+                throw new NzbDroneClientException(HttpStatusCode.Conflict, "'{0}' was just grabbed: {1}", movie.Title, recentGrab.Title);
+            }
+
             var remoteMovie = BuildRemoteMovie(item, movie, quality);
+
+            // A scene with a file only takes a release that upgrades it, as an automatic grab would
+            if (movie.HasFile)
+            {
+                var upgradeRejection = GetUpgradeRejection(remoteMovie);
+
+                if (upgradeRejection != null)
+                {
+                    throw new NzbDroneClientException(HttpStatusCode.Conflict, "'{0}' already has a file this release doesn't upgrade: {1}", movie.Title, upgradeRejection);
+                }
+            }
 
             if (isManual)
             {
@@ -270,6 +302,8 @@ namespace NzbDrone.Core.Download.Review
             }
 
             await _downloadService.DownloadReport(remoteMovie, null);
+
+            _recentGrabs[movie.Id] = new ReviewSceneGrab { Title = item.Title, State = "grabbed", Grabbed = DateTime.UtcNow };
 
             if (isManual)
             {
@@ -440,13 +474,64 @@ namespace NzbDrone.Core.Download.Review
             RemoveCandidates(message.Movies.Where(m => !m.Monitored).Select(m => m.Id));
         }
 
+        // The scenes that have a grab under way: in the download queue (anything but a failed or ignored download),
+        // or grabbed from review moments ago and not in the queue yet. A failed download frees the scene again.
+        public Dictionary<int, ReviewSceneGrab> GetActiveGrabs(IEnumerable<int> movieIds)
+        {
+            var ids = movieIds.ToHashSet();
+            var grabs = new Dictionary<int, ReviewSceneGrab>();
+
+            if (ids.Empty())
+            {
+                return grabs;
+            }
+
+            foreach (var queued in _queueService.GetQueue().Where(q => q.Movie != null && ids.Contains(q.Movie.Id)))
+            {
+                if (queued.TrackedDownloadState is TrackedDownloadState.Failed or TrackedDownloadState.FailedPending or TrackedDownloadState.Ignored)
+                {
+                    continue;
+                }
+
+                grabs.TryAdd(queued.Movie.Id, new ReviewSceneGrab
+                {
+                    Title = queued.Title,
+                    State = (queued.TrackedDownloadState ?? TrackedDownloadState.Downloading).ToString().ToLowerInvariant(),
+                    Grabbed = queued.Added
+                });
+            }
+
+            foreach (var (movieId, grab) in _recentGrabs)
+            {
+                if (grab.Grabbed < DateTime.UtcNow - RecentGrabWindow)
+                {
+                    _recentGrabs.TryRemove(movieId, out _);
+                }
+                else if (ids.Contains(movieId))
+                {
+                    grabs.TryAdd(movieId, grab);
+                }
+            }
+
+            return grabs;
+        }
+
+        public void Handle(DownloadFailedEvent message)
+        {
+            if (_recentGrabs.TryRemove(message.MovieId, out _))
+            {
+                _eventAggregator.PublishEvent(new ReviewQueueUpdatedEvent());
+            }
+        }
+
         public void Handle(MovieFileImportedEvent message)
         {
             var movie = message.MovieInfo?.Movie;
 
             if (movie != null)
             {
-                RemoveCandidates(new[] { movie.Id });
+                // A release that would still upgrade the new file stays up for review
+                RemoveCandidates(new[] { movie.Id }, IsUpgradeFor);
             }
         }
 
@@ -653,8 +738,61 @@ namespace NzbDrone.Core.Download.Review
             return remoteMovie;
         }
 
-        // A scene that was deleted, unmonitored or got a file no longer needs this release
-        private void RemoveCandidates(IEnumerable<int> movieIds)
+        // Why a release isn't an upgrade the scene's quality profile allows over its file, null when it is.
+        // The same checks as the upgrade specifications of an automatic grab (UpgradeAllowed, UpgradeDisk).
+        private string GetUpgradeRejection(RemoteMovie remoteMovie)
+        {
+            var movie = remoteMovie.Movie;
+            var file = movie.MovieFile;
+            var profile = movie.QualityProfile;
+
+            if (file == null || profile == null)
+            {
+                return null;
+            }
+
+            file.Movie = movie;
+
+            var fileFormats = _formatCalculator.ParseCustomFormat(file);
+            var quality = remoteMovie.ParsedMovieInfo.Quality;
+
+            if (!_upgradableSpecification.IsUpgradeAllowed(profile, file.Quality, fileFormats, quality, remoteMovie.CustomFormats))
+            {
+                return "upgrades aren't allowed by its quality profile";
+            }
+
+            if (!_upgradableSpecification.CutoffNotMet(profile, file.Quality, fileFormats, quality))
+            {
+                return $"its file ({file.Quality}) already meets the quality cutoff";
+            }
+
+            if (_upgradableSpecification.IsUpgradable(profile, file.Quality, fileFormats, quality, remoteMovie.CustomFormats) != UpgradeableRejectReason.None)
+            {
+                return $"its file ({file.Quality}) is of equal or better quality";
+            }
+
+            return null;
+        }
+
+        private bool IsUpgradeFor(ReviewItem item, int movieId)
+        {
+            try
+            {
+                var movie = _movieService.GetMovie(movieId);
+
+                return movie.HasFile && GetUpgradeRejection(BuildRemoteMovie(item, movie, null)) == null;
+            }
+            catch (Exception ex)
+            {
+                _logger.Debug(ex, "Can't tell whether '{0}' upgrades scene {1}", item.Title, movieId);
+
+                return false;
+            }
+        }
+
+        // A scene that was deleted, unmonitored or got a file no longer needs this release,
+        // unless keep says the release is still wanted for it (an upgrade over the new file)
+        private void RemoveCandidates(IEnumerable<int> movieIds, Func<ReviewItem, int, bool> keep = null)
         {
             var ids = movieIds.ToHashSet();
 
@@ -675,7 +813,10 @@ namespace NzbDrone.Core.Download.Review
 
             foreach (var item in affected)
             {
-                item.Candidates.RemoveAll(c => ids.Contains(c.MovieId));
+                if (item.Candidates.RemoveAll(c => ids.Contains(c.MovieId) && (keep == null || !keep(item, c.MovieId))) == 0)
+                {
+                    continue;
+                }
 
                 if (item.Candidates.Empty())
                 {

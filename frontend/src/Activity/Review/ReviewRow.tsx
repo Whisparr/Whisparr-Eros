@@ -12,7 +12,11 @@ import { icons, kinds } from 'Helpers/Props';
 import MovieQuality from 'Movie/MovieQuality';
 import { InputChanged } from 'typings/inputs';
 import { SelectStateInputProps } from 'typings/props';
-import Review, { MovieParseMatchType, ReviewCandidate } from 'typings/Review';
+import Review, {
+  MovieParseMatchType,
+  ReviewCandidate,
+  ReviewSceneGrab,
+} from 'typings/Review';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
 import SelectReviewSceneModal from './SelectScene/SelectReviewSceneModal';
@@ -32,6 +36,9 @@ interface ReviewRowProps extends Review {
   qualityOptions: SelectInputOption[];
   override?: ReviewOverride;
   isApproving: boolean;
+
+  // Another release for this scene is on its way, so this one isn't grabbed too
+  grabBlockedBy?: ReviewSceneGrab | null;
   onSelectedChange: (options: SelectStateInputProps) => void;
   onOverrideChange: (id: number, override: ReviewOverride) => void;
   onApprovePress: (id: number) => void;
@@ -73,6 +80,7 @@ function getSceneTitle(candidate: ReviewCandidate) {
 function ReviewRow(props: ReviewRowProps) {
   const {
     id,
+    movieId,
     candidates,
     title,
     indexer,
@@ -88,6 +96,7 @@ function ReviewRow(props: ReviewRowProps) {
     qualityOptions,
     override,
     isApproving,
+    grabBlockedBy,
     onSelectedChange,
     onOverrideChange,
     onApprovePress,
@@ -104,6 +113,10 @@ function ReviewRow(props: ReviewRowProps) {
   }, [candidates, selectedMovieId]);
 
   const manualScene = override?.scene;
+
+  // Only while the release would still be grabbed for the scene that is on its way
+  const isGrabBlocked =
+    !!grabBlockedBy && !override?.scene && selectedMovieId === movieId;
 
   // The scene the release will be grabbed for
   const scene = manualScene ?? candidate;
@@ -204,7 +217,14 @@ function ReviewRow(props: ReviewRowProps) {
   }, [id, onRemovePress]);
 
   return (
-    <TableRow>
+    <TableRow
+      className={isGrabBlocked ? styles.grabBlocked : styles.row}
+      title={
+        isGrabBlocked && grabBlockedBy
+          ? translate('ReviewGrabBlocked', { title: grabBlockedBy.title })
+          : undefined
+      }
+    >
       <TableSelectCell
         id={id}
         isSelected={isSelected}
@@ -387,10 +407,17 @@ function ReviewRow(props: ReviewRowProps) {
           return (
             <TableRowCell key={name} className={styles.actions}>
               <IconButton
-                title={translate('ReviewApproveRelease')}
+                title={
+                  isGrabBlocked && grabBlockedBy
+                    ? translate('ReviewGrabBlocked', {
+                        title: grabBlockedBy.title,
+                      })
+                    : translate('ReviewApproveRelease')
+                }
                 name={icons.DOWNLOAD}
                 kind={kinds.SUCCESS}
                 isSpinning={isApproving}
+                isDisabled={isGrabBlocked}
                 onPress={handleApprovePress}
               />
 

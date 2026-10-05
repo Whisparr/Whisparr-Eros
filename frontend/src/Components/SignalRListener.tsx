@@ -1,6 +1,7 @@
 // TODO: Standardize the "when" on React Query Key invalidation to avoid rapid-fire reloads during bulk operations.
 import * as signalR from '@microsoft/signalr';
 import { useEffect, useRef } from 'react';
+import { invalidateReviewQueries } from 'Activity/Review/useReview';
 import { setAppValue, setVersion } from 'App/appStore';
 import { queryClient } from 'App/queryClient';
 import {
@@ -520,8 +521,8 @@ function SignalRListener() {
     }
 
     if (name === 'review') {
-      // Prefix match: refreshes the review page and the sidebar badge
-      queryClient.invalidateQueries({ queryKey: ['/review'] });
+      // The review page and the sidebar badge
+      invalidateReviewQueries(queryClient);
       return;
     }
 

@@ -1,4 +1,4 @@
-import { useQueryClient } from '@tanstack/react-query';
+import { QueryClient, useQueryClient } from '@tanstack/react-query';
 import useApiMutation from 'Helpers/Hooks/useApiMutation';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import usePage from 'Helpers/Hooks/usePage';
@@ -32,8 +32,10 @@ const useReview = () => {
   const { page, goToPage } = usePage('review');
   const { pageSize, sortKey, sortDirection } = useReviewOptions();
 
+  // Paged by scene: all releases waiting for a scene come in one page, next to each other
   const query = usePagedApiQuery<Review>({
     path: REVIEW_PATH,
+    queryParams: { groupByScene: true },
     page,
     pageSize,
     sortKey,
@@ -49,13 +51,21 @@ const useReview = () => {
 
 export default useReview;
 
-// `/review` is a prefix of `/review/status`, so one invalidation refreshes the
-// page and the sidebar badge.
+// Query keys are matched entry by entry, so `['/review']` would not match the
+// sidebar badge's `['/review/status']`: every query whose path starts with
+// `/review` is refreshed, the page and the badge alike.
+export const invalidateReviewQueries = (queryClient: QueryClient) => {
+  return queryClient.invalidateQueries({
+    predicate: ({ queryKey }) =>
+      typeof queryKey[0] === 'string' && queryKey[0].startsWith(REVIEW_PATH),
+  });
+};
+
 const useInvalidateReview = () => {
   const queryClient = useQueryClient();
 
   return () => {
-    queryClient.invalidateQueries({ queryKey: [REVIEW_PATH] });
+    invalidateReviewQueries(queryClient);
   };
 };
 
