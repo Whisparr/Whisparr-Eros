@@ -11,7 +11,6 @@ using NzbDrone.Core.Download.Clients;
 using NzbDrone.Core.Download.Pending;
 using NzbDrone.Core.Exceptions;
 using NzbDrone.Core.Indexers;
-using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Movies;
 using NzbDrone.Core.Parser.Model;
 using NzbDrone.Core.Profiles.Qualities;
@@ -70,21 +69,6 @@ namespace NzbDrone.Core.Test.Download.DownloadApprovedReportsTests
             };
 
             return remoteMovie;
-        }
-
-        [Test]
-        public async Task should_publish_the_processed_decisions()
-        {
-            var grabbed = new DownloadDecision(GetRemoteMovie(new QualityModel(Quality.HDTV720p)));
-            var rejected = new DownloadDecision(GetRemoteMovie(new QualityModel(Quality.HDTV720p), GetMovie(2)), new DownloadRejection(DownloadRejectionReason.UnknownMovie, "Unknown Movie"));
-
-            var result = await Subject.ProcessDecisions(new List<DownloadDecision> { grabbed, rejected });
-
-            Mocker.GetMock<IEventAggregator>()
-                  .Verify(v => v.PublishEvent(It.Is<DownloadDecisionsProcessedEvent>(e => e.ProcessedDecisions == result &&
-                                                                                          e.ProcessedDecisions.Grabbed.Contains(grabbed) &&
-                                                                                          e.ProcessedDecisions.Rejected.Contains(rejected))),
-                          Times.Once());
         }
 
         [Test]

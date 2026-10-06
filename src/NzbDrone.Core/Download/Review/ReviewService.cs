@@ -305,9 +305,6 @@ namespace NzbDrone.Core.Download.Review
 
             if (isManual)
             {
-                // Recorded on the grab's history as the movie match type
-                remoteMovie.MovieMatchType = MovieMatchType.Manual;
-
                 _logger.Info("Grabbing reviewed release '{0}' for manually chosen '{1}'", item.Title, movie.Title);
             }
             else

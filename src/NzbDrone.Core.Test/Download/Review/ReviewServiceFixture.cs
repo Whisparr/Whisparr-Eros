@@ -569,7 +569,7 @@ namespace NzbDrone.Core.Test.Download.Review
 
             Mocker.GetMock<IDownloadService>()
                   .Verify(v => v.DownloadReport(It.Is<RemoteMovie>(r => r.Movie == chosen &&
-                                                                        r.MovieMatchType == MovieMatchType.Manual &&
+                                                                        r.MovieMatchType == MovieMatchType.Id &&
                                                                         r.Release.Guid == "guid-1"),
                                                 null),
                           Times.Once());
@@ -778,7 +778,7 @@ namespace NzbDrone.Core.Test.Download.Review
                           Times.Once());
 
             Mocker.GetMock<IDownloadService>()
-                  .Verify(v => v.DownloadReport(It.Is<RemoteMovie>(r => r.Movie == added && r.MovieMatchType == MovieMatchType.Manual), null), Times.Once());
+                  .Verify(v => v.DownloadReport(It.Is<RemoteMovie>(r => r.Movie == added && r.MovieMatchType == MovieMatchType.Id), null), Times.Once());
 
             item.MovieId.Should().Be(added.Id);
             item.ManuallyMatched.Should().BeTrue();

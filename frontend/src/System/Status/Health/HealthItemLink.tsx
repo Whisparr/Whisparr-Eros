@@ -57,14 +57,6 @@ function HealthItemLink(props: HealthItemLinkProps) {
           to="/"
         />
       );
-    case 'ReviewQueueCheck':
-      return (
-        <IconButton
-          name={icons.ACTIVITY}
-          title={translate('Review')}
-          to="/activity/review"
-        />
-      );
     case 'UpdateCheck':
       return (
         <IconButton

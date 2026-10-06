@@ -2018,8 +2018,6 @@
   "ReviewMatchTypePerformerTitle": "Title and performer",
   "ReviewMatchTypeStashId": "StashDB ID",
   "ReviewMatchTypeTitle": "Title",
-  "ReviewQueueCheckMultipleMessage": "{count} releases are awaiting review in [Activity → Review](/activity/review)",
-  "ReviewQueueCheckSingleMessage": "1 release is awaiting review in [Activity → Review](/activity/review)",
   "ReviewReasonAmbiguousMatch": "Fits {count} scenes",
   "ReviewReasonUnknownQuality": "Quality unknown",
   "ReviewRejectRelease": "Reject and blocklist this release",

@@ -123,6 +123,5 @@ namespace NzbDrone.Core.HealthCheck
         UpdateStartupNotWritable,
         UpdateStartupTranslocation,
         UpdateUiNotWritable,
-        ReviewQueuePending,
     }
 }
