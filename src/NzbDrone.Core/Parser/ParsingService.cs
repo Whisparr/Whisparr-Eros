@@ -68,7 +68,7 @@ namespace NzbDrone.Core.Parser
                 return _movieService.FindByTitle(title);
             }
 
-            if (parsedMovieInfo.IsScene)
+            if (parsedMovieInfo.IsScene || parsedMovieInfo.IsDatelessScene)
             {
                 var scene = _movieService.FindScene(parsedMovieInfo, interactive, null);
 
@@ -135,8 +135,9 @@ namespace NzbDrone.Core.Parser
         {
             FindMovieResult result = null;
             var searchingForScene = searchCriteria?.Movie.MovieMetadata?.Value.ItemType == ItemType.Scene;
+            var sceneLookup = parsedMovieInfo.IsScene || parsedMovieInfo.IsDatelessScene || searchingForScene;
 
-            if (parsedMovieInfo.IsScene || searchingForScene)
+            if (sceneLookup)
             {
                 result = GetSceneMovie(parsedMovieInfo, searchCriteria);
 
@@ -149,7 +150,7 @@ namespace NzbDrone.Core.Parser
             // A dateless "Studio - Title" parse may just as well be a movie named "Title - Subtitle", so fall back to a movie lookup
             var datelessMovieFallback = result == null && parsedMovieInfo.IsDatelessScene && !searchingForScene;
 
-            if (datelessMovieFallback || !(parsedMovieInfo.IsScene || searchingForScene))
+            if (datelessMovieFallback || !sceneLookup)
             {
                 if (result == null && tmdbId > 0)
                 {

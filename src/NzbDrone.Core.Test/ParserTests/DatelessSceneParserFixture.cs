@@ -17,12 +17,16 @@ namespace NzbDrone.Core.Test.ParserTests
         [TestCase("Next Door Originals - Nico Coopa & Joseph Castlian - Helping You Out [720p].mp4", "Next Door Originals", "nico coopa and joseph castlian helping you out")]
         [TestCase("Sketchy Sex - Big Dick Stairway - 0116.mp4", "Sketchy Sex", "big dick stairway 0116")]
         [TestCase("TwinkPOP - Sweet Twink Sweat - Callum West, Maverick Sun BB 1080p.mp4", "TwinkPOP", "sweet twink sweat callum west maverick sun bb")]
+        [TestCase("Helix Studios - Shower Sex - Joey Mills 1080p BluRay x264.mkv", "Helix Studios", "shower sex joey mills")]
+        [TestCase("Helix Studios - Shower Sex - Joey Mills [DVDRip XviD AC3]", "Helix Studios", "shower sex joey mills")]
         public void should_parse_dateless_studio_title_release(string title, string studio, string releaseTokens)
         {
             var result = Parser.Parser.ParseMovieTitle(title);
 
             result.Should().NotBeNull();
-            result.IsScene.Should().BeTrue();
+
+            // Only the scene lookup treats it as a scene, everything else (e.g. the search type for a lookup) sees a movie name as on eros-develop
+            result.IsScene.Should().BeFalse();
             result.IsDatelessScene.Should().BeTrue();
             result.StudioTitle.Should().Be(studio);
             result.ReleaseDate.Should().BeNullOrEmpty();
@@ -38,7 +42,10 @@ namespace NzbDrone.Core.Test.ParserTests
             Parser.Parser.ParseMovieTitle(title).Quality.Quality.Resolution.Should().Be(resolution);
         }
 
-        // Not "[720p]": ReleaseGroupParser takes a trailing "[720p]" block as the group for any release name, dateless or not
+        [TestCase("Helix Studios - Shower Sex - Joey Mills & Landon Vega [720p].mp4")]
+        [TestCase("Blacked - Ava Addams - Hot Title [2160p]")]
+        [TestCase("[HorribleSubs] Anime Title - 01 [720p].mkv")]
+        [TestCase("Studio - Title-Thing")]
         [TestCase("[Bromo] Bet Your Ass - Ryan Jacobs & Sunny D (1080p).mp4")]
         [TestCase("SayUncle Labs - Concept - Gay Sex Confessions No 2 - Luke Hudson and Ricky Larkin (720p)")]
         [TestCase("Helix - Return to Helix Academy ~HEVC (1080p)")]
@@ -47,6 +54,17 @@ namespace NzbDrone.Core.Test.ParserTests
         public void should_not_parse_release_group_from_dateless_release(string title)
         {
             Parser.Parser.ParseMovieTitle(title).ReleaseGroup.Should().BeNullOrEmpty();
+        }
+
+        // Group releases with their tags in the name parse as on eros-develop, not as a dateless scene
+        [TestCase("Some Movie - Part 2 WEB-DL 1080p x264-GROUP", "Some Movie - Part 2 WEB-DL")]
+        [TestCase("Movie Title - Directors Cut 1080p BluRay x264-SPARKS", "Movie Title - Directors Cut")]
+        public void should_leave_group_releases_to_the_movie_patterns(string title, string movieTitle)
+        {
+            var result = Parser.Parser.ParseMovieTitle(title);
+
+            result.IsDatelessScene.Should().BeFalse();
+            result.PrimaryMovieTitle.Should().Be(movieTitle);
         }
 
         // Dated patterns keep priority over the dateless one
@@ -95,6 +113,7 @@ namespace NzbDrone.Core.Test.ParserTests
         {
             var result = Parser.Parser.ParseMovieTitle("Mission Impossible - Ghost Protocol 1080p");
 
+            result.IsScene.Should().BeFalse();
             result.IsDatelessScene.Should().BeTrue();
             result.StudioTitle.Should().Be("Mission Impossible");
             result.PrimaryMovieTitle.Should().Be("Mission Impossible - Ghost Protocol");

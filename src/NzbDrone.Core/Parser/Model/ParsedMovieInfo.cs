@@ -35,6 +35,7 @@ namespace NzbDrone.Core.Parser.Model
         public string ReleaseTokens { get; set; }
 
         // Parsed by the dateless "Studio - Title" pattern: StudioTitle and ReleaseTokens are set, ReleaseDate is not.
+        // Not counted as IsScene: the name may just as well be a movie, so only the scene lookup tries it as a scene first.
         public bool IsDatelessScene { get; set; }
 
         public string MovieTitle => PrimaryMovieTitle;
@@ -56,7 +57,7 @@ namespace NzbDrone.Core.Parser.Model
         {
             get
             {
-                return ReleaseDate.IsNotNullOrWhiteSpace() || IsDatelessScene || Episode.IsNotNullOrWhiteSpace() || Code.IsNotNullOrWhiteSpace() || StashId.IsNotNullOrWhiteSpace();
+                return ReleaseDate.IsNotNullOrWhiteSpace() || Episode.IsNotNullOrWhiteSpace() || Code.IsNotNullOrWhiteSpace() || StashId.IsNotNullOrWhiteSpace();
             }
         }
 

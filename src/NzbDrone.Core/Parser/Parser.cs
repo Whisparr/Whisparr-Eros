@@ -46,7 +46,7 @@ namespace NzbDrone.Core.Parser
                                                                            @"(?:\[(?=[^\]]*[a-z])(?<studiotitle>[a-z0-9][^\[\]]{1,39}?)\]\s*(?=[^\[\]]+?\s[-\u2013\u2014]\s)" +
                                                                            @"|(?=[^-\u2013\u2014]*[a-z])(?<studiotitle>[a-z0-9][\w'&!.,]*(?:\s[\w'&!.,]+){0,3}?)\s+[-\u2013\u2014]\s+)" +
                                                                            @"(?<releasetoken>[^\[\]()]*?[a-z].*?)" +
-                                                                           @"(?:[\s._~+-]*(?:[\[(][\s+,&._-]*(?:(?:\d{3,4}[pi]|4k|uhd|hd|sd|hevc|avc|x26[45]|h26[45]|photo\s?sets?|photos|pics|web-?dl|web-?rip)[\s+,&._-]*)*[\])]|\b(?:hevc|avc|xxx|web-?dl|web-?rip|\d{3,4}[pi]|mp4|mkv|avi|wmv|m4v|mov)\b))*[\s._~+-]*$",
+                                                                           @"(?:[\s._~+-]*(?:[\[(][\s+,&._-]*(?:(?:\d{3,4}[pi]|4k|uhd|hd|sd|hevc|avc|x26[45]|h\.?26[45]|xvid|divx|blu-?ray|bdrip|brrip|dvdrip|hdtv|hdrip|remux|aac|ac3|dts|photo\s?sets?|photos|pics|web-?dl|web-?rip)[\s+,&._-]*)*[\])]|\b(?:hevc|avc|xxx|web-?dl|web-?rip|x26[45]|h\.?26[45]|xvid|divx|blu-?ray|bdrip|brrip|dvdrip|hdtv|hdrip|remux|aac|ac3|dts|\d{3,4}[pi]|mp4|mkv|avi|wmv|m4v|mov)\b))*[\s._~+-]*$",
                                                                            RegexOptions.IgnoreCase | RegexOptions.Compiled,
                                                                            RegexDefaults.Timeout);
 
@@ -266,6 +266,9 @@ namespace NzbDrone.Core.Parser
                                                                          RegexOptions.IgnoreCase | RegexOptions.Compiled,
                                                                          RegexDefaults.Timeout);
 
+        // A "-GROUP" at the very end of a release title, as P2P movie and scene group releases are named
+        private static readonly Regex ReleaseGroupSuffixRegex = new Regex(@"(?<=\S)-[a-z0-9]+$", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout);
+
         private static readonly Regex StashIdRegex = new Regex(@"(?<stashid>.{8}-.{4}-.{4}-.{4}-.{12})", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout);
 
         // Studio names arrive from a release as one run-together token. Split it back into words at a
@@ -405,8 +408,7 @@ namespace NzbDrone.Core.Parser
                             {
                                 var simpleReleaseTitle = SimpleReleaseTitleRegex.Replace(releaseTitle, string.Empty);
 
-                                // Scenes (incl. dateless ones, which carry a fallback movie title) never replace the title before release group parsing
-                                var simpleTitleReplaceString = match[0].Groups["title"].Success ? match[0].Groups["title"].Value : (result.IsScene ? null : result.PrimaryMovieTitle);
+                                var simpleTitleReplaceString = match[0].Groups["title"].Success ? match[0].Groups["title"].Value : result.PrimaryMovieTitle;
 
                                 if (simpleTitleReplaceString.IsNotNullOrWhiteSpace())
                                 {
@@ -446,7 +448,8 @@ namespace NzbDrone.Core.Parser
                                     }
                                 }
 
-                                result.ReleaseGroup = ReleaseGroupParser.ParseReleaseGroup(simpleReleaseTitle);
+                                // The dateless pattern only matches when nothing but quality and container tags follow the title, so there is no release group to find
+                                result.ReleaseGroup = result.IsDatelessScene ? null : ReleaseGroupParser.ParseReleaseGroup(simpleReleaseTitle);
 
                                 var subGroup = GetSubGroup(match);
                                 if (!subGroup.IsNullOrWhiteSpace())
@@ -887,6 +890,12 @@ namespace NzbDrone.Core.Parser
         private static ParsedMovieInfo ParseMatchCollection(MatchCollection matchCollection, string releaseTitle)
         {
             var isDateless = matchCollection[0].Groups[DatelessConst].Success;
+
+            // "Some Movie - Part 2 WEB-DL 1080p x264-GROUP" is a group release with its tags in the name, not a dateless scene: leave it to the patterns after this one
+            if (isDateless && ReleaseTagBoundaryRegex.IsMatch(releaseTitle) && ReleaseGroupSuffixRegex.IsMatch(releaseTitle))
+            {
+                return null;
+            }
 
             if (!isDateless && !matchCollection[0].Groups[AirYearConst].Success && !matchCollection[0].Groups[CodeConst].Success && !matchCollection[0].Groups[EpisodeConst].Success && !matchCollection[0].Groups[StashIdConst].Success)
             {
