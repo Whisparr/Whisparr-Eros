@@ -51,6 +51,7 @@ namespace NzbDrone.Core.Download.Review
                                  IHandle<MoviesBulkEditedEvent>,
                                  IHandle<MovieFileImportedEvent>,
                                  IHandle<DownloadFailedEvent>,
+                                 IHandle<DownloadDecisionsProcessedEvent>,
                                  IHandle<CommandExecutedEvent>
     {
         public const string REJECTED_MESSAGE = "Rejected in review";
@@ -80,6 +81,7 @@ namespace NzbDrone.Core.Download.Review
         private readonly IRemoteMovieAggregationService _aggregationService;
         private readonly ICustomFormatCalculationService _formatCalculator;
         private readonly IUpgradableSpecification _upgradableSpecification;
+        private readonly IEnumerable<IDownloadDecisionEngineSpecification> _specifications;
         private readonly IEventAggregator _eventAggregator;
         private readonly Logger _logger;
 
@@ -101,6 +103,7 @@ namespace NzbDrone.Core.Download.Review
                              IRemoteMovieAggregationService aggregationService,
                              ICustomFormatCalculationService formatCalculator,
                              IUpgradableSpecification upgradableSpecification,
+                             IEnumerable<IDownloadDecisionEngineSpecification> specifications,
                              IEventAggregator eventAggregator,
                              Logger logger)
         {
@@ -115,6 +118,7 @@ namespace NzbDrone.Core.Download.Review
             _aggregationService = aggregationService;
             _formatCalculator = formatCalculator;
             _upgradableSpecification = upgradableSpecification;
+            _specifications = specifications;
             _eventAggregator = eventAggregator;
             _logger = logger;
         }
@@ -128,16 +132,26 @@ namespace NzbDrone.Core.Download.Review
 
             var added = new List<ReviewItem>();
 
-            foreach (var decision in decisions)
+            foreach (var rejected in decisions)
             {
-                var remoteMovie = decision.RemoteMovie;
-
-                if (remoteMovie?.Movie == null || remoteMovie.Release == null || !CaptureSources.Contains(remoteMovie.ReleaseSource))
+                if (rejected.RemoteMovie?.Release == null || !CaptureSources.Contains(rejected.RemoteMovie.ReleaseSource))
                 {
                     continue;
                 }
 
-                var reason = GetReviewReason(decision);
+                // A release that fits a scene only on a weak match, or fits a few scenes equally well, is rejected as an unknown
+                // movie. It is evaluated against its first candidate so a release that would be rejected anyway (blocklisted, scene
+                // has a file it doesn't upgrade, already queued, ...) isn't offered for review.
+                var isReviewMatch = rejected.RemoteMovie.Movie == null && rejected.RemoteMovie.ReviewCandidates?.Any() == true;
+                var decision = isReviewMatch ? EvaluateCandidate(rejected.RemoteMovie) : rejected;
+                var remoteMovie = decision.RemoteMovie;
+
+                if (remoteMovie.Movie == null)
+                {
+                    continue;
+                }
+
+                var reason = GetReviewReason(decision, isReviewMatch);
 
                 if (reason == ReviewReason.None)
                 {
@@ -516,6 +530,20 @@ namespace NzbDrone.Core.Download.Review
             return grabs;
         }
 
+        public void Handle(DownloadDecisionsProcessedEvent message)
+        {
+            var processed = message.ProcessedDecisions;
+
+            try
+            {
+                Capture(processed.Rejected, processed.Grabbed.Concat(processed.Pending));
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Unable to add releases for review");
+            }
+        }
+
         public void Handle(DownloadFailedEvent message)
         {
             if (_recentGrabs.TryRemove(message.MovieId, out _))
@@ -553,13 +581,14 @@ namespace NzbDrone.Core.Download.Review
             _eventAggregator.PublishEvent(new ReviewNeededEvent(items));
         }
 
-        internal static ReviewReason GetReviewReason(DownloadDecision decision)
+        // isReviewMatch: the decision is the evaluation of a release against a scene it only fits on a weak or ambiguous match
+        internal static ReviewReason GetReviewReason(DownloadDecision decision, bool isReviewMatch = false)
         {
             var remoteMovie = decision.RemoteMovie;
-            var needsReview = decision.Rejections.Any(r => r.Reason == DownloadRejectionReason.NeedsReview);
+            var needsReview = isReviewMatch;
 
             // Temporary rejections (a delay) don't matter, a human decides when to grab
-            var blocking = decision.Rejections.Where(r => r.Reason != DownloadRejectionReason.NeedsReview && r.Type == RejectionType.Permanent).ToList();
+            var blocking = decision.Rejections.Where(r => r.Type == RejectionType.Permanent).ToList();
 
             // A release whose resolution and source can't be parsed is otherwise lost, a human can tell the quality.
             // A known quality the profile doesn't want was the user's choice and stays rejected.
@@ -584,6 +613,61 @@ namespace NzbDrone.Core.Download.Review
             }
 
             return reason;
+        }
+
+        // The release against its first candidate scene, with the same specifications (in priority order, stopping at the first
+        // group with a rejection) as the decision engine. The decision engine itself only knows the release as an unknown movie.
+        private DownloadDecision EvaluateCandidate(RemoteMovie release)
+        {
+            var remoteMovie = new RemoteMovie
+            {
+                Release = release.Release,
+                ParsedMovieInfo = release.ParsedMovieInfo,
+                Languages = release.Languages,
+                ReleaseSource = release.ReleaseSource,
+                ReviewCandidates = release.ReviewCandidates,
+                Movie = release.ReviewCandidates.First().Movie,
+                MovieMatchType = MovieMatchType.Title,
+                DownloadAllowed = true
+            };
+
+            _aggregationService.Augment(remoteMovie);
+            remoteMovie.CustomFormats = _formatCalculator.ParseCustomFormat(remoteMovie, remoteMovie.Release.Size);
+            remoteMovie.CustomFormatScore = remoteMovie.Movie.QualityProfile?.CalculateCustomFormatScore(remoteMovie.CustomFormats) ?? 0;
+
+            var rejections = Array.Empty<DownloadRejection>();
+
+            foreach (var specifications in _specifications.GroupBy(s => s.Priority).OrderBy(g => g.Key))
+            {
+                rejections = specifications.Select(s => EvaluateSpecification(s, remoteMovie)).Where(r => r != null).ToArray();
+
+                if (rejections.Any())
+                {
+                    break;
+                }
+            }
+
+            return new DownloadDecision(remoteMovie, rejections);
+        }
+
+        private DownloadRejection EvaluateSpecification(IDownloadDecisionEngineSpecification specification, RemoteMovie remoteMovie)
+        {
+            try
+            {
+                var result = specification.IsSatisfiedBy(remoteMovie, null);
+
+                return result.Accepted ? null : new DownloadRejection(result.Reason, result.Message, specification.Type);
+            }
+            catch (NotImplementedException)
+            {
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.Debug(ex, "Couldn't evaluate '{0}' for review with {1}", remoteMovie.Release.Title, specification.GetType().Name);
+
+                return new DownloadRejection(DownloadRejectionReason.DecisionError, $"{specification.GetType().Name}: {ex.Message}");
+            }
         }
 
         private static List<ReviewItemCandidate> GetCandidates(RemoteMovie remoteMovie)

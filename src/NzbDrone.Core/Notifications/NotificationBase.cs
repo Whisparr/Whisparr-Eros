@@ -20,7 +20,6 @@ namespace NzbDrone.Core.Notifications
         protected const string HEALTH_RESTORED_TITLE = "Health Check Restored";
         protected const string APPLICATION_UPDATE_TITLE = "Application Updated";
         protected const string MANUAL_INTERACTION_REQUIRED_TITLE = "Manual Interaction";
-        protected const string REVIEW_NEEDED_TITLE = "Releases Awaiting Review";
 
         protected const string MOVIE_GRABBED_TITLE_BRANDED = "Whisparr - " + MOVIE_GRABBED_TITLE;
         protected const string MOVIE_ADDED_TITLE_BRANDED = "Whisparr - " + MOVIE_ADDED_TITLE;
@@ -32,7 +31,6 @@ namespace NzbDrone.Core.Notifications
         protected const string HEALTH_RESTORED_TITLE_BRANDED = "Whisparr - " + HEALTH_RESTORED_TITLE;
         protected const string APPLICATION_UPDATE_TITLE_BRANDED = "Whisparr - " + APPLICATION_UPDATE_TITLE;
         protected const string MANUAL_INTERACTION_REQUIRED_TITLE_BRANDED = "Whisparr - " + MANUAL_INTERACTION_REQUIRED_TITLE;
-        protected const string REVIEW_NEEDED_TITLE_BRANDED = "Whisparr - " + REVIEW_NEEDED_TITLE;
 
         public abstract string Name { get; }
 
@@ -87,10 +85,6 @@ namespace NzbDrone.Core.Notifications
         {
         }
 
-        public virtual void OnReviewNeeded(ReviewNeededMessage message)
-        {
-        }
-
         public virtual void ProcessQueue()
         {
         }
@@ -107,7 +101,6 @@ namespace NzbDrone.Core.Notifications
         public bool SupportsOnHealthRestored => HasConcreteImplementation("OnHealthRestored");
         public bool SupportsOnApplicationUpdate => HasConcreteImplementation("OnApplicationUpdate");
         public bool SupportsOnManualInteractionRequired => HasConcreteImplementation("OnManualInteractionRequired");
-        public bool SupportsOnReviewNeeded => HasConcreteImplementation("OnReviewNeeded");
 
         protected TSettings Settings => (TSettings)Definition.Settings;
 

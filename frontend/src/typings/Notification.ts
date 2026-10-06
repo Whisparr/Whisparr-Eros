@@ -19,7 +19,6 @@ interface Notification extends Provider {
   onHealthRestored: boolean;
   onApplicationUpdate: boolean;
   onManualInteractionRequired: boolean;
-  onReviewNeeded: boolean;
   supportsOnGrab: boolean;
   supportsOnDownload: boolean;
   supportsOnUpgrade: boolean;
@@ -32,7 +31,6 @@ interface Notification extends Provider {
   supportsOnHealthRestored: boolean;
   supportsOnApplicationUpdate: boolean;
   supportsOnManualInteractionRequired: boolean;
-  supportsOnReviewNeeded: boolean;
   tags: number[];
 
   // Schema responses only: the canned configurations an implementation offers.

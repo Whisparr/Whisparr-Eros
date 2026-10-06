@@ -89,7 +89,6 @@ export const useManageNotification = (
       onMovieFileDeleteForUpgrade: schema.supportsOnMovieFileDeleteForUpgrade,
       onApplicationUpdate: schema.supportsOnApplicationUpdate,
       onManualInteractionRequired: schema.supportsOnManualInteractionRequired,
-      onReviewNeeded: schema.supportsOnReviewNeeded,
     };
   }, [schema]);
 

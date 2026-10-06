@@ -18,7 +18,6 @@ namespace Whisparr.Api.V3.Notifications
         public bool OnHealthRestored { get; set; }
         public bool OnApplicationUpdate { get; set; }
         public bool OnManualInteractionRequired { get; set; }
-        public bool OnReviewNeeded { get; set; }
         public bool SupportsOnGrab { get; set; }
         public bool SupportsOnDownload { get; set; }
         public bool SupportsOnUpgrade { get; set; }
@@ -31,7 +30,6 @@ namespace Whisparr.Api.V3.Notifications
         public bool SupportsOnHealthRestored { get; set; }
         public bool SupportsOnApplicationUpdate { get; set; }
         public bool SupportsOnManualInteractionRequired { get; set; }
-        public bool SupportsOnReviewNeeded { get; set; }
         public string TestCommand { get; set; }
     }
 
@@ -59,7 +57,6 @@ namespace Whisparr.Api.V3.Notifications
             resource.OnHealthRestored = definition.OnHealthRestored;
             resource.OnApplicationUpdate = definition.OnApplicationUpdate;
             resource.OnManualInteractionRequired = definition.OnManualInteractionRequired;
-            resource.OnReviewNeeded = definition.OnReviewNeeded;
             resource.SupportsOnGrab = definition.SupportsOnGrab;
             resource.SupportsOnDownload = definition.SupportsOnDownload;
             resource.SupportsOnUpgrade = definition.SupportsOnUpgrade;
@@ -72,7 +69,6 @@ namespace Whisparr.Api.V3.Notifications
             resource.SupportsOnHealthRestored = definition.SupportsOnHealthRestored;
             resource.SupportsOnApplicationUpdate = definition.SupportsOnApplicationUpdate;
             resource.SupportsOnManualInteractionRequired = definition.SupportsOnManualInteractionRequired;
-            resource.SupportsOnReviewNeeded = definition.SupportsOnReviewNeeded;
 
             return resource;
         }
@@ -99,7 +95,6 @@ namespace Whisparr.Api.V3.Notifications
             definition.OnHealthRestored = resource.OnHealthRestored;
             definition.OnApplicationUpdate = resource.OnApplicationUpdate;
             definition.OnManualInteractionRequired = resource.OnManualInteractionRequired;
-            definition.OnReviewNeeded = resource.OnReviewNeeded;
             definition.SupportsOnGrab = resource.SupportsOnGrab;
             definition.SupportsOnDownload = resource.SupportsOnDownload;
             definition.SupportsOnUpgrade = resource.SupportsOnUpgrade;
@@ -112,7 +107,6 @@ namespace Whisparr.Api.V3.Notifications
             definition.SupportsOnHealthRestored = resource.SupportsOnHealthRestored;
             definition.SupportsOnApplicationUpdate = resource.SupportsOnApplicationUpdate;
             definition.SupportsOnManualInteractionRequired = resource.SupportsOnManualInteractionRequired;
-            definition.SupportsOnReviewNeeded = resource.SupportsOnReviewNeeded;
 
             return definition;
         }

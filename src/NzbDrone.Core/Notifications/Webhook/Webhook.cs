@@ -74,11 +74,6 @@ namespace NzbDrone.Core.Notifications.Webhook
             _proxy.SendWebhook(BuildManualInteractionRequiredPayload(message), Settings);
         }
 
-        public override void OnReviewNeeded(ReviewNeededMessage message)
-        {
-            _proxy.SendWebhook(BuildReviewNeededPayload(message), Settings);
-        }
-
         public override string Name => "Webhook";
 
         public override ValidationResult Test()

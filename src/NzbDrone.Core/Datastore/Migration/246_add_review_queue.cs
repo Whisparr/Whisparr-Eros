@@ -24,8 +24,6 @@ namespace NzbDrone.Core.Datastore.Migration
                 .WithColumn("Status").AsInt32().WithDefaultValue(0).Indexed()
                 .WithColumn("ReleaseSource").AsInt32().WithDefaultValue(0)
                 .WithColumn("Added").AsDateTimeOffset();
-
-            Alter.Table("Notifications").AddColumn("OnReviewNeeded").AsBoolean().WithDefaultValue(false);
         }
     }
 }

@@ -32,7 +32,6 @@ function NotificationEventItems({
     onHealthRestored,
     onApplicationUpdate,
     onManualInteractionRequired,
-    onReviewNeeded,
     supportsOnGrab,
     supportsOnDownload,
     supportsOnUpgrade,
@@ -43,7 +42,6 @@ function NotificationEventItems({
     supportsOnMovieFileDeleteForUpgrade,
     supportsOnApplicationUpdate,
     supportsOnManualInteractionRequired,
-    supportsOnReviewNeeded,
     supportsOnHealthIssue,
     supportsOnHealthRestored,
     includeHealthWarnings,
@@ -203,17 +201,6 @@ function NotificationEventItems({
               helpText={translate('OnManualInteractionRequired')}
               isDisabled={!supportsOnManualInteractionRequired.value}
               {...onManualInteractionRequired}
-              onChange={onInputChange}
-            />
-          </div>
-
-          <div>
-            <FormInputGroup
-              type={inputTypes.CHECK}
-              name="onReviewNeeded"
-              helpText={translate('OnReviewNeeded')}
-              isDisabled={!supportsOnReviewNeeded.value}
-              {...onReviewNeeded}
               onChange={onInputChange}
             />
           </div>

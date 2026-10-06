@@ -6,9 +6,9 @@ using NLog;
 using NzbDrone.Core.DecisionEngine;
 using NzbDrone.Core.Download.Clients;
 using NzbDrone.Core.Download.Pending;
-using NzbDrone.Core.Download.Review;
 using NzbDrone.Core.Exceptions;
 using NzbDrone.Core.Indexers;
+using NzbDrone.Core.Messaging.Events;
 
 namespace NzbDrone.Core.Download
 {
@@ -23,19 +23,19 @@ namespace NzbDrone.Core.Download
         private readonly IDownloadService _downloadService;
         private readonly IPrioritizeDownloadDecision _prioritizeDownloadDecision;
         private readonly IPendingReleaseService _pendingReleaseService;
-        private readonly IReviewService _reviewService;
+        private readonly IEventAggregator _eventAggregator;
         private readonly Logger _logger;
 
         public ProcessDownloadDecisions(IDownloadService downloadService,
                                         IPrioritizeDownloadDecision prioritizeDownloadDecision,
                                         IPendingReleaseService pendingReleaseService,
-                                        IReviewService reviewService,
+                                        IEventAggregator eventAggregator,
                                         Logger logger)
         {
             _downloadService = downloadService;
             _prioritizeDownloadDecision = prioritizeDownloadDecision;
             _pendingReleaseService = pendingReleaseService;
-            _reviewService = reviewService;
+            _eventAggregator = eventAggregator;
             _logger = logger;
         }
 
@@ -125,9 +125,11 @@ namespace NzbDrone.Core.Download
                 _pendingReleaseService.AddMany(pendingAddQueue);
             }
 
-            CaptureForReview(decisions, grabbed.Concat(pending));
+            var processed = new ProcessedDecisions(grabbed, pending, rejected);
 
-            return new ProcessedDecisions(grabbed, pending, rejected);
+            _eventAggregator.PublishEvent(new DownloadDecisionsProcessedEvent(processed));
+
+            return processed;
         }
 
         public async Task<ProcessedDecisionResult> ProcessDecision(DownloadDecision decision, int? downloadClientId)
@@ -157,18 +159,6 @@ namespace NzbDrone.Core.Download
             }
 
             return result;
-        }
-
-        private void CaptureForReview(List<DownloadDecision> decisions, IEnumerable<DownloadDecision> processed)
-        {
-            try
-            {
-                _reviewService.Capture(decisions.Where(d => d.Rejected), processed.ToList());
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "Unable to add releases for review");
-            }
         }
 
         internal List<DownloadDecision> GetQualifiedReports(IEnumerable<DownloadDecision> decisions)

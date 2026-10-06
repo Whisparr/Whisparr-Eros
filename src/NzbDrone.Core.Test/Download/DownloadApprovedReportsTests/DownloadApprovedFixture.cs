@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using FizzWare.NBuilder;
 using FluentAssertions;
@@ -10,9 +9,9 @@ using NzbDrone.Core.DecisionEngine;
 using NzbDrone.Core.Download;
 using NzbDrone.Core.Download.Clients;
 using NzbDrone.Core.Download.Pending;
-using NzbDrone.Core.Download.Review;
 using NzbDrone.Core.Exceptions;
 using NzbDrone.Core.Indexers;
+using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Movies;
 using NzbDrone.Core.Parser.Model;
 using NzbDrone.Core.Profiles.Qualities;
@@ -74,30 +73,18 @@ namespace NzbDrone.Core.Test.Download.DownloadApprovedReportsTests
         }
 
         [Test]
-        public async Task should_offer_rejected_releases_for_review_with_the_grabbed_ones()
+        public async Task should_publish_the_processed_decisions()
         {
             var grabbed = new DownloadDecision(GetRemoteMovie(new QualityModel(Quality.HDTV720p)));
-            var needsReview = new DownloadDecision(GetRemoteMovie(new QualityModel(Quality.HDTV720p), GetMovie(2)), new DownloadRejection(DownloadRejectionReason.NeedsReview, "Needs review"));
+            var rejected = new DownloadDecision(GetRemoteMovie(new QualityModel(Quality.HDTV720p), GetMovie(2)), new DownloadRejection(DownloadRejectionReason.UnknownMovie, "Unknown Movie"));
 
-            await Subject.ProcessDecisions(new List<DownloadDecision> { grabbed, needsReview });
+            var result = await Subject.ProcessDecisions(new List<DownloadDecision> { grabbed, rejected });
 
-            Mocker.GetMock<IReviewService>()
-                  .Verify(v => v.Capture(It.Is<IEnumerable<DownloadDecision>>(d => d.Single() == needsReview), It.Is<IEnumerable<DownloadDecision>>(d => d.Single() == grabbed)), Times.Once());
-        }
-
-        [Test]
-        public async Task should_still_return_processed_decisions_when_review_capture_fails()
-        {
-            var grabbed = new DownloadDecision(GetRemoteMovie(new QualityModel(Quality.HDTV720p)));
-
-            Mocker.GetMock<IReviewService>()
-                  .Setup(v => v.Capture(It.IsAny<IEnumerable<DownloadDecision>>(), It.IsAny<IEnumerable<DownloadDecision>>()))
-                  .Throws(new InvalidOperationException("boom"));
-
-            var result = await Subject.ProcessDecisions(new List<DownloadDecision> { grabbed });
-
-            result.Grabbed.Should().ContainSingle();
-            ExceptionVerification.ExpectedErrors(1);
+            Mocker.GetMock<IEventAggregator>()
+                  .Verify(v => v.PublishEvent(It.Is<DownloadDecisionsProcessedEvent>(e => e.ProcessedDecisions == result &&
+                                                                                          e.ProcessedDecisions.Grabbed.Contains(grabbed) &&
+                                                                                          e.ProcessedDecisions.Rejected.Contains(rejected))),
+                          Times.Once());
         }
 
         [Test]

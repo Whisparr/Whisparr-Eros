@@ -14,6 +14,7 @@ using NzbDrone.Core.Download.Review;
 using NzbDrone.Core.Download.TrackedDownloads;
 using NzbDrone.Core.Exceptions;
 using NzbDrone.Core.Indexers;
+using NzbDrone.Core.IndexerSearch.Definitions;
 using NzbDrone.Core.MediaFiles;
 using NzbDrone.Core.MediaFiles.Events;
 using NzbDrone.Core.Messaging.Commands;
@@ -27,12 +28,19 @@ using NzbDrone.Core.Parser.Model;
 using NzbDrone.Core.Profiles.Qualities;
 using NzbDrone.Core.Qualities;
 using NzbDrone.Core.Test.Framework;
+using NzbDrone.Test.Common;
 
 namespace NzbDrone.Core.Test.Download.Review
 {
     [TestFixture]
     public class ReviewServiceFixture : CoreTest<ReviewService>
     {
+        // How the decision engine rejects a release it only matched to scenes on a weak or ambiguous match
+        private static readonly DownloadRejection UnknownMovie = new (DownloadRejectionReason.UnknownMovie, "Unknown Movie");
+
+        // What the specifications say about each release when it is evaluated against its candidate scene
+        private readonly Dictionary<ReleaseInfo, List<DownloadRejection>> _specRejections = new ();
+
         private Movie _scene;
         private Movie _otherScene;
         private List<ReviewItem> _stored;
@@ -43,6 +51,9 @@ namespace NzbDrone.Core.Test.Download.Review
             _scene = new Movie { Id = 4, Title = "Poolside", Monitored = true };
             _otherScene = new Movie { Id = 5, Title = "Locker Room", Monitored = true };
             _stored = new List<ReviewItem>();
+            _specRejections.Clear();
+
+            Mocker.SetConstant<IEnumerable<IDownloadDecisionEngineSpecification>>(new[] { GivenSpecification(RejectionType.Permanent), GivenSpecification(RejectionType.Temporary) });
 
             var repository = Mocker.GetMock<IReviewItemRepository>();
 
@@ -106,25 +117,54 @@ namespace NzbDrone.Core.Test.Download.Review
             return release;
         }
 
+        // A specification that rejects a release with what the test registered for it, of its own rejection type
+        private IDownloadDecisionEngineSpecification GivenSpecification(RejectionType type)
+        {
+            var specification = new Mock<IDownloadDecisionEngineSpecification>();
+
+            specification.SetupGet(s => s.Type).Returns(type);
+            specification.SetupGet(s => s.Priority).Returns(SpecificationPriority.Default);
+            specification.Setup(s => s.IsSatisfiedBy(It.IsAny<RemoteMovie>(), It.IsAny<SearchCriteriaBase>()))
+                         .Returns<RemoteMovie, SearchCriteriaBase>((remoteMovie, _) =>
+                         {
+                             var rejection = _specRejections.GetValueOrDefault(remoteMovie.Release)?.FirstOrDefault(r => r.Type == type);
+
+                             return rejection == null ? DownloadSpecDecision.Accept() : DownloadSpecDecision.Reject(rejection.Reason, rejection.Message);
+                         });
+
+            return specification.Object;
+        }
+
+        // With UnknownMovie among the rejections and candidates given, the decision is what the decision engine makes of a weak or
+        // ambiguous match: an unknown movie that carries its candidates. Its other rejections are what the specifications say when
+        // the release is evaluated against the first candidate.
         private DownloadDecision GivenDecision(Quality quality, ReleaseSourceType source, IEnumerable<SceneMatchCandidate> candidates, params DownloadRejection[] rejections)
         {
             var candidateList = candidates.ToList();
+            var isReviewMatch = candidateList.Any() && rejections.Contains(UnknownMovie);
 
             var remoteMovie = new RemoteMovie
             {
-                Movie = candidateList.FirstOrDefault()?.Movie ?? _scene,
+                Movie = isReviewMatch ? null : candidateList.FirstOrDefault()?.Movie ?? _scene,
                 Release = GivenRelease(),
                 ParsedMovieInfo = new ParsedMovieInfo { Quality = new QualityModel(quality) },
                 ReleaseSource = source,
                 ReviewCandidates = candidateList
             };
 
-            return new DownloadDecision(remoteMovie, rejections);
+            if (!isReviewMatch)
+            {
+                return new DownloadDecision(remoteMovie, rejections);
+            }
+
+            _specRejections[remoteMovie.Release] = rejections.Where(r => r != UnknownMovie).ToList();
+
+            return new DownloadDecision(remoteMovie, UnknownMovie);
         }
 
         private DownloadDecision GivenWeakMatch(ReleaseSourceType source = ReleaseSourceType.Rss, params DownloadRejection[] otherRejections)
         {
-            var rejections = otherRejections.Append(new DownloadRejection(DownloadRejectionReason.NeedsReview, "Needs review")).ToArray();
+            var rejections = otherRejections.Append(UnknownMovie).ToArray();
 
             return GivenDecision(Quality.WEBDL720p, source, new[] { new SceneMatchCandidate(_scene, MovieParseMatchType.PerformersNotTitle) }, rejections);
         }
@@ -168,7 +208,7 @@ namespace NzbDrone.Core.Test.Download.Review
             var decision = GivenDecision(Quality.WEBDL720p,
                 ReleaseSourceType.Rss,
                 new[] { new SceneMatchCandidate(_scene, MovieParseMatchType.Title), new SceneMatchCandidate(_otherScene, MovieParseMatchType.Title) },
-                new DownloadRejection(DownloadRejectionReason.NeedsReview, "Needs review"));
+                UnknownMovie);
 
             var item = Capture(decision).Single();
 
@@ -195,7 +235,7 @@ namespace NzbDrone.Core.Test.Download.Review
                 ReleaseSourceType.Rss,
                 new[] { new SceneMatchCandidate(_scene, MovieParseMatchType.Performers) },
                 QualityNotWanted,
-                new DownloadRejection(DownloadRejectionReason.NeedsReview, "Needs review"));
+                UnknownMovie);
 
             Capture(decision).Single().Reason.Should().Be(ReviewReason.WeakMatch | ReviewReason.UnknownQuality);
         }
@@ -305,7 +345,7 @@ namespace NzbDrone.Core.Test.Download.Review
             var decision = GivenDecision(Quality.Unknown,
                 ReleaseSourceType.Rss,
                 new[] { new SceneMatchCandidate(_scene, MovieParseMatchType.Title), new SceneMatchCandidate(_otherScene, MovieParseMatchType.Title) },
-                new DownloadRejection(DownloadRejectionReason.NeedsReview, "Needs review"));
+                UnknownMovie);
 
             var item = Capture(decision).Single();
 
@@ -407,7 +447,7 @@ namespace NzbDrone.Core.Test.Download.Review
             var decision = GivenDecision(Quality.WEBDL720p,
                 ReleaseSourceType.Rss,
                 new[] { new SceneMatchCandidate(_scene, MovieParseMatchType.Title), new SceneMatchCandidate(_otherScene, MovieParseMatchType.Title) },
-                new DownloadRejection(DownloadRejectionReason.NeedsReview, "Needs review"));
+                UnknownMovie);
 
             var item = Capture(decision).Single();
 
@@ -478,7 +518,7 @@ namespace NzbDrone.Core.Test.Download.Review
             var decision = GivenDecision(Quality.WEBDL720p,
                 ReleaseSourceType.Rss,
                 new[] { new SceneMatchCandidate(_scene, MovieParseMatchType.Title), new SceneMatchCandidate(_otherScene, MovieParseMatchType.Title) },
-                new DownloadRejection(DownloadRejectionReason.NeedsReview, "Needs review"));
+                UnknownMovie);
 
             var item = Capture(decision).Single();
 
@@ -947,6 +987,29 @@ namespace NzbDrone.Core.Test.Download.Review
             Subject.Handle(new MovieFileImportedEvent(new LocalMovie { Movie = _scene }, null, null, true, null));
 
             _stored.Should().BeEmpty();
+        }
+
+        [Test]
+        public void should_capture_from_the_processed_decisions_of_a_search_or_rss_sync()
+        {
+            var weak = GivenWeakMatch(ReleaseSourceType.Search);
+            var grabbed = GivenDecision(Quality.WEBDL1080p, ReleaseSourceType.Search, new[] { new SceneMatchCandidate(_otherScene, MovieParseMatchType.Title) });
+
+            Subject.Handle(new DownloadDecisionsProcessedEvent(new ProcessedDecisions(new List<DownloadDecision> { grabbed }, new List<DownloadDecision>(), new List<DownloadDecision> { weak })));
+
+            _stored.Should().ContainSingle(i => i.MovieId == _scene.Id && i.Reason == ReviewReason.WeakMatch);
+        }
+
+        [Test]
+        public void should_not_fail_the_search_when_capturing_fails()
+        {
+            Mocker.GetMock<IReviewItemRepository>()
+                  .Setup(s => s.Insert(It.IsAny<ReviewItem>()))
+                  .Throws(new InvalidOperationException("boom"));
+
+            Subject.Handle(new DownloadDecisionsProcessedEvent(new ProcessedDecisions(new List<DownloadDecision>(), new List<DownloadDecision>(), new List<DownloadDecision> { GivenWeakMatch() })));
+
+            ExceptionVerification.ExpectedErrors(1);
         }
     }
 }
