@@ -61,6 +61,10 @@ namespace NzbDrone.Core.Test.ParserTests
         [TestCase("Movie Title - Directors Cut 1080p BluRay x264-SPARKS", "Movie Title - Directors Cut", "SPARKS")]
         [TestCase("Studio - Title 1080p [GRP]", "Studio - Title", "GRP")]
         [TestCase("Studio - Title 1080p WEB-DL x264 [GROUP]", "Studio - Title", "GROUP")]
+
+        // The trailing bracket is what the "Final check that it is a video" pattern gives on eros-develop too
+        [TestCase("Studio - Title (1080p) [GRP]", "Studio - Title (", "GRP")]
+        [TestCase("Studio - Title [1080p] [GRP]", "Studio - Title [", "GRP")]
         public void should_leave_group_releases_to_the_movie_patterns(string title, string movieTitle, string releaseGroup)
         {
             var result = Parser.Parser.ParseMovieTitle(title);

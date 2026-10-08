@@ -24,6 +24,9 @@ namespace NzbDrone.Core.Parser
         // The quality, codec and container tags a dateless scene name may end in ("~HEVC (1080p)", "[720p+Photoset]", "1080p BluRay x264", ".mp4")
         private const string DatelessTagTailPattern = @"(?:[\s._~+-]*(?:[\[(][\s+,&._-]*(?:(?:\d{3,4}[pi]|4k|uhd|hd|sd|hevc|avc|x26[45]|h\.?26[45]|xvid|divx|blu-?ray|bdrip|brrip|dvdrip|hdtv|hdrip|remux|aac|ac3|dts|photo\s?sets?|photos|pics|web-?dl|web-?rip)[\s+,&._-]*)*[\])]|\b(?:hevc|avc|xxx|web-?dl|web-?rip|x26[45]|h\.?26[45]|xvid|divx|blu-?ray|bdrip|brrip|dvdrip|hdtv|hdrip|remux|aac|ac3|dts|\d{3,4}[pi]|mp4|mkv|avi|wmv|m4v|mov)\b))*[\s._~+-]*$";
 
+        // Quality, source, codec and container tags of a release name
+        private const string ReleaseTagPattern = @"(?:XXX|\d{3,4}[ip]|WEB[-_. ]?DL|WEBRip|WEB|BluRay|BDRip|BRRip|DVDRip|DVD|HDTV|HDRip|SDTV|SD|HEVC|AVC|AV1|VP9|XviD|DivX|[xh][-_. ]?26[45]|AAC|AC3|DTS|MP3|mp4|mkv|avi|wmv|m4v)";
+
         private const string EditionConst = "edition";
         private const string EpisodeConst = "episode";
         private const string ImdbIdConst = "imdbid";
@@ -266,11 +269,14 @@ namespace NzbDrone.Core.Parser
 
         // Marks where the release tag block starts, so masking the scene title out of the simple
         // release title can't reach into the quality, codec and release group behind it.
-        private static readonly Regex ReleaseTagBoundaryRegex = new Regex(@"[-_. ](?:XXX|\d{3,4}[ip]|WEB[-_. ]?DL|WEBRip|WEB|BluRay|BDRip|BRRip|DVDRip|DVD|HDTV|HDRip|SDTV|SD|HEVC|AVC|AV1|VP9|XviD|DivX|[xh][-_. ]?26[45]|AAC|AC3|DTS|MP3|mp4|mkv|avi|wmv|m4v)(?![a-z0-9])",
+        private static readonly Regex ReleaseTagBoundaryRegex = new Regex(@"[-_. ]" + ReleaseTagPattern + @"(?![a-z0-9])",
                                                                          RegexOptions.IgnoreCase | RegexOptions.Compiled,
                                                                          RegexDefaults.Timeout);
 
         private static readonly Regex DatelessTagTailRegex = new Regex(DatelessTagTailPattern, RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout);
+
+        // A quality tag anywhere in a name, also right after an opening bracket ("Title (1080p) [GRP]")
+        private static readonly Regex LeftoverReleaseTagRegex = new Regex(@"[-_. (\[]" + ReleaseTagPattern + @"(?![a-z0-9])", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout);
 
         private static readonly Regex StashIdRegex = new Regex(@"(?<stashid>.{8}-.{4}-.{4}-.{4}-.{12})", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout);
 
@@ -895,8 +901,8 @@ namespace NzbDrone.Core.Parser
             var isDateless = matchCollection[0].Groups[DatelessConst].Success;
 
             // Quality tags left in the name once the trailing ones are cut off mean a group release, not a dateless scene: "Studio - Title 1080p [GRP]",
-            // "Some Movie - Part 2 WEB-DL 1080p x264-GROUP". Leave it to the patterns after this one, which parse it as on eros-develop.
-            if (isDateless && ReleaseTagBoundaryRegex.IsMatch(DatelessTagTailRegex.Replace(releaseTitle, string.Empty)))
+            // "Studio - Title (1080p) [GRP]", "Some Movie - Part 2 WEB-DL 1080p x264-GROUP". Leave it to the patterns after this one, which parse it as on eros-develop.
+            if (isDateless && LeftoverReleaseTagRegex.IsMatch(DatelessTagTailRegex.Replace(releaseTitle, string.Empty)))
             {
                 return null;
             }
