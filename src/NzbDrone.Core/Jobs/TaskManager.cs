@@ -18,6 +18,7 @@ using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Movies.Commands;
 using NzbDrone.Core.Movies.Performers.Commands;
 using NzbDrone.Core.Movies.Studios.Commands;
+using NzbDrone.Core.Notifications.Stash;
 using NzbDrone.Core.Update.Commands;
 
 namespace NzbDrone.Core.Jobs
@@ -137,6 +138,12 @@ namespace NzbDrone.Core.Jobs
                     {
                         Interval = 5,
                         TypeName = typeof(ImportListSyncCommand).FullName
+                    },
+
+                    new ScheduledTask
+                    {
+                        Interval = 15,
+                        TypeName = typeof(SyncStashPerformersCommand).FullName
                     },
 
                     new ScheduledTask
