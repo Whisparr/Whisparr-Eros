@@ -56,15 +56,18 @@ namespace NzbDrone.Core.Test.ParserTests
             Parser.Parser.ParseMovieTitle(title).ReleaseGroup.Should().BeNullOrEmpty();
         }
 
-        // Group releases with their tags in the name parse as on eros-develop, not as a dateless scene
-        [TestCase("Some Movie - Part 2 WEB-DL 1080p x264-GROUP", "Some Movie - Part 2 WEB-DL")]
-        [TestCase("Movie Title - Directors Cut 1080p BluRay x264-SPARKS", "Movie Title - Directors Cut")]
-        public void should_leave_group_releases_to_the_movie_patterns(string title, string movieTitle)
+        // Group releases with quality tags in the name parse as on eros-develop, not as a dateless scene
+        [TestCase("Some Movie - Part 2 WEB-DL 1080p x264-GROUP", "Some Movie - Part 2 WEB-DL", "GROUP")]
+        [TestCase("Movie Title - Directors Cut 1080p BluRay x264-SPARKS", "Movie Title - Directors Cut", "SPARKS")]
+        [TestCase("Studio - Title 1080p [GRP]", "Studio - Title", "GRP")]
+        [TestCase("Studio - Title 1080p WEB-DL x264 [GROUP]", "Studio - Title", "GROUP")]
+        public void should_leave_group_releases_to_the_movie_patterns(string title, string movieTitle, string releaseGroup)
         {
             var result = Parser.Parser.ParseMovieTitle(title);
 
             result.IsDatelessScene.Should().BeFalse();
             result.PrimaryMovieTitle.Should().Be(movieTitle);
+            result.ReleaseGroup.Should().Be(releaseGroup);
         }
 
         // Dated patterns keep priority over the dateless one

@@ -20,6 +20,10 @@ namespace NzbDrone.Core.Parser
         private const string AirYearConst = "airyear";
         private const string CodeConst = "code";
         private const string DatelessConst = "dateless";
+
+        // The quality, codec and container tags a dateless scene name may end in ("~HEVC (1080p)", "[720p+Photoset]", "1080p BluRay x264", ".mp4")
+        private const string DatelessTagTailPattern = @"(?:[\s._~+-]*(?:[\[(][\s+,&._-]*(?:(?:\d{3,4}[pi]|4k|uhd|hd|sd|hevc|avc|x26[45]|h\.?26[45]|xvid|divx|blu-?ray|bdrip|brrip|dvdrip|hdtv|hdrip|remux|aac|ac3|dts|photo\s?sets?|photos|pics|web-?dl|web-?rip)[\s+,&._-]*)*[\])]|\b(?:hevc|avc|xxx|web-?dl|web-?rip|x26[45]|h\.?26[45]|xvid|divx|blu-?ray|bdrip|brrip|dvdrip|hdtv|hdrip|remux|aac|ac3|dts|\d{3,4}[pi]|mp4|mkv|avi|wmv|m4v|mov)\b))*[\s._~+-]*$";
+
         private const string EditionConst = "edition";
         private const string EpisodeConst = "episode";
         private const string ImdbIdConst = "imdbid";
@@ -46,7 +50,7 @@ namespace NzbDrone.Core.Parser
                                                                            @"(?:\[(?=[^\]]*[a-z])(?<studiotitle>[a-z0-9][^\[\]]{1,39}?)\]\s*(?=[^\[\]]+?\s[-\u2013\u2014]\s)" +
                                                                            @"|(?=[^-\u2013\u2014]*[a-z])(?<studiotitle>[a-z0-9][\w'&!.,]*(?:\s[\w'&!.,]+){0,3}?)\s+[-\u2013\u2014]\s+)" +
                                                                            @"(?<releasetoken>[^\[\]()]*?[a-z].*?)" +
-                                                                           @"(?:[\s._~+-]*(?:[\[(][\s+,&._-]*(?:(?:\d{3,4}[pi]|4k|uhd|hd|sd|hevc|avc|x26[45]|h\.?26[45]|xvid|divx|blu-?ray|bdrip|brrip|dvdrip|hdtv|hdrip|remux|aac|ac3|dts|photo\s?sets?|photos|pics|web-?dl|web-?rip)[\s+,&._-]*)*[\])]|\b(?:hevc|avc|xxx|web-?dl|web-?rip|x26[45]|h\.?26[45]|xvid|divx|blu-?ray|bdrip|brrip|dvdrip|hdtv|hdrip|remux|aac|ac3|dts|\d{3,4}[pi]|mp4|mkv|avi|wmv|m4v|mov)\b))*[\s._~+-]*$",
+                                                                           DatelessTagTailPattern,
                                                                            RegexOptions.IgnoreCase | RegexOptions.Compiled,
                                                                            RegexDefaults.Timeout);
 
@@ -266,8 +270,7 @@ namespace NzbDrone.Core.Parser
                                                                          RegexOptions.IgnoreCase | RegexOptions.Compiled,
                                                                          RegexDefaults.Timeout);
 
-        // A "-GROUP" at the very end of a release title, as P2P movie and scene group releases are named
-        private static readonly Regex ReleaseGroupSuffixRegex = new Regex(@"(?<=\S)-[a-z0-9]+$", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout);
+        private static readonly Regex DatelessTagTailRegex = new Regex(DatelessTagTailPattern, RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout);
 
         private static readonly Regex StashIdRegex = new Regex(@"(?<stashid>.{8}-.{4}-.{4}-.{4}-.{12})", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexDefaults.Timeout);
 
@@ -891,8 +894,9 @@ namespace NzbDrone.Core.Parser
         {
             var isDateless = matchCollection[0].Groups[DatelessConst].Success;
 
-            // "Some Movie - Part 2 WEB-DL 1080p x264-GROUP" is a group release with its tags in the name, not a dateless scene: leave it to the patterns after this one
-            if (isDateless && ReleaseTagBoundaryRegex.IsMatch(releaseTitle) && ReleaseGroupSuffixRegex.IsMatch(releaseTitle))
+            // Quality tags left in the name once the trailing ones are cut off mean a group release, not a dateless scene: "Studio - Title 1080p [GRP]",
+            // "Some Movie - Part 2 WEB-DL 1080p x264-GROUP". Leave it to the patterns after this one, which parse it as on eros-develop.
+            if (isDateless && ReleaseTagBoundaryRegex.IsMatch(DatelessTagTailRegex.Replace(releaseTitle, string.Empty)))
             {
                 return null;
             }
