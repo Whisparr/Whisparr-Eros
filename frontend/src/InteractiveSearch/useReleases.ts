@@ -30,10 +30,16 @@ const SORT_PREDICATES = {
 
   languages: (item: Release) => {
     if (item.languages.length > 1) {
-      return 10000;
+      return translate('MultiLanguages');
     }
 
-    return item.languages[0]?.id ?? 0;
+    const language = item.languages[0];
+
+    if (!language || language.id === 0) {
+      return '\uffff';
+    }
+
+    return language.name;
   },
 
   indexerFlags: (item: Release) =>
