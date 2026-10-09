@@ -128,5 +128,49 @@ namespace NzbDrone.Core.Test.ParserTests.ParsingServiceTests
         {
             Subject.Map(_umlautInfo, "", 0, _movieSearchCriteria).Movie.Should().Be(_movieSearchCriteria.Movie);
         }
+
+        [TestCase(true)]
+        [TestCase(false)]
+        public void should_pass_interactive_search_to_scene_lookup(bool interactiveSearch)
+        {
+            var scene = Builder<Movie>.CreateNew()
+                                      .With(m => m.Title = "Shower Sex")
+                                      .With(m => m.MovieMetadata.Value.ItemType = ItemType.Scene)
+                                      .Build();
+
+            var searchCriteria = new MovieSearchCriteria
+            {
+                Movie = scene,
+                InteractiveSearch = interactiveSearch
+            };
+
+            var parsedMovieInfo = Parser.Parser.ParseMovieTitle("Helix Studios - Shower Sex - Joey Mills & Landon Vega [720p].mp4");
+
+            Subject.Map(parsedMovieInfo, "", 0, searchCriteria);
+
+            Mocker.GetMock<IMovieService>()
+                  .Verify(v => v.FindScene(parsedMovieInfo, interactiveSearch, searchCriteria), Times.Once());
+        }
+
+        [Test]
+        public void should_fall_back_to_movie_lookup_for_dateless_release()
+        {
+            var movie = Builder<Movie>.CreateNew()
+                                      .With(m => m.Title = "Mission Impossible - Ghost Protocol")
+                                      .With(m => m.MovieMetadata.Value.CleanTitle = "Mission Impossible - Ghost Protocol".CleanMovieTitle())
+                                      .With(m => m.MovieMetadata.Value.ItemType = ItemType.Movie)
+                                      .Build();
+
+            var searchCriteria = new MovieSearchCriteria
+            {
+                Movie = movie
+            };
+
+            var parsedMovieInfo = Parser.Parser.ParseMovieTitle("Mission Impossible - Ghost Protocol 1080p");
+
+            parsedMovieInfo.IsDatelessScene.Should().BeTrue();
+
+            Subject.Map(parsedMovieInfo, "", 0, searchCriteria).Movie.Should().Be(movie);
+        }
     }
 }

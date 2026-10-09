@@ -1181,19 +1181,20 @@ namespace NzbDrone.Core.Test.MediaCoverTests
                 Subject.Handle(new MovieUpdatedEvent(GivenMovie(7100 + i)));
             }
 
-            var blocked = new[]
+            var blocked = new List<Task>
             {
-                Task.Run(() => Subject.Handle(new MovieUpdatedEvent(GivenMovie(8000, "https://example.com/old-duplicate")))),
-                Task.Run(() => Subject.Handle(new MovieUpdatedEvent(GivenMovie(8001)))),
-                Task.Run(() => Subject.Handle(new MovieUpdatedEvent(GivenMovie(8000, "https://example.com/new-duplicate"))))
+                Task.Run(() => Subject.Handle(new MovieUpdatedEvent(GivenMovie(8000, "https://example.com/old-duplicate"))))
             };
-
-            SpinWait.SpinUntil(() => Subject.MovieCoverQueueTest.BlockedProducerCount == blocked.Length, 5000).Should().BeTrue();
+            SpinWait.SpinUntil(() => Subject.MovieCoverQueueTest.BlockedProducerCount == 1, 5000).Should().BeTrue();
+            blocked.Add(Task.Run(() => Subject.Handle(new MovieUpdatedEvent(GivenMovie(8001)))));
+            SpinWait.SpinUntil(() => Subject.MovieCoverQueueTest.BlockedProducerCount == 2, 5000).Should().BeTrue();
+            blocked.Add(Task.Run(() => Subject.Handle(new MovieUpdatedEvent(GivenMovie(8000, "https://example.com/new-duplicate")))));
+            SpinWait.SpinUntil(() => Subject.MovieCoverQueueTest.BlockedProducerCount == 3, 5000).Should().BeTrue();
 
             try
             {
                 Subject.Handle(new ApplicationShutdownRequested());
-                Task.WaitAll(blocked, 1000).Should().BeTrue();
+                Task.WaitAll(blocked.ToArray(), 1000).Should().BeTrue();
                 Subject.MovieCoverQueueTest.BlockedProducerCount.Should().Be(0);
             }
             finally
