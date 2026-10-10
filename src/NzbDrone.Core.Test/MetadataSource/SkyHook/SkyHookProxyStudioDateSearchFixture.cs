@@ -11,6 +11,7 @@ using NzbDrone.Core.MetadataSource.SkyHook.Resource;
 using NzbDrone.Core.Movies;
 using NzbDrone.Core.Movies.Studios;
 using NzbDrone.Core.Test.Framework;
+using NzbDrone.Test.Common;
 
 namespace NzbDrone.Core.Test.MetadataSource.SkyHook
 {
@@ -144,6 +145,8 @@ namespace NzbDrone.Core.Test.MetadataSource.SkyHook
             var query = QueryParams();
             query.Should().NotContainKey("studio");
             query["q"].Should().Be("brazzers exxtra 2024-05-17");
+
+            ExceptionVerification.ExpectedWarns(1);
         }
 
         [Test]

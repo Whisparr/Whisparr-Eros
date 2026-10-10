@@ -17,6 +17,7 @@ using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Movies;
 using NzbDrone.Core.Movies.Events;
 using NzbDrone.Core.Test.Framework;
+using NzbDrone.Test.Common;
 
 namespace NzbDrone.Core.Test.MediaCoverTests
 {
@@ -732,6 +733,8 @@ namespace NzbDrone.Core.Test.MediaCoverTests
             intake.Should().NotThrow();
             completed.Wait(5000).Should().BeTrue();
             Subject.MovieCoverQueueTest.PendingUniqueCount.Should().Be(0);
+
+            ExceptionVerification.ExpectedErrors(1);
         }
 
         [Test]
@@ -1050,6 +1053,8 @@ namespace NzbDrone.Core.Test.MediaCoverTests
 
             SpinWait.SpinUntil(() => Subject.MovieCoverQueueTest.WorkerPoolSize == 0, 5000).Should().BeTrue();
             Subject.MovieCoverQueueTest.WorkerCountAlive.Should().Be(0);
+
+            ExceptionVerification.ExpectedWarns(1);
         }
 
         [Test]
@@ -1148,6 +1153,8 @@ namespace NzbDrone.Core.Test.MediaCoverTests
             releaseCover.Set();
             SpinWait.SpinUntil(() => Subject.MovieCoverQueueTest.WorkerPoolSize == 0, 5000).Should().BeTrue();
             Subject.MovieCoverQueueTest.WorkerCountAlive.Should().Be(0);
+
+            ExceptionVerification.ExpectedWarns(1);
         }
 
         [Test]
@@ -1201,6 +1208,8 @@ namespace NzbDrone.Core.Test.MediaCoverTests
             {
                 releaseWorkers.Set();
             }
+
+            ExceptionVerification.ExpectedWarns(1);
         }
 
         [Test]
@@ -1264,6 +1273,8 @@ namespace NzbDrone.Core.Test.MediaCoverTests
             Thread.Sleep(200);
 
             completedIds.Should().NotContainKey(4999);
+
+            ExceptionVerification.ExpectedWarns(1);
         }
 
         [Test]
@@ -1335,6 +1346,8 @@ namespace NzbDrone.Core.Test.MediaCoverTests
             {
                 releaseBlockers.Set();
             }
+
+            ExceptionVerification.ExpectedErrors(1);
         }
 
         [Test]
