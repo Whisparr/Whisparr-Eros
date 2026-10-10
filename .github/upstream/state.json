@@ -5,8 +5,8 @@
       "repo": "Radarr/Radarr",
       "branch": "develop",
       "owns": "backend",
-      "highWater": "c90668a520664ad0c91812cfee57c41928ad2148",
-      "highWaterNote": "2026-09-20 'Reset loaded state for movie images when URL changes', the current tip of Radarr develop. Everything at or before this mark is dispositioned: 2026-09 closed with three backend fixes adapted and the frontend commit skipped under the radarr-frontend gate. Advance only when everything at or before the new mark is settled."
+      "highWater": "2c205edecafb96b852d62e5743b8adc4e8dd8494",
+      "highWaterNote": "2026-10-09 'Restrict ImageSharp decoders and suppress 3.x advisories', the current tip of Radarr develop. Everything at or before this mark is dispositioned: 2026-10 closed with two backend fixes picked and three adapted (disposed-container events without the deferred e80abdd60 guard, edition-tag mm casing, and the ImageSharp decoder restriction without the suppressions #954 already carries). Advance only when everything at or before the new mark is settled."
     },
     "sonarr": {
       "repo": "Sonarr/Sonarr",
@@ -769,6 +769,36 @@
         "month": "2026-09",
         "disposition": "skip",
         "reason": "Radarr frontend, and the bug does not exist in our component. Ours follows Sonarr and has no isLoaded state at all - MovieImage.tsx tracks hasError plus a triedRemote ref for the remote-URL fallback, so there is nothing to reset when the URL changes."
+      },
+      "a07ba4195ed3eceeb170f1bce49346078e1e8eb3": {
+        "subject": "Fix Event handling on disposed Container",
+        "month": "2026-10",
+        "disposition": "adapt",
+        "reason": "Our ServiceFactory wraps the same DryIoc 5.4.3 container through DryIoc.Microsoft.DependencyInjection 6.2.0, so the IResolverContext.IsDisposed check works unchanged and stops late events resolving handlers from a disposed container during shutdown. Conflicted only on context: Radarr's EventAggregator carries the IsExiting/LifecycleEvent guard from e80abdd60, which is deferred here, so just the disposed-container check is ported."
+      },
+      "31f9e416668cdfd0a6a43efbc2c11045154ac4fe": {
+        "subject": "Fix DbLogger unregister",
+        "month": "2026-10",
+        "disposition": "pick",
+        "reason": "Our DatabaseTarget was byte-identical to the pre-fix upstream, so the same shutdown path applies: Startup.Configure resolves the concrete DatabaseTarget and calls Register(), while ApplicationShutdownRequested reaches whichever instance the event aggregator resolves, which checked its own Rule. The fix looks the registered target up by name and unregisters that one. Also guards against double-subscribing ConfigurationChanged on re-register. Applied cleanly."
+      },
+      "803e10274cf23464d429b0b5af4606c4b89e3793": {
+        "subject": "Fix edition tags capitalization for mm scans",
+        "month": "2026-10",
+        "disposition": "adapt",
+        "reason": "{Edition Tags} is a live movie naming token here and title-cased '35mm' to '35Mm'. Conflicted because our GetEditionToken passes RegexDefaults.Timeout (S6444) and upstream does not; re-applied the mm alternation, the static modifier and the ?. cleanup by hand, plus upstream's six EditionTagsFixture cases. Organizer, not Parser, so the parser gate does not apply."
+      },
+      "0a097deb192a6b72b84c23dc18c2c0d68a0678fe": {
+        "subject": "Fixed: update every matching Plex section",
+        "month": "2026-10",
+        "disposition": "pick",
+        "reason": "Our PlexServerService.UpdateSections was identical to the pre-fix upstream and returned after the first matching section, so two Plex libraries sharing a root folder only had one refreshed. Applied cleanly with upstream's new PlexServerServiceFixture, which compiles against our Movie unchanged."
+      },
+      "2c205edecafb96b852d62e5743b8adc4e8dd8494": {
+        "subject": "Restrict ImageSharp decoders and suppress 3.x advisories",
+        "month": "2026-10",
+        "disposition": "adapt",
+        "reason": "Took the ImageResizer half: a private Configuration with only the JPEG, PNG and WebP modules, SimpleGcMemoryAllocator and SkipMetadata, so TIFF, BMP, GIF and the rest are never decoded from downloaded covers. Left the NuGetAuditSuppress half - the same five GHSAs are already suppressed in src/Directory.Build.props by #954, each with its own reason. Added an ImageResizerFixture case proving a BMP is refused; it fails without the change. Resize failures are already caught and logged per cover in MediaCoverService."
       }
     },
     "sonarr": {
