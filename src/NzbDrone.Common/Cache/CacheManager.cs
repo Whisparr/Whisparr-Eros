@@ -12,6 +12,7 @@ namespace NzbDrone.Common.Cache
         ICached<T> GetRollingCache<T>(Type host, string name, TimeSpan defaultLifeTime);
         ICachedDictionary<T> GetCacheDictionary<T>(Type host, string name, Func<IDictionary<string, T>> fetchFunc = null, TimeSpan? lifeTime = null);
         void Clear();
+        void ClearExpired();
         ICollection<ICached> Caches { get; }
     }
 
@@ -27,6 +28,14 @@ namespace NzbDrone.Common.Cache
         public void Clear()
         {
             _cache.Clear();
+        }
+
+        public void ClearExpired()
+        {
+            foreach (var cache in _cache.Values)
+            {
+                cache.ClearExpired();
+            }
         }
 
         public ICollection<ICached> Caches => _cache.Values;
