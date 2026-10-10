@@ -39,6 +39,7 @@ namespace NzbDrone.Core.Test.MovieTests.MovieServiceTests
                 CreateScene(5, "Locker Room", "2017-01-05", "Kyle Ross"),
                 CreateScene(6, "Locker Room", "2022-02-06", "Ashton Summers"),
                 CreateScene(7, "Shower Sex", "2023-09-07", "Cameron Parks"),
+                CreateScene(9, "Cuddly", "2015-12-06", ("Ava Addams", Gender.Female)),
             };
 
             Mocker.GetMock<IStudioService>()
@@ -50,7 +51,7 @@ namespace NzbDrone.Core.Test.MovieTests.MovieServiceTests
                 .Returns(() => _scenes.ToList());
         }
 
-        private static Movie CreateScene(int id, string title, string releaseDate, params string[] performers)
+        private static Movie CreateScene(int id, string title, string releaseDate, params (string Name, Gender Gender)[] performers)
         {
             var movie = new Movie
             {
@@ -61,9 +62,14 @@ namespace NzbDrone.Core.Test.MovieTests.MovieServiceTests
 
             movie.MovieMetadata.Value.Id = id;
             movie.MovieMetadata.Value.ReleaseDate = releaseDate;
-            movie.MovieMetadata.Value.Credits = performers.Select(p => new Credit { Character = "", Performer = new CreditPerformer { Name = p, Gender = Gender.Male } }).ToList();
+            movie.MovieMetadata.Value.Credits = performers.Select(p => new Credit { Character = "", Performer = new CreditPerformer { Name = p.Name, Gender = p.Gender } }).ToList();
 
             return movie;
+        }
+
+        private static Movie CreateScene(int id, string title, string releaseDate, params string[] performerNames)
+        {
+            return CreateScene(id, title, releaseDate, performerNames.Select(n => (n, Gender.Male)).ToArray());
         }
 
         private Movie FindScene(string title, Source source)
@@ -93,6 +99,13 @@ namespace NzbDrone.Core.Test.MovieTests.MovieServiceTests
         // Title & Performer
         [TestCase("Helix Studios - Shower Sex - Joey Mills & Landon Vega [720p].mp4", 1)]
         [TestCase("Helix Studios - Spitroasted - Blake Mitchell, Corbin Colby & Clay Turner [1080p+Photoset]", 3)]
+
+        // Title + a single female performer (not all of them), #960: before the title & performer check ran first this was
+        // shadowed by the all-female-performers check into [Performers], which automatic search rejects
+        [TestCase("Helix Studios - Cuddly Fun - Ava Addams [720p]", 9)]
+
+        // Title + all female performers, previously matched via the weak [Performers] branch; must still match in a search
+        [TestCase("Helix Studios - Cuddly Fun - Ava Addams & Landon Vega [720p]", 9)]
         public void should_only_match_title_and_performer_in_a_search(string title, int id)
         {
             FindScene(title, Source.Rss).Should().BeNull();
