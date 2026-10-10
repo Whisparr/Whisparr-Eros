@@ -19,7 +19,7 @@ function YearInfo({
   sizeOnDisk,
 }: YearInfoProps) {
   return (
-    <DescriptionList>
+    <DescriptionList className={styles.descriptionList}>
       <DescriptionListItem
         titleClassName={styles.title}
         descriptionClassName={styles.description}
