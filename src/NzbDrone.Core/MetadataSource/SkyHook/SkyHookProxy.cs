@@ -838,7 +838,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             }
             else
             {
-                var searchTerm = lowerTitle.Replace("_", " ").Replace(".", " ");
+                var searchTerm = ReplaceSearchSeparators(lowerTitle);
                 var movies = itemType == ItemType.Movie ? SearchForNewMovie(searchTerm) : SearchForNewScene(searchTerm);
 
                 foreach (var movie in movies)
@@ -874,7 +874,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
         public List<Movie> SearchForNewTmdbMovie(string title)
         {
-            var normalizedTitle = title.ToLowerInvariant().Replace(".", "");
+            var normalizedTitle = title.ToLowerInvariant().Replace(".", "", StringComparison.Ordinal);
 
             if (normalizedTitle.StartsWith(TpdbPrefix, StringComparison.Ordinal) || normalizedTitle.StartsWith(TpdbIdPrefix, StringComparison.Ordinal))
             {
@@ -893,7 +893,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
                 var lowerTitle = title.ToLowerInvariant();
 
-                lowerTitle = lowerTitle.Replace(".", "");
+                lowerTitle = lowerTitle.Replace(".", "", StringComparison.Ordinal);
 
                 var parserTitle = lowerTitle;
 
@@ -952,7 +952,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                     }
                 }
 
-                var searchTerm = parserTitle.Replace("_", " ").Replace(".", " ");
+                var searchTerm = ReplaceSearchSeparators(parserTitle);
 
                 var request = _whisparrMetadata.Create()
                     .SetSegment(RouteConst, "movie/search")
@@ -999,7 +999,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
         public List<Movie> SearchForNewTpdbMovie(string title)
         {
-            var normalizedTitle = title.ToLowerInvariant().Replace(".", "");
+            var normalizedTitle = title.ToLowerInvariant().Replace(".", "", StringComparison.Ordinal);
 
             if (normalizedTitle.StartsWith(TmdbPrefix, StringComparison.Ordinal) || normalizedTitle.StartsWith(TmdbIdPrefix, StringComparison.Ordinal))
             {
@@ -1010,7 +1010,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             {
                 var lowerTitle = title.ToLowerInvariant();
 
-                lowerTitle = lowerTitle.Replace(".", "");
+                lowerTitle = lowerTitle.Replace(".", "", StringComparison.Ordinal);
 
                 // Allow search to accept a full StashDB URL
                 var regex = new Regex(@"^https://theporndb\.net/movies/(?<tpdbid>[A-Za-z0-9\-]+).*$", RegexOptions.Compiled, RegexDefaults.Timeout);
@@ -1054,7 +1054,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                 if (parserResult != null && parserResult.PrimaryMovieTitle.IsNotNullOrWhiteSpace() && parserResult.PrimaryMovieTitle != title)
                 {
                     // Parser found something interesting!
-                    parserTitle = parserResult.PrimaryMovieTitle.ToLowerInvariant().Replace(".", " "); // TODO Update so not every period gets replaced (e.g. R.I.P.D.)
+                    parserTitle = parserResult.PrimaryMovieTitle.ToLowerInvariant().Replace(".", " ", StringComparison.Ordinal); // TODO Update so not every period gets replaced (e.g. R.I.P.D.)
                     if (parserResult.Year > 1800)
                     {
                         yearTerm = parserResult.Year.ToString();
@@ -1063,7 +1063,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
                 parserTitle = StripTrailingTheFromTitle(parserTitle);
 
-                var searchTerm = parserTitle.Replace("_", " ").Replace(".", " ");
+                var searchTerm = ReplaceSearchSeparators(parserTitle);
 
                 var request = _whisparrMetadata.Create()
                     .SetSegment(RouteConst, "tpdb/movie/search")
@@ -1119,7 +1119,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             {
                 var lowerTitle = title.ToLowerInvariant();
 
-                lowerTitle = lowerTitle.Replace(".", "");
+                lowerTitle = lowerTitle.Replace(".", "", StringComparison.Ordinal);
 
                 // Allow search to accept a full StashDB URL
                 var regex = new Regex(@"^https://stashdb\.org/performers/(?<stashid>[A-Za-z0-9\-]+).*$", RegexOptions.Compiled, RegexDefaults.Timeout);
@@ -1154,7 +1154,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                     }
                 }
 
-                var searchTerm = lowerTitle.Replace("_", " ").Replace(".", " ");
+                var searchTerm = ReplaceSearchSeparators(lowerTitle);
 
                 var request = _whisparrMetadata.Create()
                     .SetSegment(RouteConst, "performer/search")
@@ -1200,7 +1200,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             {
                 var lowerTitle = title.ToLowerInvariant();
 
-                lowerTitle = lowerTitle.Replace(".", "");
+                lowerTitle = lowerTitle.Replace(".", "", StringComparison.Ordinal);
 
                 // Allow search to accept a full StashDB URL
                 var regex = new Regex(@"^https://stashdb\.org/studios/(?<stashid>[A-Za-z0-9\-]+).*$", RegexOptions.Compiled, RegexDefaults.Timeout);
@@ -1235,7 +1235,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                     }
                 }
 
-                var searchTerm = lowerTitle.Replace("_", " ").Replace(".", " ");
+                var searchTerm = ReplaceSearchSeparators(lowerTitle);
 
                 var request = _whisparrMetadata.Create()
                     .SetSegment(RouteConst, "site/search")
@@ -1588,6 +1588,11 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             return title;
         }
 
+        private static string ReplaceSearchSeparators(string term)
+        {
+            return term.Replace("_", " ").Replace(".", " ");
+        }
+
         /// <summary>Resolves a studio parsed from a release to a metadata server studio.</summary>
         /// <param name="studioTitle">The studio name as it was parsed from the release.</param>
         /// <param name="cleanStudioTitle">The cleaned form of that name, used to confirm the match.</param>
@@ -1669,7 +1674,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
         private List<Movie> SearchForNewScene(string title, string studioForeignId, string releaseDate)
         {
-            var normalizedTitle = title.ToLowerInvariant().Replace(".", "");
+            var normalizedTitle = title.ToLowerInvariant().Replace(".", "", StringComparison.Ordinal);
 
             if (normalizedTitle.StartsWith(TmdbPrefix, StringComparison.Ordinal) || normalizedTitle.StartsWith(TmdbIdPrefix, StringComparison.Ordinal) || normalizedTitle.StartsWith(TpdbPrefix, StringComparison.Ordinal) || normalizedTitle.StartsWith("tpdbid:", StringComparison.Ordinal))
             {
@@ -1680,7 +1685,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             {
                 var lowerTitle = title.ToLowerInvariant();
 
-                lowerTitle = lowerTitle.Replace(".", "");
+                lowerTitle = lowerTitle.Replace(".", "", StringComparison.Ordinal);
 
                 // Allow search to accept a full StashDB URL
                 var regex = new Regex(@"^https://stashdb\.org/scenes/(?<stashid>[A-Za-z0-9\-]+).*$", RegexOptions.Compiled, RegexDefaults.Timeout);
@@ -1715,7 +1720,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                     }
                 }
 
-                var searchTerm = lowerTitle.Replace("_", " ").Replace(".", " ");
+                var searchTerm = ReplaceSearchSeparators(lowerTitle);
 
                 var requestBuilder = _whisparrMetadata.Create()
                     .SetSegment(RouteConst, "scene/search")
