@@ -1590,7 +1590,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
         private static string ReplaceSearchSeparators(string term)
         {
-            return term.Replace("_", " ").Replace(".", " ");
+            return term.Replace("_", " ", StringComparison.Ordinal).Replace(".", " ", StringComparison.Ordinal);
         }
 
         /// <summary>Resolves a studio parsed from a release to a metadata server studio.</summary>
