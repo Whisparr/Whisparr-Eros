@@ -15,7 +15,6 @@ using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.MetadataSource;
 using NzbDrone.Core.Movies.Performers.Commands;
-using NzbDrone.Core.Movies.Performers.Events;
 
 namespace NzbDrone.Core.Movies.Performers
 {
@@ -77,7 +76,6 @@ namespace NzbDrone.Core.Movies.Performers
                     performer.Status = PerformerStatus.Deleted;
                     _performerService.Update(performer);
                     _logger.Debug(ex, "Performer not found on StashDB for {0}", performer);
-                    _eventAggregator.PublishEvent(new PerformerUpdatedEvent(performer));
                 }
 
                 throw;
@@ -144,7 +142,6 @@ namespace NzbDrone.Core.Movies.Performers
             _performerService.Update(performer);
 
             _logger.Debug("Finished performer metadata refresh for {0}", performer.Name);
-            _eventAggregator.PublishEvent(new PerformerUpdatedEvent(performer));
 
             return performer;
         }
