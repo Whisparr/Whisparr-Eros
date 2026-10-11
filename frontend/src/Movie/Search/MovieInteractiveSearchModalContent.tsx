@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import Button from 'Components/Link/Button';
 import ModalBody from 'Components/Modal/ModalBody';
 import ModalContent from 'Components/Modal/ModalContent';
@@ -19,8 +19,9 @@ export interface MovieInteractiveSearchModalContentProps {
 function MovieInteractiveSearchModalContent({
   movieId,
   onModalClose,
-}: MovieInteractiveSearchModalContentProps) {
+}: Readonly<MovieInteractiveSearchModalContentProps>) {
   const movie = useMovie(movieId).data;
+  const modalBodyRef = useRef<HTMLDivElement>(null);
 
   const { showRelativeDates, shortDateFormat } = useUiSettingsValues();
 
@@ -46,8 +47,11 @@ function MovieInteractiveSearchModalContent({
           : translate('InteractiveSearchModalHeader')}
       </ModalHeader>
 
-      <ModalBody scrollDirection={BOTH}>
-        <InteractiveSearch searchPayload={{ movieId }} />
+      <ModalBody ref={modalBodyRef} scrollDirection={BOTH}>
+        <InteractiveSearch
+          searchPayload={{ movieId }}
+          scrollerRef={modalBodyRef}
+        />
       </ModalBody>
 
       <ModalFooter>

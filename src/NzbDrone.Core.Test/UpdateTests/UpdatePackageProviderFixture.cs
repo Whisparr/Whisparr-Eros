@@ -10,6 +10,7 @@ using NzbDrone.Common.Http;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Test.Framework;
 using NzbDrone.Core.Update;
+using NzbDrone.Test.Common;
 
 namespace NzbDrone.Core.Test.UpdateTests
 {
@@ -145,6 +146,8 @@ namespace NzbDrone.Core.Test.UpdateTests
             GivenList("GithubDevelopOnlyPageResponse.json");
 
             Subject.GetLatestUpdate("eros", new Version(2, 0, 0)).Should().BeNull();
+
+            ExceptionVerification.ExpectedWarns(1);
         }
 
         [Test]

@@ -9,7 +9,7 @@ import formatDateTime from 'Utilities/Date/formatDateTime';
 import getRelativeDate from 'Utilities/Date/getRelativeDate';
 import formatBytes from 'Utilities/Number/formatBytes';
 import MovieIndexOverviewInfoRow from './MovieIndexOverviewInfoRow';
-import styles from './MovieIndexOverviewInfo.css';
+import styles from './MovieIndexOverviewInfo.module.css';
 
 interface RowProps {
   name: string;

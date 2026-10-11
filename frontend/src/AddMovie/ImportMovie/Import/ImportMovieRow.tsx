@@ -10,7 +10,7 @@ import {
   MovieLookupResult,
 } from '../ImportMovieTypes';
 import ImportMovieSelectMovie from './SelectMovie/ImportMovieSelectMovie';
-import styles from './ImportMovieRow.css';
+import styles from './ImportMovieRow.module.css';
 
 interface ImportMovieRowProps {
   readonly item: ImportItem;

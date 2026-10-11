@@ -19,7 +19,7 @@ import PageToolbarSeparator from 'Components/Page/Toolbar/PageToolbarSeparator';
 import { Filter as AppStateFilter } from 'Filters/Filter';
 import useSelectState from 'Helpers/Hooks/useSelectState';
 import { align, icons, kinds, sortDirections } from 'Helpers/Props';
-import styles from 'Movie/Index/MovieIndex.css';
+import styles from 'Movie/Index/MovieIndex.module.css';
 import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
 import { COLLECTION_FILTERS } from './collectionFilters';

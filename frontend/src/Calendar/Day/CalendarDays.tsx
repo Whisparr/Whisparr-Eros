@@ -9,8 +9,10 @@ import {
   goToPreviousRange,
   useCalendarDates,
 } from 'Calendar/useCalendar';
+import translate from 'Utilities/String/translate';
 import CalendarDay from './CalendarDay';
-import styles from './CalendarDays.css';
+import CalendarTableHeader from './CalendarTableHeader';
+import styles from './CalendarDays.module.css';
 
 function CalendarDays() {
   const dates = useCalendarDates();
@@ -107,20 +109,40 @@ function CalendarDays() {
     };
   }, [handleTouchStart, handleTouchEnd, handleTouchCancel, handleTouchMove]);
 
+  const rowSize = view === calendarViews.MONTH ? 7 : Math.max(dates.length, 1);
+  const rows: string[][] = [];
+
+  for (let index = 0; index < dates.length; index += rowSize) {
+    rows.push(dates.slice(index, index + rowSize));
+  }
+
+  // A table, so screen readers can move by row and column and announce each
+  // day's date; the visible day-of-week strip above is hidden from them.
   return (
-    <div
+    <table
       className={classNames(styles.days, styles[view as keyof typeof styles])}
+      aria-label={translate('Calendar')}
     >
-      {dates.map((date) => {
-        return (
-          <CalendarDay
-            key={date}
-            date={date}
-            isTodaysDate={date === todaysDate}
-          />
-        );
-      })}
-    </div>
+      <CalendarTableHeader todaysDate={todaysDate} />
+
+      <tbody>
+        {rows.map((row) => {
+          return (
+            <tr key={row[0]}>
+              {row.map((date) => {
+                return (
+                  <CalendarDay
+                    key={date}
+                    date={date}
+                    isTodaysDate={date === todaysDate}
+                  />
+                );
+              })}
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
   );
 }
 

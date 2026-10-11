@@ -16,7 +16,7 @@ import translate from 'Utilities/String/translate';
 import NamingOption from './NamingOption';
 import TokenCase from './TokenCase';
 import TokenSeparator from './TokenSeparator';
-import styles from './NamingModal.css';
+import styles from './NamingModal.module.css';
 
 const separatorOptions: { key: TokenSeparator; value: string }[] = [
   {

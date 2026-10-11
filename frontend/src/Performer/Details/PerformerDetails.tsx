@@ -49,7 +49,7 @@ import {
   usePerformerDetailsMovies,
 } from './usePerformerDetails';
 import { usePerformerTags } from './usePerformerTags';
-import styles from './PerformerDetails.css';
+import styles from './PerformerDetails.module.css';
 
 function getFanartUrl(
   images: Array<{ coverType: string; url: string }>
@@ -177,11 +177,13 @@ function PerformerDetails() {
         </PageContent>
       );
     }
+
     if (performerDetailsError) {
       return (
         <Alert kind={kinds.DANGER}>{translate('LoadingPerformerFailed')}</Alert>
       );
     }
+
     return null;
   }
 
@@ -240,21 +242,27 @@ function PerformerDetails() {
   function handleDeleteMovieModalClose() {
     setIsDeleteMovieModalOpen(false);
   }
+
   function handleEditMovieModalClose() {
     setIsEditMovieModalOpen(false);
   }
+
   function handleEditMoviePress() {
     setIsEditMovieModalOpen(true);
   }
+
   function handleDeleteMoviePress() {
     setIsDeleteMovieModalOpen(true);
   }
+
   function handleRefreshPress() {
     onRefreshPress();
   }
+
   function handleSearchPress() {
     onSearchPress();
   }
+
   function handleMonitorTogglePress(
     value: boolean | { monitored: boolean; moviesMonitored: boolean },
     _options: { shiftKey: boolean }

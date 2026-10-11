@@ -15,7 +15,7 @@ import formatTimeSpan from 'Utilities/Date/formatTimeSpan';
 import titleCase from 'Utilities/String/titleCase';
 import translate from 'Utilities/String/translate';
 import QueuedTaskRowNameCell from './QueuedTaskRowNameCell';
-import styles from './QueuedTaskRow.css';
+import styles from './QueuedTaskRow.module.css';
 
 function getStatusIconProps(
   status: string,

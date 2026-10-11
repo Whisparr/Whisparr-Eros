@@ -7,6 +7,7 @@ using NzbDrone.Common.Extensions;
 using NzbDrone.Core.DecisionEngine;
 using NzbDrone.Core.Download;
 using NzbDrone.Core.Download.Pending;
+using NzbDrone.Core.Lifecycle;
 using NzbDrone.Core.Movies;
 using NzbDrone.Core.Parser.Model;
 using NzbDrone.Core.Profiles.Qualities;
@@ -18,7 +19,6 @@ namespace NzbDrone.Core.Test.Download.Pending.PendingReleaseServiceTests
     [TestFixture]
     public class RemoveGrabbedFixture : CoreTest<PendingReleaseService>
     {
-        private DownloadDecision _temporarilyRejected;
         private Movie _movie;
         private QualityProfile _profile;
         private ReleaseInfo _release;
@@ -56,8 +56,6 @@ namespace NzbDrone.Core.Test.Download.Pending.PendingReleaseServiceTests
             _remoteMovie.ParsedMovieInfo = _parsedMovieInfo;
             _remoteMovie.Release = _release;
 
-            _temporarilyRejected = new DownloadDecision(_remoteMovie, new DownloadRejection(DownloadRejectionReason.MinimumAgeDelay, "Temp Rejected", RejectionType.Temporary));
-
             _heldReleases = new List<PendingRelease>();
 
             Mocker.GetMock<IPendingReleaseRepository>()
@@ -94,6 +92,8 @@ namespace NzbDrone.Core.Test.Download.Pending.PendingReleaseServiceTests
                                                    .Build();
 
             _heldReleases.AddRange(heldReleases);
+
+            Subject.Handle(new ApplicationStartedEvent());
         }
 
         [Test]

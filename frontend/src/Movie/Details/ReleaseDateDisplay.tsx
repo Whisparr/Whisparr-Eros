@@ -1,7 +1,7 @@
 import React from 'react';
 import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import getRelativeDate from 'Utilities/Date/getRelativeDate';
-import styles from './MovieDetails.css';
+import styles from './MovieDetails.module.css';
 
 interface Props {
   releaseDate?: string;

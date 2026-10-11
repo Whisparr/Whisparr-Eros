@@ -17,7 +17,7 @@ import {
   setSceneIndexTableOption,
 } from '../sceneIndexOptionsStore';
 import SceneIndexTableOptions from './SceneIndexTableOptions';
-import styles from './SceneIndexTableHeader.css';
+import styles from './SceneIndexTableHeader.module.css';
 
 interface SceneIndexTableHeaderProps {
   columns: Column[];

@@ -20,7 +20,7 @@ import { useShowAdvancedSettings } from 'Settings/advancedSettingsStore';
 import { AutoTaggingSpecification } from 'typings/AutoTagging';
 import { InputChanged } from 'typings/inputs';
 import translate from 'Utilities/String/translate';
-import styles from './EditSpecificationModalContent.css';
+import styles from './EditSpecificationModalContent.module.css';
 
 interface EditSpecificationModalContentProps {
   specification: AutoTaggingSpecification;

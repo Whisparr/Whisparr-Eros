@@ -7,7 +7,7 @@ import { sizes } from 'Helpers/Props';
 import { SelectedSchema } from 'Settings/useProviderSchema';
 import translate from 'Utilities/String/translate';
 import AddNotificationPresetMenuItem from './AddNotificationPresetMenuItem';
-import styles from './AddNotificationItem.css';
+import styles from './AddNotificationItem.module.css';
 
 interface AddNotificationItemProps {
   implementation: string;

@@ -59,6 +59,7 @@ function getRelativeDate({
       "getRelativeDate: 'timeFormat' is required when 'includeTime' or 'timeForToday' is true"
     );
   }
+
   // Detect date-only strings (YYYY-MM-DD) or midnight-UTC timestamps
   const isDateOnly = /^\d{4}-\d{2}-\d{2}$/.test(date || '');
   const isMidnightUtc = /T00:00:00(?:\.000)?Z$/.test(date || '');
@@ -109,6 +110,7 @@ function getRelativeDate({
   }
 
   const isYesterdayDate = m.isSame(now.clone().subtract(1, 'day'), 'day');
+
   if (isYesterdayDate) {
     return includeTime
       ? translate('YesterdayAt', { time })
@@ -120,6 +122,7 @@ function getRelativeDate({
   }
 
   const isTomorrowDate = m.isSame(now.clone().add(1, 'day'), 'day');
+
   if (isTomorrowDate) {
     return includeTime
       ? translate('TomorrowAt', { time })
@@ -127,6 +130,7 @@ function getRelativeDate({
   }
 
   const diffDays = m.startOf('day').diff(now.startOf('day'), 'days');
+
   if (diffDays > 0 && diffDays <= 7) {
     const day = getDayOfWeek(m.day());
     return includeTime ? translate('DayOfWeekAt', { day, time }) : day;

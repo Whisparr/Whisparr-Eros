@@ -2,6 +2,7 @@ import classNames from 'classnames';
 import React, {
   FocusEvent,
   FormEvent,
+  Key,
   KeyboardEvent,
   KeyboardEventHandler,
   MutableRefObject,
@@ -23,7 +24,7 @@ import { Manager, Popper, Reference } from 'react-popper';
 import Portal from 'Components/Portal';
 import usePrevious from 'Helpers/Hooks/usePrevious';
 import { InputChanged } from 'typings/inputs';
-import styles from './AutoSuggestInput.css';
+import styles from './AutoSuggestInput.module.css';
 
 interface AutoSuggestInputProps<T> extends Omit<
   AutosuggestPropsBase<T>,
@@ -101,6 +102,7 @@ function AutoSuggestInput<T = any>(props: AutoSuggestInputProps<T>) {
         state.styles.popper.maxHeight = `${maxHeight}px`;
       } else {
         const windowHeight = window.innerHeight;
+
         if (state.placement.startsWith('bottom')) {
           state.styles.popper.maxHeight = `${windowHeight - bottom}px`;
         } else {
@@ -115,16 +117,23 @@ function AutoSuggestInput<T = any>(props: AutoSuggestInputProps<T>) {
 
   const createRenderInputComponent = useCallback(
     (inputProps: RenderInputComponentProps) => {
+      // react-autosuggest passes `key` inside its props, and React warns when a
+      // key is spread rather than passed directly.
+      const { key, ...otherInputProps } =
+        inputProps as RenderInputComponentProps & {
+          key?: Key;
+        };
+
       return (
         <Reference>
           {({ ref }) => {
             if (renderInputComponent) {
-              return renderInputComponent(inputProps, ref);
+              return renderInputComponent(otherInputProps, ref);
             }
 
             return (
               <div ref={ref}>
-                <input {...inputProps} />
+                <input key={key} {...otherInputProps} />
               </div>
             );
           }}
@@ -136,6 +145,8 @@ function AutoSuggestInput<T = any>(props: AutoSuggestInputProps<T>) {
 
   const renderSuggestionsContainer = useCallback(
     ({ containerProps, children }: RenderSuggestionsContainerParams) => {
+      const { key, ...otherContainerProps } = containerProps;
+
       return (
         <Portal>
           <Popper
@@ -165,7 +176,8 @@ function AutoSuggestInput<T = any>(props: AutoSuggestInputProps<T>) {
                   }
                 >
                   <div
-                    {...containerProps}
+                    key={key}
+                    {...otherContainerProps}
                     style={{
                       maxHeight: style.maxHeight,
                     }}

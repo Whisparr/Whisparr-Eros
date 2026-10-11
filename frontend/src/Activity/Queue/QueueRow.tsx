@@ -34,7 +34,7 @@ import QueueStatusCell from './QueueStatusCell';
 import RemoveQueueItemModal, { RemovePressProps } from './RemoveQueueItemModal';
 import TimeleftCell from './TimeleftCell';
 import { useGrabQueueItem, useRemoveQueueItem } from './useQueue';
-import styles from './QueueRow.css';
+import styles from './QueueRow.module.css';
 
 interface QueueRowProps {
   id: number;
@@ -339,8 +339,8 @@ function QueueRow(props: QueueRowProps) {
 
       <InteractiveImportModal
         isOpen={isInteractiveImportModalOpen}
-        downloadId={downloadId}
-        modalTitle={title}
+        downloadIds={downloadId ? [downloadId] : undefined}
+        title={title}
         onModalClose={handleInteractiveImportModalClose}
       />
 

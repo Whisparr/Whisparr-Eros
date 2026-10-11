@@ -4,7 +4,7 @@ import ProgressBar from 'Components/ProgressBar';
 import { kinds, sizes } from 'Helpers/Props';
 import { Kind } from 'Helpers/Props/kinds';
 import Studio from 'Studio/Studio';
-import styles from './StudioIndexProgressBar.css';
+import styles from './StudioIndexProgressBar.module.css';
 
 interface StudioIndexProgressBarProps {
   Studio: Studio;

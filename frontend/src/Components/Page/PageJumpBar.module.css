@@ -1,0 +1,22 @@
+.jumpBar {
+  z-index: var(--pageJumpBarZIndex);
+  display: flex;
+  place-content: stretch center;
+  align-items: stretch;
+  align-self: stretch;
+  flex: 0 0 30px;
+}
+
+.jumpBarItems {
+  display: flex;
+  justify-content: space-around;
+  flex: 0 0 100%;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+@media (--breakpointSmall) {
+  .jumpBar {
+    display: none;
+  }
+}

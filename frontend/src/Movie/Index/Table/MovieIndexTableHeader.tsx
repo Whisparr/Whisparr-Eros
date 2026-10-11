@@ -17,7 +17,7 @@ import {
   setMovieIndexTableOption,
 } from '../movieIndexOptionsStore';
 import MovieIndexTableOptions from './MovieIndexTableOptions';
-import styles from './MovieIndexTableHeader.css';
+import styles from './MovieIndexTableHeader.module.css';
 
 interface MovieIndexTableHeaderProps {
   columns: Column[];

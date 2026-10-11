@@ -4,7 +4,7 @@ import PageContent from 'Components/Page/PageContent';
 import PageContentBody from 'Components/Page/PageContentBody';
 import translate from 'Utilities/String/translate';
 import SettingsToolbar from './SettingsToolbar';
-import styles from './Settings.css';
+import styles from './Settings.module.css';
 
 function Settings() {
   return (

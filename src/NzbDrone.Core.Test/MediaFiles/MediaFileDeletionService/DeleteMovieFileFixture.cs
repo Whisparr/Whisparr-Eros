@@ -6,6 +6,7 @@ using NzbDrone.Common.Disk;
 using NzbDrone.Core.Exceptions;
 using NzbDrone.Core.MediaFiles;
 using NzbDrone.Core.Movies;
+using NzbDrone.Core.RootFolders;
 using NzbDrone.Core.Test.Framework;
 using NzbDrone.Test.Common;
 
@@ -41,6 +42,10 @@ namespace NzbDrone.Core.Test.MediaFiles.MediaFileDeletionService
 
         private void GivenRootFolderExists()
         {
+            Mocker.GetMock<IRootFolderService>()
+                  .Setup(s => s.GetBestRootFolderPath(_movie.Path, null))
+                  .Returns(RootFolder);
+
             Mocker.GetMock<IDiskProvider>()
                   .Setup(s => s.FolderExists(RootFolder))
                   .Returns(true);
@@ -115,6 +120,25 @@ namespace NzbDrone.Core.Test.MediaFiles.MediaFileDeletionService
             Subject.DeleteMovieFile(_movie, _movieFile);
 
             Mocker.GetMock<IRecycleBinProvider>().Verify(v => v.DeleteFile(_movieFile.Path, "Movie Title"), Times.Once());
+            Mocker.GetMock<IMediaFileService>().Verify(v => v.Delete(_movieFile, DeleteMediaFileReason.Manual), Times.Once());
+        }
+
+        [Test]
+        public void should_check_the_root_folder_not_the_parent_folder_for_a_nested_movie()
+        {
+            var nestedPath = Path.Combine(RootFolder, "Studio", "Scene Title");
+            _movie.Path = nestedPath;
+
+            Mocker.GetMock<IDiskProvider>()
+                  .Setup(s => s.GetParentFolder(nestedPath))
+                  .Returns(Path.Combine(RootFolder, "Studio"));
+
+            GivenRootFolderExists();
+            GivenRootFolderHasFolders();
+
+            Subject.DeleteMovieFile(_movie, _movieFile);
+
+            Mocker.GetMock<IDiskProvider>().Verify(v => v.FolderExists(RootFolder), Times.Once());
             Mocker.GetMock<IMediaFileService>().Verify(v => v.Delete(_movieFile, DeleteMediaFileReason.Manual), Times.Once());
         }
 

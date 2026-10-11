@@ -28,7 +28,7 @@ import translate from 'Utilities/String/translate';
 import SceneIndexProgressBar from '../ProgressBar/SceneIndexProgressBar';
 import { useSceneIndexOption } from '../sceneIndexOptionsStore';
 import SceneStatusCell from './SceneStatusCell';
-import styles from './SceneIndexRow.css';
+import styles from './SceneIndexRow.module.css';
 
 interface SceneIndexRowProps {
   scene: Movie;

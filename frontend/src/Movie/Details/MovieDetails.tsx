@@ -60,7 +60,7 @@ import MovieTags from './MovieTags';
 import ReleaseDateDisplay from './ReleaseDateDisplay';
 import MovieTitlesTable from './Titles/MovieTitlesTable';
 import useMovieDetailsModals from './useMovieDetailsModals';
-import styles from './MovieDetails.css';
+import styles from './MovieDetails.module.css';
 
 interface Props {
   isSaving: boolean;
@@ -141,6 +141,7 @@ function MovieDetails(props: Readonly<Partial<Props>>) {
         </PageContentBody>
       );
     }
+
     return null;
   }
 
@@ -184,6 +185,7 @@ function MovieDetails(props: Readonly<Partial<Props>>) {
   function handleTitleMeasure({ width }: { width: number }) {
     setTitleWidth(width);
   }
+
   function handleOverviewMeasure({ height }: { height: number }) {
     setOverviewHeight(height);
   }
@@ -194,6 +196,7 @@ function MovieDetails(props: Readonly<Partial<Props>>) {
       movieIds: [movieId],
     });
   }
+
   function handleSearchPress() {
     executeCommand({
       name: MOVIE_SEARCH,

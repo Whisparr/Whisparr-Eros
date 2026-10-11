@@ -8,7 +8,7 @@ import MovieSearchCell from 'Movie/MovieSearchCell';
 import MovieStatus from 'Movie/MovieStatus';
 import MovieTitleLink from 'Movie/MovieTitleLink';
 import { SelectStateInputProps } from 'typings/props';
-import styles from './MissingRow.css';
+import styles from './MissingRow.module.css';
 
 interface MissingRowProps {
   id: number;

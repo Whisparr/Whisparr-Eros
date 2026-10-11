@@ -58,7 +58,9 @@ namespace Whisparr.Http.Frontend
 
             if (mapper != null)
             {
-                var result = await mapper.GetResponse(path);
+                var result = mapper is ViteDevMapper viteDevMapper
+                    ? await viteDevMapper.GetResponse(path, Request.QueryString.Value).ConfigureAwait(false)
+                    : await mapper.GetResponse(path).ConfigureAwait(false);
 
                 if (result != null)
                 {

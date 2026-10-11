@@ -92,6 +92,7 @@ namespace NzbDrone.Core.HealthCheck
         NotificationStatusAll,
         NotificationStatusSingle,
         Package,
+        PasswordResetTokenConfigured,
         ProxyBadRequest,
         ProxyFailed,
         ProxyResolveIp,

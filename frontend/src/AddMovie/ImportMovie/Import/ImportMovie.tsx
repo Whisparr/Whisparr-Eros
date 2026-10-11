@@ -38,7 +38,7 @@ import useImportMutation, { buildImportBody } from '../useImportMutation';
 import ImportMovieFooter from './ImportMovieFooter';
 import ImportMovieTable from './ImportMovieTable';
 
-const EMPTY_IMPORT_FILES: ImportFile[] = [];
+const EMPTY_IMPORT_FILES: ReadonlyArray<ImportFile> = [];
 
 interface ImportMovieProps {
   readonly itemType?: ImportItemType;
@@ -58,6 +58,7 @@ function getSelectedIds(selectedState: Record<string, boolean>): string[] {
       if (value) {
         result.push(id);
       }
+
       return result;
     },
     []
@@ -133,6 +134,7 @@ function ImportMovie({ itemType }: ImportMovieProps) {
     if (!importFiles.length) {
       return;
     }
+
     initialised.current = false; // reset so new batch of import files can re-init lookup
     dispatch({
       type: 'INIT_ITEMS',
@@ -150,6 +152,7 @@ function ImportMovie({ itemType }: ImportMovieProps) {
     if (initialised.current || !importState.items.length) {
       return;
     }
+
     initialised.current = true;
 
     importState.items.forEach((item) => {
@@ -242,11 +245,13 @@ function ImportMovie({ itemType }: ImportMovieProps) {
   const onFooterInputChange = useCallback(
     ({ name, value }: { name: string; value: string | number }) => {
       const selectedIds = getSelectedIds(selectionState.selectedState);
+
       if (name === 'monitor') {
         setAddMovieDefault('monitor', value as string);
       } else if (name === 'qualityProfileId') {
         setAddMovieDefault('qualityProfileId', value as number);
       }
+
       selectedIds.forEach((id) => {
         dispatch({
           type: 'SET_ITEM_VALUE',
@@ -266,6 +271,7 @@ function ImportMovie({ itemType }: ImportMovieProps) {
     );
 
     const body = buildImportBody(selectedItems);
+
     if (!body.length) {
       return;
     }

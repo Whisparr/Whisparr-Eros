@@ -1,3 +1,5 @@
+using System;
+using System.Globalization;
 using FluentAssertions;
 using NUnit.Framework;
 using NzbDrone.Core.Test.Framework;
@@ -105,6 +107,26 @@ namespace NzbDrone.Core.Test.ParserTests
         public void should_correctly_parse_release_date(string title, string result)
         {
             Parser.Parser.ParseMovieTitle(title).ReleaseDate.Should().Be(result);
+        }
+
+        // A release can be posted ahead of the date in its name.
+        [TestCase(1)]
+        [TestCase(7)]
+        [TestCase(14)]
+        public void should_parse_release_date_up_to_two_weeks_ahead(int daysAhead)
+        {
+            var releaseDate = DateTime.Now.AddDays(daysAhead).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+            Parser.Parser.ParseMovieTitle($"[Vixen] Performer Name - Some Title ({releaseDate}) [2160p]").ReleaseDate.Should().Be(releaseDate);
+        }
+
+        [TestCase(15)]
+        [TestCase(60)]
+        public void should_not_parse_release_date_more_than_two_weeks_ahead(int daysAhead)
+        {
+            var releaseDate = DateTime.Now.AddDays(daysAhead).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+            Parser.Parser.ParseMovieTitle($"[Vixen] Performer Name - Some Title ({releaseDate}) [2160p]")?.ReleaseDate.Should().NotBe(releaseDate);
         }
 
         [TestCase("[CzechVR.com] Lucianna Lucci, MitziX, Tabitha Poison, Vanessa Leone - Best Halloween: Part 1 ( CzechVR 736) [28.10.2024, Big Pussy Lips, Big Tits, Blowjob, Brunette, Close ups, Cowgirl, Croptop, Deep Throat , Doggy Style, Dress, FFFM, Fivesome, Halloween, Harem, Handjob, Hardcore, Lingerie, Missionary, Panties, Redhead, Reverse Cowgirl, Reverse Gangbang, Shaved, Skirt, Tanned, Tattoo, Teasing, Whispering, Virtual Reality, SideBySide, 8K , 3840p, SiteRip] [Oculus Rift / Quest 2 / Vive]", "lucianna lucci mitzix tabitha poison vanessa leone best halloween 1 czechvr 736")]

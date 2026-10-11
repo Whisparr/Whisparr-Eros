@@ -10,7 +10,7 @@ import ModalHeader from 'Components/Modal/ModalHeader';
 import { inputTypes } from 'Helpers/Props';
 import { EnhancedSelectInputChanged } from 'typings/inputs';
 import translate from 'Utilities/String/translate';
-import styles from './ManageCustomFormatsEditModalContent.css';
+import styles from './ManageCustomFormatsEditModalContent.module.css';
 
 interface SavePayload {
   includeCustomFormatWhenRenaming?: boolean;

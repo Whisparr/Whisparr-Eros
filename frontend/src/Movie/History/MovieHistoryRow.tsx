@@ -16,7 +16,7 @@ import CustomFormat from 'typings/CustomFormat';
 import { HistoryData, HistoryEventType } from 'typings/History';
 import formatCustomFormatScore from 'Utilities/Number/formatCustomFormatScore';
 import translate from 'Utilities/String/translate';
-import styles from './MovieHistoryRow.css';
+import styles from './MovieHistoryRow.module.css';
 
 interface MovieHistoryRowProps {
   id: number;

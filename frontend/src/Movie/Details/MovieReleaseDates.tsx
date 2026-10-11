@@ -6,7 +6,7 @@ import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import getRelativeDate from 'Utilities/Date/getRelativeDate';
 import translate from 'Utilities/String/translate';
 import Movie from '../Movie';
-import styles from './MovieReleaseDates.css';
+import styles from './MovieReleaseDates.module.css';
 
 type MovieReleaseDatesProps = Pick<
   Movie,
@@ -22,6 +22,7 @@ function MovieReleaseDates({
     useUiSettingsValues();
 
   let urlFragment = 'https://stashdb.org/scenes/';
+
   if (itemType === 'movie') {
     urlFragment = foreignId.startsWith('tpdb:')
       ? 'https://theporndb.net/movies/'

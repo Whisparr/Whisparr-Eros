@@ -1,0 +1,29 @@
+.container {
+  display: flex;
+  padding: 10px 20px;
+  width: 100%;
+
+  &:hover {
+    background-color: var(--menuItemHoverBackgroundColor);
+  }
+}
+
+.movie {
+  flex: 1 0 0;
+  overflow: hidden;
+}
+
+.tmdbLink,
+.tpdbLink,
+.stashdbLink {
+  composes: link from 'Components/Link/Link.module.css';
+
+  margin-left: auto;
+  color: var(--textColor);
+}
+
+.tmdbLinkIcon,
+.tpdbLinkIcon,
+.stashdbLinkIcon {
+  margin-left: 10px;
+}

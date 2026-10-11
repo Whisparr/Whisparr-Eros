@@ -16,7 +16,7 @@ import useLibrarySearch, {
   LibrarySearchType,
   useLibrarySearchPage,
 } from './useLibrarySearch';
-import styles from './LibrarySearch.css';
+import styles from './LibrarySearch.module.css';
 
 // How many of each type the All tab shows before "See all".
 const ALL_TAB_LIMIT = 12;

@@ -27,7 +27,7 @@ import {
 import ManageImportListsEditModal from './Edit/ManageImportListsEditModal';
 import ManageImportListsModalRow from './ManageImportListsModalRow';
 import TagsModal from './Tags/TagsModal';
-import styles from './ManageImportListsModalContent.css';
+import styles from './ManageImportListsModalContent.module.css';
 
 // TODO: This feels janky to do, but not sure of a better way currently
 type OnSelectedChangeCallback = React.ComponentProps<

@@ -10,7 +10,7 @@ import getRelativeDate from 'Utilities/Date/getRelativeDate';
 import formatBytes from 'Utilities/Number/formatBytes';
 import { SceneIndexOverviewOptions } from '../sceneIndexOptionsStore';
 import SceneIndexOverviewInfoRow from './SceneIndexOverviewInfoRow';
-import styles from './SceneIndexOverviewInfo.css';
+import styles from './SceneIndexOverviewInfo.module.css';
 
 interface RowProps {
   name: string;

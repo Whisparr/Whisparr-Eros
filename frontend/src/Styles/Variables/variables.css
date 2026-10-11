@@ -1,0 +1,89 @@
+/* Design tokens, read at runtime with var(--name). Breakpoints are also
+ * @custom-media in breakpoints.css, because @media cannot use var().
+ * Styles/Variables/{dimensions,fonts}.ts mirror the values TypeScript reads,
+ * so keep them in sync. */
+
+:root {
+  /* Page */
+  --pageContentBodyPadding: 20px;
+  --pageContentBodyPaddingSmallScreen: 10px;
+
+  /* Header */
+  --headerHeight: 60px;
+
+  /* Sidebar */
+  --sidebarWidth: 210px;
+
+  /* Toolbar */
+  --toolbarHeight: 60px;
+  --toolbarButtonWidth: 60px;
+  --toolbarSeparatorMargin: 20px;
+
+  /* Break Points, for calc(); media queries use breakpoints.css */
+  --breakpointExtraSmall: 480px;
+  --breakpointSmall: 768px;
+  --breakpointMedium: 992px;
+  --breakpointLarge: 1200px;
+  --breakpointExtraLarge: 1450px;
+
+  /* Form */
+  --formGroupExtraSmallWidth: 550px;
+  --formGroupSmallWidth: 650px;
+  --formGroupMediumWidth: 800px;
+  --formGroupLargeWidth: 1200px;
+  --formLabelSmallWidth: 150px;
+  --formLabelLargeWidth: 250px;
+  --formLabelRightMarginWidth: 20px;
+
+  /* Drag */
+  --dragHandleWidth: 40px;
+  --qualityProfileItemHeight: 30px;
+  --qualityProfileItemDragSourcePadding: 4px;
+
+  /* Progress Bar */
+  --progressBarSmallHeight: 5px;
+  --progressBarMediumHeight: 15px;
+  --progressBarLargeHeight: 20px;
+
+  /* Jump Bar */
+  --jumpBarItemHeight: 25px;
+
+  /* Modal */
+  --modalBodyPadding: 30px;
+
+  /* Movie */
+  --movieIndexColumnPadding: 10px;
+  --movieIndexColumnPaddingSmallScreen: 5px;
+  --movieIndexOverviewInfoRowHeight: 21px;
+
+  /* Posters */
+  --hoverScale: 1.05;
+
+  /* Calendar */
+  --fullColorGradient: rgba(244, 245, 246, 0.2);
+
+  /* Font Families */
+  --defaultFontFamily: Roboto, 'open sans', 'Helvetica Neue', Helvetica, Arial,
+    sans-serif;
+  --monoSpaceFontFamily: 'Ubuntu Mono', Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+
+  /* Font Sizes */
+  --extraSmallFontSize: 11px;
+  --smallFontSize: 12px;
+  --defaultFontSize: 14px;
+  --intermediateFontSize: 15px;
+  --largeFontSize: 16px;
+
+  --lineHeight: 1.528571429;
+
+  /* Animation Durations */
+  --defaultSpeed: 0.2s;
+  --slowSpeed: 0.6s;
+  --fastSpeed: 0.1s;
+
+  /* Z-Indexes */
+  --pageJumpBarZIndex: 10;
+  --modalZIndex: 1000;
+  --popperZIndex: 2000;
+}

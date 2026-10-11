@@ -1,5 +1,5 @@
 import React from 'react';
-import styles from './PageToolbar.css';
+import styles from './PageToolbar.module.css';
 
 interface PageToolbarProps {
   className?: string;

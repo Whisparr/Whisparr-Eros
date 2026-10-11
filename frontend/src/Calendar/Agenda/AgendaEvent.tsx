@@ -11,7 +11,7 @@ import { icons, kinds } from 'Helpers/Props';
 import { useSingleMovieFile } from 'MovieFile/useMovieFile';
 import { useUiSettingsValues } from 'Settings/UI/useUiSettings';
 import translate from 'Utilities/String/translate';
-import styles from './AgendaEvent.css';
+import styles from './AgendaEvent.module.css';
 
 interface AgendaEventProps {
   id: number;

@@ -16,6 +16,11 @@ namespace NzbDrone.Core.Download.Pending
 
         // Not persisted
         public RemoteMovie RemoteMovie { get; set; }
+
+        public PendingRelease Clone()
+        {
+            return MemberwiseClone() as PendingRelease;
+        }
     }
 
     public class PendingReleaseAdditionalInfo

@@ -8,7 +8,7 @@ import { InputChanged } from 'typings/inputs';
 import Notification from 'typings/Notification';
 import { PendingSection } from 'typings/pending';
 import translate from 'Utilities/String/translate';
-import styles from './NotificationEventItems.css';
+import styles from './NotificationEventItems.module.css';
 
 interface NotificationEventItemsProps {
   item: PendingSection<Notification>;

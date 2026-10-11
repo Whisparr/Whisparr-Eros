@@ -10,7 +10,7 @@ import BarChart, { BarChartItem } from './Charts/BarChart';
 import DoughnutChart, { DoughnutChartItem } from './Charts/DoughnutChart';
 import StatisticsSummary, { SummaryTile } from './StatisticsSummary';
 import useStatistics from './useStatistics';
-import styles from './Statistics.css';
+import styles from './Statistics.module.css';
 
 // Tags and quality profiles are bounded and arrive complete, so the chart shows the
 // biggest few and folds the rest into one bucket. Studios and performers are already

@@ -15,7 +15,7 @@ import {
 } from '../../ImportMovieTypes';
 import ImportMovieSearchResult from './ImportMovieSearchResult';
 import ImportMovieTitle from './ImportMovieTitle';
-import styles from './ImportMovieSelectMovie.css';
+import styles from './ImportMovieSelectMovie.module.css';
 
 interface ImportMovieSelectMovieProps {
   readonly item: ImportItem;
@@ -65,9 +65,11 @@ function ImportMovieSelectMovie({
     (event: MouseEvent) => {
       const button = globalThis.document.getElementById(buttonId);
       const content = globalThis.document.getElementById(contentId);
+
       if (!button || !content) {
         return;
       }
+
       if (
         !button.contains(event.target as Node) &&
         !content.contains(event.target as Node)
@@ -86,6 +88,7 @@ function ImportMovieSelectMovie({
       } else {
         globalThis.addEventListener('click', handleWindowClick);
       }
+
       return !prev;
     });
   }, [handleWindowClick]);
@@ -95,6 +98,7 @@ function ImportMovieSelectMovie({
       if (lookupTimeoutRef.current) {
         clearTimeout(lookupTimeoutRef.current);
       }
+
       setTerm(value);
       lookupTimeoutRef.current = setTimeout(() => {
         onLookup({ id, term: value, itemType, topOfQueue: true });
@@ -110,6 +114,7 @@ function ImportMovieSelectMovie({
   const onMoviePress = useCallback(
     (foreignId: string) => {
       const movie = items.find((i) => i.foreignId === foreignId);
+
       if (movie) {
         setIsOpen(false);
         globalThis.removeEventListener('click', handleWindowClick);

@@ -137,6 +137,7 @@ export const useStudioDetails = (foreignId: string): UseStudioDetailsReturn => {
     if (isManualRefresh && studio && prevStudioRef.current !== studio) {
       setIsManualRefresh(false);
     }
+
     prevStudioRef.current = studio;
   }, [studio, isManualRefresh]);
 
@@ -168,6 +169,7 @@ export const useStudioDetails = (foreignId: string): UseStudioDetailsReturn => {
       if (!studio || !studioId) {
         throw new Error('Studio data not loaded');
       }
+
       const toggleState =
         typeof value === 'boolean'
           ? { monitored: value, moviesMonitored: studio.moviesMonitored }
@@ -335,6 +337,7 @@ export function buildStudioWorksData(
     years.length > 0 && years.every((year) => expandedState[year]);
 
   let expandIcon = icons.EXPAND_INDETERMINATE;
+
   if (allExpanded) {
     expandIcon = icons.COLLAPSE;
   } else if (

@@ -18,7 +18,7 @@ import {
   RemotePathMapping,
   useManageRemotePathMapping,
 } from './useRemotePathMappings';
-import styles from './EditRemotePathMappingModalContent.css';
+import styles from './EditRemotePathMappingModalContent.module.css';
 
 interface EditRemotePathMappingModalContentProps {
   id?: number;

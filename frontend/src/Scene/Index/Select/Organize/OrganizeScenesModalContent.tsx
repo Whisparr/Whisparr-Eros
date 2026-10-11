@@ -12,7 +12,7 @@ import ModalHeader from 'Components/Modal/ModalHeader';
 import { icons, kinds } from 'Helpers/Props';
 import Movie from 'Movie/Movie';
 import translate from 'Utilities/String/translate';
-import styles from './OrganizeScenesModalContent.css';
+import styles from './OrganizeScenesModalContent.module.css';
 
 interface OrganizeScenesModalContentProps {
   sceneIds: number[];

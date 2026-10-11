@@ -60,7 +60,7 @@ import getUniqueElementId from 'Utilities/getUniqueElementId';
 import TextInput from '../TextInput';
 import HintedSelectInputOption from './HintedSelectInputOption';
 import HintedSelectInputSelectedValue from './HintedSelectInputSelectedValue';
-import styles from './EnhancedSelectInput.css';
+import styles from './EnhancedSelectInput.module.css';
 
 const MINIMUM_DISTANCE_FROM_EDGE = 10;
 
@@ -335,6 +335,7 @@ function EnhancedSelectInput<V, T extends EnhancedSelectInputValue<V>>(
         if (nextSelectedIndex !== null) {
           setSelectedIndex(nextSelectedIndex);
         }
+
         return;
       }
 

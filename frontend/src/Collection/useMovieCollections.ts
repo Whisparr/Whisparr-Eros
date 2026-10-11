@@ -8,7 +8,7 @@ import MovieCollection from './MovieCollection';
 export const COLLECTION_PATH = '/collection';
 export const EXISTING_MOVIES_PATH = '/movie/list';
 
-const EMPTY: MovieCollection[] = [];
+const EMPTY: ReadonlyArray<MovieCollection> = [];
 
 export function useMovieCollections() {
   const { data, ...rest } = useApiQuery<MovieCollection[]>({

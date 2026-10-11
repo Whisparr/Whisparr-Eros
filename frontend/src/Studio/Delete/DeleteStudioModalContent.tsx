@@ -17,7 +17,7 @@ import {
 } from 'Studio/studioDeleteOptionsStore';
 import translate from 'Utilities/String/translate';
 import { useDeleteStudioMutation } from './useDeleteStudioMutation';
-import styles from './DeleteStudioModal.css';
+import styles from './DeleteStudioModal.module.css';
 
 export interface DeleteStudioModalContentProps {
   studio: Studio;

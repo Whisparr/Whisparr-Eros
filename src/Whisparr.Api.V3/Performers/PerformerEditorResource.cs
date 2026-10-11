@@ -14,6 +14,9 @@ namespace Whisparr.Api.V3.Performers
         /// <summary>Whether the performers' movies are monitored.</summary>
         public bool? MoviesMonitored { get; set; }
 
+        /// <summary>Whether newly discovered works added by refreshing the performers are monitored.</summary>
+        public bool? WhisparrMonitorNewItems { get; set; }
+
         /// <summary>The quality profile ID to set for the performers' movies.</summary>
         public int? QualityProfileId { get; set; }
 

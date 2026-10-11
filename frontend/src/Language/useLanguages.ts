@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import Language from './Language';
 
-const NO_LANGUAGES: Language[] = [];
+const NO_LANGUAGES: ReadonlyArray<Language> = [];
 
 export const useLanguages = () => {
   const result = useApiQuery<Language[]>({

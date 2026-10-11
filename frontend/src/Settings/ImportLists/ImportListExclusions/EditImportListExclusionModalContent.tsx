@@ -15,7 +15,7 @@ import ImportListExclusion from 'typings/ImportListExclusion';
 import { InputChanged } from 'typings/inputs';
 import translate from 'Utilities/String/translate';
 import { useManageImportListExclusion } from './useImportListExclusions';
-import styles from './EditImportListExclusionModalContent.css';
+import styles from './EditImportListExclusionModalContent.module.css';
 
 const typeOptions = [
   { key: 'movie', value: translate('Movie') },

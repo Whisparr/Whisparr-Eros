@@ -5,6 +5,7 @@ using NUnit.Framework;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.CustomFormats;
 using NzbDrone.Core.MediaFiles;
+using NzbDrone.Core.MediaFiles.MovieImport;
 using NzbDrone.Core.MediaFiles.MovieImport.Specifications;
 using NzbDrone.Core.Movies;
 using NzbDrone.Core.Parser.Model;
@@ -206,6 +207,36 @@ namespace NzbDrone.Core.Test.MediaFiles.MovieImport.Specifications
         [Test]
         public void should_return_false_if_not_upgrade_to_custom_format_score()
         {
+            GivenExistingFileWithCustomFormatScore(50);
+
+            _localMovie.Quality = new QualityModel(Quality.Bluray1080p);
+            _localMovie.CustomFormats = Builder<CustomFormat>.CreateListOfSize(1).Build().ToList();
+            _localMovie.CustomFormatScore = 20;
+
+            Subject.IsSatisfiedBy(_localMovie, null).Accepted.Should().BeFalse();
+        }
+
+        [TestCase(60, ImportRejectionReason.NotCustomFormatUpgradeAfterRename)]
+        [TestCase(50, ImportRejectionReason.NotCustomFormatUpgrade)]
+        [TestCase(20, ImportRejectionReason.NotCustomFormatUpgrade)]
+        public void should_say_when_only_the_rename_loses_the_custom_format_upgrade(int scoreBeforeRename, ImportRejectionReason reason)
+        {
+            GivenExistingFileWithCustomFormatScore(50);
+
+            _localMovie.Quality = new QualityModel(Quality.Bluray1080p);
+            _localMovie.CustomFormats = Builder<CustomFormat>.CreateListOfSize(1).Build().ToList();
+            _localMovie.CustomFormatScore = 20;
+            _localMovie.OriginalFileNameCustomFormats = Builder<CustomFormat>.CreateListOfSize(1).Build().ToList();
+            _localMovie.OriginalFileNameCustomFormatScore = scoreBeforeRename;
+
+            var result = Subject.IsSatisfiedBy(_localMovie, null);
+
+            result.Accepted.Should().BeFalse();
+            result.Reason.Should().Be(reason);
+        }
+
+        private void GivenExistingFileWithCustomFormatScore(int score)
+        {
             var movieFileCustomFormats = Builder<CustomFormat>.CreateListOfSize(1).Build().ToList();
 
             var movieFile = new MovieFile
@@ -214,10 +245,10 @@ namespace NzbDrone.Core.Test.MediaFiles.MovieImport.Specifications
             };
 
             _movie.QualityProfile.FormatItems = movieFileCustomFormats.Select(c => new ProfileFormatItem
-            {
-                Format = c,
-                Score = 50
-            })
+                {
+                    Format = c,
+                    Score = score
+                })
                 .ToList();
 
             Mocker.GetMock<IConfigService>()
@@ -228,14 +259,8 @@ namespace NzbDrone.Core.Test.MediaFiles.MovieImport.Specifications
                 .Setup(s => s.ParseCustomFormat(movieFile))
                 .Returns(movieFileCustomFormats);
 
-            _localMovie.Quality = new QualityModel(Quality.Bluray1080p);
-            _localMovie.CustomFormats = Builder<CustomFormat>.CreateListOfSize(1).Build().ToList();
-            _localMovie.CustomFormatScore = 20;
-
             _localMovie.Movie.MovieFileId = 1;
             _localMovie.Movie.MovieFile = movieFile;
-
-            Subject.IsSatisfiedBy(_localMovie, null).Accepted.Should().BeFalse();
         }
     }
 }

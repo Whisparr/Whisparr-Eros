@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Security;
 using System.Security.Cryptography;
@@ -11,14 +12,23 @@ namespace Whisparr.Api.V3.Config
 {
     public static class CertificateValidation
     {
-        public static IRuleBuilderOptions<T, string> IsValidCertificate<T>(this IRuleBuilder<T, string> ruleBuilder)
+        public static IRuleBuilderOptions<T, string> IsValidCertificate<T>(this IRuleBuilder<T, string> ruleBuilder, Func<string, string> resolvePassword = null)
         {
-            return ruleBuilder.SetValidator(new CertificateValidator<T>());
+            return ruleBuilder.SetValidator(new CertificateValidator<T>(resolvePassword));
         }
     }
 
     public class CertificateValidator<T> : PropertyValidator<T, string>
     {
+        private readonly Func<string, string> _resolvePassword;
+
+        // The settings API never returns the stored certificate password, so a
+        // resource can carry the placeholder; the caller maps that back to the real one.
+        public CertificateValidator(Func<string, string> resolvePassword = null)
+        {
+            _resolvePassword = resolvePassword ?? (password => password);
+        }
+
         public override string Name => "CertificateValidator";
 
         protected override string GetDefaultMessageTemplate(string errorCode) => "Invalid SSL certificate file or password. {message}";
@@ -43,10 +53,12 @@ namespace Whisparr.Api.V3.Config
 
                 // Use SecureString for password
                 SecureString securePassword = null;
-                if (!string.IsNullOrEmpty(resource.SslCertPassword))
+                var password = _resolvePassword(resource.SslCertPassword);
+
+                if (!string.IsNullOrEmpty(password))
                 {
                     securePassword = new SecureString();
-                    foreach (var c in resource.SslCertPassword)
+                    foreach (var c in password)
                     {
                         securePassword.AppendChar(c);
                     }

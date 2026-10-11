@@ -9,7 +9,7 @@ import translate from 'Utilities/String/translate';
 import EditQualityProfileModal from './EditQualityProfileModal';
 import QualityProfile from './QualityProfile';
 import { useQualityProfiles } from './useQualityProfiles';
-import styles from './QualityProfiles.css';
+import styles from './QualityProfiles.module.css';
 
 function QualityProfiles() {
   const { data, isFetching, isFetched, error } = useQualityProfiles();

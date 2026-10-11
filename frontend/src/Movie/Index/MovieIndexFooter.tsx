@@ -8,7 +8,7 @@ import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
 import { useMovieStats } from './useMovieStats';
-import styles from './MovieIndexFooter.css';
+import styles from './MovieIndexFooter.module.css';
 
 export default function MovieIndexFooter() {
   const { data, error, isError, isFetching } = useMovieStats();
@@ -25,6 +25,7 @@ export default function MovieIndexFooter() {
       </Alert>
     );
   }
+
   if (isFetching) {
     return <LoadingIndicator />;
   }

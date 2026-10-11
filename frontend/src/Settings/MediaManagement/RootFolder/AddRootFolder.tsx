@@ -7,7 +7,7 @@ import { getValidationFailures } from 'Helpers/Hooks/useApiMutation';
 import { icons, kinds, sizes } from 'Helpers/Props';
 import { useAddRootFolder } from 'RootFolder/useRootFolders';
 import translate from 'Utilities/String/translate';
-import styles from './AddRootFolder.css';
+import styles from './AddRootFolder.module.css';
 
 function AddRootFolder() {
   const { addRootFolder, isAddingRootFolder, addRootFolderError } =

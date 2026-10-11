@@ -7,6 +7,7 @@ using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Core.Test.Framework;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace NzbDrone.Core.Test.MediaCoverTests
 {
@@ -57,6 +58,22 @@ namespace NzbDrone.Core.Test.MediaCoverTests
             File.WriteAllText(mainFile, "Just some junk data that should make it throw an Exception.");
 
             Assert.Throws(Is.InstanceOf<Exception>(), () => Subject.Resize(mainFile, resizedFile, 170));
+
+            File.Exists(resizedFile).Should().BeFalse();
+        }
+
+        [Test]
+        public void should_not_decode_formats_other_than_jpeg_png_or_webp()
+        {
+            var mainFile = Path.Combine(TempFolder, "poster.bmp");
+            var resizedFile = Path.Combine(TempFolder, "poster-170.jpg");
+
+            using (var image = new Image<Rgba32>(10, 10))
+            {
+                image.SaveAsBmp(mainFile);
+            }
+
+            Assert.Throws<UnknownImageFormatException>(() => Subject.Resize(mainFile, resizedFile, 170));
 
             File.Exists(resizedFile).Should().BeFalse();
         }

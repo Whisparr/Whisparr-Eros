@@ -19,7 +19,7 @@ namespace NzbDrone.Core.Notifications.Plex.Server
 
     public class PlexServerSettings : NotificationSettingsBase<PlexServerSettings>
     {
-        private static readonly PlexServerSettingsValidator Validator = new ();
+        private static readonly PlexServerSettingsValidator Validator = new();
 
         public PlexServerSettings()
         {
@@ -45,7 +45,11 @@ namespace NzbDrone.Core.Notifications.Plex.Server
 
         [FieldDefinition(4, Label = "UrlBase", Type = FieldType.Textbox, Advanced = true, HelpText = "ConnectionSettingsUrlBaseHelpText")]
         [FieldToken(TokenField.HelpText, "UrlBase", "connectionName", "Plex")]
+
+#pragma warning disable S5332 // Help-text placeholder shown to the user, never requested; UseSsl picks the real scheme
         [FieldToken(TokenField.HelpText, "UrlBase", "url", "http://[host]:[port]/[urlBase]/plex")]
+#pragma warning restore S5332
+
         public string UrlBase { get; set; }
 
         [FieldDefinition(5, Label = "NotificationsPlexSettingsAuthToken", Type = FieldType.Textbox, Privacy = PrivacyLevel.ApiKey, Advanced = true)]

@@ -8,6 +8,7 @@ using NzbDrone.Core.DecisionEngine;
 using NzbDrone.Core.Download;
 using NzbDrone.Core.Download.Pending;
 using NzbDrone.Core.Indexers;
+using NzbDrone.Core.Lifecycle;
 using NzbDrone.Core.Movies;
 using NzbDrone.Core.Parser;
 using NzbDrone.Core.Parser.Model;
@@ -54,7 +55,6 @@ namespace NzbDrone.Core.Test.Download.Pending.PendingReleaseServiceTests
 
             _remoteMovie = new RemoteMovie();
 
-            // _remoteEpisode.Episodes = new List<Episode>{ _episode };
             _remoteMovie.Movie = _movie;
             _remoteMovie.ParsedMovieInfo = _parsedMovieInfo;
             _remoteMovie.Release = _release;
@@ -99,6 +99,8 @@ namespace NzbDrone.Core.Test.Download.Pending.PendingReleaseServiceTests
             Mocker.GetMock<IPendingReleaseRepository>()
                   .Setup(s => s.All())
                   .Returns(heldReleases);
+
+            Subject.Handle(new ApplicationStartedEvent());
         }
 
         [Test]

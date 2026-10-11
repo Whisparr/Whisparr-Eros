@@ -23,7 +23,7 @@ import translate from 'Utilities/String/translate';
 import MovieSearchResult from './MovieSearchResult';
 import PerformerSearchResult from './PerformerSearchResult';
 import StudioSearchResult from './StudioSearchResult';
-import styles from './MovieSearchInput.css';
+import styles from './MovieSearchInput.module.css';
 
 const ADD_NEW_MOVIE = 'addNewMovie';
 const ADD_NEW_SCENE = 'addNewScene';
@@ -288,10 +288,12 @@ function MovieSearchInput() {
   const handleKeyDown = useCallback(
     (event: KeyboardEvent<HTMLElement>) => {
       if (event.shiftKey || event.altKey || event.ctrlKey) return;
+
       if (event.key === 'Escape') {
         setValue('');
         return;
       }
+
       if (event.key !== 'Tab' && event.key !== 'Enter') return;
       if (!autosuggestRef.current) return;
 
@@ -373,6 +375,7 @@ function MovieSearchInput() {
 
   useEffect(() => {
     bindShortcut('focusMovieSearchInput', focusInput);
+
     return () => {
       unbindShortcut('focusMovieSearchInput');
     };

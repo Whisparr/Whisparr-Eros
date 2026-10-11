@@ -15,6 +15,7 @@ namespace NzbDrone.Core.Instrumentation
 {
     public class DatabaseTarget : TargetWithLayout, IHandle<ApplicationShutdownRequested>
     {
+        private const string TARGET_NAME = "DbLogger";
         private const string INSERT_COMMAND = "INSERT INTO \"Logs\" (\"Message\",\"Time\",\"Logger\",\"Exception\",\"ExceptionType\",\"Level\") " +
                                       "VALUES(@Message,@Time,@Logger,@Exception,@ExceptionType,@Level)";
 
@@ -25,14 +26,17 @@ namespace NzbDrone.Core.Instrumentation
             _connectionStringFactory = connectionStringFactory;
         }
 
+        public LoggingRule Rule { get; set; }
+
         public void Register()
         {
             var target = new SlowRunningAsyncTargetWrapper(this) { TimeToSleepBetweenBatches = 500 };
 
             Rule = new LoggingRule("*", LogLevel.Info, target);
 
-            LogManager.Configuration.AddTarget("DbLogger", target);
+            LogManager.Configuration.AddTarget(TARGET_NAME, target);
             LogManager.Configuration.LoggingRules.Add(Rule);
+            LogManager.ConfigurationChanged -= OnLogManagerOnConfigurationChanged;
             LogManager.ConfigurationChanged += OnLogManagerOnConfigurationChanged;
             LogManager.ReconfigExistingLoggers();
         }
@@ -40,21 +44,19 @@ namespace NzbDrone.Core.Instrumentation
         public void UnRegister()
         {
             LogManager.ConfigurationChanged -= OnLogManagerOnConfigurationChanged;
-            LogManager.Configuration.RemoveTarget("DbLogger");
+            LogManager.Configuration.RemoveTarget(TARGET_NAME);
             LogManager.Configuration.LoggingRules.Remove(Rule);
             LogManager.ReconfigExistingLoggers();
             Dispose();
         }
 
-        private void OnLogManagerOnConfigurationChanged(object sender, LoggingConfigurationChangedEventArgs args)
+        public void Handle(ApplicationShutdownRequested message)
         {
-            if (args.ActivatedConfiguration != null)
+            if (LogManager.Configuration?.FindTargetByName(TARGET_NAME) is SlowRunningAsyncTargetWrapper { WrappedTarget: DatabaseTarget target })
             {
-                Register();
+                target.UnRegister();
             }
         }
-
-        public LoggingRule Rule { get; set; }
 
         protected override void Write(LogEventInfo logEvent)
         {
@@ -111,6 +113,14 @@ namespace NzbDrone.Core.Instrumentation
             }
         }
 
+        private void OnLogManagerOnConfigurationChanged(object sender, LoggingConfigurationChangedEventArgs args)
+        {
+            if (args.ActivatedConfiguration != null)
+            {
+                Register();
+            }
+        }
+
         private void WritePostgresLog(Log log, string connectionString)
         {
             using (var connection =
@@ -150,14 +160,6 @@ namespace NzbDrone.Core.Instrumentation
                     sqlCommand.Parameters.Add(new SQLiteParameter("Level", DbType.String) { Value = log.Level });
                     sqlCommand.ExecuteNonQuery();
                 }
-            }
-        }
-
-        public void Handle(ApplicationShutdownRequested message)
-        {
-            if (LogManager.Configuration?.LoggingRules?.Contains(Rule) == true)
-            {
-                UnRegister();
             }
         }
     }

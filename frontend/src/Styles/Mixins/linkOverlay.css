@@ -1,5 +1,5 @@
 @define-mixin linkOverlay {
-  @add-mixin cover;
+  @mixin cover;
 
   pointer-events: none;
   user-select: none;

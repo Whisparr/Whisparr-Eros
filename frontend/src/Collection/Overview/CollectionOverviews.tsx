@@ -15,7 +15,7 @@ import { useCollectionOption } from '../collectionOptionsStore';
 import { CollectionItem } from '../useCollectionItems';
 import { useCollectionExistingMovies } from '../useMovieCollections';
 import CollectionOverview from './CollectionOverview';
-import styles from './CollectionOverviews.css';
+import styles from './CollectionOverviews.module.css';
 
 // Poster container dimensions
 const columnPadding = Number.parseInt(dimensions.movieIndexColumnPadding, 10);

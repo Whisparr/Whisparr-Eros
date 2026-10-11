@@ -18,7 +18,7 @@ import StudioLogo from 'Studio/StudioLogo';
 import { useSaveStudio } from 'Studio/useStudio';
 import { InputChanged } from 'typings/inputs';
 import translate from 'Utilities/String/translate';
-import styles from './EditStudioModalContent.css';
+import styles from './EditStudioModalContent.module.css';
 
 export interface EditStudioModalContentProps {
   studio: Studio;

@@ -1,0 +1,65 @@
+.relativePath {
+  composes: cell from 'Components/Table/Cells/TableRowCell.module.css';
+
+  word-break: break-all;
+}
+
+.quality,
+.formats,
+.language {
+  composes: cell from 'Components/Table/Cells/TableRowCell.module.css';
+}
+
+.language {
+  width: 100px;
+}
+
+.rejected,
+.download {
+  composes: cell from 'Components/Table/Cells/TableRowCell.module.css';
+
+  width: 50px;
+}
+
+.age,
+.size {
+  composes: cell from 'Components/Table/Cells/TableRowCell.module.css';
+
+  white-space: nowrap;
+}
+
+.languages,
+.audio,
+.video,
+.actions {
+  composes: cell from 'Components/Table/Cells/TableRowCell.module.css';
+
+  width: 100px;
+}
+
+.audioLanguages,
+.videoDynamicRangeType,
+.subtitles {
+  composes: cell from 'Components/Table/Cells/TableRowCell.module.css';
+
+  width: 165px;
+}
+
+.releaseGroup,
+.dateAdded {
+  composes: cell from 'Components/Table/Cells/TableRowCell.module.css';
+
+  width: 120px;
+}
+
+.customFormatScore {
+  composes: cell from 'Components/Table/Cells/TableRowCell.module.css';
+
+  width: 55px;
+}
+
+.indexerFlags {
+  composes: cell from 'Components/Table/Cells/TableRowCell.module.css';
+
+  width: 50px;
+}

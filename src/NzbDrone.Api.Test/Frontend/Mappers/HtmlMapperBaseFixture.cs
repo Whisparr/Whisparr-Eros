@@ -49,6 +49,15 @@ namespace NzbDrone.Api.Test.Frontend.Mappers
             Render(html).Should().Be(expected);
         }
 
+        // Vite's built index.html, and the dev server's module entry point.
+        [TestCase("<script type=\"module\" crossorigin src=\"/assets/index-BZHIVVq0.js\"></script>", "<script type=\"module\" crossorigin src=\"/whisparr/assets/index-BZHIVVq0.js?h=hash\"></script>")]
+        [TestCase("<link rel=\"stylesheet\" crossorigin href=\"/assets/index-X9ctvmqT.css\">", "<link rel=\"stylesheet\" crossorigin href=\"/whisparr/assets/index-X9ctvmqT.css?h=hash\">")]
+        [TestCase("<script type=\"module\" src=\"/frontend/src/index.ts\" data-no-hash></script>", "<script type=\"module\" src=\"/whisparr/frontend/src/index.ts\"></script>")]
+        public void should_prefix_vite_entry_points(string html, string expected)
+        {
+            Render(html).Should().Be(expected);
+        }
+
         [TestCase("<a href=/jsdocs>")]
         [TestCase("<a href=/styles.css/more>")]
         public void should_not_rewrite_an_unquoted_value_that_does_not_end_in_an_asset_extension(string html)

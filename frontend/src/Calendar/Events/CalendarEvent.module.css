@@ -1,0 +1,197 @@
+.event {
+  position: relative;
+  margin: 4px 2px;
+  padding: 5px;
+  border-bottom: 1px solid var(--calendarBorderColor);
+  border-left: 4px solid var(--calendarBorderColor);
+}
+
+.underlay {
+  @mixin cover;
+}
+
+.overlay {
+  @mixin linkOverlay;
+
+  position: relative;
+  overflow-x: hidden;
+  font-size: 12px;
+
+  &:global(.colorImpaired) {
+    border-left-width: 5px;
+  }
+}
+
+.info,
+.movieInfo {
+  display: flex;
+}
+
+.movieInfo {
+  color: var(--calendarTextDim);
+}
+
+.movieTitle,
+.genres,
+.eventType {
+  @mixin truncate;
+  flex: 1 0 1px;
+  margin-right: 10px;
+}
+
+.movieTitle {
+  color: var(--calendarTextDimAlternate);
+  font-size: var(--defaultFontSize);
+}
+
+.statusContainer {
+  display: flex;
+  align-items: center;
+
+  &:global(.fullColor) {
+    filter: var(--calendarFullColorFilter);
+  }
+}
+
+.statusIcon {
+  margin-left: 3px;
+  cursor: default;
+  pointer-events: all;
+}
+
+/*
+ * Status
+ */
+
+.downloaded {
+  border-left-color: var(--successColor) !important;
+
+  &:global(.fullColor) {
+    background-color: rgba(39, 194, 76, 0.4) !important;
+  }
+
+  &:global(.colorImpaired) {
+    border-left-color: color(#27c24c saturation(+15%)) !important;
+  }
+}
+
+.queue {
+  border-left-color: var(--purple) !important;
+
+  &:global(.fullColor) {
+    background-color: rgba(122, 67, 182, 0.4) !important;
+  }
+}
+
+.unmonitored {
+  border-left-color: var(--gray) !important;
+
+  &:global(.fullColor) {
+    background-color: rgba(173, 173, 173, 0.5) !important;
+  }
+
+  &:global(.colorImpaired) {
+    background: repeating-linear-gradient(
+      45deg,
+      var(--colorImpairedGradientDark),
+      var(--colorImpairedGradientDark) 5px,
+      var(--colorImpairedGradient) 5px,
+      var(--colorImpairedGradient) 10px
+    );
+  }
+
+  &:global(.fullColor.colorImpaired) {
+    background: repeating-linear-gradient(
+      45deg,
+      var(--fullColorGradient),
+      var(--fullColorGradient) 5px,
+      transparent 5px,
+      transparent 10px
+    );
+  }
+}
+
+.missingUnmonitored {
+  border-left-color: var(--warningColor) !important;
+
+  &:global(.fullColor) {
+    background-color: rgba(255, 165, 0, 0.6) !important;
+  }
+
+  &:global(.colorImpaired) {
+    background: repeating-linear-gradient(
+      90deg,
+      var(--colorImpairedGradientDark),
+      var(--colorImpairedGradientDark) 5px,
+      var(--colorImpairedGradient) 5px,
+      var(--colorImpairedGradient) 10px
+    );
+  }
+
+  &:global(.fullColor.colorImpaired) {
+    background: repeating-linear-gradient(
+      90deg,
+      var(--fullColorGradient),
+      var(--fullColorGradient) 5px,
+      transparent 5px,
+      transparent 10px
+    );
+  }
+}
+
+.missingMonitored {
+  border-left-color: var(--dangerColor) !important;
+
+  &:global(.fullColor) {
+    background-color: rgba(240, 80, 80, 0.6) !important;
+  }
+
+  &:global(.colorImpaired) {
+    border-left-color: color(#f05050 saturation(+15%)) !important;
+    background: repeating-linear-gradient(
+      90deg,
+      var(--colorImpairedGradientDark),
+      var(--colorImpairedGradientDark) 5px,
+      var(--colorImpairedGradient) 5px,
+      var(--colorImpairedGradient) 10px
+    );
+  }
+
+  &:global(.fullColor.colorImpaired) {
+    background: repeating-linear-gradient(
+      90deg,
+      var(--fullColorGradient),
+      var(--fullColorGradient) 5px,
+      transparent 5px,
+      transparent 10px
+    );
+  }
+}
+
+.continuing {
+  border-left-color: var(--primaryColor) !important;
+
+  &:global(.fullColor) {
+    background-color: rgba(93, 156, 236, 0.4) !important;
+  }
+
+  &:global(.colorImpaired) {
+    background: repeating-linear-gradient(
+      90deg,
+      var(--colorImpairedGradientDark),
+      var(--colorImpairedGradientDark) 5px,
+      var(--colorImpairedGradient) 5px,
+      var(--colorImpairedGradient) 10px
+    );
+  }
+
+  &:global(.fullColor.colorImpaired) {
+    background: repeating-linear-gradient(
+      90deg,
+      var(--fullColorGradient),
+      var(--fullColorGradient) 5px,
+      transparent 5px,
+      transparent 10px
+    );
+  }
+}

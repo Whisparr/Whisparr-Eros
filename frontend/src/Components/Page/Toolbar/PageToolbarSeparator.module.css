@@ -1,0 +1,12 @@
+.separator {
+  margin: 10px var(--toolbarSeparatorMargin);
+  height: 40px;
+  border-right: 1px solid #e5e5e5;
+  opacity: 0.35;
+}
+
+@media (--breakpointSmall) {
+  .separator {
+    margin: 10px 5px;
+  }
+}

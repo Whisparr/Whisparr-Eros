@@ -5,7 +5,7 @@ import { icons, kinds } from 'Helpers/Props';
 import { CheckInputChanged } from 'typings/inputs';
 import { SelectStateInputProps } from 'typings/props';
 import translate from 'Utilities/String/translate';
-import styles from './OrganizePreviewRow.css';
+import styles from './OrganizePreviewRow.module.css';
 
 interface OrganizePreviewRowProps {
   id: number;

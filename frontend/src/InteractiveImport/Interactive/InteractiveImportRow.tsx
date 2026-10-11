@@ -27,7 +27,7 @@ import formatBytes from 'Utilities/Number/formatBytes';
 import formatCustomFormatScore from 'Utilities/Number/formatCustomFormatScore';
 import translate from 'Utilities/String/translate';
 import InteractiveImportRowCellPlaceholder from './InteractiveImportRowCellPlaceholder';
-import styles from './InteractiveImportRow.css';
+import styles from './InteractiveImportRow.module.css';
 
 type SelectType =
   'movie' | 'releaseGroup' | 'quality' | 'language' | 'indexerFlags';

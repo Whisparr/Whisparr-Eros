@@ -8,7 +8,9 @@ import EnhancedSelectInput, {
   EnhancedSelectInputValue,
 } from './EnhancedSelectInput';
 
-function getSelectOptions(items: FieldSelectOption<unknown>[]) {
+function getSelectOptions(
+  items: ReadonlyArray<FieldSelectOption<unknown>> | undefined
+) {
   if (!items) {
     return [];
   }

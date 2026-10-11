@@ -2,7 +2,7 @@ import React from 'react';
 import Column from 'Components/Table/Column';
 import VirtualTableHeader from 'Components/Table/VirtualTableHeader';
 import VirtualTableHeaderCell from 'Components/Table/VirtualTableHeaderCell';
-import styles from './SelectMovieModalTableHeader.css';
+import styles from './SelectMovieModalTableHeader.module.css';
 
 interface SelectMovieModalTableHeaderProps {
   columns: Column[];

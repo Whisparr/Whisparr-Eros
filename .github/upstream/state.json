@@ -5,15 +5,15 @@
       "repo": "Radarr/Radarr",
       "branch": "develop",
       "owns": "backend",
-      "highWater": "c90668a520664ad0c91812cfee57c41928ad2148",
-      "highWaterNote": "2026-09-20 'Reset loaded state for movie images when URL changes', the current tip of Radarr develop. Everything at or before this mark is dispositioned: 2026-09 closed with three backend fixes adapted and the frontend commit skipped under the radarr-frontend gate. Advance only when everything at or before the new mark is settled."
+      "highWater": "2c205edecafb96b852d62e5743b8adc4e8dd8494",
+      "highWaterNote": "2026-10-09 'Restrict ImageSharp decoders and suppress 3.x advisories', the current tip of Radarr develop. Everything at or before this mark is dispositioned: 2026-10 closed with two backend fixes picked and three adapted (disposed-container events without the deferred e80abdd60 guard, edition-tag mm casing, and the ImageSharp decoder restriction without the suppressions #954 already carries). Advance only when everything at or before the new mark is settled."
     },
     "sonarr": {
       "repo": "Sonarr/Sonarr",
       "branch": "v5-develop",
       "owns": "frontend",
-      "highWater": "76c684e097f16ac216e6213845e5cac372774995",
-      "highWaterNote": "2026-09-16 'Reset loaded state for series images when URL changes', the current tip of Sonarr v5-develop. Everything at or before this mark is settled: all eight commits of the 2026-09 batch are dispositioned, including the three the upstream-watch PR #907 picked without dispositions. Advance only when everything at or before the new mark is settled."
+      "highWater": "4831dfe91cdceaeba3d441abb3d348c4c53b605a",
+      "highWaterNote": "2026-10-10 'Make Calendar grid navigable with screen readers', the current tip of Sonarr v5-develop. Everything at or before this mark is settled. Sonarr 2026-10 is 72 commits over three PRs: #963 (frontend fixes, Interactive Search virtualization, Transmission labels, the parser date window), #965 (the auth batch, including Forms by default and login lockout by paul's decision), and a third for the 15 pushed on 2026-10-10. Advance only when everything at or before the new mark is settled."
     }
   },
   "dispositions": {
@@ -769,6 +769,36 @@
         "month": "2026-09",
         "disposition": "skip",
         "reason": "Radarr frontend, and the bug does not exist in our component. Ours follows Sonarr and has no isLoaded state at all - MovieImage.tsx tracks hasError plus a triedRemote ref for the remote-URL fallback, so there is nothing to reset when the URL changes."
+      },
+      "a07ba4195ed3eceeb170f1bce49346078e1e8eb3": {
+        "subject": "Fix Event handling on disposed Container",
+        "month": "2026-10",
+        "disposition": "adapt",
+        "reason": "Our ServiceFactory wraps the same DryIoc 5.4.3 container through DryIoc.Microsoft.DependencyInjection 6.2.0, so the IResolverContext.IsDisposed check works unchanged and stops late events resolving handlers from a disposed container during shutdown. Conflicted only on context: Radarr's EventAggregator carries the IsExiting/LifecycleEvent guard from e80abdd60, which is deferred here, so just the disposed-container check is ported."
+      },
+      "31f9e416668cdfd0a6a43efbc2c11045154ac4fe": {
+        "subject": "Fix DbLogger unregister",
+        "month": "2026-10",
+        "disposition": "pick",
+        "reason": "Our DatabaseTarget was byte-identical to the pre-fix upstream, so the same shutdown path applies: Startup.Configure resolves the concrete DatabaseTarget and calls Register(), while ApplicationShutdownRequested reaches whichever instance the event aggregator resolves, which checked its own Rule. The fix looks the registered target up by name and unregisters that one. Also guards against double-subscribing ConfigurationChanged on re-register. Applied cleanly."
+      },
+      "803e10274cf23464d429b0b5af4606c4b89e3793": {
+        "subject": "Fix edition tags capitalization for mm scans",
+        "month": "2026-10",
+        "disposition": "adapt",
+        "reason": "{Edition Tags} is a live movie naming token here and title-cased '35mm' to '35Mm'. Conflicted because our GetEditionToken passes RegexDefaults.Timeout (S6444) and upstream does not; re-applied the mm alternation, the static modifier and the ?. cleanup by hand, plus upstream's six EditionTagsFixture cases. Organizer, not Parser, so the parser gate does not apply."
+      },
+      "0a097deb192a6b72b84c23dc18c2c0d68a0678fe": {
+        "subject": "Fixed: update every matching Plex section",
+        "month": "2026-10",
+        "disposition": "pick",
+        "reason": "Our PlexServerService.UpdateSections was identical to the pre-fix upstream and returned after the first matching section, so two Plex libraries sharing a root folder only had one refreshed. Applied cleanly with upstream's new PlexServerServiceFixture, which compiles against our Movie unchanged."
+      },
+      "2c205edecafb96b852d62e5743b8adc4e8dd8494": {
+        "subject": "Restrict ImageSharp decoders and suppress 3.x advisories",
+        "month": "2026-10",
+        "disposition": "adapt",
+        "reason": "Took the ImageResizer half: a private Configuration with only the JPEG, PNG and WebP modules, SimpleGcMemoryAllocator and SkipMetadata, so TIFF, BMP, GIF and the rest are never decoded from downloaded covers. Left the NuGetAuditSuppress half - the same five GHSAs are already suppressed in src/Directory.Build.props by #954, each with its own reason. Added an ImageResizerFixture case proving a BMP is refused; it fails without the change. Resize failures are already caught and logged per cover in MediaCoverService."
       }
     },
     "sonarr": {
@@ -1303,8 +1333,8 @@
       "8718f28fbd652d3254873d197b0875859c508ae9": {
         "subject": "Fixed: Loading queue or processing releases slow with many Pending Releases",
         "month": "2025-11",
-        "disposition": "skip",
-        "reason": "Caches pending-release resolution per app start / quality-profile update so queue loads stop re-parsing every held release. Every production file conflicts with our diverged PendingReleaseService tree (RemovePendingObsoleteFixture was removed locally); porting by hand is out of scope for a sync pass - revisit as its own change."
+        "disposition": "adapt",
+        "reason": "Landed 2026-09-28 as its own PR. Our PendingReleaseService is byte-identical to Radarr develop, so the drift was only Series/Episode against Movie. Taken as upstream: pending releases are resolved once into an in-memory cache that the queue, GetPendingRemoteMovies, OldestPendingRelease, RemoveGrabbed/RemoveRejected and AddMany read, rebuilt after AddMany, grab, RSS sync, delete, config save, application start and the new QualityProfileUpdatedEvent. Adapted: the cache is an instance field, not static. Movie edited/bulk-edited/updated rebuild only when that movie has pending releases, because our refresh publishes MovieUpdatedEvent for every movie and upstream's unconditional rebuild would reload the cache once per movie in a library refresh. RemovePendingQueueItems rebuilds too, which upstream misses, so a removed item leaves the queue straight away. RemovePendingObsoleteFixture does not exist here."
       },
       "0ff644e842168945db086afc29c06ac3b5cb37ee": {
         "subject": "Queue hiding when switching pages",
@@ -1327,8 +1357,8 @@
       "beadc687ae47c6d90cba247f84595a692d79a736": {
         "subject": "Add reason to health check",
         "month": "2025-11",
-        "disposition": "skip",
-        "reason": "Feature: adds a Reason payload across every health check plus API/UI plumbing. Not part of this sync scope; can be requested on its own."
+        "disposition": "have",
+        "reason": "Already in our tree through Radarr's port of it, 72ae0c011, adapted in #642: all 33 of our checks pass a HealthCheckReason, with our own reasons (AllowedHostsNotConfigured, MetadataUrlMismatch) and a None = 0 member. Sonarr reads the reason only in its v5 HealthResource, which we do not have; like Radarr, nothing here exposes it through the v3 API or the frontend."
       },
       "9bc9d6d400ff479c8348deaf6755a6c4a7547d22": {
         "subject": "Add v5 health endpoints",
@@ -1459,8 +1489,8 @@
       "317cdf15582746bd4e713d6b99e17a21dcb8abeb": {
         "subject": "add TTL setting for pushover notifications",
         "month": "2025-11",
-        "disposition": "skip",
-        "reason": "New Pushover TTL setting - small feature not in scope for this pass."
+        "disposition": "have",
+        "reason": "Already in our tree through Radarr's port of it, 949922b9a: the Pushover Ttl field, validator, proxy parameter and en.json keys all landed with the January Radarr sync."
       },
       "5a702dec12a24a1b2f7c23a40079c563a31c2573": {
         "subject": "Add v5 episode, missing and cutoff unmet endpoints",
@@ -2041,8 +2071,8 @@
       "6bb694a6f78db654f112868be9719f4945948796": {
         "subject": "New: Fallback to alternate download clients on failure",
         "month": "2025-12",
-        "disposition": "skip",
-        "reason": "Deferred: user-facing feature (fallback to alternate download clients on failure), not a sync decision. Needs GetDownloadClients(protocol) plus priority/last-used rotation and its own test surface. Raised and deferred on 2026-09-01."
+        "disposition": "adapt",
+        "reason": "Landed 2026-09-26 as its own PR. DownloadClientProvider taken verbatim, since ours matched upstream's parent apart from the tag message. Adapted in DownloadService: when every client fails, upstream throws a bare 'All download clients failed' and keeps the causes at Trace, so a single-client setup would lose the client's own error in the grab response. We carry the last client's exception as the inner exception and append its message. Four DownloadServiceFixture cases added for fallback, no fallback on ReleaseDownloadException, all-failed and an explicit client id."
       },
       "ee875ae65484bcd3fc15387c32cfd33a13d993aa": {
         "subject": "New: Removed Special Handling of Reflinks for BTRFS and ZFS",
@@ -2059,8 +2089,8 @@
       "ce8a5d8a6bed6bfbbab0047e799b60b4326cc9d8": {
         "subject": "New: Manually import multiple items at the same time from Activity: Queue",
         "month": "2025-12",
-        "disposition": "skip",
-        "reason": "Deferred: multi-select manual import from the queue. Upstream's backend half lives only in Sonarr.Api.V5, so taking it means authoring the Whisparr.Api.V3 side ourselves - a feature port, not a cherry-pick. Raised and deferred on 2026-09-01."
+        "disposition": "adapt",
+        "reason": "Landed 2026-09-27 as its own PR. Upstream's backend half exists only in Sonarr.Api.V5, so the V3 ManualImportController gained downloadIds itself. It keeps downloadId for existing API clients, merges and de-duplicates the two, and scans each download once. The frontend is taken as upstream has it, with three adaptations. The empty-array checks test length, because [] is truthy and upstream's `downloadIds ?` would misfire. Import Selected only counts items the row itself offers manual import for (completed with a warning). And the modal gets `title` rather than `modalTitle`, which also fixes the dangling ' -' in the existing per-row modal header. Also guards ManualImportService against a tracked download that has no ImportItem yet (still downloading). It used to throw a NullReferenceException, and a multi-select would have surfaced it for the whole batch."
       },
       "0ade5b4c225408e6ac61d612a74e086849dd331c": {
         "subject": "Fixed: Cleanse logged RSS URLs",
@@ -2623,8 +2653,8 @@
       "33fb0a4e880a5a5a3dc3d04e26d85b0a22c73552": {
         "subject": "New: Calculate custom score using renamed filename before importing",
         "month": "2026-03",
-        "disposition": "skip",
-        "reason": "Extracts a LocalEpisodeCustomFormatCalculationService and threads FileNameUsedForCustomFormatCalculation through ImportDecisionMaker, ImportApprovedEpisodes, ManualImportService, UpdateMediaInfoService and UpgradeSpecification -- 283 changed lines of core plus a new ImportRejectionReason. We have no counterpart service, and it changes what an import decision is scored on. That is a feature port with its own blast radius, not a sync pick; worth doing on its own PR."
+        "disposition": "adapt",
+        "reason": "Landed 2026-09-27 as its own PR. Taken as upstream: a LocalMovieCustomFormatCalculationService scores an import on the name FileNameBuilder will give it, and keeps the score on its current name, so UpgradeSpecification compares like with like against the existing file (already scored on its renamed name) and rejects with the new NotCustomFormatUpgradeAfterRename when only the rename loses the upgrade. ImportDecisionMaker and ManualImportService use it, and LocalMovie.ToMovieFile() replaces ImportApprovedMovie's hand-built MovieFile, as upstream's ToEpisodeFile did. Adapted: the built name is cut to its file name and given the file's extension, since existing files are scored on Path.GetFileName(RelativePath) and our scene formats can hold folders. FileNameUsedForCustomFormatCalculation and GetSceneOrFileName are left out, having no reader here. UpdateMediaInfoService already skips persisting a MovieFile with Id 0. As upstream, a download's file now keeps its own indexer flags when grab history has none, where it was left at 0, and SceneName and OriginalFilePath are recorded on every import, not only new downloads."
       },
       "ac1c74105f4a739ec61636dc3817a4e942309434": {
         "subject": "Cleanup settings controllers",
@@ -2767,8 +2797,8 @@
       "c64f4adfc435347da071e2fbd69847c9bb3e64ff": {
         "subject": "New: Delete files for Select Series",
         "month": "2026-03",
-        "disposition": "skip",
-        "reason": "Adds bulk 'delete files' for a series-index selection: a new DeleteSeriesFilesCommand, an IExecute handler on MediaFileDeletionService, three V5 endpoints and a new modal. That is a feature, not a sync pick. It also carries a real fix we do not take here -- DeleteEpisodeFile switching from _diskProvider.GetParentFolder to _rootFolderService.GetBestRootFolderPath, which matters when the item sits in a nested folder under the root. Lifting one line out of a feature commit into our file-deletion and recycle-bin path is not a drive-by worth making; flagged for its own PR."
+        "disposition": "adapt",
+        "reason": "Landed 2026-09-27 as its own PR. The backend became a DeleteMovieFilesCommand executed by MediaFileDeletionService. It serves both the Movies and Scenes index select footers through one shared modal; our delete modal had no file list, so it reuses the existing *FolderMovieCount/*FolderSceneCount keys and adds three of our own. The GetBestRootFolderPath fix is taken in DeleteMovieFile too: with GetParentFolder, a movie or scene nested under a studio folder had its parent studio folder checked as the root folder, and deletes failed with 'root folder doesn't exist'. One deliberate difference from upstream: a file already missing from disk is still removed from the database, matching our single-file delete, and there is no movie-folder-exists precondition."
       },
       "b135e5a2a43de73a382c7d505263d4318c00d647": {
         "subject": "New: Replace HTML Encoded values in release titles",
@@ -3331,8 +3361,8 @@
       "a1abe179a5074f59d32296b57ec76474b984a76c": {
         "subject": "Fix calculating custom score using renamed filename before manual importing",
         "month": "2026-05",
-        "disposition": "have",
-        "reason": "The bug cannot exist here: our ParseCustomFormat(LocalMovie) takes no fileName parameter and already derives SimpleReleaseTitle from Path.GetFileName(localMovie.Path), so a renamed filename never reaches custom format scoring. The LocalEpisode.cs half is a collection-expression cleanup."
+        "disposition": "adapt",
+        "reason": "Taken with 33fb0a4e8, which our ParseCustomFormat(LocalMovie) now follows: the fileName parameter only feeds CustomFormatInput.Filename, and SimpleReleaseTitle still comes from the scene name or the file on disk, so renaming cannot lose a format only the original name carried. The LocalEpisode.cs half is a collection-expression cleanup of properties LocalMovie initialises with new()."
       },
       "0ebda892bc0db4adc87e8f7a1aeaaddc351cde55": {
         "subject": "Use react-query for Auto Tagging",
@@ -3649,8 +3679,8 @@
       "838b25d0962108de0b5232f6957c9473b6fc6c9d": {
         "subject": "Improve Mark as Failed for non-grabbed history events",
         "month": "2026-05",
-        "disposition": "skip",
-        "reason": "Broken as landed -- both new blocks throw InvalidOperationException unconditionally after publishing the event, so marking a download failed would always 400. Upstream fixed it in 43797d65c8 a month later. Separately, our FailedDownloadService has neither the message/source parameters nor the grabbedHistory aggregation this builds on, so it is a port of two commits, not a cherry-pick. Reconsider as a pair when 2026-06 is worked."
+        "disposition": "adapt",
+        "reason": "Landed 2026-09-28 as its own PR, together with its fix 43797d65c. Taken as upstream for MarkAsFailed(historyId): a history item with a download ID is failed against that download's grab rather than the item chosen, and one that has no grab (or was not grabbed and has no download ID) is refused. Adapted: movies have no episode aggregation, so it is the grab itself or the newest grab for the download ID; the refusal is our existing NzbDroneClientException(BadRequest), which the error pipeline already maps, instead of upstream's InvalidOperationException plus a pipeline branch that would turn every unrelated InvalidOperationException into a 400. MarkAsFailed(TrackedDownload) only logs a warning when there is no grab instead of throwing, because the queue removes the item from the client before blocklisting and bulk removal would stop part way through. skipRedownload is also passed on the download-ID path, which upstream drops."
       },
       "dfc37be76e061d321ef82e88bd4c82da416018d6": {
         "subject": "Fixed: Parsing quality from some WEB releases",
@@ -3661,14 +3691,14 @@
       "fe7d8e1218a02179b8bc0f2a413f03f3cb9af000": {
         "subject": "Enforce new lines around multi-line blocks",
         "month": "2026-05",
-        "disposition": "skip",
-        "reason": "Adopting padding-line-between-statements would be an eslint sweep over our whole frontend, not the 26 files upstream touched, and our config is flat (eslint.config.js) not their .eslintrc.js. Worth its own PR if we want the rule."
+        "disposition": "adapt",
+        "reason": "Landed 2026-09-28 as its own PR. The same padding-line-between-statements rule (blank line before and after any multi-line block), added to our flat eslint.config.js and auto-fixed across the whole frontend rather than upstream's 26 files: 173 blank lines in 63 files, whitespace only."
       },
       "9bed77c68d6b0e117265a8a65c80b0bf7e81d4be": {
         "subject": "Avoid mutation for react-query data",
         "month": "2026-05",
-        "disposition": "skip",
-        "reason": "Right idea -- ReadonlyArray<T> on react-query data stops callers mutating the cache in place -- but it is a 37-file typing sweep against a tree whose file set diverges from theirs, and the payoff is uniform only if it is done everywhere. Worth its own PR rather than riding along in a month's sync."
+        "disposition": "adapt",
+        "reason": "Landed 2026-09-28 as its own PR, finishing what #455 started. #455 made useApiQuery return Readonly<T>; most of upstream's consumer hunks were already in place or absent here, since our tag hooks carry readonly through. This extends it to the roots #455 missed: usePagedApiQuery's records, the two direct useQuery hooks (useProviderOptions, useTranslations), every typed setQueryData cache writer and SignalRListener's updaters, and the hooks' empty-array fallbacks. Helpers that only read now accept ReadonlyArray: SelectProvider, TagInput, getSelectOptions, upsertRootFolder, the import reducer's INIT_ITEMS, Filter optionsSelector, FilterBuilderRowValue tagList, selectUniqueIds. Types only: no in-place mutation of cached data turned up, and the built bundle is equivalent to the base."
       },
       "98202ad7a61e4fe0c3006668eb6ea071546ea26a": {
         "subject": "Multiple Translations updated by Weblate",
@@ -3691,14 +3721,14 @@
       "43797d65c8f710ec18906a87ae27c08381efafb3": {
         "subject": "Fix marking as failed for grabbed history events",
         "month": "2026-06",
-        "disposition": "have",
-        "reason": "Both halves are already in our tree: FailedDownloadService.MarkAsFailed has no throw after the grabbed-history branch, so the missing-return fallthrough cannot occur here, and MovieHistoryRow.tsx already calls setIsMarkAsFailedModalOpen(false) on confirm."
+        "disposition": "adapt",
+        "reason": "Taken with 838b25d09: its returns after publishing are part of that port. The MovieHistoryRow half (closing the confirm modal) was already in our tree."
       },
       "1de3fb96631a71f4e030ddefe92229f832b82faa": {
         "subject": "Fixed: Loading eligible pending releases on when RSS sync runs",
         "month": "2026-06",
-        "disposition": "skip",
-        "reason": "Swaps JsonClone for MemberwiseClone in PendingReleaseService.AddMany to speed up their in-memory _pendingReleases cache. We have no such cache: our AddMany reads _repository.AllByMovieId(movie.Id) per movie and clones nothing, so there is no call site to fix."
+        "disposition": "adapt",
+        "reason": "Taken with 8718f28fb, which gives us the in-memory cache this speeds up: PendingRelease.Clone() (MemberwiseClone) copies cached entries in AddMany instead of JsonClone."
       },
       "07af80c503659172005cdbcbe7d68f7399fd7324": {
         "subject": "New: Support for VVC/H266 in media info",
@@ -3715,8 +3745,8 @@
       "edba5ce84cf8016ba9b945396d155f4ab2ead66e": {
         "subject": "Fix filename builder for files without streams",
         "month": "2026-06",
-        "disposition": "skip",
-        "reason": "Guards against a null MediaInfoAudioStreamModel, which is a shape we do not have; our formatters read AudioFormat/AudioChannels straight off MediaInfoModel, and AudioChannels is a non-nullable int. The null-to-empty return change is also a no-op here because FileNameBuilder already guards MediaInfo == null and null-coalesces both formatter results to string.Empty."
+        "disposition": "have",
+        "reason": "Already in our tree through Radarr's port of it, 0d0cb8f75, which was adapted after the bug reproduced here: whitespace-only audio/video formats fell through to an unknown-format warning and into renamed filenames. The earlier no-op reasoning here was wrong; see the Radarr record for what was taken."
       },
       "3e1de5fcf6c50e1f16d9bf76da16f03650a7c2b2": {
         "subject": "Fix invalid season error when season number is not yet defined in manual import",
@@ -4241,6 +4271,608 @@
         "month": "2026-09",
         "disposition": "skip",
         "reason": "The state it resets does not exist here. Upstream SeriesImage tracks isLoaded to fade the image in; our frontend/src/Movie/MovieImage.tsx tracks only url, hasError and triedRemote, and isLoaded appears nowhere in frontend/src outside three unrelated list views. The upstream-watch bot applied the one-line setIsLoaded(true) to MovieImage.tsx anyway (PR #907, dfd55217bd) by context match alone - it would not compile."
+      },
+      "e5761eceb069cfcaa4dbfe8313d6ad629693824f": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-09",
+        "disposition": "skip",
+        "reason": "Weblate translation update. Translations come from our own Weblate project, never from cherry-picks."
+      },
+      "f278f17b5dba9c5f9f98657844b3a844cbbf5cdd": {
+        "subject": "Automated API Docs update",
+        "month": "2026-09",
+        "disposition": "skip",
+        "reason": "Regenerated openapi.json for the V5 surface only. We retired the checked-in spec and serve ours at /docs, and we have no Api.V5 project anyway."
+      },
+      "dbb5c33f148a6cc8d24e89d4b97b800fec4e9dd4": {
+        "subject": "Internal restart fixes",
+        "month": "2026-09",
+        "disposition": "defer",
+        "reason": "Follow-up fixes to Sonarr's in-process restart (6cd1ab376): an IsDisposed guard in EventAggregator so events published while the container is torn down are dropped, and a DatabaseTarget that unsubscribes before resubscribing and finds itself by name on shutdown. They only matter once the host can restart in-process, which we do not do yet. Wanted when that lands, and they should land together with it.",
+        "blockedBy": "Radarr e80abdd60 (Improve external restart handling), itself deferred until Radarr wires up RestartableServiceLifetime. Sonarr's 6cd1ab376 was skipped so that both halves land through the Radarr chunk; take these fixes in the same PR."
+      },
+      "8033170da0cd53c5030930f46e5fd23d6a72bc1b": {
+        "subject": "Bump FFMpegCore to 5.5.0 and FFprobe to 9.0.2",
+        "month": "2026-09",
+        "disposition": "have",
+        "reason": "Openur.FFMpegCore is already 5.5.0.45 and Openur.FFprobeStatic 9.0.2.508 here, the exact versions this moves to."
+      },
+      "56d29e02ae20e91014c8b4ada304afa533bd0028": {
+        "subject": "Bump Dapper, MailKit and Polly",
+        "month": "2026-09",
+        "disposition": "have",
+        "reason": "Already there: Dapper 2.1.89 in all three projects, MailKit 4.18.0 and Polly 8.8.0."
+      },
+      "7bfb953e8af1a8c3cf55e3a6ee16908a5e62e3e6": {
+        "subject": "Bump Microsoft.AspNetCore.Authentication.OpenIdConnect to 10.0.12",
+        "month": "2026-09",
+        "disposition": "skip",
+        "reason": "Bumps Microsoft.AspNetCore.Authentication.OpenIdConnect, which we do not reference at all. It came to Sonarr with OIDC authentication (9f0cb9284), which is deferred here as a product decision; the package arrives with that port."
+      },
+      "93bed3223d90a2bf2debaa6cb41677a896ab6d99": {
+        "subject": "Remove System.Drawing.Common",
+        "month": "2026-09",
+        "disposition": "skip",
+        "reason": "Drops System.Drawing.Common from Sonarr.Core. Our backend follows Radarr, which still references it on develop (Radarr.Core.csproj), and we carry it in four projects (Core, Http, SignalR, Test.Common), not one. Removing it is a dependency-audit call across all four, not a Sonarr pick."
+      },
+      "1580ff87c143e449df6e22e20819e4f674d96f42": {
+        "subject": "Fixed: Manual Interaction Required Notifications for Unknown Series",
+        "month": "2026-09",
+        "disposition": "have",
+        "reason": "Already safe here. NotificationService.ShouldHandleMovie returns false with a debug log for a null movie on a tagged notification. The ManualInteractionRequired handler reads message.RemoteMovie?.Movie, and CustomScript already null-guards the movie and DownloadItem."
+      },
+      "d9e7ea05016d5bbbce62ec74da94f2dd2023f914": {
+        "subject": "v5 UI Foundation",
+        "month": "2026-09",
+        "disposition": "defer",
+        "reason": "Part of Sonarr's v5 UI redesign, merged into v5-develop in 2026-09. UI Foundation: the new design tokens, base components and page chrome that every later redesign commit builds on. Nothing here is a bug fix in code we share. It changes the look and layout, and the pages are Series-shaped, so every file would be an adapt onto our Movie/Scene/Performer/Studio pages. The en.json hunk is not ours to take either.",
+        "blockedBy": "A product decision on whether Eros adopts Sonarr's v5 UI redesign. Deferred by paul on 2026-09-27. If it is adopted, the port is its own multi-PR feature, starting from d9e7ea050 (UI Foundation), which the rest of the redesign builds on."
+      },
+      "a267097a325da52021683c6db4d0ee1c382fe218": {
+        "subject": "v5 UI Containers, Toolbear, Sidebar and Headings",
+        "month": "2026-09",
+        "disposition": "defer",
+        "reason": "Part of Sonarr's v5 UI redesign, merged into v5-develop in 2026-09. Page containers, toolbar, sidebar and headings, restyled on the foundation. Nothing here is a bug fix in code we share. It changes the look and layout, and the pages are Series-shaped, so every file would be an adapt onto our Movie/Scene/Performer/Studio pages. The en.json hunk is not ours to take either.",
+        "blockedBy": "A product decision on whether Eros adopts Sonarr's v5 UI redesign. Deferred by paul on 2026-09-27. If it is adopted, the port is its own multi-PR feature, starting from d9e7ea050 (UI Foundation), which the rest of the redesign builds on."
+      },
+      "a39334288a73eeb04208668e07cc554b916befff": {
+        "subject": "v5 Series Index",
+        "month": "2026-09",
+        "disposition": "defer",
+        "reason": "Part of Sonarr's v5 UI redesign, merged into v5-develop in 2026-09. Series Index pages rebuilt in the new design. Nothing here is a bug fix in code we share. It changes the look and layout, and the pages are Series-shaped, so every file would be an adapt onto our Movie/Scene/Performer/Studio pages. The en.json hunk is not ours to take either.",
+        "blockedBy": "A product decision on whether Eros adopts Sonarr's v5 UI redesign. Deferred by paul on 2026-09-27. If it is adopted, the port is its own multi-PR feature, starting from d9e7ea050 (UI Foundation), which the rest of the redesign builds on."
+      },
+      "22d8961c44898a68267884cd2331c2310c56f77e": {
+        "subject": "v5 Series Details",
+        "month": "2026-09",
+        "disposition": "defer",
+        "reason": "Part of Sonarr's v5 UI redesign, merged into v5-develop in 2026-09. Series Details rebuilt in the new design. Nothing here is a bug fix in code we share. It changes the look and layout, and the pages are Series-shaped, so every file would be an adapt onto our Movie/Scene/Performer/Studio pages. The en.json hunk is not ours to take either.",
+        "blockedBy": "A product decision on whether Eros adopts Sonarr's v5 UI redesign. Deferred by paul on 2026-09-27. If it is adopted, the port is its own multi-PR feature, starting from d9e7ea050 (UI Foundation), which the rest of the redesign builds on."
+      },
+      "fcdc91262c43af8ec7800a80ce83bbbf740cc131": {
+        "subject": "v5 Calendar",
+        "month": "2026-09",
+        "disposition": "defer",
+        "reason": "Part of Sonarr's v5 UI redesign, merged into v5-develop in 2026-09. Calendar rebuilt in the new design. Nothing here is a bug fix in code we share. It changes the look and layout, and the pages are Series-shaped, so every file would be an adapt onto our Movie/Scene/Performer/Studio pages. The en.json hunk is not ours to take either.",
+        "blockedBy": "A product decision on whether Eros adopts Sonarr's v5 UI redesign. Deferred by paul on 2026-09-27. If it is adopted, the port is its own multi-PR feature, starting from d9e7ea050 (UI Foundation), which the rest of the redesign builds on."
+      },
+      "4fb11bf986a30ff9b00d19e5b293e1d3aaf5f072": {
+        "subject": "v5 Activity and Wanted",
+        "month": "2026-09",
+        "disposition": "defer",
+        "reason": "Part of Sonarr's v5 UI redesign, merged into v5-develop in 2026-09. Activity and Wanted pages restyled. Nothing here is a bug fix in code we share. It changes the look and layout, and the pages are Series-shaped, so every file would be an adapt onto our Movie/Scene/Performer/Studio pages. The en.json hunk is not ours to take either.",
+        "blockedBy": "A product decision on whether Eros adopts Sonarr's v5 UI redesign. Deferred by paul on 2026-09-27. If it is adopted, the port is its own multi-PR feature, starting from d9e7ea050 (UI Foundation), which the rest of the redesign builds on."
+      },
+      "2c057e9b824b41fe73924d3e19f53141359b91f6": {
+        "subject": "v5 Settings",
+        "month": "2026-09",
+        "disposition": "defer",
+        "reason": "Part of Sonarr's v5 UI redesign, merged into v5-develop in 2026-09. Every Settings page restyled: 284 files. Nothing here is a bug fix in code we share. It changes the look and layout, and the pages are Series-shaped, so every file would be an adapt onto our Movie/Scene/Performer/Studio pages. The en.json hunk is not ours to take either.",
+        "blockedBy": "A product decision on whether Eros adopts Sonarr's v5 UI redesign. Deferred by paul on 2026-09-27. If it is adopted, the port is its own multi-PR feature, starting from d9e7ea050 (UI Foundation), which the rest of the redesign builds on."
+      },
+      "9f6853a95d4f6c6cfcfcda02340b3962db6f0b98": {
+        "subject": "v5 Add New Series",
+        "month": "2026-09",
+        "disposition": "defer",
+        "reason": "Part of Sonarr's v5 UI redesign, merged into v5-develop in 2026-09. Add New Series flow rebuilt in the new design. Nothing here is a bug fix in code we share. It changes the look and layout, and the pages are Series-shaped, so every file would be an adapt onto our Movie/Scene/Performer/Studio pages. The en.json hunk is not ours to take either.",
+        "blockedBy": "A product decision on whether Eros adopts Sonarr's v5 UI redesign. Deferred by paul on 2026-09-27. If it is adopted, the port is its own multi-PR feature, starting from d9e7ea050 (UI Foundation), which the rest of the redesign builds on."
+      },
+      "d85b036ab8e1162a8078aedebdcdd018c5fe0c9e": {
+        "subject": "v5 Library Import",
+        "month": "2026-09",
+        "disposition": "defer",
+        "reason": "Part of Sonarr's v5 UI redesign, merged into v5-develop in 2026-09. Library Import rebuilt in the new design. Nothing here is a bug fix in code we share. It changes the look and layout, and the pages are Series-shaped, so every file would be an adapt onto our Movie/Scene/Performer/Studio pages. The en.json hunk is not ours to take either.",
+        "blockedBy": "A product decision on whether Eros adopts Sonarr's v5 UI redesign. Deferred by paul on 2026-09-27. If it is adopted, the port is its own multi-PR feature, starting from d9e7ea050 (UI Foundation), which the rest of the redesign builds on."
+      },
+      "481ffa84a90e97f2215996c10d791d8a737a3d8c": {
+        "subject": "Update v5 redesign styling",
+        "month": "2026-09",
+        "disposition": "defer",
+        "reason": "Part of Sonarr's v5 UI redesign, merged into v5-develop in 2026-09. Styling pass over the redesigned components. Nothing here is a bug fix in code we share. It changes the look and layout, and the pages are Series-shaped, so every file would be an adapt onto our Movie/Scene/Performer/Studio pages. The en.json hunk is not ours to take either.",
+        "blockedBy": "A product decision on whether Eros adopts Sonarr's v5 UI redesign. Deferred by paul on 2026-09-27. If it is adopted, the port is its own multi-PR feature, starting from d9e7ea050 (UI Foundation), which the rest of the redesign builds on."
+      },
+      "b9da16d63ed22910ff47d67a6dc7ee47daef5cb6": {
+        "subject": "New: Move 'Test Parsing' and 'Manual Import' to menu on page header",
+        "month": "2026-09",
+        "disposition": "defer",
+        "reason": "Part of Sonarr's v5 UI redesign, merged into v5-develop in 2026-09. Moves Test Parsing and Manual Import from the sidebar into a menu in the redesigned page header. Nothing here is a bug fix in code we share. It changes the look and layout, and the pages are Series-shaped, so every file would be an adapt onto our Movie/Scene/Performer/Studio pages. The en.json hunk is not ours to take either.",
+        "blockedBy": "A product decision on whether Eros adopts Sonarr's v5 UI redesign. Deferred by paul on 2026-09-27. If it is adopted, the port is its own multi-PR feature, starting from d9e7ea050 (UI Foundation), which the rest of the redesign builds on."
+      },
+      "a8a82905e7cebad06a8414d84124cd13899abb89": {
+        "subject": "Hide home until we have something to show",
+        "month": "2026-09",
+        "disposition": "defer",
+        "reason": "Part of Sonarr's v5 UI redesign, merged into v5-develop in 2026-09. Redirects / to /series and hides the redesign's Home nav item until its homepage exists. We have no Home page to hide. Nothing here is a bug fix in code we share. It changes the look and layout, and the pages are Series-shaped, so every file would be an adapt onto our Movie/Scene/Performer/Studio pages. The en.json hunk is not ours to take either.",
+        "blockedBy": "A product decision on whether Eros adopts Sonarr's v5 UI redesign. Deferred by paul on 2026-09-27. If it is adopted, the port is its own multi-PR feature, starting from d9e7ea050 (UI Foundation), which the rest of the redesign builds on."
+      },
+      "600f1522651ade9668a1f9a44fe76d29fb94d9d6": {
+        "subject": "Replace react-dnd with dnd-kit",
+        "month": "2026-09",
+        "disposition": "adapt",
+        "reason": "Landed 2026-09-27 as its own PR. The mechanism was ported, not the files: our tree still had the separate DragSource/DragPreview components upstream had already folded away, and upstream's quality section has since gained modes and size editing we do not have. Taken as upstream: @dnd-kit/react and @dnd-kit/helpers 0.5.0, useSortable for table columns, delay profiles, qualities and groups, and a board-based useQualityProfileDnd. We also declare @dnd-kit/abstract, which upstream imports without declaring. Adapted: groups are told apart from qualities by a missing quality, per our typings. Delay profile reorder now sends the profile it lands after, read from the moved list rather than from order numbers. Our styling is kept, apart from touch-action on the handles. Fixed in the port: upstream's moveGroup reads the drop target, but optimistic sorting leaves the dragged group as its own target, so dragging a group never moved it. The sortable's initialIndex/index drive the move instead. That bug is upstream's too. Not taken: the qualityProfileItemFailures additions, which belong to per-item size validation we lack."
+      },
+      "b2413c1e09e798101a952b848470f919a9e9311a": {
+        "subject": "Replace PostCSS variables with custom properties and @custom-media",
+        "month": "2026-09",
+        "disposition": "adapt",
+        "reason": "Landed 2026-09-27 as its own PR, and wider than upstream. Upstream's parent had already moved most tokens to var() during the redesign, so their commit only finished the job. Our 126 stylesheets still used 41 postcss-simple-vars tokens, and all of them are converted. Taken as upstream: breakpoints.css as @custom-media, loaded everywhere by @csstools/postcss-global-data and expanded by postcss-custom-media, with postcss-simple-vars and require-nocache removed. We use the current plugin majors, 4.0.0 and 12.0.2. Adapted: variables.css is new here. It holds every token plus the two that were declared locally, $hoverScale in ten poster stylesheets and $fullColorGradient, and it is imported from Styles/globals.css. dimensions.ts and fonts.ts stay as the TypeScript mirror, since about twenty components read them; animations.ts and zIndexes.ts had no TypeScript readers and are deleted. One media query used calc($breakpointLarge + 100px), which @custom-media cannot express, so it became a literal 1300px. postcss-color-function is kept, unlike upstream, because CalendarEvent and ProgressBar still use color(). The dead css-variables-loader.js goes with the variable files it existed for."
+      },
+      "dc984cf1754f935573b1722eab57e53acb6c2572": {
+        "subject": "Rename CSS modules to .module.css",
+        "month": "2026-09",
+        "disposition": "adapt",
+        "reason": "Landed 2026-09-27 as its own PR, re-run on our tree rather than replayed, since 26 of upstream's files are Sonarr-only pages. Every stylesheet imported as a CSS module (422 files) is renamed to .module.css along with its generated .css.d.ts. TS imports and composes references are rewritten, including the ~-prefixed one. Files that are not modules keep their names: globals.css, scaffolding.css, index.css, the mixins, variables.css, breakpoints.css and fonts.css. Adapted: upstream let the rename change every generated class name to Foo-module-bar. Our webpack config adds a getLocalIdent that drops the .module suffix, so the class names stay Foo-bar, which the Selenium tests and user themes match on. The compiled CSS is identical to the pre-rename build, down to the class-name hashes."
+      },
+      "3731e9dc4731b2c1e62a05a8a6758c7c26d49239": {
+        "subject": "Replace webpack with Vite",
+        "month": "2026-09",
+        "disposition": "adapt",
+        "reason": "Landed 2026-09-27 as its own PR, and it pushes a workflow change, so it could not come through upstream-watch. Taken as upstream: Vite 8, @vitejs/plugin-react and vite-css-modules replace webpack, Babel and their loaders. It also brings a root index.html, the static-content copy plugin, relative built URLs instead of __webpack_public_path__, tcm-generated CSS module typings (gitignored, generated by yarn typecheck, which CI now runs), and the backend Vite dev-server proxy. Adapted: the config is frontend/vite.config.mts, next to postcss.config.js and inside the frontend coverage exclusion, as .mts since we have no \"type\": \"module\"; and our class names stay Component-local-hash through generateScopedName instead of Vite's _local_hash. The dev-server env var is WHISPARR_VITE_DEV_SERVER on port 6939. Our mapper interface has no HttpContext, so the controller passes the query string to ViteDevMapper directly. The proxy only forwards Vite paths, rejects traversal and must resolve under the dev server's base URI, and index.html is served from the dev server even when no build is on disk. HtmlMapperBase keeps its unquoted-attribute branch and gains ts. countryCode.ts's dynamic require became import.meta.glob. Three stylesheet defects that webpack tolerated had to be fixed for Vite. A ~-prefixed composes path. A composes of a class DescriptionListItemDescription does not have (YearInfo). Eight Tooltip arrow rules nested into invalid ::after.default selectors, which never applied. The fixes are removals, since none of the three ever took effect."
+      },
+      "4e7590137f59d77a8b2319c6aaa2953f71df6f63": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-10",
+        "disposition": "skip",
+        "reason": "Weblate gate. Touches Localization/Core/*.json only. Our translations come from Weblate, never from cherry-picks."
+      },
+      "f382d6e8f9059a1f5d52c16becc2b8a3a7761af6": {
+        "subject": "New: Update all matching Plex libraries, not just the first match",
+        "month": "2026-10",
+        "disposition": "have",
+        "reason": "Taken through Radarr: radarr/radarr@0a097deb1 is the same fix, landed here as 9a87bb77de (Fixed: update every matching Plex section). PlexServerService already updates every matching section, not just the first."
+      },
+      "9e5d1573eecee6fbdb66d8d66161e7d568dd48a0": {
+        "subject": "Fix typo in documentation",
+        "month": "2026-10",
+        "disposition": "skip",
+        "reason": "Fixes a typo ('approproate') in a CONTRIBUTING.md paragraph about AI-opened issues and trace logs that our CONTRIBUTING.md does not have."
+      },
+      "f22ca68e9d0b07ce57f000664ca7605624d4dac8": {
+        "subject": "New: Irish language",
+        "month": "2026-10",
+        "disposition": "skip",
+        "reason": "Parser gate, and the language ids collide. Adds Irish as Language 53 to Language.cs, IsoLanguages and the LanguageParser regex. Our Language ids follow Radarr, not Sonarr: 53 is already Tagalog here and Georgian is 57, so taking Sonarr's id would change what a stored 53 means. A new language is a feature with nothing to reproduce; if Radarr adds Irish it arrives with Radarr's id."
+      },
+      "287cb4231559e0dd5f641534596150742a4b1e13": {
+        "subject": "Virtualize Interactive Search results",
+        "month": "2026-10",
+        "disposition": "adapt",
+        "reason": "Ported the mechanism onto our own Interactive Search, which is a separate port (flat Release type, its own releaseOptionsStore, a columns array in the component), so the files could not be replayed. The list is a react-window VariableSizeList sized to the modal body it scrolls in, each row measures itself with a ResizeObserver, the header is a new InteractiveSearchTableHeader, and ModalBody forwards its ref to the Scroller. The title filter box beside the filter menu came too, with our own FilterReleasesPlaceholder key; the upstream en.json hunk was not taken. Only the one caller here, MovieInteractiveSearchModalContent; the Episode and Season callers do not exist. The age column is 85px rather than upstream's 70px, which clipped '21.0 hours' into the title. Verified on 6969 against a stub Torznab returning 80 releases: 34 rows in the DOM, wrapped titles measure 103px and the rest 60px, scrolling the modal reaches the 80th, the filter row stays pinned, and the title filter narrows to 1 and 20 rows with the hidden-results alerts."
+      },
+      "1c94b6600dc97a1f6f21d54c92726b46e76ccd97": {
+        "subject": "Improve Vite dev server support",
+        "month": "2026-10",
+        "disposition": "have",
+        "reason": "Our dev-server integration already does what this catches Sonarr up to. ViteDevServer defaults to localhost:6939 in a debug build without WHISPARR_VITE_DEV_SERVER, probes @vite/client every 2s and serves the built UI when Vite is not answering, so a missing dev server never errors (IndexHtmlMapper only reads Vite's index.html while the probe says it is up). frontend/vite.config.mts is already ESM, and the fuse.worker type: module fix has no counterpart: our MovieSearchInput uses no worker. The proxying stays a mapper rather than moving to middleware; nothing here is broken by that."
+      },
+      "8f2d47a32dc2b84342cb99807309c4d4be5b0453": {
+        "subject": "Fix double border on path input with additional buttons",
+        "month": "2026-10",
+        "disposition": "defer",
+        "reason": "Fixes PathInputInternal, a component the v5 redesign introduced. Our PathInput predates it and has no fileBrowserGroup/hasButton combination to double a border.",
+        "blockedBy": "A product decision on whether Eros adopts Sonarr's v5 UI redesign. Deferred by paul on 2026-09-27. If it is adopted, this follow-up comes with it, after d9e7ea050 (UI Foundation)."
+      },
+      "523724b6843758c99ecb803aa378e0cbac9c2719": {
+        "subject": "Fix key spread warnings in AutoSuggestInput",
+        "month": "2026-10",
+        "disposition": "adapt",
+        "reason": "Same warning here: react-autosuggest passes key inside inputProps and containerProps, and our AutoSuggestInput spread both. Applied to our react-popper version of the component rather than upstream's floating-ui one."
+      },
+      "4e8ad878adb2da53c1c996cdf4c4e5c835e287e1": {
+        "subject": "Convert dimensions to TypeScript and use for breakpoints",
+        "month": "2026-10",
+        "disposition": "have",
+        "reason": "We converted dimensions to TypeScript in our own port (frontend/src/Styles/Variables/dimensions.ts), and breakpoints come from @custom-media in breakpoints.css. ResolutionUtility, which this deletes, does not exist here. Upstream's numeric-value refactor of the store and index components is redesign-shaped and buys nothing over ours."
+      },
+      "383dae178c3e19ad27ef8c995cb59c6086cf7dbb": {
+        "subject": "Use custom media breakpoints in CSS",
+        "month": "2026-10",
+        "disposition": "have",
+        "reason": "Our 2026-09 adapt of b2413c1e0 moved every stylesheet to @custom-media, wider than upstream did, so none of the raw max-width queries this replaces are left in the files it touches. The four that remain here are in our own Movie/Scene/Performer/Studio IndexSelectFooter stylesheets, which upstream does not have."
+      },
+      "1d7ff23918d589936a4a001b059e1551f60488d8": {
+        "subject": "Replace react-document-title with useEffect",
+        "month": "2026-10",
+        "disposition": "pick",
+        "reason": "Same two DocumentTitle wrappers here (App and PageContent). Replaced with the same useEffect plus an initial document.title in bootstrap, and react-document-title and its types dropped from package.json and yarn.lock."
+      },
+      "64dc5d957400e0dea7e6f4d9032c6f872ba90909": {
+        "subject": "Close menus when a menu item is pressed",
+        "month": "2026-10",
+        "disposition": "skip",
+        "reason": "The bug is in floating-ui code we do not have. Upstream's Menu closed on a 100ms timeout in useDismiss's outsidePress handler; our Menu is the older implementation that closes from a window click listener, which a menu item press already reaches, so there is no timeout to replace with a context."
+      },
+      "0e132ed1a559c4b40e9c3e33b5b32eaa096806f7": {
+        "subject": "Fix authentication settings after merge conflict",
+        "month": "2026-10",
+        "disposition": "defer",
+        "reason": "Repairs FormsAuthenticationSettings and OidcAuthenticationSettings after an upstream merge conflict. Neither component exists here; they came with OIDC authentication.",
+        "blockedBy": "sonarr@9f0cb9284 (OIDC authentication), itself deferred as a product decision on whether Eros gains OIDC as a fourth authentication method."
+      },
+      "7004c3df7bab19d3b2ae82652c1e6c716edefec3": {
+        "subject": "Series search results styling",
+        "month": "2026-10",
+        "disposition": "defer",
+        "reason": "Restyles the series search dropdown in the redesign's tokens (--ink, --accent, --cardBackgroundColor, --shadowDropdown). Only 14 of the 53 context lines in the stylesheet match our MovieSearchInput.module.css, which is still the pre-redesign one.",
+        "blockedBy": "A product decision on whether Eros adopts Sonarr's v5 UI redesign. Deferred by paul on 2026-09-27. If it is adopted, this follow-up comes with it, after d9e7ea050 (UI Foundation)."
+      },
+      "c74a5edb14270e59e7709e503cd59b922416fd76": {
+        "subject": "Fix path input buttons wrapping on mobile",
+        "month": "2026-10",
+        "disposition": "pick",
+        "reason": "Applied cleanly: min-width: 0 on AutoSuggestInput's container and no flex-wrap on FormInputGroup, so path inputs keep their buttons on the same line on narrow screens. Also in the upstream-watch draft #944, which this supersedes."
+      },
+      "a7c95ce3303e663187c0168c6f8efb6b92a533c9": {
+        "subject": "Convert remaining FormGroup usages to FormRow",
+        "month": "2026-10",
+        "disposition": "defer",
+        "reason": "Moves the remaining FormGroup usages to the redesign's FormRow. FormRow does not exist here; FormGroup is still our form row everywhere.",
+        "blockedBy": "A product decision on whether Eros adopts Sonarr's v5 UI redesign. Deferred by paul on 2026-09-27. If it is adopted, this follow-up comes with it, after d9e7ea050 (UI Foundation)."
+      },
+      "525e675a55e47d7b84d7aa955872cfa8dedd8b8a": {
+        "subject": "Remove unused FormGroup and FormInputGroup",
+        "month": "2026-10",
+        "disposition": "defer",
+        "reason": "Deletes FormGroup and FormInputGroup once the redesign has replaced them with FormRow and FormInput. Both are in use throughout our tree.",
+        "blockedBy": "A product decision on whether Eros adopts Sonarr's v5 UI redesign. Deferred by paul on 2026-09-27. If it is adopted, this follow-up comes with it, after d9e7ea050 (UI Foundation)."
+      },
+      "5b09fed7fd7f669d8e16cd6a3bcd7a7e4ee1d717": {
+        "subject": "Show check inputs beside their label on mobile",
+        "month": "2026-10",
+        "disposition": "defer",
+        "reason": "Mobile layout for the redesign's FormRow.module.css, which does not exist here.",
+        "blockedBy": "A product decision on whether Eros adopts Sonarr's v5 UI redesign. Deferred by paul on 2026-09-27. If it is adopted, this follow-up comes with it, after d9e7ea050 (UI Foundation)."
+      },
+      "97d89b7f0d024fc26e5ec236e64d95cb99819c0b": {
+        "subject": "Fix series posters on touch devices and row height with tags",
+        "month": "2026-10",
+        "disposition": "defer",
+        "reason": "Fixes the redesign's poster hover (translateY controls, a box-shadow and filter on posterContainer) and its row-height maths. Our MovieIndexPoster still has the pre-redesign hover and our MovieIndexPosters a different row-height calculation; 6 of the 38 context lines match.",
+        "blockedBy": "A product decision on whether Eros adopts Sonarr's v5 UI redesign. Deferred by paul on 2026-09-27. If it is adopted, this follow-up comes with it, after d9e7ea050 (UI Foundation)."
+      },
+      "aa2791c2c895b457b99bdfe334ddb16a1d494efa": {
+        "subject": "Fix hidden checkbox input escaping custom check containers",
+        "month": "2026-10",
+        "disposition": "have",
+        "reason": "Our CheckInput's .container is already position: relative and wraps the label, so the absolutely positioned hidden checkbox is contained. Upstream's redesign made the label the container, which is what let the input escape. Also in the upstream-watch draft #944, which this supersedes."
+      },
+      "3fc1db2b9898505206377b0db4d1c856295c6570": {
+        "subject": "Allow table header cells to wrap on desktop",
+        "month": "2026-10",
+        "disposition": "have",
+        "reason": "Our TableHeaderCell.module.css never set white-space: nowrap on desktop; it only does so under @media (--breakpointMedium), which is the end state this commit reaches."
+      },
+      "46955e359ad4158591b2b390baf0a8dee9f0898d": {
+        "subject": "Fixed: Search before triggering On Series Add notifications",
+        "month": "2026-10",
+        "disposition": "skip",
+        "reason": "No counterpart event. Upstream moved SeriesAddCompletedEvent after the post-add search so On Series Add notifications see the search. Our MovieScannedHandler publishes no add-completed event: On Movie Added fires from MovieAddedEvent at add time (Radarr's model), and the scan handler only queues the search and clears the add options."
+      },
+      "46e2bec9d0c15ed19a2d769bf84f193167896235": {
+        "subject": "Fix `yarn start` on Windows",
+        "month": "2026-10",
+        "disposition": "adapt",
+        "reason": "Same spawn of tcm.cmd without a shell in our frontend/vite.config.mts, which Node refuses on Windows since its .cmd/.bat hardening. Applied to our config file, which lives in frontend/ rather than the repo root."
+      },
+      "8e609aefa4630daa586f3d44e65ef614fdb9bded": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-10",
+        "disposition": "skip",
+        "reason": "Weblate gate. Touches Localization/Core/*.json only. Our translations come from Weblate, never from cherry-picks."
+      },
+      "6856af8bb632b9460aa85fd14081083068ff16a9": {
+        "subject": "Improve Deluge reconnection logic",
+        "month": "2026-10",
+        "disposition": "pick",
+        "reason": "Same bug in our Deluge client: the reconnect branch sat inside a check on the flag it was supposed to set, so it was unreachable and Whisparr only ever logged the warning. Upstream's test taken; their neighbouring outputdirs test was context, not part of the change, and not taken."
+      },
+      "da7fa1f8d79f64388d9310bd8bbe2371e6d286ed": {
+        "subject": "Fixed: Parsing anime partial and multi-season packs with a subgroup prefix",
+        "month": "2026-10",
+        "disposition": "skip",
+        "reason": "Parser gate, no reproduction possible. Adds anime subgroup-prefix patterns for partial and multi-season packs, with AbsoluteEpisodeNumber and Season fixtures; we carry no anime, season or episode patterns."
+      },
+      "9283091c932795d0db4d1c6c24ee020a84f8e5c0": {
+        "subject": "Sticky header for calendar",
+        "month": "2026-10",
+        "disposition": "pick",
+        "reason": "Applied cleanly onto our Calendar. The sticky wrapper's negative margin was changed from upstream's literal 24px to var(--pageContentBodyPadding), since our page padding is 20px. Also in the upstream-watch draft #944, which this supersedes. Verified on 6969: with the month grid scrolled 300px, the header and days of the week stay at the top of the page body."
+      },
+      "b049b1ba1fb705cdda471e16d8fa0249dba3ff20": {
+        "subject": "New: Full Transmission label support",
+        "month": "2026-10",
+        "disposition": "adapt",
+        "reason": "Our TransmissionBase is upstream's pre-change code with Tv renamed to Movie, so the change applies as written on MovieCategory/MovieDirectory: on Transmission 4.0+ the category is only a label, torrents predating labels still match by subfolder, a directory filters GetItems, and Category plus Directory is allowed (still rejected on 3.x and Vuze, now in Test()). Upstream's Transmission and Vuze tests ported. Our own DownloadClientTransmissionSettingsCategoryHelpText key; the upstream en.json hunk was not taken."
+      },
+      "454b4c440384f51b0bf9a2f0635a1644b068e752": {
+        "subject": "Return error seriesId and season number aren't both included",
+        "month": "2026-10",
+        "disposition": "skip",
+        "reason": "Our ReleaseController.GetReleases takes movieId alone; there is no seriesId/seasonNumber pair that can arrive half-filled. The other half is Sonarr.Api.V5, which we do not have."
+      },
+      "ae7a61c106834caf9cbcd944991284902c0b01e3": {
+        "subject": "Add logging for Manual Interaction required",
+        "month": "2026-10",
+        "disposition": "pick",
+        "reason": "Same SetStateToImportBlocked here. The warning is taken with its title and status messages passed through ForLog(), since both come from the download client."
+      },
+      "c1c5144e7c9ea219b34c89340464b7caf10abf8d": {
+        "subject": "Include CSS Module filename name in class",
+        "month": "2026-10",
+        "disposition": "have",
+        "reason": "Our generateScopedName in frontend/vite.config.mts already puts the component file name in every class (Component-local-hash, the webpack shape the automation tests and user themes rely on)."
+      },
+      "86584e8cc4cb1dd76786349c6ff712e9954dacf0": {
+        "subject": "Fix actions spacing",
+        "month": "2026-10",
+        "disposition": "defer",
+        "reason": "Restores button spacing the redesign removed: our ModalFooter still gives every button a margin-left, so the shared Manage*EditModalContent footers and the interactive import buttons are already spaced. The rest is Series-only redesign pages.",
+        "blockedBy": "A product decision on whether Eros adopts Sonarr's v5 UI redesign. Deferred by paul on 2026-09-27. If it is adopted, this follow-up comes with it, after d9e7ea050 (UI Foundation)."
+      },
+      "0eb86d8afbcc1eb1dc16c6bfaf398c33e6dea0e7": {
+        "subject": "Fix styling for float inputs with unit",
+        "month": "2026-10",
+        "disposition": "adapt",
+        "reason": "Same check in our tree, in FormInputGroup rather than the redesign's FormInput: a float input with a unit got the text-input unit style."
+      },
+      "da990630a18f6982f9b82bc641bd2d25bd16dc2a": {
+        "subject": "Fix slow loading of manage episodes on missing series folder",
+        "month": "2026-10",
+        "disposition": "adapt",
+        "reason": "Worse here than upstream's slowness: our GetMediaFiles(movieId) enumerated a missing movie folder, and Directory.EnumerateFiles throws on that. Guarded with IDiskProvider.FolderExists rather than DirectoryInfo.Exists so the case is testable, and a fixture case added that fails before the fix. Verified on 6969: GET /api/v3/manualimport?movieId= for a movie whose folder is missing returns 200 with an empty list."
+      },
+      "4542b66c3cd02fed5d971f8623d47b8059563a09": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-10",
+        "disposition": "skip",
+        "reason": "Weblate gate. Touches Localization/Core/*.json only. Our translations come from Weblate, never from cherry-picks."
+      },
+      "b59552cfea880398771468630a30eafc5722410a": {
+        "subject": "Restrict ImageSharp decoders and suppress 3.x advisories",
+        "month": "2026-10",
+        "disposition": "have",
+        "reason": "Taken through Radarr: radarr/radarr@2c205edec is the same commit, adapted here in the Radarr 2026-10 sync as ca62bffbaa, with the 3.x advisories already suppressed in #954."
+      },
+      "b4e9ab17919fc167fff1232f370bbe0d3592e0ef": {
+        "subject": "Translations and Episode Order",
+        "month": "2026-10",
+        "disposition": "skip",
+        "reason": "Series metadata translations and episode order: a SeriesTranslation table (migration 208), SkyHook TranslationResource and SeasonTypeResource, Series.EpisodeOrder, and the add/import UI for them. All of it is TVDB-shaped. Our metadata comes from the Eros skyhook, which has no per-language translations or episode orders, and 79 files touch Series/Episode code with no counterpart."
+      },
+      "c77445801052c4ef63696690bddb37896fe8fe28": {
+        "subject": "Season Titles",
+        "month": "2026-10",
+        "disposition": "skip",
+        "reason": "Season titles from TVDB: Season.Title, a {Season Title} naming token and the season folder format that uses it. We have no seasons."
+      },
+      "4be71f2c5b78621340453bd42d043e694fe6067b": {
+        "subject": "Preferred metadata language setting",
+        "month": "2026-10",
+        "disposition": "skip",
+        "reason": "A preferred metadata language for series lookup and import lists, built on the series translations in b4e9ab179 (skipped) and exposed only through Sonarr.Api.V5 settings controllers. Our metadata source has no translations to choose between."
+      },
+      "4cfd439cbdcfdecb909da408110de492ee1fcb32": {
+        "subject": "Allow some flexibility in release date parsing",
+        "month": "2026-10",
+        "disposition": "adapt",
+        "reason": "Past the parser gate with a reproduction. Our scene-date parser had the same guard rejecting any date more than a day out, so a scene posted ahead of its date failed to parse; new ParseMovieTitleFixture cases with dates 7 and 14 days ahead failed on eros-develop and pass now, and 15 and 60 days ahead still do not parse. Window widened to 14 days as upstream; taken by paul's decision on 2026-10-10. No existing assertion changed."
+      },
+      "76e436005ef7bc896e72009718071b7b3cc6faf4": {
+        "subject": "Fixed: Importing anime from Simkl Import List",
+        "month": "2026-10",
+        "disposition": "skip",
+        "reason": "Only touches the Simkl import list parser. We have no Simkl list: src/NzbDrone.Core/ImportLists carries RSS, StashDB, TMDb and Whisparr."
+      },
+      "5f5fd1e5eb1bd2d27029fe4d461d2b14600430ca": {
+        "subject": "More system directories",
+        "month": "2026-10",
+        "disposition": "pick",
+        "reason": "Applied cleanly: /usr/sbin, /usr/local/bin and /usr/local/sbin join SystemFolders, so they are refused as root folders here too."
+      },
+      "5c8e4f1d17f56c7effc8a8b4dcfa3c61965fddd3": {
+        "subject": "Improve precision rounding statistics",
+        "month": "2026-10",
+        "disposition": "adapt",
+        "reason": "Only the roundNumber half applies: Number.EPSILON fixes values like 1.005 rounding down. Our Statistics page computes no percentages with it; the quality definition sizes are its one caller here."
+      },
+      "1bffb720d869395a9210de4a401bc80a2876139e": {
+        "subject": "Fix Interactive Search layout on smaller screens",
+        "month": "2026-10",
+        "disposition": "adapt",
+        "reason": "Follow-up to 287cb4231, applied to our port of it: below the large breakpoint the results scroll sideways, and the title, indexer, quality, language and score columns get wider minimums."
+      },
+      "f4f1a88dc5340cd2e1a5ad479ecf6e08841d6a7e": {
+        "subject": "Fix popovers overflowing the viewport on mobile",
+        "month": "2026-10",
+        "disposition": "adapt",
+        "reason": "Our Tooltip middleware was upstream's pre-change list, so the size middleware, shift padding and alignment-aware flip are taken as written. The stylesheet half is applied to our Tooltip and Popover classes and theme tokens (upstream's are the redesign's), and Popover renders a fragment so title and body are flex children of the capped tooltip. Also dropped margin: 10px from our .tooltipContainer, a react-popper leftover upstream does not have: it moved every tooltip 10px right and down after floating-ui placed it, which put a phone-width popover flush against the screen edge despite the new padding. Verified on 6969 at 375px: the Links popover sits 10px inside the right edge and 10px below its anchor."
+      },
+      "8b23970f37fc1c36ab1abb6a8309540eae790e41": {
+        "subject": "Fix page scroll staying locked when a modal unmounts while open",
+        "month": "2026-10",
+        "disposition": "pick",
+        "reason": "Applied cleanly. Our Modal used the same wasOpen bookkeeping, so a modal unmounted while open never removed itself from openModals and left the page scroll-locked."
+      },
+      "4d7dcf1e1d878811ed8fb557f832bb462687e9a7": {
+        "subject": "Improve spacing between description list items on mobile",
+        "month": "2026-10",
+        "disposition": "pick",
+        "reason": "Applied cleanly onto our DescriptionList stylesheet, which matched upstream's pre-image."
+      },
+      "c8cd4cdc7c0db69a008dfc1210ade71aaeab9a05": {
+        "subject": "Show no airings message on calendar single day view",
+        "month": "2026-10",
+        "disposition": "adapt",
+        "reason": "Our CalendarDay has the same day view. Shows a message on an empty day with our own NoReleasesOnDay key, since NoEpisodesAiring does not fit movies and scenes; styled with our helpTextColor token, and the upstream en.json hunk was not taken. Verified on 6969: an empty day view shows the message."
+      },
+      "096f4e29f762f6ed0b0a2a873fa2f1b925a0c6f3": {
+        "subject": "Fix validation for empty values in media management",
+        "month": "2026-10",
+        "disposition": "skip",
+        "reason": "The V3 half only adds a SeasonPackUpgradeThreshold rule, a setting we do not have. The nullable-value validation fixes are all in Sonarr.Api.V5 settings, which we do not have."
+      },
+      "a83ffea24543bf45669f1656041bbd5f69735297": {
+        "subject": "Increase iterations to match OWASP recommendations",
+        "month": "2026-10",
+        "disposition": "pick",
+        "reason": "Same UserService here, at 10,000 PBKDF2-HMAC-SHA512 iterations. Raised to 220,000 with a rehash on the next successful login for passwords stored with fewer. Upstream has no test for it; a new UserServiceFixture covers the rehash, no rehash at the current count, and a wrong password. Verified on 6969 against a fresh data dir: the generated user signs in."
+      },
+      "0bdf2087a278670c750bf3630408b979d9ac062c": {
+        "subject": "New: Lockout after failed login attempts",
+        "month": "2026-10",
+        "disposition": "adapt",
+        "reason": "Applied to our AuthenticationService, which keeps its cached authentication method rather than reading config per request. Five failures from one address lock it out for five minutes, a success clears the count, and the login page disables the button and counts down. Usernames in the rewritten Auth log lines go through ForLog() (CodeQL flags rewritten log lines). Upstream shipped no tests; a new AuthenticationServiceFixture in Api.Test covers the threshold, refusal of the right password while locked, per-address scope and reset on success. Verified on 6969: the fifth failure redirects with lockoutUntil, the right password is refused while locked, and the page shows the countdown with the button disabled. Taken by paul's decision on 2026-10-10."
+      },
+      "9efa5a0698d33a1f4f58c84bd20f0c509711ac02": {
+        "subject": "Don't return passwords and secrets from settings API",
+        "month": "2026-10",
+        "disposition": "adapt",
+        "reason": "Same leak here: GET /api/v3/config/host returned the user's password hash, the SSL certificate password and the proxy password. Applied to our V3 HostConfigController and our CertificateValidator<T> (newer FluentValidation shape), with UserService.Upsert taking null to keep the stored password; the V5 GeneralSettingsController half has no counterpart. UserServiceFixture covers the Upsert cases. Verified on 6969: the host config returns ******** for the password, and saving the masked resource back keeps the original password working."
+      },
+      "b0bc052701c7da17fac978cc9ca6b31389ec9c49": {
+        "subject": "Path validation rejects relative path segments",
+        "month": "2026-10",
+        "disposition": "adapt",
+        "reason": "Taken with PathTraversalValidator rewritten for our FluentValidation version. Upstream moved its mappers from ConfigFileProvider.UiFolder ('../UI' in debug, which the new check rejects) to a normalized GetUiFolder(); we have UiFolder in more mappers than they do, so all seven here moved (Index, Login, Manifest, Favicon, Robots, BrowserConfig, StaticResource), unused IConfigFileProvider parameters dropped, and ViteDevMapperFixture updated. Upstream's PathExtension cases taken. The check runs inside CleanFilePath, so PathEquals and friends now throw on a '..' path; DiskProviderBase.GetMount resolves such a path first, keeping the mount lookup our Mono DiskProviderFixture pins (CI caught it in Mono.Test, which the local run had skipped). Verified on 6969: saving a backup folder of Backups/../escape returns 400 with the traversal message, and the debug publish still serves its UI."
+      },
+      "178b034505935065f81f941aa1509a9dfa1c8cdf": {
+        "subject": "Refresh browser after resetting API Key",
+        "month": "2026-10",
+        "disposition": "pick",
+        "reason": "Same frontend flow here: resetting the API key opened the restart-required modal, though the page only needed the new key it is served with. ApiKeyAuthenticationHandler now reads the key from config on each request, and the settings page reloads itself after a reset. Uses our existing BrowserReloadRequired key; the upstream en.json hunk was not taken."
+      },
+      "14771abc54ab66859568b1b34ca43cb4849dff24": {
+        "subject": "New: Enable Forms authentication by default",
+        "month": "2026-10",
+        "disposition": "adapt",
+        "reason": "Taken by paul's decision on 2026-10-10. New installs, and config files still set to None, use Forms; on startup with no user InitialUserService creates 'whisparr' (WHISPARR__AUTH__INITIALUSERNAME/INITIALPASSWORD override it) and logs a generated password once. The login page gains a reset flow that writes a single-use token to the Auth log, with WHISPARR__AUTH__RESETTOKEN as a fallback and a health check while it is set. Adapted: the config-file credential migration reads through ConfigFileProvider.LoadConfigFile as ours did, the reset path checks our cached method since EffectiveAuthenticationMethod came with the deferred OIDC work, the reset panels use our login.html theme variables, and the two health check strings are our own keys. Upstream's InitialUserService, SecretGenerator, ConfigFileProvider and AuthenticationService tests ported (the last into Api.Test). Verified on 6969 against a fresh data dir: Forms and Required=Enabled by default, the generated user signs in, request/throttle/mismatch/reset/reuse all redirect as expected, the old password stops working, and a restart creates no second user."
+      },
+      "93b5da55b33339546b445e9c6beedb043db1d7b7": {
+        "subject": "Clean up permissions on Windows",
+        "month": "2026-10",
+        "disposition": "pick",
+        "reason": "Same AppFolderFactory here, granting Everyone Modify on the AppData folder on every Windows startup. Now the install-service and register-url modes grant the current user (plus LocalService when the service exists) and only then remove the Everyone rule. Builds for the Windows platform; not run, since nothing here can exercise Windows ACLs. Taken by paul's decision on 2026-10-10."
+      },
+      "c340e50b7fd02dc1a6bef8c20b39298c445d0034": {
+        "subject": "Use constant time comparison for API key and password hashes",
+        "month": "2026-10",
+        "disposition": "pick",
+        "reason": "Applied cleanly on top of 178b03450: FixedTimeEquals for the API key and both password hash comparisons."
+      },
+      "b0bde26f81cfc7937a0f1a6eb21d145ab989221a": {
+        "subject": "Resolve episodes accross multi-season packs",
+        "month": "2026-10",
+        "disposition": "skip",
+        "reason": "Parser gate and no counterpart model. Resolves episodes across multi-season packs: Parser.cs season-range patterns, ParsedEpisodeInfo season fields, SeasonMatch and SingleEpisodeSearchMatch specifications and episode lookup in ParsingService. We have no seasons or episodes, and our parser carries none of these patterns."
+      },
+      "4ebfc48477322cab439634da2c91adbbcf9f1815": {
+        "subject": "Clear all expired cache entries periodically",
+        "month": "2026-10",
+        "disposition": "pick",
+        "reason": "Applied cleanly. Expired cache entries stayed in memory until read again or swept by their owner; ICacheManager.ClearExpired now sweeps every cache, run by a new scheduled task every five minutes, and CachedDictionary no longer throws when swept without a TTL. Upstream's Common and Core tests taken."
+      },
+      "0932ff5ba7238ada9f521569eb18c148412f6daa": {
+        "subject": "Hours instead of days for Air Date Grace Period",
+        "month": "2026-10",
+        "disposition": "adapt",
+        "reason": "Only the frontend guard applies: getValidationFailures assumed any 400 body was an array of failures, so a 400 carrying a message object threw in reduce. The rest moves the release-profile air date grace period from days to hours, and we have no AirDateSpecification or grace period setting."
+      },
+      "be26be8ae0c6fae98407067f39ece1203820331e": {
+        "subject": "New: Option to remove tags from series removed from import list",
+        "month": "2026-10",
+        "disposition": "defer",
+        "reason": "Adds a per-import-list option to remove tags from series that drop off the list, with migration 236 and a TagExistingType enum, reworking ImportListSyncService. It would apply to our movie import lists, but it is a new list feature with its own migration, not a sync fix.",
+        "blockedBy": "A product decision on whether Eros import lists gain the tag-removal option, which needs its own migration number in our sequence."
+      },
+      "a6ed62f133e76eb7e07c3ee0fb06276f4e26c0e1": {
+        "subject": "Don't cache translations during development",
+        "month": "2026-10",
+        "disposition": "adapt",
+        "reason": "Same cached localization here. A debug build now reads en.json fresh, and a copy-localization plugin in our frontend/vite.config.mts copies the localization files into every Localization/Core folder under _output while yarn start runs. Upstream only looks one level down, which misses our RID and publish layouts (_output/net10.0/osx-arm64/publish), so ours walks _output. Verified with the osx-arm64 debug publish on 6969: adding a key to src en.json while yarn start ran had /api/v3/localization serve it within 3 seconds, with no restart and no dotnet build, and removing it took it away again."
+      },
+      "155f3fd0f79137628d2794678f32b4fcf2a34279": {
+        "subject": "Fix loading indicator with Reduced Motion enabled",
+        "month": "2026-10",
+        "disposition": "defer",
+        "reason": "Fixes a loading indicator frozen by a global prefers-reduced-motion rule in Sonarr's scaffolding.css. That rule came with d9e7ea050 (v5 UI Foundation); our stylesheets have no reduced-motion override, so our ripple still animates and there is nothing to fix until the redesign lands.",
+        "blockedBy": "A product decision on whether Eros adopts Sonarr's v5 UI redesign. Deferred by paul on 2026-09-27. If it is adopted, this follow-up comes with it, after d9e7ea050 (UI Foundation)."
+      },
+      "4f63215b3d453dd2caa3b1348a6fcb90aa987fb7": {
+        "subject": "Fixed: Sorting Interactive Search results by language",
+        "month": "2026-10",
+        "disposition": "adapt",
+        "reason": "Same predicate in our port of useReleases: languages sorted by internal id, which follows no visible order. Now by name, multi-language releases as our existing MultiLanguage label, unknown last."
+      },
+      "843c5e8120e2b4fb93c61ccdcca97abbcab06e47": {
+        "subject": "Update frontend dependencies",
+        "month": "2026-10",
+        "disposition": "skip",
+        "reason": "A frontend dependency bump against Sonarr's package.json (React 18, typescript-eslint 8.71, stylelint 15.11), plus lint-driven tweaks to stylesheets for pages we have restyled or do not have. Our dependencies are on different versions (React 19) and Dependabot owns them."
+      },
+      "01d1d9c516d492362e9d29600f77819e224f4ebd": {
+        "subject": "Center search suggestions dropdown",
+        "month": "2026-10",
+        "disposition": "defer",
+        "reason": "Centres the series search .dropdown, a class introduced by 7004c3df7 (Series search results styling), itself deferred as a redesign follow-up. Our MovieSearchInput has no .dropdown.",
+        "blockedBy": "A product decision on whether Eros adopts Sonarr's v5 UI redesign. Deferred by paul on 2026-09-27. If it is adopted, this follow-up comes with it, after d9e7ea050 (UI Foundation)."
+      },
+      "eb55c5d44ec5bd71aa9c146399c55148a78eb679": {
+        "subject": "Page message and input for files improvements",
+        "month": "2026-10",
+        "disposition": "defer",
+        "reason": "Mostly redesign follow-up: PageMessage came with 4fb11bf98 (v5 Activity and Wanted) and does not exist here, and the file-input and About spacing tweak redesign styles. The backup upload path fix is already ours (useBackups posts through useApiMutation, not a hard-coded v5 URL), and the /system/backup to /system/backups rename would only move a URL people may have bookmarked.",
+        "blockedBy": "A product decision on whether Eros adopts Sonarr's v5 UI redesign. Deferred by paul on 2026-09-27. If it is adopted, this follow-up comes with it, after d9e7ea050 (UI Foundation)."
+      },
+      "f2cf7193a9455b6bffa4ecd9f209b610933fd500": {
+        "subject": "Improve alert readability with Color-impaired mode",
+        "month": "2026-10",
+        "disposition": "defer",
+        "reason": "Removes the colour-impaired theme's alert colour overrides from themes.css, which came with d9e7ea050 (v5 UI Foundation). Our themes are the TypeScript light/dark objects and have no colour-impaired variant.",
+        "blockedBy": "A product decision on whether Eros adopts Sonarr's v5 UI redesign. Deferred by paul on 2026-09-27. If it is adopted, this follow-up comes with it, after d9e7ea050 (UI Foundation)."
+      },
+      "ecbbc2cdcb4ae6c4dc0242200022baf8098f31d7": {
+        "subject": "Reduce payload size when saving series",
+        "month": "2026-10",
+        "disposition": "skip",
+        "reason": "Strips seasons statistics, seasonTypes, translations and images from the series save payload. Most of those fields came with the series translations work (b4e9ab179), skipped here, and the rest are Series-shaped; our movie monitored toggle already PATCHes rather than resending the movie."
+      },
+      "afbb3e42617714da5223b11937a6d5fa7bce1295": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-10",
+        "disposition": "skip",
+        "reason": "Weblate gate. Touches Localization/Core/*.json only. Our translations come from Weblate, never from cherry-picks."
+      },
+      "9215ed61d4b8468be8944b194744e7bc10e82d53": {
+        "subject": "Automated API Docs update",
+        "month": "2026-10",
+        "disposition": "skip",
+        "reason": "Regenerated openapi.json for the V5 surface only. We retired the checked-in spec and serve ours at /docs, and we have no Api.V5 project anyway."
+      },
+      "4831dfe91cdceaeba3d441abb3d348c4c53b605a": {
+        "subject": "Make Calendar grid navigable with screen readers",
+        "month": "2026-10",
+        "disposition": "adapt",
+        "reason": "Our calendar matches upstream's pre-image closely (it was ported from Sonarr), so the grid becomes a table with a visually hidden header row and each day carrying its full date and aria-current for today; the visible day-of-week strip is aria-hidden. Adapted: our 70px minimum row height rather than upstream's 110/140px, @mixin rather than @add-mixin (our stylelint only allows the former), and a new visuallyHidden mixin that StatusIndicator now uses. Verified on 6969 in month, week, forecast and day views: columns line up with the day-of-week strip, the table is labelled Calendar, today is announced, rows still grow with their events, and no console errors."
       }
     }
   }

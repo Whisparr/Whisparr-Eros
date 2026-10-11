@@ -28,7 +28,7 @@ import getRelativeDate from 'Utilities/Date/getRelativeDate';
 import translate from 'Utilities/String/translate';
 import { useMovieIndexOption } from '../movieIndexOptionsStore';
 import MovieIndexPosterInfo from './MovieIndexPosterInfo';
-import styles from './MovieIndexPoster.css';
+import styles from './MovieIndexPoster.module.css';
 
 interface MovieIndexPosterProps {
   movie: Movie;

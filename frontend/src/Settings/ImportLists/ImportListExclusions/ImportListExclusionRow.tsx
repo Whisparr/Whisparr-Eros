@@ -11,7 +11,7 @@ import { SelectStateInputProps } from 'typings/props';
 import translate from 'Utilities/String/translate';
 import EditImportListExclusionModal from './EditImportListExclusionModal';
 import { useDeleteImportListExclusion } from './useImportListExclusions';
-import styles from './ImportListExclusionRow.css';
+import styles from './ImportListExclusionRow.module.css';
 
 interface ImportListExclusionRowProps {
   importListExclusion: ImportListExclusion;

@@ -1,7 +1,7 @@
 import React from 'react';
 import Button from 'Components/Link/Button';
 import { kinds } from 'Helpers/Props';
-import styles from 'Scene/NoScene.css';
+import styles from 'Scene/NoScene.module.css';
 import translate from 'Utilities/String/translate';
 
 export interface NoStudioProps {

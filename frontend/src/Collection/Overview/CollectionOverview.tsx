@@ -25,7 +25,7 @@ import { CheckInputChanged } from 'typings/inputs';
 import translate from 'Utilities/String/translate';
 import CollectionMovie from './CollectionMovie';
 import CollectionMovieLabel from './CollectionMovieLabel';
-import styles from './CollectionOverview.css';
+import styles from './CollectionOverview.module.css';
 
 // Import Swiper styles
 import 'swiper/css';

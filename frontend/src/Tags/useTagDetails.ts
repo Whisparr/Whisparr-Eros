@@ -15,7 +15,7 @@ export interface TagDetail extends ModelBase {
 
 export const TAG_DETAILS_QUERY_KEY = ['/tag/detail'];
 
-const DEFAULT_TAG_DETAILS: TagDetail[] = [];
+const DEFAULT_TAG_DETAILS: ReadonlyArray<TagDetail> = [];
 
 // Unlike the tag list, this is derived data: every settings section that can
 // carry a tag feeds it, so it goes stale for reasons this app cannot see. It

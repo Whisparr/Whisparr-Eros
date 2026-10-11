@@ -9,7 +9,7 @@ import formatDateTime from 'Utilities/Date/formatDateTime';
 import getRelativeDate from 'Utilities/Date/getRelativeDate';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
-import styles from './SceneIndexPosterInfo.css';
+import styles from './SceneIndexPosterInfo.module.css';
 
 interface SceneIndexPosterInfoProps {
   studio?: string;

@@ -1,0 +1,32 @@
+.formGroupsContainer {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.formGroupWrapper,
+.formatItemLarge {
+  flex: 0 0 calc(var(--formGroupSmallWidth) - 100px);
+}
+
+.deleteButtonContainer {
+  margin-right: auto;
+}
+
+.formatItemSmall {
+  display: none;
+}
+
+@media (max-width: 1300px) {
+  /* breakpointLarge + 100px; @media cannot calc() a custom property */
+  .formGroupsContainer {
+    display: block;
+  }
+
+  .formatItemSmall {
+    display: block;
+  }
+
+  .formatItemLarge {
+    display: none;
+  }
+}

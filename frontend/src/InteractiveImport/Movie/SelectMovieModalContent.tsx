@@ -16,7 +16,7 @@ import { InputChanged } from 'typings/inputs';
 import translate from 'Utilities/String/translate';
 import SelectMovieModalTableHeader from './SelectMovieModalTableHeader';
 import SelectMovieRow from './SelectMovieRow';
-import styles from './SelectMovieModalContent.css';
+import styles from './SelectMovieModalContent.module.css';
 
 const columns: Column[] = [
   { name: 'studioTitle', label: () => translate('Studio'), isVisible: true },

@@ -17,7 +17,7 @@ import formatBytes from 'Utilities/Number/formatBytes';
 import titleCase from 'Utilities/String/titleCase';
 import translate from 'Utilities/String/translate';
 import PerformerIndexProgressBar from './PerformerIndexProgressBar';
-import styles from './PerformerIndexPoster.css';
+import styles from './PerformerIndexPoster.module.css';
 
 interface PerformerIndexPosterProps {
   performer: Performer;

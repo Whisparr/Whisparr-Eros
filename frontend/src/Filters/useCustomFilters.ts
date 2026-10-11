@@ -7,7 +7,7 @@ import { CustomFilter } from './Filter';
 
 export const CUSTOM_FILTERS_QUERY_KEY = ['/customFilter'];
 
-const DEFAULT_CUSTOM_FILTERS: CustomFilter[] = [];
+const DEFAULT_CUSTOM_FILTERS: ReadonlyArray<CustomFilter> = [];
 
 const useCustomFilters = () => {
   const result = useApiQuery<CustomFilter[]>({
@@ -51,7 +51,7 @@ const useApplyToCache = () => {
   return useMemo(
     () => ({
       upsert(customFilter: CustomFilter) {
-        queryClient.setQueryData<CustomFilter[]>(
+        queryClient.setQueryData<ReadonlyArray<CustomFilter>>(
           CUSTOM_FILTERS_QUERY_KEY,
           (existing = DEFAULT_CUSTOM_FILTERS) => {
             if (!existing.some((f) => f.id === customFilter.id)) {
@@ -66,7 +66,7 @@ const useApplyToCache = () => {
       },
 
       remove(id: number) {
-        queryClient.setQueryData<CustomFilter[]>(
+        queryClient.setQueryData<ReadonlyArray<CustomFilter>>(
           CUSTOM_FILTERS_QUERY_KEY,
           (existing = DEFAULT_CUSTOM_FILTERS) =>
             existing.filter((f) => f.id !== id)

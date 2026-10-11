@@ -1,7 +1,7 @@
 import React from 'react';
 import TableRowCell from 'Components/Table/Cells/TableRowCell';
 import translate from 'Utilities/String/translate';
-import styles from './QueuedTaskRowNameCell.css';
+import styles from './QueuedTaskRowNameCell.module.css';
 
 export interface QueuedTaskRowNameCellProps {
   commandName: string;

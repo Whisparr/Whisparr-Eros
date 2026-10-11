@@ -2,30 +2,28 @@
 using NLog;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnvironmentInfo;
-using NzbDrone.Core.Configuration;
+using NzbDrone.Common.Extensions;
 
 namespace Whisparr.Http.Frontend.Mappers
 {
     public class ManifestMapper : StaticResourceMapperBase
     {
         private readonly IAppFolderInfo _appFolderInfo;
-        private readonly IConfigFileProvider _configFileProvider;
 
-        public ManifestMapper(IAppFolderInfo appFolderInfo, IDiskProvider diskProvider, IConfigFileProvider configFileProvider, Logger logger)
+        public ManifestMapper(IAppFolderInfo appFolderInfo, IDiskProvider diskProvider, Logger logger)
             : base(diskProvider, logger)
         {
             _appFolderInfo = appFolderInfo;
-            _configFileProvider = configFileProvider;
         }
 
-        protected override string FolderPath => Path.Combine(_appFolderInfo.StartUpFolder, _configFileProvider.UiFolder);
+        protected override string FolderPath => _appFolderInfo.GetUiFolder();
 
         protected override string MapPath(string resourceUrl)
         {
             var path = resourceUrl.Replace('/', Path.DirectorySeparatorChar);
             path = path.Trim(Path.DirectorySeparatorChar);
 
-            return Path.ChangeExtension(Path.Combine(_appFolderInfo.StartUpFolder, _configFileProvider.UiFolder, path), "json");
+            return Path.ChangeExtension(Path.Combine(_appFolderInfo.GetUiFolder(), path), "json");
         }
 
         public override bool CanHandle(string resourceUrl)

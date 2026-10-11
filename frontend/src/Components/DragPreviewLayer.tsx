@@ -1,5 +1,5 @@
 import React from 'react';
-import styles from './DragPreviewLayer.css';
+import styles from './DragPreviewLayer.module.css';
 
 interface DragPreviewLayerProps {
   className?: string;

@@ -346,5 +346,49 @@ namespace NzbDrone.Core.Test.MediaFiles.MovieImport
                   .Verify(v => v.UpgradeMovieFile(It.Is<MovieFile>(e => e.SceneName == firstDecision.LocalMovie.SceneName), _approvedDecisions.First().LocalMovie, false),
                       Times.Once());
         }
+
+        [Test]
+        public void should_set_relative_path_for_existing_files()
+        {
+            GivenExistingFileOnDisk();
+
+            Subject.Import(new List<ImportDecision> { _approvedDecisions.First() }, false);
+
+            Mocker.GetMock<IMediaFileService>().Verify(v => v.Add(It.Is<MovieFile>(c => c.RelativePath == "30 Rock - S01E01 - Pilot.avi")));
+        }
+
+        [Test]
+        public void should_use_indexer_flags_from_grab_history()
+        {
+            GivenNewDownload();
+            GivenGrabHistory(new Dictionary<string, string> { { "indexerFlags", "G_Halfleech" } });
+            _approvedDecisions.First().LocalMovie.IndexerFlags = IndexerFlags.G_Freeleech;
+
+            Subject.Import(new List<ImportDecision> { _approvedDecisions.First() }, true, _downloadClientItem);
+
+            Mocker.GetMock<IMediaFileService>().Verify(v => v.Add(It.Is<MovieFile>(c => c.IndexerFlags == IndexerFlags.G_Halfleech)));
+        }
+
+        [Test]
+        public void should_keep_indexer_flags_of_the_file_when_grab_history_has_none()
+        {
+            GivenNewDownload();
+            GivenGrabHistory(new Dictionary<string, string>());
+            _approvedDecisions.First().LocalMovie.IndexerFlags = IndexerFlags.G_Freeleech;
+
+            Subject.Import(new List<ImportDecision> { _approvedDecisions.First() }, true, _downloadClientItem);
+
+            Mocker.GetMock<IMediaFileService>().Verify(v => v.Add(It.Is<MovieFile>(c => c.IndexerFlags == IndexerFlags.G_Freeleech)));
+        }
+
+        private void GivenGrabHistory(Dictionary<string, string> data)
+        {
+            Mocker.GetMock<IHistoryService>()
+                .Setup(x => x.FindByDownloadId(_downloadClientItem.DownloadId))
+                .Returns(new List<MovieHistory>
+                {
+                    new() { EventType = MovieHistoryEventType.Grabbed, DownloadId = _downloadClientItem.DownloadId, Data = data }
+                });
+        }
     }
 }

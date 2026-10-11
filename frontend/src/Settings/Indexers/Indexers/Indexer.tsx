@@ -12,7 +12,7 @@ import IndexerModel from 'typings/Indexer';
 import translate from 'Utilities/String/translate';
 import EditIndexerModal from './EditIndexerModal';
 import { useDeleteIndexer } from './useIndexers';
-import styles from './Indexer.css';
+import styles from './Indexer.module.css';
 
 interface IndexerProps {
   indexer: IndexerModel;

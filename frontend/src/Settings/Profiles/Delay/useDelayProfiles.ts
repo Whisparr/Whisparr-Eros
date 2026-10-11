@@ -75,7 +75,6 @@ interface ReorderDelayProfile {
 
 export const useReorderDelayProfile = () => {
   const queryClient = useQueryClient();
-  const { data } = useDelayProfiles();
 
   // The endpoint takes the profile in the route and the one it lands after in
   // the query string and reads nothing from the body, so these variables only
@@ -87,28 +86,20 @@ export const useReorderDelayProfile = () => {
     queryParams: ({ after }) => (after === undefined ? {} : { after }),
     mutationOptions: {
       onSuccess: (delayProfiles: DelayProfile[]) => {
-        queryClient.setQueryData<DelayProfile[]>([PATH], delayProfiles);
+        queryClient.setQueryData<ReadonlyArray<DelayProfile>>(
+          [PATH],
+          delayProfiles
+        );
       },
     },
   });
 
+  // `after` is the profile the moved one now follows, or undefined when it
+  // moved to the top.
   return useCallback(
-    (id: number, moveIndex: number) => {
-      const moving = data.find((delayProfile) => delayProfile.id === id);
-
-      // Orders are 1-based and the drop index is not, so a profile dropped
-      // where it already sits is a no-op rather than a request.
-      if (!moving || moving.order === moveIndex + 1) {
-        return;
-      }
-
-      const after =
-        moveIndex > 0
-          ? data.find((delayProfile) => delayProfile.order === moveIndex)
-          : undefined;
-
-      mutate({ id, after: after?.id });
+    (id: number, after: number | undefined) => {
+      mutate({ id, after });
     },
-    [data, mutate]
+    [mutate]
   );
 };

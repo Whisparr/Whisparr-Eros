@@ -11,7 +11,7 @@ import { inputTypes } from 'Helpers/Props';
 import MoveSceneModal from 'Scene/MoveScene/MoveSceneModal';
 import { EnhancedSelectInputChanged } from 'typings/inputs';
 import translate from 'Utilities/String/translate';
-import styles from './EditScenesModalContent.css';
+import styles from './EditScenesModalContent.module.css';
 
 interface SavePayload {
   monitored?: boolean;

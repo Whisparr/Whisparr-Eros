@@ -20,7 +20,7 @@ namespace NzbDrone.Core.CustomFormats
         List<CustomFormat> ParseCustomFormat(MovieFile movieFile);
         List<CustomFormat> ParseCustomFormat(Blocklist blocklist, Movie movie);
         List<CustomFormat> ParseCustomFormat(MovieHistory history, Movie movie);
-        List<CustomFormat> ParseCustomFormat(LocalMovie localMovie);
+        List<CustomFormat> ParseCustomFormat(LocalMovie localMovie, string fileName);
     }
 
     public class CustomFormatCalculationService : ICustomFormatCalculationService
@@ -121,7 +121,7 @@ namespace NzbDrone.Core.CustomFormats
             return ParseCustomFormat(input);
         }
 
-        public List<CustomFormat> ParseCustomFormat(LocalMovie localMovie)
+        public List<CustomFormat> ParseCustomFormat(LocalMovie localMovie, string fileName)
         {
             var movieInfo = new ParsedMovieInfo
             {
@@ -142,7 +142,7 @@ namespace NzbDrone.Core.CustomFormats
                 Size = localMovie.Size,
                 Languages = localMovie.Languages,
                 IndexerFlags = localMovie.IndexerFlags,
-                Filename = Path.GetFileName(localMovie.Path)
+                Filename = fileName
             };
 
             return ParseCustomFormat(input);

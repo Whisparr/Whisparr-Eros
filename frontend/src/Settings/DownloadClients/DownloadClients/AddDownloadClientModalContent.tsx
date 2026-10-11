@@ -13,7 +13,7 @@ import DownloadClient from 'typings/DownloadClient';
 import translate from 'Utilities/String/translate';
 import AddDownloadClientItem from './AddDownloadClientItem';
 import { useDownloadClientSchema } from './useDownloadClients';
-import styles from './AddDownloadClientModalContent.css';
+import styles from './AddDownloadClientModalContent.module.css';
 
 interface AddDownloadClientModalContentProps {
   onDownloadClientSelect: (selectedSchema: SelectedSchema) => void;

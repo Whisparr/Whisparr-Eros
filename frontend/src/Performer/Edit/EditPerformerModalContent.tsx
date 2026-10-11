@@ -19,7 +19,7 @@ import Performer from 'Performer/Performer';
 import { useSavePerformer } from 'Performer/usePerformer';
 import { InputChanged } from 'typings/inputs';
 import translate from 'Utilities/String/translate';
-import styles from './EditPerformerModalContent.css';
+import styles from './EditPerformerModalContent.module.css';
 
 export interface EditPerformerModalContentProps {
   performer: Performer;

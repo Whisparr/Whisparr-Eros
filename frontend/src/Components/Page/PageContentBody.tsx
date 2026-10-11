@@ -3,7 +3,7 @@ import Scroller, { OnScroll } from 'Components/Scroller/Scroller';
 import useScrollPosition from 'Helpers/Hooks/useScrollPosition';
 import { VERTICAL } from 'Helpers/Props/scrollDirections';
 import { isLocked } from 'Utilities/scrollLock';
-import styles from './PageContentBody.css';
+import styles from './PageContentBody.module.css';
 
 interface PageContentBodyProps {
   className?: string;

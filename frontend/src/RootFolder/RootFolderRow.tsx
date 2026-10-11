@@ -10,7 +10,7 @@ import ImportFile from 'typings/ImportFile';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
 import { useDeleteRootFolder, useRefreshRootFolder } from './useRootFolders';
-import styles from './RootFolderRow.css';
+import styles from './RootFolderRow.module.css';
 
 interface RootFolderRowProps {
   id: number;

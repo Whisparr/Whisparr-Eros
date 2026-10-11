@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import Queue from 'typings/Queue';
 
-const DEFAULT_QUEUE_DETAILS: Queue[] = [];
+const DEFAULT_QUEUE_DETAILS: ReadonlyArray<Queue> = [];
 
 // Sonarr wraps this in a context provider so each page can fetch a filtered
 // slice. Our controller only binds `movieId` and `includeMovie` -- the `all`,

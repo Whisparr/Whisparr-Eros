@@ -17,7 +17,7 @@ import {
 } from 'Performer/performerDeleteOptionsStore';
 import translate from 'Utilities/String/translate';
 import { useDeletePerformerMutation } from './useDeletePerformerMutation';
-import styles from './DeletePerformerModal.css';
+import styles from './DeletePerformerModal.module.css';
 
 export interface DeletePerformerModalContentProps {
   performer: Performer;

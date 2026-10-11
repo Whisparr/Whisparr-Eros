@@ -71,6 +71,11 @@ namespace Whisparr.Api.V3.Studios
                     studios.MoviesMonitored = resource.MoviesMonitored.Value;
                 }
 
+                if (resource.WhisparrMonitorNewItems.HasValue)
+                {
+                    studios.WhisparrMonitorNewItems = resource.WhisparrMonitorNewItems.Value;
+                }
+
                 if (resource.QualityProfileId.HasValue)
                 {
                     studios.QualityProfileId = resource.QualityProfileId.Value;

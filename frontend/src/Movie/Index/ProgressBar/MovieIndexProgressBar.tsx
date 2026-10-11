@@ -6,7 +6,7 @@ import { MovieStatus } from 'Movie/Movie';
 import { MovieFile } from 'MovieFile/MovieFile';
 import getProgressBarKind from 'Utilities/Movie/getProgressBarKind';
 import translate from 'Utilities/String/translate';
-import styles from './MovieIndexProgressBar.css';
+import styles from './MovieIndexProgressBar.module.css';
 
 interface MovieIndexProgressBarProps {
   movieId: number;

@@ -4,6 +4,7 @@ using System.Linq;
 using NLog;
 using NzbDrone.Common.Cache;
 using NzbDrone.Core.Backup;
+using NzbDrone.Core.Caching;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Configuration.Events;
 using NzbDrone.Core.Download;
@@ -71,6 +72,12 @@ namespace NzbDrone.Core.Jobs
                     {
                         Interval = 5,
                         TypeName = typeof(MessagingCleanupCommand).FullName
+                    },
+
+                    new ScheduledTask
+                    {
+                        Interval = 5,
+                        TypeName = typeof(ClearExpiredCacheCommand).FullName
                     },
 
                     new ScheduledTask

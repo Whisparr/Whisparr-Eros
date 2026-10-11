@@ -1,0 +1,10 @@
+.relativePath {
+  composes: cell from 'Components/Table/Cells/TableRowCell.module.css';
+
+  word-break: break-all;
+}
+
+.extension,
+.type {
+  composes: cell from 'Components/Table/Cells/TableRowCell.module.css';
+}

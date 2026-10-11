@@ -55,7 +55,7 @@ namespace Whisparr.Http.Frontend.Mappers
                 return Task.FromResult<IActionResult>(null);
             }
 
-            if (_diskProvider.FileExists(filePath, _caseSensitive))
+            if (ResourceExists(filePath))
             {
                 if (!_mimeTypeProvider.TryGetContentType(filePath, out var contentType))
                 {
@@ -71,6 +71,11 @@ namespace Whisparr.Http.Frontend.Mappers
             _logger.Warn("File {0} not found", filePath.ForLog());
 
             return Task.FromResult<IActionResult>(null);
+        }
+
+        protected virtual bool ResourceExists(string filePath)
+        {
+            return _diskProvider.FileExists(filePath, _caseSensitive);
         }
 
         protected virtual Stream GetContentStream(string filePath)

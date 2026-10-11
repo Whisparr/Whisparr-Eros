@@ -11,7 +11,7 @@ import formatDateTime from 'Utilities/Date/formatDateTime';
 import getRelativeDate from 'Utilities/Date/getRelativeDate';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
-import styles from './MovieIndexPosterInfo.css';
+import styles from './MovieIndexPosterInfo.module.css';
 
 interface MovieIndexPosterInfoProps {
   studio?: string;

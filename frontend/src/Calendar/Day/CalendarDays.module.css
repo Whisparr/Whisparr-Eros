@@ -1,0 +1,12 @@
+.days {
+  width: 100%;
+  border-spacing: 0;
+  border-collapse: separate;
+  border-right: 1px solid var(--calendarBorderColor);
+  table-layout: fixed;
+}
+
+/* A table row's height is its minimum, as the days' min-height was. */
+.days tbody tr {
+  height: 70px;
+}

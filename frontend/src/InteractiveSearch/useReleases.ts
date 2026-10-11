@@ -13,7 +13,7 @@ import { useReleaseFilterKey, useReleaseSort } from './releaseOptionsStore';
 
 export const RELEASE_PATH = '/release';
 
-const DEFAULT_RELEASES: Release[] = [];
+const DEFAULT_RELEASES: ReadonlyArray<Release> = [];
 
 // Every clause the slice kept. `rejections` and `releaseWeight` both push
 // rejected releases to the bottom rather than sorting on the rejection itself,
@@ -28,12 +28,20 @@ const SORT_PREDICATES = {
     return seeders * 1000000 + leechers;
   },
 
+  // By name, with multi-language releases sorted as their label and unknown
+  // last; ids follow no meaningful order.
   languages: (item: Release) => {
     if (item.languages.length > 1) {
-      return 10000;
+      return translate('MultiLanguage');
     }
 
-    return item.languages[0]?.id ?? 0;
+    const language = item.languages[0];
+
+    if (!language || language.id === 0) {
+      return '\uffff';
+    }
+
+    return language.name;
   },
 
   indexerFlags: (item: Release) =>
@@ -52,7 +60,7 @@ const SORT_PREDICATES = {
       : item.releaseWeight + 1000000,
 };
 
-export function useReleases(payload: InteractiveSearchPayload) {
+export function useReleases(payload: InteractiveSearchPayload, filter = '') {
   const selectedFilterKey = useReleaseFilterKey();
   const { sortKey, sortDirection } = useReleaseSort();
   const customFilters = useCustomFiltersList('releases');
@@ -75,16 +83,36 @@ export function useReleases(payload: InteractiveSearchPayload) {
   const releases = data ?? DEFAULT_RELEASES;
 
   const { data: items, totalItems } = useMemo(() => {
-    return clientSideFilterAndSort(releases, {
-      selectedFilterKey,
-      filters: RELEASE_FILTERS,
-      filterPredicates: RELEASE_FILTER_PREDICATES,
-      customFilters,
-      sortKey,
-      sortDirection,
-      sortPredicates: SORT_PREDICATES,
-    });
-  }, [releases, selectedFilterKey, customFilters, sortKey, sortDirection]);
+    const { data: sortedItems, totalItems } = clientSideFilterAndSort(
+      releases,
+      {
+        selectedFilterKey,
+        filters: RELEASE_FILTERS,
+        filterPredicates: RELEASE_FILTER_PREDICATES,
+        customFilters,
+        sortKey,
+        sortDirection,
+        sortPredicates: SORT_PREDICATES,
+      }
+    );
+
+    const trimmedFilter = filter.trim().toLowerCase();
+
+    const filteredItems = trimmedFilter
+      ? sortedItems.filter((item) =>
+          item.title.toLowerCase().includes(trimmedFilter)
+        )
+      : sortedItems;
+
+    return { data: filteredItems, totalItems };
+  }, [
+    releases,
+    selectedFilterKey,
+    customFilters,
+    sortKey,
+    sortDirection,
+    filter,
+  ]);
 
   return {
     releases,

@@ -3,7 +3,7 @@ import React, { SyntheticEvent, useCallback, useMemo } from 'react';
 import SpinnerIconButton from 'Components/Link/SpinnerIconButton';
 import { icons } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './MonitorToggleButton.css';
+import styles from './MonitorToggleButton.module.css';
 
 interface MonitorToggleButtonProps {
   className?: string;
@@ -38,6 +38,7 @@ function getTooltip(
   if (tooltip) return tooltip;
   if (isDisabled)
     return 'Cannot toggle monitored state when movie is unmonitored';
+
   if (monitored) {
     const monitoredLabels: Record<string, string> = {
       movieMonitor: translate('ToggleMonitoredToUnmonitoredMovies'),
@@ -45,6 +46,7 @@ function getTooltip(
     };
     return monitoredLabels[type ?? ''] ?? 'Monitored, click to unmonitor';
   }
+
   const unMonitoredLabels: Record<string, string> = {
     movieMonitor: translate('ToggleUnmonitoredToMonitoredMovies'),
     sceneMonitor: translate('ToggleUnmonitoredToMonitoredScenes'),
@@ -69,6 +71,7 @@ function MonitorToggleButton(props: MonitorToggleButtonProps) {
   } = props;
 
   let monitorType: 'movie' | 'scene' | undefined = undefined;
+
   switch (type) {
     case 'movieMonitor':
       monitorType = 'movie';
@@ -83,6 +86,7 @@ function MonitorToggleButton(props: MonitorToggleButtonProps) {
   const monitoredValue = monitorType === 'movie' ? moviesMonitored : monitored;
 
   let iconName = icons.UNMONITORED;
+
   if (monitorType) {
     const iconSet =
       monitorType === 'movie'
@@ -101,6 +105,7 @@ function MonitorToggleButton(props: MonitorToggleButtonProps) {
   const handlePress = useCallback(
     (event: SyntheticEvent<HTMLLinkElement, MouseEvent>) => {
       const shiftKey = event.nativeEvent.shiftKey;
+
       if (type === 'movieMonitor') {
         onPress({ monitored, moviesMonitored: !moviesMonitored }, { shiftKey });
       } else if (type === 'sceneMonitor') {

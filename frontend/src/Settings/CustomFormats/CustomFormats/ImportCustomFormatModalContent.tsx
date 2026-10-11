@@ -17,7 +17,7 @@ import Field from 'typings/Field';
 import { InputChanged } from 'typings/inputs';
 import translate from 'Utilities/String/translate';
 import { useCustomFormatSpecificationSchema } from './useCustomFormats';
-import styles from './ImportCustomFormatModalContent.css';
+import styles from './ImportCustomFormatModalContent.module.css';
 
 export interface ImportedCustomFormat {
   name?: string;

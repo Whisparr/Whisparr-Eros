@@ -15,7 +15,7 @@ import Performer from 'Performer/Performer';
 import { EnhancedSelectInputChanged } from 'typings/inputs';
 import translate from 'Utilities/String/translate';
 import { useAddNewPerformerModalContent } from './useAddNewPerformer';
-import styles from './AddNewPerformerModalContent.css';
+import styles from './AddNewPerformerModalContent.module.css';
 
 interface AddNewPerformerModalContentProps {
   performer: Performer;

@@ -9,7 +9,7 @@ import { useNamingSettings } from 'Settings/MediaManagement/Naming/useNamingSett
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
 import { ImportItemType } from '../ImportMovieTypes';
-import styles from './ImportMovieRootFolderRow.css';
+import styles from './ImportMovieRootFolderRow.module.css';
 
 interface ImportFile {
   name: string;

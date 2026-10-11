@@ -207,7 +207,7 @@ export const useBulkEditCustomFormats = () => {
     method: 'PUT',
     mutationOptions: {
       onSuccess: (updatedCustomFormats) => {
-        queryClient.setQueryData<CustomFormat[]>(
+        queryClient.setQueryData<ReadonlyArray<CustomFormat>>(
           [CUSTOM_FORMATS_PATH],
           (customFormats = []) => {
             return customFormats.map((customFormat) => {
@@ -238,7 +238,7 @@ export const useBulkDeleteCustomFormats = () => {
     method: 'DELETE',
     mutationOptions: {
       onSuccess: (_data, { ids }) => {
-        queryClient.setQueryData<CustomFormat[]>(
+        queryClient.setQueryData<ReadonlyArray<CustomFormat>>(
           [CUSTOM_FORMATS_PATH],
           (customFormats = []) => {
             return customFormats.filter(

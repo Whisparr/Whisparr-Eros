@@ -22,7 +22,7 @@ export interface PagedQueryResponse<T> {
   sortDirection: string;
   totalRecords: number;
   totalPages: number;
-  records: T[];
+  records: ReadonlyArray<T>;
 }
 
 const DEFAULT_RECORDS: never[] = [];
@@ -76,7 +76,10 @@ const usePagedApiQuery = <T>(options: PagedQueryOptions<T>) => {
     ...options.queryOptions,
     queryKey,
     queryFn: async ({ signal }) => {
-      const response = await fetchJson<PagedQueryResponse<T>, unknown>({
+      const response = await fetchJson<
+        Readonly<PagedQueryResponse<T>>,
+        unknown
+      >({
         ...requestOptions,
         signal,
       });

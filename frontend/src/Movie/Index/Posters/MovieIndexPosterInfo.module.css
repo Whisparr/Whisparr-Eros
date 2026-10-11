@@ -1,0 +1,22 @@
+.info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--movieBackgroundColor);
+  font-size: var(--smallFontSize);
+  gap: 5px;
+}
+
+.title {
+  @mixin truncate;
+
+  composes: info;
+}
+
+.tags {
+  composes: tags from './MovieIndexPoster.module.css';
+}
+
+.tagsList {
+  composes: tagsList from './MovieIndexPoster.module.css';
+}

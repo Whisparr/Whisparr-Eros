@@ -15,7 +15,7 @@ import isString from 'Utilities/String/isString';
 import translate from 'Utilities/String/translate';
 import { NAME } from './FilterBuilderRowValue';
 import FilterBuilderRowValueProps from './FilterBuilderRowValueProps';
-import styles from './DateFilterBuilderRowValue.css';
+import styles from './DateFilterBuilderRowValue.module.css';
 
 type DateFilterBuilderRowValueProps = Pick<
   FilterBuilderRowValueProps,

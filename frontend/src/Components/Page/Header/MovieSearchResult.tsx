@@ -9,7 +9,7 @@ import formatRuntime from 'Utilities/Date/formatRuntime';
 import getRelativeDate from 'Utilities/Date/getRelativeDate';
 import firstCharToUpper from 'Utilities/String/firstCharToUpper';
 import { SuggestedMovie } from './MovieSearchInput';
-import styles from './MovieSearchResult.css';
+import styles from './MovieSearchResult.module.css';
 
 function MovieSearchResult(props: Readonly<SuggestedMovie>) {
   const { title, year, images, itemType, studioTitle, runtime, releaseDate } =

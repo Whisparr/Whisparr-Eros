@@ -13,7 +13,7 @@ import getErrorMessage from 'Utilities/Object/getErrorMessage';
 import translate from 'Utilities/String/translate';
 import AddNewPerformerSearchResult from './AddNewPerformerSearchResult';
 import useAddNewPerformer from './useAddNewPerformer';
-import styles from '../../AddMovie/AddNewMovie/AddNewMovie.css';
+import styles from '../../AddMovie/AddNewMovie/AddNewMovie.module.css';
 
 function AddNewPerformer() {
   const {
@@ -100,6 +100,7 @@ function AddNewPerformer() {
                     />
                   );
                 }
+
                 return null;
               }
             )}
@@ -111,7 +112,7 @@ function AddNewPerformer() {
             <div className={styles.noResults}>
               {translate('CouldNotFindResults', { term })}
             </div>
-            <div>{translate('YouCanAlsoSearch')}</div>
+            <div>{translate('YouCanAlsoSearchPerformer')}</div>
             <div>
               <Link to="https://wiki.servarr.com/whisparr/faq#why-can-i-not-add-a-new-movie-to-whisparr">
                 {translate('CantFindScene')}

@@ -21,7 +21,7 @@ import { useIsWindows } from 'System/Status/useSystemStatus';
 import { InputChanged } from 'typings/inputs';
 import getNewMovie from 'Utilities/Movie/getNewMovie';
 import translate from 'Utilities/String/translate';
-import styles from './AddNewMovieCollectionMovieModalContent.css';
+import styles from './AddNewMovieCollectionMovieModalContent.module.css';
 
 export interface AddNewMovieCollectionMovieModalContentProps {
   movie: MovieCollectionMovie;

@@ -7,7 +7,7 @@ import { sizes } from 'Helpers/Props';
 import { CustomFormatSpecification } from 'typings/CustomFormat';
 import translate from 'Utilities/String/translate';
 import AddSpecificationPresetMenuItem from './AddSpecificationPresetMenuItem';
-import styles from './AddSpecificationItem.css';
+import styles from './AddSpecificationItem.module.css';
 
 export interface SelectedSpecification {
   implementation: string;

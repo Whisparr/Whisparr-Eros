@@ -1,0 +1,281 @@
+.blurred {
+  filter: blur(6px);
+  transition: filter 0.2s;
+}
+
+.innerContentBody {
+  padding: 0;
+}
+
+.header {
+  position: relative;
+  z-index: 0;
+  width: 100%;
+  height: 375px;
+}
+
+.errorMessage {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 20px;
+}
+
+.backdrop {
+  position: absolute;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+}
+
+.backdropOverlay {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: var(--black);
+  opacity: 0.7;
+}
+
+.headerContent {
+  display: flex;
+  padding: 30px;
+  width: 100%;
+  height: 100%;
+  color: var(--white);
+}
+
+.poster {
+  z-index: 2;
+  flex-shrink: 0;
+  margin-right: 30px;
+  object-fit: cover;
+
+  width: 217px;
+  height: 319px;
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+.titleRow {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  flex: 0 0 auto;
+}
+
+.titleContainer {
+  display: flex;
+  align-items: center;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  font-size: 50px;
+  line-height: 1;
+}
+
+.performerName {
+  vertical-align: middle;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.unmonitored {
+  color: var(--disabledColor);
+  opacity: 0.5;
+}
+
+.monitorToggleButtonsContainer {
+  display: flex;
+  align-items: center;
+  margin-right: 20px;
+  line-height: 1;
+}
+
+.toggleMonitoredContainer,
+.toggleMoviesMonitoredContainer {
+  align-self: center;
+}
+
+.monitorToggleButton {
+  composes: toggleButton from 'Components/MonitorToggleButton.module.css';
+
+  width: 30px;
+
+  &:hover {
+    color: var(--iconButtonHoverLightColor);
+  }
+}
+
+.alternateTitlesIconContainer {
+  align-self: flex-end;
+  margin-left: 20px;
+}
+
+.filterIcon {
+  float: right;
+}
+
+.movieNavigationButtons {
+  position: absolute;
+  right: 0;
+  white-space: nowrap;
+}
+
+.movieNavigationButton {
+  composes: button from 'Components/Link/IconButton.module.css';
+
+  margin-left: 5px;
+  width: 30px;
+  color: #e1e2e3;
+  white-space: nowrap;
+
+  &:hover {
+    color: var(--iconButtonHoverLightColor);
+  }
+}
+
+.metadata {
+  padding: 10px;
+}
+
+.metadataLabel {
+  composes: label from 'Components/Label.module.css';
+
+  margin: 5px 10px 5px 0;
+  background-color: transparent;
+}
+
+.links,
+.ethnicity,
+.years,
+.age,
+.birthDate,
+.status,
+.runtime {
+  margin-left: 8px;
+  font-weight: 300;
+  font-size: 17px;
+}
+
+.gender {
+  display: flex;
+  align-items: center;
+  margin: 0 4px;
+  vertical-align: middle;
+}
+
+.country {
+  display: flex;
+  align-items: center;
+  margin: 8px 4px 0;
+  vertical-align: middle;
+}
+
+.details {
+  padding: 10px;
+}
+
+.detailsLabel {
+  composes: label from 'Components/Label.module.css';
+
+  margin: 5px 10px 5px 0;
+}
+
+.path,
+.sizeOnDisk,
+.qualityProfileName,
+.movieCount,
+.sceneCount,
+.statusName,
+.studio,
+.tags,
+.links,
+.genres {
+  margin-left: 8px;
+  font-weight: 300;
+  font-size: 17px;
+}
+
+.overview {
+  flex: 1 0 auto;
+  margin-top: 8px;
+  padding-left: 7px;
+  min-height: 0;
+  font-size: var(--intermediateFontSize);
+}
+
+.contentContainer {
+  padding: 20px;
+}
+
+.tabList {
+  margin: 0;
+  padding: 0;
+  border-bottom: 1px solid var(--lightGray);
+}
+
+.tab {
+  position: relative;
+  bottom: -1px;
+  display: inline-block;
+  padding: 6px 12px;
+  border: 1px solid transparent;
+  border-top: none;
+  list-style: none;
+  cursor: pointer;
+}
+
+.selectedTab {
+  border-bottom: 4px solid var(--linkColor);
+}
+
+.tabContent {
+  margin-top: 20px;
+}
+
+@media (--breakpointSmall) {
+  .contentContainer {
+    padding: 20px 0;
+  }
+
+  .headerContent {
+    padding: 15px;
+  }
+
+  .title {
+    display: flex;
+    align-items: center;
+    font-size: 30px;
+    line-height: 30px;
+  }
+
+  .monitorToggleButtonsContainer {
+    line-height: 30px;
+  }
+}
+
+@media (--breakpointLarge) {
+  .poster,
+  .movieNavigationButtons {
+    display: none;
+  }
+
+  .certification,
+  .links,
+  .rating,
+  .year,
+  .runtime {
+    margin-right: 9px;
+  }
+
+  .scenesFieldSet {
+    flex-direction: column;
+  }
+}

@@ -1,0 +1,37 @@
+.optionText {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1 0 0;
+
+  &.isMobile {
+    display: block;
+
+    .freeSpace {
+      margin-left: 0;
+    }
+  }
+}
+
+.value {
+  display: flex;
+  max-width: 500px;
+}
+
+.movieFolder {
+  @mixin truncate;
+
+  color: var(--disabledColor);
+}
+
+.freeSpace {
+  margin-left: 15px;
+  color: var(--darkGray);
+  font-size: var(--smallFontSize);
+}
+
+.isMissing {
+  margin-left: 15px;
+  color: var(--dangerColor);
+  font-size: var(--smallFontSize);
+}

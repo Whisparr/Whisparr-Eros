@@ -50,7 +50,6 @@
       content="/Content/Images/Icons/browserconfig.xml"
     />
 
-    <link rel="stylesheet" type="text/css" href="/Content/styles.css" />
     <link rel="stylesheet" type="text/css" href="/Content/Fonts/fonts.css" />
 
     <title>Login - Whisparr</title>
@@ -131,6 +130,8 @@
       }
 
       .button {
+        box-sizing: border-box;
+        display: block;
         overflow: hidden;
         margin-top: 20px;
         padding: 10px 0;
@@ -186,6 +187,49 @@
         color: var(--forgotPasswordAltColor);
       }
 
+      .button-default {
+        font-size: 13.3333px;
+        border-color: var(--inputBorderColor);
+        background-color: var(--panelBackground);
+        color: var(--textColor);
+        text-decoration: none;
+      }
+
+      .button-default:hover {
+        border-color: var(--inputFocusBorderColor);
+        background-color: var(--panelBackground);
+        color: var(--textColor);
+      }
+
+      .reset-note {
+        margin-top: 15px;
+        color: var(--textColor);
+        font-size: 13px;
+        line-height: 1.4;
+      }
+
+      .reset-note code {
+        color: var(--primaryBackgroundColor);
+        white-space: nowrap;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 12px;
+      }
+
+      .back-to-login {
+        display: block;
+        margin-top: 15px;
+        color: var(--forgotPasswordColor);
+        text-decoration: none;
+        text-align: center;
+        font-size: 13px;
+      }
+
+      .reset-succeeded {
+        margin-top: 20px;
+        color: var(--textColor);
+        font-size: 14px;
+      }
+
       .login-failed {
         margin-top: 20px;
         color: var(--failedColor);
@@ -212,7 +256,7 @@
             <img src="/Content/Images/logo.svg" alt="Image" class="logo" />
           </div>
 
-          <div class="panel-body">
+          <div id="sign-in-panel" class="panel-body">
             <div class="sign-in">
               SIGN IN TO CONTINUE
             </div>
@@ -260,9 +304,7 @@
                   <label for="rememberMe">Remember Me</label>
                 </span>
 
-                <a
-                  href="https://wiki.servarr.com/whisparr/faq#help-i-have-locked-myself-out"
-                  class="forgot-password"
+                <a href="login?resetPassword=true" class="forgot-password"
                   >Forgot your password?</a
                 >
               </div>
@@ -271,7 +313,111 @@
               <div id="login-failed" class="login-failed hidden">
                 Incorrect Username or Password
               </div>
+
+              <div id="password-reset" class="reset-succeeded hidden">
+                Your password has been reset, sign in with your new password.
+              </div>
             </form>
+          </div>
+
+          <div id="reset-request-panel" class="panel-body hidden">
+            <div class="sign-in">RESET YOUR PASSWORD</div>
+
+            <form role="form" method="POST" action="reset-password/request">
+              <div class="reset-note">
+                Whisparr will write a single-use reset token to its log file.
+                Copy it from the <code>Auth-ResetRequested</code> line in the
+                latest log.
+              </div>
+
+              <button type="submit" class="button">
+                Write a reset token to the log
+              </button>
+            </form>
+
+            <a
+              href="login?resetPassword=true&amp;tokenSent=true"
+              class="button button-default"
+              >I already have a reset token</a
+            >
+
+            <a href="login" class="back-to-login">Back to sign in</a>
+          </div>
+
+          <div id="reset-panel" class="panel-body hidden">
+            <div class="sign-in">RESET YOUR PASSWORD</div>
+
+            <form role="form" method="POST" action="reset-password">
+              <div class="reset-note">
+                Enter the token from the <code>Auth-ResetRequested</code> line in
+                the log. It's valid for 15 minutes and can only be used once. If
+                you set <code>WHISPARR__AUTH__RESETTOKEN</code>, enter its value
+                instead.
+              </div>
+
+              <div class="form-group">
+                <input
+                  type="text"
+                  name="token"
+                  class="form-input"
+                  placeholder="Reset token"
+                  autocomplete="off"
+                  autocapitalize="false"
+                  required
+                  autofocus="true"
+                />
+              </div>
+
+              <div class="form-group">
+                <input
+                  type="text"
+                  name="username"
+                  class="form-input"
+                  placeholder="Username"
+                  autocomplete="off"
+                  autocapitalize="false"
+                  required
+                />
+              </div>
+
+              <div class="form-group">
+                <input
+                  type="password"
+                  name="password"
+                  class="form-input"
+                  placeholder="New password"
+                  required
+                />
+              </div>
+
+              <div class="form-group">
+                <input
+                  type="password"
+                  name="passwordConfirmation"
+                  class="form-input"
+                  placeholder="Confirm new password"
+                  required
+                />
+              </div>
+
+              <button type="submit" class="button">Reset password</button>
+
+              <div id="reset-failed" class="login-failed hidden">
+                Invalid or expired reset token
+              </div>
+
+              <div id="reset-invalid" class="login-failed hidden">
+                Username and password are required, and the passwords must match
+              </div>
+
+              <div id="token-unavailable" class="reset-note hidden">
+                A new reset token wasn't written to the log. One may already be
+                active, so check the log first. Restarting Whisparr clears it and
+                lets you request another.
+              </div>
+            </form>
+
+            <a href="login" class="back-to-login">Back to sign in</a>
           </div>
         </div>
 
@@ -292,10 +438,72 @@
     var copyDiv = document.getElementById("copy");
     copyDiv.classList.remove("hidden");
 
-    if (window.location.search.indexOf("loginFailed=true") > -1) {
-      var loginFailedDiv = document.getElementById("login-failed");
+    var searchParams = new URLSearchParams(window.location.search);
 
-      loginFailedDiv.classList.remove("hidden");
+    if (searchParams.get("resetPassword") === "true") {
+      document.getElementById("sign-in-panel").classList.add("hidden");
+
+      if (searchParams.get("tokenSent") === "true") {
+        document.getElementById("reset-panel").classList.remove("hidden");
+
+        if (searchParams.get("resetFailed") === "true") {
+          document.getElementById("reset-failed").classList.remove("hidden");
+        }
+
+        if (searchParams.get("resetInvalid") === "true") {
+          document.getElementById("reset-invalid").classList.remove("hidden");
+        }
+
+        if (searchParams.get("tokenUnavailable") === "true") {
+          document.getElementById("token-unavailable").classList.remove("hidden");
+        }
+      } else {
+        document.getElementById("reset-request-panel").classList.remove("hidden");
+      }
+    }
+
+    if (searchParams.get("passwordReset") === "true") {
+      document.getElementById("password-reset").classList.remove("hidden");
+    }
+
+    if (searchParams.get("loginFailed") === "true") {
+      var loginFailedDiv = document.getElementById("login-failed");
+      var lockoutUntil = parseInt(searchParams.get("lockoutUntil"), 10);
+      var lockoutTimer = null;
+
+      if (isNaN(lockoutUntil)) {
+        loginFailedDiv.classList.remove("hidden");
+      } else if (lockoutUntil > Date.now()) {
+        var submitButton = document.querySelector('button[type="submit"]');
+
+        submitButton.disabled = true;
+        loginFailedDiv.classList.remove("hidden");
+
+        var updateLockout = function () {
+          var remainingSeconds = Math.ceil((lockoutUntil - Date.now()) / 1000);
+
+          if (remainingSeconds <= 0) {
+            clearInterval(lockoutTimer);
+            submitButton.disabled = false;
+            loginFailedDiv.classList.add("hidden");
+
+            return;
+          }
+
+          var minutes = Math.floor(remainingSeconds / 60);
+          var seconds = remainingSeconds % 60;
+          var remaining = minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+
+          loginFailedDiv.textContent =
+            "Too many failed sign in attempts. Please try again in " + remaining + ".";
+        };
+
+        updateLockout();
+
+        lockoutTimer = setInterval(updateLockout, 1000);
+      } else {
+        loginFailedDiv.classList.remove("hidden");
+      }
     }
 
     var light = {

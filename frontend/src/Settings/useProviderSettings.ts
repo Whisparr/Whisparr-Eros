@@ -106,7 +106,7 @@ export const useSaveProviderSettings = <T extends ModelBase>(
       onSuccess: (updatedProvider: T) => {
         lastSaveData.current = null;
 
-        queryClient.setQueryData<T[]>([path], (providers = []) =>
+        queryClient.setQueryData<ReadonlyArray<T>>([path], (providers = []) =>
           providers.some((provider) => provider.id === updatedProvider.id)
             ? providers.map((provider) =>
                 provider.id === updatedProvider.id ? updatedProvider : provider
@@ -340,7 +340,7 @@ export const useDeleteProvider = <T extends ModelBase>(
     method: 'DELETE',
     mutationOptions: {
       onSuccess: () => {
-        queryClient.setQueryData<T[]>([path], (providers = []) => {
+        queryClient.setQueryData<ReadonlyArray<T>>([path], (providers = []) => {
           return providers.filter((provider) => provider.id !== id);
         });
       },

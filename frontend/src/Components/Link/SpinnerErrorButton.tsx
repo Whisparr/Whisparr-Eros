@@ -8,7 +8,7 @@ import { getValidationFailures } from 'Helpers/Hooks/useApiMutation';
 import usePrevious from 'Helpers/Hooks/usePrevious';
 import { icons } from 'Helpers/Props';
 import { ApiError } from 'Utilities/Fetch/fetchJson';
-import styles from './SpinnerErrorButton.css';
+import styles from './SpinnerErrorButton.module.css';
 
 function getTestResult(error: ApiError | string | undefined | null) {
   if (!error) {

@@ -7,7 +7,7 @@ import useTagDetails from 'Tags/useTagDetails';
 import useTags, { useSortedTagList } from 'Tags/useTags';
 import translate from 'Utilities/String/translate';
 import Tag from './Tag';
-import styles from './Tags.css';
+import styles from './Tags.module.css';
 
 function Tags() {
   const items = useSortedTagList();

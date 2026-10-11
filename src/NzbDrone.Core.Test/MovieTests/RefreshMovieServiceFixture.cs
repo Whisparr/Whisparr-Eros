@@ -153,6 +153,9 @@ namespace NzbDrone.Core.Test.MovieTests
 
             Mocker.GetMock<ICommandResultReporter>()
                   .Verify(v => v.Report(CommandResult.Indeterminate), Times.AtLeastOnce());
+
+            // Both builder movies share TmdbId 1, so the mocked failure hits each of them.
+            ExceptionVerification.ExpectedErrors(2);
         }
     }
 }

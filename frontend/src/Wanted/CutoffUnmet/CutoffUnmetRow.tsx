@@ -9,7 +9,7 @@ import MovieStatus from 'Movie/MovieStatus';
 import MovieTitleLink from 'Movie/MovieTitleLink';
 import MovieFileQuality from 'MovieFile/MovieFileQuality';
 import { SelectStateInputProps } from 'typings/props';
-import styles from './CutoffUnmetRow.css';
+import styles from './CutoffUnmetRow.module.css';
 
 interface CutoffUnmetRowProps {
   id: number;

@@ -1,8 +1,7 @@
-import React from 'react';
-import DocumentTitle from 'react-document-title';
+import React, { useEffect } from 'react';
 import ErrorBoundary from 'Components/Error/ErrorBoundary';
 import PageContentError from './PageContentError';
-import styles from './PageContent.css';
+import styles from './PageContent.module.css';
 
 interface PageContentProps {
   className?: string;
@@ -14,20 +13,22 @@ function PageContent({
   className = styles.content,
   title,
   children,
-}: PageContentProps) {
+}: Readonly<PageContentProps>) {
+  useEffect(() => {
+    document.title = title
+      ? `${title} - ${window.Whisparr.instanceName}`
+      : window.Whisparr.instanceName;
+
+    return () => {
+      document.title = window.Whisparr.instanceName;
+    };
+  }, [title]);
+
   return (
     <ErrorBoundary errorComponent={PageContentError}>
-      <DocumentTitle
-        title={
-          title
-            ? `${title} - ${window.Whisparr.instanceName}`
-            : window.Whisparr.instanceName
-        }
-      >
-        <main className={className} aria-label={title}>
-          {children}
-        </main>
-      </DocumentTitle>
+      <main className={className} aria-label={title}>
+        {children}
+      </main>
     </ErrorBoundary>
   );
 }

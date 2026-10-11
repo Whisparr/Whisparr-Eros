@@ -13,7 +13,7 @@ import Indexer from 'typings/Indexer';
 import translate from 'Utilities/String/translate';
 import AddIndexerItem from './AddIndexerItem';
 import { useIndexerSchema } from './useIndexers';
-import styles from './AddIndexerModalContent.css';
+import styles from './AddIndexerModalContent.module.css';
 
 interface AddIndexerModalContentProps {
   onIndexerSelect: (selectedSchema: SelectedSchema) => void;

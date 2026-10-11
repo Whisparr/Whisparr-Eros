@@ -11,7 +11,7 @@ import { AutoTaggingSpecification } from 'typings/AutoTagging';
 import translate from 'Utilities/String/translate';
 import EditAutoTaggingModal from './EditAutoTaggingModal';
 import { useDeleteAutoTagging } from './useAutoTaggings';
-import styles from './AutoTagging.css';
+import styles from './AutoTagging.module.css';
 
 interface AutoTaggingProps {
   id: number;
@@ -92,6 +92,7 @@ export default function AutoTagging({
           if (item.required) {
             kind = 'success';
           }
+
           if (item.negate) {
             kind = 'danger';
           }

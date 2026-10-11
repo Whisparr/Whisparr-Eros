@@ -1,6 +1,6 @@
 import React from 'react';
 import { useModalContext } from './ModalContext';
-import styles from './ModalHeader.css';
+import styles from './ModalHeader.module.css';
 
 interface ModalHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
   children?: React.ReactNode;

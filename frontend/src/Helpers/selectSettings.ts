@@ -51,6 +51,7 @@ function getFailures(failures: ValidationFailure[], key: string) {
 
   return result;
 }
+
 export interface ModelBaseSetting {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [id: string]: any;

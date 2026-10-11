@@ -7,7 +7,7 @@ import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { kinds, sizes } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './MoveSceneModal.css';
+import styles from './MoveSceneModal.module.css';
 
 export interface MoveSceneModalProps {
   originalPath?: string;

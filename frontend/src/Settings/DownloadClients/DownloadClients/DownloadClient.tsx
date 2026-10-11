@@ -11,7 +11,7 @@ import DownloadClientModel from 'typings/DownloadClient';
 import translate from 'Utilities/String/translate';
 import EditDownloadClientModal from './EditDownloadClientModal';
 import { useDeleteDownloadClient } from './useDownloadClients';
-import styles from './DownloadClient.css';
+import styles from './DownloadClient.module.css';
 
 interface DownloadClientProps {
   downloadClient: DownloadClientModel;

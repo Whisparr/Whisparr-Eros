@@ -9,7 +9,7 @@ import { useMovie } from 'Movie/useMovie';
 import { useSingleMovieFile } from 'MovieFile/useMovieFile';
 import translate from 'Utilities/String/translate';
 import MovieQuality from './MovieQuality';
-import styles from './MovieStatus.css';
+import styles from './MovieStatus.module.css';
 
 interface MovieStatusProps {
   movieId: number;
@@ -21,6 +21,7 @@ function MovieStatus({ movieId, movieFileId }: MovieStatusProps) {
   const queueItem = useQueueItemForMovie(movieId);
   const { data: movieFile } = useSingleMovieFile(movieFileId);
   const { data: movie } = useMovie(movieId);
+
   if (!movie) {
     return null;
   }

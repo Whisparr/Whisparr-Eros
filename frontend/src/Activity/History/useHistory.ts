@@ -161,7 +161,7 @@ const useHistory = () => {
 
 export default useHistory;
 
-const DEFAULT_HISTORY: History[] = [];
+const DEFAULT_HISTORY: ReadonlyArray<History> = [];
 
 // History for a single movie, used by the movie history modal.
 export const useMovieHistory = (movieId: number | undefined) => {

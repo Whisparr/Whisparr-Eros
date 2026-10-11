@@ -18,7 +18,7 @@ import {
   usePerformerDetailsYearActions,
   usePerformerDetailsYearData,
 } from './usePerformerDetailsYear';
-import styles from './PerformerDetailsYear.css';
+import styles from './PerformerDetailsYear.module.css';
 
 interface PerformerDetailsYearProps {
   year: number;
@@ -60,6 +60,7 @@ function PerformerDetailsYear(props: PerformerDetailsYearProps) {
     if (movie.sizeOnDisk) {
       return total + movie.sizeOnDisk;
     }
+
     return total;
   }, 0);
 
@@ -82,6 +83,7 @@ function PerformerDetailsYear(props: PerformerDetailsYearProps) {
         return kinds.DANGER;
     }
   }
+
   const yearKind = getMovieCountKind();
 
   function handleRefreshClick() {

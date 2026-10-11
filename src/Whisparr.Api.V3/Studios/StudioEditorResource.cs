@@ -14,6 +14,9 @@ namespace Whisparr.Api.V3.Studios
         /// <summary>Whether the studios' movies are monitored</summary>
         public bool? MoviesMonitored { get; set; }
 
+        /// <summary>Whether newly discovered works added by refreshing the studios are monitored</summary>
+        public bool? WhisparrMonitorNewItems { get; set; }
+
         /// <summary>The quality profile ID to set on the studios</summary>
         public int? QualityProfileId { get; set; }
 

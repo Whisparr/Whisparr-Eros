@@ -19,6 +19,8 @@ namespace Whisparr.Api.V3.Config
     [V3ApiController("config/host")]
     public class HostConfigController : RestController<HostConfigResource>
     {
+        private const string PrivateValue = "********";
+
         private readonly IConfigFileProvider _configFileProvider;
         private readonly IConfigService _configService;
         private readonly IUserService _userService;
@@ -73,7 +75,7 @@ namespace Whisparr.Api.V3.Config
                 .NotEmpty()
                 .IsValidPath()
                 .SetValidator(fileExistsValidator)
-                .IsValidCertificate()
+                .IsValidCertificate(p => p == PrivateValue ? _configFileProvider.SslCertPassword : p)
                 .When(c => c.EnableSsl);
 
             SharedValidator.RuleFor(c => c.LogSizeLimit).InclusiveBetween(1, 10);
@@ -81,26 +83,20 @@ namespace Whisparr.Api.V3.Config
             SharedValidator.RuleFor(c => c.Branch).NotEmpty().WithMessage("Branch name is required, 'master' is the default");
             SharedValidator.RuleFor(c => c.UpdateScriptPath).IsValidPath().When(c => c.UpdateMechanism == UpdateMechanism.Script);
 
+            SharedValidator.RuleFor(c => c.BackupFolder).ContainsNoPathTraversal();
             SharedValidator.RuleFor(c => c.BackupFolder).IsValidPath().When(c => Path.IsPathRooted(c.BackupFolder));
             SharedValidator.RuleFor(c => c.BackupInterval).InclusiveBetween(1, 7);
             SharedValidator.RuleFor(c => c.BackupRetention).InclusiveBetween(1, 90);
         }
 
-        private bool IsMatchingPassword(HostConfigResource resource)
+        private static bool IsMatchingPassword(HostConfigResource resource)
         {
-            var user = _userService.FindUser();
-
-            if (user != null && user.Password == resource.Password)
+            if (resource.Password == PrivateValue)
             {
                 return true;
             }
 
-            if (resource.Password == resource.PasswordConfirmation)
-            {
-                return true;
-            }
-
-            return false;
+            return resource.Password == resource.PasswordConfirmation;
         }
 
         protected override HostConfigResource GetResourceById(int id)
@@ -117,8 +113,12 @@ namespace Whisparr.Api.V3.Config
             var user = _userService.FindUser();
 
             resource.Username = user?.Username ?? string.Empty;
-            resource.Password = user?.Password ?? string.Empty;
+            resource.Password = user?.Password.IsNotNullOrWhiteSpace() == true ? PrivateValue : string.Empty;
             resource.PasswordConfirmation = string.Empty;
+
+            // Prevent secrets from being exposed
+            resource.SslCertPassword = resource.SslCertPassword.IsNullOrWhiteSpace() ? string.Empty : PrivateValue;
+            resource.ProxyPassword = resource.ProxyPassword.IsNullOrWhiteSpace() ? string.Empty : PrivateValue;
 
             return resource;
         }
@@ -133,12 +133,22 @@ namespace Whisparr.Api.V3.Config
                                      .GetProperties(BindingFlags.Instance | BindingFlags.Public)
                                      .ToDictionary(prop => prop.Name, prop => prop.GetValue(resource, null));
 
+            if (resource.SslCertPassword == PrivateValue)
+            {
+                dictionary["SslCertPassword"] = _configFileProvider.SslCertPassword;
+            }
+
+            if (resource.ProxyPassword == PrivateValue)
+            {
+                dictionary["ProxyPassword"] = _configService.ProxyPassword;
+            }
+
             _configFileProvider.SaveConfigDictionary(dictionary);
             _configService.SaveConfigDictionary(dictionary);
 
             if (resource.Username.IsNotNullOrWhiteSpace() && resource.Password.IsNotNullOrWhiteSpace())
             {
-                _userService.Upsert(resource.Username, resource.Password);
+                _userService.Upsert(resource.Username, resource.Password == PrivateValue ? null : resource.Password);
             }
 
             return Accepted(resource.Id);

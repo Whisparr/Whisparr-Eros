@@ -1,0 +1,28 @@
+.optionText {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1 0 0;
+  min-width: 0;
+
+  &.isMobile {
+    display: block;
+
+    .hintText {
+      margin-left: 0;
+    }
+  }
+}
+
+.hintText {
+  @mixin truncate;
+
+  margin-left: 15px;
+  color: var(--darkGray);
+  font-size: var(--smallFontSize);
+}
+
+.divider {
+  border: none;
+  border-bottom: 1px solid var(--lightGray);
+}

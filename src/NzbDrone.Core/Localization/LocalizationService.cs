@@ -130,6 +130,12 @@ namespace NzbDrone.Core.Localization
             var prefix = Path.Combine(startupFolder, "Localization", "Core");
             var key = prefix + language;
 
+            // Read fresh in a debug build, so an en.json edit shows up without a restart.
+            if (BuildInfo.IsDebug)
+            {
+                return GetDictionary(prefix, language, DefaultCulture + ".json").GetAwaiter().GetResult();
+            }
+
             return _cache.Get("localization", () => GetDictionary(prefix, language, DefaultCulture + ".json").GetAwaiter().GetResult());
         }
 

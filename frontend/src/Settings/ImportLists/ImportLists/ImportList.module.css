@@ -1,0 +1,31 @@
+.list {
+  composes: card from 'Components/Card.module.css';
+
+  width: 290px;
+}
+
+.nameContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.name {
+  @mixin truncate;
+
+  margin-bottom: 20px;
+  font-weight: 300;
+  font-size: 24px;
+}
+
+.cloneButton {
+  composes: button from 'Components/Link/IconButton.module.css';
+
+  height: 36px;
+}
+
+.enabled {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 5px;
+}

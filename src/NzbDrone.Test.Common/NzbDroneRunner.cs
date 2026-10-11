@@ -21,6 +21,7 @@ namespace NzbDrone.Test.Common
         private readonly IProcessProvider _processProvider;
         private readonly IRestClient _restClient;
         private Process _nzbDroneProcess;
+        private bool _enableAuth;
 
         public string AppData { get; private set; }
         public string ApiKey { get; private set; }
@@ -38,6 +39,7 @@ namespace NzbDrone.Test.Common
 
         public void Start(bool enableAuth = false)
         {
+            _enableAuth = enableAuth;
             AppData = Path.Combine(TestContext.CurrentContext.TestDirectory, "_intg_" + TestBase.GetUID());
             Directory.CreateDirectory(AppData);
             var logData = Path.Combine(AppData, "logs");
@@ -146,7 +148,12 @@ namespace NzbDrone.Test.Common
 
         private void Start(string outputWhisparrConsoleExe)
         {
-            StringDictionary envVars = new ();
+            StringDictionary envVars = new();
+            if (!_enableAuth)
+            {
+                envVars.Add("Whisparr__Auth__Method", "None");
+            }
+
             if (PostgresOptions?.Host != null)
             {
                 envVars.Add("Whisparr__Postgres__Host", PostgresOptions.Host);

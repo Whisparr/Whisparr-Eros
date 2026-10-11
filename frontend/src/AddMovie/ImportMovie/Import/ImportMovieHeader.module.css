@@ -1,0 +1,30 @@
+.folder {
+  composes: headerCell from 'Components/Table/VirtualTableHeaderCell.module.css';
+
+  flex: 0 1 250px;
+  min-width: 170px;
+}
+
+.monitor {
+  composes: headerCell from 'Components/Table/VirtualTableHeaderCell.module.css';
+
+  flex: 0 1 150px;
+  min-width: 100px;
+}
+
+.qualityProfile {
+  composes: headerCell from 'Components/Table/VirtualTableHeaderCell.module.css';
+
+  flex: 0 1 170px;
+  min-width: 100px;
+}
+
+.movie {
+  composes: headerCell from 'Components/Table/VirtualTableHeaderCell.module.css';
+
+  flex: 1 0 200px;
+}
+
+.detailsIcon {
+  margin-left: 8px;
+}

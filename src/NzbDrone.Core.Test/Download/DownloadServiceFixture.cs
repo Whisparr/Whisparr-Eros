@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using FizzWare.NBuilder;
+using FluentAssertions;
 using Moq;
 using NUnit.Framework;
 using NzbDrone.Common.Http;
@@ -28,8 +29,8 @@ namespace NzbDrone.Core.Test.Download
             _downloadClients = new List<IDownloadClient>();
 
             Mocker.GetMock<IProvideDownloadClient>()
-                .Setup(v => v.GetDownloadClients(It.IsAny<bool>()))
-                .Returns(_downloadClients);
+                .Setup(v => v.GetDownloadClients(It.IsAny<DownloadProtocol>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<HashSet<int>>()))
+                .Returns<DownloadProtocol, int, bool, HashSet<int>>((v, i, f, t) => _downloadClients.Where(d => d.Protocol == v));
 
             Mocker.GetMock<IProvideDownloadClient>()
                 .Setup(v => v.GetDownloadClient(It.IsAny<DownloadProtocol>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<HashSet<int>>()))
@@ -54,6 +55,14 @@ namespace NzbDrone.Core.Test.Download
             _downloadClients.Add(mock.Object);
 
             mock.SetupGet(v => v.Protocol).Returns(DownloadProtocol.Usenet);
+
+            return mock;
+        }
+
+        private Mock<IDownloadClient> WithUsenetClient(int id)
+        {
+            var mock = WithUsenetClient();
+            mock.SetupGet(s => s.Definition).Returns(Builder<DownloadClientDefinition>.CreateNew().With(d => d.Id = id).With(d => d.Name = $"Client {id}").Build());
 
             return mock;
         }
@@ -99,7 +108,7 @@ namespace NzbDrone.Core.Test.Download
             mock.Setup(s => s.Download(It.IsAny<RemoteMovie>(), It.IsAny<IIndexer>()))
                 .Throws(new WebException());
 
-            Assert.ThrowsAsync<WebException>(async () => await Subject.DownloadReport(_parseResult, null));
+            Assert.ThrowsAsync<DownloadClientUnavailableException>(async () => await Subject.DownloadReport(_parseResult, null));
 
             VerifyEventNotPublished<MovieGrabbedEvent>();
         }
@@ -169,7 +178,7 @@ namespace NzbDrone.Core.Test.Download
             mock.Setup(s => s.Download(It.IsAny<RemoteMovie>(), It.IsAny<IIndexer>()))
                 .Throws(new DownloadClientException("Some Error"));
 
-            Assert.ThrowsAsync<DownloadClientException>(async () => await Subject.DownloadReport(_parseResult, null));
+            Assert.ThrowsAsync<DownloadClientUnavailableException>(async () => await Subject.DownloadReport(_parseResult, null));
 
             Mocker.GetMock<IIndexerStatusService>()
                 .Verify(v => v.RecordFailure(It.IsAny<int>(), It.IsAny<TimeSpan>()), Times.Never());
@@ -247,6 +256,78 @@ namespace NzbDrone.Core.Test.Download
 
             mockTorrent.Verify(c => c.Download(It.IsAny<RemoteMovie>(), It.IsAny<IIndexer>()), Times.Once());
             mockUsenet.Verify(c => c.Download(It.IsAny<RemoteMovie>(), It.IsAny<IIndexer>()), Times.Never());
+        }
+
+        [Test]
+        public async Task should_fall_back_to_next_client_when_first_fails()
+        {
+            var failing = WithUsenetClient(1);
+            var working = WithUsenetClient(2);
+
+            failing.Setup(s => s.Download(It.IsAny<RemoteMovie>(), It.IsAny<IIndexer>()))
+                .Throws(new WebException());
+
+            await Subject.DownloadReport(_parseResult, null);
+
+            failing.Verify(c => c.Download(It.IsAny<RemoteMovie>(), It.IsAny<IIndexer>()), Times.Once());
+            working.Verify(c => c.Download(It.IsAny<RemoteMovie>(), It.IsAny<IIndexer>()), Times.Once());
+            VerifyEventPublished<MovieGrabbedEvent>();
+
+            Mocker.GetMock<IProvideDownloadClient>()
+                .Verify(v => v.ReportSuccessfulDownloadClient(DownloadProtocol.Usenet, 2), Times.Once());
+        }
+
+        [Test]
+        public void should_not_fall_back_when_release_download_fails()
+        {
+            var first = WithUsenetClient(1);
+            var second = WithUsenetClient(2);
+
+            first.Setup(s => s.Download(It.IsAny<RemoteMovie>(), It.IsAny<IIndexer>()))
+                .Callback<RemoteMovie, IIndexer>((v, indexer) => throw new ReleaseUnavailableException(v.Release, "Gone"));
+
+            Assert.ThrowsAsync<ReleaseUnavailableException>(async () => await Subject.DownloadReport(_parseResult, null));
+
+            second.Verify(c => c.Download(It.IsAny<RemoteMovie>(), It.IsAny<IIndexer>()), Times.Never());
+        }
+
+        [Test]
+        public void should_report_last_client_error_when_all_clients_fail()
+        {
+            var first = WithUsenetClient(1);
+            var second = WithUsenetClient(2);
+
+            first.Setup(s => s.Download(It.IsAny<RemoteMovie>(), It.IsAny<IIndexer>()))
+                .Throws(new DownloadClientException("First is down"));
+            second.Setup(s => s.Download(It.IsAny<RemoteMovie>(), It.IsAny<IIndexer>()))
+                .Throws(new DownloadClientException("Second is down"));
+
+            var ex = Assert.ThrowsAsync<DownloadClientUnavailableException>(async () => await Subject.DownloadReport(_parseResult, null));
+
+            ex.Message.Should().Contain("Second is down");
+            ex.InnerException.Should().BeOfType<DownloadClientException>();
+            VerifyEventNotPublished<MovieGrabbedEvent>();
+
+            Mocker.GetMock<IProvideDownloadClient>()
+                .Verify(v => v.ReportSuccessfulDownloadClient(It.IsAny<DownloadProtocol>(), It.IsAny<int>()), Times.Never());
+        }
+
+        [Test]
+        public void should_not_fall_back_when_client_is_specified()
+        {
+            var specified = WithUsenetClient(1);
+            var other = WithUsenetClient(2);
+
+            Mocker.GetMock<IProvideDownloadClient>()
+                .Setup(v => v.Get(1))
+                .Returns(specified.Object);
+
+            specified.Setup(s => s.Download(It.IsAny<RemoteMovie>(), It.IsAny<IIndexer>()))
+                .Throws(new WebException());
+
+            Assert.ThrowsAsync<WebException>(async () => await Subject.DownloadReport(_parseResult, 1));
+
+            other.Verify(c => c.Download(It.IsAny<RemoteMovie>(), It.IsAny<IIndexer>()), Times.Never());
         }
     }
 }

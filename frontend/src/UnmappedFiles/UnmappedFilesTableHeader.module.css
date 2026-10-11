@@ -1,0 +1,19 @@
+.quality,
+.size,
+.dateAdded {
+  composes: headerCell from 'Components/Table/VirtualTableHeaderCell.module.css';
+
+  flex: 0 0 120px;
+}
+
+.path {
+  composes: headerCell from 'Components/Table/VirtualTableHeaderCell.module.css';
+
+  flex: 4 0 400px;
+}
+
+.actions {
+  composes: headerCell from 'Components/Table/VirtualTableHeaderCell.module.css';
+
+  flex: 0 1 95px;
+}

@@ -19,7 +19,7 @@ export const TRANSLATIONS_QUERY_KEY = ['/localization'];
 // render that first sees `isFetched` would emit raw keys and nothing would
 // re-render to correct them.
 function useTranslations() {
-  return useQuery<TranslationsResponse, ApiError>({
+  return useQuery<Readonly<TranslationsResponse>, ApiError>({
     queryKey: TRANSLATIONS_QUERY_KEY,
     // The strings only change when the server's language setting does, which
     // requires a restart.

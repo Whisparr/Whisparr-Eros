@@ -7,13 +7,14 @@ import React, {
 } from 'react';
 import translate from 'Utilities/String/translate';
 import { CoverType, Image } from './Movie';
-import styles from './MovieImage.css';
+import styles from './MovieImage.module.css';
 
 function findImage(images: Image[], coverType: CoverType) {
   const preferred = images.find((image) => image.coverType === coverType);
   if (preferred) return preferred;
 
   const fallbacks = ['logo', 'clearlogo', 'poster'];
+
   for (const fb of fallbacks) {
     const found = images.find((image) => image.coverType === fb);
     if (found) return found;
@@ -88,6 +89,7 @@ function MovieImage({
 
   const handleError = useCallback(() => {
     const nextImage = image.current;
+
     if (!triedRemote.current && nextImage?.remoteUrl) {
       triedRemote.current = true;
       setUrl(nextImage.remoteUrl);

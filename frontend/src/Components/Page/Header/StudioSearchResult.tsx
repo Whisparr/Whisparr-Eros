@@ -5,7 +5,7 @@ import { kinds, sizes } from 'Helpers/Props';
 import Studio from 'Studio/Studio';
 import StudioLogo from 'Studio/StudioLogo';
 import translate from 'Utilities/String/translate';
-import styles from './MovieSearchResult.css';
+import styles from './MovieSearchResult.module.css';
 
 type StudioSearchResultProps = Pick<Studio, 'title' | 'network' | 'images'>;
 

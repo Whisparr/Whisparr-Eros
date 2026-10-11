@@ -4,7 +4,7 @@ import Link from 'Components/Link/Link';
 import { kinds, sizes } from 'Helpers/Props';
 import Performer from 'Performer/Performer';
 import translate from 'Utilities/String/translate';
-import styles from './PerformerDetailsLinks.css';
+import styles from './PerformerDetailsLinks.module.css';
 
 type PerformerDetailsLinksProps = Pick<
   Performer,

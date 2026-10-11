@@ -8,7 +8,7 @@ import React, {
 } from 'react';
 import { Manager, Popper, PopperProps, Reference } from 'react-popper';
 import Portal from 'Components/Portal';
-import styles from './Menu.css';
+import styles from './Menu.module.css';
 
 const sharedModifiers = [
   { name: 'preventOverflow', options: { padding: 0 } },

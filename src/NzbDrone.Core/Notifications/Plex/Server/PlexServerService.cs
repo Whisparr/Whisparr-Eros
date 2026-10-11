@@ -19,7 +19,7 @@ namespace NzbDrone.Core.Notifications.Plex.Server
     public interface IPlexServerService
     {
         void UpdateLibrary(Movie movie, PlexServerSettings settings);
-        void UpdateLibrary(IEnumerable<Movie> movie, PlexServerSettings settings);
+        void UpdateLibrary(IEnumerable<Movie> movies, PlexServerSettings settings);
         ValidationFailure Test(PlexServerSettings settings);
     }
 
@@ -45,7 +45,7 @@ namespace NzbDrone.Core.Notifications.Plex.Server
             UpdateLibrary(new[] { movie }, settings);
         }
 
-        public void UpdateLibrary(IEnumerable<Movie> multipleMovies, PlexServerSettings settings)
+        public void UpdateLibrary(IEnumerable<Movie> movies, PlexServerSettings settings)
         {
             try
             {
@@ -57,7 +57,7 @@ namespace NzbDrone.Core.Notifications.Plex.Server
 
                 var sections = GetSections(settings);
 
-                foreach (var movie in multipleMovies)
+                foreach (var movie in movies)
                 {
                     UpdateSections(movie, sections, settings);
                 }
@@ -69,85 +69,6 @@ namespace NzbDrone.Core.Notifications.Plex.Server
                 _logger.Warn(ex, "Failed to Update Plex host: " + settings.Host);
                 throw;
             }
-        }
-
-        private List<PlexSection> GetSections(PlexServerSettings settings)
-        {
-            _logger.Debug("Getting sections from Plex host: {0}", settings.Host);
-
-            return _plexServerProxy.GetMovieSections(settings).ToList();
-        }
-
-        private void ValidateVersion(Version version)
-        {
-            if (version >= new Version(1, 3, 0) && version < new Version(1, 3, 1))
-            {
-                throw new PlexVersionException("Found version {0}, upgrade to PMS 1.3.1 to fix library updating and then restart Whisparr", version);
-            }
-        }
-
-        private Version GetVersion(PlexServerSettings settings)
-        {
-            _logger.Debug("Getting version from Plex host: {0}", settings.Host);
-
-            var rawVersion = _plexServerProxy.Version(settings);
-            var version = new Version(Regex.Match(rawVersion, @"^(\d+[.-]){4}", RegexOptions.None, RegexDefaults.Timeout).Value.Trim('.', '-'));
-
-            return version;
-        }
-
-        private void UpdateSections(Movie movie, List<PlexSection> sections, PlexServerSettings settings)
-        {
-            var rootFolderPath = _rootFolderService.GetBestRootFolderPath(movie.Path);
-            var movieRelativePath = rootFolderPath.GetRelativePath(movie.Path);
-
-            // Try to update a matching section location before falling back to updating all section locations.
-            foreach (var section in sections)
-            {
-                foreach (var location in section.Locations)
-                {
-                    var rootFolder = new OsPath(rootFolderPath);
-                    var mappedPath = rootFolder;
-
-                    if (settings.MapTo.IsNotNullOrWhiteSpace())
-                    {
-                        mappedPath = new OsPath(settings.MapTo) + (rootFolder - new OsPath(settings.MapFrom));
-
-                        _logger.Trace("Mapping Path from {0} to {1} for partial scan", rootFolder, mappedPath);
-                    }
-
-                    if (location.Path.PathEquals(mappedPath.FullPath))
-                    {
-                        _logger.Debug("Updating matching section location, {0}", location.Path);
-                        UpdateSectionPath(movieRelativePath, section, location, settings);
-
-                        return;
-                    }
-                }
-            }
-
-            _logger.Debug("Unable to find matching section location, updating all Movie sections");
-
-            foreach (var section in sections)
-            {
-                foreach (var location in section.Locations)
-                {
-                    UpdateSectionPath(movieRelativePath, section, location, settings);
-                }
-            }
-        }
-
-        private void UpdateSectionPath(string movieRelativePath, PlexSection section, PlexSectionLocation location, PlexServerSettings settings)
-        {
-            var separator = location.Path.Contains('\\') ? "\\" : "/";
-            var locationRelativePath = movieRelativePath.Replace("\\", separator).Replace("/", separator);
-
-            // Plex location paths trim trailing extraneous separator characters,
-            // unless it's a Windows drive letter (S:\) that needs to be trimmed.
-            var pathToUpdate = $"{location.Path.TrimEnd(separator)}{separator}{locationRelativePath}";
-
-            _logger.Debug("Updating section location, {0}", location.Path);
-            _plexServerProxy.Update(section.Id, pathToUpdate, settings);
         }
 
         public ValidationFailure Test(PlexServerSettings settings)
@@ -176,12 +97,99 @@ namespace NzbDrone.Core.Notifications.Plex.Server
                 _logger.Error(ex, "Unable to connect to Plex Media Server");
 
                 return new NzbDroneValidationFailure("Host", _localizationService.GetLocalizedString("NotificationsValidationUnableToConnectToService", new Dictionary<string, object> { { "serviceName", "Plex Media Server" } }))
-                       {
-                           DetailedDescription = ex.Message
-                       };
+                {
+                    DetailedDescription = ex.Message
+                };
             }
 
             return null;
+        }
+
+        private static void ValidateVersion(Version version)
+        {
+            if (version >= new Version(1, 3, 0) && version < new Version(1, 3, 1))
+            {
+                throw new PlexVersionException("Found version {0}, upgrade to PMS 1.3.1 to fix library updating and then restart Whisparr", version);
+            }
+        }
+
+        private List<PlexSection> GetSections(PlexServerSettings settings)
+        {
+            _logger.Debug("Getting sections from Plex host: {0}", settings.Host);
+
+            return _plexServerProxy.GetMovieSections(settings).ToList();
+        }
+
+        private Version GetVersion(PlexServerSettings settings)
+        {
+            _logger.Debug("Getting version from Plex host: {0}", settings.Host);
+
+            var rawVersion = _plexServerProxy.Version(settings);
+            var version = new Version(Regex.Match(rawVersion, @"^(\d+[.-]){4}", RegexOptions.None, RegexDefaults.Timeout).Value.Trim('.', '-'));
+
+            return version;
+        }
+
+        private void UpdateSections(Movie movie, List<PlexSection> sections, PlexServerSettings settings)
+        {
+            var rootFolderPath = _rootFolderService.GetBestRootFolderPath(movie.Path);
+            var movieRelativePath = rootFolderPath.GetRelativePath(movie.Path);
+
+            // Try to update every matching section location before falling back to updating all section locations.
+            var matched = false;
+
+            foreach (var section in sections)
+            {
+                foreach (var location in section.Locations)
+                {
+                    var rootFolder = new OsPath(rootFolderPath);
+                    var mappedPath = rootFolder;
+
+                    if (settings.MapTo.IsNotNullOrWhiteSpace())
+                    {
+                        mappedPath = new OsPath(settings.MapTo) + (rootFolder - new OsPath(settings.MapFrom));
+
+                        _logger.Trace("Mapping Path from {0} to {1} for partial scan", rootFolder, mappedPath);
+                    }
+
+                    if (location.Path.PathEquals(mappedPath.FullPath))
+                    {
+                        _logger.Debug("Updating matching section location, {0}", location.Path);
+                        UpdateSectionPath(movieRelativePath, section, location, settings);
+
+                        matched = true;
+                        break;
+                    }
+                }
+            }
+
+            if (matched)
+            {
+                return;
+            }
+
+            _logger.Debug("Unable to find matching section location, updating all Movie sections");
+
+            foreach (var section in sections)
+            {
+                foreach (var location in section.Locations)
+                {
+                    UpdateSectionPath(movieRelativePath, section, location, settings);
+                }
+            }
+        }
+
+        private void UpdateSectionPath(string movieRelativePath, PlexSection section, PlexSectionLocation location, PlexServerSettings settings)
+        {
+            var separator = location.Path.Contains('\\') ? "\\" : "/";
+            var locationRelativePath = movieRelativePath.Replace("\\", separator).Replace("/", separator);
+
+            // Plex location paths trim trailing extraneous separator characters,
+            // unless it's a Windows drive letter (S:\) that needs to be trimmed.
+            var pathToUpdate = $"{location.Path.TrimEnd(separator)}{separator}{locationRelativePath}";
+
+            _logger.Debug("Updating section location, {0}", location.Path);
+            _plexServerProxy.Update(section.Id, pathToUpdate, settings);
         }
     }
 }

@@ -14,7 +14,7 @@ namespace Whisparr.Http.Frontend.Mappers
         private readonly Lazy<ICacheBreakerProvider> _cacheBreakProviderFactory;
 
         // A minifier may drop the quotes (src=/index.js), so match both forms or the url base is never applied.
-        private static readonly Regex ReplaceRegex = new Regex(@"(?<attribute>href|src)=(?:\""(?<path>.*?(?:css|js|png|ico|ics|svg|json))\""|(?<path>[^\s\""'<>=`]+?(?:css|js|png|ico|ics|svg|json))(?=[\s>]))(?:\s(?<nohash>data-no-hash))?", RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexDefaults.Timeout);
+        private static readonly Regex ReplaceRegex = new Regex(@"(?<attribute>href|src)=(?:\""(?<path>.*?\.(?:css|js|ts|png|ico|ics|svg|json))\""|(?<path>[^\s\""'<>=`]+?\.(?:css|js|ts|png|ico|ics|svg|json))(?=[\s>]))(?:\s(?<nohash>data-no-hash))?", RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexDefaults.Timeout);
 
         private string _generatedContent;
 
@@ -29,6 +29,11 @@ namespace Whisparr.Http.Frontend.Mappers
 
         protected string HtmlPath;
         protected string UrlBase;
+
+        protected virtual string ReadHtml()
+        {
+            return _diskProvider.ReadAllText(HtmlPath);
+        }
 
         protected override Stream GetContentStream(string filePath)
         {
@@ -49,7 +54,7 @@ namespace Whisparr.Http.Frontend.Mappers
                 return _generatedContent;
             }
 
-            var text = _diskProvider.ReadAllText(HtmlPath);
+            var text = ReadHtml();
             var cacheBreakProvider = _cacheBreakProviderFactory.Value;
 
             text = ReplaceRegex.Replace(text, match =>

@@ -41,6 +41,7 @@ function useImportLookupQueue(
         setIsLookingUp(false);
         dispatch({ type: 'SET_LOOKING_UP', value: false });
       }
+
       return;
     }
 
@@ -102,6 +103,7 @@ function useImportLookupQueue(
 
       // Remove any existing entry for this id
       const existingIdx = queueRef.current.findIndex((e) => e.id === entry.id);
+
       if (existingIdx >= 0) {
         queueRef.current.splice(existingIdx, 1);
       }

@@ -1,6 +1,6 @@
 import React from 'react';
 import Icon, { IconName } from 'Components/Icon';
-import styles from './MovieIndexOverviewInfoRow.css';
+import styles from './MovieIndexOverviewInfoRow.module.css';
 
 interface MovieIndexOverviewInfoRowProps {
   title?: string;

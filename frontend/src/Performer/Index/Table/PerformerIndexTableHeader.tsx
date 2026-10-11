@@ -17,7 +17,7 @@ import {
 import { CheckInputChanged } from 'typings/inputs';
 import translate from 'Utilities/String/translate';
 import PerformerIndexTableOptions from './PerformerIndexTableOptions';
-import styles from './PerformerIndexTableHeader.css';
+import styles from './PerformerIndexTableHeader.module.css';
 
 interface PerformerIndexTableHeaderProps {
   columns: Column[];

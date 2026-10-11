@@ -1,0 +1,20 @@
+.links {
+  margin: 0;
+}
+
+.link {
+  white-space: nowrap;
+}
+
+.linkLabel {
+  composes: label from 'Components/Label.module.css';
+
+  cursor: pointer;
+}
+
+@media (--breakpointExtraSmall) {
+  .links {
+    display: flex;
+    flex-flow: column wrap;
+  }
+}

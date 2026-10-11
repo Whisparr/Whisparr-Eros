@@ -11,7 +11,7 @@ import { useNotificationSchema } from 'Settings/Notifications/useNotifications';
 import { SelectedSchema } from 'Settings/useProviderSchema';
 import translate from 'Utilities/String/translate';
 import AddNotificationItem from './AddNotificationItem';
-import styles from './AddNotificationModalContent.css';
+import styles from './AddNotificationModalContent.module.css';
 
 interface AddNotificationModalContentProps {
   onNotificationSelect: (selectedSchema: SelectedSchema) => void;

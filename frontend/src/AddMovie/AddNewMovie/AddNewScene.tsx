@@ -11,7 +11,7 @@ import { icons, kinds } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import AddNewMovieSearchResult from './AddNewMovie/AddNewMovieSearchResult';
 import { useAddNewMovie } from './useAddNewMovie';
-import styles from './AddNewMovie.css';
+import styles from './AddNewMovie.module.css';
 
 function AddNewScene() {
   const {
@@ -110,7 +110,7 @@ function AddNewScene() {
             <div className={styles.noResults}>
               {translate('CouldNotFindResults', { term })}
             </div>
-            <div>{translate('YouCanAlsoSearch')}</div>
+            <div>{translate('YouCanAlsoSearchScene')}</div>
             <div>
               {/* TODO: This link needs a refresh.  Unsuer if we keep Servarr for wiki or not */}
               <Link to="https://wiki.servarr.com/whisparr/faq#why-can-i-not-add-a-new-movie-to-whisparr">

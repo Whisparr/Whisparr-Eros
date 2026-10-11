@@ -11,7 +11,7 @@ import { inputTypes } from 'Helpers/Props';
 import MoveMovieModal from 'Movie/MoveMovie/MoveMovieModal';
 import { InputChanged } from 'typings/inputs';
 import translate from 'Utilities/String/translate';
-import styles from './EditMoviesModalContent.css';
+import styles from './EditMoviesModalContent.module.css';
 
 interface SavePayload {
   monitored?: boolean;

@@ -124,9 +124,11 @@ export function useAddNewMovie(itemType: 'movie' | 'scene') {
 
   const onLookupChange = useCallback((value: string) => {
     setTerm(value);
+
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
+
     if (value.trim()) {
       timeoutRef.current = setTimeout(() => setDebouncedTerm(value), 300);
     } else {

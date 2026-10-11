@@ -26,7 +26,7 @@ import {
 } from '../useCustomFormats';
 import ManageCustomFormatsEditModal from './Edit/ManageCustomFormatsEditModal';
 import ManageCustomFormatsModalRow from './ManageCustomFormatsModalRow';
-import styles from './ManageCustomFormatsModalContent.css';
+import styles from './ManageCustomFormatsModalContent.module.css';
 
 // TODO: This feels janky to do, but not sure of a better way currently
 type OnSelectedChangeCallback = React.ComponentProps<

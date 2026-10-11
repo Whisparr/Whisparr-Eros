@@ -9,7 +9,7 @@ import KeyboardShortcutsModal from './KeyboardShortcutsModal';
 import MovieSearchInput from './MovieSearchInput';
 import PageHeaderActionsMenu from './PageHeaderActionsMenu';
 import SafeForWorkButton from './SafeForWorkButton';
-import styles from './PageHeader.css';
+import styles from './PageHeader.module.css';
 
 interface PageHeaderProps {
   isSmallScreen: boolean;

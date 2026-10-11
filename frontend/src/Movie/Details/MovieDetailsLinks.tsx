@@ -4,7 +4,7 @@ import ClipboardButton from 'Components/Link/ClipboardButton';
 import Link from 'Components/Link/Link';
 import { kinds, sizes } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './MovieDetailsLinks.css';
+import styles from './MovieDetailsLinks.module.css';
 
 interface MovieDetailsLinksProps {
   tmdbId?: number;

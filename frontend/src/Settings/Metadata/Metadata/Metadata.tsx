@@ -6,7 +6,7 @@ import { kinds } from 'Helpers/Props';
 import MetadataModel from 'typings/Metadata';
 import translate from 'Utilities/String/translate';
 import EditMetadataModal from './EditMetadataModal';
-import styles from './Metadata.css';
+import styles from './Metadata.module.css';
 
 interface MetadataProps {
   metadata: MetadataModel;

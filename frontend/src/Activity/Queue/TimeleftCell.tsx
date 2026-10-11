@@ -8,7 +8,7 @@ import formatTimeSpan from 'Utilities/Date/formatTimeSpan';
 import getRelativeDate from 'Utilities/Date/getRelativeDate';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
-import styles from './TimeleftCell.css';
+import styles from './TimeleftCell.module.css';
 
 interface TimeleftCellProps {
   estimatedCompletionTime?: string;

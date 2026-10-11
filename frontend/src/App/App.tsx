@@ -1,6 +1,5 @@
 import { QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
-import DocumentTitle from 'react-document-title';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Page from 'Components/Page/Page';
 import ApplyTheme from './ApplyTheme';
@@ -24,11 +23,9 @@ function App() {
   });
 
   return (
-    <DocumentTitle title={globalThis.Whisparr.instanceName}>
-      <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
-      </QueryClientProvider>
-    </DocumentTitle>
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>
   );
 }
 

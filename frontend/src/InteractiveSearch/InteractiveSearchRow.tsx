@@ -1,11 +1,16 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import ProtocolLabel from 'Activity/Queue/ProtocolLabel';
 import Icon from 'Components/Icon';
 import Link from 'Components/Link/Link';
 import SpinnerIconButton from 'Components/Link/SpinnerIconButton';
 import ConfirmModal from 'Components/Modal/ConfirmModal';
-import TableRowCell from 'Components/Table/Cells/TableRowCell';
-import TableRow from 'Components/Table/TableRow';
+import VirtualTableRowCell from 'Components/Table/Cells/VirtualTableRowCell';
 import Popover from 'Components/Tooltip/Popover';
 import Tooltip from 'Components/Tooltip/Tooltip';
 import { icons, kinds, tooltipPositions } from 'Helpers/Props';
@@ -26,7 +31,7 @@ import InteractiveSearchPayload from './InteractiveSearchPayload';
 import OverrideMatchModal from './OverrideMatch/OverrideMatchModal';
 import Peers from './Peers';
 import { useGrabRelease } from './useReleases';
-import styles from './InteractiveSearchRow.css';
+import styles from './InteractiveSearchRow.module.css';
 
 function getDownloadIcon(
   isGrabbing: boolean,
@@ -91,6 +96,9 @@ function useMovieExclusion(movieId: number) {
 }
 
 interface InteractiveSearchRowProps extends Release {
+  index: number;
+  style: React.CSSProperties;
+  setRowHeight: (index: number, height: number) => void;
   searchPayload: InteractiveSearchPayload;
 }
 
@@ -118,8 +126,32 @@ function InteractiveSearchRow(props: Readonly<InteractiveSearchRowProps>) {
     indexerFlags = [],
     rejections = [],
     downloadAllowed,
+    index,
+    style,
+    setRowHeight,
     searchPayload,
   } = props;
+
+  const rowRef = useRef<HTMLDivElement>(null);
+
+  // Rows wrap to fit long titles and rejection lists, so the list can't know
+  // their height up front. Each row reports what it actually rendered at.
+  useLayoutEffect(() => {
+    const element = rowRef.current;
+
+    if (!element) {
+      return;
+    }
+
+    const measure = () => setRowHeight(index, element.offsetHeight);
+
+    measure();
+
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+
+    return () => observer.disconnect();
+  }, [index, setRowHeight]);
 
   // One grab per row. The override modal below is handed this same instance, so
   // whichever button starts the grab, both report it.
@@ -181,13 +213,15 @@ function InteractiveSearchRow(props: Readonly<InteractiveSearchRowProps>) {
     setIsOverrideModalOpen(false);
   }, [setIsOverrideModalOpen]);
 
-  return (
-    <TableRow>
-      <TableRowCell className={styles.protocol}>
-        <ProtocolLabel protocol={protocol} />
-      </TableRowCell>
+  const { height: _height, ...positionStyle } = style;
 
-      <TableRowCell
+  return (
+    <div ref={rowRef} className={styles.row} style={positionStyle}>
+      <VirtualTableRowCell className={styles.protocol}>
+        <ProtocolLabel protocol={protocol} />
+      </VirtualTableRowCell>
+
+      <VirtualTableRowCell
         className={styles.age}
         title={formatDateTime(publishDate, longDateFormat, timeFormat, {
           includeSeconds: true,
@@ -195,19 +229,21 @@ function InteractiveSearchRow(props: Readonly<InteractiveSearchRowProps>) {
         })}
       >
         {formatAge(age, ageHours, ageMinutes)}
-      </TableRowCell>
+      </VirtualTableRowCell>
 
-      <TableRowCell>
+      <VirtualTableRowCell className={styles.title}>
         <div className={styles.titleContent}>
           <Link to={infoUrl} title={title}>
             {title}
           </Link>
         </div>
-      </TableRowCell>
+      </VirtualTableRowCell>
 
-      <TableRowCell className={styles.indexer}>{indexer}</TableRowCell>
+      <VirtualTableRowCell className={styles.indexer}>
+        {indexer}
+      </VirtualTableRowCell>
 
-      <TableRowCell className={styles.history}>
+      <VirtualTableRowCell className={styles.history}>
         {history?.grabbed && !history.failed ? (
           <Tooltip
             anchor={<Icon name={icons.DOWNLOADING} kind={kinds.DEFAULT} />}
@@ -269,25 +305,27 @@ function InteractiveSearchRow(props: Readonly<InteractiveSearchRowProps>) {
             })}
           />
         ) : null}
-      </TableRowCell>
+      </VirtualTableRowCell>
 
-      <TableRowCell className={styles.size}>{formatBytes(size)}</TableRowCell>
+      <VirtualTableRowCell className={styles.size}>
+        {formatBytes(size)}
+      </VirtualTableRowCell>
 
-      <TableRowCell className={styles.peers}>
+      <VirtualTableRowCell className={styles.peers}>
         {protocol === 'torrent' ? (
           <Peers seeders={seeders} leechers={leechers} />
         ) : null}
-      </TableRowCell>
+      </VirtualTableRowCell>
 
-      <TableRowCell className={styles.languages}>
+      <VirtualTableRowCell className={styles.languages}>
         <MovieLanguages languages={languages} />
-      </TableRowCell>
+      </VirtualTableRowCell>
 
-      <TableRowCell className={styles.quality}>
+      <VirtualTableRowCell className={styles.quality}>
         <MovieQuality quality={quality} showRevision={true} />
-      </TableRowCell>
+      </VirtualTableRowCell>
 
-      <TableRowCell className={styles.customFormatScore}>
+      <VirtualTableRowCell className={styles.customFormatScore}>
         <Tooltip
           anchor={formatCustomFormatScore(
             customFormatScore,
@@ -296,9 +334,9 @@ function InteractiveSearchRow(props: Readonly<InteractiveSearchRowProps>) {
           tooltip={<MovieFormats formats={customFormats} />}
           position={tooltipPositions.LEFT}
         />
-      </TableRowCell>
+      </VirtualTableRowCell>
 
-      <TableRowCell className={styles.indexerFlags}>
+      <VirtualTableRowCell className={styles.indexerFlags}>
         {indexerFlags.length ? (
           <Popover
             anchor={<Icon name={icons.FLAG} />}
@@ -313,9 +351,9 @@ function InteractiveSearchRow(props: Readonly<InteractiveSearchRowProps>) {
             position={tooltipPositions.LEFT}
           />
         ) : null}
-      </TableRowCell>
+      </VirtualTableRowCell>
 
-      <TableRowCell className={styles.rejected}>
+      <VirtualTableRowCell className={styles.rejected}>
         {rejections.length ? (
           <Popover
             anchor={<Icon name={icons.DANGER} kind={kinds.DANGER} />}
@@ -330,9 +368,9 @@ function InteractiveSearchRow(props: Readonly<InteractiveSearchRowProps>) {
             position={tooltipPositions.LEFT}
           />
         ) : null}
-      </TableRowCell>
+      </VirtualTableRowCell>
 
-      <TableRowCell className={styles.download}>
+      <VirtualTableRowCell className={styles.download}>
         <SpinnerIconButton
           name={getDownloadIcon(isGrabbing, isGrabbed, grabError)}
           kind={getDownloadKind(isGrabbed, grabError)}
@@ -360,7 +398,7 @@ function InteractiveSearchRow(props: Readonly<InteractiveSearchRowProps>) {
             />
           </div>
         </Link>
-      </TableRowCell>
+      </VirtualTableRowCell>
 
       <ConfirmModal
         isOpen={isConfirmGrabModalOpen}
@@ -386,7 +424,7 @@ function InteractiveSearchRow(props: Readonly<InteractiveSearchRowProps>) {
         onGrabRelease={grabRelease}
         onModalClose={onOverrideModalClose}
       />
-    </TableRow>
+    </div>
   );
 }
 

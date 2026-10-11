@@ -23,7 +23,7 @@ import useCalendar, {
   useCalendarTime,
 } from '../useCalendar';
 import CalendarHeaderViewButton from './CalendarHeaderViewButton';
-import styles from './CalendarHeader.css';
+import styles from './CalendarHeader.module.css';
 
 function CalendarHeader() {
   const { isFetching } = useCalendar();

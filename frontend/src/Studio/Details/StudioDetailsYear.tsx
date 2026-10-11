@@ -24,7 +24,7 @@ import {
   useStudioDetailsYearData,
 } from './useStudioDetailsYear';
 import YearInfo from './YearInfo';
-import styles from './StudioDetailsYear.css';
+import styles from './StudioDetailsYear.module.css';
 
 interface StudioDetailsYearProps {
   studioId: number;
@@ -82,6 +82,7 @@ function StudioDetailsYear(props: StudioDetailsYearProps) {
     if (movie.sizeOnDisk) {
       return total + movie.sizeOnDisk;
     }
+
     return total;
   }, 0);
 

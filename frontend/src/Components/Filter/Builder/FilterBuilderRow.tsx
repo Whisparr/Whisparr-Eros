@@ -27,7 +27,7 @@ import QualityProfileFilterBuilderRowValue from './QualityProfileFilterBuilderRo
 import QueueStatusFilterBuilderRowValue from './QueueStatusFilterBuilderRowValue';
 import ReleaseStatusFilterBuilderRowValue from './ReleaseStatusFilterBuilderRowValue';
 import TagFilterBuilderRowValue from './TagFilterBuilderRowValue';
-import styles from './FilterBuilderRow.css';
+import styles from './FilterBuilderRow.module.css';
 
 interface FilterBuilderRowProps<T> {
   index: number;

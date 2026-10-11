@@ -7,11 +7,12 @@ namespace NzbDrone.Common
 {
     public interface IServiceFactory
     {
+        bool IsDisposed { get; }
         T Build<T>()
             where T : class;
+        object Build(Type contract);
         IEnumerable<T> BuildAll<T>()
             where T : class;
-        object Build(Type contract);
         IEnumerable<Type> GetImplementations(Type contract);
     }
 
@@ -24,21 +25,23 @@ namespace NzbDrone.Common
             _container = container;
         }
 
+        public bool IsDisposed => _container is DryIoc.IResolverContext { IsDisposed: true };
+
         public T Build<T>()
             where T : class
         {
             return _container.GetRequiredService<T>();
         }
 
+        public object Build(Type contract)
+        {
+            return _container.GetRequiredService(contract);
+        }
+
         public IEnumerable<T> BuildAll<T>()
             where T : class
         {
             return _container.GetServices<T>().GroupBy(c => c.GetType().FullName).Select(g => g.First());
-        }
-
-        public object Build(Type contract)
-        {
-            return _container.GetRequiredService(contract);
         }
 
         public IEnumerable<Type> GetImplementations(Type contract)

@@ -78,7 +78,6 @@ namespace NzbDrone.Core.Test.MetadataSource.SkyHook
         [TestCase("tmdbid: -12")]
         [TestCase("tmdbid:1")]
         [TestCase("adjalkwdjkalwdjklawjdlKAJD")]
-        [TestCase("imdb: tt9805708")]
         [TestCase("https://www.UNKNOWN-DOMAIN.com/title/tt0033467/")]
         [TestCase("https://www.themoviedb.org/MALFORMED/775-le-voyage-dans-la-lune")]
         public void no_movie_search_result(string term)

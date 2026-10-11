@@ -6,7 +6,7 @@ import { icons } from 'Helpers/Props';
 import { ExtraFile } from 'MovieFile/ExtraFile';
 import titleCase from 'Utilities/String/titleCase';
 import translate from 'Utilities/String/translate';
-import styles from './ExtraFileRow.css';
+import styles from './ExtraFileRow.module.css';
 
 export type ExtraFileRowProps = Omit<ExtraFile, 'movieFileId'>;
 

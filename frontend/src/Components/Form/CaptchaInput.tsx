@@ -9,7 +9,7 @@ import { ProviderData } from 'Utilities/requestAction';
 import FormInputButton from './FormInputButton';
 import TextInput from './TextInput';
 import useCaptcha from './useCaptcha';
-import styles from './CaptchaInput.css';
+import styles from './CaptchaInput.module.css';
 
 export interface CaptchaInputProps {
   className?: string;

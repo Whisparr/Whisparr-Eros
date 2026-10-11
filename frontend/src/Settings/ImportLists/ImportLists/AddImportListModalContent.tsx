@@ -14,7 +14,7 @@ import titleCase from 'Utilities/String/titleCase';
 import translate from 'Utilities/String/translate';
 import AddImportListItem from './AddImportListItem';
 import { useImportListSchema } from './useImportLists';
-import styles from './AddImportListModalContent.css';
+import styles from './AddImportListModalContent.module.css';
 
 export interface AddImportListModalContentProps {
   onImportListSelect: (selectedSchema: SelectedSchema) => void;

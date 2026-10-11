@@ -1,0 +1,36 @@
+.day {
+  overflow: hidden;
+  padding: 0;
+  border-bottom: 1px solid var(--calendarBorderColor);
+  border-left: 1px solid var(--calendarBorderColor);
+  vertical-align: top;
+}
+
+.isSingleDay {
+  width: 100%;
+}
+
+.noEvents {
+  padding: 30px 0;
+  color: var(--helpTextColor);
+  text-align: center;
+  font-size: 16px;
+}
+
+.dayOfMonth {
+  padding-right: 5px;
+  border-bottom: 1px solid var(--calendarBorderColor);
+  text-align: right;
+}
+
+.isToday {
+  background-color: var(--calendarTodayBackgroundColor);
+}
+
+.isDifferentMonth {
+  color: var(--disabledColor);
+}
+
+.fullDate {
+  @mixin visuallyHidden;
+}

@@ -8,7 +8,7 @@ import ModalHeader from 'Components/Modal/ModalHeader';
 import { kinds } from 'Helpers/Props';
 import CustomFormat from 'typings/CustomFormat';
 import translate from 'Utilities/String/translate';
-import styles from './ExportCustomFormatModalContent.css';
+import styles from './ExportCustomFormatModalContent.module.css';
 
 interface ExportCustomFormatModalContentProps {
   customFormat: CustomFormat;

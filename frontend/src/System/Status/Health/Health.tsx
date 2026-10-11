@@ -18,7 +18,7 @@ import titleCase from 'Utilities/String/titleCase';
 import translate from 'Utilities/String/translate';
 import HealthItemLink from './HealthItemLink';
 import useHealth from './useHealth';
-import styles from './Health.css';
+import styles from './Health.module.css';
 
 const columns: Column[] = [
   {
@@ -89,6 +89,7 @@ function Health() {
                 const source = item.source;
 
                 let kind: IconKind = kinds.WARNING;
+
                 switch (item.type.toLowerCase()) {
                   case 'error':
                     kind = kinds.DANGER;

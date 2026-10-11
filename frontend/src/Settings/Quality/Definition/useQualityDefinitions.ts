@@ -38,7 +38,7 @@ export const useSaveQualityDefinitions = (onSuccess?: () => void) => {
     method: 'PUT',
     mutationOptions: {
       onSuccess: (updatedDefinitions: QualityDefinitionModel[]) => {
-        queryClient.setQueryData<QualityDefinitionModel[]>(
+        queryClient.setQueryData<ReadonlyArray<QualityDefinitionModel>>(
           [QUALITY_DEFINITIONS_PATH],
           updatedDefinitions
         );

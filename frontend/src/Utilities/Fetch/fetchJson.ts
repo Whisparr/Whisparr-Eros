@@ -57,6 +57,7 @@ async function fetchJson<T, TData>({
   const isBinaryBody = body instanceof FormData || body instanceof Blob;
 
   let requestBody: BodyInit | undefined = undefined;
+
   if (body) {
     requestBody = isBinaryBody
       ? (body as unknown as BodyInit)

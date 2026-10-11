@@ -6,7 +6,7 @@ import MonitorToggleButton from 'Components/MonitorToggleButton';
 import MovieHeadshot from 'Movie/MovieHeadshot';
 import { useTogglePerformerMonitored } from 'Performer/usePerformer';
 import MovieCredit from 'typings/MovieCredit';
-import styles from '../MovieCreditPoster.css';
+import styles from '../MovieCreditPoster.module.css';
 
 interface Props {
   credit: MovieCredit;

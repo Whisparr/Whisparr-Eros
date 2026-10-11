@@ -20,6 +20,8 @@ namespace NzbDrone.Core.Download.Clients.Transmission
 {
     public abstract class TransmissionBase : TorrentClientBase<TransmissionSettings>
     {
+        private static readonly char[] PathSeparators = { '\\', '/' };
+
         public abstract bool SupportsLabels { get; }
 
         protected readonly ITransmissionProxy _proxy;
@@ -42,6 +44,7 @@ namespace NzbDrone.Core.Download.Clients.Transmission
         {
             var configFunc = new Lazy<TransmissionConfig>(() => _proxy.GetConfig(Settings));
             var torrents = _proxy.GetTorrents(null, Settings);
+            var downloadDirectory = GetDownloadDirectory();
 
             var items = new List<DownloadClientItem>();
 
@@ -49,30 +52,26 @@ namespace NzbDrone.Core.Download.Clients.Transmission
             {
                 var outputPath = new OsPath(torrent.DownloadDir);
 
-                if (Settings.MovieCategory.IsNotNullOrWhiteSpace() && SupportsLabels && torrent.Labels is { Count: > 0 })
+                if (Settings.MovieCategory.IsNotNullOrWhiteSpace() && SupportsLabels)
                 {
-                    if (!torrent.Labels.Contains(Settings.MovieCategory, StringComparer.InvariantCultureIgnoreCase))
+                    // For people who are moving from Transmission 3 -> 4, torrents predating
+                    // labels are still matched by their category subfolder.
+                    if (torrent.Labels is { Count: > 0 })
+                    {
+                        if (!torrent.Labels.Contains(Settings.MovieCategory, StringComparer.InvariantCultureIgnoreCase))
+                        {
+                            continue;
+                        }
+                    }
+                    else if (!outputPath.FullPath.Split(PathSeparators).Contains(Settings.MovieCategory))
                     {
                         continue;
                     }
                 }
-                else
+
+                if (downloadDirectory.IsNotNullOrWhiteSpace() && !new OsPath(downloadDirectory).Contains(outputPath))
                 {
-                    if (Settings.MovieDirectory.IsNotNullOrWhiteSpace())
-                    {
-                        if (!new OsPath(Settings.MovieDirectory).Contains(outputPath))
-                        {
-                            continue;
-                        }
-                    }
-                    else if (Settings.MovieCategory.IsNotNullOrWhiteSpace())
-                    {
-                        var directories = outputPath.FullPath.Split('\\', '/');
-                        if (!directories.Contains(Settings.MovieCategory))
-                        {
-                            continue;
-                        }
-                    }
+                    continue;
                 }
 
                 outputPath = _remotePathMappingService.RemapRemoteToLocal(Settings.Host, outputPath);
@@ -209,22 +208,7 @@ namespace NzbDrone.Core.Download.Clients.Transmission
 
         public override DownloadClientInfo GetStatus()
         {
-            string destDir;
-
-            if (Settings.MovieDirectory.IsNotNullOrWhiteSpace())
-            {
-                destDir = Settings.MovieDirectory;
-            }
-            else
-            {
-                var config = _proxy.GetConfig(Settings);
-                destDir = config.DownloadDir;
-
-                if (Settings.MovieCategory.IsNotNullOrWhiteSpace())
-                {
-                    destDir = $"{destDir}/{Settings.MovieCategory}";
-                }
-            }
+            var destDir = GetDownloadDirectory() ?? _proxy.GetConfig(Settings).DownloadDir;
 
             return new DownloadClientInfo
             {
@@ -273,6 +257,11 @@ namespace NzbDrone.Core.Download.Clients.Transmission
                 return;
             }
 
+            if (!SupportsLabels && Settings.MovieCategory.IsNotNullOrWhiteSpace() && Settings.MovieDirectory.IsNotNullOrWhiteSpace())
+            {
+                failures.Add(new NzbDroneValidationFailure("MovieCategory", "Cannot use Category and Directory"));
+            }
+
             failures.AddIfNotNull(TestGetTorrents());
         }
 
@@ -288,15 +277,12 @@ namespace NzbDrone.Core.Download.Clients.Transmission
                 return Settings.MovieDirectory;
             }
 
-            if (!Settings.MovieCategory.IsNotNullOrWhiteSpace())
+            if (SupportsLabels || Settings.MovieCategory.IsNullOrWhiteSpace())
             {
                 return null;
             }
 
-            var config = _proxy.GetConfig(Settings);
-            var destDir = config.DownloadDir;
-
-            return $"{destDir.TrimEnd('/')}/{Settings.MovieCategory}";
+            return $"{_proxy.GetConfig(Settings).DownloadDir.TrimEnd('/')}/{Settings.MovieCategory}";
         }
 
         protected ValidationFailure TestConnection()
