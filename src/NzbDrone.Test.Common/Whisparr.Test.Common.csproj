@@ -6,13 +6,14 @@
   <ItemGroup>
     <PackageReference Include="FluentAssertions" Version="8.11.0" />
     <PackageReference Include="FluentValidation" Version="12.1.1" />
-    <PackageReference Include="Moq" Version="4.20.72" />
+    <PackageReference Include="Moq" Version="4.21.0" />
     <PackageReference Include="NLog" Version="6.2.1" />
-    <PackageReference Include="NUnit" Version="4.6.1" />
+    <PackageReference Include="NUnit" Version="5.0.0" />
     <PackageReference Include="RestSharp" Version="114.0.0" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Dapper" Version="2.1.89" />
+    <PackageReference Include="MailKit" Version="4.18.1" />
     <PackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="10.0.12" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.12" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.12" />
