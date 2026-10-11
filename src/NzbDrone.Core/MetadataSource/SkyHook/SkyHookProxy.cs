@@ -817,7 +817,12 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             title = FormatSearchTerm(title, itemType, movieInfo);
             var lowerTitle = title.ToLowerInvariant();
 
-            if (lowerTitle.StartsWith("tmdb:", StringComparison.Ordinal) || lowerTitle.StartsWith("tmdbid:", StringComparison.Ordinal) || lowerTitle.StartsWith("imdb:", StringComparison.Ordinal) || lowerTitle.StartsWith("imdbid:", StringComparison.Ordinal) || lowerTitle.StartsWith(StashPrefixConst, StringComparison.Ordinal) || lowerTitle.StartsWith(StashIdPrefixConst, StringComparison.Ordinal) || lowerTitle.StartsWith("https:", StringComparison.Ordinal))
+            if (lowerTitle.StartsWith("imdb:", StringComparison.Ordinal) || lowerTitle.StartsWith("imdbid:", StringComparison.Ordinal))
+            {
+                throw new InvalidSearchTermException("IMDb ids are not supported by Whisparr metadata. Search by title or use a TMDb/TPDB id instead");
+            }
+
+            if (lowerTitle.StartsWith("tmdb:", StringComparison.Ordinal) || lowerTitle.StartsWith("tmdbid:", StringComparison.Ordinal) || lowerTitle.StartsWith("tpdb:", StringComparison.Ordinal) || lowerTitle.StartsWith("tpdbid:", StringComparison.Ordinal) || lowerTitle.StartsWith(StashPrefixConst, StringComparison.Ordinal) || lowerTitle.StartsWith(StashIdPrefixConst, StringComparison.Ordinal) || lowerTitle.StartsWith("https:", StringComparison.Ordinal))
             {
                 _logger.Debug($"Searching for {itemType.ToString()} - {title}");
                 var movies = itemType == ItemType.Movie ? SearchForNewMovie(title) : SearchForNewScene(title);
@@ -865,6 +870,13 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
         public List<Movie> SearchForNewTmdbMovie(string title)
         {
+            var normalizedTitle = title.ToLowerInvariant().Replace(".", "");
+
+            if (normalizedTitle.StartsWith("tpdb:", StringComparison.Ordinal) || normalizedTitle.StartsWith("tpdbid:", StringComparison.Ordinal))
+            {
+                throw new InvalidSearchTermException("TPDB ids can't be searched while the movie metadata source is TMDb. Change it in General Settings or search by title instead");
+            }
+
             try
             {
                 var regex = new Regex("^https://www.themoviedb.org/movie/(?<tmdbid>[0-9]+).*$", RegexOptions.None, RegexDefaults.Timeout);
@@ -898,19 +910,6 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                         yearTerm = parserResult.Year.ToString();
                     }
 
-                    if (parserResult.ImdbId.IsNotNullOrWhiteSpace())
-                    {
-                        try
-                        {
-                            var movieLookup = GetMovieByImdbId(parserResult.ImdbId);
-                            return movieLookup == null ? new List<Movie>() : new List<Movie> { _movieService.FindByTmdbId(movieLookup.TmdbId) ?? new Movie { MovieMetadata = movieLookup } };
-                        }
-                        catch (Exception)
-                        {
-                            return new List<Movie>();
-                        }
-                    }
-
                     if (parserResult.TmdbId > 0)
                     {
                         try
@@ -926,28 +925,6 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                 }
 
                 parserTitle = StripTrailingTheFromTitle(parserTitle);
-
-                if (lowerTitle.StartsWith("imdb:", StringComparison.Ordinal) || lowerTitle.StartsWith("imdbid:", StringComparison.Ordinal))
-                {
-                    var slug = lowerTitle.Split(':')[1].Trim();
-
-                    var imdbid = slug;
-
-                    if (slug.IsNullOrWhiteSpace() || slug.Any(char.IsWhiteSpace))
-                    {
-                        return new List<Movie>();
-                    }
-
-                    try
-                    {
-                        var movieLookup = GetMovieByImdbId(imdbid);
-                        return movieLookup == null ? new List<Movie>() : new List<Movie> { _movieService.FindByTmdbId(movieLookup.TmdbId) ?? new Movie { MovieMetadata = movieLookup } };
-                    }
-                    catch (MovieNotFoundException)
-                    {
-                        return new List<Movie>();
-                    }
-                }
 
                 if (lowerTitle.StartsWith("tmdb:", StringComparison.Ordinal) || lowerTitle.StartsWith("tmdbid:", StringComparison.Ordinal))
                 {
@@ -1018,6 +995,13 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
         public List<Movie> SearchForNewTpdbMovie(string title)
         {
+            var normalizedTitle = title.ToLowerInvariant().Replace(".", "");
+
+            if (normalizedTitle.StartsWith("tmdb:", StringComparison.Ordinal) || normalizedTitle.StartsWith("tmdbid:", StringComparison.Ordinal))
+            {
+                throw new InvalidSearchTermException("TMDb ids can't be searched while the movie metadata source is TPDB. Change it in General Settings or search by title instead");
+            }
+
             try
             {
                 var lowerTitle = title.ToLowerInvariant();
@@ -1375,11 +1359,6 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                 {
                     return $"tmdb:{movieInfo.TmdbId}";
                 }
-
-                if (movieInfo.ImdbId.IsNotNullOrWhiteSpace())
-                {
-                    return $"imdb:{movieInfo.ImdbId}";
-                }
             }
 
             return title;
@@ -1689,6 +1668,13 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
         private List<Movie> SearchForNewScene(string title, string studioForeignId, string releaseDate)
         {
+            var normalizedTitle = title.ToLowerInvariant().Replace(".", "");
+
+            if (normalizedTitle.StartsWith("tmdb:", StringComparison.Ordinal) || normalizedTitle.StartsWith("tmdbid:", StringComparison.Ordinal) || normalizedTitle.StartsWith("tpdb:", StringComparison.Ordinal) || normalizedTitle.StartsWith("tpdbid:", StringComparison.Ordinal))
+            {
+                throw new InvalidSearchTermException("Scene search only supports StashDB ids. Use stash:<id> or search by title instead");
+            }
+
             try
             {
                 var lowerTitle = title.ToLowerInvariant();

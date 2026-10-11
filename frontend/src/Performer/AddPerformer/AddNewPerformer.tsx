@@ -112,7 +112,7 @@ function AddNewPerformer() {
             <div className={styles.noResults}>
               {translate('CouldNotFindResults', { term })}
             </div>
-            <div>{translate('YouCanAlsoSearch')}</div>
+            <div>{translate('YouCanAlsoSearchPerformer')}</div>
             <div>
               <Link to="https://wiki.servarr.com/whisparr/faq#why-can-i-not-add-a-new-movie-to-whisparr">
                 {translate('CantFindScene')}
