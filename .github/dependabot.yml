@@ -100,6 +100,11 @@ updates:
       # as #957. Drop this when #955 replaces or licenses ImageSharp.
       - dependency-name: "SixLabors.ImageSharp"
         versions: [">= 4.0.0"]
+      # NUnit 5 breaks the test build (async asserts now return Task, [Order]
+      # is obsolete) and arrived bundled with unrelated bumps in #937. Hold it
+      # on 4.x so the group keeps moving; migrate in its own PR, then drop this.
+      - dependency-name: "NUnit"
+        versions: [">= 5.0.0"]
   - package-ecosystem: "github-actions"
     # "/" covers .github/workflows. The composite actions under
     # .github/actions/*/action.yml pin their own `uses:` versions and drift
