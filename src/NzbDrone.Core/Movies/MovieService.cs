@@ -1205,6 +1205,54 @@ namespace NzbDrone.Core.Movies
             throw new MultipleMoviesFoundException(movies, "Expected one movie, but found {0}. Matching movies: {1}", movies.Count, string.Join(",", movies));
         }
 
+        private static bool IsConfidentDatelessMatch(Movie movie, MovieParseMatchType matchType, string parsedMovieTitle, bool search)
+        {
+            switch (matchType)
+            {
+                case MovieParseMatchType.StashId:
+                case MovieParseMatchType.Title:
+                    return true;
+
+                // Only from a search, where the result must be the searched scene: from RSS a catalogue that is missing the
+                // real scene would hand the release to another scene whose title happens to be in the name
+                case MovieParseMatchType.Episode: // scene code and title both in the release name
+                    return search;
+                case MovieParseMatchType.PerformerTitle:
+                    return search && movie.MovieMetadata.Value.Credits
+                                          .Select(c => Parser.Parser.NormalizeEpisodeTitle(c.Performer?.Name ?? c.PersonName))
+                                          .Any(p => ContainsWords(parsedMovieTitle, p));
+                default:
+                    return false;
+            }
+        }
+
+        private static bool IsDatelessTitleMatch(Movie movie, string parsedMovieTitle, string foreignId)
+        {
+            if (foreignId.IsNotNullOrWhiteSpace() && foreignId == movie.ForeignId)
+            {
+                return true;
+            }
+
+            var cleanTitle = Parser.Parser.NormalizeEpisodeTitle(movie.Title);
+
+            return cleanTitle.IsNotNullOrWhiteSpace() &&
+                   (parsedMovieTitle.Equals(cleanTitle) || Parser.Parser.StripSpaces(parsedMovieTitle).Equals(Parser.Parser.StripSpaces(cleanTitle)));
+        }
+
+        private static bool ContainsDatelessTitle(Movie movie, string parsedMovieTitle, string foreignId)
+        {
+            return IsDatelessTitleMatch(movie, parsedMovieTitle, foreignId) ||
+                   ContainsWords(parsedMovieTitle, Parser.Parser.NormalizeEpisodeTitle(movie.Title));
+        }
+
+        // Whole words only, so "Alex" isn't found in "Alexander"
+        private static bool ContainsWords(string text, string words)
+        {
+            return text.IsNotNullOrWhiteSpace() &&
+                   words.IsNotNullOrWhiteSpace() &&
+                   Regex.IsMatch(text, @"(?<![\p{L}\p{N}])" + Regex.Escape(words) + @"(?![\p{L}\p{N}])", RegexOptions.None, RegexDefaults.Timeout);
+        }
+
         /// <summary> Remove the movie resources cache for a specific cache key. </summary>
         /// <param name="cacheKey">The cache key to remove.</param>
         /// <returns>void</returns>
@@ -1410,54 +1458,6 @@ namespace NzbDrone.Core.Movies
                 releaseDate);
 
             return null;
-        }
-
-        private static bool IsConfidentDatelessMatch(Movie movie, MovieParseMatchType matchType, string parsedMovieTitle, bool search)
-        {
-            switch (matchType)
-            {
-                case MovieParseMatchType.StashId:
-                case MovieParseMatchType.Title:
-                    return true;
-
-                // Only from a search, where the result must be the searched scene: from RSS a catalogue that is missing the
-                // real scene would hand the release to another scene whose title happens to be in the name
-                case MovieParseMatchType.Episode: // scene code and title both in the release name
-                    return search;
-                case MovieParseMatchType.PerformerTitle:
-                    return search && movie.MovieMetadata.Value.Credits
-                                          .Select(c => Parser.Parser.NormalizeEpisodeTitle(c.Performer?.Name ?? c.PersonName))
-                                          .Any(p => ContainsWords(parsedMovieTitle, p));
-                default:
-                    return false;
-            }
-        }
-
-        private static bool IsDatelessTitleMatch(Movie movie, string parsedMovieTitle, string foreignId)
-        {
-            if (foreignId.IsNotNullOrWhiteSpace() && foreignId == movie.ForeignId)
-            {
-                return true;
-            }
-
-            var cleanTitle = Parser.Parser.NormalizeEpisodeTitle(movie.Title);
-
-            return cleanTitle.IsNotNullOrWhiteSpace() &&
-                   (parsedMovieTitle.Equals(cleanTitle) || Parser.Parser.StripSpaces(parsedMovieTitle).Equals(Parser.Parser.StripSpaces(cleanTitle)));
-        }
-
-        private static bool ContainsDatelessTitle(Movie movie, string parsedMovieTitle, string foreignId)
-        {
-            return IsDatelessTitleMatch(movie, parsedMovieTitle, foreignId) ||
-                   ContainsWords(parsedMovieTitle, Parser.Parser.NormalizeEpisodeTitle(movie.Title));
-        }
-
-        // Whole words only, so "Alex" isn't found in "Alexander"
-        private static bool ContainsWords(string text, string words)
-        {
-            return text.IsNotNullOrWhiteSpace() &&
-                   words.IsNotNullOrWhiteSpace() &&
-                   Regex.IsMatch(text, @"(?<![\p{L}\p{N}])" + Regex.Escape(words) + @"(?![\p{L}\p{N}])", RegexOptions.None, RegexDefaults.Timeout);
         }
     }
 }
