@@ -870,14 +870,14 @@ namespace NzbDrone.Core.Movies
 
                 // Title + performer / title + character are stronger evidence than a performer- or character-only match, so they must be
                 // checked first: otherwise a release containing the full scene title and its performers is misclassified as a weak match.
-                if (cleanPerformers.Any(x => parsedMovieTitle.Contains(x)) && parsedMovieTitle.Contains(cleanTitle))
+                if (cleanPerformers.Any(x => parsedMovieTitle.Contains(x, StringComparison.Ordinal)) && parsedMovieTitle.Contains(cleanTitle, StringComparison.Ordinal))
                 {
                     _logger.Debug("Match {0} against {1} {2} [Title & Performer]", parsedMovieTitle, cleanTitle, cleanPerformers.Join(", "));
                     matches.Add(movie, MovieParseMatchType.PerformerTitle);
                     continue;
                 }
 
-                if (cleanCharacters.Any() && cleanCharacters.Any(x => parsedMovieTitle.Contains(x)) && parsedMovieTitle.Contains(cleanTitle))
+                if (cleanCharacters.Any() && cleanCharacters.Any(x => parsedMovieTitle.Contains(x, StringComparison.Ordinal)) && parsedMovieTitle.Contains(cleanTitle, StringComparison.Ordinal))
                 {
                     _logger.Debug("Match {0} against {1} {2} [Title & Character]", parsedMovieTitle, cleanTitle, cleanCharacters.Join(", "));
                     matches.Add(movie, MovieParseMatchType.CharacterTitle);
@@ -889,7 +889,7 @@ namespace NzbDrone.Core.Movies
                                                                              .Where(x => x.IsNotNullOrWhiteSpace()).ToList();
 
                 // If all female performers are in title, consider a match
-                if (cleanFemalePerformers.Any() && cleanFemalePerformers.All(x => parsedMovieTitle.Contains(x)))
+                if (cleanFemalePerformers.Any() && cleanFemalePerformers.All(x => parsedMovieTitle.Contains(x, StringComparison.Ordinal)))
                 {
                     _logger.Debug("Match {0} against {1} [Female Performers]", parsedMovieTitle, cleanFemalePerformers.Join(", "));
                     matches.Add(movie, MovieParseMatchType.Performers);
@@ -901,7 +901,7 @@ namespace NzbDrone.Core.Movies
                                                                              .Where(x => x.IsNotNullOrWhiteSpace()).ToList();
 
                 // If all female characters are in title, consider a match
-                if (cleanFemaleCharacters.Any() && cleanFemaleCharacters.All(x => parsedMovieTitle.Contains(x)))
+                if (cleanFemaleCharacters.Any() && cleanFemaleCharacters.All(x => parsedMovieTitle.Contains(x, StringComparison.Ordinal)))
                 {
                     _logger.Debug("Match {0} against {1} [Female Characters]", parsedMovieTitle, cleanFemaleCharacters.Join(", "));
                     matches.Add(movie, MovieParseMatchType.Characters);
@@ -909,7 +909,7 @@ namespace NzbDrone.Core.Movies
                 }
 
                 // If parsed title contains all performer and the not title then consider a match
-                if (cleanPerformers.All(x => parsedMovieTitle.Contains(x)) && !parsedMovieTitle.Contains(cleanTitle))
+                if (cleanPerformers.All(x => parsedMovieTitle.Contains(x, StringComparison.Ordinal)) && !parsedMovieTitle.Contains(cleanTitle, StringComparison.Ordinal))
                 {
                     _logger.Debug("Match {0} against {1} {2} [Performers & NOT Title]", parsedMovieTitle, cleanTitle, cleanPerformers.Join(", "));
                     matches.Add(movie, MovieParseMatchType.PerformersNotTitle);
@@ -917,7 +917,7 @@ namespace NzbDrone.Core.Movies
                 }
 
                 // If parsed title contains all character and the not title then consider a match
-                if (cleanCharacters.Any() && cleanCharacters.All(x => parsedMovieTitle.Contains(x)) && !parsedMovieTitle.Contains(cleanTitle))
+                if (cleanCharacters.Any() && cleanCharacters.All(x => parsedMovieTitle.Contains(x, StringComparison.Ordinal)) && !parsedMovieTitle.Contains(cleanTitle, StringComparison.Ordinal))
                 {
                     _logger.Debug("Match {0} against {1} {2} [Characters & NOT Title]", parsedMovieTitle, cleanTitle, cleanCharacters.Join(", "));
                     matches.Add(movie, MovieParseMatchType.CharactersNotTitle);
