@@ -2479,8 +2479,8 @@
   "Yesterday": "Yesterday",
   "YesterdayAt": "Yesterday at {time}",
   "YouCanAlsoSearch": "You can also search using TMDb ID (default) or TPDB ID of a movie. e.g. `tmdb:476739`. Configure 'Movie metadata source' in Settings > General.",
-  "YouCanAlsoSearchScene": "Scene search only supports StashDB ids. Use `stash:<id>` or search by title instead",
   "YouCanAlsoSearchPerformer": "You can also search using the Stash ID a performer. e.g. `stash:3c0cd77e-1a34-4ca1-af02-65775ce9ea7b`",
+  "YouCanAlsoSearchScene": "Scene search only supports StashDB ids. Use `stash:<id>` or search by title instead",
   "YouCanAlsoSearchStudio": "You can also search using the Stash ID a studio. e.g. `stash:06a8ee7b-4b90-4f31-a640-9a12aedfe7cf`",
   "YourFolderStructureShouldLookLikeThis": "Your folder structure should look like this:",
   "yymmdd": "yy.mm.dd"
