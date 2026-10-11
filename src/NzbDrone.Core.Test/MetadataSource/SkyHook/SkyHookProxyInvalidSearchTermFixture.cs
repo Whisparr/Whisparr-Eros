@@ -10,11 +10,6 @@ namespace NzbDrone.Core.Test.MetadataSource.SkyHook
     [TestFixture]
     public class SkyHookProxyInvalidSearchTermFixture : CoreTest<SkyHookProxy>
     {
-        private void GivenMovieMetadataSource(MovieMetadataType source)
-        {
-            Mocker.GetMock<IConfigService>().SetupGet(c => c.WhisparrMovieMetadataSource).Returns(source);
-        }
-
         [TestCase("/movies/Some.Movie.2024.1080p.WEB-DL")]
         [TestCase("/tmp/Some.Movie.2024.mkv")]
         public void should_reject_search_terms_that_are_file_paths(string title)
@@ -62,6 +57,11 @@ namespace NzbDrone.Core.Test.MetadataSource.SkyHook
             var act = () => Subject.SearchForNewEntity(title, ItemType.Scene);
 
             act.Should().Throw<InvalidSearchTermException>();
+        }
+
+        private void GivenMovieMetadataSource(MovieMetadataType source)
+        {
+            Mocker.GetMock<IConfigService>().SetupGet(c => c.WhisparrMovieMetadataSource).Returns(source);
         }
     }
 }
