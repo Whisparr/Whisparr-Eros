@@ -1,4 +1,5 @@
 <Project>
   <Import Project="Targets/PublishAllRids.targets" />
   <Import Project="Targets/CopyRuntimes.targets" />
+  <Import Project="Targets/ExcludeMismatchedLibvips.targets" />
 </Project>

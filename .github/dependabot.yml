@@ -93,13 +93,6 @@ updates:
         patterns:
           - "*"
     ignore:
-      # ImageSharp 4 fails the build without a commercial licence key (#334).
-      # Hold it on 3.x until it is replaced. This is a version range rather
-      # than `update-types: semver-major` because the update-types rule did not
-      # stop security updates: advisories fixed only in 4.1.2 got through it
-      # as #957. Drop this when #955 replaces or licenses ImageSharp.
-      - dependency-name: "SixLabors.ImageSharp"
-        versions: [">= 4.0.0"]
       # NUnit 5 breaks the test build (async asserts now return Task, [Order]
       # is obsolete) and arrived bundled with unrelated bumps in #937. Hold it
       # on 4.x so the group keeps moving; migrate in its own PR, then drop this.

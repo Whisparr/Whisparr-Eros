@@ -1,18 +1,18 @@
-﻿using System;
+using System;
 using System.IO;
 using FluentAssertions;
 using Moq;
+using NetVips;
 using NUnit.Framework;
 using NzbDrone.Common.Disk;
-using NzbDrone.Common.EnvironmentInfo;
+using NzbDrone.Core.MediaCover;
 using NzbDrone.Core.Test.Framework;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
+using VipsImage = NetVips.Image;
 
 namespace NzbDrone.Core.Test.MediaCoverTests
 {
     [TestFixture]
-    public class ImageResizerFixture : CoreTest<MediaCover.ImageResizer>
+    public class ImageResizerFixture : CoreTest<ImageResizer>
     {
         [SetUp]
         public void SetUp()
@@ -24,8 +24,6 @@ namespace NzbDrone.Core.Test.MediaCoverTests
             Mocker.GetMock<IDiskProvider>()
                   .Setup(v => v.DeleteFile(It.IsAny<string>()))
                   .Callback<string>(s => File.Delete(s));
-
-            Mocker.SetConstant<IPlatformInfo>(Mocker.Resolve<PlatformInfo>());
         }
 
         [Test]
@@ -42,11 +40,29 @@ namespace NzbDrone.Core.Test.MediaCoverTests
             fileInfo.Exists.Should().BeTrue();
             fileInfo.Length.Should().BeInRange(1000, 30000);
 
-            using (var image = Image.Load(resizedFile))
+            using var image = VipsImage.NewFromFile(resizedFile);
+            image.Height.Should().Be(170);
+            image.Width.Should().Be(170);
+        }
+
+        [Test]
+        public void should_resize_jpeg_to_height_and_keep_aspect_ratio()
+        {
+            var mainFile = Path.Combine(TempFolder, "poster.jpg");
+            var resizedFile = Path.Combine(TempFolder, "poster-250.jpg");
+
+            using (var source = VipsImage.Black(300, 600, bands: 3))
             {
-                image.Height.Should().Be(170);
-                image.Width.Should().Be(170);
+                source.Jpegsave(mainFile);
             }
+
+            Subject.Resize(mainFile, resizedFile, 250);
+
+            using var image = VipsImage.NewFromFile(resizedFile);
+            image.Height.Should().Be(250);
+            image.Width.Should().Be(125);
+            image.Get("vips-loader").Should().Be("jpegload");
+            image.Get("jpeg-chroma-subsample").Should().Be("4:2:0");
         }
 
         [Test]
@@ -65,17 +81,42 @@ namespace NzbDrone.Core.Test.MediaCoverTests
         [Test]
         public void should_not_decode_formats_other_than_jpeg_png_or_webp()
         {
-            var mainFile = Path.Combine(TempFolder, "poster.bmp");
+            var mainFile = Path.Combine(TempFolder, "poster.tif");
             var resizedFile = Path.Combine(TempFolder, "poster-170.jpg");
 
-            using (var image = new Image<Rgba32>(10, 10))
+            using (var source = VipsImage.Black(10, 10))
             {
-                image.SaveAsBmp(mainFile);
+                source.Tiffsave(mainFile);
             }
 
-            Assert.Throws<UnknownImageFormatException>(() => Subject.Resize(mainFile, resizedFile, 170));
+            Assert.Throws<VipsException>(() => Subject.Resize(mainFile, resizedFile, 170));
 
             File.Exists(resizedFile).Should().BeFalse();
+        }
+
+        [Test]
+        public void should_be_available_with_libvips_8_15()
+        {
+            ImageResizer.GetUnavailableReason(true, null, (8 << 16) | (15 << 8)).Should().BeNull();
+        }
+
+        [Test]
+        public void should_be_unavailable_when_libvips_is_older_than_8_15()
+        {
+            ImageResizer.GetUnavailableReason(true, null, (8 << 16) | (14 << 8) | 1).Should().Be("libvips 8.14.1 is older than 8.15");
+        }
+
+        [Test]
+        public void should_be_unavailable_when_libvips_version_is_unknown()
+        {
+            ImageResizer.GetUnavailableReason(true, null, null).Should().Be("libvips of unknown version is older than 8.15");
+        }
+
+        [Test]
+        public void should_be_unavailable_when_libvips_cannot_be_loaded()
+        {
+            ImageResizer.GetUnavailableReason(false, new DllNotFoundException("libvips.so.42"), null).Should().Be("libvips could not be loaded (libvips.so.42)");
+            ImageResizer.GetUnavailableReason(false, null, null).Should().Be("libvips could not be loaded (not found)");
         }
     }
 }
