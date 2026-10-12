@@ -7,7 +7,7 @@
     <NoWarn>$(NoWarn);CA1825</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="FluentValidation" Version="12.1.1" />
+    <PackageReference Include="FluentValidation" Version="12.2.0" />
     <PackageReference Include="ImpromptuInterface" Version="8.1.0" />
     <PackageReference Include="NLog" Version="6.2.1" />
   </ItemGroup>
@@ -18,6 +18,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.12" />
     <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.12" />
     <PackageReference Include="NLog.Extensions.Logging" Version="6.2.1" />
+    <PackageReference Include="Sentry" Version="6.12.0" />
     <PackageReference Include="System.Drawing.Common" Version="10.0.12" />
     <ProjectReference Include="..\NzbDrone.Core\Whisparr.Core.csproj" />
     <ProjectReference Include="..\NzbDrone.SignalR\Whisparr.SignalR.csproj" />

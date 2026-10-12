@@ -3,9 +3,9 @@
     <TargetFrameworks>net10.0</TargetFrameworks>
   </PropertyGroup>
 <ItemGroup>
-  <PackageReference Include="Selenium.WebDriver" Version="4.49.0" />
-  <PackageReference Include="Selenium.Support" Version="4.49.0" />
-  <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="154.0.8037.5700" />
+  <PackageReference Include="Selenium.WebDriver" Version="4.51.0" />
+  <PackageReference Include="Selenium.Support" Version="4.51.0" />
+  <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="155.0.8059.3900" />
 </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NzbDrone.Test.Common\Whisparr.Test.Common.csproj" />
