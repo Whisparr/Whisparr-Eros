@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -11,7 +12,6 @@ using NzbDrone.Common;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Extras.Metadata.Files;
-using NzbDrone.Core.Languages;
 using NzbDrone.Core.MediaCover;
 using NzbDrone.Core.MediaFiles;
 using NzbDrone.Core.MediaFiles.MediaInfo;
@@ -23,6 +23,13 @@ namespace NzbDrone.Core.Extras.Metadata.Consumers.Xbmc
 {
     public class XbmcMetadata : MetadataBase<XbmcMetadataSettings>
     {
+        private const string Rating = "rating";
+        private const string Default = "default";
+        private const string Thumb = "thumb";
+        private const string HdrType = "hdrtype";
+        private static readonly Regex MovieImagesRegex = new Regex(@"^(?<type>poster|banner|fanart|clearart|discart|keyart|landscape|logo|backdrop|clearlogo)\.(?:png|jpe?g)", RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexDefaults.Timeout);
+        private static readonly Regex MovieFileImageRegex = new Regex(@"(?<type>-thumb|-poster|-banner|-fanart|-clearart|-discart|-keyart|-landscape|-logo|-backdrop|-clearlogo)\.(?:png|jpe?g)", RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexDefaults.Timeout);
+
         private readonly IMapCoversToLocal _mediaCoverService;
         private readonly Logger _logger;
         private readonly IDetectXbmcNfo _detectNfo;
@@ -44,9 +51,6 @@ namespace NzbDrone.Core.Extras.Metadata.Consumers.Xbmc
             _creditService = creditService;
             _tagRepository = tagRepository;
         }
-
-        private static readonly Regex MovieImagesRegex = new Regex(@"^(?<type>poster|banner|fanart|clearart|discart|keyart|landscape|logo|backdrop|clearlogo)\.(?:png|jpe?g)", RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexDefaults.Timeout);
-        private static readonly Regex MovieFileImageRegex = new Regex(@"(?<type>-thumb|-poster|-banner|-fanart|-clearart|-discart|-keyart|-landscape|-logo|-backdrop|-clearlogo)\.(?:png|jpe?g)", RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexDefaults.Timeout);
 
         public override string Name => "Kodi (XBMC) / Emby";
 
@@ -119,12 +123,6 @@ namespace NzbDrone.Core.Extras.Metadata.Consumers.Xbmc
             {
                 _logger.Debug("Generating Movie Metadata for: {0}", Path.Combine(movie.Path, movieFile.RelativePath));
 
-                var movieMetadataLanguage = Settings.MovieMetadataLanguage == (int)Language.Original ?
-                    (int)movie.MovieMetadata.Value.OriginalLanguage :
-                    Settings.MovieMetadataLanguage;
-
-                var selectedSettingsLanguage = Language.FindById(movieMetadataLanguage);
-
                 var credits = _creditService.GetAllCreditsForMovieMetadata(movie.MovieMetadataId);
 
                 var watched = GetExistingWatchedStatus(movie, movieFile.RelativePath);
@@ -149,7 +147,7 @@ namespace NzbDrone.Core.Extras.Metadata.Consumers.Xbmc
 
                     if (movie.MovieMetadata.Value.Ratings?.Imdb?.Votes > 0)
                     {
-                        var setRateImdb = new XElement("rating", new XAttribute("name", "imdb"), new XAttribute("max", "10"), new XAttribute("default", "true"));
+                        var setRateImdb = new XElement(Rating, new XAttribute("name", "imdb"), new XAttribute("max", "10"), new XAttribute(Default, "true"));
                         setRateImdb.Add(new XElement("value", movie.MovieMetadata.Value.Ratings.Imdb.Value));
                         setRateImdb.Add(new XElement("votes", movie.MovieMetadata.Value.Ratings.Imdb.Votes));
 
@@ -159,14 +157,14 @@ namespace NzbDrone.Core.Extras.Metadata.Consumers.Xbmc
 
                     if (movie.MovieMetadata.Value.Ratings?.Tmdb?.Votes > 0)
                     {
-                        var setRateTheMovieDb = new XElement("rating", new XAttribute("name", "themoviedb"), new XAttribute("max", "10"));
+                        var setRateTheMovieDb = new XElement(Rating, new XAttribute("name", "themoviedb"), new XAttribute("max", "10"));
                         setRateTheMovieDb.Add(new XElement("value", movie.MovieMetadata.Value.Ratings.Tmdb.Value));
                         setRateTheMovieDb.Add(new XElement("votes", movie.MovieMetadata.Value.Ratings.Tmdb.Votes));
 
                         if (!defaultRatingSet)
                         {
                             defaultRatingSet = true;
-                            setRateTheMovieDb.SetAttributeValue("default", "true");
+                            setRateTheMovieDb.SetAttributeValue(Default, "true");
                         }
 
                         setRating.Add(setRateTheMovieDb);
@@ -174,12 +172,12 @@ namespace NzbDrone.Core.Extras.Metadata.Consumers.Xbmc
 
                     if (movie.MovieMetadata.Value.Ratings?.RottenTomatoes?.Value > 0)
                     {
-                        var setRateRottenTomatoes = new XElement("rating", new XAttribute("name", "tomatometerallcritics"), new XAttribute("max", "100"));
+                        var setRateRottenTomatoes = new XElement(Rating, new XAttribute("name", "tomatometerallcritics"), new XAttribute("max", "100"));
                         setRateRottenTomatoes.Add(new XElement("value", movie.MovieMetadata.Value.Ratings.RottenTomatoes.Value));
 
                         if (!defaultRatingSet)
                         {
-                            setRateRottenTomatoes.SetAttributeValue("default", "true");
+                            setRateRottenTomatoes.SetAttributeValue(Default, "true");
                         }
 
                         setRating.Add(setRateRottenTomatoes);
@@ -190,7 +188,7 @@ namespace NzbDrone.Core.Extras.Metadata.Consumers.Xbmc
 
                 if (movie.MovieMetadata.Value.Ratings?.Tmdb?.Votes > 0)
                 {
-                    details.Add(new XElement("rating", movie.MovieMetadata.Value.Ratings.Tmdb.Value));
+                    details.Add(new XElement(Rating, movie.MovieMetadata.Value.Ratings.Tmdb.Value));
                 }
 
                 if (movie.MovieMetadata.Value.Ratings?.RottenTomatoes?.Value > 0)
@@ -212,14 +210,14 @@ namespace NzbDrone.Core.Extras.Metadata.Consumers.Xbmc
 
                 if (thumbnail != null)
                 {
-                    details.Add(new XElement("thumb", thumbnail.RemoteUrl));
+                    details.Add(new XElement(Thumb, thumbnail.RemoteUrl));
                 }
 
                 foreach (var poster in posters)
                 {
                     if (poster != null && poster.RemoteUrl != null)
                     {
-                        details.Add(new XElement("thumb", new XAttribute("aspect", "poster"), new XAttribute("preview", poster.RemoteUrl), poster.RemoteUrl));
+                        details.Add(new XElement(Thumb, new XAttribute("aspect", "poster"), new XAttribute("preview", poster.RemoteUrl), poster.RemoteUrl));
                     }
                 }
 
@@ -231,7 +229,7 @@ namespace NzbDrone.Core.Extras.Metadata.Consumers.Xbmc
                     {
                         if (fanart != null && fanart.RemoteUrl != null)
                         {
-                            fanartElement.Add(new XElement("thumb", new XAttribute("preview", fanart.RemoteUrl), fanart.RemoteUrl));
+                            fanartElement.Add(new XElement(Thumb, new XAttribute("preview", fanart.RemoteUrl), fanart.RemoteUrl));
                         }
                     }
 
@@ -246,7 +244,7 @@ namespace NzbDrone.Core.Extras.Metadata.Consumers.Xbmc
 
                 var uniqueId = new XElement("uniqueid", movie.TmdbId);
                 uniqueId.SetAttributeValue("type", "tmdb");
-                uniqueId.SetAttributeValue("default", true);
+                uniqueId.SetAttributeValue(Default, true);
                 details.Add(uniqueId);
 
                 if (movie.MovieMetadata.Value.ImdbId.IsNotNullOrWhiteSpace())
@@ -285,7 +283,7 @@ namespace NzbDrone.Core.Extras.Metadata.Consumers.Xbmc
 
                 details.Add(new XElement("year", movie.Year));
 
-                details.Add(new XElement("studio", movie.MovieMetadata.Value.Studio?.Title));
+                details.Add(new XElement("studio", movie.MovieMetadata.Value.StudioTitle));
 
                 details.Add(new XElement("watched", watched));
 
@@ -298,7 +296,7 @@ namespace NzbDrone.Core.Extras.Metadata.Consumers.Xbmc
                     video.Add(new XElement("aspect", (float)movieFile.MediaInfo.Width / (float)movieFile.MediaInfo.Height));
                     video.Add(new XElement("bitrate", movieFile.MediaInfo.VideoBitrate));
                     video.Add(new XElement("codec", movieFile.MediaInfo.VideoFormat));
-                    video.Add(new XElement("framerate", movieFile.MediaInfo.VideoFps.ToString("0.###")));
+                    video.Add(new XElement("framerate", movieFile.MediaInfo.VideoFps.ToString("0.###", CultureInfo.InvariantCulture)));
                     video.Add(new XElement("height", movieFile.MediaInfo.Height));
                     video.Add(new XElement("scantype", movieFile.MediaInfo.ScanType));
                     video.Add(new XElement("width", movieFile.MediaInfo.Width));
@@ -311,19 +309,19 @@ namespace NzbDrone.Core.Extras.Metadata.Consumers.Xbmc
 
                     if (movieFile.MediaInfo.VideoHdrFormat is HdrFormat.DolbyVision or HdrFormat.DolbyVisionHdr10 or HdrFormat.DolbyVisionHdr10Plus or HdrFormat.DolbyVisionHlg or HdrFormat.DolbyVisionSdr)
                     {
-                        video.Add(new XElement("hdrtype", "dolbyvision"));
+                        video.Add(new XElement(HdrType, "dolbyvision"));
                     }
                     else if (movieFile.MediaInfo.VideoHdrFormat is HdrFormat.Hdr10 or HdrFormat.Hdr10Plus or HdrFormat.Pq10)
                     {
-                        video.Add(new XElement("hdrtype", "hdr10"));
+                        video.Add(new XElement(HdrType, "hdr10"));
                     }
                     else if (movieFile.MediaInfo.VideoHdrFormat == HdrFormat.Hlg10)
                     {
-                        video.Add(new XElement("hdrtype", "hlg"));
+                        video.Add(new XElement(HdrType, "hlg"));
                     }
                     else if (movieFile.MediaInfo.VideoHdrFormat == HdrFormat.None)
                     {
-                        video.Add(new XElement("hdrtype", ""));
+                        video.Add(new XElement(HdrType, ""));
                     }
 
                     streamDetails.Add(video);
@@ -363,7 +361,7 @@ namespace NzbDrone.Core.Extras.Metadata.Consumers.Xbmc
 
                             if (headshot != null && headshot.RemoteUrl != null)
                             {
-                                actorElement.Add(new XElement("thumb", headshot.RemoteUrl));
+                                actorElement.Add(new XElement(Thumb, headshot.RemoteUrl));
                             }
 
                             details.Add(actorElement);
