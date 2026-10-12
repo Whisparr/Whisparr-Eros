@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using FizzWare.NBuilder;
@@ -11,11 +12,14 @@ using Moq;
 using NUnit.Framework;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnvironmentInfo;
+using NzbDrone.Common.Http;
 using NzbDrone.Core.Lifecycle;
 using NzbDrone.Core.MediaCover;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Movies;
 using NzbDrone.Core.Movies.Events;
+using NzbDrone.Core.Movies.Performers;
+using NzbDrone.Core.Movies.Performers.Events;
 using NzbDrone.Core.Test.Framework;
 using NzbDrone.Test.Common;
 
@@ -1348,6 +1352,65 @@ namespace NzbDrone.Core.Test.MediaCoverTests
             }
 
             ExceptionVerification.ExpectedErrors(1);
+        }
+
+        [Test]
+        public void should_record_the_source_of_a_downloaded_movie_cover()
+        {
+            var movie = GivenMovie(7);
+            var path = Subject.GetMovieCoverPath(movie.Id, MediaCoverTypes.Poster);
+
+            Mocker.GetMock<ICoverExistsSpecification>()
+                  .Setup(v => v.AlreadyExists(RemoteUrl, path))
+                  .Returns(false);
+
+            Subject.HandleAsync(new MovieUpdatedEvent(movie));
+
+            Mocker.GetMock<IHttpClient>()
+                  .Verify(v => v.DownloadFile(RemoteUrl, path), Times.Once());
+
+            Mocker.GetMock<ICoverExistsSpecification>()
+                  .Verify(v => v.RecordSource(RemoteUrl, path), Times.Once());
+        }
+
+        [Test]
+        public void should_not_record_the_source_when_the_download_fails()
+        {
+            var movie = GivenMovie(7);
+
+            Mocker.GetMock<ICoverExistsSpecification>()
+                  .Setup(v => v.AlreadyExists(It.IsAny<string>(), It.IsAny<string>()))
+                  .Returns(false);
+
+            Mocker.GetMock<IHttpClient>()
+                  .Setup(v => v.DownloadFile(It.IsAny<string>(), It.IsAny<string>()))
+                  .Throws(new WebException("timed out", WebExceptionStatus.Timeout));
+
+            Subject.HandleAsync(new MovieUpdatedEvent(movie));
+
+            Mocker.GetMock<ICoverExistsSpecification>()
+                  .Verify(v => v.RecordSource(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+
+            ExceptionVerification.ExpectedWarns(1);
+        }
+
+        [Test]
+        public void should_record_the_source_of_a_downloaded_performer_cover()
+        {
+            var performer = Builder<Performer>.CreateNew()
+                .With(p => p.Id = 8)
+                .With(p => p.Images = new List<MediaCover.MediaCover> { new (MediaCoverTypes.Headshot, RemoteUrl) })
+                .Build();
+            var path = Subject.GetPerformerCoverPath(performer.Id, MediaCoverTypes.Headshot);
+
+            Mocker.GetMock<ICoverExistsSpecification>()
+                  .Setup(v => v.AlreadyExists(RemoteUrl, path))
+                  .Returns(false);
+
+            Subject.HandleAsync(new PerformerUpdatedEvent(performer));
+
+            Mocker.GetMock<ICoverExistsSpecification>()
+                  .Verify(v => v.RecordSource(RemoteUrl, path), Times.Once());
         }
 
         [Test]

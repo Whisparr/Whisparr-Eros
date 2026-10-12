@@ -777,6 +777,7 @@ namespace NzbDrone.Core.MediaCover
 
             _logger.Trace("Downloading {0} for {1} {2}", cover.CoverType, movie.ToString(), cover.RemoteUrl);
             _httpClient.DownloadFile(cover.RemoteUrl, fileName);
+            _coverExistsSpecification.RecordSource(cover.RemoteUrl, fileName);
         }
 
         private void DownloadCover(Performer performer, MediaCover cover)
@@ -785,6 +786,7 @@ namespace NzbDrone.Core.MediaCover
 
             _logger.Trace("Downloading {0} for {1} {2}", cover.CoverType, performer.ToString(), cover.RemoteUrl);
             _httpClient.DownloadFile(cover.RemoteUrl, fileName);
+            _coverExistsSpecification.RecordSource(cover.RemoteUrl, fileName);
         }
 
         private void DownloadCover(Studio studio, MediaCover cover)
@@ -809,6 +811,7 @@ namespace NzbDrone.Core.MediaCover
 
             _logger.Trace("Writing studio cover to {0}", filePath);
             File.WriteAllBytes(filePath, imageResponse.ResponseData);
+            _coverExistsSpecification.RecordSource(cover.RemoteUrl, filePath);
         }
 
         private void EnsureResizedCovers(Movie movie, MediaCover cover, bool forceResize)
