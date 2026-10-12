@@ -71,6 +71,7 @@ function Tooltip(props: Readonly<TooltipProps>) {
         crossAxis: canFlip ? 'alignment' : false,
         mainAxis: canFlip,
         fallbackAxisSideDirection: 'start',
+        padding: VIEWPORT_PADDING,
       }),
       shift({ padding: VIEWPORT_PADDING }),
       // Cap the tooltip to the space left in the viewport, so a long one
