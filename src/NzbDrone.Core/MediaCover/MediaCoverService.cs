@@ -515,6 +515,11 @@ namespace NzbDrone.Core.MediaCover
             };
         }
 
+        private static bool IsRecentlyAdded(DateTime? added)
+        {
+            return added > DateTime.UtcNow - CoverExistsCheckWindow;
+        }
+
         // Keyed on the remote URL rather than the file's modification time: our metadata sources
         // address images by content (a StashDB image UUID, a TPDB content hash), so the URL changes
         // when and only when the image does. A modification time changes whenever the file is
@@ -541,11 +546,6 @@ namespace NzbDrone.Core.MediaCover
         private bool CoverExists(string filePath)
         {
             return _coverExistsCache.Get(filePath, () => _diskProvider.FileExists(filePath));
-        }
-
-        private static bool IsRecentlyAdded(DateTime? added)
-        {
-            return added > DateTime.UtcNow - CoverExistsCheckWindow;
         }
 
         private void RemoveCoverExistsCache(IEnumerable<MediaCover> covers, Func<MediaCoverTypes, string> pathFor)

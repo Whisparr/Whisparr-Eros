@@ -32,6 +32,9 @@ namespace NzbDrone.Core.Test.MediaCoverTests
 
         private Movie _movie;
 
+        // The remote URL's hash, truncated the same way MediaCoverService truncates it.
+        private static string ExpectedHash => RemoteUrl.SHA256Hash()[..20];
+
         [SetUp]
         public void Setup()
         {
@@ -49,28 +52,6 @@ namespace NzbDrone.Core.Test.MediaCoverTests
         public void TearDown()
         {
             (Subject as IHandle<ApplicationShutdownRequested>)?.Handle(new ApplicationShutdownRequested());
-        }
-
-        // The remote URL's hash, truncated the same way MediaCoverService truncates it.
-        private static string ExpectedHash => RemoteUrl.SHA256Hash()[..20];
-
-        private static Movie GivenMovie(int id, string remoteUrl = RemoteUrl)
-        {
-            return Builder<Movie>.CreateNew()
-                .With(v => v.Id = id)
-                .With(v => v.MovieMetadata.Value.Images = new List<MediaCover.MediaCover>
-                {
-                    new (MediaCoverTypes.Poster, remoteUrl)
-                })
-                .Build();
-        }
-
-        private static List<MediaCover.MediaCover> GivenCovers(string remoteUrl = RemoteUrl)
-        {
-            return new List<MediaCover.MediaCover>
-            {
-                new () { CoverType = MediaCoverTypes.Banner, RemoteUrl = remoteUrl }
-            };
         }
 
         [Test]
@@ -434,6 +415,7 @@ namespace NzbDrone.Core.Test.MediaCoverTests
             var oldProducerAcquiredSlot = new ManualResetEventSlim();
             var releaseOldProducer = new ManualResetEventSlim();
             var latestCompleted = new ManualResetEventSlim();
+            var oldCompleted = new ManualResetEventSlim();
             var completions = new ConcurrentQueue<string>();
 
             Mocker.GetMock<ICoverExistsSpecification>()
@@ -458,6 +440,10 @@ namespace NzbDrone.Core.Test.MediaCoverTests
                           {
                               latestCompleted.Set();
                           }
+                          else
+                          {
+                              oldCompleted.Set();
+                          }
                       }
                   });
 
@@ -479,7 +465,7 @@ namespace NzbDrone.Core.Test.MediaCoverTests
 
             releaseOldProducer.Set();
             oldProducer.Wait(5000).Should().BeTrue();
-            Thread.Sleep(200);
+            oldCompleted.Wait(200).Should().BeFalse();
 
             completions.Should().Equal("https://example.com/latest");
         }
@@ -1223,7 +1209,7 @@ namespace NzbDrone.Core.Test.MediaCoverTests
             var workersStarted = new CountdownEvent(workerCount);
             var activeCompleted = new CountdownEvent(workerCount);
             var releaseWorkers = new ManualResetEventSlim();
-            var completedIds = new ConcurrentDictionary<int, int>();
+            var queuedCompleted = new ManualResetEventSlim();
             Subject.MovieCoverQueueTest.ShutdownTimeout = TimeSpan.FromMilliseconds(200);
 
             Mocker.GetMock<ICoverExistsSpecification>()
@@ -1247,7 +1233,10 @@ namespace NzbDrone.Core.Test.MediaCoverTests
                   .Setup(v => v.PublishEvent(It.IsAny<MediaCoversUpdatedEvent>()))
                   .Callback<MediaCoversUpdatedEvent>(message =>
                   {
-                      completedIds.AddOrUpdate(message.Movie.Id, 1, (_, count) => count + 1);
+                      if (message.Movie.Id == 4999)
+                      {
+                          queuedCompleted.Set();
+                      }
 
                       if (message.Movie.Id >= 4000 && message.Movie.Id < 4000 + workerCount)
                       {
@@ -1274,9 +1263,7 @@ namespace NzbDrone.Core.Test.MediaCoverTests
 
             releaseWorkers.Set();
             activeCompleted.Wait(5000).Should().BeTrue();
-            Thread.Sleep(200);
-
-            completedIds.Should().NotContainKey(4999);
+            queuedCompleted.Wait(200).Should().BeFalse();
 
             ExceptionVerification.ExpectedWarns(1);
         }
@@ -1399,7 +1386,7 @@ namespace NzbDrone.Core.Test.MediaCoverTests
         {
             var performer = Builder<Performer>.CreateNew()
                 .With(p => p.Id = 8)
-                .With(p => p.Images = new List<MediaCover.MediaCover> { new (MediaCoverTypes.Headshot, RemoteUrl) })
+                .With(p => p.Images = new List<MediaCover.MediaCover> { new(MediaCoverTypes.Headshot, RemoteUrl) })
                 .Build();
             var path = Subject.GetPerformerCoverPath(performer.Id, MediaCoverTypes.Headshot);
 
@@ -1508,6 +1495,25 @@ namespace NzbDrone.Core.Test.MediaCoverTests
 
             Mocker.GetMock<IImageResizer>()
                   .Verify(v => v.Resize(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()), Times.Exactly(2));
+        }
+
+        private static Movie GivenMovie(int id, string remoteUrl = RemoteUrl)
+        {
+            return Builder<Movie>.CreateNew()
+                .With(v => v.Id = id)
+                .With(v => v.MovieMetadata.Value.Images = new List<MediaCover.MediaCover>
+                {
+                    new (MediaCoverTypes.Poster, remoteUrl)
+                })
+                .Build();
+        }
+
+        private static List<MediaCover.MediaCover> GivenCovers(string remoteUrl = RemoteUrl)
+        {
+            return new List<MediaCover.MediaCover>
+            {
+                new () { CoverType = MediaCoverTypes.Banner, RemoteUrl = remoteUrl }
+            };
         }
     }
 }

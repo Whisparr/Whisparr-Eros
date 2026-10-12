@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using NLog;
 using NzbDrone.Common.Disk;
 
@@ -29,14 +30,14 @@ namespace NzbDrone.Core.MediaCover
 
         public bool AlreadyExists(string url, string path)
         {
-            if (!_diskProvider.FileExists(path))
+            if (!_diskProvider.FileExists(path, DiskProviderBase.PathStringComparison))
             {
                 return false;
             }
 
             var sourcePath = path + SourceExtension;
 
-            if (!_diskProvider.FileExists(sourcePath))
+            if (!_diskProvider.FileExists(sourcePath, DiskProviderBase.PathStringComparison))
             {
                 // Covers downloaded before sources were recorded count as current, so upgrading
                 // doesn't download the whole library again.
@@ -50,7 +51,7 @@ namespace NzbDrone.Core.MediaCover
             {
                 recordedUrl = _diskProvider.ReadAllText(sourcePath).Trim();
             }
-            catch (Exception e)
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException)
             {
                 _logger.Warn(e, "Couldn't read the source of cover {0}, keeping the current file", path);
                 return true;
@@ -72,7 +73,7 @@ namespace NzbDrone.Core.MediaCover
             {
                 _diskProvider.WriteAllText(path + SourceExtension, url ?? string.Empty);
             }
-            catch (Exception e)
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException)
             {
                 _logger.Warn(e, "Couldn't record the source of cover {0}", path);
             }

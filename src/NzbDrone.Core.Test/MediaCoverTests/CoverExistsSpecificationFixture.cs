@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using FluentAssertions;
 using Moq;
@@ -18,12 +19,12 @@ namespace NzbDrone.Core.Test.MediaCoverTests
 
         private void GivenCoverOnDisk()
         {
-            Mocker.GetMock<IDiskProvider>().Setup(c => c.FileExists(CoverPath)).Returns(true);
+            Mocker.GetMock<IDiskProvider>().Setup(c => c.FileExists(CoverPath, It.IsAny<StringComparison>())).Returns(true);
         }
 
         private void GivenRecordedSource(string url)
         {
-            Mocker.GetMock<IDiskProvider>().Setup(c => c.FileExists(SourcePath)).Returns(true);
+            Mocker.GetMock<IDiskProvider>().Setup(c => c.FileExists(SourcePath, It.IsAny<StringComparison>())).Returns(true);
             Mocker.GetMock<IDiskProvider>().Setup(c => c.ReadAllText(SourcePath)).Returns(url);
         }
 
@@ -65,7 +66,7 @@ namespace NzbDrone.Core.Test.MediaCoverTests
         public void should_keep_the_current_cover_if_the_source_cannot_be_read()
         {
             GivenCoverOnDisk();
-            Mocker.GetMock<IDiskProvider>().Setup(c => c.FileExists(SourcePath)).Returns(true);
+            Mocker.GetMock<IDiskProvider>().Setup(c => c.FileExists(SourcePath, It.IsAny<StringComparison>())).Returns(true);
             Mocker.GetMock<IDiskProvider>().Setup(c => c.ReadAllText(SourcePath)).Throws(new IOException("locked"));
 
             Subject.AlreadyExists(Url, CoverPath).Should().BeTrue();
