@@ -12,7 +12,7 @@ Whisparr Eros tracks **two** upstreams on two clocks:
 
 | Tree | Upstream | Why |
 | --- | --- | --- |
-| `frontend/` | `Sonarr/Sonarr:v5-develop` | Our React Query + zustand frontend was ported from Sonarr's completed migration (see `REDUX_MIGRATION.md`). |
+| `frontend/` | `Sonarr/Sonarr:develop` | Our React Query + zustand frontend was ported from Sonarr's completed migration (see `REDUX_MIGRATION.md`). |
 | `src/` and everything else | `Radarr/Radarr:develop` | Our code lineage. The chain is Sonarr → Radarr → us. |
 
 State lives in `.github/upstream/state.json` — high-water SHAs plus a
