@@ -12,8 +12,8 @@
       "repo": "Sonarr/Sonarr",
       "branch": "develop",
       "owns": "frontend",
-      "highWater": "4831dfe91cdceaeba3d441abb3d348c4c53b605a",
-      "highWaterNote": "2026-10-10 'Make Calendar grid navigable with screen readers', then the tip of Sonarr v5-develop. On 2026-10-12 Sonarr promoted v5 to develop (v4 moved to v4-develop) and deleted v5-develop; this mark is an ancestor of the new develop, so tracking switched branches without losing place. Everything at or before this mark is settled. Sonarr 2026-10 is 72 commits over three PRs: #963 (frontend fixes, Interactive Search virtualization, Transmission labels, the parser date window), #965 (the auth batch, including Forms by default and login lockout by paul's decision), and a third for the 15 pushed on 2026-10-10. Advance only when everything at or before the new mark is settled."
+      "highWater": "57816c149d02f95543973fefb4780c4495f8121c",
+      "highWaterNote": "2026-10-12 'Look for previous tag in same major version', the current tip of Sonarr develop (v5 was promoted to develop on 2026-10-12 and v5-develop deleted; v4 is on v4-develop). Everything at or before this mark is settled. Sonarr 2026-10 is 104 commits over four PRs: #963 (frontend fixes, Interactive Search virtualization, Transmission labels, the parser date window), #965 (the auth batch, including Forms by default and login lockout by paul's decision), a third for the 15 pushed on 2026-10-10, and a fourth for the 32 pushed 2026-10-11/12 (moment locales, tracked-download cleanup, calendar and select fixes; redesign follow-ups deferred). Advance only when everything at or before the new mark is settled."
     }
   },
   "dispositions": {
@@ -4897,6 +4897,205 @@
         "month": "2026-10",
         "disposition": "adapt",
         "reason": "Our calendar matches upstream's pre-image closely (it was ported from Sonarr), so the grid becomes a table with a visually hidden header row and each day carrying its full date and aria-current for today; the visible day-of-week strip is aria-hidden. Adapted: our 70px minimum row height rather than upstream's 110/140px, @mixin rather than @add-mixin (our stylelint only allows the former), and a new visuallyHidden mixin that StatusIndicator now uses. Verified on 6969 in month, week, forecast and day views: columns line up with the day-of-week strip, the table is labelled Calendar, today is announced, rows still grow with their events, and no console errors."
+      },
+      "5bd36c0333352a2be3ef1ad753bee390a4ac093c": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-10",
+        "disposition": "skip",
+        "reason": "Weblate translation update. Our translations come from Weblate, never from cherry-picks."
+      },
+      "adf53108f06db7f4be22a72aaf48ce6ca346db1b": {
+        "subject": "Cleanup downloads removed from client",
+        "month": "2026-10",
+        "disposition": "adapt",
+        "reason": "A download removed from its client stayed in the tracked-download cache until restart, and so lingered in the queue. TrackedDownloadService.StopTrackingMissing drops a client's tracked downloads that its last successful GetItems no longer lists, called from DownloadMonitoringService. Conflicted only because Sonarr's LogItemChange sits next to the new method and is not in our tree; ported without it. Upstream's TrackedDownloadServiceFixture case taken and passes against our Movie model."
+      },
+      "ae891953b133b9ac573512c75c2055f4410c5558": {
+        "subject": "Label Calendar episode buttons for screen readers",
+        "month": "2026-10",
+        "disposition": "adapt",
+        "reason": "Same gap here: the calendar and agenda underlay is an unlabelled link, so a screen reader announced nothing. Ours is a Radarr-shape movie calendar where the underlay navigates to the movie page rather than opening an episode modal, so it takes the movie title as aria-label. Left out the CalendarOpenEpisodeDetails key and getCalendarStatusLabel: their status strings map Sonarr's CalendarStatus, which differs from ours, and the en.json hunk is not ours to take."
+      },
+      "a81a5d81a96af7a2501ace5b00e40f8fb4c3a361": {
+        "subject": "Hide more/less buttons for short length overviews",
+        "month": "2026-10",
+        "disposition": "defer",
+        "reason": "Fixes the overview clamp and More/Less toggle on the v5-redesign Series Details hero (sonarr@22d8961c4). Our movie and scene details pages have no clamped overview or toggle.",
+        "blockedBy": "A product decision on whether Eros adopts Sonarr's v5 UI redesign. Deferred by paul on 2026-09-27. If it is adopted, this follow-up comes with it, after d9e7ea050 (UI Foundation)."
+      },
+      "0ac6f584acaf3fb17e1db33ce11acb9fa928cdde": {
+        "subject": "Fix date custom filters for series",
+        "month": "2026-10",
+        "disposition": "skip",
+        "reason": "Fixes useSeries' inline client-side date predicate, which ignored relative (in-the-last-N) filter values. Our movie and scene indexes filter server-side and the only client-side filter set (collections) has no date filters, so there is no predicate here to fix."
+      },
+      "2ce652eb11d18684e37bcbe159234f955ffb1992": {
+        "subject": "Allow multiple show statuses chips in poster options",
+        "month": "2026-10",
+        "disposition": "defer",
+        "reason": "Turns the v5-redesign poster status chip option (showStatus) into a multi-select, adding @fastify/deepmerge to the options store. Our poster options have no status chip at all.",
+        "blockedBy": "A product decision on whether Eros adopts Sonarr's v5 UI redesign. Deferred by paul on 2026-09-27. If it is adopted, this follow-up comes with it, after d9e7ea050 (UI Foundation)."
+      },
+      "c125365c647921659aafaaebbc0353c15fb2149e": {
+        "subject": "Change episode order in series edit",
+        "month": "2026-10",
+        "disposition": "skip",
+        "reason": "Adds a SeasonType (episode ordering) selector to Edit Series and refreshes the series when it changes; most of the commit is under src/Sonarr.Api.V5/. Episode ordering is a Series concept with no counterpart on our Movie/Scene model. The SeriesPathValidator hunk only changes a comment."
+      },
+      "6fed7b225039ba8d0651bebb352958dbb59044c0": {
+        "subject": "Fix calendar view translations",
+        "month": "2026-10",
+        "disposition": "adapt",
+        "reason": "Same bugs here: the calendar view buttons rendered titleCase(view), so Day/Week/Month/Forecast/Agenda were never translated, and the delay profile and tag details title-cased the whole translated sentence rather than the protocol inside it. All five view keys and both protocol keys already exist in our en.json. Left out the EditDelayProfileModalContent half: our default-profile intro is already an Alert."
+      },
+      "fc5380f96235ab1569c9272f066db5359e982bbc": {
+        "subject": "Show full series path on mouse hover",
+        "month": "2026-10",
+        "disposition": "defer",
+        "reason": "Adds a tooltip to the pathLine in the v5-redesign Series Details hero footer (sonarr@22d8961c4), which our details pages do not have.",
+        "blockedBy": "A product decision on whether Eros adopts Sonarr's v5 UI redesign. Deferred by paul on 2026-09-27. If it is adopted, this follow-up comes with it, after d9e7ea050 (UI Foundation)."
+      },
+      "b3f9d4e30171110a9e286a6bd8a44cdc2c7226b1": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-10",
+        "disposition": "skip",
+        "reason": "Weblate translation update. Our translations come from Weblate, never from cherry-picks."
+      },
+      "477249dee6bd80f50a001b889de41464493228d4": {
+        "subject": "Optimize search worker performance",
+        "month": "2026-10",
+        "disposition": "skip",
+        "reason": "Keeps the series list resident in the header search's fuse.worker instead of posting it with every keystroke. Our header search has no worker: MovieSearchInput queries the server through useLibrarySearch."
+      },
+      "0ad7a31fba77417b9f947fe37d052dc5593b2ceb": {
+        "subject": "Fix NZBGet history message showing token in message",
+        "month": "2026-10",
+        "disposition": "have",
+        "reason": "Picked from the Radarr twin, radarr@af7814f7a, in #985."
+      },
+      "eb50a8a439e346fd0aa1863be7024e63f2843e2e": {
+        "subject": "Show series path on its own line on mobile and copy it on click",
+        "month": "2026-10",
+        "disposition": "defer",
+        "reason": "Replaces the v5-redesign Series Details hero's pathLine with a SeriesDetailsPath component (sonarr@22d8961c4). Our details pages have no hero footer or path line.",
+        "blockedBy": "A product decision on whether Eros adopts Sonarr's v5 UI redesign. Deferred by paul on 2026-09-27. If it is adopted, this follow-up comes with it, after d9e7ea050 (UI Foundation)."
+      },
+      "49e1a3198195a932c304f7afa53048b218083b4e": {
+        "subject": "Fix long root folder paths overlapping in mobile select",
+        "month": "2026-10",
+        "disposition": "adapt",
+        "reason": "Same CSS here, so long root folder paths overflowed the fixed 50px mobile option. Adapted because Sonarr's .seriesFolder is .movieFolder in our RootFolderSelectInputOption; the draft #983 took it verbatim, styling a class we do not have."
+      },
+      "47afab061eae6dee81559ecc8495deb63ca542ba": {
+        "subject": "Fix Season Information popover alignment",
+        "month": "2026-10",
+        "disposition": "pick",
+        "reason": "Sonarr's SeasonInfo is our Studio/Details/YearInfo, the same popover (still titled SeasonInformation) on studio pages, and the DescriptionList CSS it composes is identical. Below 768px the title stopped floating while the description kept its 110px margin. Applied through git's rename detection, with @add-mixin changed to our @mixin."
+      },
+      "8d491d0cd0020495c615181dbe9291f17a0af078": {
+        "subject": "Link header logo to series list",
+        "month": "2026-10",
+        "disposition": "skip",
+        "reason": "Sonarr's / became a separate home page in the redesign, so the logo moved to /series. Our / is still the scene index, which is what the logo should open."
+      },
+      "2dffaf5132dccb2992b17bbbd38ef366aa992475": {
+        "subject": "Fix import selected to handle only completed downloads",
+        "month": "2026-10",
+        "disposition": "have",
+        "reason": "Already here on both halves. Queue.tsx builds selectedDownloadIds from completed items with a warning only, the row's interactive import button is already labelled ManualImport, and ManualImportService already returns nothing when the tracked download has no ImportItem."
+      },
+      "9d0920b470b033106ca2913572970324244e8fb0": {
+        "subject": "Fix deepMerge for columns in state",
+        "month": "2026-10",
+        "disposition": "defer",
+        "reason": "Fixes the @fastify/deepmerge call that sonarr@2ce652eb1 introduced in useOptionsStore. Our merge is still a shallow spread with mergeColumns, so the bug does not exist here until that commit lands.",
+        "blockedBy": "sonarr@2ce652eb1 (multiple poster status chips), itself deferred behind the v5 UI redesign decision. Take this in the same PR."
+      },
+      "ddc7edf192f8cbcbdbe0d09eefcaaffdf4324962": {
+        "subject": "Translation improvements",
+        "month": "2026-10",
+        "disposition": "adapt",
+        "reason": "Same bug here: Vite resolves moment to its ES build, which ships no locales, so moment.locale() never left English and dates ignored the UI language. Took the on-demand moment locale chunk, the app-page wait on it, optimizeDeps exclude, the 'en' pinning of calendar week maths and the date picker, the ScheduledTaskRow regex anchor, and formatUnit (Intl plurals) in formatAge/formatShortTimeSpan/formatTimeSpan, removing our ten now-unused FormatAge*/FormatShortTimeSpan*/FormatTimeSpanDays keys. Left out the Series label renames and the Globals.d.ts glob typing (vite/client already provides it), and did not take the en.json hunk. Beyond upstream, the calendar title formats in the current locale: the store makes its first time at module load, before the locale arrives, and Sonarr only escapes that by resetting time on mount. Verified on 6969 in German: Oktober 2026, Monat/Woche/Tag, task intervals in 6 Stunden / vor einer Minute."
+      },
+      "b20f28f86cb1641a63f843610010e2a9ac52c57d": {
+        "subject": "Remove gap between table and pager",
+        "month": "2026-10",
+        "disposition": "skip",
+        "reason": "Removes a margin-top the redesign's TablePager had. Ours has no margin-top, border or padding on .pager, so there is no gap to remove."
+      },
+      "8bc7ca89796165e8c305c1d9b8774e181f9e91bd": {
+        "subject": "Fix spacing between alerts on Log Files page",
+        "month": "2026-10",
+        "disposition": "defer",
+        "reason": "The redesign dropped Alert's margin, so Sonarr's stacked log-location and no-log-files alerts touched. Our Alert keeps margin: 5px, so they do not; it also conflicts on the redesign toolbar.",
+        "blockedBy": "A product decision on whether Eros adopts Sonarr's v5 UI redesign. Deferred by paul on 2026-09-27. If it is adopted, this follow-up comes with it, after d9e7ea050 (UI Foundation)."
+      },
+      "2499c0ae08a42a0530af4df37d9c03e25042c298": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-10",
+        "disposition": "skip",
+        "reason": "Weblate translation update. Our translations come from Weblate, never from cherry-picks."
+      },
+      "7581ac887f0f0294790a49f680c102650d3adfee": {
+        "subject": "Show Test All results on indexer cards",
+        "month": "2026-10",
+        "disposition": "defer",
+        "reason": "Shows each indexer's Test All result on its card and announces the run's status. It is built on SettingsCard and SettingsCardStatus, which come from the v5 Settings redesign (sonarr@2c057e9b8); our indexer cards are still the older Card.",
+        "blockedBy": "A product decision on whether Eros adopts Sonarr's v5 UI redesign. Deferred by paul on 2026-09-27. If it is adopted, this comes with it after sonarr@2c057e9b8 (v5 Settings), which introduces SettingsCard."
+      },
+      "698bb1dbb7cafc6ff3a5d1d15f3535a1d16da636": {
+        "subject": "Make Calendar episode groups keyboard accessible",
+        "month": "2026-10",
+        "disposition": "skip",
+        "reason": "Adds aria labelling and focus handling to CalendarEventGroup, Sonarr's grouping of several episodes of one series on a day. Our movie calendar has no event grouping."
+      },
+      "6c9d41960fb8f14c3f26944539702424140efc8e": {
+        "subject": "Multiple Translations updated by Weblate",
+        "month": "2026-10",
+        "disposition": "skip",
+        "reason": "Weblate translation update. Our translations come from Weblate, never from cherry-picks."
+      },
+      "72abb2885a465d4b8481bd08b5096fbfa5d53bf3": {
+        "subject": "Disable imported select if no eligible records found",
+        "month": "2026-10",
+        "disposition": "have",
+        "reason": "Our Queue already disables Import Selected with isDisabled={!selectedDownloadIds.length}, where selectedDownloadIds holds only completed items."
+      },
+      "59c22e85993bb1120bfcf9fd1d6f509a510203df": {
+        "subject": "Use default page size recommended by the indexer",
+        "month": "2026-10",
+        "disposition": "have",
+        "reason": "Picked from the Radarr twin, radarr@a3fb071ae, in #985."
+      },
+      "bf00a7710a2c3bcd9e5137aec4561edc3ae59891": {
+        "subject": "Don't fail to load HTML during development if file doesn't exist",
+        "month": "2026-10",
+        "disposition": "have",
+        "reason": "Already here from our Vite port (75d3d92767): StaticResourceMapperBase checks a virtual ResourceExists, which IndexHtmlMapper overrides to return true while the Vite dev server is enabled."
+      },
+      "fc67367333d3214acb6cb471ffacce2b12e81891": {
+        "subject": "Update workflows for v5 beta",
+        "month": "2026-10",
+        "disposition": "skip",
+        "reason": "Sonarr's own CI and branch plumbing for its v5 beta (build_v5.yml, api_docs.yml, branch guards). Our workflows are separate."
+      },
+      "3c8b8573d976265f3d0ef061a8e12846d3b99a78": {
+        "subject": "Generate v3 API docs too",
+        "month": "2026-10",
+        "disposition": "skip",
+        "reason": "Changes scripts/docs.sh, which we do not have: our OpenAPI spec is served from the running app at /docs and no generated copy is checked in."
+      },
+      "6d607b09aa5bed11f7c209fcde5f64b070d7017e": {
+        "subject": "Update v3 API docs",
+        "month": "2026-10",
+        "disposition": "skip",
+        "reason": "Regenerated src/Sonarr.Api.V3/openapi.json. We retired the checked-in spec."
+      },
+      "57816c149d02f95543973fefb4780c4495f8121c": {
+        "subject": "Look for previous tag in same major version",
+        "month": "2026-10",
+        "disposition": "skip",
+        "reason": "Tunes cardinalby/git-get-release-action in Sonarr's deploy.yml to stay inside a major version. Our deploy no longer uses that action: it finds the previous release through gh api (releases/latest for eros, newest prerelease otherwise), and we ship a single major."
       }
     }
   }
