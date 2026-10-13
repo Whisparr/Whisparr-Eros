@@ -16,11 +16,13 @@ function TagDetailsDelayProfile({
   enableTorrent,
   usenetDelay,
   torrentDelay,
-}: TagDetailsDelayProfileProps) {
+}: Readonly<TagDetailsDelayProfileProps>) {
   return (
     <div>
       <div>
-        {titleCase(translate('DelayProfileProtocol', { preferredProtocol }))}
+        {translate('DelayProfileProtocol', {
+          preferredProtocol: titleCase(preferredProtocol),
+        })}
       </div>
 
       <div>

@@ -54,8 +54,7 @@ namespace NzbDrone.Core.MediaCover
         // after this window the cover is assumed present rather than paying a stat per request.
         private static readonly TimeSpan CoverExistsCheckWindow = TimeSpan.FromDays(1);
 
-        // ImageSharp is slow on ARM (no hardware acceleration on mono yet)
-        // So limit the number of concurrent resizing tasks
+        // Resizing is CPU bound, so limit the number of concurrent resizing tasks
         private static SemaphoreSlim _semaphore = new SemaphoreSlim((int)Math.Ceiling(Environment.ProcessorCount / 2.0));
 
         private readonly IMediaCoverProxy _mediaCoverProxy;
@@ -516,6 +515,11 @@ namespace NzbDrone.Core.MediaCover
             };
         }
 
+        private static bool IsRecentlyAdded(DateTime? added)
+        {
+            return added > DateTime.UtcNow - CoverExistsCheckWindow;
+        }
+
         // Keyed on the remote URL rather than the file's modification time: our metadata sources
         // address images by content (a StashDB image UUID, a TPDB content hash), so the URL changes
         // when and only when the image does. A modification time changes whenever the file is
@@ -542,11 +546,6 @@ namespace NzbDrone.Core.MediaCover
         private bool CoverExists(string filePath)
         {
             return _coverExistsCache.Get(filePath, () => _diskProvider.FileExists(filePath));
-        }
-
-        private static bool IsRecentlyAdded(DateTime? added)
-        {
-            return added > DateTime.UtcNow - CoverExistsCheckWindow;
         }
 
         private void RemoveCoverExistsCache(IEnumerable<MediaCover> covers, Func<MediaCoverTypes, string> pathFor)
@@ -778,6 +777,7 @@ namespace NzbDrone.Core.MediaCover
 
             _logger.Trace("Downloading {0} for {1} {2}", cover.CoverType, movie.ToString(), cover.RemoteUrl);
             _httpClient.DownloadFile(cover.RemoteUrl, fileName);
+            _coverExistsSpecification.RecordSource(cover.RemoteUrl, fileName);
         }
 
         private void DownloadCover(Performer performer, MediaCover cover)
@@ -786,6 +786,7 @@ namespace NzbDrone.Core.MediaCover
 
             _logger.Trace("Downloading {0} for {1} {2}", cover.CoverType, performer.ToString(), cover.RemoteUrl);
             _httpClient.DownloadFile(cover.RemoteUrl, fileName);
+            _coverExistsSpecification.RecordSource(cover.RemoteUrl, fileName);
         }
 
         private void DownloadCover(Studio studio, MediaCover cover)
@@ -810,6 +811,7 @@ namespace NzbDrone.Core.MediaCover
 
             _logger.Trace("Writing studio cover to {0}", filePath);
             File.WriteAllBytes(filePath, imageResponse.ResponseData);
+            _coverExistsSpecification.RecordSource(cover.RemoteUrl, filePath);
         }
 
         private void EnsureResizedCovers(Movie movie, MediaCover cover, bool forceResize)

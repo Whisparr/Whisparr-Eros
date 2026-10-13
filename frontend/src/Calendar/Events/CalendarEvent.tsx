@@ -45,7 +45,7 @@ function CalendarEvent({
   monitored: isMonitored,
   hasFile,
   grabbed,
-}: CalendarEventProps) {
+}: Readonly<CalendarEventProps>) {
   const { data: movieFile } = useSingleMovieFile(movieFileId);
   const queueItem = useQueueItemForMovie(id);
 
@@ -93,7 +93,7 @@ function CalendarEvent({
         fullColorEvents && 'fullColor'
       )}
     >
-      <Link className={styles.underlay} to={link} />
+      <Link className={styles.underlay} to={link} aria-label={title} />
 
       <div className={styles.overlay}>
         <div className={styles.info}>

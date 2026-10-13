@@ -1,0 +1,12 @@
+<Project>
+  <!--
+      NetVips.Native has no linux-musl-arm build, so the RID fallback hands that build the
+      glibc linux-arm libvips. It can't load on musl and would sit in front of a system
+      libvips in the app folder, so leave it out and let ImageResizer find the system one.
+  -->
+  <Target Name="ExcludeMismatchedLibvips" AfterTargets="ResolvePackageAssets" Condition="'$(RuntimeIdentifier)' == 'linux-musl-arm'">
+    <ItemGroup>
+      <NativeCopyLocalItems Remove="@(NativeCopyLocalItems)" Condition="'%(NativeCopyLocalItems.NuGetPackageId)' == 'NetVips.Native.linux-arm'" />
+    </ItemGroup>
+  </Target>
+</Project>

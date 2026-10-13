@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using FizzWare.NBuilder;
@@ -11,11 +12,14 @@ using Moq;
 using NUnit.Framework;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnvironmentInfo;
+using NzbDrone.Common.Http;
 using NzbDrone.Core.Lifecycle;
 using NzbDrone.Core.MediaCover;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Movies;
 using NzbDrone.Core.Movies.Events;
+using NzbDrone.Core.Movies.Performers;
+using NzbDrone.Core.Movies.Performers.Events;
 using NzbDrone.Core.Test.Framework;
 using NzbDrone.Test.Common;
 
@@ -27,6 +31,9 @@ namespace NzbDrone.Core.Test.MediaCoverTests
         private const string RemoteUrl = "https://stashdb.org/images/e9be2754-f9de-4db7-8cac-a64afd2a5126";
 
         private Movie _movie;
+
+        // The remote URL's hash, truncated the same way MediaCoverService truncates it.
+        private static string ExpectedHash => RemoteUrl.SHA256Hash()[..20];
 
         [SetUp]
         public void Setup()
@@ -45,28 +52,6 @@ namespace NzbDrone.Core.Test.MediaCoverTests
         public void TearDown()
         {
             (Subject as IHandle<ApplicationShutdownRequested>)?.Handle(new ApplicationShutdownRequested());
-        }
-
-        // The remote URL's hash, truncated the same way MediaCoverService truncates it.
-        private static string ExpectedHash => RemoteUrl.SHA256Hash()[..20];
-
-        private static Movie GivenMovie(int id, string remoteUrl = RemoteUrl)
-        {
-            return Builder<Movie>.CreateNew()
-                .With(v => v.Id = id)
-                .With(v => v.MovieMetadata.Value.Images = new List<MediaCover.MediaCover>
-                {
-                    new (MediaCoverTypes.Poster, remoteUrl)
-                })
-                .Build();
-        }
-
-        private static List<MediaCover.MediaCover> GivenCovers(string remoteUrl = RemoteUrl)
-        {
-            return new List<MediaCover.MediaCover>
-            {
-                new () { CoverType = MediaCoverTypes.Banner, RemoteUrl = remoteUrl }
-            };
         }
 
         [Test]
@@ -430,6 +415,7 @@ namespace NzbDrone.Core.Test.MediaCoverTests
             var oldProducerAcquiredSlot = new ManualResetEventSlim();
             var releaseOldProducer = new ManualResetEventSlim();
             var latestCompleted = new ManualResetEventSlim();
+            var oldCompleted = new ManualResetEventSlim();
             var completions = new ConcurrentQueue<string>();
 
             Mocker.GetMock<ICoverExistsSpecification>()
@@ -454,6 +440,10 @@ namespace NzbDrone.Core.Test.MediaCoverTests
                           {
                               latestCompleted.Set();
                           }
+                          else
+                          {
+                              oldCompleted.Set();
+                          }
                       }
                   });
 
@@ -475,7 +465,7 @@ namespace NzbDrone.Core.Test.MediaCoverTests
 
             releaseOldProducer.Set();
             oldProducer.Wait(5000).Should().BeTrue();
-            Thread.Sleep(200);
+            oldCompleted.Wait(200).Should().BeFalse();
 
             completions.Should().Equal("https://example.com/latest");
         }
@@ -1219,7 +1209,7 @@ namespace NzbDrone.Core.Test.MediaCoverTests
             var workersStarted = new CountdownEvent(workerCount);
             var activeCompleted = new CountdownEvent(workerCount);
             var releaseWorkers = new ManualResetEventSlim();
-            var completedIds = new ConcurrentDictionary<int, int>();
+            var queuedCompleted = new ManualResetEventSlim();
             Subject.MovieCoverQueueTest.ShutdownTimeout = TimeSpan.FromMilliseconds(200);
 
             Mocker.GetMock<ICoverExistsSpecification>()
@@ -1243,7 +1233,10 @@ namespace NzbDrone.Core.Test.MediaCoverTests
                   .Setup(v => v.PublishEvent(It.IsAny<MediaCoversUpdatedEvent>()))
                   .Callback<MediaCoversUpdatedEvent>(message =>
                   {
-                      completedIds.AddOrUpdate(message.Movie.Id, 1, (_, count) => count + 1);
+                      if (message.Movie.Id == 4999)
+                      {
+                          queuedCompleted.Set();
+                      }
 
                       if (message.Movie.Id >= 4000 && message.Movie.Id < 4000 + workerCount)
                       {
@@ -1270,9 +1263,7 @@ namespace NzbDrone.Core.Test.MediaCoverTests
 
             releaseWorkers.Set();
             activeCompleted.Wait(5000).Should().BeTrue();
-            Thread.Sleep(200);
-
-            completedIds.Should().NotContainKey(4999);
+            queuedCompleted.Wait(200).Should().BeFalse();
 
             ExceptionVerification.ExpectedWarns(1);
         }
@@ -1348,6 +1339,65 @@ namespace NzbDrone.Core.Test.MediaCoverTests
             }
 
             ExceptionVerification.ExpectedErrors(1);
+        }
+
+        [Test]
+        public void should_record_the_source_of_a_downloaded_movie_cover()
+        {
+            var movie = GivenMovie(7);
+            var path = Subject.GetMovieCoverPath(movie.Id, MediaCoverTypes.Poster);
+
+            Mocker.GetMock<ICoverExistsSpecification>()
+                  .Setup(v => v.AlreadyExists(RemoteUrl, path))
+                  .Returns(false);
+
+            Subject.HandleAsync(new MovieUpdatedEvent(movie));
+
+            Mocker.GetMock<IHttpClient>()
+                  .Verify(v => v.DownloadFile(RemoteUrl, path), Times.Once());
+
+            Mocker.GetMock<ICoverExistsSpecification>()
+                  .Verify(v => v.RecordSource(RemoteUrl, path), Times.Once());
+        }
+
+        [Test]
+        public void should_not_record_the_source_when_the_download_fails()
+        {
+            var movie = GivenMovie(7);
+
+            Mocker.GetMock<ICoverExistsSpecification>()
+                  .Setup(v => v.AlreadyExists(It.IsAny<string>(), It.IsAny<string>()))
+                  .Returns(false);
+
+            Mocker.GetMock<IHttpClient>()
+                  .Setup(v => v.DownloadFile(It.IsAny<string>(), It.IsAny<string>()))
+                  .Throws(new WebException("timed out", WebExceptionStatus.Timeout));
+
+            Subject.HandleAsync(new MovieUpdatedEvent(movie));
+
+            Mocker.GetMock<ICoverExistsSpecification>()
+                  .Verify(v => v.RecordSource(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+
+            ExceptionVerification.ExpectedWarns(1);
+        }
+
+        [Test]
+        public void should_record_the_source_of_a_downloaded_performer_cover()
+        {
+            var performer = Builder<Performer>.CreateNew()
+                .With(p => p.Id = 8)
+                .With(p => p.Images = new List<MediaCover.MediaCover> { new(MediaCoverTypes.Headshot, RemoteUrl) })
+                .Build();
+            var path = Subject.GetPerformerCoverPath(performer.Id, MediaCoverTypes.Headshot);
+
+            Mocker.GetMock<ICoverExistsSpecification>()
+                  .Setup(v => v.AlreadyExists(RemoteUrl, path))
+                  .Returns(false);
+
+            Subject.HandleAsync(new PerformerUpdatedEvent(performer));
+
+            Mocker.GetMock<ICoverExistsSpecification>()
+                  .Verify(v => v.RecordSource(RemoteUrl, path), Times.Once());
         }
 
         [Test]
@@ -1445,6 +1495,25 @@ namespace NzbDrone.Core.Test.MediaCoverTests
 
             Mocker.GetMock<IImageResizer>()
                   .Verify(v => v.Resize(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()), Times.Exactly(2));
+        }
+
+        private static Movie GivenMovie(int id, string remoteUrl = RemoteUrl)
+        {
+            return Builder<Movie>.CreateNew()
+                .With(v => v.Id = id)
+                .With(v => v.MovieMetadata.Value.Images = new List<MediaCover.MediaCover>
+                {
+                    new (MediaCoverTypes.Poster, remoteUrl)
+                })
+                .Build();
+        }
+
+        private static List<MediaCover.MediaCover> GivenCovers(string remoteUrl = RemoteUrl)
+        {
+            return new List<MediaCover.MediaCover>
+            {
+                new () { CoverType = MediaCoverTypes.Banner, RemoteUrl = remoteUrl }
+            };
         }
     }
 }

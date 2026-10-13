@@ -39,22 +39,6 @@
     <NoWarn>$(NoWarn);CS1591;NETSDK1201;NETSDK1138</NoWarn>
   </PropertyGroup>
 
-  <!--
-      SixLabors.ImageSharp 3.1.12 advisories, fixed only in 4.1.2. 4.x needs a Six Labors
-      license key at build time, so stay on 3.x like Sonarr and Radarr and revisit when they move.
-      Only ImageResizer uses ImageSharp (load, resize, save cover art from the metadata sources).
-  -->
-  <ItemGroup>
-    <!-- HistogramEqualization out-of-bounds index: Whisparr never calls HistogramEqualization -->
-    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-j3p4-wp97-rph4" />
-    <!-- ICC CLUT allocation from a crafted image: worst case is a failed cover resize -->
-    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-gwg2-r3hj-4w44" />
-    <!-- TIFF CCITT T6 / T4 encoder overruns: covers are only saved as .jpg / .png, the TIFF encoder is never used -->
-    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-jjfr-hcj7-qf5w" />
-    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-j9gm-c75j-xc9q" />
-    <!-- BigTIFF IFD count decode loop from a crafted image: worst case is a slow, failed cover resize -->
-    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-wmxv-xphr-5c9g" />
-  </ItemGroup>
 
   <PropertyGroup Condition="'$(RuntimeIdentifier)' != '' and '$(SelfContained)' == ''">
     <!--
@@ -151,11 +135,11 @@
 
   <!-- Standard testing packages -->
   <ItemGroup Condition="'$(TestProject)'=='true'">
-    <PackageReference Include="coverlet.collector" Version="10.0.1" />
+    <PackageReference Include="coverlet.collector" Version="10.1.0" />
     <PackageReference Include="GitHubActionsTestLogger" Version="3.0.5" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
     <PackageReference Include="NUnit" Version="4.6.1" />
-    <PackageReference Include="NUnit3TestAdapter" Version="6.3.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="6.3.1" />
     <PackageReference Include="NunitXml.TestLogger" Version="8.0.0" />
   </ItemGroup>
 

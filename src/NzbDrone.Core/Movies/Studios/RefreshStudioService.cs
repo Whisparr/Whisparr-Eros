@@ -13,7 +13,6 @@ using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.MetadataSource;
 using NzbDrone.Core.Movies.Studios.Commands;
-using NzbDrone.Core.Movies.Studios.Events;
 
 namespace NzbDrone.Core.Movies.Studios
 {
@@ -94,7 +93,6 @@ namespace NzbDrone.Core.Movies.Studios
             // Aliases
 
             _logger.Debug("Finished studio metadata refresh for {0}", studio.Title);
-            _eventAggregator.PublishEvent(new StudioUpdatedEvent(studio));
 
             return studio;
         }

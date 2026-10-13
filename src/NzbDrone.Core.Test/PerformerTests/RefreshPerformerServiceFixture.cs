@@ -12,12 +12,15 @@ using NUnit.Framework;
 using NzbDrone.Common.Http;
 
 using NzbDrone.Core.Configuration;
+using NzbDrone.Core.Exceptions;
 using NzbDrone.Core.ImportLists.ImportExclusions;
 using NzbDrone.Core.Messaging.Commands;
+using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.MetadataSource;
 using NzbDrone.Core.Movies;
 using NzbDrone.Core.Movies.Performers;
 using NzbDrone.Core.Movies.Performers.Commands;
+using NzbDrone.Core.Movies.Performers.Events;
 using NzbDrone.Core.Test.Framework;
 using NzbDrone.Test.Common;
 
@@ -407,6 +410,57 @@ namespace NzbDrone.Core.Test.PerformerTests
             addedMovies.Should().HaveCount(2);
             addedMovies.Should().OnlyContain(m => !m.Monitored);
             addedMovies.Should().OnlyContain(m => !m.AddOptions.SearchForMovie);
+        }
+
+        [Test]
+        public void should_leave_the_updated_event_to_performer_service_after_a_refresh()
+        {
+            var performer = GivenPerformer(true);
+
+            Mocker.GetMock<IProvideMovieInfo>()
+                .Setup(s => s.GetPerformerWorks(performer.ForeignId))
+                .Returns((
+                    new List<string>(),
+                    new List<string>(),
+                    new List<int>()));
+
+            Subject.Execute(new RefreshPerformersCommand(new List<int> { performer.Id }));
+
+            // PerformerService.Update publishes PerformerUpdatedEvent, so a second publish here
+            // runs every handler twice, including two concurrent cover downloads and resizes.
+            Mocker.GetMock<IPerformerService>()
+                .Verify(s => s.Update(performer), Times.Once());
+
+            Mocker.GetMock<IEventAggregator>()
+                .Verify(s => s.PublishEvent(It.IsAny<PerformerUpdatedEvent>()), Times.Never());
+        }
+
+        [Test]
+        public void should_leave_the_updated_event_to_performer_service_when_marking_a_performer_deleted()
+        {
+            var performer = GivenPerformer(true);
+            performer.Status = PerformerStatus.Active;
+
+            Mocker.GetMock<IProvideMovieInfo>()
+                .Setup(s => s.GetPerformerInfo(performer.ForeignId))
+                .Throws(new MovieNotFoundException(performer.ForeignId));
+
+            Mocker.GetMock<IProvideMovieInfo>()
+                .Setup(s => s.GetPerformerWorks(performer.ForeignId))
+                .Returns((
+                    new List<string>(),
+                    new List<string>(),
+                    new List<int>()));
+
+            Subject.Execute(new RefreshPerformersCommand(new List<int> { performer.Id }));
+
+            Mocker.GetMock<IPerformerService>()
+                .Verify(s => s.Update(It.Is<Performer>(p => p.Id == performer.Id && p.Status == PerformerStatus.Deleted)), Times.Once());
+
+            Mocker.GetMock<IEventAggregator>()
+                .Verify(s => s.PublishEvent(It.IsAny<PerformerUpdatedEvent>()), Times.Never());
+
+            ExceptionVerification.ExpectedErrors(1);
         }
 
         [Test]

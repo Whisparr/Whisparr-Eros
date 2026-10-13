@@ -88,7 +88,9 @@ function DelayProfile({
     deleteDelayProfile();
   }, [deleteDelayProfile]);
 
-  let preferred = titleCase(translate('PreferProtocol', { preferredProtocol }));
+  let preferred = translate('PreferProtocol', {
+    preferredProtocol: titleCase(preferredProtocol),
+  });
 
   if (!enableUsenet) {
     preferred = translate('OnlyTorrent');

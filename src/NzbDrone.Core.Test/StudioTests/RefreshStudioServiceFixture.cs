@@ -14,10 +14,12 @@ using NzbDrone.Common.Http;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.ImportLists.ImportExclusions;
 using NzbDrone.Core.Messaging.Commands;
+using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.MetadataSource;
 using NzbDrone.Core.Movies;
 using NzbDrone.Core.Movies.Studios;
 using NzbDrone.Core.Movies.Studios.Commands;
+using NzbDrone.Core.Movies.Studios.Events;
 using NzbDrone.Core.Test.Framework;
 using NzbDrone.Test.Common;
 
@@ -345,6 +347,29 @@ namespace NzbDrone.Core.Test.StudioTests
             addedMovies.Should().HaveCount(2);
             addedMovies.Should().OnlyContain(m => !m.Monitored);
             addedMovies.Should().OnlyContain(m => !m.AddOptions.SearchForMovie);
+        }
+
+        [Test]
+        public void should_leave_the_updated_event_to_studio_service_after_a_refresh()
+        {
+            var studio = GivenStudio(true);
+
+            Mocker.GetMock<IProvideMovieInfo>()
+                .Setup(s => s.GetStudioWorks(studio.ForeignId))
+                .Returns((
+                    new List<string>(),
+                    new List<string>(),
+                    new List<int>()));
+
+            Subject.Execute(new RefreshStudiosCommand(new List<int> { studio.Id }));
+
+            // StudioService.Update publishes StudioUpdatedEvent, so a second publish here
+            // runs every handler twice, including two concurrent cover downloads and resizes.
+            Mocker.GetMock<IStudioService>()
+                .Verify(s => s.Update(studio), Times.Once());
+
+            Mocker.GetMock<IEventAggregator>()
+                .Verify(s => s.PublishEvent(It.IsAny<StudioUpdatedEvent>()), Times.Never());
         }
 
         [Test]
