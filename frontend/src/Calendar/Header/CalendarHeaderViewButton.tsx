@@ -35,7 +35,7 @@ function CalendarHeaderViewButton({
   selectedView,
   onPress,
   ...otherProps
-}: CalendarHeaderViewButtonProps) {
+}: Readonly<CalendarHeaderViewButtonProps>) {
   const handlePress = useCallback(() => {
     onPress(view);
   }, [view, onPress]);

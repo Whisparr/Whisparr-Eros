@@ -17,7 +17,7 @@ function YearInfo({
   monitoredMovieCount,
   movieFileCount,
   sizeOnDisk,
-}: YearInfoProps) {
+}: Readonly<YearInfoProps>) {
   return (
     <DescriptionList className={styles.descriptionList}>
       <DescriptionListItem

@@ -45,7 +45,7 @@ function CalendarEvent({
   monitored: isMonitored,
   hasFile,
   grabbed,
-}: CalendarEventProps) {
+}: Readonly<CalendarEventProps>) {
   const { data: movieFile } = useSingleMovieFile(movieFileId);
   const queueItem = useQueueItemForMovie(id);
 
