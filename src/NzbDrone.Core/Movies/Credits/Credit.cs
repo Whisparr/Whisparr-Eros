@@ -57,6 +57,7 @@ namespace NzbDrone.Core.Movies.Credits
         public List<MediaCover.MediaCover> Images { get; set; }
         public bool Monitored { get; set; }
         public bool MoviesMonitored { get; set; }
+        public PerformerVisibility Visibility { get; set; } = PerformerVisibility.Visible;
     }
 
     public enum CreditType

@@ -460,6 +460,14 @@ namespace NzbDrone.Core.MediaCover
 
         public void HandleAsync(PerformerUpdatedEvent message)
         {
+            // Hidden performers keep no artwork, so hiding one also clears what was already downloaded
+            if (message.Performer.Visibility == PerformerVisibility.Hidden)
+            {
+                DeletePerformerCovers(message.Performer);
+
+                return;
+            }
+
             _ = EnsureCovers(message.Performer);
         }
 
@@ -484,13 +492,7 @@ namespace NzbDrone.Core.MediaCover
         {
             foreach (var performer in message.Performers)
             {
-                RemoveCoverExistsCache(performer.Images, coverType => GetPerformerCoverPath(performer.Id, coverType));
-
-                var path = GetPerformerCoverPath(performer.Id);
-                if (_diskProvider.FolderExists(path))
-                {
-                    _diskProvider.DeleteFolder(path, true);
-                }
+                DeletePerformerCovers(performer);
             }
         }
 
@@ -1045,6 +1047,17 @@ namespace NzbDrone.Core.MediaCover
         private void DeleteMovieCoverFolder(int movieId)
         {
             var path = GetMovieCoverPath(movieId);
+            if (_diskProvider.FolderExists(path))
+            {
+                _diskProvider.DeleteFolder(path, true);
+            }
+        }
+
+        private void DeletePerformerCovers(Performer performer)
+        {
+            RemoveCoverExistsCache(performer.Images, coverType => GetPerformerCoverPath(performer.Id, coverType));
+
+            var path = GetPerformerCoverPath(performer.Id);
             if (_diskProvider.FolderExists(path))
             {
                 _diskProvider.DeleteFolder(path, true);

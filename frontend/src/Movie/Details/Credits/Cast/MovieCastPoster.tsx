@@ -6,6 +6,7 @@ import MonitorToggleButton from 'Components/MonitorToggleButton';
 import MovieHeadshot from 'Movie/MovieHeadshot';
 import { useTogglePerformerMonitored } from 'Performer/usePerformer';
 import MovieCredit from 'typings/MovieCredit';
+import translate from 'Utilities/String/translate';
 import styles from '../MovieCreditPoster.module.css';
 
 interface Props {
@@ -14,7 +15,11 @@ interface Props {
   posterHeight: number;
 }
 
-function MovieCastPoster({ credit, posterWidth, posterHeight }: Props) {
+function MovieCastPoster({
+  credit,
+  posterWidth,
+  posterHeight,
+}: Readonly<Props>) {
   const safeForWorkMode = useSafeForWorkMode();
   const togglePerformerMonitored = useTogglePerformerMonitored();
 
@@ -63,6 +68,7 @@ function MovieCastPoster({ credit, posterWidth, posterHeight }: Props) {
     monitored,
     canMovieMonitor,
     moviesMonitored,
+    performerHidden,
   } = credit;
 
   const onPosterLoad = useCallback(() => {
@@ -82,9 +88,14 @@ function MovieCastPoster({ credit, posterWidth, posterHeight }: Props) {
   const contentStyle = { width: `${posterWidth}px` } as React.CSSProperties;
   const isPerformer = !!foreignId;
   const link = isPerformer ? `/performer/${foreignId}` : '';
-  const title = isPerformer
+  let title = isPerformer
     ? `${personName}`
     : 'Create a Link on StashDB to Link this Performer';
+
+  // Hidden performers have no artwork, so they always get the name overlay
+  if (performerHidden) {
+    title = `${personName} (${translate('Hidden')})`;
+  }
 
   return (
     <div className={styles.content} style={contentStyle}>
@@ -127,14 +138,28 @@ function MovieCastPoster({ credit, posterWidth, posterHeight }: Props) {
               onLoad={onPosterLoad}
             />
 
-            {hasPosterError && (
-              <div className={styles.overlayTitle}>{personName}</div>
+            {(hasPosterError || performerHidden) && (
+              <div
+                className={classNames(
+                  styles.overlayTitle,
+                  performerHidden && styles.hidden
+                )}
+              >
+                {personName}
+              </div>
             )}
           </Link>
         </div>
       </div>
 
-      <div className={classNames(styles.title, 'swiper-no-swiping')}>
+      <div
+        className={classNames(
+          styles.title,
+          performerHidden && styles.hidden,
+          'swiper-no-swiping'
+        )}
+        title={performerHidden ? title : undefined}
+      >
         {personName}
       </div>
       <div className={classNames(styles.title, 'swiper-no-swiping')}>

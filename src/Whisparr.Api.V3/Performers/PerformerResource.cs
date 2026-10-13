@@ -105,6 +105,10 @@ namespace Whisparr.Api.V3.Performers
         /// <summary>Whether newly discovered works are added monitored</summary>
         public bool WhisparrMonitorNewItems { get; set; } = true;
 
+        /// <summary>Whether the performer is shown in the library; hidden performers were added alongside a monitored one and keep no artwork</summary>
+        /// <remarks>Omit to leave unchanged. Hiding a performer unmonitors them, and monitoring a hidden performer makes them visible.</remarks>
+        public PerformerVisibility? Visibility { get; set; }
+
         /// <summary>Only add this performer's items released on or after this date, as yyyy-MM-dd</summary>
         /// <remarks>
         /// Serialized even when null. The global WhenWritingNull default would drop the key
@@ -212,8 +216,11 @@ namespace Whisparr.Api.V3.Performers
                 Monitored = model.Monitored,
                 MoviesMonitored = model.MoviesMonitored,
                 WhisparrMonitorNewItems = model.WhisparrMonitorNewItems,
+                Visibility = model.Visibility,
                 AfterDate = model.AfterDate?.ToString("yyyy-MM-dd"),
-                Images = model.Images,
+
+                // Hidden performers keep no artwork on disk, so there's nothing local to point at
+                Images = model.Visibility == PerformerVisibility.Hidden ? new List<MediaCover>() : model.Images,
                 QualityProfileId = model.QualityProfileId,
                 RootFolderPath = model.RootFolderPath,
                 SearchOnAdd = model.SearchOnAdd,
@@ -270,6 +277,7 @@ namespace Whisparr.Api.V3.Performers
                 Monitored = resource.Monitored,
                 MoviesMonitored = resource.MoviesMonitored,
                 WhisparrMonitorNewItems = resource.WhisparrMonitorNewItems,
+                Visibility = resource.Visibility ?? PerformerVisibility.Visible,
                 AfterDate = ParseAfterDate(resource.AfterDate),
                 QualityProfileId = resource.QualityProfileId,
                 RootFolderPath = resource.RootFolderPath,
@@ -286,6 +294,7 @@ namespace Whisparr.Api.V3.Performers
         public static Performer ToModel(this PerformerResource resource, Performer performer)
         {
             var updatedPerformer = resource.ToModel();
+            updatedPerformer.Visibility = resource.Visibility ?? performer.Visibility;
 
             performer.ApplyChanges(updatedPerformer);
 

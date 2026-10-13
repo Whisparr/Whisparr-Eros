@@ -151,6 +151,26 @@ namespace Whisparr.Api.V3.Performers
             return performerResource;
         }
 
+        /// <summary>Retrieves the name and aliases of the visible performers among the given foreign IDs</summary>
+        /// <returns>A map of foreign ID to the names a visible performer may be credited under</returns>
+        /// <remarks>Lets name-only performer lists mark hidden performers without loading each one. Hidden and unknown foreign IDs are left out.</remarks>
+        /// <response code="200">Names returned, or an empty object</response>
+        [HttpPost("visible")]
+        [Consumes("application/json")]
+        [Produces("application/json")]
+        public ActionResult<Dictionary<string, List<string>>> GetVisiblePerformerNames([FromBody] List<string> performerForeignIds)
+        {
+            return _performerService.VisiblePerformerNames(performerForeignIds ?? new List<string>())
+                .Where(p => p.ForeignId.IsNotNullOrWhiteSpace())
+                .GroupBy(p => p.ForeignId)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.SelectMany(p => (p.Aliases ?? new List<string>()).Prepend(p.Name))
+                          .Where(n => n.IsNotNullOrWhiteSpace())
+                          .Distinct()
+                          .ToList());
+        }
+
         /// <summary>Retrieves a list of performers by their external foreign ID (e.g., from StashDb)</summary>
         /// <returns>Performer details</returns>
         /// <remarks>If a foreign Id does not exist in Whisparr, it does not query StashDB on demand</remarks>

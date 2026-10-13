@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useSafeForWorkMode } from 'App/safeForWorkStore';
 import Icon from 'Components/Icon';
@@ -24,18 +24,21 @@ interface SceneRowProps {
   movie: Movie;
   isSaving?: boolean;
   columns: Column[];
+  // From `useVisiblePerformerNames`, fetched once for the whole table
+  visiblePerformerNames?: Record<string, string[]>;
 }
 
-export default function SceneRow(props: SceneRowProps) {
+export default function SceneRow(props: Readonly<SceneRowProps>) {
   const { movieRuntimeFormat } = useUiSettingsValues();
   const safeForWorkMode = useSafeForWorkMode();
 
-  const { isSaving, columns, movie } = props;
+  const { isSaving, columns, movie, visiblePerformerNames } = props;
   const {
     id,
     itemType,
     foreignId,
     monitored,
+    performerForeignIds,
     performerNames,
     runtime,
     path,
@@ -74,6 +77,24 @@ export default function SceneRow(props: SceneRowProps) {
   };
 
   const { mutate: toggleMonitored } = useToggleMovieMonitored();
+
+  // The names this scene's visible performers can be credited under. Names and
+  // foreign ids aren't parallel lists, so match on name within this scene's ids.
+  const visibleNames = useMemo(() => {
+    if (!visiblePerformerNames) {
+      return undefined;
+    }
+
+    const names = new Set<string>();
+
+    performerForeignIds?.forEach((performerForeignId) => {
+      visiblePerformerNames[performerForeignId]?.forEach((name) =>
+        names.add(name.toLowerCase())
+      );
+    });
+
+    return names;
+  }, [visiblePerformerNames, performerForeignIds]);
 
   function onMonitorToggle(): void {
     toggleMonitored({ id: movie.id, monitored: !movie.monitored });
@@ -143,14 +164,29 @@ export default function SceneRow(props: SceneRowProps) {
 
         if (name === 'credits' && performerNames) {
           // TODO: Workaround for duplicates before slicing
-          const uniquePerformers = Array.from(new Set(performerNames));
-          const joinedPerformers = uniquePerformers
+          const uniquePerformers = Array.from(new Set(performerNames))
             .sort((a, b) => (a > b ? 1 : -1))
-            .slice(0, 4)
-            .join(', ');
+            .slice(0, 4);
+          const joinedPerformers = uniquePerformers.join(', ');
           return (
             <TableRowCell key={name} className={styles.performers}>
-              <span title={joinedPerformers}>{joinedPerformers}</span>
+              <span title={joinedPerformers}>
+                {uniquePerformers.map((performerName, index) => (
+                  <React.Fragment key={performerName}>
+                    {index > 0 ? ', ' : null}
+                    <span
+                      className={
+                        visibleNames &&
+                        !visibleNames.has(performerName.toLowerCase())
+                          ? styles.hiddenPerformer
+                          : undefined
+                      }
+                    >
+                      {performerName}
+                    </span>
+                  </React.Fragment>
+                ))}
+              </span>
             </TableRowCell>
           );
         }

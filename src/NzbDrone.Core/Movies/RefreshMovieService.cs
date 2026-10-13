@@ -215,6 +215,7 @@ namespace NzbDrone.Core.Movies
             performerInfo.ForEach(p =>
                     {
                         p.Monitored = false;
+                        p.Visibility = PerformerVisibility.Hidden;
                         p.RootFolderPath = _folderService.GetBestRootFolderPath(movie.Path);
                         p.SearchOnAdd = movie.AddOptions?.SearchForMovie ?? false;
                         p.QualityProfileId = movie.QualityProfileId;

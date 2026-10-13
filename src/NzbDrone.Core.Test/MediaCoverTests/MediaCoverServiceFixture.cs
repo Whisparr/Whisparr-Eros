@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -1384,10 +1385,7 @@ namespace NzbDrone.Core.Test.MediaCoverTests
         [Test]
         public void should_record_the_source_of_a_downloaded_performer_cover()
         {
-            var performer = Builder<Performer>.CreateNew()
-                .With(p => p.Id = 8)
-                .With(p => p.Images = new List<MediaCover.MediaCover> { new(MediaCoverTypes.Headshot, RemoteUrl) })
-                .Build();
+            var performer = GivenPerformer(8, PerformerVisibility.Visible);
             var path = Subject.GetPerformerCoverPath(performer.Id, MediaCoverTypes.Headshot);
 
             Mocker.GetMock<ICoverExistsSpecification>()
@@ -1398,6 +1396,77 @@ namespace NzbDrone.Core.Test.MediaCoverTests
 
             Mocker.GetMock<ICoverExistsSpecification>()
                   .Verify(v => v.RecordSource(RemoteUrl, path), Times.Once());
+        }
+
+        [Test]
+        public void should_not_download_covers_for_a_hidden_performer()
+        {
+            var performer = GivenPerformer(8, PerformerVisibility.Hidden);
+
+            Mocker.GetMock<ICoverExistsSpecification>()
+                  .Setup(v => v.AlreadyExists(It.IsAny<string>(), It.IsAny<string>()))
+                  .Returns(false);
+
+            Subject.HandleAsync(new PerformerUpdatedEvent(performer));
+
+            Mocker.GetMock<IHttpClient>()
+                  .Verify(v => v.DownloadFile(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+        }
+
+        [Test]
+        public void should_delete_the_cover_folder_of_a_hidden_performer()
+        {
+            var performer = GivenPerformer(8, PerformerVisibility.Hidden);
+            var folder = Path.GetDirectoryName(Subject.GetPerformerCoverPath(performer.Id, MediaCoverTypes.Headshot));
+
+            Mocker.GetMock<IDiskProvider>()
+                  .Setup(v => v.FolderExists(folder))
+                  .Returns(true);
+
+            Subject.HandleAsync(new PerformerUpdatedEvent(performer));
+
+            Mocker.GetMock<IDiskProvider>()
+                  .Verify(v => v.DeleteFolder(folder, true), Times.Once());
+        }
+
+        [Test]
+        public void should_not_delete_anything_for_a_hidden_performer_without_covers()
+        {
+            var performer = GivenPerformer(8, PerformerVisibility.Hidden);
+
+            Mocker.GetMock<IDiskProvider>()
+                  .Setup(v => v.FolderExists(It.IsAny<string>()))
+                  .Returns(false);
+
+            Subject.HandleAsync(new PerformerUpdatedEvent(performer));
+
+            Mocker.GetMock<IDiskProvider>()
+                  .Verify(v => v.DeleteFolder(It.IsAny<string>(), It.IsAny<bool>()), Times.Never());
+        }
+
+        [Test]
+        public void should_delete_the_cover_folder_of_a_deleted_performer()
+        {
+            var performer = GivenPerformer(8, PerformerVisibility.Visible);
+            var folder = Path.GetDirectoryName(Subject.GetPerformerCoverPath(performer.Id, MediaCoverTypes.Headshot));
+
+            Mocker.GetMock<IDiskProvider>()
+                  .Setup(v => v.FolderExists(folder))
+                  .Returns(true);
+
+            Subject.HandleAsync(new PerformersDeletedEvent(new List<Performer> { performer }));
+
+            Mocker.GetMock<IDiskProvider>()
+                  .Verify(v => v.DeleteFolder(folder, true), Times.Once());
+        }
+
+        private static Performer GivenPerformer(int id, PerformerVisibility visibility)
+        {
+            return Builder<Performer>.CreateNew()
+                .With(p => p.Id = id)
+                .With(p => p.Visibility = visibility)
+                .With(p => p.Images = new List<MediaCover.MediaCover> { new(MediaCoverTypes.Headshot, RemoteUrl) })
+                .Build();
         }
 
         [Test]

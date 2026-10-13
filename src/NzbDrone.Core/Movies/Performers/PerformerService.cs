@@ -23,6 +23,7 @@ namespace NzbDrone.Core.Movies.Performers
         List<Performer> SearchPerformers(string query);
         List<Performer> GetAllPerformers();
         List<string> AllPerformerForeignIds();
+        List<Performer> VisiblePerformerNames(List<string> foreignIds);
         List<int> AllPerformerIdsByLastInfoSync();
         Performer Update(Performer performer);
         List<Performer> Update(List<Performer> performers);
@@ -195,6 +196,19 @@ namespace NzbDrone.Core.Movies.Performers
         public List<string> AllPerformerForeignIds()
         {
             return _performerRepo.AllPerformerForeignIds();
+        }
+
+        public List<Performer> VisiblePerformerNames(List<string> foreignIds)
+        {
+            var results = new List<Performer>();
+
+            // Chunked to stay under SQLite's bound-parameter limit
+            foreach (var chunk in foreignIds.Distinct().Chunk(500))
+            {
+                results.AddRange(_performerRepo.VisiblePerformerNames(chunk.ToList()));
+            }
+
+            return results;
         }
 
         public List<int> AllPerformerIdsByLastInfoSync()

@@ -52,6 +52,7 @@ namespace NzbDrone.Core.Movies.Credits
                     creditPerformer.Gender = performer?.Gender ?? Gender.Female;
                     creditPerformer.Monitored = performer?.Monitored == true;
                     creditPerformer.MoviesMonitored = performer?.MoviesMonitored == true;
+                    creditPerformer.Visibility = performer?.Visibility ?? PerformerVisibility.Visible;
 
                     credit.Performer = creditPerformer;
 
@@ -88,6 +89,7 @@ namespace NzbDrone.Core.Movies.Credits
                     creditPerformer.TmdbId = performer?.TmdbId ?? 0;
                     creditPerformer.Monitored = performer?.Monitored == true;
                     creditPerformer.MoviesMonitored = performer?.MoviesMonitored == true;
+                    creditPerformer.Visibility = performer?.Visibility ?? PerformerVisibility.Visible;
 
                     credit.Performer = creditPerformer;
 

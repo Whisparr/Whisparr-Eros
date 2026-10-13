@@ -1,12 +1,13 @@
 import { queryClient } from 'App/queryClient';
 import useApiMutation from 'Helpers/Hooks/useApiMutation';
-import Performer from 'Performer/Performer';
+import Performer, { PerformerVisibility } from 'Performer/Performer';
 
 interface PerformerEditorPayload {
   performerIds: number[];
   monitored?: boolean;
   moviesMonitored?: boolean;
   whisparrMonitorNewItems?: boolean;
+  visibility?: PerformerVisibility;
   qualityProfileId?: number;
   rootFolderPath?: string;
   searchOnAdd?: boolean;
@@ -24,6 +25,9 @@ export function useEditPerformersMutation() {
         // Invalidate all performer paged queries regardless of paging/sorting/filter params
         queryClient.invalidateQueries({
           queryKey: ['/performer/paged'],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ['/performer/visible'],
         });
       },
     },

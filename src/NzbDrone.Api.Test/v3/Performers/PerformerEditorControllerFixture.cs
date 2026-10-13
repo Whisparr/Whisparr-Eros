@@ -136,6 +136,46 @@ namespace NzbDrone.Api.Test.v3.Performers
             _performers[1].WhisparrMonitorNewItems.Should().BeTrue();
         }
 
+        [Test]
+        public void should_hide_and_unmonitor_every_performer()
+        {
+            _performers.ForEach(p => p.Monitored = true);
+
+            var resource = GivenResource();
+            resource.Visibility = PerformerVisibility.Hidden;
+
+            Subject.SaveAll(resource);
+
+            _performers.Should().OnlyContain(p => p.Visibility == PerformerVisibility.Hidden && !p.Monitored && !p.MoviesMonitored);
+        }
+
+        [Test]
+        public void should_show_hidden_performers_that_are_monitored()
+        {
+            _performers.ForEach(p => p.Visibility = PerformerVisibility.Hidden);
+
+            var resource = GivenResource();
+            resource.Monitored = true;
+
+            Subject.SaveAll(resource);
+
+            _performers.Should().OnlyContain(p => p.Visibility == PerformerVisibility.Visible && p.Monitored);
+        }
+
+        [Test]
+        public void should_leave_the_visibility_alone_when_not_given()
+        {
+            _performers[0].Visibility = PerformerVisibility.Hidden;
+
+            var resource = GivenResource();
+            resource.SearchOnAdd = true;
+
+            Subject.SaveAll(resource);
+
+            _performers[0].Visibility.Should().Be(PerformerVisibility.Hidden);
+            _performers[1].Visibility.Should().Be(PerformerVisibility.Visible);
+        }
+
         private static PerformerEditorResource GivenResource()
         {
             return new PerformerEditorResource { PerformerIds = new List<int> { 1, 2 } };

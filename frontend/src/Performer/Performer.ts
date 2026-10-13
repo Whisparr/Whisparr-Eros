@@ -1,6 +1,8 @@
 import ModelBase from 'App/ModelBase';
 import { Image } from 'Movie/Movie';
 
+export type PerformerVisibility = 'visible' | 'hidden';
+
 interface Performer extends ModelBase {
   foreignId: string;
   afterDate?: string | null;
@@ -34,6 +36,7 @@ interface Performer extends ModelBase {
   tags: number[];
   totalMovieCount: number;
   totalSceneCount: number;
+  visibility: PerformerVisibility;
 }
 
 export default Performer;

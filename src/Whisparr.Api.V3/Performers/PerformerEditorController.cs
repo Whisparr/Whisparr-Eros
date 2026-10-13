@@ -74,6 +74,9 @@ namespace Whisparr.Api.V3.Performers
                     performer.WhisparrMonitorNewItems = resource.WhisparrMonitorNewItems.Value;
                 }
 
+                // After the monitored flags, so hiding can unmonitor and monitoring can unhide
+                performer.ApplyVisibility(resource.Visibility ?? performer.Visibility);
+
                 if (resource.QualityProfileId.HasValue)
                 {
                     performer.QualityProfileId = resource.QualityProfileId.Value;

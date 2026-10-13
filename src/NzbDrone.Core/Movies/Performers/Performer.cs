@@ -53,6 +53,9 @@ namespace NzbDrone.Core.Movies.Performers
         public DateTime? LastInfoSync { get; set; }
         public HashSet<int> Tags { get; set; }
 
+        /// <summary>Hidden performers were added only because they share credits with a monitored one; they keep no artwork on disk.</summary>
+        public PerformerVisibility Visibility { get; set; } = PerformerVisibility.Visible;
+
         /// <summary> Number of scenes in Whisparr with this performer</summary>
         public int TotalSceneCount { get; set; }
 
@@ -80,12 +83,40 @@ namespace NzbDrone.Core.Movies.Performers
             AfterDate = otherPerformer.AfterDate;
             RootFolderPath = otherPerformer.RootFolderPath;
             Tags = otherPerformer.Tags;
+            ApplyVisibility(otherPerformer.Visibility);
+        }
+
+        /// <summary>Applies a requested visibility after the monitored flags have been set.</summary>
+        /// <remarks>Hiding a visible performer unmonitors them; otherwise a monitored performer is always visible.</remarks>
+        public void ApplyVisibility(PerformerVisibility visibility)
+        {
+            if (visibility == PerformerVisibility.Hidden && Visibility == PerformerVisibility.Visible)
+            {
+                Visibility = PerformerVisibility.Hidden;
+                Monitored = false;
+                MoviesMonitored = false;
+
+                return;
+            }
+
+            Visibility = visibility;
+
+            if (Monitored || MoviesMonitored)
+            {
+                Visibility = PerformerVisibility.Visible;
+            }
         }
 
         public override string ToString()
         {
             return string.Format("[{0}]", Name.NullSafe());
         }
+    }
+
+    public enum PerformerVisibility
+    {
+        Hidden = 0,
+        Visible = 1
     }
 
     public enum PerformerStatus

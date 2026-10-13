@@ -3,11 +3,13 @@ import FormGroup from 'Components/Form/FormGroup';
 import FormInputGroup from 'Components/Form/FormInputGroup';
 import FormLabel from 'Components/Form/FormLabel';
 import Button from 'Components/Link/Button';
+import ConfirmModal from 'Components/Modal/ConfirmModal';
 import ModalBody from 'Components/Modal/ModalBody';
 import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
-import { inputTypes } from 'Helpers/Props';
+import { inputTypes, kinds } from 'Helpers/Props';
+import { PerformerVisibility } from 'Performer/Performer';
 import { EnhancedSelectInputChanged } from 'typings/inputs';
 import translate from 'Utilities/String/translate';
 import styles from './EditPerformersModalContent.module.css';
@@ -16,6 +18,7 @@ interface SavePayload {
   monitored?: boolean;
   moviesMonitored?: boolean;
   whisparrMonitorNewItems?: boolean;
+  visibility?: PerformerVisibility;
   qualityProfileId?: number;
   rootFolderPath?: string;
   searchOnAdd?: boolean;
@@ -50,6 +53,28 @@ const monitoredOptions = [
     key: 'unmonitored',
     get value() {
       return translate('Unmonitored');
+    },
+  },
+];
+
+const visibilityOptions = [
+  {
+    key: NO_CHANGE,
+    get value() {
+      return translate('NoChange');
+    },
+    disabled: true,
+  },
+  {
+    key: 'visible',
+    get value() {
+      return translate('Visible');
+    },
+  },
+  {
+    key: 'hidden',
+    get value() {
+      return translate('Hidden');
     },
   },
 ];
@@ -115,6 +140,9 @@ function EditPerformersModalContent(
     string | number
   >(NO_CHANGE);
 
+  const [visibility, setVisibility] = useState<string | number>(NO_CHANGE);
+  const [isConfirmHideModalOpen, setIsConfirmHideModalOpen] = useState(false);
+
   const [qualityProfileId, setQualityProfileId] = useState<string | number>(
     NO_CHANGE
   );
@@ -146,6 +174,11 @@ function EditPerformersModalContent(
     if (whisparrMonitorNewItems !== NO_CHANGE) {
       hasChanges = true;
       payload.whisparrMonitorNewItems = whisparrMonitorNewItems === 'true';
+    }
+
+    if (visibility !== NO_CHANGE) {
+      hasChanges = true;
+      payload.visibility = visibility as PerformerVisibility;
     }
 
     if (qualityProfileId !== NO_CHANGE) {
@@ -180,6 +213,7 @@ function EditPerformersModalContent(
     monitored,
     moviesMonitored,
     whisparrMonitorNewItems,
+    visibility,
     qualityProfileId,
     rootFolderPath,
     searchOnAdd,
@@ -200,6 +234,9 @@ function EditPerformersModalContent(
           break;
         case 'whisparrMonitorNewItems':
           setWhisparrMonitorNewItems(value);
+          break;
+        case 'visibility':
+          setVisibility(value);
           break;
         case 'qualityProfileId':
           setQualityProfileId(value);
@@ -223,9 +260,25 @@ function EditPerformersModalContent(
     [setMonitored]
   );
 
+  // Hiding unmonitors the performers and deletes their artwork, so it's
+  // confirmed before it goes out.
   const onSavePressWrapper = useCallback(() => {
+    if (visibility === 'hidden') {
+      setIsConfirmHideModalOpen(true);
+      return;
+    }
+
+    save();
+  }, [visibility, save]);
+
+  const onConfirmHide = useCallback(() => {
+    setIsConfirmHideModalOpen(false);
     save();
   }, [save]);
+
+  const onCancelHide = useCallback(() => {
+    setIsConfirmHideModalOpen(false);
+  }, []);
 
   const selectedCount = performerIds.length;
 
@@ -269,6 +322,19 @@ function EditPerformersModalContent(
             helpText={translate('WhisparrMonitorNewItemsEntityHelpText')}
             value={whisparrMonitorNewItems}
             values={yesNoOptions}
+            onChange={onInputChange}
+          />
+        </FormGroup>
+
+        <FormGroup>
+          <FormLabel>{translate('Visibility')}</FormLabel>
+
+          <FormInputGroup
+            type={inputTypes.SELECT}
+            name="visibility"
+            helpText={translate('VisiblePerformerHelpText')}
+            value={visibility}
+            values={visibilityOptions}
             onChange={onInputChange}
           />
         </FormGroup>
@@ -354,6 +420,18 @@ function EditPerformersModalContent(
           </Button>
         </div>
       </ModalFooter>
+
+      <ConfirmModal
+        isOpen={isConfirmHideModalOpen}
+        kind={kinds.DANGER}
+        title={translate('HidePerformers')}
+        message={translate('HidePerformersMessageText', {
+          count: selectedCount,
+        })}
+        confirmLabel={translate('Hide')}
+        onConfirm={onConfirmHide}
+        onCancel={onCancelHide}
+      />
     </ModalContent>
   );
 }

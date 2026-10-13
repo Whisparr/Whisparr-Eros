@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using FizzWare.NBuilder;
 using Moq;
 using NUnit.Framework;
@@ -44,6 +45,19 @@ namespace NzbDrone.Core.Test.PerformerTests
             // RefreshPerformerService relies on this being the only PerformerUpdatedEvent
             Mocker.GetMock<IEventAggregator>()
                 .Verify(s => s.PublishEvent(It.Is<PerformerUpdatedEvent>(e => e.Performer == performer)), Times.Once());
+        }
+
+        [Test]
+        public void should_look_up_each_visible_performer_name_once()
+        {
+            Mocker.GetMock<IPerformerRepository>()
+                .Setup(s => s.VisiblePerformerNames(It.IsAny<List<string>>()))
+                .Returns(new List<Performer>());
+
+            _subject.VisiblePerformerNames(new List<string> { "a", "b", "a" });
+
+            Mocker.GetMock<IPerformerRepository>()
+                .Verify(v => v.VisiblePerformerNames(It.Is<List<string>>(l => l.Count == 2 && l.Contains("a") && l.Contains("b"))), Times.Once());
         }
     }
 }

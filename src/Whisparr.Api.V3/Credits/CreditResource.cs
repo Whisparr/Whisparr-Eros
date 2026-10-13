@@ -4,6 +4,7 @@ using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.MediaCover;
 using NzbDrone.Core.Movies.Credits;
+using NzbDrone.Core.Movies.Performers;
 using Whisparr.Http.REST;
 
 namespace NzbDrone.Api.V3.Credits
@@ -79,6 +80,11 @@ namespace NzbDrone.Api.V3.Credits
         /// Whether movies for this performer are currently monitored for Movies.
         /// </summary>
         public bool MoviesMonitored { get; set; }
+
+        /// <summary>
+        /// Whether the performer was added alongside a monitored one and is hidden; hidden performers have no images.
+        /// </summary>
+        public bool PerformerHidden { get; set; }
     }
 
     public static class CreditResourceMapper
@@ -101,6 +107,8 @@ namespace NzbDrone.Api.V3.Credits
                 canMovieMonitor = true;
             }
 
+            var performerHidden = model.Performer?.Visibility == PerformerVisibility.Hidden;
+
             return new CreditResource
             {
                 Id = model.Id,
@@ -109,13 +117,14 @@ namespace NzbDrone.Api.V3.Credits
                 ForeignId = model.PerformerForeignId,
                 PersonName = model.PersonName,
                 Character = model.Character,
-                Images = model.Images,
+                Images = performerHidden ? new List<MediaCover>() : model.Images,
                 Order = model.Order,
                 Type = model.Type,
                 CanMonitor = model.Performer?.ForeignId.IsNotNullOrWhiteSpace() == true,
                 Monitored = model.Performer?.Monitored == true,
                 CanMovieMonitor = canMovieMonitor,
-                MoviesMonitored = model.Performer?.MoviesMonitored == true
+                MoviesMonitored = model.Performer?.MoviesMonitored == true,
+                PerformerHidden = performerHidden
             };
         }
 

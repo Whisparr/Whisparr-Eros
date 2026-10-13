@@ -90,8 +90,12 @@ function useAddNewPerformer() {
       ])
     );
 
+    // A hidden performer was only added alongside a monitored one, so they're
+    // still offered for adding; the server makes them visible instead of
+    // inserting a duplicate.
     return lookupItems.map((item) => {
-      const found = existing.get(item.performer.foreignId);
+      const match = existing.get(item.performer.foreignId);
+      const found = match?.visibility === 'hidden' ? undefined : match;
 
       return {
         performer: found ?? item.performer,

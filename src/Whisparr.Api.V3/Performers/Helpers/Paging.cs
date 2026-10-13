@@ -81,6 +81,9 @@ namespace Whisparr.Api.V3.Performers.Helpers
                     case "tags":
                         TagsFilter.Apply(pageSpec, jsonElement, op);
                         break;
+                    case "visibility":
+                        EnumFilter.Apply(pageSpec, jsonElement, op, p => p.Visibility);
+                        break;
                 }
             }
         }

@@ -36,6 +36,11 @@ namespace NzbDrone.Core.Movies.Performers
             }
         }
 
+        public List<Performer> VisiblePerformerNames(List<string> foreignIds)
+        {
+            return Query(x => x.Visibility == PerformerVisibility.Visible && foreignIds.Contains(x.ForeignId)).ToList();
+        }
+
         public List<int> AllPerformerIdsByLastInfoSync()
         {
             using (var conn = _database.OpenConnection())

@@ -1,15 +1,24 @@
-import { Filter } from 'Filters/Filter';
+import { Filter, PropertyFilter } from 'Filters/Filter';
 import { filterTypes } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 
 // The preset filters offered by the filter menu. Lifted out of
 // `performerActions` unchanged: static definitions rather than user state, so
 // they never belonged in slice state.
+//
+// Every preset but Hidden leaves out the performers that were only added
+// alongside a monitored one, so they don't crowd the index.
+const VISIBLE_FILTER: PropertyFilter = {
+  key: 'visibility',
+  value: ['visible'],
+  type: filterTypes.EQUAL,
+};
+
 export const PERFORMER_INDEX_FILTERS: Filter[] = [
   {
     key: 'all',
     label: () => translate('All'),
-    filters: [],
+    filters: [VISIBLE_FILTER],
   },
   {
     key: 'monitoredscenesonly',
@@ -20,6 +29,7 @@ export const PERFORMER_INDEX_FILTERS: Filter[] = [
         value: true,
         type: filterTypes.EQUAL,
       },
+      VISIBLE_FILTER,
     ],
   },
   {
@@ -31,6 +41,7 @@ export const PERFORMER_INDEX_FILTERS: Filter[] = [
         value: true,
         type: filterTypes.EQUAL,
       },
+      VISIBLE_FILTER,
     ],
   },
   {
@@ -40,6 +51,18 @@ export const PERFORMER_INDEX_FILTERS: Filter[] = [
       {
         key: 'monitored',
         value: false,
+        type: filterTypes.EQUAL,
+      },
+      VISIBLE_FILTER,
+    ],
+  },
+  {
+    key: 'hidden',
+    label: () => translate('Hidden'),
+    filters: [
+      {
+        key: 'visibility',
+        value: ['hidden'],
         type: filterTypes.EQUAL,
       },
     ],
