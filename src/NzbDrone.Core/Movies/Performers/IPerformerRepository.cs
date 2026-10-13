@@ -9,6 +9,7 @@ namespace NzbDrone.Core.Movies.Performers
         List<Performer> FindByForeignIds(List<string> foreignIds);
         List<Performer> SearchPerformers(string cleanName, string foreignId);
         List<string> AllPerformerForeignIds();
+        List<Performer> VisiblePerformerNames(List<string> foreignIds);
         List<int> AllPerformerIdsByLastInfoSync();
     }
 }

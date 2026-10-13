@@ -57,11 +57,29 @@ namespace NzbDrone.Core.Test.MovieTests
                 .Returns(new AutoTaggingChanges());
         }
 
-        private void GivenNewMovieInfo(MovieMetadata movie)
+        private void GivenNewMovieInfo(MovieMetadata movie, List<Performer> performers = null)
         {
             Mocker.GetMock<IProvideMovieInfo>()
                   .Setup(s => s.GetMovieInfo(_movie.TmdbId))
-                  .Returns(new System.Tuple<MovieMetadata, Studio, List<Performer>, List<Credit>>(movie, new Studio(), new List<Performer>(), new List<Credit>()));
+                  .Returns(new System.Tuple<MovieMetadata, Studio, List<Performer>, List<Credit>>(movie, new Studio(), performers ?? new List<Performer>(), new List<Credit>()));
+        }
+
+        [Test]
+        public void should_add_co_stars_hidden_and_unmonitored()
+        {
+            var coStar = new Performer { ForeignId = "co-star-foreign-id", Monitored = true };
+
+            GivenNewMovieInfo(_movie.JsonClone(), new List<Performer> { coStar });
+
+            Subject.Execute(new RefreshMovieCommand(new List<int> { _movie.Id }));
+
+            Mocker.GetMock<IAddPerformerService>()
+                .Verify(v => v.AddPerformers(It.Is<List<Performer>>(l => l.Count == 1 &&
+                                                                          l[0].ForeignId == "co-star-foreign-id" &&
+                                                                          l[0].Visibility == PerformerVisibility.Hidden &&
+                                                                          !l[0].Monitored),
+                                             true),
+                        Times.Once());
         }
 
         [Test]

@@ -159,6 +159,38 @@ namespace NzbDrone.Api.Test.v3.Performers
             SharedValidator().Validate(GivenResource()).IsValid.Should().BeTrue();
         }
 
+        [Test]
+        public void should_return_the_names_and_aliases_of_visible_performers_by_foreign_id()
+        {
+            Mocker.GetMock<IPerformerService>()
+                .Setup(s => s.VisiblePerformerNames(It.IsAny<List<string>>()))
+                .Returns(new List<Performer>
+                {
+                    new() { ForeignId = "a", Name = "Performer A", Aliases = new List<string> { "Alias A", "Performer A", "" } },
+                    new() { ForeignId = "b", Name = "Performer B", Aliases = null },
+                    new() { ForeignId = null, Name = "No Foreign Id" }
+                });
+
+            var result = Subject.GetVisiblePerformerNames(new List<string> { "a", "b" }).Value;
+
+            result.Should().HaveCount(2);
+            result["a"].Should().Equal("Performer A", "Alias A");
+            result["b"].Should().Equal("Performer B");
+        }
+
+        [Test]
+        public void should_treat_a_missing_body_as_no_foreign_ids()
+        {
+            Mocker.GetMock<IPerformerService>()
+                .Setup(s => s.VisiblePerformerNames(It.IsAny<List<string>>()))
+                .Returns(new List<Performer>());
+
+            Subject.GetVisiblePerformerNames(null).Value.Should().BeEmpty();
+
+            Mocker.GetMock<IPerformerService>()
+                .Verify(v => v.VisiblePerformerNames(It.Is<List<string>>(l => l.Count == 0)), Times.Once());
+        }
+
         private void GivenProfileAndRootFolder()
         {
             Mocker.GetMock<IQualityProfileService>()

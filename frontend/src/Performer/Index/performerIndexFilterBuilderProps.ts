@@ -93,6 +93,12 @@ export const PERFORMER_INDEX_FILTER_BUILDER_PROPS: FilterBuilderProp<Performer>[
         fixedOptions(['active', 'inactive', 'unknown', 'deleted']),
     },
     {
+      name: 'visibility',
+      label: () => translate('Visibility'),
+      type: filterBuilderTypes.EXACT,
+      optionsSelector: () => fixedOptions(['visible', 'hidden']),
+    },
+    {
       name: 'rootFolderPath',
       label: () => translate('RootFolder'),
       type: filterBuilderTypes.EXACT,

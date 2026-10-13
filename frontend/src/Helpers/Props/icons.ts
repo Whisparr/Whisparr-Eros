@@ -197,6 +197,7 @@ export const GROUP = farObjectGroup;
 export const HEALTH = fasMedkit;
 export const HEART = fasHeart;
 export const HEART_OUTLINE = farHeart;
+export const HIDDEN = fasEyeSlash;
 export const HISTORY = fasHistory;
 export const HOUSEKEEPING = fasHome;
 export const IGNORE = fasTimesCircle;

@@ -33,6 +33,7 @@ function EditPerformerModalContent({
   const { isSmallScreen } = useAppDimensions();
   const safeForWorkMode = useSafeForWorkMode();
 
+  const [visible, setVisible] = useState(performer.visibility !== 'hidden');
   const [monitored, setMonitored] = useState(performer.monitored);
   const [moviesMonitored, setMoviesMonitored] = useState(
     performer.moviesMonitored
@@ -56,7 +57,11 @@ function EditPerformerModalContent({
   // performer on save, and handed to selectSettings so it can mark them
   // pending.
   const pendingChanges = useMemo(() => {
-    const changes: Partial<Performer> = {};
+    const changes: Partial<Performer> & { visible?: boolean } = {};
+
+    if (visible !== (performer.visibility !== 'hidden')) {
+      changes.visible = visible;
+    }
 
     if (monitored !== performer.monitored) {
       changes.monitored = monitored;
@@ -92,6 +97,7 @@ function EditPerformerModalContent({
 
     return changes;
   }, [
+    visible,
     monitored,
     moviesMonitored,
     whisparrMonitorNewItems,
@@ -106,6 +112,7 @@ function EditPerformerModalContent({
   const { settings, validationErrors, validationWarnings } = useMemo(() => {
     return selectSettings(
       {
+        visible: performer.visibility !== 'hidden',
         monitored: performer.monitored,
         moviesMonitored: performer.moviesMonitored,
         whisparrMonitorNewItems: performer.whisparrMonitorNewItems,
@@ -139,13 +146,34 @@ function EditPerformerModalContent({
   // a value the server now rejects on every save.
   const isMovieMonitorDisabled = !isMovieMonitorLinked && !moviesMonitored;
 
+  // Mirrors the server: hiding a performer unmonitors them, and monitoring a
+  // hidden performer makes them visible.
   const handleInputChange = useCallback(({ name, value }: InputChanged) => {
     switch (name) {
+      case 'visible':
+        setVisible(value as boolean);
+
+        if (!value) {
+          setMonitored(false);
+          setMoviesMonitored(false);
+        }
+
+        break;
       case 'monitored':
         setMonitored(value as boolean);
+
+        if (value) {
+          setVisible(true);
+        }
+
         break;
       case 'moviesMonitored':
         setMoviesMonitored(value as boolean);
+
+        if (value) {
+          setVisible(true);
+        }
+
         break;
       case 'whisparrMonitorNewItems':
         setWhisparrMonitorNewItems(value as boolean);
@@ -171,7 +199,15 @@ function EditPerformerModalContent({
   }, []);
 
   const handleSavePress = useCallback(() => {
-    savePerformer.mutate({ ...performer, ...pendingChanges });
+    const { visible: pendingVisible, ...changes } = pendingChanges;
+
+    savePerformer.mutate({
+      ...performer,
+      ...changes,
+      ...(pendingVisible === undefined
+        ? {}
+        : { visibility: pendingVisible ? 'visible' : 'hidden' }),
+    });
   }, [savePerformer, performer, pendingChanges]);
 
   useEffect(() => {
@@ -205,6 +241,22 @@ function EditPerformerModalContent({
               validationErrors={validationErrors}
               validationWarnings={validationWarnings}
             >
+              <FormGroup>
+                <FormLabel>{translate('Visible')}</FormLabel>
+                <FormInputGroup
+                  type={inputTypes.CHECK}
+                  name="visible"
+                  helpText={translate('VisiblePerformerHelpText')}
+                  helpTextWarning={
+                    visible
+                      ? undefined
+                      : translate('HiddenPerformerHelpTextWarning')
+                  }
+                  {...settings.visible}
+                  onChange={handleInputChange}
+                />
+              </FormGroup>
+
               <FormGroup>
                 <FormLabel>{translate('MonitoredScene')}</FormLabel>
                 <FormInputGroup

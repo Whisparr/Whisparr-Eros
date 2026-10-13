@@ -17,6 +17,7 @@ interface MovieCredit extends ModelBase {
   monitored: boolean;
   canMovieMonitor: boolean;
   moviesMonitored: boolean;
+  performerHidden: boolean;
 }
 
 export default MovieCredit;

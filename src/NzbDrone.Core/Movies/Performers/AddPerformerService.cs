@@ -6,7 +6,9 @@ using FluentValidation.Results;
 using NLog;
 using NzbDrone.Common.EnsureThat;
 using NzbDrone.Core.Exceptions;
+using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.MetadataSource;
+using NzbDrone.Core.Movies.Performers.Commands;
 using NzbDrone.Core.Parser;
 
 namespace NzbDrone.Core.Movies.Performers
@@ -21,20 +23,30 @@ namespace NzbDrone.Core.Movies.Performers
     {
         private readonly IPerformerService _performerService;
         private readonly IProvideMovieInfo _performerInfo;
+        private readonly IManageCommandQueue _commandQueueManager;
         private readonly Logger _logger;
 
         public AddPerformerService(IPerformerService performerService,
                                    IProvideMovieInfo performerInfo,
+                                   IManageCommandQueue commandQueueManager,
                                    Logger logger)
         {
             _performerService = performerService;
             _performerInfo = performerInfo;
+            _commandQueueManager = commandQueueManager;
             _logger = logger;
         }
 
         public Performer AddPerformer(Performer newPerformer, bool ignoreErrors = false)
         {
             Ensure.That(newPerformer, () => newPerformer).IsNotNull();
+
+            var existingPerformer = _performerService.FindByForeignId(newPerformer.ForeignId);
+
+            if (existingPerformer is { Visibility: PerformerVisibility.Hidden })
+            {
+                return ShowHiddenPerformer(existingPerformer, newPerformer);
+            }
 
             newPerformer = AddSkyhookData(newPerformer);
             newPerformer = SetPropertiesAndValidate(newPerformer);
@@ -110,6 +122,24 @@ namespace NzbDrone.Core.Movies.Performers
             }
 
             return _performerService.AddPerformers(performersToAdd);
+        }
+
+        // A hidden performer is already in the database, so adding them means taking on the new settings and becoming visible
+        private Performer ShowHiddenPerformer(Performer existingPerformer, Performer newPerformer)
+        {
+            _logger.Info("Showing hidden Performer {0}", existingPerformer.Name);
+
+            existingPerformer.ApplyChanges(newPerformer);
+            existingPerformer.Visibility = PerformerVisibility.Visible;
+
+            var performer = _performerService.Update(existingPerformer);
+
+            if (performer.Monitored || performer.MoviesMonitored)
+            {
+                _commandQueueManager.Push(new RefreshPerformersCommand(new List<int> { performer.Id }));
+            }
+
+            return performer;
         }
 
         private Performer AddSkyhookData(Performer newPerformer)

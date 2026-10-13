@@ -132,7 +132,8 @@ namespace NzbDrone.Core.Movies.Performers
                         QualityProfileId = performer.QualityProfileId,
                         RootFolderPath = performer.RootFolderPath,
                         SearchOnAdd = performer.SearchOnAdd,
-                        Tags = performer.Tags
+                        Tags = performer.Tags,
+                        Visibility = performer.Visibility
                     };
 
                     _addPerformerService.AddPerformer(newPerformer, true);

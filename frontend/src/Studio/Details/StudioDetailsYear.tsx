@@ -17,6 +17,7 @@ import { align, icons, kinds, sizes, tooltipPositions } from 'Helpers/Props';
 import { SortDirection } from 'Helpers/Props/sortDirections';
 import Movie from 'Movie/Movie';
 import SceneRow from 'Performer/Details/SceneRow';
+import useVisiblePerformerNames from 'Performer/useVisiblePerformerNames';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
 import {
@@ -59,7 +60,7 @@ function getMovieCountKind(
   }
 }
 
-function StudioDetailsYear(props: StudioDetailsYearProps) {
+function StudioDetailsYear(props: Readonly<StudioDetailsYearProps>) {
   const {
     studioId,
     year,
@@ -71,6 +72,11 @@ function StudioDetailsYear(props: StudioDetailsYearProps) {
 
   const { items, isSmallScreen, isSearching, columns, sortKey, sortDirection } =
     useStudioDetailsYearData(works);
+
+  const { data: visiblePerformerNames } = useVisiblePerformerNames(
+    items,
+    isExpanded
+  );
 
   const totalMovieCount = works.length;
   const monitoredMovieCount = works.filter((m) => m.monitored).length;
@@ -237,6 +243,7 @@ function StudioDetailsYear(props: StudioDetailsYearProps) {
                       key={item.id}
                       movie={item}
                       columns={columns}
+                      visiblePerformerNames={visiblePerformerNames}
                       {...item}
                     />
                   ))}

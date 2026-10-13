@@ -82,3 +82,7 @@
 .customFormatScore {
   width: 55px;
 }
+
+.hiddenPerformer {
+  color: var(--disabledColor);
+}

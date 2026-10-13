@@ -244,13 +244,16 @@ function invalidateMovieBulkQueryCache() {
   queryClient.invalidateQueries({ queryKey: ['/movie/bulk'] });
 }
 
+// Also refreshes the visible foreign ids, since an update can hide or show a
+// performer.
 function invalidatePerformerPagedQueryCache() {
   queryClient.invalidateQueries({
     predicate: (query) => {
       return (
         Array.isArray(query.queryKey) &&
         typeof query.queryKey[0] === 'string' &&
-        query.queryKey[0].startsWith('/performer/paged')
+        (query.queryKey[0].startsWith('/performer/paged') ||
+          query.queryKey[0] === '/performer/visible')
       );
     },
   });

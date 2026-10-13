@@ -541,6 +541,23 @@ function PerformerDetails() {
                   </Label>
                 ) : null}
 
+                {performer.visibility === 'hidden' ? (
+                  <Tooltip
+                    anchor={
+                      <Label className={styles.detailsLabel} size={sizes.LARGE}>
+                        <Icon name={icons.HIDDEN} size={17} />
+
+                        <span className={styles.visibility}>
+                          {translate('Hidden')}
+                        </span>
+                      </Label>
+                    }
+                    tooltip={translate('HiddenPerformerTooltip')}
+                    kind={kinds.INVERSE}
+                    position={tooltipPositions.BOTTOM}
+                  />
+                ) : null}
+
                 {performerTags.length ? (
                   <Tooltip
                     anchor={

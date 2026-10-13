@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using NzbDrone.Core.Movies.Performers;
 
 namespace Whisparr.Api.V3.Performers
 {
@@ -16,6 +17,9 @@ namespace Whisparr.Api.V3.Performers
 
         /// <summary>Whether newly discovered works added by refreshing the performers are monitored.</summary>
         public bool? WhisparrMonitorNewItems { get; set; }
+
+        /// <summary>Show or hide the selected performers. Hiding unmonitors them and deletes their downloaded artwork.</summary>
+        public PerformerVisibility? Visibility { get; set; }
 
         /// <summary>The quality profile ID to set for the performers' movies.</summary>
         public int? QualityProfileId { get; set; }

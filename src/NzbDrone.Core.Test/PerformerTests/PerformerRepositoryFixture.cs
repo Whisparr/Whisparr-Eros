@@ -46,5 +46,37 @@ namespace NzbDrone.Core.Test.PerformerTests
 
             Subject.All().Should().ContainSingle().Which.AfterDate.Should().BeNull();
         }
+
+        [Test]
+        public void should_round_trip_a_hidden_performer()
+        {
+            var performer = GivenPerformer(null);
+            performer.Visibility = PerformerVisibility.Hidden;
+
+            Subject.Insert(performer);
+
+            Subject.All().Should().ContainSingle().Which.Visibility.Should().Be(PerformerVisibility.Hidden);
+        }
+
+        [Test]
+        public void should_return_the_names_and_aliases_of_only_visible_performers()
+        {
+            var visible = GivenPerformer(null);
+            visible.Aliases = new List<string> { "Alias One" };
+
+            var hidden = GivenPerformer(null);
+            hidden.ForeignId = "hidden-foreign-id";
+            hidden.Name = "Hidden Performer";
+            hidden.Visibility = PerformerVisibility.Hidden;
+
+            Subject.InsertMany(new List<Performer> { visible, hidden });
+
+            var names = Subject.VisiblePerformerNames(new List<string> { "performer-foreign-id", "hidden-foreign-id", "unknown-foreign-id" });
+
+            names.Should().ContainSingle();
+            names[0].ForeignId.Should().Be("performer-foreign-id");
+            names[0].Name.Should().Be("Some Performer");
+            names[0].Aliases.Should().BeEquivalentTo(new List<string> { "Alias One" });
+        }
     }
 }

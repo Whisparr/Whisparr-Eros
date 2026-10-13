@@ -10,6 +10,7 @@ import Popover from 'Components/Tooltip/Popover';
 import { icons, kinds, sizes, tooltipPositions } from 'Helpers/Props';
 import { SortDirection } from 'Helpers/Props/sortDirections';
 import Movie from 'Movie/Movie';
+import useVisiblePerformerNames from 'Performer/useVisiblePerformerNames';
 import YearInfo from 'Studio/Details/YearInfo';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
@@ -28,8 +29,13 @@ interface PerformerDetailsYearProps {
   onExpandPress: (year: number, expand: boolean) => void;
 }
 
-function PerformerDetailsYear(props: PerformerDetailsYearProps) {
+function PerformerDetailsYear(props: Readonly<PerformerDetailsYearProps>) {
   const { movies, year, isExpanded, onExpandPress, onYearRefreshPress } = props;
+
+  const { data: visiblePerformerNames } = useVisiblePerformerNames(
+    movies,
+    isExpanded
+  );
 
   const {
     items: sortedMovies,
@@ -193,6 +199,7 @@ function PerformerDetailsYear(props: PerformerDetailsYearProps) {
                         key={movie.id}
                         movie={movie}
                         columns={columns}
+                        visiblePerformerNames={visiblePerformerNames}
                       />
                     );
                   })}

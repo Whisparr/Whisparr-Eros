@@ -3,11 +3,13 @@ import FormGroup from 'Components/Form/FormGroup';
 import FormInputGroup from 'Components/Form/FormInputGroup';
 import FormLabel from 'Components/Form/FormLabel';
 import Button from 'Components/Link/Button';
+import ConfirmModal from 'Components/Modal/ConfirmModal';
 import ModalBody from 'Components/Modal/ModalBody';
 import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
-import { inputTypes } from 'Helpers/Props';
+import { inputTypes, kinds } from 'Helpers/Props';
+import { PerformerVisibility } from 'Performer/Performer';
 import { EnhancedSelectInputChanged } from 'typings/inputs';
 import translate from 'Utilities/String/translate';
 import styles from './EditPerformersModalContent.module.css';
@@ -16,6 +18,7 @@ interface SavePayload {
   monitored?: boolean;
   moviesMonitored?: boolean;
   whisparrMonitorNewItems?: boolean;
+  visibility?: PerformerVisibility;
   qualityProfileId?: number;
   rootFolderPath?: string;
   searchOnAdd?: boolean;
@@ -32,73 +35,48 @@ const NO_CHANGE = 'noChange';
 const SET_DATE = 'setDate';
 const CLEAR_DATE = 'clearDate';
 
-const monitoredOptions = [
-  {
-    key: NO_CHANGE,
-    get value() {
-      return translate('NoChange');
+// Every bulk select leads with a disabled "No Change"; only the choices after it
+// differ.
+function noChangeOptions(choices: [key: string, labelKey: string][]) {
+  return [
+    {
+      key: NO_CHANGE,
+      get value() {
+        return translate('NoChange');
+      },
+      disabled: true,
     },
-    disabled: true,
-  },
-  {
-    key: 'monitored',
-    get value() {
-      return translate('Monitored');
-    },
-  },
-  {
-    key: 'unmonitored',
-    get value() {
-      return translate('Unmonitored');
-    },
-  },
-];
+    ...choices.map(([key, labelKey]) => ({
+      key,
+      get value() {
+        return translate(labelKey);
+      },
+    })),
+  ];
+}
 
-const yesNoOptions = [
-  {
-    key: NO_CHANGE,
-    get value() {
-      return translate('NoChange');
-    },
-    disabled: true,
-  },
-  {
-    key: 'true',
-    get value() {
-      return translate('Yes');
-    },
-  },
-  {
-    key: 'false',
-    get value() {
-      return translate('No');
-    },
-  },
-];
+const monitoredOptions = noChangeOptions([
+  ['monitored', 'Monitored'],
+  ['unmonitored', 'Unmonitored'],
+]);
+
+const visibilityOptions = noChangeOptions([
+  ['visible', 'Visible'],
+  ['hidden', 'Hidden'],
+]);
+
+const yesNoOptions = noChangeOptions([
+  ['true', 'Yes'],
+  ['false', 'No'],
+]);
+
 // A date box on its own can't say whether a blank means "leave every performer alone"
 // or "clear them all", so the choice is made in a select and the box only appears
 // once the user has asked to set a date.
-const afterDateOptions = [
-  {
-    key: NO_CHANGE,
-    get value() {
-      return translate('NoChange');
-    },
-    disabled: true,
-  },
-  {
-    key: SET_DATE,
-    get value() {
-      return translate('SetDate');
-    },
-  },
-  {
-    key: CLEAR_DATE,
-    get value() {
-      return translate('Clear');
-    },
-  },
-];
+const afterDateOptions = noChangeOptions([
+  [SET_DATE, 'SetDate'],
+  [CLEAR_DATE, 'Clear'],
+]);
 
 function EditPerformersModalContent(
   props: Readonly<EditPerformersModalContentProps>
@@ -114,6 +92,9 @@ function EditPerformersModalContent(
   const [whisparrMonitorNewItems, setWhisparrMonitorNewItems] = useState<
     string | number
   >(NO_CHANGE);
+
+  const [visibility, setVisibility] = useState<string | number>(NO_CHANGE);
+  const [isConfirmHideModalOpen, setIsConfirmHideModalOpen] = useState(false);
 
   const [qualityProfileId, setQualityProfileId] = useState<string | number>(
     NO_CHANGE
@@ -148,6 +129,11 @@ function EditPerformersModalContent(
       payload.whisparrMonitorNewItems = whisparrMonitorNewItems === 'true';
     }
 
+    if (visibility !== NO_CHANGE) {
+      hasChanges = true;
+      payload.visibility = visibility as PerformerVisibility;
+    }
+
     if (qualityProfileId !== NO_CHANGE) {
       hasChanges = true;
       payload.qualityProfileId = qualityProfileId as number;
@@ -180,6 +166,7 @@ function EditPerformersModalContent(
     monitored,
     moviesMonitored,
     whisparrMonitorNewItems,
+    visibility,
     qualityProfileId,
     rootFolderPath,
     searchOnAdd,
@@ -200,6 +187,9 @@ function EditPerformersModalContent(
           break;
         case 'whisparrMonitorNewItems':
           setWhisparrMonitorNewItems(value);
+          break;
+        case 'visibility':
+          setVisibility(value);
           break;
         case 'qualityProfileId':
           setQualityProfileId(value);
@@ -223,9 +213,25 @@ function EditPerformersModalContent(
     [setMonitored]
   );
 
+  // Hiding unmonitors the performers and deletes their artwork, so it's
+  // confirmed before it goes out.
   const onSavePressWrapper = useCallback(() => {
+    if (visibility === 'hidden') {
+      setIsConfirmHideModalOpen(true);
+      return;
+    }
+
+    save();
+  }, [visibility, save]);
+
+  const onConfirmHide = useCallback(() => {
+    setIsConfirmHideModalOpen(false);
     save();
   }, [save]);
+
+  const onCancelHide = useCallback(() => {
+    setIsConfirmHideModalOpen(false);
+  }, []);
 
   const selectedCount = performerIds.length;
 
@@ -269,6 +275,19 @@ function EditPerformersModalContent(
             helpText={translate('WhisparrMonitorNewItemsEntityHelpText')}
             value={whisparrMonitorNewItems}
             values={yesNoOptions}
+            onChange={onInputChange}
+          />
+        </FormGroup>
+
+        <FormGroup>
+          <FormLabel>{translate('Visibility')}</FormLabel>
+
+          <FormInputGroup
+            type={inputTypes.SELECT}
+            name="visibility"
+            helpText={translate('VisiblePerformerHelpText')}
+            value={visibility}
+            values={visibilityOptions}
             onChange={onInputChange}
           />
         </FormGroup>
@@ -354,6 +373,18 @@ function EditPerformersModalContent(
           </Button>
         </div>
       </ModalFooter>
+
+      <ConfirmModal
+        isOpen={isConfirmHideModalOpen}
+        kind={kinds.DANGER}
+        title={translate('HidePerformers')}
+        message={translate('HidePerformersMessageText', {
+          count: selectedCount,
+        })}
+        confirmLabel={translate('Hide')}
+        onConfirm={onConfirmHide}
+        onCancel={onCancelHide}
+      />
     </ModalContent>
   );
 }
