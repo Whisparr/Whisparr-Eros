@@ -75,14 +75,15 @@ const useAppPage = () => {
   // wait on this -- nothing renders differently for want of the command list.
   useCommands();
 
-  // The UI language identifier feeds Intl.DisplayNames in MediaInfo. Kicked off
-  // here rather than waited on: the hook falls back to English display names
-  // until it lands, exactly as the module-level singleton it replaces did.
-  useInitializeLanguage();
+  // Every date moment formats during render follows the UI language, so the app
+  // waits until its moment locale has loaded. Otherwise the first paint shows
+  // English month and day names that switch a moment later.
+  const { isInitialized: isLanguageInitialized } = useInitializeLanguage();
 
   const isPopulated =
     isImportListsPopulated &&
     isIndexerFlagsPopulated &&
+    isLanguageInitialized &&
     isLanguagesPopulated &&
     isQualityProfilesPopulated &&
     isSystemStatusPopulated &&

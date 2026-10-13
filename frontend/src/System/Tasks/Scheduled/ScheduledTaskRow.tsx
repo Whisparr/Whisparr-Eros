@@ -58,7 +58,7 @@ function ScheduledTaskRow(props: ScheduledTaskRowProps) {
     return moment
       .duration(interval, 'minutes')
       .humanize()
-      .replace(/an?(?=\s)/, '1');
+      .replace(/^an?(?=\s)/, '1');
   }, [interval]);
 
   const { lastExecutionTime, nextExecutionTime } = useMemo(() => {

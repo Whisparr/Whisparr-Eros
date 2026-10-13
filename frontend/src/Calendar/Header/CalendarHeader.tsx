@@ -55,18 +55,21 @@ function CalendarHeader() {
 
   const datePickerValue = useMemo(() => {
     if (view === 'month') {
-      return moment(time).startOf('month').format('YYYY-MM-DD');
+      return moment(time).locale('en').startOf('month').format('YYYY-MM-DD');
     }
 
     if (start) {
-      return moment(start).format('YYYY-MM-DD');
+      return moment(start).locale('en').format('YYYY-MM-DD');
     }
 
     return '';
   }, [view, time, start]);
 
   const title = useMemo(() => {
-    const timeMoment = moment(time);
+    // The store's first `time` is created when the module loads, before the UI
+    // language's moment locale has, and a clone keeps the locale it was made
+    // with. Format it in the current one.
+    const timeMoment = moment(time).locale(moment.locale());
     const startMoment = moment(start);
     const endMoment = moment(end);
 

@@ -1,6 +1,6 @@
-import moment from 'moment';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
+import loadMomentLocale from './loadMomentLocale';
 
 interface LanguageResponse {
   identifier: string;
@@ -26,14 +26,20 @@ const useLanguage = () => {
 };
 
 export const useInitializeLanguage = () => {
-  const { data } = useLanguage();
+  const { data, isFetched } = useLanguage();
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Also points moment at the UI language, so the month and day names it
-  // formats follow the same setting the day-of-week strings do. An identifier
-  // moment does not recognise leaves the current locale in place.
+  // formats follow the same setting the day-of-week strings do. Vite resolves
+  // moment to its ES build, which ships no locales, so the locale has to be
+  // loaded before moment.locale() can switch to it.
   useEffect(() => {
-    moment.locale(data?.identifier);
-  }, [data]);
+    if (isFetched) {
+      loadMomentLocale(data?.identifier).then(() => setIsInitialized(true));
+    }
+  }, [data, isFetched]);
+
+  return { isInitialized };
 };
 
 const useLanguageName = () => {

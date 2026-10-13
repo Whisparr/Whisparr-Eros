@@ -268,6 +268,12 @@ export default defineConfig({
     },
   },
 
+  // moment's locale files import moment's ES build directly. Prebundling would
+  // give the app a separate copy, so locales loaded at runtime never reach it.
+  optimizeDeps: {
+    exclude: ['moment'],
+  },
+
   resolve: {
     alias: srcAliases,
   },
