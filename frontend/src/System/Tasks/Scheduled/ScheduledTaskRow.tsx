@@ -23,7 +23,7 @@ interface ScheduledTaskRowProps {
   nextExecution: string;
 }
 
-function ScheduledTaskRow(props: ScheduledTaskRowProps) {
+function ScheduledTaskRow(props: Readonly<ScheduledTaskRowProps>) {
   const {
     taskName,
     name,
@@ -58,7 +58,7 @@ function ScheduledTaskRow(props: ScheduledTaskRowProps) {
     return moment
       .duration(interval, 'minutes')
       .humanize()
-      .replace(/an?(?=\s)/, '1');
+      .replace(/^an?(?=\s)/, '1');
   }, [interval]);
 
   const { lastExecutionTime, nextExecutionTime } = useMemo(() => {

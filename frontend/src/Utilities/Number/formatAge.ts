@@ -1,4 +1,4 @@
-import translate from 'Utilities/String/translate';
+import formatUnit from 'Utilities/Number/formatUnit';
 
 function formatAge(
   age: number | string,
@@ -11,13 +11,13 @@ function formatAge(
 
   if (days < 2 && hours) {
     if (hours < 2 && !!minutes) {
-      return `${minutes.toFixed(0)} ${hours === 1 ? translate('FormatAgeMinute') : translate('FormatAgeMinutes')}`;
+      return formatUnit(minutes, 'minute');
     }
 
-    return `${hours.toFixed(1)} ${hours === 1 ? translate('FormatAgeHour') : translate('FormatAgeHours')}`;
+    return formatUnit(hours, 'hour', { maximumFractionDigits: 1 });
   }
 
-  return `${days} ${days === 1 ? translate('FormatAgeDay') : translate('FormatAgeDays')}`;
+  return formatUnit(days, 'day');
 }
 
 export default formatAge;
