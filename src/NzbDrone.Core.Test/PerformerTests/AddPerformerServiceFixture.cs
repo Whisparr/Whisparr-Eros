@@ -40,25 +40,6 @@ namespace NzbDrone.Core.Test.PerformerTests
                   .Returns(new Performer { ForeignId = ForeignId, Name = "Co Star" });
         }
 
-        private void GivenExisting()
-        {
-            Mocker.GetMock<IPerformerService>()
-                  .Setup(s => s.FindByForeignId(ForeignId))
-                  .Returns(_existing);
-        }
-
-        private static Performer GivenNewPerformer(bool monitored)
-        {
-            return new Performer
-            {
-                ForeignId = ForeignId,
-                Monitored = monitored,
-                QualityProfileId = 3,
-                RootFolderPath = "/new",
-                Tags = new HashSet<int> { 4 }
-            };
-        }
-
         [Test]
         public void should_show_a_hidden_performer_instead_of_adding_a_duplicate()
         {
@@ -118,6 +99,25 @@ namespace NzbDrone.Core.Test.PerformerTests
                                                                      p.Visibility == PerformerVisibility.Visible)),
                           Times.Once());
             Mocker.GetMock<IPerformerService>().Verify(v => v.Update(It.IsAny<Performer>()), Times.Never());
+        }
+
+        private static Performer GivenNewPerformer(bool monitored)
+        {
+            return new Performer
+            {
+                ForeignId = ForeignId,
+                Monitored = monitored,
+                QualityProfileId = 3,
+                RootFolderPath = "/new",
+                Tags = new HashSet<int> { 4 }
+            };
+        }
+
+        private void GivenExisting()
+        {
+            Mocker.GetMock<IPerformerService>()
+                  .Setup(s => s.FindByForeignId(ForeignId))
+                  .Returns(_existing);
         }
     }
 }

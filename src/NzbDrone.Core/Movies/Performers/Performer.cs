@@ -113,12 +113,6 @@ namespace NzbDrone.Core.Movies.Performers
         }
     }
 
-    public enum PerformerVisibility
-    {
-        Hidden = 0,
-        Visible = 1
-    }
-
     public enum PerformerStatus
     {
         Active,
@@ -178,5 +172,11 @@ namespace NzbDrone.Core.Movies.Performers
         TransFemale,
         Intersex,
         NonBinary
+    }
+
+    public enum PerformerVisibility
+    {
+        Hidden = 0,
+        Visible = 1
     }
 }

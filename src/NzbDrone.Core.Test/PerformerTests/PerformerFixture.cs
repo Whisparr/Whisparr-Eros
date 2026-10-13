@@ -8,16 +8,6 @@ namespace NzbDrone.Core.Test.PerformerTests
     [TestFixture]
     public class PerformerFixture : CoreTest
     {
-        private static Performer GivenPerformer(PerformerVisibility visibility, bool monitored = false, bool moviesMonitored = false)
-        {
-            return new Performer
-            {
-                Visibility = visibility,
-                Monitored = monitored,
-                MoviesMonitored = moviesMonitored
-            };
-        }
-
         [Test]
         public void should_default_new_performers_to_visible()
         {
@@ -99,6 +89,16 @@ namespace NzbDrone.Core.Test.PerformerTests
 
             performer.Visibility.Should().Be(PerformerVisibility.Visible);
             performer.Monitored.Should().BeTrue();
+        }
+
+        private static Performer GivenPerformer(PerformerVisibility visibility, bool monitored = false, bool moviesMonitored = false)
+        {
+            return new Performer
+            {
+                Visibility = visibility,
+                Monitored = monitored,
+                MoviesMonitored = moviesMonitored
+            };
         }
     }
 }

@@ -13,7 +13,7 @@ export default function useVisiblePerformerNames(
     () =>
       Array.from(
         new Set(movies.flatMap((movie) => movie.performerForeignIds ?? []))
-      ).sort(),
+      ).sort((a, b) => a.localeCompare(b)),
     [movies]
   );
 

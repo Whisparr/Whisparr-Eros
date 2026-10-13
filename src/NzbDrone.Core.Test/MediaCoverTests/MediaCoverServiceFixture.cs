@@ -1460,15 +1460,6 @@ namespace NzbDrone.Core.Test.MediaCoverTests
                   .Verify(v => v.DeleteFolder(folder, true), Times.Once());
         }
 
-        private static Performer GivenPerformer(int id, PerformerVisibility visibility)
-        {
-            return Builder<Performer>.CreateNew()
-                .With(p => p.Id = id)
-                .With(p => p.Visibility = visibility)
-                .With(p => p.Images = new List<MediaCover.MediaCover> { new(MediaCoverTypes.Headshot, RemoteUrl) })
-                .Build();
-        }
-
         [Test]
         public void should_resize_covers_if_main_downloaded()
         {
@@ -1583,6 +1574,15 @@ namespace NzbDrone.Core.Test.MediaCoverTests
             {
                 new () { CoverType = MediaCoverTypes.Banner, RemoteUrl = remoteUrl }
             };
+        }
+
+        private static Performer GivenPerformer(int id, PerformerVisibility visibility)
+        {
+            return Builder<Performer>.CreateNew()
+                .With(p => p.Id = id)
+                .With(p => p.Visibility = visibility)
+                .With(p => p.Images = new List<MediaCover.MediaCover> { new(MediaCoverTypes.Headshot, RemoteUrl) })
+                .Build();
         }
     }
 }

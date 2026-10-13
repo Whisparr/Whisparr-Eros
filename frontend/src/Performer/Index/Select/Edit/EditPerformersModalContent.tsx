@@ -35,95 +35,48 @@ const NO_CHANGE = 'noChange';
 const SET_DATE = 'setDate';
 const CLEAR_DATE = 'clearDate';
 
-const monitoredOptions = [
-  {
-    key: NO_CHANGE,
-    get value() {
-      return translate('NoChange');
+// Every bulk select leads with a disabled "No Change"; only the choices after it
+// differ.
+function noChangeOptions(choices: [key: string, labelKey: string][]) {
+  return [
+    {
+      key: NO_CHANGE,
+      get value() {
+        return translate('NoChange');
+      },
+      disabled: true,
     },
-    disabled: true,
-  },
-  {
-    key: 'monitored',
-    get value() {
-      return translate('Monitored');
-    },
-  },
-  {
-    key: 'unmonitored',
-    get value() {
-      return translate('Unmonitored');
-    },
-  },
-];
+    ...choices.map(([key, labelKey]) => ({
+      key,
+      get value() {
+        return translate(labelKey);
+      },
+    })),
+  ];
+}
 
-const visibilityOptions = [
-  {
-    key: NO_CHANGE,
-    get value() {
-      return translate('NoChange');
-    },
-    disabled: true,
-  },
-  {
-    key: 'visible',
-    get value() {
-      return translate('Visible');
-    },
-  },
-  {
-    key: 'hidden',
-    get value() {
-      return translate('Hidden');
-    },
-  },
-];
+const monitoredOptions = noChangeOptions([
+  ['monitored', 'Monitored'],
+  ['unmonitored', 'Unmonitored'],
+]);
 
-const yesNoOptions = [
-  {
-    key: NO_CHANGE,
-    get value() {
-      return translate('NoChange');
-    },
-    disabled: true,
-  },
-  {
-    key: 'true',
-    get value() {
-      return translate('Yes');
-    },
-  },
-  {
-    key: 'false',
-    get value() {
-      return translate('No');
-    },
-  },
-];
+const visibilityOptions = noChangeOptions([
+  ['visible', 'Visible'],
+  ['hidden', 'Hidden'],
+]);
+
+const yesNoOptions = noChangeOptions([
+  ['true', 'Yes'],
+  ['false', 'No'],
+]);
+
 // A date box on its own can't say whether a blank means "leave every performer alone"
 // or "clear them all", so the choice is made in a select and the box only appears
 // once the user has asked to set a date.
-const afterDateOptions = [
-  {
-    key: NO_CHANGE,
-    get value() {
-      return translate('NoChange');
-    },
-    disabled: true,
-  },
-  {
-    key: SET_DATE,
-    get value() {
-      return translate('SetDate');
-    },
-  },
-  {
-    key: CLEAR_DATE,
-    get value() {
-      return translate('Clear');
-    },
-  },
-];
+const afterDateOptions = noChangeOptions([
+  [SET_DATE, 'SetDate'],
+  [CLEAR_DATE, 'Clear'],
+]);
 
 function EditPerformersModalContent(
   props: Readonly<EditPerformersModalContentProps>
