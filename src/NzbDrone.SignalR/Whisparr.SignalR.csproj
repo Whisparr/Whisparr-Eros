@@ -6,11 +6,11 @@
   <ItemGroup>
     <PackageReference Include="FluentValidation" Version="12.2.0" />
     <PackageReference Include="MailKit" Version="4.18.1" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.12" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.13" />
     <PackageReference Include="NLog" Version="6.2.1" />
     <PackageReference Include="NLog.Extensions.Logging" Version="6.2.1" />
-    <PackageReference Include="Sentry" Version="6.12.0" />
-    <PackageReference Include="System.Drawing.Common" Version="10.0.12" />
+    <PackageReference Include="Sentry" Version="6.12.1" />
+    <PackageReference Include="System.Drawing.Common" Version="10.0.13" />
     <ProjectReference Include="..\NzbDrone.Core\Whisparr.Core.csproj" />
     <ProjectReference Include="..\NzbDrone.Common\Whisparr.Common.csproj" />
   </ItemGroup>
