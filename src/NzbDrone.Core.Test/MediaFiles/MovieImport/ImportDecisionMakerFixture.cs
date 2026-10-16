@@ -126,6 +126,30 @@ namespace NzbDrone.Core.Test.MediaFiles.MovieImport
         }
 
         [Test]
+        public void should_switch_scene_to_movie_from_database()
+        {
+            _movie.MovieMetadata.Value.ItemType = ItemType.Scene;
+
+            var dbMovie = Builder<Movie>.CreateNew()
+                                        .With(e => e.Id = _movie.Id)
+                                        .With(e => e.Path = _movie.Path)
+                                        .With(e => e.QualityProfile = new QualityProfile { Items = Qualities.QualityFixture.GetDefaultQualities() })
+                                        .Build();
+            dbMovie.MovieMetadata.Value.ItemType = ItemType.Scene;
+
+            Mocker.GetMock<IMovieService>()
+                  .Setup(s => s.GetMovie(_movie.Id))
+                  .Returns(dbMovie);
+
+            GivenSpecifications(_pass1);
+
+            var result = Subject.GetImportDecisions(_videoFiles, _movie);
+
+            result.Single().Approved.Should().BeTrue();
+            result.Single().LocalMovie.Movie.Should().BeSameAs(dbMovie);
+        }
+
+        [Test]
         public void should_return_rejected_if_single_specs_fail()
         {
             GivenSpecifications(_fail1);
