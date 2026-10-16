@@ -58,9 +58,9 @@ export default function SceneRow(props: Readonly<SceneRowProps>) {
   const externalLink = () => {
     if (!foreignId) return '';
 
-    if (foreignId.startsWith('tpdbId:')) {
+    if (foreignId.startsWith('tpdbid:')) {
       return `https://www.theporndb.net/movies/${foreignId.replace(
-        'tpdbId:',
+        'tpdbid:',
         ''
       )}`;
     }
