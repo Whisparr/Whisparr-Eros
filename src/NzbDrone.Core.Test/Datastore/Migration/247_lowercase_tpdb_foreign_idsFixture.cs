@@ -7,24 +7,8 @@ using NzbDrone.Core.Test.Framework;
 namespace NzbDrone.Core.Test.Datastore.Migration
 {
     [TestFixture]
-    public class lowercase_tpdb_foreign_idsFixture : MigrationTest<lowercase_tpdb_foreign_ids>
+    public class Lowercase_tpdb_foreign_idsFixture : MigrationTest<lowercase_tpdb_foreign_ids>
     {
-        private static void InsertMetadata(FluentMigrator.Builders.Insert.IInsertExpressionRoot insert, string foreignId)
-        {
-            insert.IntoTable("MovieMetadata").Row(new
-            {
-                ForeignId = foreignId,
-                MetadataSource = 2,
-                Images = "[]",
-                Title = foreignId,
-                OriginalLanguage = 1,
-                Status = 1,
-                Runtime = 0,
-                Recommendations = "[]",
-                ItemType = 0
-            });
-        }
-
         [Test]
         public void should_lowercase_tpdb_movie_foreign_ids()
         {
@@ -75,6 +59,22 @@ namespace NzbDrone.Core.Test.Datastore.Migration
             var ids = db.Query<ForeignId247>("SELECT \"ForeignId\" || '' AS \"ForeignId\" FROM \"ImportExclusions\"").Select(x => x.ForeignId);
 
             ids.Should().BeEquivalentTo("tpdbid:d534a2e3-b77a-4aac-95f6-e5671faf7165");
+        }
+
+        private static void InsertMetadata(FluentMigrator.Builders.Insert.IInsertExpressionRoot insert, string foreignId)
+        {
+            insert.IntoTable("MovieMetadata").Row(new
+            {
+                ForeignId = foreignId,
+                MetadataSource = 2,
+                Images = "[]",
+                Title = foreignId,
+                OriginalLanguage = 1,
+                Status = 1,
+                Runtime = 0,
+                Recommendations = "[]",
+                ItemType = 0
+            });
         }
     }
 
