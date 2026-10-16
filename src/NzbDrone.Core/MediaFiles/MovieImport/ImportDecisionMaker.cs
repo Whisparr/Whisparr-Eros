@@ -235,16 +235,9 @@ namespace NzbDrone.Core.MediaFiles.MovieImport
 
                 if (localMovie.Movie.MovieMetadata.Value.ItemType == ItemType.Movie)
                 {
-                    if (localMovie.Movie == null)
-                    {
-                        decision = new ImportDecision(localMovie, new ImportRejection(ImportRejectionReason.InvalidMovie, "Invalid movie"));
-                    }
-                    else
-                    {
-                        _formatCalculator.UpdateMovieCustomFormats(localMovie);
+                    _formatCalculator.UpdateMovieCustomFormats(localMovie);
 
-                        decision = GetDecision(localMovie, downloadClientItem);
-                    }
+                    decision = GetDecision(localMovie, downloadClientItem);
                 }
                 else
                 {
@@ -258,23 +251,8 @@ namespace NzbDrone.Core.MediaFiles.MovieImport
                         }
                     }
 
-                    var matchedMovie = new Movie();
-
-                    if (localMovie.Movie != null)
-                    {
-                        matchedMovie = _movieService.GetMovie(localMovie.Movie.Id);
-
-                        // Switch the movie so that the QualityProfile is populated
-                        localMovie.Movie = matchedMovie;
-                    }
-                    else
-                    {
-                        matchedMovie = _movieService.FindScene(fileMovieInfo);
-                        if (matchedMovie.Title != localMovie.Movie.Title)
-                        {
-                            decision = new ImportDecision(localMovie, new ImportRejection(ImportRejectionReason.UnknownMovie, "Movie title does not match identified scene title"));
-                        }
-                    }
+                    // Switch the movie so that the QualityProfile is populated
+                    localMovie.Movie = _movieService.GetMovie(localMovie.Movie.Id);
 
                     _formatCalculator.UpdateMovieCustomFormats(localMovie);
 
