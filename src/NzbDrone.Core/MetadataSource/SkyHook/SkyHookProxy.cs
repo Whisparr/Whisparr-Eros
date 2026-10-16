@@ -87,7 +87,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             }
             else if (metadataSource == Movies.MetadataSource.TpdbMovie)
             {
-                return $"tpdbId:{externalIdResource.TpdbId}";
+                return $"{TpdbIdPrefix}{externalIdResource.TpdbId}";
             }
             else
             {
