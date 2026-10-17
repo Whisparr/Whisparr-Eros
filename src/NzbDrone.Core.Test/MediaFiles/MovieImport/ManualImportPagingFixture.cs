@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using FluentAssertions;
 using Moq;
@@ -16,22 +17,25 @@ using NzbDrone.Core.Movies;
 using NzbDrone.Core.Parser;
 using NzbDrone.Core.Parser.Model;
 using NzbDrone.Core.Test.Framework;
+using NzbDrone.Test.Common;
 
 namespace NzbDrone.Core.Test.MediaFiles.MovieImport
 {
     [TestFixture]
     public class ManualImportPagingFixture : CoreTest<ManualImportService>
     {
+        private string _rootFolder;
         private string[] _files;
 
         [SetUp]
         public void Setup()
         {
-            _files = Enumerable.Range(1, 1001).Select(i => $"/fixture/file-{i:00000}.mkv").ToArray();
-            Mocker.GetMock<IDiskProvider>().Setup(d => d.FolderExists("/fixture")).Returns(true);
+            _rootFolder = @"C:\fixture".AsOsAgnostic();
+            _files = Enumerable.Range(1, 1001).Select(i => Path.Combine(_rootFolder, $"file-{i:00000}.mkv")).ToArray();
+            Mocker.GetMock<IDiskProvider>().Setup(d => d.FolderExists(_rootFolder)).Returns(true);
             Mocker.GetMock<IDiskProvider>().Setup(d => d.GetDirectories(It.IsAny<string>())).Returns(Array.Empty<string>());
             Mocker.GetMock<IDiskProvider>().Setup(d => d.GetFileSize(It.IsAny<string>())).Returns(1024);
-            Mocker.GetMock<IDiskScanService>().Setup(d => d.GetVideoFiles("/fixture", false)).Returns(() => _files);
+            Mocker.GetMock<IDiskScanService>().Setup(d => d.GetVideoFiles(_rootFolder, false)).Returns(() => _files);
             Mocker.GetMock<IDiskScanService>().Setup(d => d.FilterPaths(It.IsAny<string>(), It.IsAny<IEnumerable<string>>(), true))
                 .Returns((string root, IEnumerable<string> paths, bool filter) => paths.ToList());
             Mocker.GetMock<IAggregationService>().Setup(a => a.Augment(It.IsAny<LocalMovie>(), null))
@@ -40,7 +44,7 @@ namespace NzbDrone.Core.Test.MediaFiles.MovieImport
 
         private PagingSpec<ManualImportItem> Page(int page, string key = "relativePath", SortDirection direction = SortDirection.Ascending)
         {
-            return Subject.GetMediaFilesPage("/fixture", null, null, false, new PagingSpec<ManualImportItem>
+            return Subject.GetMediaFilesPage(_rootFolder, null, null, false, new PagingSpec<ManualImportItem>
             {
                 Page = page, PageSize = 50, SortKey = key, SortDirection = direction
             });
@@ -82,24 +86,24 @@ namespace NzbDrone.Core.Test.MediaFiles.MovieImport
         [Test]
         public void should_keep_duplicate_basenames_in_separate_folders()
         {
-            _files = new[] { "/fixture/b/same.mkv", "/fixture/a/same.mkv" };
+            _files = new[] { Path.Combine(_rootFolder, "b", "same.mkv"), Path.Combine(_rootFolder, "a", "same.mkv") };
             Page(1).Records.Select(i => i.Path).Should().Equal(_files.Reverse());
         }
 
         [Test]
         public void should_filter_existing_files_before_paging_and_analyze_a_matched_folder_in_one_batch()
         {
-            var movie = new Movie { Id = 1, Path = "/library/example", Title = "Example" };
+            var movie = new Movie { Id = 1, Path = @"C:\library\example".AsOsAgnostic(), Title = "Example" };
             var remaining = _files.Skip(1).ToList();
             Mocker.GetMock<IParsingService>().Setup(parser => parser.GetMovie("fixture")).Returns(movie);
-            Mocker.GetMock<IDiskScanService>().Setup(disk => disk.GetVideoFiles("/fixture", true)).Returns(_files);
+            Mocker.GetMock<IDiskScanService>().Setup(disk => disk.GetVideoFiles(_rootFolder, true)).Returns(_files);
             Mocker.GetMock<IMediaFileService>().Setup(service => service.FilterExistingFiles(It.IsAny<List<string>>(), movie)).Returns(remaining);
             Mocker.GetMock<IMakeImportDecision>()
                 .Setup(maker => maker.GetImportDecisionsForPage(It.IsAny<List<string>>(), remaining, movie, null, It.IsAny<ParsedMovieInfo>(), true))
                 .Returns((List<string> page, List<string> context, Movie match, NzbDrone.Core.Download.DownloadClientItem download, ParsedMovieInfo folder, bool scene) =>
                     page.Select(file => new ImportDecision(new LocalMovie { Path = file, Movie = match })).ToList());
 
-            var result = Subject.GetMediaFilesPage("/fixture", null, null, true, new PagingSpec<ManualImportItem>
+            var result = Subject.GetMediaFilesPage(_rootFolder, null, null, true, new PagingSpec<ManualImportItem>
             {
                 Page = 2, PageSize = 50, SortKey = "relativePath", SortDirection = SortDirection.Ascending
             });
@@ -115,12 +119,12 @@ namespace NzbDrone.Core.Test.MediaFiles.MovieImport
         {
             foreach (var id in new[] { "first", "second" })
             {
-                var folder = "/" + id;
+                var folder = Path.Combine(_rootFolder, id);
                 Mocker.GetMock<ITrackedDownloadService>().Setup(service => service.Find(id))
                     .Returns(new TrackedDownload { ImportItem = new DownloadClientItem { OutputPath = new OsPath(folder) } });
                 Mocker.GetMock<IDiskProvider>().Setup(disk => disk.FolderExists(folder)).Returns(true);
                 Mocker.GetMock<IDiskScanService>().Setup(disk => disk.GetVideoFiles(folder, false))
-                    .Returns(Enumerable.Range(1, 30).Select(i => $"{folder}/{i:000}.mkv").ToArray());
+                    .Returns(Enumerable.Range(1, 30).Select(i => Path.Combine(folder, $"{i:000}.mkv")).ToArray());
             }
 
             var spec = new PagingSpec<ManualImportItem>
@@ -131,10 +135,10 @@ namespace NzbDrone.Core.Test.MediaFiles.MovieImport
 
             result.TotalRecords.Should().Be(60);
             result.Records.Should().HaveCount(10);
-            result.Records.First().Path.Should().Be("/second/021.mkv");
+            result.Records.First().Path.Should().Be(Path.Combine(_rootFolder, "second", "021.mkv"));
             result.Records.Should().OnlyContain(item => item.DownloadId == "second");
             Mocker.GetMock<IAggregationService>().Verify(a => a.Augment(It.IsAny<LocalMovie>(), null), Times.Exactly(10));
-            Mocker.GetMock<IDiskProvider>().Verify(disk => disk.GetFileSize("/first/001.mkv"), Times.Never());
+            Mocker.GetMock<IDiskProvider>().Verify(disk => disk.GetFileSize(Path.Combine(_rootFolder, "first", "001.mkv")), Times.Never());
         }
 
         [Test]
@@ -153,11 +157,11 @@ namespace NzbDrone.Core.Test.MediaFiles.MovieImport
         [Test]
         public void should_page_library_files_before_mapping_their_metadata()
         {
-            var movie = new Movie { Id = 7, Path = "/fixture", Title = "Example" };
+            var movie = new Movie { Id = 7, Path = _rootFolder, Title = "Example" };
             Mocker.GetMock<IMovieService>().Setup(service => service.GetMovie(7)).Returns(movie);
             Mocker.GetMock<IMediaFileService>().Setup(service => service.GetFilesByMovie(7))
                 .Returns(new List<MovieFile> { new MovieFile { Id = 8, Path = _files[0], RelativePath = "file-00001.mkv" } });
-            Mocker.GetMock<IDiskScanService>().Setup(disk => disk.GetVideoFiles("/fixture", true)).Returns(_files);
+            Mocker.GetMock<IDiskScanService>().Setup(disk => disk.GetVideoFiles(_rootFolder, true)).Returns(_files);
             var spec = new PagingSpec<ManualImportItem>
             {
                 Page = 2, PageSize = 50, SortKey = "relativePath", SortDirection = SortDirection.Ascending
@@ -187,7 +191,7 @@ namespace NzbDrone.Core.Test.MediaFiles.MovieImport
         [Test]
         public void should_return_empty_results_for_missing_paths()
         {
-            Mocker.GetMock<IDiskProvider>().Setup(d => d.FolderExists("/fixture")).Returns(false);
+            Mocker.GetMock<IDiskProvider>().Setup(d => d.FolderExists(_rootFolder)).Returns(false);
             Page(1).TotalRecords.Should().Be(0);
         }
     }
