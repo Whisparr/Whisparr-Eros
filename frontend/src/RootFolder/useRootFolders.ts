@@ -5,7 +5,11 @@ import useApiQuery from 'Helpers/Hooks/useApiQuery';
 import RootFolder from 'typings/RootFolder';
 import sortByProp from 'Utilities/Array/sortByProp';
 
-export const ROOT_FOLDERS_QUERY_KEY = ['/rootFolder'];
+const SUMMARY_PARAMS = { includeImportFiles: false };
+export const ROOT_FOLDERS_QUERY_KEY = [
+  '/rootFolder',
+  JSON.stringify(SUMMARY_PARAMS),
+];
 
 const DEFAULT_ROOT_FOLDERS: ReadonlyArray<RootFolder> = [];
 
@@ -15,6 +19,7 @@ const DEFAULT_ROOT_FOLDERS: ReadonlyArray<RootFolder> = [];
 const useRootFolders = () => {
   const result = useApiQuery<RootFolder[]>({
     path: '/rootFolder',
+    queryParams: SUMMARY_PARAMS,
   });
 
   return {
@@ -36,6 +41,8 @@ export const useSortedRootFolders = () => {
 export const useRootFolder = (id: number) => {
   return useApiQuery<RootFolder>({
     path: `/rootFolder/${id}`,
+    queryParams: SUMMARY_PARAMS,
+    queryOptions: { placeholderData: undefined, refetchOnWindowFocus: false },
   });
 };
 
@@ -110,19 +117,22 @@ export const useRefreshRootFolder = () => {
     RootFolder,
     { id: number }
   >({
-    path: ({ id }) => `/rootFolder/refresh/${id}`,
+    path: ({ id }) => `/rootFolder/refresh/${id}?includeImportFiles=false`,
     method: 'POST',
     mutationOptions: {
-      onSuccess: (rootFolder) => {
+      onSuccess: async (rootFolder) => {
         queryClient.setQueryData<ReadonlyArray<RootFolder>>(
           ROOT_FOLDERS_QUERY_KEY,
           (rootFolders) => upsertRootFolder(rootFolders, rootFolder)
         );
 
         queryClient.setQueryData<RootFolder>(
-          [`/rootFolder/${rootFolder.id}`],
+          [`/rootFolder/${rootFolder.id}`, JSON.stringify(SUMMARY_PARAMS)],
           rootFolder
         );
+        await queryClient.invalidateQueries({
+          queryKey: [`/rootFolder/${rootFolder.id}/importfiles`],
+        });
       },
     },
   });

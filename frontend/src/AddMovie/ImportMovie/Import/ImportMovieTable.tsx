@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import Scroller from 'Components/Scroller/Scroller';
 import { HORIZONTAL } from 'Helpers/Props/scrollDirections';
 import { SortDirection } from 'Helpers/Props/sortDirections';
@@ -22,7 +22,6 @@ interface ImportMovieTableProps {
   readonly onSortPress: () => void;
   readonly onSelectAllChange: (opts: { value: boolean }) => void;
   readonly onSelectedChange: (opts: SelectStateInputProps) => void;
-  readonly onRemoveSelectedStateItem: (id: string) => void;
   readonly onLookup: (opts: {
     id: string;
     term: string;
@@ -47,54 +46,10 @@ function ImportMovieTable({
   onSortPress,
   onSelectAllChange,
   onSelectedChange,
-  onRemoveSelectedStateItem,
   onLookup,
   onMovieSelect,
   onItemValueChange,
 }: ImportMovieTableProps) {
-  const prevItemsRef = useRef<ImportItem[]>([]);
-
-  // Auto-select/deselect rows as lookup results come in — mirrors the
-  // componentDidUpdate logic from the original class component.
-  useEffect(() => {
-    const prevItems = prevItemsRef.current;
-
-    prevItems.forEach((prevItem) => {
-      const { id } = prevItem;
-      const item = items.find((i) => i.id === id);
-
-      if (!item) {
-        onRemoveSelectedStateItem(id);
-        return;
-      }
-
-      const { selectedMovie } = item;
-      const isSelected = selectedState[id];
-
-      // A selected movie that is an existing movie should be deselected
-      if (
-        (!selectedMovie && prevItem.selectedMovie) ||
-        (selectedMovie?.isExisting && !prevItem.selectedMovie)
-      ) {
-        onSelectedChange({ id, value: false, shiftKey: false });
-        return;
-      }
-
-      // Row is selected but no movie is chosen — deselect
-      if (isSelected && !selectedMovie) {
-        onSelectedChange({ id, value: false, shiftKey: false });
-        return;
-      }
-
-      // A new movie was selected — auto-select the row
-      if (selectedMovie && selectedMovie !== prevItem.selectedMovie) {
-        onSelectedChange({ id, value: true, shiftKey: false });
-      }
-    });
-
-    prevItemsRef.current = items;
-  }, [items, onRemoveSelectedStateItem, onSelectedChange, selectedState]);
-
   if (!items.length) {
     return null;
   }

@@ -50,6 +50,25 @@ namespace Whisparr.Api.V3.ManualImport
             return _manualImportService.GetMediaFiles(folder, null, movieId, filterExistingFiles).ToResource().Select(AddQualityWeight).ToList();
         }
 
+        [HttpGet("paged")]
+        [Produces("application/json")]
+        public PagingResource<ManualImportResource> GetMediaFilesPage([FromQuery] PagingRequestResource request, string folder, string downloadId, int? movieId, bool filterExistingFiles = true, [FromQuery] string[] downloadIds = null)
+        {
+            var spec = ImportPagingRequest.ToSpec<ManualImportItem>(request, "relativePath", "size");
+            var result = downloadIds?.Length > 0
+                ? _manualImportService.GetMediaFilesPage(folder, downloadId, movieId, filterExistingFiles, spec, downloadIds)
+                : _manualImportService.GetMediaFilesPage(folder, downloadId, movieId, filterExistingFiles, spec);
+            return new PagingResource<ManualImportResource>
+            {
+                Page = result.Page,
+                PageSize = result.PageSize,
+                SortKey = result.SortKey,
+                SortDirection = result.SortDirection,
+                TotalRecords = result.TotalRecords,
+                Records = result.Records.ToResource().Select(AddQualityWeight).ToList()
+            };
+        }
+
         [HttpPost]
         [Consumes("application/json")]
         public List<ManualImportReprocessResource> ReprocessItems([FromBody] List<ManualImportReprocessResource> items)

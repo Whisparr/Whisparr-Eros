@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import fetchJson from 'Utilities/Fetch/fetchJson';
 import getQueryPath from 'Utilities/Fetch/getQueryPath';
 import {
@@ -13,87 +13,90 @@ interface QueueEntry {
   itemType?: ImportItemType;
 }
 
-interface UseImportLookupQueueResult {
-  queueLookup: (entry: QueueEntry & { topOfQueue?: boolean }) => void;
-  lookupUnsearched: (
-    items: {
-      id: string;
-      term: string;
-      itemType?: ImportItemType;
-      isPopulated: boolean;
-    }[]
-  ) => void;
-  cancelQueue: () => void;
-  isLookingUp: boolean;
-}
-
-function useImportLookupQueue(
-  dispatch: React.Dispatch<ImportAction>
-): UseImportLookupQueueResult {
+function useImportLookupQueue(dispatch: React.Dispatch<ImportAction>) {
   const queueRef = useRef<QueueEntry[]>([]);
   const abortRef = useRef<AbortController | null>(null);
   const processingRef = useRef(false);
+  const generationRef = useRef(0);
   const [isLookingUp, setIsLookingUp] = useState(false);
 
   const processQueue = useCallback(async () => {
-    if (processingRef.current || queueRef.current.length === 0) {
-      if (queueRef.current.length === 0) {
-        setIsLookingUp(false);
-        dispatch({ type: 'SET_LOOKING_UP', value: false });
-      }
-
+    if (processingRef.current || !queueRef.current.length) {
       return;
     }
 
     processingRef.current = true;
-    const entry = queueRef.current.shift()!;
+    const generation = generationRef.current;
+    setIsLookingUp(true);
+    dispatch({ type: 'SET_LOOKING_UP', value: true });
 
-    dispatch({ type: 'SET_ITEM_FETCHING', id: entry.id });
-    dispatch({ type: 'SET_QUEUED', id: entry.id, queued: false });
+    while (generation === generationRef.current && queueRef.current.length) {
+      const entry = queueRef.current.shift()!;
+      const controller = new AbortController();
+      abortRef.current = controller;
+      dispatch({ type: 'SET_ITEM_FETCHING', id: entry.id });
+      dispatch({ type: 'SET_QUEUED', id: entry.id, queued: false });
+      const params = new URLSearchParams({ term: entry.term });
 
-    const controller = new AbortController();
-    abortRef.current = controller;
+      if (entry.itemType) {
+        params.set('itemType', entry.itemType);
+      }
 
-    // An unset itemType is left off the query so the server infers it from
-    // the file name rather than forcing a movie search.
-    const params = new URLSearchParams({ term: entry.term });
+      try {
+        const results = await fetchJson<MovieLookupResult[], never>({
+          path: getQueryPath(`/movie/lookup?${params.toString()}`),
+          method: 'GET',
+          headers: {
+            'X-Api-Key': globalThis.Whisparr.apiKey,
+            'X-Whisparr-Client': 'Whisparr',
+          },
+          signal: controller.signal,
+        });
 
-    if (entry.itemType) {
-      params.set('itemType', entry.itemType);
+        if (generation === generationRef.current) {
+          dispatch({ type: 'SET_LOOKUP_RESULTS', id: entry.id, results });
+        }
+      } catch (error) {
+        if (
+          generation === generationRef.current &&
+          (error as Error).name !== 'AbortError'
+        ) {
+          dispatch({
+            type: 'SET_LOOKUP_ERROR',
+            id: entry.id,
+            error: error as Error,
+          });
+        }
+      }
     }
 
-    try {
-      const results = await fetchJson<MovieLookupResult[], never>({
-        path: getQueryPath(`/movie/lookup?${params.toString()}`),
-        method: 'GET',
-        headers: {
-          'X-Api-Key': globalThis.Whisparr.apiKey,
-          'X-Whisparr-Client': 'Whisparr',
-        },
-        signal: controller.signal,
-      });
-
-      dispatch({ type: 'SET_LOOKUP_RESULTS', id: entry.id, results });
-    } catch (err) {
-      if ((err as Error).name !== 'AbortError') {
-        dispatch({
-          type: 'SET_LOOKUP_ERROR',
-          id: entry.id,
-          error: err as Error,
-        });
-      }
-    } finally {
+    // An aborted worker must not clear the new page's worker or advance its queue.
+    if (generation === generationRef.current) {
       processingRef.current = false;
       abortRef.current = null;
-
-      if (queueRef.current.length > 0) {
-        processQueue();
-      } else {
-        setIsLookingUp(false);
-        dispatch({ type: 'SET_LOOKING_UP', value: false });
-      }
+      setIsLookingUp(false);
+      dispatch({ type: 'SET_LOOKING_UP', value: false });
     }
   }, [dispatch]);
+
+  const cancelQueue = useCallback(() => {
+    generationRef.current += 1;
+    queueRef.current = [];
+    abortRef.current?.abort();
+    abortRef.current = null;
+    processingRef.current = false;
+    setIsLookingUp(false);
+    dispatch({ type: 'CANCEL_LOOKUPS' });
+  }, [dispatch]);
+
+  useEffect(
+    () => () => {
+      generationRef.current += 1;
+      queueRef.current = [];
+      abortRef.current?.abort();
+    },
+    []
+  );
 
   const queueLookup = useCallback(
     (entry: QueueEntry & { topOfQueue?: boolean }) => {
@@ -101,79 +104,37 @@ function useImportLookupQueue(
         return;
       }
 
-      // Remove any existing entry for this id
-      const existingIdx = queueRef.current.findIndex((e) => e.id === entry.id);
-
-      if (existingIdx >= 0) {
-        queueRef.current.splice(existingIdx, 1);
-      }
-
-      const queueEntry: QueueEntry = {
-        id: entry.id,
-        term: entry.term,
-        itemType: entry.itemType,
-      };
+      queueRef.current = queueRef.current.filter(
+        (queued) => queued.id !== entry.id
+      );
 
       if (entry.topOfQueue) {
-        // Abort the current in-flight lookup so the user's search takes priority
+        generationRef.current += 1;
         abortRef.current?.abort();
-        queueRef.current.unshift(queueEntry);
+        processingRef.current = false;
+        dispatch({ type: 'CANCEL_LOOKUPS' });
+        queueRef.current.unshift(entry);
+        queueRef.current.forEach(({ id }) =>
+          dispatch({ type: 'SET_QUEUED', id, queued: true })
+        );
       } else {
-        queueRef.current.push(queueEntry);
+        queueRef.current.push(entry);
+        dispatch({ type: 'SET_QUEUED', id: entry.id, queued: true });
       }
 
-      dispatch({ type: 'SET_QUEUED', id: entry.id, queued: true });
-
-      if (!processingRef.current) {
-        setIsLookingUp(true);
-        dispatch({ type: 'SET_LOOKING_UP', value: true });
-        processQueue();
-      }
+      processQueue();
     },
     [dispatch, processQueue]
   );
 
   const lookupUnsearched = useCallback(
-    (
-      items: {
-        id: string;
-        term: string;
-        itemType?: ImportItemType;
-        isPopulated: boolean;
-      }[]
-    ) => {
-      if (processingRef.current || queueRef.current.length > 0) {
-        return;
-      }
-
-      items.forEach((item) => {
-        if (!item.isPopulated) {
-          queueRef.current.push({
-            id: item.id,
-            term: item.term,
-            itemType: item.itemType,
-          });
-          dispatch({ type: 'SET_QUEUED', id: item.id, queued: true });
-        }
-      });
-
-      if (queueRef.current.length > 0) {
-        setIsLookingUp(true);
-        dispatch({ type: 'SET_LOOKING_UP', value: true });
-        processQueue();
+    (items: (QueueEntry & { isPopulated: boolean })[]) => {
+      if (!processingRef.current && !queueRef.current.length) {
+        items.filter((item) => !item.isPopulated).forEach(queueLookup);
       }
     },
-    [dispatch, processQueue]
+    [queueLookup]
   );
-
-  const cancelQueue = useCallback(() => {
-    queueRef.current.splice(0);
-    abortRef.current?.abort();
-    abortRef.current = null;
-    processingRef.current = false;
-    setIsLookingUp(false);
-    dispatch({ type: 'SET_LOOKING_UP', value: false });
-  }, [dispatch]);
 
   return { queueLookup, lookupUnsearched, cancelQueue, isLookingUp };
 }

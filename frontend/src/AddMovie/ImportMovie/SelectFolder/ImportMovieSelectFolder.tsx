@@ -160,7 +160,7 @@ function ImportMovieSelectFolder({ itemType }: ImportMovieSelectFolderProps) {
                           id={rootFolder.id}
                           path={rootFolder.path}
                           freeSpace={rootFolder.freeSpace}
-                          importFiles={rootFolder.importFiles}
+                          importFileCount={rootFolder.importFileCount}
                           itemType={itemType}
                         />
                       ))}
