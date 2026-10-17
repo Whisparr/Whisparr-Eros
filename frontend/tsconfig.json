@@ -27,6 +27,8 @@
   "include": [
       "./src/**/*",
       "./vite.config.mts",
+      "./tests/**/*.ts",
+      "./tests/**/*.tsx",
       "./typings/*.ts"
   ],
   "exclude": [

@@ -11,6 +11,7 @@ using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Instrumentation.Extensions;
 using NzbDrone.Core.Configuration;
+using NzbDrone.Core.Datastore;
 using NzbDrone.Core.MediaFiles;
 using NzbDrone.Core.Movies;
 using NzbDrone.Core.Organizer;
@@ -21,11 +22,12 @@ namespace NzbDrone.Core.RootFolders
     public interface IRootFolderService
     {
         List<RootFolder> All();
-        List<RootFolder> AllWithImportFiles();
+        List<RootFolder> AllWithImportFiles(bool includeImportFiles = true);
+        PagingSpec<ImportFile> GetImportFiles(int id, PagingSpec<ImportFile> pagingSpec);
         RootFolder Add(RootFolder rootDir);
         void Remove(int id);
-        RootFolder Get(int id);
-        RootFolder Refresh(int id);
+        RootFolder Get(int id, bool includeImportFiles = true);
+        RootFolder Refresh(int id, bool includeImportFiles = true);
         string GetBestRootFolderPath(string path, List<RootFolder> rootFolders = null);
     }
 
@@ -86,7 +88,7 @@ namespace NzbDrone.Core.RootFolders
             return rootFolders;
         }
 
-        public List<RootFolder> AllWithImportFiles()
+        public List<RootFolder> AllWithImportFiles(bool includeImportFiles = true)
         {
             var rootFolders = _rootFolderRepository.All().ToList();
 
@@ -98,7 +100,7 @@ namespace NzbDrone.Core.RootFolders
                 {
                     if (folder.Path.IsPathValid(PathValidationType.CurrentOs))
                     {
-                        GetDetails(folder, moviePaths, true);
+                        GetDetails(folder, moviePaths, true, includeImportFiles: includeImportFiles);
                     }
                 }
 
@@ -214,13 +216,26 @@ namespace NzbDrone.Core.RootFolders
             return results.OrderBy(u => u.Name, StringComparer.InvariantCultureIgnoreCase).ToList();
         }
 
-        public RootFolder Get(int id)
+        public RootFolder Get(int id, bool includeImportFiles = true)
         {
             var rootFolder = _rootFolderRepository.Get(id);
 
-            rootFolder.ImportFiles = _importFileRepository.FindByRootFolderId(rootFolder.Id);
+            SetImportFiles(rootFolder, includeImportFiles);
 
             return rootFolder;
+        }
+
+        public PagingSpec<ImportFile> GetImportFiles(int id, PagingSpec<ImportFile> pagingSpec)
+        {
+            _rootFolderRepository.Get(id);
+            pagingSpec.FilterExpressions.Add(file => file.RootFolderId == id);
+            return _importFileRepository.GetPaged(pagingSpec);
+        }
+
+        private void SetImportFiles(RootFolder rootFolder, bool includeImportFiles)
+        {
+            rootFolder.ImportFileCount = _importFileRepository.Count(file => file.RootFolderId == rootFolder.Id);
+            rootFolder.ImportFiles = includeImportFiles ? _importFileRepository.FindByRootFolderId(rootFolder.Id) : null;
         }
 
         public string GetBestRootFolderPath(string path, List<RootFolder> rootFolders = null)
@@ -228,7 +243,7 @@ namespace NzbDrone.Core.RootFolders
             return _cache.Get(path, () => GetBestRootFolderPathInternal(path, rootFolders), TimeSpan.FromDays(1));
         }
 
-        private void GetDetails(RootFolder rootFolder, Dictionary<int, string> moviePaths, bool timeout, bool getMovieFolder = false)
+        private void GetDetails(RootFolder rootFolder, Dictionary<int, string> moviePaths, bool timeout, bool getMovieFolder = false, bool includeImportFiles = true)
         {
             Task.Run(() =>
             {
@@ -237,7 +252,7 @@ namespace NzbDrone.Core.RootFolders
                     rootFolder.Accessible = true;
                     rootFolder.FreeSpace = _diskProvider.GetAvailableSpace(rootFolder.Path);
                     rootFolder.TotalSpace = _diskProvider.GetTotalSize(rootFolder.Path);
-                    rootFolder.ImportFiles = _importFileRepository.FindByRootFolderId(rootFolder.Id);
+                    SetImportFiles(rootFolder, includeImportFiles);
                 }
             }).Wait(timeout ? 5000 : -1);
         }
@@ -258,9 +273,9 @@ namespace NzbDrone.Core.RootFolders
             return possibleRootFolder.Path.GetCleanPath();
         }
 
-        public RootFolder Refresh(int id)
+        public RootFolder Refresh(int id, bool includeImportFiles = true)
         {
-            var rootFolder = Get(id);
+            var rootFolder = Get(id, false);
 
             // We want to make sure we have the latest movie paths in case any have been added or removed since the root folder was loaded
             var importFolder = GetImportFolder(rootFolder.Path);
@@ -305,7 +320,7 @@ namespace NzbDrone.Core.RootFolders
             _importFileRepository.DeleteMany(toRemove.Select(u => u.Id).ToList());
 
             var moviePaths = _movieRepository.AllMoviePaths();
-            GetDetails(rootFolder, moviePaths, true);
+            GetDetails(rootFolder, moviePaths, true, includeImportFiles: includeImportFiles);
 
             _logger.ProgressInfo("Scanning {0} Completed", importFolder);
             return rootFolder;

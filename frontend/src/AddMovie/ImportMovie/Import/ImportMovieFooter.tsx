@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import FormInputGroup from 'Components/Form/FormInputGroup';
 import Icon from 'Components/Icon';
 import Button from 'Components/Link/Button';
@@ -16,17 +16,18 @@ const MIXED = 'mixed';
 
 function isMixed(
   items: ImportItem[],
-  selectedIds: string[],
+  selectedIds: ReadonlySet<string>,
   key: 'monitor' | 'qualityProfileId',
   defaultValue: string | number
 ): boolean {
   return items.some(
-    (item) => selectedIds.includes(item.id) && item[key] !== defaultValue
+    (item) => selectedIds.has(item.id) && item[key] !== defaultValue
   );
 }
 
 interface ImportMovieFooterProps {
   items: ImportItem[];
+  lookupItems: ImportItem[];
   selectedIds: string[];
   defaultMonitor: string;
   defaultQualityProfileId: number;
@@ -41,6 +42,7 @@ interface ImportMovieFooterProps {
 
 function ImportMovieFooter({
   items,
+  lookupItems,
   selectedIds,
   defaultMonitor,
   defaultQualityProfileId,
@@ -53,15 +55,21 @@ function ImportMovieFooter({
   onCancelLookup,
 }: Readonly<ImportMovieFooterProps>) {
   const selectedCount = selectedIds.length;
-  const isMonitorMixed = isMixed(items, selectedIds, 'monitor', defaultMonitor);
+  const selectedIdSet = useMemo(() => new Set(selectedIds), [selectedIds]);
+  const isMonitorMixed = isMixed(
+    items,
+    selectedIdSet,
+    'monitor',
+    defaultMonitor
+  );
   const isQualityProfileIdMixed = isMixed(
     items,
-    selectedIds,
+    selectedIdSet,
     'qualityProfileId',
     defaultQualityProfileId
   );
   const hasUnsearchedItems =
-    !isLookingUp && items.some((item) => !item.isPopulated);
+    !isLookingUp && lookupItems.some((item) => !item.isPopulated);
 
   const [monitor, setMonitor] = useState<string>(defaultMonitor);
   const [qualityProfileId, setQualityProfileId] = useState<number | string>(

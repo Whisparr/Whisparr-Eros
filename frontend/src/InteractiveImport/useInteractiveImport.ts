@@ -1,10 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import useApiMutation from 'Helpers/Hooks/useApiMutation';
 import useApiQuery from 'Helpers/Hooks/useApiQuery';
+import { PagedQueryResponse } from 'Helpers/Hooks/usePagedApiQuery';
 import Language from 'Language/Language';
 import { QualityModel } from 'Quality/Quality';
-import clientSideFilterAndSort from 'Utilities/Filter/clientSideFilterAndSort';
-import naturalExpansion from 'Utilities/String/naturalExpansion';
 import InteractiveImport from './InteractiveImport';
 import { useInteractiveImportOptions } from './interactiveImportOptionsStore';
 
@@ -12,19 +11,13 @@ export const MANUAL_IMPORT_PATH = '/manualimport';
 
 const DEFAULT_ITEMS: ReadonlyArray<InteractiveImport> = [];
 
-const SORT_PREDICATES = {
-  relativePath: (item: InteractiveImport) =>
-    naturalExpansion(item.relativePath.toLowerCase()),
-  movie: (item: InteractiveImport) => item.movie?.sortTitle ?? '',
-  quality: (item: InteractiveImport) => item.qualityWeight || 0,
-  customFormats: (item: InteractiveImport) => item.customFormatScore,
-};
-
 export interface InteractiveImportParams {
   downloadIds?: string[];
   movieId?: number;
   folder?: string;
   filterExistingFiles?: boolean;
+  page: number;
+  pageSize: number;
 }
 
 interface ReprocessInteractiveImportItem {
@@ -53,31 +46,77 @@ export default function useInteractiveImport(params: InteractiveImportParams) {
   const { sortKey, sortDirection } = useInteractiveImportOptions();
   const [changes, setChanges] = useState<ItemChanges>({});
 
-  const { downloadIds, movieId, folder, filterExistingFiles } = params;
+  const { downloadIds, movieId, folder, filterExistingFiles, page, pageSize } =
+    params;
+  const scope = JSON.stringify([
+    downloadIds,
+    movieId,
+    folder,
+    filterExistingFiles,
+  ]);
+  const currentScope = useRef(scope);
+  currentScope.current = scope;
+  const [cache, setCache] = useState<{
+    scope: string;
+    rows: InteractiveImport[];
+  }>({ scope, rows: [] });
 
   const {
     data,
     isFetching,
     isFetched,
     error: fetchError,
-  } = useApiQuery<InteractiveImport[]>({
-    path: MANUAL_IMPORT_PATH,
-    queryParams: { downloadIds, movieId, folder, filterExistingFiles },
+  } = useApiQuery<PagedQueryResponse<InteractiveImport>>({
+    path: `${MANUAL_IMPORT_PATH}/paged`,
+    queryParams: {
+      downloadIds,
+      movieId,
+      folder,
+      filterExistingFiles,
+      page,
+      pageSize,
+      sortKey: ['relativePath', 'size'].includes(sortKey)
+        ? sortKey
+        : 'relativePath',
+      sortDirection,
+    },
     queryOptions: {
       // The list is only meaningful while the modal is open, and a stale one
       // would be handed straight back the next time it opens.
       gcTime: 0,
+      placeholderData: undefined,
       refetchOnWindowFocus: false,
     },
   });
 
-  const originalItems = data ?? DEFAULT_ITEMS;
+  const originalItems = useMemo(() => {
+    const rows = new Map(
+      (cache.scope === scope ? cache.rows : DEFAULT_ITEMS).map((item) => [
+        item.id,
+        item,
+      ])
+    );
+    data?.records.forEach((item) => rows.set(item.id, item));
+    return Array.from(rows.values());
+  }, [cache, scope, data]);
 
-  // Switching between all files and unmapped files fetches a different list, so
-  // the edits made against the old one no longer apply.
+  useEffect(() => {
+    if (data) {
+      setCache((previous) => {
+        const rows = new Map(
+          (previous.scope === scope ? previous.rows : DEFAULT_ITEMS).map(
+            (item) => [item.id, item]
+          )
+        );
+        data.records.forEach((item) => rows.set(item.id, item));
+        return { scope, rows: Array.from(rows.values()) };
+      });
+    }
+  }, [data, scope]);
+
   useEffect(() => {
     setChanges({});
-  }, [filterExistingFiles]);
+  }, [scope]);
 
   const mergedItems = useMemo(() => {
     return originalItems.map((item) =>
@@ -85,29 +124,28 @@ export default function useInteractiveImport(params: InteractiveImportParams) {
     );
   }, [originalItems, changes]);
 
-  const { data: items } = useMemo(() => {
-    return clientSideFilterAndSort(mergedItems, {
-      sortKey,
-      sortDirection,
-      sortPredicates: SORT_PREDICATES,
-    });
-  }, [mergedItems, sortKey, sortDirection]);
+  const pageItems = useMemo(() => {
+    const byId = new Map(mergedItems.map((item) => [item.id, item]));
+    return (data?.records ?? DEFAULT_ITEMS).map((item) => byId.get(item.id)!);
+  }, [data, mergedItems]);
+  const totalRecords = data?.totalRecords ?? 0;
 
   const { mutate: reprocess, isPending: isReprocessing } = useApiMutation<
     InteractiveImport[],
+    { scope: string; items: ReprocessInteractiveImportItem[] },
     ReprocessInteractiveImportItem[]
   >({
     path: MANUAL_IMPORT_PATH,
     method: 'POST',
+    body: (request) => request.items,
     mutationOptions: {
-      onSuccess: (reprocessedItems) => {
+      onSuccess: (reprocessedItems, request) => {
+        if (currentScope.current !== request.scope) return;
         setChanges((previous) => {
           const next = { ...previous };
-
           reprocessedItems.forEach(({ id, ...rest }) => {
             next[id] = { ...next[id], ...rest };
           });
-
           return next;
         });
       },
@@ -156,14 +194,16 @@ export default function useInteractiveImport(params: InteractiveImportParams) {
       );
 
       if (payload.length) {
-        reprocess(payload);
+        reprocess({ scope, items: payload });
       }
     },
-    [mergedItems, reprocess]
+    [mergedItems, reprocess, scope]
   );
 
   return {
-    items,
+    items: mergedItems,
+    pageItems,
+    totalRecords,
     originalItems,
     isFetching,
     isFetched,

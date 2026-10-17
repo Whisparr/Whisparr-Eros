@@ -11,15 +11,11 @@ import translate from 'Utilities/String/translate';
 import { ImportItemType } from '../ImportMovieTypes';
 import styles from './ImportMovieRootFolderRow.module.css';
 
-interface ImportFile {
-  name: string;
-}
-
 interface ImportMovieRootFolderRowProps {
   id: number;
   path: string;
   freeSpace?: number;
-  importFiles: ImportFile[];
+  importFileCount: number;
   itemType: ImportItemType;
 }
 
@@ -27,7 +23,7 @@ function ImportMovieRootFolderRow({
   id,
   path,
   freeSpace,
-  importFiles,
+  importFileCount,
   itemType,
 }: Readonly<ImportMovieRootFolderRowProps>) {
   const { refreshRootFolder } = useRefreshRootFolder();
@@ -37,7 +33,7 @@ function ImportMovieRootFolderRow({
     itemType === 'movie'
       ? `/add/import/movies/${id}`
       : `/add/import/scenes/${id}`;
-  const importFilesCount = importFiles.length || '-';
+  const importFilesCount = importFileCount || '-';
 
   const handleRefreshPress = useCallback(() => {
     refreshRootFolder({ id });
