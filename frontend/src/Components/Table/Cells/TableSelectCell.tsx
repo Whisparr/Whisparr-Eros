@@ -10,6 +10,7 @@ interface TableSelectCellProps extends Omit<TableRowCellProps, 'id'> {
   className?: string;
   id: number | string;
   isSelected?: boolean;
+  registerOnMount?: boolean;
   onSelectedChange: (options: SelectStateInputProps) => void;
 }
 
@@ -17,6 +18,7 @@ function TableSelectCell({
   className = styles.selectCell,
   id,
   isSelected = false,
+  registerOnMount = true,
   onSelectedChange,
   ...otherProps
 }: TableSelectCellProps) {
@@ -33,6 +35,10 @@ function TableSelectCell({
   );
 
   useEffect(() => {
+    if (!registerOnMount) {
+      return;
+    }
+
     handleSelectedChange.current({
       id,
       value: initialIsSelected.current,
@@ -42,7 +48,7 @@ function TableSelectCell({
     return () => {
       handleSelectedChange.current({ id, value: null, shiftKey: false });
     };
-  }, [id]);
+  }, [id, registerOnMount]);
 
   return (
     <TableRowCell className={className}>

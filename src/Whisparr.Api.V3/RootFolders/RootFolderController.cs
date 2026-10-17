@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
@@ -64,7 +65,7 @@ namespace Whisparr.Api.V3.RootFolders
         /// <returns>The <see cref="RootFolderResource"/> matching the provided id.</returns>
         protected override RootFolderResource GetResourceById(int id)
         {
-            return _rootFolderService.Get(id).ToResource();
+            return _rootFolderService.Get(id, IncludeImportFiles).ToResource();
         }
 
         /// <summary>
@@ -86,20 +87,39 @@ namespace Whisparr.Api.V3.RootFolders
         /// </summary>
         /// <returns>List of <see cref="RootFolderResource"/>.</returns>
         [HttpGet]
-        public List<RootFolderResource> GetRootFolders()
+        public List<RootFolderResource> GetRootFolders(bool includeImportFiles = true)
         {
-            return _rootFolderService.AllWithImportFiles().ToResource();
+            return _rootFolderService.AllWithImportFiles(includeImportFiles).ToResource();
         }
 
         /// <summary>
         /// Refreshes the specified root folder (e.g. re-scan for media).
         /// </summary>
         /// <param name="id">Id of the root folder to refresh.</param>
+        /// <param name="includeImportFiles">Whether to embed the complete import file list.</param>
         /// <returns>The refreshed <see cref="RootFolderResource"/>.</returns>
         [HttpPost("refresh/{id}")]
-        public RootFolderResource Refresh([FromRoute] int id)
+        public RootFolderResource Refresh([FromRoute] int id, bool includeImportFiles = true)
         {
-            return _rootFolderService.Refresh(id).ToResource();
+            return _rootFolderService.Refresh(id, includeImportFiles).ToResource();
+        }
+
+        private bool IncludeImportFiles => !string.Equals(Request?.Query["includeImportFiles"].ToString(), "false", StringComparison.OrdinalIgnoreCase);
+
+        [HttpGet("{id:int}/importfiles")]
+        public PagingResource<ImportFile> GetImportFiles(int id, [FromQuery] PagingRequestResource request)
+        {
+            var spec = ImportPagingRequest.ToSpec<ImportFile>(request, "relativePath", "name", "path");
+            var result = _rootFolderService.GetImportFiles(id, spec);
+            return new PagingResource<ImportFile>
+            {
+                Page = result.Page,
+                PageSize = result.PageSize,
+                SortKey = result.SortKey,
+                SortDirection = result.SortDirection,
+                TotalRecords = result.TotalRecords,
+                Records = result.Records
+            };
         }
 
         /// <summary>

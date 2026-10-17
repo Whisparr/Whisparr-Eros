@@ -57,7 +57,7 @@ function RootFolders() {
               path={rootFolder.path}
               accessible={rootFolder.accessible}
               freeSpace={rootFolder.freeSpace}
-              importFiles={rootFolder.importFiles}
+              importFileCount={rootFolder.importFileCount}
             />
           );
         })}

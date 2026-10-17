@@ -1,4 +1,4 @@
-import { cloneDeep, without } from 'lodash';
+import { cloneDeep } from 'lodash';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import * as commandNames from 'Commands/commandNames';
 import { useExecuteCommand } from 'Commands/useCommands';
@@ -19,7 +19,7 @@ import ModalHeader from 'Components/Modal/ModalHeader';
 import Column from 'Components/Table/Column';
 import Table from 'Components/Table/Table';
 import TableBody from 'Components/Table/TableBody';
-import useSelectState from 'Helpers/Hooks/useSelectState';
+import TablePager from 'Components/Table/TablePager';
 import { align, icons, kinds } from 'Helpers/Props';
 import { BOTH } from 'Helpers/Props/scrollDirections';
 import { SortDirection } from 'Helpers/Props/sortDirections';
@@ -50,8 +50,8 @@ import { SortCallback } from 'typings/callbacks';
 import { CheckInputChanged } from 'typings/inputs';
 import getErrorMessage from 'Utilities/Object/getErrorMessage';
 import translate from 'Utilities/String/translate';
-import getSelectedIds from 'Utilities/Table/getSelectedIds';
 import InteractiveImportRow from './InteractiveImportRow';
+import useImportSelection from './useImportSelection';
 import styles from './InteractiveImportModalContent.module.css';
 
 type SelectType =
@@ -61,6 +61,8 @@ type SelectType =
 type OnSelectedChangeCallback = React.ComponentProps<
   typeof InteractiveImportRow
 >['onSelectedChange'];
+
+const PAGE_SIZE = 50;
 
 const COLUMNS = [
   {
@@ -207,21 +209,29 @@ function InteractiveImportModalContent(
     initialFilterExistingFiles
   );
 
-  const { items, originalItems, isFetching, isFetched, error, updateItems } =
-    useInteractiveImport({
-      downloadIds,
-      movieId,
-      folder,
-      filterExistingFiles,
-    });
+  const [page, setPage] = useState(1);
+  const {
+    items,
+    pageItems,
+    totalRecords,
+    originalItems,
+    isFetching,
+    isFetched,
+    error,
+    updateItems,
+  } = useInteractiveImport({
+    downloadIds,
+    movieId,
+    folder,
+    filterExistingFiles,
+    page,
+    pageSize: PAGE_SIZE,
+  });
 
   const { mutate: deleteMovieFilesMutate, isPending: isDeleting } =
     useDeleteMovieFiles();
   const { mutate: updateMovieFilesMutate } = useUpdateMovieFiles();
 
-  const [invalidRowsSelected, setInvalidRowsSelected] = useState<number[]>([]);
-  const [withoutMovieFileIdRowsSelected, setWithoutMovieFileIdRowsSelected] =
-    useState<number[]>([]);
   const [selectModalOpen, setSelectModalOpen] = useState<SelectType | null>(
     null
   );
@@ -229,12 +239,29 @@ function InteractiveImportModalContent(
     useState(false);
   const [interactiveImportErrorMessage, setInteractiveImportErrorMessage] =
     useState<string | null>(null);
-  const [selectState, setSelectState] = useSelectState();
-  const { allSelected, allUnselected, selectedState } = selectState;
+  const totalPages = Math.max(1, Math.ceil(totalRecords / PAGE_SIZE));
+  const currentPage = page;
+  const { selectedState, selectPage, selectRow } = useImportSelection(
+    items,
+    pageItems,
+    allowMovieChange,
+    JSON.stringify([folder, downloadIds, movieId, filterExistingFiles])
+  );
+  const allSelected = pageItems.every((item) => selectedState[item.id]);
+  const allUnselected = pageItems.every((item) => !selectedState[item.id]);
   const executeCommand = useExecuteCommand();
 
+  useEffect(() => {
+    if (!['relativePath', 'size'].includes(sortKey)) {
+      setInteractiveImportSort({ sortKey: 'relativePath', sortDirection });
+    }
+  }, [sortKey, sortDirection]);
+
   const columns: Column[] = useMemo(() => {
-    const result: Column[] = cloneDeep(COLUMNS);
+    const result: Column[] = cloneDeep(COLUMNS).map((column) => ({
+      ...column,
+      isSortable: column.name === 'relativePath' || column.name === 'size',
+    }));
 
     if (!showMovie) {
       const movieColumn = result.find((c) => c.name === 'movie');
@@ -257,9 +284,40 @@ function InteractiveImportModalContent(
     return result;
   }, [showMovie, items]);
 
-  const selectedIds: number[] = useMemo(() => {
-    return getSelectedIds(selectedState);
-  }, [selectedState]);
+  const originalItemsById = useMemo(() => {
+    return new Map(originalItems.map((item) => [item.id, item]));
+  }, [originalItems]);
+
+  const selectedItems = useMemo(() => {
+    return items.filter((item) => selectedState[item.id]);
+  }, [items, selectedState]);
+  const selectedIds = useMemo(
+    () => selectedItems.map((item) => item.id),
+    [selectedItems]
+  );
+  const hasInvalidSelection = selectedItems.some(
+    (item) => !item.movie || !item.quality || !item.languages
+  );
+  const hasSelectionWithoutMovieFile = selectedItems.some(
+    (item) => !item.movieFileId
+  );
+
+  useEffect(() => {
+    setPage(1);
+  }, [
+    folder,
+    downloadIds,
+    movieId,
+    filterExistingFiles,
+    sortKey,
+    sortDirection,
+  ]);
+
+  useEffect(() => {
+    if (!isFetching && !error && isFetched) {
+      setPage((previous) => Math.min(previous, totalPages));
+    }
+  }, [totalPages, isFetching, error, isFetched]);
 
   const bulkSelectOptions = useMemo(() => {
     const options: SelectInputOption[] = [
@@ -318,46 +376,27 @@ function InteractiveImportModalContent(
     [updateItems]
   );
 
+  const onFirstPagePress = useCallback(() => setPage(1), []);
+  const onPreviousPagePress = useCallback(
+    () => setPage(currentPage - 1),
+    [currentPage]
+  );
+  const onNextPagePress = useCallback(
+    () => setPage(currentPage + 1),
+    [currentPage]
+  );
+  const onLastPagePress = useCallback(() => setPage(totalPages), [totalPages]);
+
   const onSelectAllChange = useCallback(
-    ({ value }: CheckInputChanged) => {
-      setSelectState({ type: value ? 'selectAll' : 'unselectAll', items });
-    },
-    [items, setSelectState]
+    ({ value }: CheckInputChanged) => selectPage(value),
+    [selectPage]
   );
 
   const onSelectedChange = useCallback<OnSelectedChangeCallback>(
-    ({ id, value, hasMovieFileId, shiftKey = false }) => {
-      setSelectState({
-        type: 'toggleSelected',
-        items,
-        id,
-        isSelected: value,
-        shiftKey,
-      });
-
-      setWithoutMovieFileIdRowsSelected(
-        hasMovieFileId || !value
-          ? without(withoutMovieFileIdRowsSelected, id as number)
-          : [...withoutMovieFileIdRowsSelected, id as number]
-      );
+    ({ id, value, shiftKey = false }) => {
+      selectRow(Number(id), !!value, shiftKey);
     },
-    [
-      items,
-      withoutMovieFileIdRowsSelected,
-      setSelectState,
-      setWithoutMovieFileIdRowsSelected,
-    ]
-  );
-
-  const onValidRowChange = useCallback(
-    (id: number, isValid: boolean) => {
-      if (isValid && invalidRowsSelected.includes(id)) {
-        setInvalidRowsSelected(without(invalidRowsSelected, id));
-      } else if (!isValid && !invalidRowsSelected.includes(id)) {
-        setInvalidRowsSelected([...invalidRowsSelected, id]);
-      }
-    },
-    [invalidRowsSelected, setInvalidRowsSelected]
+    [selectRow]
   );
 
   const onDeleteSelectedPress = useCallback(() => {
@@ -389,6 +428,10 @@ function InteractiveImportModalContent(
     const existingFiles: Partial<MovieFile>[] = [];
     const files: InteractiveImportCommandOptions[] = [];
 
+    if (hasInvalidSelection) {
+      return;
+    }
+
     if (finalImportMode === 'chooseImportMode') {
       setInteractiveImportErrorMessage(
         translate('InteractiveImportNoImportMode')
@@ -397,71 +440,65 @@ function InteractiveImportModalContent(
       return;
     }
 
-    items.forEach((item) => {
-      const isSelected = selectedIds.indexOf(item.id) > -1;
+    selectedItems.forEach((item) => {
+      const {
+        downloadId,
+        movie,
+        releaseGroup,
+        quality,
+        languages,
+        indexerFlags,
+        movieFileId,
+      } = item;
 
-      if (isSelected) {
-        const {
-          downloadId,
-          movie,
-          releaseGroup,
-          quality,
-          languages,
-          indexerFlags,
-          movieFileId,
-        } = item;
-
-        if (!movie) {
-          setInteractiveImportErrorMessage(
-            translate('InteractiveImportNoMovie')
-          );
-          return;
-        }
-
-        if (!quality) {
-          setInteractiveImportErrorMessage(
-            translate('InteractiveImportNoQuality')
-          );
-          return;
-        }
-
-        if (!languages) {
-          setInteractiveImportErrorMessage(
-            translate('InteractiveImportNoLanguage')
-          );
-          return;
-        }
-
-        setInteractiveImportErrorMessage(null);
-
-        if (movieFileId) {
-          const originalItem = originalItems.find((i) => i.id === item.id);
-
-          if (isSameMovieFile(item, originalItem)) {
-            existingFiles.push({
-              id: movieFileId,
-              releaseGroup,
-              quality,
-              languages,
-              indexerFlags,
-            });
-
-            return;
-          }
-        }
-
-        files.push({
-          path: item.path,
-          folderName: item.folderName,
-          movieId: movie.id,
-          releaseGroup,
-          quality,
-          languages,
-          indexerFlags,
-          downloadId,
-          movieFileId,
-        });
+      if (!movie) {
+        setInteractiveImportErrorMessage(translate('InteractiveImportNoMovie'));
+        return;
       }
+
+      if (!quality) {
+        setInteractiveImportErrorMessage(
+          translate('InteractiveImportNoQuality')
+        );
+        return;
+      }
+
+      if (!languages) {
+        setInteractiveImportErrorMessage(
+          translate('InteractiveImportNoLanguage')
+        );
+        return;
+      }
+
+      setInteractiveImportErrorMessage(null);
+
+      if (movieFileId) {
+        const originalItem = originalItemsById.get(item.id);
+
+        if (isSameMovieFile(item, originalItem)) {
+          existingFiles.push({
+            id: movieFileId,
+            releaseGroup,
+            quality,
+            languages,
+            indexerFlags,
+          });
+
+          return;
+        }
+      }
+
+      files.push({
+        path: item.path,
+        folderName: item.folderName,
+        movieId: movie.id,
+        releaseGroup,
+        quality,
+        languages,
+        indexerFlags,
+        downloadId,
+        movieFileId,
+      });
     });
 
     let shouldClose = false;
@@ -490,20 +527,22 @@ function InteractiveImportModalContent(
     downloadIds,
     showImportMode,
     importMode,
-    items,
-    originalItems,
-    selectedIds,
+    selectedItems,
+    hasInvalidSelection,
+    originalItemsById,
     onModalClose,
     updateMovieFilesMutate,
     executeCommand,
   ]);
 
   const onSortPress = useCallback<SortCallback>((sortKey, sortDirection) => {
+    setPage(1);
     setInteractiveImportSort({ sortKey, sortDirection });
   }, []);
 
   const onFilterExistingFilesChange = useCallback(
     (value: string | undefined) => {
+      setPage(1);
       setFilterExistingFiles(value !== 'all');
     },
     []
@@ -584,7 +623,7 @@ function InteractiveImportModalContent(
         {modalTitle} - {title || folder}
       </ModalHeader>
 
-      <ModalBody scrollDirection={BOTH}>
+      <ModalBody key={currentPage} scrollDirection={BOTH}>
         {showFilterExistingFiles && (
           <div className={styles.filterContainer}>
             <Menu alignMenu={align.RIGHT}>
@@ -636,7 +675,7 @@ function InteractiveImportModalContent(
             onSelectAllChange={onSelectAllChange}
           >
             <TableBody>
-              {items.map((item) => {
+              {pageItems.map((item) => {
                 return (
                   <InteractiveImportRow
                     key={item.id}
@@ -647,7 +686,6 @@ function InteractiveImportModalContent(
                     modalTitle={modalTitle}
                     onItemChange={handleItemChange}
                     onSelectedChange={onSelectedChange}
-                    onValidRowChange={onValidRowChange}
                   />
                 );
               })}
@@ -660,6 +698,19 @@ function InteractiveImportModalContent(
           : null}
       </ModalBody>
 
+      {isFetched && !!items.length && !isFetching ? (
+        <TablePager
+          page={currentPage}
+          totalPages={totalPages}
+          totalRecords={totalRecords}
+          onFirstPagePress={onFirstPagePress}
+          onPreviousPagePress={onPreviousPagePress}
+          onNextPagePress={onNextPagePress}
+          onLastPagePress={onLastPagePress}
+          onPageSelect={setPage}
+        />
+      ) : null}
+
       <ModalFooter className={styles.footer}>
         <div className={styles.leftButtons}>
           {showDelete ? (
@@ -667,9 +718,7 @@ function InteractiveImportModalContent(
               className={styles.deleteButton}
               kind={kinds.DANGER}
               isSpinning={isDeleting}
-              isDisabled={
-                !selectedIds.length || !!withoutMovieFileIdRowsSelected.length
-              }
+              isDisabled={!selectedIds.length || hasSelectionWithoutMovieFile}
               onPress={onDeleteSelectedPress}
             >
               {translate('Delete')}
@@ -707,10 +756,12 @@ function InteractiveImportModalContent(
 
           <Button
             kind={kinds.SUCCESS}
-            isDisabled={!selectedIds.length || !!invalidRowsSelected.length}
+            isDisabled={
+              !selectedIds.length || hasInvalidSelection || isFetching
+            }
             onPress={onImportSelectedPress}
           >
-            {translate('Import')}
+            {translate('Import')} ({selectedIds.length})
           </Button>
         </div>
       </ModalFooter>

@@ -6,7 +6,6 @@ import ConfirmModal from 'Components/Modal/ConfirmModal';
 import TableRowCell from 'Components/Table/Cells/TableRowCell';
 import TableRow from 'Components/Table/TableRow';
 import { icons, kinds } from 'Helpers/Props';
-import ImportFile from 'typings/ImportFile';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
 import { useDeleteRootFolder, useRefreshRootFolder } from './useRootFolders';
@@ -17,11 +16,11 @@ interface RootFolderRowProps {
   path: string;
   accessible: boolean;
   freeSpace?: number;
-  importFiles: ImportFile[];
+  importFileCount: number;
 }
 
 function RootFolderRow(props: RootFolderRowProps) {
-  const { id, path, accessible, freeSpace = 0, importFiles = [] } = props;
+  const { id, path, accessible, freeSpace = 0, importFileCount = 0 } = props;
 
   const isUnavailable = !accessible;
 
@@ -73,7 +72,7 @@ function RootFolderRow(props: RootFolderRowProps) {
       </TableRowCell>
 
       <TableRowCell className={styles.importFiles}>
-        {isUnavailable ? '-' : importFiles.length}
+        {isUnavailable ? '-' : importFileCount}
       </TableRowCell>
 
       <TableRowCell className={styles.actions}>
