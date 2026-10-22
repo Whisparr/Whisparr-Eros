@@ -111,7 +111,7 @@
     "eslint-plugin-react-hooks": "7.1.1",
     "eslint-plugin-simple-import-sort": "14.0.0",
     "globals": "17.13.0",
-    "postcss": "8.5.30",
+    "postcss": "8.5.31",
     "postcss-color-function": "4.1.0",
     "postcss-custom-media": "12.0.3",
     "postcss-mixins": "12.1.2",
