@@ -30,6 +30,9 @@ namespace NzbDrone.Common.Instrumentation
             // Email
             Rule(@"\b(?<secret>[a-z0-9._%+-]+)@[a-z0-9.-]+\.[a-z]{2,}\b"),
 
+            // Email
+            new(@"\b(?<secret>[a-z0-9._%+-]+)@[a-z0-9.-]+\.[a-z]{2,}\b", RegexOptions.Compiled | RegexOptions.IgnoreCase),
+
             // NzbGet
             Rule(@"""Name""\s*:\s*""[^""]*(username|password)""\s*,\s*""Value""\s*:\s*""(?<secret>[^""]+?)"""),
 
