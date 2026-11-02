@@ -185,10 +185,17 @@ namespace NzbDrone.Core.MediaFiles.MovieImport
 
                     importResults.Add(new ImportResult(importDecision, "Failed to import movie, unable to move existing file to the Recycle Bin."));
                 }
+                catch (UnauthorizedAccessException e)
+                {
+                    _logger.Warn(e, "Couldn't import movie " + localMovie);
+                    _eventAggregator.PublishEvent(new MovieImportFailedEvent(e, localMovie, newDownload, downloadClientItem));
+
+                    importResults.Add(new ImportResult(importDecision, "Failed to import movie due to permission issues.", e.Message));
+                }
                 catch (Exception e)
                 {
                     _logger.Warn(e, "Couldn't import movie " + localMovie);
-                    importResults.Add(new ImportResult(importDecision, "Failed to import movie"));
+                    importResults.Add(new ImportResult(importDecision, "Failed to import movie", e.Message));
                 }
             }
 
