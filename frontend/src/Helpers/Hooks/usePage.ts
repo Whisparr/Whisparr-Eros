@@ -1,10 +1,8 @@
-import { useEffect } from 'react';
-import { useNavigationType } from 'react-router-dom';
 import { create } from 'zustand';
 
 // Current page per server-side paged view. Kept out of the option stores
 // because it is deliberately not persisted -- a page number is meaningless
-// across sessions -- and reset when the user navigates back to a page.
+// across sessions -- but kept in memory so browser back returns to it.
 interface PageStore {
   blocklist: number;
   cutoffUnmet: number;
@@ -34,17 +32,9 @@ const pageStore = create<PageStore>(() => ({
 }));
 
 const usePage = (kind: keyof PageStore) => {
-  const navigationType = useNavigationType();
-
   const goToPage = (page: number) => {
     pageStore.setState({ [kind]: page });
   };
-
-  useEffect(() => {
-    if (navigationType === 'POP') {
-      pageStore.setState({ [kind]: 1 });
-    }
-  }, [navigationType, kind]);
 
   return {
     page: pageStore((state) => state[kind]),
