@@ -140,11 +140,6 @@ namespace NzbDrone.Core.Notifications.Telegram
                 {
                     links.Add(new TelegramLink("IMDb", $"https://www.imdb.com/title/{movie.ImdbId}"));
                 }
-
-                if (linkType == MetadataLinkType.Trakt && movie.ImdbId.IsNotNullOrWhiteSpace())
-                {
-                    links.Add(new TelegramLink("Trakt", $"https://trakt.tv/movies/{movie.ImdbId}"));
-                }
             }
 
             return links;
