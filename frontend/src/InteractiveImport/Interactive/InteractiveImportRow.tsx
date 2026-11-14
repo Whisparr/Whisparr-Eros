@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import Icon from 'Components/Icon';
 import TableRowCell from 'Components/Table/Cells/TableRowCell';
 import TableRowCellButton from 'Components/Table/Cells/TableRowCellButton';
@@ -55,7 +55,6 @@ interface InteractiveImportRowProps {
   modalTitle: string;
   onItemChange(id: number, changes: Partial<InteractiveImport>): void;
   onSelectedChange(result: SelectedChangeProps): void;
-  onValidRowChange(id: number, isValid: boolean): void;
 }
 
 function InteractiveImportRow(props: InteractiveImportRowProps) {
@@ -78,7 +77,6 @@ function InteractiveImportRow(props: InteractiveImportRowProps) {
     columns,
     onItemChange,
     onSelectedChange,
-    onValidRowChange,
   } = props;
 
   const isMovieColumnVisible = useMemo(
@@ -93,31 +91,6 @@ function InteractiveImportRow(props: InteractiveImportRowProps) {
   const [selectModalOpen, setSelectModalOpen] = useState<SelectType | null>(
     null
   );
-
-  useEffect(
-    () => {
-      if (allowMovieChange && movie && quality && languages && size > 0) {
-        onSelectedChange({
-          id,
-          hasMovieFileId: !!movieFileId,
-          value: true,
-          shiftKey: false,
-        });
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
-  );
-
-  useEffect(() => {
-    const isValid = !!(movie && quality && languages);
-
-    if (isSelected && !isValid) {
-      onValidRowChange(id, false);
-    } else {
-      onValidRowChange(id, true);
-    }
-  }, [id, movie, quality, languages, isSelected, onValidRowChange]);
 
   const handleSelectedChange = useCallback(
     (result: SelectStateInputProps) => {
@@ -227,6 +200,7 @@ function InteractiveImportRow(props: InteractiveImportRowProps) {
       <TableSelectCell
         id={id}
         isSelected={isSelected}
+        registerOnMount={false}
         onSelectedChange={handleSelectedChange}
       />
 

@@ -6,7 +6,8 @@ interface RootFolder extends ModelBase {
   path: string;
   accessible: boolean;
   freeSpace?: number;
-  importFiles: ImportFile[];
+  importFileCount: number;
+  importFiles?: ImportFile[];
 }
 
 export default RootFolder;

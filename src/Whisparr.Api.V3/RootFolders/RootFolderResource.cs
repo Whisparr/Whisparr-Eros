@@ -12,6 +12,8 @@ namespace Whisparr.Api.V3.RootFolders
         public bool Accessible { get; set; }
         public long? FreeSpace { get; set; }
 
+        public int ImportFileCount { get; set; }
+
         public List<ImportFile> ImportFiles { get; set; }
     }
 
@@ -30,6 +32,7 @@ namespace Whisparr.Api.V3.RootFolders
                 Path = model.Path.GetCleanPath(),
                 Accessible = model.Accessible,
                 FreeSpace = model.FreeSpace,
+                ImportFileCount = model.ImportFileCount,
                 ImportFiles = model.ImportFiles
             };
         }

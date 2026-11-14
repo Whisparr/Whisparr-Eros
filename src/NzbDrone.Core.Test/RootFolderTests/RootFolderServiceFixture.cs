@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Moq;
 using NUnit.Framework;
 using NzbDrone.Common.Disk;
+using NzbDrone.Core.Datastore;
 using NzbDrone.Core.Movies;
 using NzbDrone.Core.Organizer;
 using NzbDrone.Core.RootFolders;
@@ -37,6 +39,34 @@ namespace NzbDrone.Core.Test.RootFolderTests
             Mocker.GetMock<INamingConfigService>()
                   .Setup(c => c.GetConfig())
                   .Returns(_namingConfig);
+        }
+
+        [Test]
+        public void should_return_a_count_without_loading_files_for_summary_requests()
+        {
+            Mocker.GetMock<IRootFolderRepository>().Setup(repository => repository.Get(1))
+                .Returns(new RootFolder { Id = 1, Path = "/fixture" });
+            Mocker.GetMock<IImportFileRepository>().Setup(repository => repository.Count(It.IsAny<System.Linq.Expressions.Expression<System.Func<ImportFile, bool>>>()))
+                .Returns(10001);
+
+            var result = Subject.Get(1, false);
+
+            Assert.That(result.ImportFileCount, Is.EqualTo(10001));
+            Assert.That(result.ImportFiles, Is.Null);
+            Mocker.GetMock<IImportFileRepository>().Verify(repository => repository.FindByRootFolderId(It.IsAny<int>()), Times.Never());
+        }
+
+        [Test]
+        public void should_scope_a_page_to_an_existing_root_folder()
+        {
+            var spec = new PagingSpec<ImportFile> { Page = 3, PageSize = 50, SortKey = "relativePath" };
+            Mocker.GetMock<IRootFolderRepository>().Setup(repository => repository.Get(7))
+                .Returns(new RootFolder { Id = 7, Path = "/fixture" });
+            Mocker.GetMock<IImportFileRepository>().Setup(repository => repository.GetPaged(spec)).Returns(spec);
+            Assert.That(Subject.GetImportFiles(7, spec), Is.SameAs(spec));
+            var predicate = spec.FilterExpressions.Single().Compile();
+            Assert.That(predicate(new ImportFile { RootFolderId = 7 }), Is.True);
+            Assert.That(predicate(new ImportFile { RootFolderId = 8 }), Is.False);
         }
 
         private void WithNonExistingFolder()

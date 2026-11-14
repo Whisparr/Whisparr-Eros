@@ -59,12 +59,13 @@ export interface ImportItem {
 
 export type ImportAction =
   | {
-      type: 'INIT_ITEMS';
+      type: 'INIT_ITEMS' | 'MERGE_ITEMS';
       files: ReadonlyArray<ImportFile>;
       itemType?: ImportItemType;
       defaults: { monitor: string; qualityProfileId: number };
     }
   | { type: 'SET_ITEM_FETCHING'; id: string }
+  | { type: 'CANCEL_LOOKUPS' }
   | {
       type: 'SET_LOOKUP_RESULTS';
       id: string;
@@ -87,34 +88,54 @@ export interface ImportState {
   items: ImportItem[];
 }
 
-export const IMPORT_ITEM_LIMIT = 500;
+export const IMPORT_PAGE_SIZE = 50;
 
 export function importReducer(
   state: ImportState,
   action: ImportAction
 ): ImportState {
   switch (action.type) {
-    case 'INIT_ITEMS': {
-      const sliced = action.files.slice(0, IMPORT_ITEM_LIMIT);
+    case 'INIT_ITEMS':
+    // fall through
+
+    case 'MERGE_ITEMS': {
+      const existing = action.type === 'MERGE_ITEMS' ? state.items : [];
+      const known = new Set(existing.map((item) => item.id));
       return {
         isLookingUp: false,
-        items: sliced.map((f) => ({
-          id: f.name,
-          path: f.path,
-          relativePath: f.relativePath,
-          term: f.name,
-          itemType: action.itemType,
-          isFetching: false,
-          isPopulated: false,
-          isQueued: false,
-          error: null,
-          items: [],
-          selectedMovie: null,
-          monitor: action.defaults.monitor,
-          qualityProfileId: action.defaults.qualityProfileId,
-        })),
+        items: [
+          ...existing,
+          ...action.files
+            .filter((f) => !known.has(f.path))
+            .map((f) => ({
+              id: f.path,
+              path: f.path,
+              relativePath: f.relativePath,
+              term: f.name,
+              itemType: action.itemType,
+              isFetching: false,
+              isPopulated: false,
+              isQueued: false,
+              error: null,
+              items: [],
+              selectedMovie: null,
+              monitor: action.defaults.monitor,
+              qualityProfileId: action.defaults.qualityProfileId,
+            })),
+        ],
       };
     }
+
+    case 'CANCEL_LOOKUPS':
+      return {
+        ...state,
+        isLookingUp: false,
+        items: state.items.map((item) =>
+          item.isFetching || item.isQueued
+            ? { ...item, isFetching: false, isQueued: false }
+            : item
+        ),
+      };
 
     case 'SET_ITEM_FETCHING':
       return {
@@ -133,6 +154,7 @@ export function importReducer(
           }
 
           const selectedMovie = item.selectedMovie ?? action.results[0] ?? null;
+
           return {
             ...item,
             isFetching: false,
