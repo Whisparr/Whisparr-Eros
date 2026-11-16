@@ -122,8 +122,6 @@ namespace NzbDrone.Core.Organizer
         private readonly ICustomFormatCalculationService _formatCalculator;
         private readonly Logger _logger;
 
-        private int _trimEnd;
-
         public FileNameBuilder(INamingConfigService namingConfigService,
                                IQualityDefinitionService qualityDefinitionService,
                                ICreditService creditService,
@@ -139,7 +137,6 @@ namespace NzbDrone.Core.Organizer
             _mediaInfoUpdater = mediaInfoUpdater;
             _formatCalculator = formatCalculator;
             _logger = logger;
-            _trimEnd = 0;
         }
 
         public static string TitleThe(string title)
@@ -213,6 +210,10 @@ namespace NzbDrone.Core.Organizer
 
             UpdateMediaInfoIfNeeded(pattern, movieFile, movie);
 
+            // Local to this call: FileNameBuilder is a singleton, so a field would carry one
+            // over-long name's trim into every name built after it.
+            var trimEnd = 0;
+
             if (itemType == ItemType.Movie)
             {
                 AddMovieTokens(tokenHandlers, movie);
@@ -221,7 +222,7 @@ namespace NzbDrone.Core.Organizer
             {
                 AddStudioTokens(tokenHandlers, movie);
                 AddSceneTokens(tokenHandlers, movie);
-                AddSceneTitlePlaceholderTokens(tokenHandlers, movie);
+                AddSceneTitlePlaceholderTokens(tokenHandlers, movie, () => trimEnd);
             }
 
             AddReleaseDateTokens(tokenHandlers, movie);
@@ -243,9 +244,9 @@ namespace NzbDrone.Core.Organizer
                 var fileLengthLimit = splitPatterns[splitPatterns.Length - 1] == s ? namingConfig.MaxFilePathLength : namingConfig.MaxFolderPathLength;
                 if (fileLengthLimit > 0)
                 {
-                    while (component.Length > fileLengthLimit && _trimEnd < fileLengthLimit)
+                    while (component.Length > fileLengthLimit && trimEnd < fileLengthLimit)
                     {
-                        _trimEnd++;
+                        trimEnd++;
                         component = ReplaceTokens(splitPattern, tokenHandlers, namingConfig).Trim();
                     }
                 }
@@ -299,7 +300,7 @@ namespace NzbDrone.Core.Organizer
             else
             {
                 AddSceneTokens(tokenHandlers, movie);
-                AddSceneTitlePlaceholderTokens(tokenHandlers, movie);
+                AddSceneTitlePlaceholderTokens(tokenHandlers, movie, () => 0);
             }
 
             AddStudioTokens(tokenHandlers, movie);
@@ -809,13 +810,13 @@ namespace NzbDrone.Core.Organizer
             }
         }
 
-        private void AddSceneTitlePlaceholderTokens(Dictionary<string, Func<TokenMatch, string>> tokenHandlers, Movie movie)
+        private void AddSceneTitlePlaceholderTokens(Dictionary<string, Func<TokenMatch, string>> tokenHandlers, Movie movie, Func<int> trimEnd)
         {
-            tokenHandlers["{Scene Title}"] = m => TrimAndTruncate(GetLanguageTitle(movie), m.CustomFormat);
-            tokenHandlers["{Scene CleanTitle}"] = m => TrimAndTruncate(CleanTitle(GetLanguageTitle(movie)), m.CustomFormat);
-            tokenHandlers["{Scene TitleThe}"] = m => TrimAndTruncate(TitleThe(movie.Title), m.CustomFormat);
-            tokenHandlers["{Scene TitleFirstCharacter}"] = m => TrimAndTruncate(TitleFirstCharacter(TitleThe(GetLanguageTitle(movie))), m.CustomFormat);
-            tokenHandlers["{Scene CleanTitleNoSeasonEpisode}"] = m => TrimAndTruncate(CleanTitleNoSeasonEpisode(GetLanguageTitle(movie)), m.CustomFormat);
+            tokenHandlers["{Scene Title}"] = m => TrimAndTruncate(GetLanguageTitle(movie), m.CustomFormat, trimEnd());
+            tokenHandlers["{Scene CleanTitle}"] = m => TrimAndTruncate(CleanTitle(GetLanguageTitle(movie)), m.CustomFormat, trimEnd());
+            tokenHandlers["{Scene TitleThe}"] = m => TrimAndTruncate(TitleThe(movie.Title), m.CustomFormat, trimEnd());
+            tokenHandlers["{Scene TitleFirstCharacter}"] = m => TrimAndTruncate(TitleFirstCharacter(TitleThe(GetLanguageTitle(movie))), m.CustomFormat, trimEnd());
+            tokenHandlers["{Scene CleanTitleNoSeasonEpisode}"] = m => TrimAndTruncate(CleanTitleNoSeasonEpisode(GetLanguageTitle(movie)), m.CustomFormat, trimEnd());
         }
 
         private void AddQualityTokens(Dictionary<string, Func<TokenMatch, string>> tokenHandlers, MovieFile movieFile)
@@ -978,14 +979,14 @@ namespace NzbDrone.Core.Organizer
             return replacementText;
         }
 
-        // Scene titles are shortened from the end by _trimEnd when the built path is over the
+        // Scene titles are shortened from the end by trimEnd when the built path is over the
         // configured length limit; the token's own truncation (ex. {Scene CleanTitle:100}) is
         // applied afterwards so the ellipsis placeholder stays at the end of the title.
-        private string TrimAndTruncate(string input, string formatter)
+        private static string TrimAndTruncate(string input, string formatter, int trimEnd)
         {
-            if (_trimEnd > 0 && input.IsNotNullOrWhiteSpace())
+            if (trimEnd > 0 && input.IsNotNullOrWhiteSpace())
             {
-                input = input.Substring(0, Math.Max(0, input.Length - _trimEnd));
+                input = input.Substring(0, Math.Max(0, input.Length - trimEnd));
             }
 
             return Truncate(input, formatter);

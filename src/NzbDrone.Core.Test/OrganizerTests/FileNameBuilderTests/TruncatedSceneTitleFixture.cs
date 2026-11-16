@@ -4,6 +4,7 @@ using FizzWare.NBuilder;
 using FluentAssertions;
 using NUnit.Framework;
 using NzbDrone.Core.CustomFormats;
+using NzbDrone.Core.MediaFiles;
 using NzbDrone.Core.Movies;
 using NzbDrone.Core.Organizer;
 using NzbDrone.Core.Qualities;
@@ -16,6 +17,7 @@ namespace NzbDrone.Core.Test.OrganizerTests.FileNameBuilderTests
     public class TruncatedSceneTitleFixture : CoreTest<FileNameBuilder>
     {
         private Movie _scene;
+        private MovieFile _movieFile;
         private NamingConfig _namingConfig;
 
         [SetUp]
@@ -26,6 +28,8 @@ namespace NzbDrone.Core.Test.OrganizerTests.FileNameBuilderTests
                     .With(s => s.Title = "The Fantastic Life of Mr. Sisko")
                     .With(s => s.MovieMetadata.Value.ItemType = ItemType.Scene)
                     .Build();
+
+            _movieFile = new MovieFile { Quality = new QualityModel(Quality.HDTV720p), ReleaseGroup = "WhisparrTest" };
 
             _namingConfig = NamingConfig.Default;
             _namingConfig.RenameScenes = true;
@@ -53,6 +57,32 @@ namespace NzbDrone.Core.Test.OrganizerTests.FileNameBuilderTests
 
             var result = Subject.GetMovieFolder(_scene, _namingConfig);
             result.Should().Be(expected);
+        }
+
+        [Test]
+        public void should_trim_scene_title_from_the_end_when_file_name_is_too_long()
+        {
+            _namingConfig.StandardSceneFormat = "{Scene Title}";
+            _namingConfig.MaxFilePathLength = 18;
+
+            Subject.BuildFileName(_scene, _movieFile).Should().Be("The Fantastic Life");
+        }
+
+        [Test]
+        public void should_not_carry_title_trim_into_later_names()
+        {
+            // Too long to fit even with the whole title removed, so the trim reaches the limit
+            _namingConfig.StandardSceneFormat = "{Scene Title} - this fixed text is longer than the limit";
+            _namingConfig.MaxFilePathLength = 40;
+
+            Subject.BuildFileName(_scene, _movieFile);
+
+            _namingConfig.StandardSceneFormat = "{Scene Title}";
+            _namingConfig.MaxFilePathLength = NamingConfig.Default.MaxFilePathLength;
+            _namingConfig.SceneFolderFormat = "{Scene CleanTitle}";
+
+            Subject.BuildFileName(_scene, _movieFile).Should().Be("The Fantastic Life of Mr. Sisko");
+            Subject.GetMovieFolder(_scene, _namingConfig).Should().Be("The Fantastic Life of Mr. Sisko");
         }
     }
 }
