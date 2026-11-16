@@ -1,6 +1,6 @@
 ---
 name: review-eros
-description: Review a GitHub PR against Whisparr/Whisparr-Eros:eros-develop with this repo's conventions (branch target, commit prefixes, 80% new-code coverage, en.json translation keys, DB-migration note, NUnit *Fixture tests, ParserTests scrutiny). Produces a structured terminal review, then offers to post it. Use when reviewing an Eros PR.
+description: Review a GitHub PR against bifanaboy/Whisparr-Eros:eros-develop with this repo's conventions (branch target, commit prefixes, 80% new-code coverage, en.json translation keys, DB-migration note, NUnit *Fixture tests, ParserTests scrutiny). Produces a structured terminal review, then offers to post it. Use when reviewing an Eros PR.
 argument-hint: "[PR number or URL]"
 user-invocable: true
 allowed-tools: Bash, Read, Grep, Glob, Agent, AskUserQuestion, TodoWrite
@@ -8,8 +8,8 @@ allowed-tools: Bash, Read, Grep, Glob, Agent, AskUserQuestion, TodoWrite
 
 # Review an Eros PR
 
-Review a pull request against `Whisparr/Whisparr-Eros:eros-develop` the same way
-every time. The repo is `Whisparr/Whisparr-Eros` (remote here). Eros issues live
+Review a pull request against `bifanaboy/Whisparr-Eros:eros-develop` the same way
+every time. The repo is bifanaboy/Whisparr-Eros (origin here); upstream remote is Whisparr/Whisparr-Eros for syncing. Eros issues live
 on this repo (since 2026-09-17), so a linked issue is a bare `Fixes #NNNN`;
 `Whisparr/Whisparr` keeps the v2 line and needs the qualified form.
 
@@ -25,9 +25,9 @@ Run the phases in order. Track them with TodoWrite if the review is non-trivial.
   (`gh pr view --json number` on the checked-out branch) or ask which PR.
 - Gather everything up front:
   ```
-  gh pr view <n> --repo Whisparr/Whisparr-Eros \
+  gh pr view <n> --repo bifanaboy/Whisparr-Eros \
     --json number,title,body,baseRefName,headRefName,author,files,commits,url,isDraft
-  gh pr diff <n> --repo Whisparr/Whisparr-Eros
+  gh pr diff <n> --repo bifanaboy/Whisparr-Eros
   ```
 - Note: title, body, **base branch**, head branch, changed files, full diff,
   commit list, linked issues, draft status.
@@ -50,7 +50,7 @@ Flag every miss. Sources: `CONTRIBUTING.md`, `.github/PULL_REQUEST_TEMPLATE.md`,
     number.
   - **Tests** checkbox and **Translation Keys** checkbox.
   - Linked issue as `Fixes #NNNN` (Eros issues live on this repo);
-    `Fixes Whisparr/Whisparr#NNNN` only for a v2 issue.
+    `Fixes Whisparr/Whisparr-Eros#NNNN` only for an upstream issue.
 - **Localization**: any new user-facing string needs an `en.json` key at
   `src/NzbDrone.Core/Localization/Core/en.json`. Backend uses
   `_localizationService.GetLocalizedString("Key")`; frontend uses
@@ -87,7 +87,7 @@ Decide from the diff whether to run anything locally:
 
 - **Risky diff** — touches `src/NzbDrone.Core/Parser/`, a DB migration, core
   release/parsing/decision logic, or security-sensitive code:
-  1. `gh pr checkout <n> --repo Whisparr/Whisparr-Eros`
+  1. `gh pr checkout <n> --repo bifanaboy/Whisparr-Eros`
   2. Build + run the **targeted** fixtures for the touched area, excluding heavy
      categories, e.g.:
      ```
@@ -107,8 +107,8 @@ Never claim tests passed unless you actually ran them.
 The PR's CI has usually already run — read it, don't just predict it:
 
 ```
-gh pr checks <n> --repo Whisparr/Whisparr-Eros
-gh pr view <n> --repo Whisparr/Whisparr-Eros --json statusCheckRollup,mergeStateStatus,mergeable
+gh pr checks <n> --repo bifanaboy/Whisparr-Eros
+gh pr view <n> --repo bifanaboy/Whisparr-Eros --json statusCheckRollup,mergeStateStatus,mergeable
 ```
 
 Report the real state of the key gates from `build_v3.yml` and `sonarqube.yml`:
@@ -147,8 +147,8 @@ Always use this fixed structure:
 After printing the review, use AskUserQuestion to ask whether to post it. Only on
 explicit approval:
 
-- Summary review: `gh pr review <n> --repo Whisparr/Whisparr-Eros --comment --body "..."`
+- Summary review: `gh pr review <n> --repo bifanaboy/Whisparr-Eros --comment --body "..."`
   (or `--request-changes` / `--approve` to match the verdict).
-- Inline notes: `gh pr comment <n> --repo Whisparr/Whisparr-Eros --body "..."`.
+- Inline notes: `gh pr comment <n> --repo bifanaboy/Whisparr-Eros --body "..."`.
 
 Confirm before this outward-facing step every time. No AI-attribution footer.

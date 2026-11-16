@@ -5,7 +5,7 @@ We're always looking for people to help make Whisparr even better, there are a n
 
 # Documentation
 
-Setup guides, [FAQ](Whisparr/Whisparr-Eros/wiki/FAQ), the more information we have on the [wiki](https://wiki.servarr.com/whisparr) the better.
+Setup guides, [FAQ](https://github.com/bifanaboy/Whisparr-Eros/wiki/FAQ), the more information we have on the [wiki](https://github.com/bifanaboy/Whisparr-Eros/wiki) the better.
 
 # Development
 
@@ -35,7 +35,7 @@ For a map of the repository layout and where new code belongs (backend project s
 
 ## Getting started
 
-1. Fork Whisparr
+1. Fork bifanaboy/Whisparr-Eros
 1. Clone the repository into your development machine. [*info*](https://docs.github.com/en/get-started/quickstart/fork-a-repo)
 
 > Be sure to run lint `yarn lint --fix` on your code for any front end changes before committing.
@@ -95,11 +95,11 @@ dotnet msbuild -restore src/Whisparr.sln -p:Configuration=Debug -p:Platform=Posi
 
 ## Contributing Code
 
-- If you're adding a new, already requested feature, please comment on [GitHub Issues](https://github.com/Whisparr/Whisparr-Eros/issues) so work is not duplicated (If you want to add something not already on there, please talk to us first)
-- Rebase from Whisparr's `eros-develop` branch, do not merge
+- If you're adding a new, already requested feature, please comment on [GitHub Issues](https://github.com/bifanaboy/Whisparr-Eros/issues) so work is not duplicated (If you want to add something not already on there, please talk to us first)
+- Rebase from bifanaboy's `eros-develop` branch, do not merge
 - Make meaningful commits, or squash them
 - Feel free to make a pull request before work is complete, this will let us see where its at and make comments/suggest improvements
-- Reach out to us on the discord if you have any questions
+- Reach out via this repo's issues if you have any questions
 - Add tests (unit/integration)
 - Commit with \*nix line endings for consistency (We checkout Windows and commit \*nix)
 - One feature/bug fix per pull request to keep things clean and easy to understand

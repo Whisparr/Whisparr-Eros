@@ -45,8 +45,10 @@ jobs:
           client-id: ${{ secrets.CI_APP_ID }}
           private-key: ${{ secrets.CI_APP_KEY }}
           # Both the PR and the backlog issue live on this repo, so a
-          # single-repo scope is enough. (It was two repos until Issues were
-          # enabled here on 2026-09-17 and the tracking issues moved over.)
+          # single-repo scope is enough. This repo is the bifanaboy fork; its
+          # upstream remote is Whisparr/Whisparr-Eros. (It was two repos until
+          # Issues were enabled here on 2026-09-17 and the tracking issues
+          # moved over.)
           owner: ${{ github.repository_owner }}
           repositories: |
             Whisparr-Eros
@@ -63,7 +65,7 @@ jobs:
 
       - name: Identify
         run: |
-          git config user.name 'whisparr-github-ci[bot]'
+          git config user.name 'bifanaboy-github-ci[bot]'
           git config user.email '${{ steps.app.outputs.app-slug }}[bot]@users.noreply.github.com'
 
       - name: Attempt the picks

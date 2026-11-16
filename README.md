@@ -1,12 +1,8 @@
 # Whisparr-Eros
 
-[![Build-Develop](https://github.com/Whisparr/Whisparr-Eros/actions/workflows/build_v3.yml/badge.svg?branch=eros-develop)](https://github.com/Whisparr/Whisparr-Eros/actions/workflows/build_v3.yml)
-![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/whisparr/whisparr-eros/total)
-[![Translation status](https://translate.servarr.com/widget/servarr/whisparr/svg-badge.svg)](https://translate.servarr.com/engage/servarr/?utm_source=widget)
-[![Docker](https://img.shields.io/badge/Docker-Info-blue)](https://wiki.servarr.com/whisparr/installation/docker)
-[![Backers on Open Collective](https://opencollective.com/Whisparr/backers/badge.svg)](#backers)
-[![Sponsors on Open Collective](https://opencollective.com/Whisparr/sponsors/badge.svg)](#sponsors)
-[![Mega Sponsors on Open Collective](https://opencollective.com/Whisparr/megasponsors/badge.svg)](#mega-sponsors)
+[![Build-Develop](https://github.com/bifanaboy/Whisparr-Eros/actions/workflows/build_v3.yml/badge.svg?branch=eros-develop)](https://github.com/bifanaboy/Whisparr-Eros/actions/workflows/build_v3.yml)
+
+> Personal fork of [Whisparr/Whisparr-Eros](https://github.com/Whisparr/Whisparr-Eros) — upstream Radarr/Sonarr sync kept, support via this repo's issues.
 
 Whisparr is an adult movie and scene collection manager for Usenet and BitTorrent users. It can monitor multiple RSS feeds for new items and will interface with clients and indexers to grab, sort, and rename them. It can also be configured to automatically upgrade the quality of existing files in the library when a better quality format becomes available.
 Note that only one type of a given movie is supported. If you want both an 4k version and 1080p version of a given movie you will need multiple instances.
@@ -29,47 +25,14 @@ Note that only one type of a given movie is supported. If you want both an 4k ve
 
 ## Support
 
-[![Wiki](https://img.shields.io/badge/servarr-wiki-181717.svg?maxAge=60)](https://wiki.servarr.com/whisparr)
-[![Discord](https://img.shields.io/badge/discord-chat-7289DA.svg?maxAge=60)](https://whisparr.com/discord)
-
 Note: GitHub Issues are for Bugs and Feature Requests Only
 
-[![GitHub - Bugs and Feature Requests Only](https://img.shields.io/badge/github-issues-red.svg?maxAge=60)](https://github.com/Whisparr/Whisparr-Eros/issues)
+[![GitHub - Bugs and Feature Requests Only](https://img.shields.io/badge/github-issues-red.svg?maxAge=60)](https://github.com/bifanaboy/Whisparr-Eros/issues)
 
 ## Contributors & Developers
 
-[API Documentation](https://whisparr.com/docs/api/)
-
-This project exists thanks to all the people who contribute.
 - [Contribute (GitHub)](CONTRIBUTING.md)
-- [Contribution (Wiki Article)](https://wiki.servarr.com/whisparr/contributing)
 
-[![Contributors List](https://opencollective.com/Whisparr/contributors.svg?width=890&button=false)](https://github.com/Whisparr/Whisparr/graphs/contributors)
-
-## Backers
-
-Thank you to all our backers! 🙏 [Become a backer](https://opencollective.com/Whisparr#backer)
-
-[![Backers List](https://opencollective.com/Whisparr/backers.svg?width=890)](https://opencollective.com/Whisparr#backer)
-
-## Sponsors
-
-Support this project by becoming a sponsor. Your logo will show up here with a link to your website. [Become a sponsor](https://opencollective.com/Whisparr#sponsor)
-
-[![Sponsors List](https://opencollective.com/Whisparr/sponsors.svg?width=890)](https://opencollective.com/Whisparr#sponsor)
-
-## Mega Sponsors
-
-[![Mega Sponsors List](https://opencollective.com/Whisparr/tiers/mega-sponsor.svg?width=890)](https://opencollective.com/Whisparr#mega-sponsor)
-
-## JetBrains
-
-Thank you to [<img src="https://resources.jetbrains.com/storage/products/company/brand/logos/jetbrains.png" alt="JetBrains" width="96">](http://www.jetbrains.com/) for providing us with free licenses to their great tools.
-
-* [<img src="https://resources.jetbrains.com/storage/products/company/brand/logos/ReSharper_icon.png" alt="ReSharper" width="32"> ReSharper](http://www.jetbrains.com/resharper/)
-* [<img src="https://resources.jetbrains.com/storage/products/company/brand/logos/WebStorm_icon.png" alt="WebStorm" width="32"> WebStorm](http://www.jetbrains.com/webstorm/)
-* [<img src="https://resources.jetbrains.com/storage/products/company/brand/logos/Rider_icon.png" alt="Rider" width="32"> Rider](http://www.jetbrains.com/rider/)
-* [<img src="https://resources.jetbrains.com/storage/products/company/brand/logos/dotTrace_icon.png" alt="dotTrace" width="32"> dotTrace](http://www.jetbrains.com/dottrace/)
 
 ### License
 
