@@ -219,11 +219,18 @@ namespace NzbDrone.Core.Movies
                 .Join<Movie, MovieMetadata>((m, p) => m.MovieMetadataId == p.Id)
                 .Where<MovieMetadata>(x => x.ItemType == itemType && x.Year == year);
 
+            var qualityProfiles = _profileRepository.All().ToDictionary(x => x.Id);
+
             return _database.QueryJoined<Movie, MovieMetadata>(
                 builder,
                 (movie, metadata) =>
                 {
                     movie.MovieMetadata = metadata;
+
+                    if (qualityProfiles.TryGetValue(movie.QualityProfileId, out var profile))
+                    {
+                        movie.QualityProfile = profile;
+                    }
 
                     return movie;
                 }).AsList();

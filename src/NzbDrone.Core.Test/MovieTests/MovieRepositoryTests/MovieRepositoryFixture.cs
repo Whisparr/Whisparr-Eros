@@ -59,6 +59,22 @@ namespace NzbDrone.Core.Test.MovieTests.MovieRepositoryTests
         }
 
         [Test]
+        public void should_load_quality_profile_when_finding_movie_by_year()
+        {
+            var profile = GivenProfile();
+            var movie = GivenTitledMovie(profile.Id, "Regression Test Movie", ItemType.Movie);
+
+            var results = Subject.FindByYear(ItemType.Movie, 2020);
+
+            results.Should().ContainSingle()
+                .Which.Id.Should().Be(movie.Id);
+
+            var result = results.Single();
+            result.QualityProfile.Should().NotBeNull();
+            result.QualityProfile.Id.Should().Be(profile.Id);
+        }
+
+        [Test]
         public void should_load_movie_file_on_paged()
         {
             var profile = GivenProfile();
