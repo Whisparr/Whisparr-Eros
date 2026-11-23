@@ -113,7 +113,7 @@ namespace NzbDrone.Core.Download.Clients.Flood
                     continue;
                 }
 
-                if (Settings.PostImportTags.All(tag => properties.Tags.Contains(tag)))
+                if (Settings.PostImportTags.Any() && Settings.PostImportTags.All(tag => properties.Tags.Contains(tag)))
                 {
                     continue;
                 }
