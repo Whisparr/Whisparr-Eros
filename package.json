@@ -74,7 +74,7 @@
     "react-tabs": "6.1.1",
     "react-text-truncate": "0.19.0",
     "react-use-measure": "2.1.7",
-    "react-virtualized": "9.22.6",
+    "react-virtualized": "10.0.0",
     "react-window": "1.8.11",
     "react-world-flags": "1.6.0",
     "stacktrace-js": "2.0.2",
