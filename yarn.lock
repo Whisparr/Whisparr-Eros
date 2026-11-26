@@ -4506,22 +4506,22 @@ postcss-modules-values@^4.0.0:
   dependencies:
     icss-utils "^5.0.0"
 
-postcss-nested@8.0.1:
-  version "8.0.1"
-  resolved "https://registry.yarnpkg.com/postcss-nested/-/postcss-nested-8.0.1.tgz#4e204d832d1af59080f4d209df141954622736ec"
-  integrity sha512-PvSIwDVh1NTw939iu4FBK+oeZfSm0cbErFAjXCTPiStammzobBNE2SiQNezy8Xp+Oud2uLXaLpTauv3UdxWjbQ==
+postcss-nested@9.0.0:
+  version "9.0.0"
+  resolved "https://registry.yarnpkg.com/postcss-nested/-/postcss-nested-9.0.0.tgz#277dfd765196fc41f93fa713eb13b45c0ffbf904"
+  integrity sha512-cYlRG8MiABEAPvxMj1ms9Ame0Xi31AlSe0pY9I61dhUOKUZ6PQU/4i0WdVetUYKlowi3552nnbjhdYYbf2o7UA==
   dependencies:
-    postcss-selector-parser "^7.1.4"
+    postcss-selector-parser "^7.1.6"
 
 postcss-safe-parser@^7.0.1:
   version "7.0.1"
   resolved "https://registry.yarnpkg.com/postcss-safe-parser/-/postcss-safe-parser-7.0.1.tgz#36e4f7e608111a0ca940fd9712ce034718c40ec0"
   integrity sha512-0AioNCJZ2DPYz5ABT6bddIqlhgwhpHZ/l65YAYo0BCIn0xiDpsnTHz0gnoTGk0OXZW0JRs+cDwL8u/teRdz+8A==
 
-postcss-selector-parser@^7.0.0, postcss-selector-parser@^7.1.1, postcss-selector-parser@^7.1.4, postcss-selector-parser@^7.1.5:
-  version "7.1.6"
-  resolved "https://registry.yarnpkg.com/postcss-selector-parser/-/postcss-selector-parser-7.1.6.tgz#45e970f2d93d4547d6754167ed1132f43012c4bf"
-  integrity sha512-7qASPzhKF2l2KLboRZux8CCTRMdGiV08vWmyKzPz22qZ7ZjQBOeY7rNzNoCLSUiftJ7HUq0GERHmxw/t0dCdMw==
+postcss-selector-parser@^7.0.0, postcss-selector-parser@^7.1.1, postcss-selector-parser@^7.1.5, postcss-selector-parser@^7.1.6:
+  version "7.1.7"
+  resolved "https://registry.yarnpkg.com/postcss-selector-parser/-/postcss-selector-parser-7.1.7.tgz#70e353032ced41529d70b7662227a74eb001d31b"
+  integrity sha512-wWBro/7hJ40ye6TPiXkUQoXKCw23xSsjriUvqd7Uls9Sso3oLiON1flc18cCdnjgCRXw4fBVqUJJeOdDTh3P3g==
   dependencies:
     cssesc "^3.0.0"
     util-deprecate "^1.0.2"
